@@ -10,8 +10,10 @@ let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
 let lastListTab = 'table'; // persists across sections
-let vocabGrouping = 'domain'; // 'domain' or 'none'
-let termsGrouping = 'source'; // 'source' or 'none'
+let vocabGrouping = 'domain'; // 'domain', 'status', 'steward', 'none'
+let termsGrouping = 'source'; // 'source', 'status', 'none'
+let codelistGrouping = 'source'; // 'source', 'none'
+let systemsGrouping = 'none'; // 'technology', 'status', 'none'
 let searchQuery = '';
 let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
@@ -579,7 +581,7 @@ function renderDomainGroup(col, concepts) {
   concepts.forEach(c => {
     const def = getDefinitionText(c.definition, lang);
     const tooltip = def ? escapeHtml(n(c, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(c, 'name'));
-    html += `<a class="concept-box" href="#/vocabulary/${c.id}" title="${tooltip}">`;
+    html += `<a class="concept-box" href="${c.href || '#/vocabulary/' + c.id}" title="${tooltip}">`;
     html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
     html += `</a>`;
   });
@@ -764,7 +766,7 @@ function renderVocabularyList(listTab, collectionId) {
 }
 
 function renderCodeListsList(listTab) {
-  // Single query with LEFT JOIN and GROUP BY to get value counts (fix N+1)
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   const codeLists = query(`SELECT cl.*,
     COALESCE(vc.value_count, 0) as value_count,
     COALESCE(vc.deprecated_count, 0) as deprecated_count
@@ -784,27 +786,72 @@ function renderCodeListsList(listTab) {
     <div class="section-subtitle">Standardisierte Wertelisten für Attribute der Geschäftsobjekte.</div>
   </div></div>`;
 
+  const groupingOpts = [
+    { id: 'source', label: 'Quelle' },
+    { id: 'none', label: 'Keine' }
+  ];
+  html += renderListTabBar('codelists', listTab, groupingOpts, codelistGrouping);
+
   if (codeLists.length === 0) {
     html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
     html += '</div>';
     return html;
   }
 
-  html += '<div class="list-panel">';
-  html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:30%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Quelle</th><th scope="col">Werte</th><th scope="col">Version</th>';
-  html += '</tr></thead><tbody>';
-  codeLists.forEach(cl => {
+  if (listTab === 'diagram') {
+    html += '<div class="diagram-canvas">';
+    if (codelistGrouping === 'none') {
+      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Codelisten', concept_count: codeLists.length }, codeLists.map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id })));
+    } else {
+      const groups = {};
+      codeLists.forEach(cl => { const k = cl.source_ref || 'Andere'; if (!groups[k]) groups[k] = []; groups[k].push(cl); });
+      const large = [], small = [];
+      Object.keys(groups).sort().forEach(k => {
+        const mapped = groups[k].map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id }));
+        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
+      });
+      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
+      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  const colgroup = '<colgroup><col style="width:22%"><col style="width:15%"><col style="width:28%"><col style="width:10%"><col style="width:12%"><col style="width:13%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Version</th><th scope="col">Status</th></tr></thead>';
+
+  function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
-    html += `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
+    return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.source_ref ? escapeHtml(cl.source_ref) : '&ndash;'}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
       <td>${cl.version ? escapeHtml(cl.version) : '&ndash;'}</td>
+      <td>${cl.deprecated_count > 0 ? cl.deprecated_count + ' veraltet' : '&ndash;'}</td>
     </tr>`;
-  });
-  html += '</tbody></table>';
+  }
+
+  html += '<div class="list-panel">';
+  if (codelistGrouping === 'none') {
+    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+    codeLists.forEach(cl => { html += clRow(cl); });
+    html += '</tbody></table>';
+  } else {
+    const groups = {};
+    codeLists.forEach(cl => { const k = cl.source_ref || 'Andere'; if (!groups[k]) groups[k] = []; groups[k].push(cl); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="cl-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="cl-${k}">`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      items.forEach(cl => { html += clRow(cl); });
+      html += '</tbody></table></div>';
+    });
+  }
   html += '</div></div>';
   return html;
 }
@@ -1055,14 +1102,12 @@ function renderTermRelationships(termId, term) {
 }
 
 function renderSystemsList(listTab) {
-  // Single query with JOINs to get schema_count and dataset_count (fix N+1)
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   const systems = query(`SELECT s.*,
     c.name as owner_name, c.organisation as owner_org,
-    COALESCE(sc_counts.schema_count, 0) as schema_count,
     COALESCE(ds_counts.dataset_count, 0) as dataset_count
     FROM system s
     LEFT JOIN contact c ON s.owner_id = c.id
-    LEFT JOIN (SELECT system_id, COUNT(*) as schema_count FROM schema_ GROUP BY system_id) sc_counts ON sc_counts.system_id = s.id
     LEFT JOIN (SELECT sc.system_id, COUNT(*) as dataset_count FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id GROUP BY sc.system_id) ds_counts ON ds_counts.system_id = s.id
     ORDER BY s.${nameCol('name')}`);
 
@@ -1070,16 +1115,15 @@ function renderSystemsList(listTab) {
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
     <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${systems.length})</div>
-    <div class="section-subtitle">Physische Quellsysteme mit Schemas, Datasets und Feldern.</div>
+    <div class="section-subtitle">Physische Quellsysteme mit Tabellen, Datasets und Feldern.</div>
   </div></div>`;
 
-  html += renderListTabBar('systems', listTab);
-
-  if (listTab === 'diagram') {
-    html += renderDiagramPlaceholder('systems');
-    html += '</div>';
-    return html;
-  }
+  const groupingOpts = [
+    { id: 'technology', label: 'Technologie' },
+    { id: 'status', label: 'Status' },
+    { id: 'none', label: 'Keine' }
+  ];
+  html += renderListTabBar('systems', listTab, groupingOpts, systemsGrouping);
 
   if (systems.length === 0) {
     html += renderEmptyState('database', 'Keine Systeme', 'Es wurden noch keine Systeme registriert.');
@@ -1087,21 +1131,66 @@ function renderSystemsList(listTab) {
     return html;
   }
 
-  html += '<div class="list-panel">';
-  html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:20%"><col style="width:12%"><col style="width:12%"><col style="width:10%"><col style="width:21%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Technologie</th><th scope="col">Schemas</th><th scope="col">Datasets</th><th scope="col">Status</th><th scope="col">Eigentümer</th>';
-  html += '</tr></thead><tbody>';
-  systems.forEach(s => {
-    html += `<tr class="clickable-row" data-href="#/systems/${s.id}">
+  if (listTab === 'diagram') {
+    html += '<div class="diagram-canvas">';
+    if (systemsGrouping === 'none') {
+      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Systeme', concept_count: systems.length }, systems.map(s => ({ id: s.id, ['name_' + lang]: n(s, 'name'), href: '#/systems/' + s.id })));
+    } else {
+      const groups = {};
+      systems.forEach(s => {
+        const k = systemsGrouping === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+        if (!groups[k]) groups[k] = [];
+        groups[k].push(s);
+      });
+      const large = [], small = [];
+      Object.keys(groups).sort().forEach(k => {
+        const mapped = groups[k].map(s => ({ id: s.id, ['name_' + lang]: n(s, 'name'), href: '#/systems/' + s.id }));
+        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
+      });
+      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
+      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  const colgroup = '<colgroup><col style="width:25%"><col style="width:20%"><col style="width:15%"><col style="width:10%"><col style="width:30%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Eigentümer</th></tr></thead>';
+
+  function sysRow(s) {
+    return `<tr class="clickable-row" data-href="#/systems/${s.id}">
       <td>${escapeHtml(n(s, 'name'))}</td>
       <td>${s.technology_stack ? escapeHtml(s.technology_stack) : '&ndash;'}</td>
-      <td>${s.schema_count}</td>
       <td>${s.dataset_count}</td>
       <td>${s.active ? statusBadge('active') : statusBadge('deprecated')}</td>
       <td>${s.owner_name ? escapeHtml(s.owner_name) : '&ndash;'}</td>
     </tr>`;
-  });
-  html += '</tbody></table>';
+  }
+
+  html += '<div class="list-panel">';
+  if (systemsGrouping === 'none') {
+    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+    systems.forEach(s => { html += sysRow(s); });
+    html += '</tbody></table>';
+  } else {
+    const groups = {};
+    systems.forEach(s => {
+      const k = systemsGrouping === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(s);
+    });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="sys-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="sys-${k}">`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      items.forEach(s => { html += sysRow(s); });
+      html += '</tbody></table></div>';
+    });
+  }
   html += '</div></div>';
   return html;
 }
@@ -2771,6 +2860,8 @@ document.addEventListener('click', function(e) {
     const section = groupOpt.dataset.groupingSection;
     if (section === 'vocabulary' || section?.startsWith('vocabulary/')) vocabGrouping = groupOpt.dataset.grouping;
     else if (section === 'terms') termsGrouping = groupOpt.dataset.grouping;
+    else if (section === 'codelists') codelistGrouping = groupOpt.dataset.grouping;
+    else if (section === 'systems') systemsGrouping = groupOpt.dataset.grouping;
     document.getElementById('grouping-menu')?.classList.remove('open');
     handleRoute();
     return;
