@@ -137,6 +137,35 @@ CREATE INDEX IF NOT EXISTS idx_concept_relation_source ON concept_relation(sourc
 CREATE INDEX IF NOT EXISTS idx_concept_relation_target ON concept_relation(target_concept_id);
 
 -- ---------------------------------------------------------------------------
+-- Term: a simple glossary entry (Fachbegriff) — no fields, no mappings, no data owner
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS term (
+    id                  TEXT NOT NULL PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
+    name_en             TEXT NOT NULL,
+    name_de             TEXT,
+    name_fr             TEXT,
+    name_it             TEXT,
+    definition          TEXT,  -- JSON per locale
+    standard_ref        TEXT,  -- e.g., "eCH-0071", "SIA 416 §3.6"
+    source_type         TEXT NOT NULL,  -- standard, law, regulation, norm
+    source_document     TEXT,  -- full document reference
+    status              TEXT NOT NULL DEFAULT 'draft',  -- draft, approved, deprecated
+    related_terms       TEXT,  -- JSON array of term IDs
+    created_at          TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    modified_at         TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_term_status ON term(status);
+CREATE INDEX IF NOT EXISTS idx_term_source_type ON term(source_type);
+
+-- Junction: concept (business object) ↔ term
+CREATE TABLE IF NOT EXISTS concept_term (
+    concept_id  TEXT NOT NULL REFERENCES concept(id),
+    term_id     TEXT NOT NULL REFERENCES term(id),
+    PRIMARY KEY (concept_id, term_id)
+);
+
+-- ---------------------------------------------------------------------------
 -- 6.5   Code List (skos:ConceptScheme type=codelist)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS code_list (

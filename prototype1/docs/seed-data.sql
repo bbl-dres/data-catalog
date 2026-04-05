@@ -1235,5 +1235,208 @@ INSERT INTO concept_relation (source_concept_id, target_concept_id, relation_typ
   ('uuid-concept-018', 'uuid-concept-009', 'skos:related');
 
 -- =============================================================================
+-- Terms (Fachbegriffe / Glossary)
+-- =============================================================================
+
+INSERT INTO term (id, name_en, name_de, name_fr, name_it, definition, standard_ref, source_type, source_document, status, related_terms, created_at, modified_at) VALUES
+  ('uuid-term-001',
+   'Federal Building Identifier',
+   'Eidgenössischer Gebäudeidentifikator',
+   'Identificateur fédéral de bâtiment',
+   'Identificatore federale dell''edificio',
+   '{"de": "Eindeutiger Gebäudeidentifikator im eidgenössischen Gebäude- und Wohnungsregister (GWR). Jedes Gebäude in der Schweiz erhält bei der Registrierung einen permanenten EGID.", "en": "Unique building identifier in the Swiss Federal Building and Dwelling Register (GWR). Every building in Switzerland receives a permanent EGID upon registration."}',
+   'eCH-0071 v2.0',
+   'standard',
+   'eCH-0071 – Datenstandard Gebäude- und Wohnungsregister v2.0',
+   'approved',
+   '["uuid-term-002"]',
+   '2024-01-15T10:00:00.000Z',
+   '2024-01-15T10:00:00.000Z'),
+
+  ('uuid-term-002',
+   'Federal Land Parcel Identifier',
+   'Eidgenössischer Grundstückidentifikator',
+   'Identificateur fédéral de bien-fonds',
+   'Identificatore federale del fondo',
+   '{"de": "Eindeutiger Grundstückidentifikator im schweizerischen Grundbuch. Verknüpft Parzellen über Kantonsgrenzen hinweg.", "en": "Unique land parcel identifier in the Swiss land registry (Grundbuch). Links parcels across cantonal boundaries."}',
+   'ZGB Art. 949a',
+   'law',
+   'Schweizerisches Zivilgesetzbuch (ZGB) Art. 949a',
+   'approved',
+   '["uuid-term-001"]',
+   '2024-01-15T10:05:00.000Z',
+   '2024-01-15T10:05:00.000Z'),
+
+  ('uuid-term-003',
+   'Rental Area',
+   'Mietfläche',
+   'Surface locative',
+   'Superficie locativa',
+   '{"de": "Die Fläche einer Mieteinheit, die vertraglich für die Mietberechnung relevant ist. Vermessung gemäss SIA 416.", "en": "The area of a rental unit that is contractually relevant for rent calculation. Measured according to SIA 416 standards."}',
+   'SIA 416 §3.4',
+   'norm',
+   'SIA 416 – Flächen und Volumen von Gebäuden §3.4',
+   'approved',
+   '["uuid-term-004", "uuid-term-005"]',
+   '2024-02-01T09:00:00.000Z',
+   '2024-02-01T09:00:00.000Z'),
+
+  ('uuid-term-004',
+   'Usable Area',
+   'Nutzfläche',
+   'Surface utile',
+   'Superficie utile',
+   '{"de": "Die für die tatsächliche Nutzung (Büro, Wohnen, Lager) verfügbare Fläche, ohne Konstruktions- und Verkehrsflächen.", "en": "The area available for actual use (office, residential, storage), excluding structural and circulation areas."}',
+   'SIA 416 §3.3',
+   'norm',
+   'SIA 416 – Flächen und Volumen von Gebäuden §3.3',
+   'approved',
+   '["uuid-term-003", "uuid-term-005"]',
+   '2024-02-01T09:15:00.000Z',
+   '2024-02-01T09:15:00.000Z'),
+
+  ('uuid-term-005',
+   'Gross Floor Area',
+   'Geschossfläche',
+   'Surface de plancher brute',
+   'Superficie lorda di piano',
+   '{"de": "Gesamte Geschossfläche einschliesslich Wände, gemessen auf Bodenniveau. Primäre Kennzahl für die Gebäudenutzung.", "en": "Total floor area of a storey including walls, measured at floor level. Primary metric for building utilization."}',
+   'SIA 416 §3.1',
+   'norm',
+   'SIA 416 – Flächen und Volumen von Gebäuden §3.1',
+   'approved',
+   '["uuid-term-003", "uuid-term-004", "uuid-term-009"]',
+   '2024-02-01T09:30:00.000Z',
+   '2024-02-01T09:30:00.000Z'),
+
+  ('uuid-term-006',
+   'Year of Construction',
+   'Baujahr',
+   'Année de construction',
+   'Anno di costruzione',
+   '{"de": "Das Jahr, in dem ein Gebäude fertiggestellt und bezugsbereit war. Im GWR erfasst.", "en": "The year in which a building was completed and ready for occupancy. Recorded in the GWR."}',
+   'GWR Merkmalskatalog 2023',
+   'standard',
+   'GWR Merkmalskatalog – Bundesamt für Statistik, Ausgabe 2023',
+   'approved',
+   '["uuid-term-001"]',
+   '2024-02-15T08:00:00.000Z',
+   '2024-02-15T08:00:00.000Z'),
+
+  ('uuid-term-007',
+   'Enterprise Identification Number',
+   'Unternehmens-Identifikationsnummer',
+   'Numéro d''identification des entreprises',
+   'Numero d''identificazione delle imprese',
+   '{"de": "Eindeutige Unternehmens-Identifikationsnummer, vergeben durch das BFS. Wird für alle behördlichen Geschäftsinteraktionen in der Schweiz verwendet.", "en": "Unique enterprise identification number issued by the BFS. Used for all official business interactions in Switzerland."}',
+   'UIDG Art. 3',
+   'law',
+   'Bundesgesetz über die Unternehmens-Identifikationsnummer (UIDG) Art. 3',
+   'approved',
+   '["uuid-term-008"]',
+   '2024-03-01T11:00:00.000Z',
+   '2024-03-01T11:00:00.000Z'),
+
+  ('uuid-term-008',
+   'OASI Insurance Number',
+   'AHV-Versichertennummer',
+   'Numéro d''assuré AVS',
+   'Numero d''assicurato AVS',
+   '{"de": "Die 13-stellige Sozialversicherungsnummer (756.xxxx.xxxx.xx). Wird für die Personenidentifikation über Bundessysteme hinweg verwendet.", "en": "The 13-digit social insurance number (756.xxxx.xxxx.xx). Used for person identification across federal systems."}',
+   'AHVG Art. 50c',
+   'law',
+   'Bundesgesetz über die Alters- und Hinterlassenenversicherung (AHVG) Art. 50c',
+   'approved',
+   '["uuid-term-007"]',
+   '2024-03-01T11:30:00.000Z',
+   '2024-03-01T11:30:00.000Z'),
+
+  ('uuid-term-009',
+   'Energy Reference Area',
+   'Energiebezugsfläche',
+   'Surface de référence énergétique',
+   'Superficie di riferimento energetica',
+   '{"de": "Die beheizte Bruttogeschossfläche, die als Referenz für Energieeffizienzberechnungen dient. Zentrale Kennzahl für die GEAK-Zertifizierung.", "en": "The heated gross floor area used as reference for energy performance calculations. Key metric for GEAK certification."}',
+   'SIA 380/1 §2.3',
+   'norm',
+   'SIA 380/1 – Heizwärmebedarf §2.3',
+   'approved',
+   '["uuid-term-005", "uuid-term-010"]',
+   '2024-03-15T14:00:00.000Z',
+   '2024-03-15T14:00:00.000Z'),
+
+  ('uuid-term-010',
+   'Cantonal Building Energy Certificate',
+   'Gebäudeenergieausweis der Kantone',
+   'Certificat énergétique cantonal des bâtiments',
+   'Certificato energetico cantonale degli edifici',
+   '{"de": "Der kantonale Gebäudeenergieausweis, der Gebäude von A (am effizientesten) bis G (am wenigsten effizient) bewertet.", "en": "The cantonal building energy certificate rating buildings from A (most efficient) to G (least efficient)."}',
+   'EnDK Mustervorschriften',
+   'regulation',
+   'Konferenz Kantonaler Energiedirektoren (EnDK) – Mustervorschriften der Kantone im Energiebereich (MuKEn)',
+   'approved',
+   '["uuid-term-009"]',
+   '2024-04-01T09:00:00.000Z',
+   '2024-04-01T09:00:00.000Z'),
+
+  ('uuid-term-011',
+   'Occupancy Rate',
+   'Belegungsgrad',
+   'Taux d''occupation',
+   'Tasso di occupazione',
+   '{"de": "Das Verhältnis der belegten zu den insgesamt verfügbaren Mieteinheiten, ausgedrückt in Prozent. Zentrale Kennzahl für das Portfoliomanagement.", "en": "The ratio of occupied to total available rental units, expressed as a percentage. Key KPI for portfolio management."}',
+   'VILB Anhang B',
+   'standard',
+   'Verordnung über das Immobilienmanagement und die Logistik des Bundes (VILB) Anhang B',
+   'approved',
+   '["uuid-term-012"]',
+   '2024-04-15T10:00:00.000Z',
+   '2024-04-15T10:00:00.000Z'),
+
+  ('uuid-term-012',
+   'Vacancy Rate',
+   'Leerstandsquote',
+   'Taux de vacance',
+   'Tasso di sfitto',
+   '{"de": "Der Prozentsatz leerstehender Mieteinheiten im Verhältnis zum Gesamtbestand. Umkehrwert des Belegungsgrads. Wird jährlich vom BFS veröffentlicht.", "en": "The percentage of vacant rental units relative to total inventory. Inverse of Belegungsgrad. Published annually by BFS."}',
+   'BFS Leerstandsstatistik',
+   'standard',
+   'Bundesamt für Statistik (BFS) – Leerstandsstatistik',
+   'approved',
+   '["uuid-term-011"]',
+   '2024-04-15T10:30:00.000Z',
+   '2024-04-15T10:30:00.000Z');
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- CONCEPT ↔ TERM (Business Object to Fachbegriff links)
+-- ─────────────────────────────────────────────────────────────────────────────
+
+-- Term IDs: 001=EGID, 002=EGRID, 003=Mietfläche, 004=Nutzfläche, 005=Geschossfläche,
+--   006=Baujahr, 007=UID, 008=AHV-Nr, 009=Energiebezugsfläche, 010=GEAK,
+--   011=Belegungsgrad, 012=Leerstandsquote
+INSERT INTO concept_term (concept_id, term_id) VALUES
+  ('uuid-concept-003', 'uuid-term-002'),   -- Grundstück → EGRID
+  ('uuid-concept-004', 'uuid-term-001'),   -- Gebäude → EGID
+  ('uuid-concept-004', 'uuid-term-006'),   -- Gebäude → Baujahr
+  ('uuid-concept-004', 'uuid-term-005'),   -- Gebäude → Geschossfläche
+  ('uuid-concept-004', 'uuid-term-010'),   -- Gebäude → GEAK
+  ('uuid-concept-005', 'uuid-term-004'),   -- Nutzungseinheit → Nutzfläche
+  ('uuid-concept-005', 'uuid-term-003'),   -- Nutzungseinheit → Mietfläche
+  ('uuid-concept-006', 'uuid-term-005'),   -- Geschoss → Geschossfläche
+  ('uuid-concept-007', 'uuid-term-004'),   -- Raum → Nutzfläche
+  ('uuid-concept-008', 'uuid-term-009'),   -- Bemessung → Energiebezugsfläche
+  ('uuid-concept-008', 'uuid-term-005'),   -- Bemessung → Geschossfläche
+  ('uuid-concept-008', 'uuid-term-004'),   -- Bemessung → Nutzfläche
+  ('uuid-concept-008', 'uuid-term-003'),   -- Bemessung → Mietfläche
+  ('uuid-concept-009', 'uuid-term-003'),   -- Mietobjekt → Mietfläche
+  ('uuid-concept-009', 'uuid-term-011'),   -- Mietobjekt → Belegungsgrad
+  ('uuid-concept-009', 'uuid-term-012'),   -- Mietobjekt → Leerstandsquote
+  ('uuid-concept-012', 'uuid-term-010'),   -- Heizzentrale → GEAK
+  ('uuid-concept-012', 'uuid-term-009'),   -- Heizzentrale → Energiebezugsfläche
+  ('uuid-concept-015', 'uuid-term-008'),   -- Person → AHV-Nr
+  ('uuid-concept-017', 'uuid-term-007'),   -- Unternehmen → UID
+  ('uuid-concept-018', 'uuid-term-007');   -- Wirtschaftseinheit → UID
+
+-- =============================================================================
 -- END OF SEED DATA
 -- =============================================================================
