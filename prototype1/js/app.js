@@ -587,7 +587,6 @@ function renderDomainGroup(col, concepts) {
   return html;
 }
 
-const expandedCollections = new Set();
 
 function renderVocabularyList(listTab, collectionId) {
   const totalConcepts = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
@@ -724,26 +723,15 @@ function renderVocabularyList(listTab, collectionId) {
   } else if (vocabGrouping === 'domain') {
     // Grouped by collection
     filteredCollections.forEach(col => {
-      const allColConcepts = conceptsByCollection[col.id] || [];
-      const isFullyExpanded = expandedCollections.has(col.id);
-      const concepts = isFullyExpanded ? allColConcepts : allColConcepts.slice(0, 5);
-      const isExpanded = concepts.length > 0;
+      const concepts = conceptsByCollection[col.id] || [];
       html += `<div class="group-header" data-toggle-group="${col.id}">
-        <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" style="width:16px;height:16px;" class="group-chevron"></i>
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
         <span class="group-header-title">${escapeHtml(n(col, 'name'))} (${col.concept_count})</span>
       </div>`;
-      html += `<div class="group-content" data-group="${col.id}" ${isExpanded ? '' : 'style="display:none"'}>`;
+      html += `<div class="group-content" data-group="${col.id}">`;
       html += `<table class="data-table">${colgroup}${thead}<tbody>`;
       concepts.forEach(c => { html += conceptRow(c); });
-      html += '</tbody></table>';
-      if (col.concept_count > 5) {
-        if (!isFullyExpanded) {
-          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Geschäftsobjekte anzeigen &rarr;</a></div>`;
-        } else {
-          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-collapse-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">&larr; Weniger anzeigen</a></div>`;
-        }
-      }
-      html += '</div>';
+      html += '</tbody></table></div>';
     });
 
     if (filteredUngrouped.length > 0) {
@@ -2853,22 +2841,6 @@ document.addEventListener('click', function(e) {
   const clickable = target.closest('[data-href]');
   if (clickable) {
     navigate(clickable.dataset.href);
-    return;
-  }
-
-  // "Show all" / "Show less" toggle in vocabulary list
-  const expandLink = target.closest('[data-expand-collection]');
-  if (expandLink) {
-    e.preventDefault();
-    expandedCollections.add(expandLink.dataset.expandCollection);
-    handleRoute();
-    return;
-  }
-  const collapseLink = target.closest('[data-collapse-collection]');
-  if (collapseLink) {
-    e.preventDefault();
-    expandedCollections.delete(collapseLink.dataset.collapseCollection);
-    handleRoute();
     return;
   }
 
