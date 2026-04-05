@@ -9,6 +9,7 @@ let currentSection = 'vocabulary';
 let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
+let lastListTab = 'table'; // persists across sections
 let vocabGrouping = 'domain'; // 'domain' or 'none'
 let termsGrouping = 'source'; // 'source' or 'none'
 let searchQuery = '';
@@ -2842,7 +2843,7 @@ document.addEventListener('click', function(e) {
     }
     // Navigate to section, expand it
     expandedSections.add(sec);
-    const tab = (currentSection === sec && (currentTab === 'diagram' || currentTab === 'table')) ? currentTab : 'table';
+    const tab = (currentTab === 'diagram' || currentTab === 'table') ? currentTab : lastListTab;
     navigate('#/' + sec + '/' + tab);
     return;
   }
@@ -2857,6 +2858,7 @@ document.addEventListener('click', function(e) {
   // List tab clicks (Übersicht / Diagramm)
   const listTabBtn = target.closest('.tab[data-list-tab]');
   if (listTabBtn) {
+    lastListTab = listTabBtn.dataset.listTab;
     navigate(listTabBtn.dataset.listRoute);
     return;
   }
