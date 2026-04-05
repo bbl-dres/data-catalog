@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "Bash(sed -n '516,538p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '539,567p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '568,598p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '599,617p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '618,651p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '652,669p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '670,700p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '701,723p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '724,758p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '759,784p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '785,820p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '821,841p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '842,872p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '873,895p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '896,917p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '918,935p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(sed -n '936,980p' \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog-immo\\\\prototype1\\\\docs\\\\DATAMODEL.md\")",
+      "Bash(python3 -c \"import sqlite3; print\\('python3 sqlite3 available'\\)\")",
+      "Bash(cp data/init-schema.sql docs/init-schema.sql)",
+      "Bash(cp data/seed-data.sql docs/seed-data.sql)",
+      "Bash(rm data/init-schema.sql data/seed-data.sql)",
+      "Bash(ls docs/*.sql)",
+      "Bash(sed -n '13,1083p' index.html)",
+      "Bash(sed -n '1159,3067p' index.html)"
+    ]
+  }
+}
