@@ -9,12 +9,9 @@ let currentSection = 'vocabulary';
 let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
-let lastListTab = 'table'; // persists across sections
-let vocabGrouping = 'domain'; // 'domain', 'status', 'steward', 'none'
-let termsGrouping = 'domain'; // 'domain', 'status', 'none'
-let codelistGrouping = 'domain'; // 'domain', 'source', 'none'
-let systemsGrouping = 'none'; // 'technology', 'status', 'none'
-let productsGrouping = 'none'; // 'publisher', 'status', 'none'
+let lastListTab = 'table';
+const grouping = { vocabulary: 'domain', terms: 'domain', codelists: 'domain', systems: 'none', products: 'none' };
+const STATUS_LABELS = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
 let searchQuery = '';
 let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
@@ -470,13 +467,7 @@ function renderKpiCard(icon, count, label, subtitle, href) {
   </div>`;
 }
 
-function renderQualityRow(label, value) {
-  return `<div class="quality-bar-container">
-    <span class="quality-bar-label">${escapeHtml(label)}</span>
-    <div class="quality-bar"><div class="quality-bar-fill-complete" style="width:${value}%;"></div></div>
-    <span class="quality-bar-value">${value}%</span>
-  </div>`;
-}
+
 
 function renderListView(section, listTab, collectionId) {
   const main = document.getElementById('main-content');
@@ -516,16 +507,7 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping)
   return html;
 }
 
-function renderDiagramPlaceholder(section) {
-  const labels = {
-    vocabulary: { title: 'Konzept-Diagramm', desc: 'Visuelle Darstellung der Konzepte und ihrer Beziehungen.' },
-    codelists: { title: 'Codelisten-Diagramm', desc: 'Visuelle Darstellung der Codelisten und Referenzen.' },
-    systems: { title: 'System-Diagramm', desc: 'Visuelle Darstellung der Systeme und Datenfl\u00fcsse.' },
-    products: { title: 'Datenprodukt-Diagramm', desc: 'Visuelle Darstellung der Datenprodukte und Distributionen.' }
-  };
-  const l = labels[section] || labels.vocabulary;
-  return '<div class="content-section">' + renderEmptyState('network', l.title, l.desc + ' Wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
-}
+
 
 function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
   let html = '<div class="diagram-canvas">';
@@ -653,29 +635,29 @@ function renderVocabularyList(listTab, collectionId) {
     { id: 'steward', label: 'Verantwortlich' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, vocabGrouping);
+  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary);
 
   // Build collection lookup
   const collectionMap = {};
   collections.forEach(col => { collectionMap[col.id] = col; });
-  const statusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
 
-  // Build generic groups based on vocabGrouping
+
+  // Build generic groups based on grouping.vocabulary
   function getGroupKey(c) {
-    if (vocabGrouping === 'domain') {
+    if (grouping.vocabulary === 'domain') {
       const col = c.collection_id ? collectionMap[c.collection_id] : null;
       return col ? n(col, 'name') : 'Ohne Domäne';
     }
-    if (vocabGrouping === 'status') return statusLabels[c.status] || c.status || 'Unbekannt';
-    if (vocabGrouping === 'steward') return c.steward_name || 'Nicht zugewiesen';
+    if (grouping.vocabulary === 'status') return STATUS_LABELS[c.status] || c.status || 'Unbekannt';
+    if (grouping.vocabulary === 'steward') return c.steward_name || 'Nicht zugewiesen';
     return null;
   }
 
   // Diagram
   if (listTab === 'diagram') {
-    if (!activeCollection && vocabGrouping === 'none') {
+    if (!activeCollection && grouping.vocabulary === 'none') {
       html += renderVocabularyDiagramFlat(allConcepts);
-    } else if (!activeCollection && vocabGrouping !== 'domain') {
+    } else if (!activeCollection && grouping.vocabulary !== 'domain') {
       // Generic grouped diagram
       const groups = {};
       allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
@@ -717,13 +699,13 @@ function renderVocabularyList(listTab, collectionId) {
   const colgroup = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:8%"><col style="width:10%"><col style="width:22%"></colgroup>';
   const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Felder</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
 
-  if (activeCollection || vocabGrouping === 'none') {
+  if (activeCollection || grouping.vocabulary === 'none') {
     // Flat table
     const concepts = activeCollection ? (conceptsByCollection[collectionId] || []) : allConcepts;
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     concepts.forEach(c => { html += conceptRow(c); });
     html += '</tbody></table>';
-  } else if (vocabGrouping === 'domain') {
+  } else if (grouping.vocabulary === 'domain') {
     // Grouped by collection
     filteredCollections.forEach(col => {
       const concepts = conceptsByCollection[col.id] || [];
@@ -801,7 +783,7 @@ function renderCodeListsList(listTab) {
     { id: 'source', label: 'Quelle' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('codelists', listTab, groupingOpts, codelistGrouping);
+  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists);
 
   if (codeLists.length === 0) {
     html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
@@ -810,14 +792,14 @@ function renderCodeListsList(listTab) {
   }
 
   function getClGroupKey(cl) {
-    if (codelistGrouping === 'domain') return cl.domain_name || 'Ohne Domäne';
-    if (codelistGrouping === 'source') return cl.source_ref || 'Andere';
+    if (grouping.codelists === 'domain') return cl.domain_name || 'Ohne Domäne';
+    if (grouping.codelists === 'source') return cl.source_ref || 'Andere';
     return null;
   }
 
   if (listTab === 'diagram') {
     html += '<div class="diagram-canvas">';
-    if (codelistGrouping === 'none') {
+    if (grouping.codelists === 'none') {
       html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Codelisten', concept_count: codeLists.length }, codeLists.map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id })));
     } else {
       const groups = {};
@@ -851,7 +833,7 @@ function renderCodeListsList(listTab) {
   }
 
   html += '<div class="list-panel">';
-  if (codelistGrouping === 'none') {
+  if (grouping.codelists === 'none') {
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     codeLists.forEach(cl => { html += clRow(cl); });
     html += '</tbody></table>';
@@ -899,7 +881,7 @@ function renderTermsList(listTab) {
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('terms', listTab, groupingOpts, termsGrouping);
+  html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms);
 
   if (totalCount === 0) {
     html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
@@ -907,18 +889,18 @@ function renderTermsList(listTab) {
     return html;
   }
 
-  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
+
 
   function getTermGroupKey(t) {
-    if (termsGrouping === 'domain') return t.domain_name || 'Ohne Domäne';
-    if (termsGrouping === 'status') return termStatusLabels[t.status] || t.status || 'Unbekannt';
+    if (grouping.terms === 'domain') return t.domain_name || 'Ohne Domäne';
+    if (grouping.terms === 'status') return STATUS_LABELS[t.status] || t.status || 'Unbekannt';
     return null;
   }
 
   if (listTab === 'diagram') {
     html += '<div class="diagram-canvas">';
-    if (termsGrouping === 'none') {
-      html += renderTermGroup('Alle Begriffe', terms);
+    if (grouping.terms === 'none') {
+      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Begriffe' }, terms.map(t => ({ ...t, href: '#/terms/' + t.id })));
     } else {
       const groups = {};
       terms.forEach(t => { const k = getTermGroupKey(t); if (!groups[k]) groups[k] = []; groups[k].push(t); });
@@ -926,8 +908,8 @@ function renderTermsList(listTab) {
       Object.keys(groups).sort().forEach(k => {
         if (groups[k].length > 3) large.push({ src: k, items: groups[k] }); else small.push({ src: k, items: groups[k] });
       });
-      large.forEach(g => { html += renderTermGroup(g.src, g.items); });
-      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderTermGroup(g.src, g.items); }); html += '</div>'; }
+      large.forEach(g => { html += renderDomainGroup({ id: g.src, ['name_' + lang]: g.src }, g.items.map(t => ({ ...t, href: '#/terms/' + t.id }))); });
+      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.src, ['name_' + lang]: g.src }, g.items.map(t => ({ ...t, href: '#/terms/' + t.id }))); }); html += '</div>'; }
     }
     html += '</div></div>';
     return html;
@@ -949,7 +931,7 @@ function renderTermsList(listTab) {
     </tr>`;
   }
 
-  if (termsGrouping === 'none') {
+  if (grouping.terms === 'none') {
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     terms.forEach(t => { html += termRow(t); });
     html += '</tbody></table>';
@@ -973,23 +955,7 @@ function renderTermsList(listTab) {
   return html;
 }
 
-function renderTermGroup(title, terms) {
-  let html = '<div class="domain-group">';
-  html += '<div class="domain-group-header">';
-  html += `<span class="domain-group-title">${escapeHtml(title)}</span>`;
-  html += `<span class="domain-group-count">${terms.length}</span>`;
-  html += '</div>';
-  html += '<div class="domain-group-concepts">';
-  terms.forEach(t => {
-    const def = getDefinitionText(t.definition, lang);
-    const tooltip = def ? escapeHtml(n(t, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(t, 'name'));
-    html += `<a class="concept-box" href="#/terms/${t.id}" title="${tooltip}">`;
-    html += `<span class="concept-box-name">${escapeHtml(n(t, 'name'))}</span>`;
-    html += `</a>`;
-  });
-  html += '</div></div>';
-  return html;
-}
+
 
 function renderTermDetail(termId, tab, main) {
   const term = queryOne("SELECT * FROM term WHERE id = ?", [termId]);
@@ -1014,7 +980,6 @@ function renderTermDetail(termId, tab, main) {
   html += `<div class="title-block-name">${escapeHtml(n(term, 'name'))}</div>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += statusBadge(term.status);
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div></div>';
@@ -1088,17 +1053,7 @@ function renderTermRelationships(termId, term) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieser Begriff hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: n(term, 'name'), satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(n(term, 'name'), satellites);
 }
 
 function renderSystemsList(listTab) {
@@ -1123,7 +1078,7 @@ function renderSystemsList(listTab) {
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('systems', listTab, groupingOpts, systemsGrouping);
+  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems);
 
   if (systems.length === 0) {
     html += renderEmptyState('database', 'Keine Systeme', 'Es wurden noch keine Systeme registriert.');
@@ -1133,12 +1088,12 @@ function renderSystemsList(listTab) {
 
   if (listTab === 'diagram') {
     html += '<div class="diagram-canvas">';
-    if (systemsGrouping === 'none') {
+    if (grouping.systems === 'none') {
       html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Systeme', concept_count: systems.length }, systems.map(s => ({ id: s.id, ['name_' + lang]: n(s, 'name'), href: '#/systems/' + s.id })));
     } else {
       const groups = {};
       systems.forEach(s => {
-        const k = systemsGrouping === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+        const k = grouping.systems === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
         if (!groups[k]) groups[k] = [];
         groups[k].push(s);
       });
@@ -1170,14 +1125,14 @@ function renderSystemsList(listTab) {
   }
 
   html += '<div class="list-panel">';
-  if (systemsGrouping === 'none') {
+  if (grouping.systems === 'none') {
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     systems.forEach(s => { html += sysRow(s); });
     html += '</tbody></table>';
   } else {
     const groups = {};
     systems.forEach(s => {
-      const k = systemsGrouping === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+      const k = grouping.systems === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
       if (!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
@@ -1200,8 +1155,10 @@ function renderSystemsList(listTab) {
 function renderProductsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   const products = query(`SELECT dp.*,
-    (SELECT COUNT(*) FROM distribution dist WHERE dist.data_product_id = dp.id) as dist_count
-    FROM data_product dp ORDER BY dp.${nameCol('name')}`);
+    COALESCE(dc.dist_count, 0) as dist_count
+    FROM data_product dp
+    LEFT JOIN (SELECT data_product_id, COUNT(*) as dist_count FROM distribution GROUP BY data_product_id) dc ON dc.data_product_id = dp.id
+    ORDER BY dp.${nameCol('name')}`);
 
   // Pre-fetch all formats in one query
   const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
@@ -1220,7 +1177,7 @@ function renderProductsList(listTab) {
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('products', listTab, groupingOpts, productsGrouping);
+  html += renderListTabBar('products', listTab, groupingOpts, grouping.products);
 
   if (products.length === 0) {
     html += renderEmptyState('package', 'Keine Datenprodukte', 'Es wurden noch keine Datenprodukte angelegt.');
@@ -1229,14 +1186,14 @@ function renderProductsList(listTab) {
   }
 
   function getProductGroupKey(dp) {
-    if (productsGrouping === 'publisher') return dp.publisher || 'Unbekannt';
-    if (productsGrouping === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
+    if (grouping.products === 'publisher') return dp.publisher || 'Unbekannt';
+    if (grouping.products === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
     return null;
   }
 
   if (listTab === 'diagram') {
     html += '<div class="diagram-canvas">';
-    if (productsGrouping === 'none') {
+    if (grouping.products === 'none') {
       html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Datensammlungen', concept_count: products.length }, products.map(dp => ({ id: dp.id, ['name_' + lang]: n(dp, 'name'), href: '#/products/' + dp.id })));
     } else {
       const groups = {};
@@ -1270,7 +1227,7 @@ function renderProductsList(listTab) {
   }
 
   html += '<div class="list-panel">';
-  if (productsGrouping === 'none') {
+  if (grouping.products === 'none') {
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     products.forEach(dp => { html += productRow(dp); });
     html += '</tbody></table>';
@@ -1347,7 +1304,6 @@ function renderConceptDetail(conceptId, tab, main) {
   html += `<div class="title-block-name">${escapeHtml(n(concept, 'name'))}</div>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += `${statusBadge(concept.status)}`;
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div>';
@@ -1364,7 +1320,7 @@ function renderConceptDetail(conceptId, tab, main) {
   // Tab content
   html += '<div class="tab-content">';
   switch(tab) {
-    case 'overview': html += renderConceptOverview(concept, vocab, steward); break;
+    case 'overview': html += renderConceptOverview(concept, collection, vocab, steward); break;
     case 'fields': html += renderConceptContents(conceptId); break;
     case 'mappings': html += renderConceptMappings(conceptId); break;
     case 'relationships': html += renderConceptRelationships(conceptId); break;
@@ -1374,19 +1330,21 @@ function renderConceptDetail(conceptId, tab, main) {
   main.innerHTML = html;
 }
 
-function renderTranslationGap(val) {
-  if (!val || val.trim() === '') {
-    return ' <span class="translation-gap">&#9888; &Uuml;bersetzung fehlt</span>';
-  }
-  return '';
-}
-
-function renderFeedbackTab() {
-  return '<div class="content-section">' + renderEmptyState('message-circle', 'Feedback & Kommentare', 'Feedback & Kommentare werden in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
-}
-
 function renderHistoryTab() {
   return '<div class="content-section">' + renderEmptyState('clock', '\u00c4nderungsprotokoll', 'Das \u00c4nderungsprotokoll wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
+}
+
+function renderRelGraph(centerLabel, satellites) {
+  if (satellites.length === 0) return '';
+  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
+  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
+  html += '<div id="rel-canvas"></div>';
+  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
+  html += '<div id="rel-panel" class="rel-panel"></div>';
+  html += '</div></div>';
+  relGraphData = { conceptName: centerLabel, satellites };
+  setTimeout(initRelationshipSVG, 50);
+  return html;
 }
 
 function renderCodeListRelationships(codeListId, cl) {
@@ -1399,17 +1357,7 @@ function renderCodeListRelationships(codeListId, cl) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Diese Codeliste hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: n(cl, 'name'), satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(n(cl, 'name'), satellites);
 }
 
 function renderSystemRelationships(systemId, sys) {
@@ -1446,17 +1394,7 @@ function renderSystemRelationships(systemId, sys) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses System hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: n(sys, 'name'), satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(n(sys, 'name'), satellites);
 }
 
 function renderDatasetRelationships(datasetId, ds) {
@@ -1496,17 +1434,7 @@ function renderDatasetRelationships(datasetId, ds) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Dataset hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: ds.display_name || ds.name, satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(ds.display_name || ds.name, satellites);
 }
 
 function renderProductRelationships(productId, dp) {
@@ -1530,20 +1458,10 @@ function renderProductRelationships(productId, dp) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Datenprodukt hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: n(dp, 'name'), satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(n(dp, 'name'), satellites);
 }
 
-function renderConceptOverview(concept, vocab, steward) {
+function renderConceptOverview(concept, collection, vocab, steward) {
   let html = '';
 
   // Definition
@@ -1565,10 +1483,9 @@ function renderConceptOverview(concept, vocab, steward) {
   }
 
   // Metadata
-  const conceptCollection = concept.col_id ? queryOne(`SELECT * FROM collection WHERE id = ?`, [concept.col_id]) : null;
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (conceptCollection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(conceptCollection, 'name'))}</td></tr>`;
+  if (collection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(collection, 'name'))}</td></tr>`;
   html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
   if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
   html += `<tr><td>Erstellt</td><td>${formatDate(concept.created_at)}</td></tr>`;
@@ -1714,18 +1631,7 @@ function renderConceptRelationships(conceptId) {
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
-
-  // Store data and render container
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-
-  relGraphData = { conceptName: n(concept, 'name'), satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
+  return renderRelGraph(n(concept, 'name'), satellites);
 }
 
 function initRelationshipSVG() {
@@ -1982,8 +1888,9 @@ function renderCodeListDetail(codeListId, tab, main) {
   const cl = queryOne("SELECT * FROM code_list WHERE id = ?", [codeListId]);
   if (!cl) { main.innerHTML = '<p>Code list not found</p>'; return; }
 
-  const valueCount = query("SELECT COUNT(*) as c FROM code_list_value WHERE code_list_id = ?", [codeListId])[0]?.c || 0;
-  const deprecatedCount = query("SELECT COUNT(*) as c FROM code_list_value WHERE code_list_id = ? AND deprecated = 1", [codeListId])[0]?.c || 0;
+  const clCounts = queryOne("SELECT COUNT(*) as total, SUM(CASE WHEN deprecated = 1 THEN 1 ELSE 0 END) as dep FROM code_list_value WHERE code_list_id = ?", [codeListId]);
+  const valueCount = clCounts?.total || 0;
+  const deprecatedCount = clCounts?.dep || 0;
 
   addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
 
@@ -2123,28 +2030,6 @@ function renderCodeListMappings(codeListId) {
   return html;
 }
 
-function renderCodeListStakeholders(cl) {
-  // Code List role groups per wireframe: Data Steward, Data Custodian
-  const roleDescs = {
-    data_steward: { label: 'Datenverantwortliche', desc: 'Maintains the catalog entry, enforces standards, approves mappings.' },
-    data_custodian: { label: 'Datenbetreuer', desc: 'Technically operates the system: access management, backup, availability.' }
-  };
-
-  let html = '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
-
-  Object.keys(roleDescs).forEach(role => {
-    const rd = roleDescs[role];
-    html += `<div class="stakeholder-section">
-      <div class="stakeholder-role-title">${rd.label}</div>
-      <div class="stakeholder-role-desc">${rd.desc}</div>
-      <div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${rd.label} zugewiesen</div>
-    </div>`;
-  });
-
-  html += '</div>';
-  return html;
-}
-
 // ============================================================
 // System Detail
 // ============================================================
@@ -2175,7 +2060,6 @@ function renderSystemDetail(systemId, tab, main) {
   html += `<div class="title-block-name">${escapeHtml(n(sys, 'name'))}</div>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += `${sys.active ? statusBadge('active') : statusBadge('deprecated')}`;
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div>';
@@ -2234,9 +2118,10 @@ function renderSystemContents(systemId, schemas) {
   // Flat list of all datasets across all schemas
   const datasets = query(`SELECT d.*,
     sc.name as schema_name, sc.display_name as schema_display_name,
-    (SELECT COUNT(*) FROM field f WHERE f.dataset_id = d.id) as field_count
+    COALESCE(fc.field_count, 0) as field_count
     FROM dataset d
     JOIN schema_ sc ON d.schema_id = sc.id
+    LEFT JOIN (SELECT dataset_id, COUNT(*) as field_count FROM field GROUP BY dataset_id) fc ON fc.dataset_id = d.id
     WHERE sc.system_id = ?
     ORDER BY d.name`, [systemId]);
 
@@ -2345,8 +2230,6 @@ function renderDatasetDetail(datasetId, systemId) {
   html += `<div class="title-block-name${restricted ? ' locked-name' : ''}">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</div>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += certifiedBadge(ds.certified);
-  if (restricted) html += ' <span class="badge badge-warning">Zugriff eingeschr&auml;nkt</span>';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div>';
@@ -2628,7 +2511,6 @@ function renderProductDetail(productId, tab, main) {
   html += `<div class="title-block-name">${escapeHtml(n(dp, 'name'))}</div>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += certifiedBadge(dp.certified);
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div>';
@@ -2921,12 +2803,8 @@ document.addEventListener('click', function(e) {
   // Grouping option click
   const groupOpt = target.closest('.grouping-option[data-grouping]');
   if (groupOpt) {
-    const section = groupOpt.dataset.groupingSection;
-    if (section === 'vocabulary' || section?.startsWith('vocabulary/')) vocabGrouping = groupOpt.dataset.grouping;
-    else if (section === 'terms') termsGrouping = groupOpt.dataset.grouping;
-    else if (section === 'codelists') codelistGrouping = groupOpt.dataset.grouping;
-    else if (section === 'systems') systemsGrouping = groupOpt.dataset.grouping;
-    else if (section === 'products') productsGrouping = groupOpt.dataset.grouping;
+    const section = (groupOpt.dataset.groupingSection || '').split('/')[0];
+    if (grouping.hasOwnProperty(section)) grouping[section] = groupOpt.dataset.grouping;
     document.getElementById('grouping-menu')?.classList.remove('open');
     handleRoute();
     return;
