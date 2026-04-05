@@ -2160,7 +2160,7 @@ function renderSystemDetail(systemId, tab, main) {
   addRecent(n(sys, 'name') || sys.name_en, `#/systems/${systemId}`);
 
   const tabs = ['overview', 'contents', 'relationships', 'stakeholders', 'history'];
-  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Tabellen', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -2233,37 +2233,34 @@ function renderSystemOverview(sys, schemas, datasetCount) {
 }
 
 function renderSystemContents(systemId, schemas) {
-  let html = '<div class="content-section"><div class="section-label">SCHEMAS & DATASETS</div>';
+  // Flat list of all datasets across all schemas
+  const datasets = query(`SELECT d.*,
+    sc.name as schema_name, sc.display_name as schema_display_name,
+    (SELECT COUNT(*) FROM field f WHERE f.dataset_id = d.id) as field_count
+    FROM dataset d
+    JOIN schema_ sc ON d.schema_id = sc.id
+    WHERE sc.system_id = ?
+    ORDER BY d.name`, [systemId]);
 
-  schemas.forEach(sc => {
-    const datasets = query(`SELECT d.*,
-      (SELECT COUNT(*) FROM field f WHERE f.dataset_id = d.id) as field_count
-      FROM dataset d WHERE d.schema_id = ? ORDER BY d.name`, [sc.id]);
-
-    html += `<div class="group-header" data-toggle-group="sc-${sc.id}">
-      <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
-      <i data-lucide="layers" style="width:16px;height:16px;color:var(--color-text-secondary);"></i>
-      <span class="group-header-title">${escapeHtml(sc.display_name || sc.name)} (${datasets.length})</span>
-    </div>`;
-    html += `<div class="group-content" data-group="sc-${sc.id}">`;
-    html += '<table class="data-table"><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Status</th>';
-    html += '</tr></thead><tbody>';
-    datasets.forEach(d => {
-      html += `<tr class="clickable-row" data-href="#/systems/${systemId}/datasets/${d.id}">
-        <td>${escapeHtml(d.display_name || d.name)}</td>
-        <td>${escapeHtml(d.dataset_type)}</td>
-        <td>${d.field_count}</td>
-        <td>${certifiedBadge(d.certified)}</td>
-      </tr>`;
-    });
-    html += '</tbody></table></div>';
-  });
-
-  if (schemas.length === 0) {
-    html += '<div class="empty-state"><div class="empty-state-title">No schemas found</div></div>';
+  if (datasets.length === 0) {
+    return '<div class="content-section">' + renderEmptyState('table-2', 'Keine Tabellen', 'Diesem System sind noch keine Tabellen zugeordnet.') + '</div>';
   }
-  html += '</div>';
+
+  let html = '<div class="content-section">';
+  html += '<table class="data-table"><colgroup><col style="width:30%"><col style="width:30%"><col style="width:15%"><col style="width:10%"><col style="width:15%"></colgroup><thead><tr>';
+  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Status</th>';
+  html += '</tr></thead><tbody>';
+  datasets.forEach(d => {
+    const desc = getDefinitionText(d.description, lang);
+    html += `<tr class="clickable-row" data-href="#/systems/${systemId}/datasets/${d.id}">
+      <td>${escapeHtml(d.display_name || d.name)}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
+      <td>${escapeHtml(d.dataset_type)}</td>
+      <td>${d.field_count}</td>
+      <td>${certifiedBadge(d.certified)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
   return html;
 }
 
