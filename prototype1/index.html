@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBL Datenkatalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+<div class="loading-screen" id="loading-screen">
+  <div style="display:flex;width:100%;height:100%;">
+    <div class="loading-skeleton-sidebar" style="width:260px;background:var(--color-bg-surface);border-right:1px solid var(--color-border-subtle);">
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div style="height:var(--space-6);"></div>
+      <div class="skeleton-bar skeleton-bar-sm" style="width:60%;"></div>
+      <div class="skeleton-bar" style="width:80%;"></div>
+      <div class="skeleton-bar" style="width:70%;"></div>
+    </div>
+    <div class="loading-skeleton-main" style="flex:1;">
+      <div class="skeleton-bar skeleton-bar-sm" style="width:30%;"></div>
+      <div class="skeleton-bar skeleton-bar-lg"></div>
+      <div class="skeleton-bar skeleton-bar-md"></div>
+      <div style="height:var(--space-6);"></div>
+      <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);">
+        <div class="skeleton-bar" style="width:80px;"></div>
+        <div class="skeleton-bar" style="width:80px;"></div>
+        <div class="skeleton-bar" style="width:80px;"></div>
+      </div>
+      <div class="skeleton-bar" style="width:90%;"></div>
+      <div class="skeleton-bar" style="width:85%;"></div>
+      <div class="skeleton-bar" style="width:75%;"></div>
+      <div class="skeleton-bar" style="width:60%;"></div>
+      <div style="height:var(--space-4);"></div>
+      <div class="skeleton-bar" style="width:90%;"></div>
+      <div class="skeleton-bar" style="width:80%;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <header class="app-header">
+    <a class="header-logo" id="header-logo">
+      <div class="header-logo-icon"><i data-lucide="database" style="width:16px;height:16px;"></i></div>
+      <span>BBL Datenkatalog</span>
+    </a>
+    <div class="header-search">
+      <div class="search-bar">
+        <i data-lucide="search" class="search-bar-icon" style="width:16px;height:16px;"></i>
+        <input type="text" class="search-bar-input" id="search-input" placeholder="Katalog durchsuchen..." aria-label="Katalog durchsuchen">
+        <span class="search-bar-shortcut">Ctrl+K</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn" id="lang-btn" aria-label="Sprache wechseln">
+          <span id="lang-label">DE</span>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown">
+          <div class="lang-option" data-lang="de"><span class="dot"></span> DE</div>
+          <div class="lang-option" data-lang="fr"><span class="dot"></span> FR</div>
+          <div class="lang-option" data-lang="it"><span class="dot"></span> IT</div>
+          <div class="lang-option" data-lang="en"><span class="dot"></span> EN</div>
+        </div>
+      </div>
+      <button class="header-icon-btn" aria-label="Hilfe"><i data-lucide="help-circle" style="width:20px;height:20px;"></i></button>
+      <div class="user-avatar" title="User" role="button" aria-label="Benutzermenu">DR</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <nav class="sidebar" id="sidebar" aria-label="Hauptnavigation"></nav>
+    <main class="main-content" id="main-content"></main>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
