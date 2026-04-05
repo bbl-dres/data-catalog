@@ -561,22 +561,10 @@ function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
   return html;
 }
 
-function renderVocabularyDiagramFlat(allConcepts, collections) {
-  const collectionMap = {};
-  collections.forEach(col => { collectionMap[col.id] = col; });
-
-  let html = '<div class="diagram-canvas"><div class="diagram-flat-grid">';
-  allConcepts.forEach(c => {
-    const col = c.collection_id ? collectionMap[c.collection_id] : null;
-    const domainName = col ? n(col, 'name') : '';
-    const def = getDefinitionText(c.definition, lang);
-    const tooltip = def ? escapeHtml(n(c, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(c, 'name'));
-    html += `<a class="concept-box concept-box--flat" href="#/vocabulary/${c.id}" title="${tooltip}">`;
-    html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
-    if (domainName) html += `<span class="concept-box-domain">${escapeHtml(domainName)}</span>`;
-    html += `</a>`;
-  });
-  html += '</div></div>';
+function renderVocabularyDiagramFlat(allConcepts) {
+  let html = '<div class="diagram-canvas">';
+  html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Geschäftsobjekte', concept_count: allConcepts.length }, allConcepts);
+  html += '</div>';
   return html;
 }
 
@@ -683,7 +671,7 @@ function renderVocabularyList(listTab, collectionId) {
   // Diagram
   if (listTab === 'diagram') {
     if (!activeCollection && vocabGrouping === 'none') {
-      html += renderVocabularyDiagramFlat(allConcepts, collections);
+      html += renderVocabularyDiagramFlat(allConcepts);
     } else if (!activeCollection && vocabGrouping !== 'domain') {
       // Generic grouped diagram
       const groups = {};
@@ -958,15 +946,7 @@ function renderTermsDiagram(terms, groups) {
 
   let html = '<div class="diagram-canvas">';
   if (termsGrouping === 'none') {
-    html += '<div class="diagram-flat-grid">';
-    terms.forEach(t => {
-      const srcLabel = sourceLabels[t.source_type] || t.source_type;
-      html += `<a class="concept-box concept-box--flat" href="#/terms/${t.id}">`;
-      html += `<span class="concept-box-name">${escapeHtml(n(t, 'name'))}</span>`;
-      html += `<span class="concept-box-domain">${escapeHtml(srcLabel)}</span>`;
-      html += `</a>`;
-    });
-    html += '</div>';
+    html += renderTermGroup('Alle Begriffe', terms);
   } else {
     // Build groups based on termsGrouping
     const activeGroups = {};
