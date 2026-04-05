@@ -933,22 +933,19 @@ function renderTermsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:30%"><col style="width:12%"><col style="width:12%"><col style="width:13%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Quellentyp</th><th scope="col">Standard</th><th scope="col">Status</th></tr></thead>';
-  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:35%"><col style="width:12%"><col style="width:20%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Standard</th></tr></thead>';
 
   html += '<div class="list-panel">';
 
   function termRow(t) {
     const def = getDefinitionText(t.definition, lang);
-    const srcLabel = sourceLabels[t.source_type] || t.source_type;
     return `<tr class="clickable-row" data-href="#/terms/${t.id}">
       <td>${escapeHtml(n(t, 'name'))}</td>
       <td>${t.domain_name ? escapeHtml(t.domain_name) : '&ndash;'}</td>
       <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
-      <td>${escapeHtml(srcLabel)}</td>
-      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
       <td>${statusBadge(t.status)}</td>
+      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
     </tr>`;
   }
 
