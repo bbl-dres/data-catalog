@@ -780,7 +780,7 @@ function renderCodeListsList(listTab) {
       FROM code_list_value GROUP BY code_list_id
     ) vc ON vc.code_list_id = cl.id
     LEFT JOIN (
-      SELECT ca.code_list_id, GROUP_CONCAT(DISTINCT col.${nameCol('name')}) as domain_name
+      SELECT ca.code_list_id, MIN(col.${nameCol('name')}) as domain_name
       FROM concept_attribute ca
       JOIN concept c ON ca.concept_id = c.id
       JOIN collection col ON c.collection_id = col.id
@@ -877,7 +877,7 @@ function renderTermsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   // Fetch terms with domain name via concept_term → concept → collection
   const terms = query(`SELECT t.*,
-    GROUP_CONCAT(DISTINCT col.${nameCol('name')}) as domain_name
+    MIN(col.${nameCol('name')}) as domain_name
     FROM term t
     LEFT JOIN concept_term ct ON ct.term_id = t.id
     LEFT JOIN concept c ON ct.concept_id = c.id
@@ -1046,14 +1046,14 @@ function renderTermOverview(term) {
   html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
   // Derive domain from linked concepts
-  const termDomains = query(`SELECT DISTINCT col.${nameCol('name')} as dname FROM concept_term ct
+  const termDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_term ct
     JOIN concept c ON ct.concept_id = c.id
     JOIN collection col ON c.collection_id = col.id
-    WHERE ct.term_id = ?`, [term.id]);
+    WHERE ct.term_id = ? LIMIT 1`, [term.id]);
 
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (termDomains.length > 0) html += `<tr><td>Domäne</td><td>${termDomains.map(d => escapeHtml(d.dname)).join(', ')}</td></tr>`;
+  if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
   if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
   const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
   html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
@@ -1998,15 +1998,15 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   html += '</table></div>';
 
   // Derive domain from linked concepts
-  const clDomains = query(`SELECT DISTINCT col.${nameCol('name')} as dname FROM concept_attribute ca
+  const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
     JOIN concept c ON ca.concept_id = c.id
     JOIN collection col ON c.collection_id = col.id
-    WHERE ca.code_list_id = ?`, [cl.id]);
+    WHERE ca.code_list_id = ? LIMIT 1`, [cl.id]);
 
   // Properties
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (clDomains.length > 0) html += `<tr><td>Domäne</td><td>${clDomains.map(d => escapeHtml(d.dname)).join(', ')}</td></tr>`;
+  if (clDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(clDomain.dname)}</td></tr>`;
   if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
   if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
   html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
