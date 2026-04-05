@@ -103,6 +103,38 @@ function formatDate(isoStr) {
   } catch { return isoStr; }
 }
 
+function sortTableByColumn(th) {
+  const table = th.closest('table');
+  const tbody = table?.querySelector('tbody');
+  if (!tbody) return;
+  const idx = Array.from(th.parentNode.children).indexOf(th);
+  const allThs = th.parentNode.querySelectorAll('th');
+
+  // Determine direction: toggle if same column, else asc
+  const wasAsc = th.classList.contains('sort-asc');
+  const dir = wasAsc ? 'desc' : 'asc';
+
+  // Clear all sort classes
+  allThs.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
+  th.classList.add('sort-' + dir);
+
+  const rows = Array.from(tbody.rows);
+  rows.sort((a, b) => {
+    const aVal = (a.cells[idx]?.textContent || '').trim();
+    const bVal = (b.cells[idx]?.textContent || '').trim();
+    // Try numeric comparison
+    const aNum = parseFloat(aVal.replace(/[^\d.-]/g, ''));
+    const bNum = parseFloat(bVal.replace(/[^\d.-]/g, ''));
+    if (!isNaN(aNum) && !isNaN(bNum) && aVal.match(/^[\d.,% –-]+$/)) {
+      return dir === 'asc' ? aNum - bNum : bNum - aNum;
+    }
+    // String comparison (locale-aware)
+    const cmp = aVal.localeCompare(bVal, 'de', { sensitivity: 'base' });
+    return dir === 'asc' ? cmp : -cmp;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
 function statusBadge(status) {
   if (!status) return '';
   const s = status.toLowerCase();
@@ -626,13 +658,41 @@ function renderVocabularyList(listTab, collectionId) {
 
   const vocabGroupOpts = activeCollection ? null : [
     { id: 'domain', label: 'Domäne' },
+    { id: 'status', label: 'Status' },
+    { id: 'steward', label: 'Verantwortlich' },
     { id: 'none', label: 'Keine' }
   ];
   html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, vocabGrouping);
 
+  // Build collection lookup
+  const collectionMap = {};
+  collections.forEach(col => { collectionMap[col.id] = col; });
+  const statusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
+
+  // Build generic groups based on vocabGrouping
+  function getGroupKey(c) {
+    if (vocabGrouping === 'domain') {
+      const col = c.collection_id ? collectionMap[c.collection_id] : null;
+      return col ? n(col, 'name') : 'Ohne Domäne';
+    }
+    if (vocabGrouping === 'status') return statusLabels[c.status] || c.status || 'Unbekannt';
+    if (vocabGrouping === 'steward') return c.steward_name || 'Nicht zugewiesen';
+    return null;
+  }
+
+  // Diagram
   if (listTab === 'diagram') {
     if (!activeCollection && vocabGrouping === 'none') {
       html += renderVocabularyDiagramFlat(allConcepts, collections);
+    } else if (!activeCollection && vocabGrouping !== 'domain') {
+      // Generic grouped diagram
+      const groups = {};
+      allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
+      html += '<div class="diagram-canvas">';
+      Object.keys(groups).forEach(k => {
+        html += renderDomainGroup({ id: k, ['name_' + lang]: k, concept_count: groups[k].length }, groups[k]);
+      });
+      html += '</div>';
     } else {
       html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped);
     }
@@ -640,7 +700,7 @@ function renderVocabularyList(listTab, collectionId) {
     return html;
   }
 
-  if (filteredCollections.length === 0 && filteredUngrouped.length === 0) {
+  if (allConcepts.length === 0) {
     html += renderEmptyState('book-open', 'Keine Geschäftsobjekte', 'Es wurden noch keine Geschäftsobjekte angelegt.');
     html += '</div>';
     return html;
@@ -648,7 +708,7 @@ function renderVocabularyList(listTab, collectionId) {
 
   html += '<div class="list-panel">';
 
-  // Helper to render a concept table row
+  // Row renderers
   function conceptRow(c) {
     const desc = getDefinitionText(c.definition, lang);
     return `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
@@ -659,10 +719,6 @@ function renderVocabularyList(listTab, collectionId) {
       <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
     </tr>`;
   }
-
-  // Build collection lookup for flat mode
-  const collectionMap = {};
-  collections.forEach(col => { collectionMap[col.id] = col; });
 
   function conceptRowFlat(c) {
     const desc = getDefinitionText(c.definition, lang);
@@ -683,19 +739,19 @@ function renderVocabularyList(listTab, collectionId) {
   const colgroupFlat = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:10%"><col style="width:8%"><col style="width:22%"></colgroup>';
   const theadFlat = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Felder</th><th scope="col">Verantwortlich</th></tr></thead>';
 
-  if (activeCollection) {
-    // Filtered by collection: flat table (no domain column needed)
-    const concepts = conceptsByCollection[collectionId] || [];
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    concepts.forEach(c => { html += conceptRow(c); });
+  if (activeCollection || vocabGrouping === 'none') {
+    // Flat table
+    const concepts = activeCollection ? (conceptsByCollection[collectionId] || []) : allConcepts;
+    if (activeCollection) {
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      concepts.forEach(c => { html += conceptRow(c); });
+    } else {
+      html += `<table class="data-table">${colgroupFlat}${theadFlat}<tbody>`;
+      concepts.forEach(c => { html += conceptRowFlat(c); });
+    }
     html += '</tbody></table>';
-  } else if (vocabGrouping === 'none') {
-    // Flat table with domain column
-    html += `<table class="data-table">${colgroupFlat}${theadFlat}<tbody>`;
-    allConcepts.forEach(c => { html += conceptRowFlat(c); });
-    html += '</tbody></table>';
-  } else {
-    // Grouped by collection with collapsible headers
+  } else if (vocabGrouping === 'domain') {
+    // Grouped by collection
     filteredCollections.forEach(col => {
       const allColConcepts = conceptsByCollection[col.id] || [];
       const isFullyExpanded = expandedCollections.has(col.id);
@@ -721,11 +777,26 @@ function renderVocabularyList(listTab, collectionId) {
 
     if (filteredUngrouped.length > 0) {
       html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
-        <span class="group-header-title">Ungrouped (${filteredUngrouped.length})</span></div>`;
+        <span class="group-header-title">Ohne Domäne (${filteredUngrouped.length})</span></div>`;
       html += `<div class="group-content"><table class="data-table">${colgroup}${thead}<tbody>`;
       filteredUngrouped.forEach(c => { html += conceptRow(c); });
       html += '</tbody></table></div>';
     }
+  } else {
+    // Generic grouping (status, steward)
+    const groups = {};
+    allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="g-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="g-${k}">`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      items.forEach(c => { html += conceptRow(c); });
+      html += '</tbody></table></div>';
+    });
   }
 
   html += '</div>'; // close list-panel
@@ -800,6 +871,7 @@ function renderTermsList(listTab) {
 
   const groupingOpts = [
     { id: 'source', label: 'Quellentyp' },
+    { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
   html += renderListTabBar('terms', listTab, groupingOpts, termsGrouping);
@@ -823,6 +895,18 @@ function renderTermsList(listTab) {
 
   html += '<div class="list-panel">';
 
+  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
+
+  function termRow(t) {
+    const def = getDefinitionText(t.definition, lang);
+    return `<tr class="clickable-row" data-href="#/terms/${t.id}">
+      <td>${escapeHtml(n(t, 'name'))}</td>
+      <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
+      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
+      <td>${statusBadge(t.status)}</td>
+    </tr>`;
+  }
+
   if (termsGrouping === 'none') {
     // Flat table with source type column
     html += `<table class="data-table">${colgroupFlat}${theadFlat}<tbody>`;
@@ -839,24 +923,27 @@ function renderTermsList(listTab) {
     });
     html += '</tbody></table>';
   } else {
-    // Grouped by source type
-    Object.keys(groups).forEach(src => {
-      const items = groups[src];
-      html += `<div class="group-header" data-toggle-group="t-${src}">
-        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
-        <span class="group-header-title">${escapeHtml(src)} (${items.length})</span>
-      </div>`;
-      html += `<div class="group-content" data-group="t-${src}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(t => {
-        const def = getDefinitionText(t.definition, lang);
-        html += `<tr class="clickable-row" data-href="#/terms/${t.id}">
-          <td>${escapeHtml(n(t, 'name'))}</td>
-          <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
-          <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
-          <td>${statusBadge(t.status)}</td>
-        </tr>`;
+    // Build groups based on termsGrouping
+    const activeGroups = {};
+    if (termsGrouping === 'status') {
+      terms.forEach(t => {
+        const k = termStatusLabels[t.status] || t.status || 'Unbekannt';
+        if (!activeGroups[k]) activeGroups[k] = [];
+        activeGroups[k].push(t);
       });
+    } else {
+      // source (default)
+      Object.assign(activeGroups, groups);
+    }
+    Object.keys(activeGroups).sort().forEach(k => {
+      const items = activeGroups[k];
+      html += `<div class="group-header" data-toggle-group="t-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="t-${k}">`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      items.forEach(t => { html += termRow(t); });
       html += '</tbody></table></div>';
     });
   }
@@ -866,12 +953,13 @@ function renderTermsList(listTab) {
 }
 
 function renderTermsDiagram(terms, groups) {
+  const sourceLabels = { standard: 'Standards', law: 'Gesetze', regulation: 'Verordnungen', norm: 'Normen' };
+  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
+
   let html = '<div class="diagram-canvas">';
   if (termsGrouping === 'none') {
-    // Flat grid
     html += '<div class="diagram-flat-grid">';
     terms.forEach(t => {
-      const sourceLabels = { standard: 'Standards', law: 'Gesetze', regulation: 'Verordnungen', norm: 'Normen' };
       const srcLabel = sourceLabels[t.source_type] || t.source_type;
       html += `<a class="concept-box concept-box--flat" href="#/terms/${t.id}">`;
       html += `<span class="concept-box-name">${escapeHtml(n(t, 'name'))}</span>`;
@@ -880,25 +968,26 @@ function renderTermsDiagram(terms, groups) {
     });
     html += '</div>';
   } else {
-    // Grouped by source type
-    const large = [];
-    const small = [];
-    Object.keys(groups).forEach(src => {
-      const items = groups[src];
-      if (items.length > 3) {
-        large.push({ src, items });
-      } else {
-        small.push({ src, items });
-      }
+    // Build groups based on termsGrouping
+    const activeGroups = {};
+    if (termsGrouping === 'status') {
+      terms.forEach(t => {
+        const k = termStatusLabels[t.status] || t.status || 'Unbekannt';
+        if (!activeGroups[k]) activeGroups[k] = [];
+        activeGroups[k].push(t);
+      });
+    } else {
+      Object.assign(activeGroups, groups);
+    }
+    const large = [], small = [];
+    Object.keys(activeGroups).sort().forEach(k => {
+      if (activeGroups[k].length > 3) large.push({ src: k, items: activeGroups[k] });
+      else small.push({ src: k, items: activeGroups[k] });
     });
-    large.forEach(g => {
-      html += renderTermGroup(g.src, g.items);
-    });
+    large.forEach(g => { html += renderTermGroup(g.src, g.items); });
     if (small.length > 0) {
       html += '<div class="diagram-row">';
-      small.forEach(g => {
-        html += renderTermGroup(g.src, g.items);
-      });
+      small.forEach(g => { html += renderTermGroup(g.src, g.items); });
       html += '</div>';
     }
   }
@@ -2798,6 +2887,13 @@ document.addEventListener('click', function(e) {
     const base = tabBtn.dataset.base;
     const tabName = tabBtn.dataset.tab;
     navigate(base + '/' + tabName);
+    return;
+  }
+
+  // Table column sorting
+  const th = target.closest('.data-table thead th');
+  if (th) {
+    sortTableByColumn(th);
     return;
   }
 

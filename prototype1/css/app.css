@@ -566,7 +566,27 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   text-align: left;
   border-bottom: 1px solid var(--color-border-default);
   white-space: nowrap;
+  cursor: pointer; user-select: none;
+  transition: color 100ms ease;
 }
+.data-table thead th:hover { color: var(--color-text-primary); }
+.data-table thead th::after {
+  content: ''; display: inline-block; width: 14px; height: 14px;
+  vertical-align: -2px; margin-left: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23BFBFBA' stroke-width='2'%3E%3Cpath d='M8 9l4-4 4 4'/%3E%3Cpath d='M16 15l-4 4-4-4'/%3E%3C/svg%3E") center/contain no-repeat;
+  opacity: 0.4;
+}
+.data-table thead th:hover::after { opacity: 0.7; }
+.data-table thead th.sort-asc::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23335E8A' stroke-width='2.5'%3E%3Cpath d='M8 14l4-4 4 4'/%3E%3C/svg%3E");
+  opacity: 1;
+}
+.data-table thead th.sort-desc::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23335E8A' stroke-width='2.5'%3E%3Cpath d='M8 10l4 4 4-4'/%3E%3C/svg%3E");
+  opacity: 1;
+}
+.data-table thead th.sort-asc,
+.data-table thead th.sort-desc { color: var(--color-text-link); }
 .data-table tbody tr {
   border-bottom: 1px solid var(--color-border-subtle);
   transition: background 80ms ease;
