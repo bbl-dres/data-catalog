@@ -834,8 +834,8 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:22%"><col style="width:16%"><col style="width:35%"><col style="width:10%"><col style="width:17%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:14%"><col style="width:25%"><col style="width:8%"><col style="width:12%"><col style="width:23%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
@@ -846,6 +846,7 @@ function renderCodeListsList(listTab) {
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
       <td>${statusBadge(clStatus)}</td>
+      <td><span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span></td>
     </tr>`;
   }
 
