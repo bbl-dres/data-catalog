@@ -1,0 +1,93 @@
+/* ============================================================
+   Design Tokens
+   ============================================================ */
+:root {
+  /* Colors — Background */
+  --color-bg-page: #F5F5F4;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-surface-hover: #F7F7F6;
+  --color-bg-accent: #EAF2FB;
+  --color-bg-accent-strong: #0B6FCC;
+  --color-bg-overlay: #262626;
+
+  /* Colors — Border */
+  --color-border-subtle: #EFEFED;
+  --color-border-default: #D8D8D5;
+  --color-border-strong: #A3A39E;
+  --color-border-accent: #0B6FCC;
+
+  /* Colors — Text */
+  --color-text-primary: #2C2C29;
+  --color-text-secondary: #6B6B66;
+  --color-text-placeholder: #A3A39E;
+  --color-text-link: #0B6FCC;
+  --color-text-link-hover: #0A5DAD;
+  --color-text-link-active: #084A8A;
+  --color-text-on-accent: #FFFFFF;
+
+  /* Colors — Status */
+  --color-status-certified: #1A9E55;
+  --color-status-certified-bg: #EDFAF3;
+  --color-status-draft: #C9820B;
+  --color-status-draft-bg: #FEF7E8;
+  --color-status-deprecated: #6B6B66;
+  --color-status-deprecated-bg: #EFEFED;
+  --color-status-restricted: #A3A39E;
+  --color-status-restricted-bg: #F7F7F6;
+
+  /* Colors — Quality */
+  --color-quality-complete: #1BA8A0;
+  --color-quality-null: #F07A2A;
+  --color-quality-bg: #EFEFED;
+
+  /* Colors — Feedback */
+  --color-warning: #C9820B;
+  --color-warning-bg: #FEF7E8;
+  --color-error: #C9372C;
+  --color-error-bg: #FEF0EE;
+
+  /* Colors — Scrollbar / interactive */
+  --color-scrollbar-thumb: #E8E8E6;
+  --color-scrollbar-thumb-hover: #D4D4D0;
+
+  /* Typography */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  --text-display: 24px;
+  --text-heading-l: 18px;
+  --text-heading-m: 16px;
+  --text-body: 14px;
+  --text-small: 12px;
+  --text-label: 11px;
+  --text-mono: 13px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* Shadows */
+  --shadow-header: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.07);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 56px;
+  --content-max-width: 960px;
+  --content-padding: 32px;
+  --prose-max-width: 720px;
+}

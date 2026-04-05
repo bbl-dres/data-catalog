@@ -30,7 +30,10 @@
       "Bash(node -e ':*)",
       "Bash(node -e \"try { new Function\\(require\\('fs'\\).readFileSync\\('js/app.js','utf8'\\)\\); console.log\\('OK'\\); } catch\\(e\\) { console.log\\('ERR:', e.message\\); }\")",
       "Bash(where gh:*)",
-      "Bash(node -e \"try { new Function\\(require\\('fs'\\).readFileSync\\('js/app.js','utf8'\\)\\); console.log\\('JS OK'\\); } catch\\(e\\) { console.log\\('ERR:', e.message\\); }\")"
+      "Bash(node -e \"try { new Function\\(require\\('fs'\\).readFileSync\\('js/app.js','utf8'\\)\\); console.log\\('JS OK'\\); } catch\\(e\\) { console.log\\('ERR:', e.message\\); }\")",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)"
     ]
   }
 }
