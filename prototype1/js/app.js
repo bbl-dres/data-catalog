@@ -19,13 +19,15 @@ let relCleanup = null; // cleanup function for relationship graph event listener
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
 const SECTION_LABELS = {
-  vocabulary: { de: 'Vokabular', fr: 'Vocabulaire', it: 'Vocabolario', en: 'Vocabulary' },
+  vocabulary: { de: 'Gesch\u00e4ftsobjekte', fr: 'Objets m\u00e9tier', it: 'Oggetti di business', en: 'Business Objects' },
+  terms: { de: 'Begriffe', fr: 'Termes', it: 'Termini', en: 'Terms' },
   codelists: { de: 'Codelisten', fr: 'Listes de codes', it: 'Liste di codici', en: 'Code Lists' },
-  systems: { de: 'Systeme', fr: 'Systemes', it: 'Sistemi', en: 'Systems' },
-  products: { de: 'Datenprodukte', fr: 'Produits de donnees', it: 'Prodotti di dati', en: 'Data Products' }
+  systems: { de: 'Systeme', fr: 'Syst\u00e8mes', it: 'Sistemi', en: 'Systems' },
+  products: { de: 'Datensammlungen', fr: 'Collections de donn\u00e9es', it: 'Raccolte di dati', en: 'Data Collections' }
 };
 const SECTION_ICONS = {
-  vocabulary: 'book-open',
+  vocabulary: 'box',
+  terms: 'book-open',
   codelists: 'list-ordered',
   systems: 'database',
   products: 'package'
@@ -252,6 +254,7 @@ function renderSidebar() {
   if (!sidebarCounts) {
     sidebarCounts = {
       vocabulary: query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0,
+      terms: query("SELECT COUNT(*) as c FROM term")[0]?.c || 0,
       codelists: query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0,
       systems: query("SELECT COUNT(*) as c FROM system")[0]?.c || 0,
       products: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
@@ -269,7 +272,7 @@ function renderSidebar() {
   </div>`;
   html += '<div class="nav-divider"></div>';
 
-  ['vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
+  ['terms', 'vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
     const isActive = currentSection === sec;
     const isExpanded = expandedSections.has(sec);
     const label = SECTION_LABELS[sec][lang] || SECTION_LABELS[sec]['en'];
@@ -347,11 +350,14 @@ function renderHome() {
   </div></div>`;
 
   // KPI cards
+  const termCount = query("SELECT COUNT(*) as c FROM term")[0]?.c || 0;
+
   html += '<div class="home-kpi-grid">';
-  html += renderKpiCard('book-open', conceptCount, 'Konzepte', `${approvedCount} Freigegeben \u00b7 ${draftCount} Entwurf`, '#/vocabulary/table');
+  html += renderKpiCard('box', conceptCount, 'Gesch\u00e4ftsobjekte', `${approvedCount} Freigegeben \u00b7 ${draftCount} Entwurf`, '#/vocabulary/table');
+  html += renderKpiCard('book-open', termCount, 'Begriffe', `Fachbegriffe & Definitionen`, '#/terms');
   html += renderKpiCard('list-ordered', codelistCount, 'Codelisten', `${valueCount} Werte`, '#/codelists');
   html += renderKpiCard('database', systemCount, 'Systeme', `${fieldCount} Felder`, '#/systems/table');
-  html += renderKpiCard('package', productCount, 'Datenprodukte', `${distCount} Distributionen`, '#/products/table');
+  html += renderKpiCard('package', productCount, 'Datensammlungen', `${distCount} Distributionen`, '#/products/table');
   html += '</div>';
 
   // Recent activity
@@ -428,6 +434,7 @@ function renderListView(section, listTab, collectionId) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   switch(section) {
     case 'vocabulary': main.innerHTML = renderVocabularyList(listTab, collectionId); break;
+    case 'terms': main.innerHTML = renderTermsList(); break;
     case 'codelists': main.innerHTML = renderCodeListsList(listTab); break;
     case 'systems': main.innerHTML = renderSystemsList(listTab); break;
     case 'products': main.innerHTML = renderProductsList(listTab); break;
@@ -532,9 +539,11 @@ function renderVocabularyList(listTab, collectionId) {
   // Pre-fetch all concepts with mapping counts and steward name in one query
   const allConcepts = query(`SELECT c.*,
     COALESCE(mc.mapping_count, 0) as mapping_count,
+    COALESCE(tc.term_count, 0) as term_count,
     u.name as steward_name
     FROM concept c
     LEFT JOIN (SELECT concept_id, COUNT(*) as mapping_count FROM concept_mapping GROUP BY concept_id) mc ON mc.concept_id = c.id
+    LEFT JOIN (SELECT concept_id, COUNT(*) as term_count FROM concept_term GROUP BY concept_id) tc ON tc.concept_id = c.id
     LEFT JOIN "user" u ON c.steward_id = u.id
     ORDER BY c.${nameCol('name')}`);
 
@@ -598,13 +607,13 @@ function renderVocabularyList(listTab, collectionId) {
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${statusBadge(c.status)}</td>
       <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-      <td>${c.standard_ref ? escapeHtml(c.standard_ref) : '&ndash;'}</td>
+      <td>${c.term_count > 0 ? c.term_count : '&ndash;'}</td>
       <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
     </tr>`;
   }
 
   const colgroup = '<colgroup><col style="width:20%"><col style="width:30%"><col style="width:10%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Fields</th><th scope="col">Standard</th><th scope="col">Data Owner</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Felder</th><th scope="col">Begriffe</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   if (activeCollection) {
     // Filtered: flat table, no group headers
@@ -719,6 +728,113 @@ function renderCodeListsList(listTab) {
   return html;
 }
 
+// ============================================================
+// Terms (Begriffe)
+// ============================================================
+function renderTermsList() {
+  const terms = query(`SELECT * FROM term ORDER BY ${nameCol('name')}`);
+  const totalCount = terms.length;
+
+  // Group by source_type
+  const sourceLabels = { standard: 'Standards', law: 'Gesetze', regulation: 'Verordnungen', norm: 'Normen' };
+  const groups = {};
+  terms.forEach(t => {
+    const src = sourceLabels[t.source_type] || t.source_type;
+    if (!groups[src]) groups[src] = [];
+    groups[src].push(t);
+  });
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
+  html += `<div class="section-header"><div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]}</div>
+    <div class="section-subtitle">${totalCount} Begriffe</div>
+  </div></div>`;
+
+  if (totalCount === 0) {
+    html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
+    html += '</div>';
+    return html;
+  }
+
+  html += '<div class="list-panel">';
+  Object.keys(groups).forEach(src => {
+    const items = groups[src];
+    html += `<div class="group-header" data-toggle-group="t-${src}">
+      <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+      <span class="group-header-title">${escapeHtml(src)}</span>
+      <span class="group-header-count">${items.length}</span>
+    </div>`;
+    html += `<div class="group-content" data-group="t-${src}">`;
+    html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:40%"><col style="width:20%"><col style="width:15%"></colgroup><thead><tr>';
+    html += '<th scope="col">Begriff</th><th scope="col">Definition</th><th scope="col">Standard</th><th scope="col">Status</th>';
+    html += '</tr></thead><tbody>';
+    items.forEach(t => {
+      const def = getDefinitionText(t.definition, lang);
+      html += `<tr class="clickable-row" data-href="#/terms/${t.id}">
+        <td>${escapeHtml(n(t, 'name'))}</td>
+        <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
+        <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
+        <td>${statusBadge(t.status)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+
+  html += '</div></div>';
+  return html;
+}
+
+function renderTermDetail(termId, main) {
+  const term = queryOne("SELECT * FROM term WHERE id = ?", [termId]);
+  if (!term) { main.innerHTML = '<p>Begriff nicht gefunden</p>'; return; }
+
+  addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
+
+  let html = '<div class="content-wrapper"><article>';
+
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/terms">${SECTION_LABELS.terms[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(term, 'name'))}</span>`;
+  html += '</nav>';
+
+  // Title block
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<div class="title-block-name">${escapeHtml(n(term, 'name'))}</div>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += statusBadge(term.status);
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += '</div></div>';
+
+  // Content sections
+  html += '<div class="tab-content">';
+
+  // Definition
+  const def = getDefinitionText(term.definition, lang);
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<table class="props-table">';
+  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
+  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
+  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
+  html += `<tr><td>Status</td><td>${statusBadge(term.status)}</td></tr>`;
+  html += `<tr><td>Ge\u00e4ndert</td><td>${formatDate(term.modified_at)}</td></tr>`;
+  html += '</table></div>';
+
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
 function renderSystemsList(listTab) {
   // Single query with JOINs to get schema_count and dataset_count (fix N+1)
   const systems = query(`SELECT s.*,
@@ -829,6 +945,7 @@ function renderDetailView(section, entityId, tab) {
   const main = document.getElementById('main-content');
   switch(section) {
     case 'vocabulary': renderConceptDetail(entityId, tab, main); break;
+    case 'terms': renderTermDetail(entityId, main); break;
     case 'codelists': renderCodeListDetail(entityId, tab, main); break;
     case 'systems': renderSystemDetail(entityId, tab, main); break;
     case 'products': renderProductDetail(entityId, tab, main); break;
@@ -884,7 +1001,7 @@ function renderConceptDetail(conceptId, tab, main) {
 
   // Title block
   html += '<div class="title-block">';
-  html += '<div class="title-block-icon"><i data-lucide="file-text" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-icon"><i data-lucide="box" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name">${escapeHtml(n(concept, 'name'))}</div>`;
   html += '</div>';
@@ -937,26 +1054,40 @@ function renderConceptOverview(concept, vocab, steward) {
   // Definition
   const def = getDefinitionText(concept.definition, lang);
   html += `<div class="content-section"><div class="section-label">DEFINITION</div>`;
-  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">No definition available.</p>'}</div></div>`;
+  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Linked terms (Begriffe)
+  const linkedTerms = query(`SELECT t.id, t.${nameCol('name')} as tname, t.standard_ref
+    FROM term t
+    JOIN concept_term ct ON ct.term_id = t.id
+    WHERE ct.concept_id = ?
+    ORDER BY t.${nameCol('name')}`, [concept.id]);
+
+  if (linkedTerms.length > 0) {
+    html += '<div class="content-section"><div class="section-label">BEGRIFFE</div>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:var(--space-2);">';
+    linkedTerms.forEach(t => {
+      html += `<a class="concept-box" href="#/terms/${t.id}" title="${t.standard_ref ? escapeHtml(t.standard_ref) : ''}">${escapeHtml(t.tname)}</a>`;
+    });
+    html += '</div></div>';
+  }
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (concept.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(concept.standard_ref)}</td></tr>`;
   html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
-  html += `<tr><td>EGID relevant</td><td>${concept.egid_relevant ? 'Yes' : 'No'}</td></tr>`;
-  html += `<tr><td>EGRID relevant</td><td>${concept.egrid_relevant ? 'Yes' : 'No'}</td></tr>`;
-  if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
-  if (concept.approved_at) html += `<tr><td>Approved</td><td>${formatDate(concept.approved_at)}</td></tr>`;
-  html += `<tr><td>Modified</td><td>${formatDate(concept.modified_at)}</td></tr>`;
+  html += `<tr><td>EGID relevant</td><td>${concept.egid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
+  html += `<tr><td>EGRID relevant</td><td>${concept.egrid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
+  if (concept.approved_at) html += `<tr><td>Freigegeben</td><td>${formatDate(concept.approved_at)}</td></tr>`;
+  html += `<tr><td>Ge\u00e4ndert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
   html += '</table></div>';
 
   // Stakeholders
-  html += '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
+  html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
   if (steward) {
-    html += renderStakeholderCard(steward.name, 'Data Steward · ' + (steward.department || ''), steward.email);
+    html += renderStakeholderCard(steward.name, 'Data Steward \u00b7 ' + (steward.department || ''), steward.email);
   } else {
-    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">No stakeholders assigned.</p>';
+    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
   }
   html += '</div>';
 
@@ -1052,39 +1183,50 @@ function renderConceptRelationships(conceptId) {
       WHERE dpd.dataset_id IN (${placeholders})`, datasetIds);
   }
 
+  // Linked terms
+  const linkedTerms = query(`SELECT t.id, t.${nameCol('name')} as tname, t.standard_ref
+    FROM term t JOIN concept_term ct ON ct.term_id = t.id
+    WHERE ct.concept_id = ? ORDER BY t.${nameCol('name')}`, [conceptId]);
+
+  // Code lists linked through attributes
+  const codeLists = query(`SELECT DISTINCT cl.id, cl.${nameCol('name')} as clname, cl.source_ref
+    FROM code_list cl
+    JOIN concept_attribute ca ON ca.code_list_id = cl.id
+    WHERE ca.concept_id = ?
+    ORDER BY cl.${nameCol('name')}`, [conceptId]);
+
   // Build satellite groups
   const satellites = [];
 
-  // Systems
-  const systems = [];
-  const seenSys = new Set();
-  mappings.forEach(m => {
-    if (!seenSys.has(m.system_id)) {
-      seenSys.add(m.system_id);
-      systems.push({ label: m.system_name, href: '#/systems/' + m.system_id, icon: 'database', meta: 'Technology: ' + (m.technology_stack || '') });
-    }
-  });
-  if (systems.length) satellites.push({ title: 'Systeme', items: systems, color: '#8B5CF6' });
+  // Begriffe (Terms)
+  if (linkedTerms.length) {
+    satellites.push({ title: 'Begriffe', items: linkedTerms.map(t => ({ label: t.tname, href: '#/terms/' + t.id, icon: 'book-open', meta: t.standard_ref || '' })), color: '#2E6EB5' });
+  }
 
-  // Datasets
-  const datasets = [];
+  // Codelisten
+  if (codeLists.length) {
+    satellites.push({ title: 'Codelisten', items: codeLists.map(cl => ({ label: cl.clname, href: '#/codelists/' + cl.id, icon: 'list-ordered', meta: cl.source_ref || '' })), color: '#0891B2' });
+  }
+
+  // Tabellen (physical tables mapped to this BO)
+  const tables = [];
   const seenDs = new Set();
   mappings.forEach(m => {
     if (!seenDs.has(m.dataset_id)) {
       seenDs.add(m.dataset_id);
-      datasets.push({ label: m.display_name || m.dataset_name, href: '#/systems/' + m.system_id + '/datasets/' + m.dataset_id, icon: 'table-2', meta: 'System: ' + m.system_name });
+      tables.push({ label: m.display_name || m.dataset_name, href: '#/systems/' + m.system_id + '/datasets/' + m.dataset_id, icon: 'table-2', meta: m.system_name });
     }
   });
-  if (datasets.length) satellites.push({ title: 'Datasets', items: datasets, color: '#C9820B' });
+  if (tables.length) satellites.push({ title: 'Tabellen', items: tables, color: '#C9820B' });
 
-  // Users
-  if (steward) {
-    satellites.push({ title: 'Benutzer', items: [{ label: steward.name, icon: 'user', meta: 'Role: Data Steward' }], color: '#2E6EB5' });
+  // Datensammlungen
+  if (products.length) {
+    satellites.push({ title: 'Datensammlungen', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
 
-  // Products
-  if (products.length) {
-    satellites.push({ title: 'Datenprodukte', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#DC2626' });
+  // Benutzer
+  if (steward) {
+    satellites.push({ title: 'Benutzer', items: [{ label: steward.name, icon: 'user', meta: 'Data Steward' }], color: '#1A9E55' });
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
@@ -1159,7 +1301,7 @@ function initRelationshipSVG() {
   html += `<div class="rel-center" style="left:${cx}px;top:${cy}px;">`;
   html += `<div class="rel-center-outer" style="width:${centerOuterR*2}px;height:${centerOuterR*2}px;">`;
   html += `<div class="rel-center-inner" style="width:${centerInnerR*2}px;height:${centerInnerR*2}px;">`;
-  html += '<i data-lucide="file-text" style="width:26px;height:26px;color:#fff;"></i>';
+  html += '<i data-lucide="box" style="width:26px;height:26px;color:#fff;"></i>';
   html += '</div></div>';
   html += `<div class="rel-center-label">${escapeHtml(conceptName)}</div>`;
   html += '</div>';
@@ -1207,7 +1349,6 @@ function initRelationshipSVG() {
   satellites.forEach(sat => {
     panelHtml += `<label class="rel-panel-item">
       <input type="checkbox" checked data-rel-toggle="${escapeHtml(sat.title)}">
-      <span class="rel-panel-dot" style="background:${sat.color};"></span>
       <span>${escapeHtml(sat.title)}</span>
     </label>`;
   });
@@ -2176,7 +2317,7 @@ function renderSearchResults() {
     html += '<div class="search-group-label">CONCEPTS</div>';
     concepts.forEach(c => {
       html += `<div class="search-result-item" data-href="#/vocabulary/${c.id}">
-        <div class="search-result-icon"><i data-lucide="file-text" style="width:16px;height:16px;"></i></div>
+        <div class="search-result-icon"><i data-lucide="box" style="width:16px;height:16px;"></i></div>
         <div>
           <div class="search-result-name">${escapeHtml(n(c, 'name'))}</div>
           <div class="search-result-type">Concept ${statusBadge(c.status)}</div>

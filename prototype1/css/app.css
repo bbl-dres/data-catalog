@@ -283,16 +283,23 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 /* Footer */
 .app-footer {
   position: fixed;
-  bottom: 0; left: var(--sidebar-width); right: 0;
+  bottom: 0; left: 0; right: 0;
   height: 32px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
+  justify-content: space-between;
+  padding: 0 var(--space-4);
   background: var(--color-bg-surface);
   border-top: 1px solid var(--color-border-subtle);
   font-size: var(--text-label);
-  z-index: 50;
+  z-index: 100;
+}
+.app-footer-version {
+  color: var(--color-text-secondary);
+}
+.app-footer-links {
+  display: flex;
+  gap: var(--space-4);
 }
 .app-footer a {
   color: var(--color-text-secondary);
@@ -978,7 +985,7 @@ a.rel-item:hover .rel-item-label { color: var(--color-text-primary); }
    ============================================================ */
 .home-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-4);
 }

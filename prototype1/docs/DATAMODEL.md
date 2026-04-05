@@ -1,6 +1,6 @@
 # BBL Datenkatalog – Data Model
 
-**Version:** 0.2 (draft)
+**Version:** 0.3 (draft)
 **Owner:** DRES – Kreis Digital Solutions
 **Status:** In Review
 
@@ -16,7 +16,9 @@
 6. [Entity Details](#6-entity-details)
    - 6.1 [Vocabulary](#61-vocabulary-skosconceptscheme)
    - 6.2 [Collection](#62-collection-skoscollection)
-   - 6.3 [Concept](#63-concept-skoasconcept)
+   - 6.3 [Concept](#63-concept-business-object)
+   - 6.3a [Term](#63a-term-glossary-entry)
+   - 6.3b [Concept–Term Junction](#63b-conceptterm-junction)
    - 6.4 [Concept Attribute](#64-concept-attribute)
    - 6.5 [Code List](#65-code-list)
    - 6.6 [Code List Value](#66-code-list-value)
@@ -100,7 +102,8 @@ The BBL Datenkatalog serves as the authoritative metadata registry for the feder
 
 | Layer | ArchiMate 3.x | DCAT-AP 2.x / SKOS | Our entity |
 |-------|--------------|---------------------|-----------|
-| Business | `Business Object` | `skos:Concept` | `concept` |
+| Business | `Business Object` | `skos:Concept` | `concept` (Geschäftsobjekt) |
+| Business | — | `skos:Concept` (simplified) | `term` (Fachbegriff) |
 | Business | `Grouping` | `skos:Collection` | `collection` |
 | Business | `Business Object` (enumerated) | `skos:ConceptScheme` (type=codelist) | `code_list` |
 | Business | `realizes` | `skos:exactMatch` | `concept_mapping` |
@@ -168,6 +171,25 @@ erDiagram
     string status
     string standard_ref
     string egid_relevant
+  }
+
+  TERM {
+    uuid id PK
+    string name_en
+    string name_de
+    string name_fr
+    string name_it
+    jsonb definition
+    string standard_ref
+    string source_type
+    string source_document
+    string status
+    jsonb related_terms
+  }
+
+  CONCEPT_TERM {
+    uuid concept_id FK
+    uuid term_id FK
   }
 
   CONCEPT_ATTRIBUTE {
@@ -350,6 +372,9 @@ erDiagram
   CONCEPT               ||--o{ CONCEPT_ATTRIBUTE : "has"
   CONCEPT               ||--o| CODE_LIST         : "enumerated by"
   CODE_LIST             ||--o{ CODE_LIST_VALUE   : "contains"
+  CONCEPT               }o--o{ TERM              : "references term"
+  CONCEPT_TERM          }o--|| CONCEPT           : "from concept"
+  CONCEPT_TERM          }o--|| TERM              : "to term"
   CONCEPT               }o--o{ CONCEPT           : "skos related"
   CONCEPT_MAPPING       }o--|| CONCEPT           : "from concept"
   CONCEPT_MAPPING       }o--|| FIELD             : "to field"
@@ -379,7 +404,9 @@ erDiagram
 |--------|------------------------|---------|-------------|----------------|
 | `vocabulary` | `skos:ConceptScheme` | Vocabulary | A named scheme of concepts | < 10 |
 | `collection` | `skos:Collection` | Vocabulary | Domain grouping within a vocabulary | 20 – 100 |
-| `concept` | `skos:Concept` / `Business Object` | Vocabulary | Solution-neutral business concept | 200 – 1 000 |
+| `concept` | `skos:Concept` / `Business Object` | Vocabulary | Business object (Geschäftsobjekt) with fields, mappings, and data owner | 200 – 1 000 |
+| `term` | `skos:Concept` (simplified) | Vocabulary | Glossary entry (Fachbegriff) — a standardized term from a law, standard, norm, or regulation | 50 – 200 |
+| `concept_term` | local ext. (junction) | Vocabulary | Links business objects to standardized terms | 100 – 500 |
 | `concept_attribute` | local ext. | Vocabulary | Logical property of a concept | 500 – 3 000 |
 | `code_list` | `skos:ConceptScheme` (codelist) | Vocabulary | Finite set of allowed values | 50 – 200 |
 | `code_list_value` | `skos:Concept` (in codelist) | Vocabulary | A single allowed value | 500 – 5 000 |
@@ -466,9 +493,9 @@ A **Collection** groups related concepts within a vocabulary. Collections are se
 
 ---
 
-### 6.3 Concept (`skos:Concept`)
+### 6.3 Concept (Business Object)
 
-A **Concept** is a solution-neutral business concept. It exists independently of any physical system. Corresponds to ArchiMate `Business Object` and SKOS `Concept`. This is the core entity of the Vocabulary section.
+A **Concept** is a business object (Geschäftsobjekt) — a solution-neutral entity that exists independently of any physical system. Unlike a simple glossary term (see §6.3a), a business object has fields/attributes, mappings to physical datasets, and a data owner. Corresponds to ArchiMate `Business Object` and SKOS `Concept`. This is the core entity of the Vocabulary section. Terms and standards are linked via the `concept_term` junction table (see §6.3b).
 
 **Table:** `concept`
 
@@ -510,6 +537,45 @@ A **Concept** is a solution-neutral business concept. It exists independently of
 | Occupancy Unit | Nutzungseinheit | SIA 416 §3 | Space Management |
 | Energy Reference Area | Energiebezugsfläche | SIA 416 §3.6 | Energy & Resources |
 | Construction Cost Index | Kostenkennwert | eBKP-H | Costs & Benchmarks |
+
+---
+
+### 6.3a Term (Glossary Entry)
+
+A **Term** is a simple glossary entry (Fachbegriff) — a definition of a standardized term with reference to a law, standard, norm, or regulation. Maps to `skos:Concept` but is simpler than a business object: unlike the `concept` table, terms have no fields, no mappings, and no data owner. Terms exist to provide authoritative definitions that business objects can reference.
+
+**Table:** `term`
+
+| Column | Type | Nullable | DCAT/SKOS | Description |
+|--------|------|----------|-----------|-------------|
+| `id` | `UUID` | NO | — | Primary key |
+| `name_en` | `TEXT` | NO | `skos:prefLabel@en` | English name |
+| `name_de` | `TEXT` | YES | `skos:prefLabel@de` | German name |
+| `name_fr` | `TEXT` | YES | `skos:prefLabel@fr` | French name |
+| `name_it` | `TEXT` | YES | `skos:prefLabel@it` | Italian name |
+| `definition` | `JSONB` | YES | `skos:definition` | Per-locale definition |
+| `standard_ref` | `TEXT` | YES | `dcterms:source` | e.g. `eCH-0071`, `SIA 416 §3.6` |
+| `source_type` | `TEXT` | NO | — | `standard`, `law`, `regulation`, `norm` |
+| `source_document` | `TEXT` | YES | — | Full document reference |
+| `status` | `TEXT` | NO | — | `draft`, `approved`, `deprecated` |
+| `related_terms` | `JSONB` | YES | `skos:related` | JSON array of related term IDs |
+| `created_at` | `TIMESTAMPTZ` | NO | `dcterms:issued` | |
+| `modified_at` | `TIMESTAMPTZ` | NO | `dcterms:modified` | |
+
+---
+
+### 6.3b Concept–Term Junction
+
+The **concept_term** junction table links business objects (`concept`) to standardized terms (`term`). A business object references one or more standardized terms. This replaces the `standard_ref` column on concepts as the primary mechanism for linking business objects to standards.
+
+**Table:** `concept_term`
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| `concept_id` | `UUID` | NO | FK → `concept.id` |
+| `term_id` | `UUID` | NO | FK → `term.id` |
+
+**Primary key:** `(concept_id, term_id)`
 
 ---
 
@@ -721,9 +787,9 @@ A **Field** is a single column, attribute, or property within a dataset. Corresp
 
 ---
 
-### 6.12 Data Product (`dcat:Dataset`, published)
+### 6.12 Data Product / Datensammlung (`dcat:Dataset`, published)
 
-A **Data Product** is a published dataset made available to data consumers. Corresponds to ArchiMate `Representation` and DCAT `dcat:Dataset` (published). This is the externally facing layer. Unlike the physical `dataset`, a data product is defined and maintained by data owners, not extracted by a scanner.
+A **Data Product** (Datensammlung / Data Collection) is a published dataset made available to data consumers. A Datensammlung consumes data from one or more system tables and provides it via distributions (API, CSV, Excel, etc.). Corresponds to ArchiMate `Representation` and DCAT `dcat:Dataset` (published). This is the externally facing layer. Unlike the physical `dataset`, a data product is defined and maintained by data owners, not extracted by a scanner.
 
 **Table:** `data_product`
 
