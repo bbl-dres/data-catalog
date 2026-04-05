@@ -82,6 +82,10 @@ function escapeHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function breadcrumbHome() {
+  return '<a class="breadcrumb-link" href="#/home">Home</a><span class="breadcrumb-separator"> / </span>';
+}
+
 function formatNumber(num) {
   if (num == null || num === '') return '';
   return new Intl.NumberFormat(lang === 'de' ? 'de-CH' : lang === 'fr' ? 'fr-CH' : lang === 'it' ? 'it-CH' : 'en-CH').format(num);
@@ -147,9 +151,9 @@ function navigate(hash) {
 }
 
 function parseRoute() {
-  const hash = window.location.hash || '#/vocabulary';
+  const hash = window.location.hash || '#/home';
   const parts = hash.replace('#/', '').split('/');
-  const section = parts[0] || 'vocabulary';
+  const section = parts[0] || 'home';
 
   if (section === 'search') {
     const qIdx = hash.indexOf('?q=');
@@ -195,7 +199,10 @@ function handleRoute() {
 
   renderSidebar();
 
-  if (route.section === 'search') {
+  if (route.section === 'home') {
+    const main = document.getElementById('main-content');
+    main.innerHTML = renderHome();
+  } else if (route.section === 'search') {
     renderSearchResults();
   } else if (route.subEntityId) {
     currentTab = route.tab || 'overview';
@@ -253,6 +260,15 @@ function renderSidebar() {
   const counts = sidebarCounts;
 
   let html = '';
+
+  // Home item
+  const homeActive = currentSection === 'home';
+  html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link">
+    <i data-lucide="home" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>Home</span>
+  </div>`;
+  html += '<div class="nav-divider"></div>';
+
   ['vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
     const isActive = currentSection === sec;
     const isExpanded = expandedSections.has(sec);
@@ -288,6 +304,125 @@ function renderSidebar() {
 // ============================================================
 // List Views
 // ============================================================
+// ============================================================
+// Home View
+// ============================================================
+function renderHome() {
+  const conceptCount = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
+  const codelistCount = query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0;
+  const systemCount = query("SELECT COUNT(*) as c FROM system")[0]?.c || 0;
+  const productCount = query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0;
+
+  const approvedCount = query("SELECT COUNT(*) as c FROM concept WHERE status = 'approved'")[0]?.c || 0;
+  const draftCount = conceptCount - approvedCount;
+  const valueCount = query("SELECT COUNT(*) as c FROM code_list_value")[0]?.c || 0;
+  const fieldCount = query("SELECT COUNT(*) as c FROM field")[0]?.c || 0;
+  const distCount = query("SELECT COUNT(*) as c FROM distribution")[0]?.c || 0;
+
+  // Recent activity: 5 most recently modified concepts
+  const recentConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname, c.status, c.modified_at,
+    col.${nameCol('name')} as col_name
+    FROM concept c
+    LEFT JOIN collection col ON c.collection_id = col.id
+    ORDER BY c.modified_at DESC LIMIT 5`);
+
+  // Domains
+  const domains = query(`SELECT col.id, col.${nameCol('name')} as cname, COUNT(c.id) as concept_count
+    FROM collection col
+    LEFT JOIN concept c ON c.collection_id = col.id
+    GROUP BY col.id ORDER BY col.sort_order`);
+
+  // Quality averages
+  const quality = queryOne(`SELECT
+    ROUND(AVG(completeness_score), 1) as avg_completeness,
+    ROUND(AVG(format_validity_score), 1) as avg_validity,
+    ROUND(AVG(null_percentage), 1) as avg_null
+    FROM data_profile`);
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">Home</span></nav>';
+  html += `<div class="section-header"><div>
+    <div class="section-title"><i data-lucide="home" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Home</div>
+    <div class="section-subtitle">BBL Datenkatalog</div>
+  </div></div>`;
+
+  // KPI cards
+  html += '<div class="home-kpi-grid">';
+  html += renderKpiCard('book-open', conceptCount, 'Konzepte', `${approvedCount} Freigegeben \u00b7 ${draftCount} Entwurf`, '#/vocabulary/table');
+  html += renderKpiCard('list-ordered', codelistCount, 'Codelisten', `${valueCount} Werte`, '#/codelists');
+  html += renderKpiCard('database', systemCount, 'Systeme', `${fieldCount} Felder`, '#/systems/table');
+  html += renderKpiCard('package', productCount, 'Datenprodukte', `${distCount} Distributionen`, '#/products/table');
+  html += '</div>';
+
+  // Recent activity
+  html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
+  if (recentConcepts.length > 0) {
+    html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
+    html += '<th scope="col">Konzept</th><th scope="col">Dom\u00e4ne</th><th scope="col">Status</th><th scope="col">Ge\u00e4ndert</th>';
+    html += '</tr></thead><tbody>';
+    recentConcepts.forEach(c => {
+      html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
+        <td>${escapeHtml(c.cname)}</td>
+        <td>${c.col_name ? escapeHtml(c.col_name) : '&ndash;'}</td>
+        <td>${statusBadge(c.status)}</td>
+        <td>${formatDate(c.modified_at)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+  } else {
+    html += '<p style="color:var(--color-text-secondary);">Keine Aktivit\u00e4t</p>';
+  }
+  html += '</div>';
+
+  // Bottom row: domains + quality
+  html += '<div class="home-bottom-grid">';
+
+  // Domains card
+  html += '<div class="content-section"><div class="section-label">DOM\u00c4NEN</div>';
+  domains.forEach(d => {
+    html += `<div class="home-domain-row clickable-row" data-href="#/vocabulary/table">
+      <span>${escapeHtml(d.cname)}</span>
+      <span class="home-domain-count">${d.concept_count}</span>
+    </div>`;
+  });
+  html += '</div>';
+
+  // Quality card
+  html += '<div class="content-section"><div class="section-label">DATENQUALIT\u00c4T</div>';
+  if (quality) {
+    const comp = quality.avg_completeness || 0;
+    const valid = quality.avg_validity || 0;
+    const nullR = quality.avg_null || 0;
+    html += renderQualityRow('Vollst\u00e4ndigkeit', comp);
+    html += renderQualityRow('Formatvalidit\u00e4t', valid);
+    html += renderQualityRow('Null-Rate', nullR);
+  } else {
+    html += '<p style="color:var(--color-text-secondary);">Keine Qualit\u00e4tsdaten</p>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // close bottom grid
+  html += '</div>'; // close content-wrapper
+  return html;
+}
+
+function renderKpiCard(icon, count, label, subtitle, href) {
+  return `<div class="home-kpi-card clickable-row" data-href="${href}">
+    <div class="home-kpi-icon"><i data-lucide="${icon}" style="width:20px;height:20px;"></i></div>
+    <div class="home-kpi-count">${count}</div>
+    <div class="home-kpi-label">${escapeHtml(label)}</div>
+    <div class="home-kpi-sub">${escapeHtml(subtitle)}</div>
+  </div>`;
+}
+
+function renderQualityRow(label, value) {
+  return `<div class="quality-bar-container">
+    <span class="quality-bar-label">${escapeHtml(label)}</span>
+    <div class="quality-bar"><div class="quality-bar-fill-complete" style="width:${value}%;"></div></div>
+    <span class="quality-bar-value">${value}%</span>
+  </div>`;
+}
+
 function renderListView(section, listTab, collectionId) {
   const main = document.getElementById('main-content');
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
@@ -424,7 +559,7 @@ function renderVocabularyList(listTab, collectionId) {
 
   let html = '<div class="content-wrapper">';
   // Breadcrumb
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   if (activeCollection) {
     html += `<a class="breadcrumb-link" href="#/vocabulary">${SECTION_LABELS.vocabulary[lang]}</a>`;
     html += '<span class="breadcrumb-separator"> / </span>';
@@ -543,7 +678,7 @@ function renderCodeListsList(listTab) {
   });
 
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
     <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]}</div>
     <div class="section-subtitle">${totalCount} Codelisten</div>
@@ -597,7 +732,7 @@ function renderSystemsList(listTab) {
     ORDER BY s.${nameCol('name')}`);
 
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
     <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]}</div>
     <div class="section-subtitle">${systems.length} Systeme</div>
@@ -642,7 +777,7 @@ function renderProductsList(listTab) {
     FROM data_product dp ORDER BY dp.${nameCol('name')}`);
 
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
     <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]}</div>
     <div class="section-subtitle">${products.length} Datenprodukte</div>
@@ -737,7 +872,7 @@ function renderConceptDetail(conceptId, tab, main) {
 
   let html = '<div class="content-wrapper"><article>';
   // Breadcrumb
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   html += `<a class="breadcrumb-link" href="#/vocabulary">${SECTION_LABELS.vocabulary[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   if (collection) {
@@ -1234,7 +1369,7 @@ function renderCodeListDetail(codeListId, tab, main) {
 
   let html = '<div class="content-wrapper"><article>';
   // Breadcrumb
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   html += `<a class="breadcrumb-link" href="#/codelists">${SECTION_LABELS.codelists[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   html += `<span class="breadcrumb-current">${escapeHtml(n(cl, 'name'))}</span>`;
@@ -1392,7 +1527,7 @@ function renderSystemDetail(systemId, tab, main) {
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   html += `<a class="breadcrumb-link" href="#/systems">${SECTION_LABELS.systems[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   html += `<span class="breadcrumb-current">${escapeHtml(n(sys, 'name'))}</span>`;
@@ -1556,7 +1691,7 @@ function renderDatasetDetail(datasetId, systemId) {
   let html = '<div class="content-wrapper"><article>';
 
   // Breadcrumb
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   html += `<a class="breadcrumb-link" href="#/systems">${SECTION_LABELS.systems[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   html += `<a class="breadcrumb-link" href="#/systems/${ds.system_id}">${escapeHtml(ds.system_name)}</a>`;
@@ -1836,7 +1971,7 @@ function renderProductDetail(productId, tab, main) {
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
   html += `<a class="breadcrumb-link" href="#/products">${SECTION_LABELS.products[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   html += `<span class="breadcrumb-current">${escapeHtml(n(dp, 'name'))}</span>`;
@@ -2030,7 +2165,7 @@ function renderSearchResults() {
   const totalResults = concepts.length + codeLists.length + datasets.length + products.length;
 
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">Suche</span></nav>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
   html += `<div class="section-header"><div>
     <div class="section-title">Suchergebnisse</div>
     <div class="section-subtitle">${totalResults} Ergebnisse fur "${escapeHtml(q)}"</div>
@@ -2138,6 +2273,7 @@ document.addEventListener('click', function(e) {
   const navItem = target.closest('.nav-item[data-nav]');
   if (navItem) {
     const sec = navItem.dataset.nav;
+    if (sec === 'home') { navigate('#/home'); return; }
     // If already on this section, toggle expand/collapse
     if (currentSection === sec && !currentEntityId) {
       if (expandedSections.has(sec)) {
@@ -2327,7 +2463,7 @@ async function initApp() {
     // Initial render
     lucide.createIcons();
     if (!window.location.hash || window.location.hash === '#' || window.location.hash === '#/') {
-      window.location.hash = '#/vocabulary';
+      window.location.hash = '#/home';
     } else {
       handleRoute();
     }
