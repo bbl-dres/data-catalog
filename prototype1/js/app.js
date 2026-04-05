@@ -1052,15 +1052,16 @@ function renderTermOverview(term) {
     JOIN collection col ON c.collection_id = col.id
     WHERE ct.term_id = ? LIMIT 1`, [term.id]);
 
+  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
-  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
-  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
-  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
-  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
   html += `<tr><td>Status</td><td>${statusBadge(term.status)}</td></tr>`;
+  html += `<tr><td>Erstellt</td><td>${formatDate(term.created_at)}</td></tr>`;
   html += `<tr><td>Geändert</td><td>${formatDate(term.modified_at)}</td></tr>`;
+  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
+  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
+  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
   html += '</table></div>';
 
   // Linked concepts
@@ -1569,11 +1570,10 @@ function renderConceptOverview(concept, vocab, steward) {
   html += '<table class="props-table">';
   if (conceptCollection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(conceptCollection, 'name'))}</td></tr>`;
   html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
-  html += `<tr><td>EGID relevant</td><td>${concept.egid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
-  html += `<tr><td>EGRID relevant</td><td>${concept.egrid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
   if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
-  if (concept.approved_at) html += `<tr><td>Freigegeben</td><td>${formatDate(concept.approved_at)}</td></tr>`;
+  html += `<tr><td>Erstellt</td><td>${formatDate(concept.created_at)}</td></tr>`;
   html += `<tr><td>Geändert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
+  if (concept.approved_at) html += `<tr><td>Freigegeben</td><td>${formatDate(concept.approved_at)}</td></tr>`;
   html += '</table></div>';
 
   // Verantwortliche
@@ -2034,21 +2034,26 @@ function renderCodeListDetail(codeListId, tab, main) {
 function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   let html = '';
 
+  // Definition
+  const def = getDefinitionText(cl.description, lang);
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
   // Derive domain from linked concepts
   const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
     JOIN concept c ON ca.concept_id = c.id
     JOIN collection col ON c.collection_id = col.id
     WHERE ca.code_list_id = ? LIMIT 1`, [cl.id]);
+  const clStatus = (valueCount > 0 && deprecatedCount === valueCount) ? 'deprecated' : 'approved';
 
-  // Properties
+  // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (clDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(clDomain.dname)}</td></tr>`;
-  if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
+  html += `<tr><td>Status</td><td>${statusBadge(clStatus)}</td></tr>`;
   if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
   html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
-
-  // Used by concepts
+  if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
   if (cl.concept_id) {
     const concept = queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id]);
     if (concept) html += `<tr><td>Geschäftsobjekt</td><td><a href="#/vocabulary/${cl.concept_id}">${escapeHtml(concept.cname)}</a></td></tr>`;
@@ -2197,20 +2202,31 @@ function renderSystemDetail(systemId, tab, main) {
 
 function renderSystemOverview(sys, schemas, datasetCount) {
   let html = '';
-  const desc = getDefinitionText(sys.description, lang);
-  if (desc) {
-    html += '<div class="content-section"><div class="section-label">DESCRIPTION</div>';
-    html += `<div class="prose"><p>${escapeHtml(desc)}</p></div></div>`;
-  }
 
-  html += '<div class="content-section"><div class="section-label">PROPERTIES</div>';
+  // Definition
+  const desc = getDefinitionText(sys.description, lang);
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (sys.technology_stack) html += `<tr><td>Technology</td><td>${escapeHtml(sys.technology_stack)}</td></tr>`;
-  html += `<tr><td>Schemas</td><td>${schemas.length}</td></tr>`;
-  html += `<tr><td>Datasets</td><td>${datasetCount}</td></tr>`;
-  html += `<tr><td>Status</td><td>${sys.active ? 'Active' : 'Inactive'}</td></tr>`;
-  if (sys.last_scanned_at) html += `<tr><td>Last scanned</td><td>${formatDate(sys.last_scanned_at)}</td></tr>`;
+  html += `<tr><td>Status</td><td>${sys.active ? statusBadge('approved') : statusBadge('deprecated')}</td></tr>`;
+  if (sys.technology_stack) html += `<tr><td>Technologie</td><td>${escapeHtml(sys.technology_stack)}</td></tr>`;
+  html += `<tr><td>Tabellen</td><td>${datasetCount}</td></tr>`;
+  html += `<tr><td>Erstellt</td><td>${formatDate(sys.created_at)}</td></tr>`;
+  if (sys.last_scanned_at) html += `<tr><td>Letzter Scan</td><td>${formatDate(sys.last_scanned_at)}</td></tr>`;
   html += '</table></div>';
+
+  // Verantwortliche (owner)
+  html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
+  if (sys.owner_name) {
+    html += renderStakeholderCard(sys.owner_name, sys.owner_org || '', sys.owner_email);
+  } else {
+    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
+  }
+  html += '</div>';
+
   return html;
 }
 
@@ -2371,36 +2387,38 @@ function renderDatasetDetail(datasetId, systemId) {
 
 function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
   let html = '';
-  const desc = getDefinitionText(ds.description, lang);
-  if (desc) {
-    html += '<div class="content-section"><div class="section-label">DESCRIPTION</div>';
-    html += `<div class="prose"><p>${escapeHtml(desc)}</p></div></div>`;
-  }
 
-  html += '<div class="content-section"><div class="section-label">PROPERTIES</div>';
+  // Definition
+  const desc = getDefinitionText(ds.description, lang);
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
+  html += `<tr><td>Status</td><td>${certifiedBadge(ds.certified)}</td></tr>`;
   html += `<tr><td>System</td><td>${escapeHtml(ds.system_name)}</td></tr>`;
-  html += `<tr><td>Schema</td><td>${escapeHtml(ds.schema_display_name || ds.schema_name)}</td></tr>`;
-  html += `<tr><td>Type</td><td>${escapeHtml(ds.dataset_type)}</td></tr>`;
-  if (ds.row_count_approx) html += `<tr><td>Approx. row count</td><td>${formatNumber(ds.row_count_approx)}</td></tr>`;
+  html += `<tr><td>Typ</td><td>${escapeHtml(ds.dataset_type)}</td></tr>`;
+  if (ds.row_count_approx) html += `<tr><td>Datensätze (ca.)</td><td>${formatNumber(ds.row_count_approx)}</td></tr>`;
+  html += `<tr><td>Felder</td><td>${fieldCount}</td></tr>`;
   if (classification) {
-    html += `<tr><td>Classification</td><td>${classificationBadge(classification)}</td></tr>`;
+    html += `<tr><td>Klassifizierung</td><td>${classificationBadge(classification)}</td></tr>`;
   }
-  html += `<tr><td>EGID</td><td>${ds.egid ? escapeHtml(ds.egid) : 'N/A'}</td></tr>`;
+  html += `<tr><td>Erstellt</td><td>${formatDate(ds.created_at)}</td></tr>`;
+  html += `<tr><td>Geändert</td><td>${formatDate(ds.modified_at)}</td></tr>`;
   html += '</table></div>';
 
+  // Linked concepts
   if (mappingCount > 0) {
-    html += '<div class="content-section"><div class="section-label">CONCEPT MAPPINGS</div>';
+    html += '<div class="content-section"><div class="section-label">VERKNÜPFTE GESCHÄFTSOBJEKTE</div>';
     const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname
       FROM concept c
       JOIN concept_mapping cm ON cm.concept_id = c.id
       JOIN field f ON cm.field_id = f.id
       WHERE f.dataset_id = ?`, [ds.id]);
-    html += '<div style="margin-bottom:var(--space-4);">';
-    html += `<div style="font-size:var(--text-small);color:var(--color-text-secondary);margin-bottom:var(--space-2);">
-      Fields in this dataset realize ${concepts.length} concepts:</div>`;
+    html += '<div class="domain-group-concepts">';
     concepts.forEach(c => {
-      html += `<a class="concept-pill" href="#/vocabulary/${c.id}">${escapeHtml(c.cname)}</a>`;
+      html += `<a class="concept-box" href="#/vocabulary/${c.id}">${escapeHtml(c.cname)}</a>`;
     });
     html += '</div></div>';
   }
@@ -2641,26 +2659,27 @@ function renderProductDetail(productId, tab, main) {
 
 function renderProductOverview(dp) {
   let html = '';
-  // Names with translation gap indicators
-  html += '<div class="content-section"><div class="section-label">NAMES</div>';
-  html += '<table class="names-table">';
-  ['en', 'de', 'fr', 'it'].forEach(l => {
-    const val = dp['name_' + l];
-    html += `<tr><td>${l.toUpperCase()}</td><td>${val ? escapeHtml(val) : '<span style="color:var(--color-text-placeholder);">&ndash;</span>'}${renderTranslationGap(val)}</td></tr>`;
-  });
-  html += '</table></div>';
 
-  // Description
+  // Definition
   const desc = getDefinitionText(dp.description, lang);
-  if (desc) {
-    html += '<div class="content-section"><div class="section-label">DESCRIPTION</div>';
-    html += `<div class="prose"><p>${escapeHtml(desc)}</p></div></div>`;
-  }
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<table class="props-table">';
+  html += `<tr><td>Status</td><td>${certifiedBadge(dp.certified)}</td></tr>`;
+  if (dp.publisher) html += `<tr><td>Herausgeber</td><td>${escapeHtml(dp.publisher)}</td></tr>`;
+  if (dp.update_frequency) html += `<tr><td>Aktualisierung</td><td>${escapeHtml(dp.update_frequency)}</td></tr>`;
+  if (dp.license) html += `<tr><td>Lizenz</td><td>${escapeHtml(dp.license)}</td></tr>`;
+  if (dp.issued) html += `<tr><td>Erstellt</td><td>${formatDate(dp.issued)}</td></tr>`;
+  if (dp.modified) html += `<tr><td>Geändert</td><td>${formatDate(dp.modified)}</td></tr>`;
+  html += '</table></div>';
 
   // Distributions summary
   const dists = query("SELECT * FROM distribution WHERE data_product_id = ? ORDER BY name_en", [dp.id]);
   if (dists.length > 0) {
-    html += '<div class="content-section"><div class="section-label">DISTRIBUTIONS</div>';
+    html += '<div class="content-section"><div class="section-label">DISTRIBUTIONEN</div>';
     dists.forEach(d => {
       const icon = d.access_type === 'rest_api' || d.access_type === 'odata' ? 'link-2' :
                    d.access_type === 'file_export' ? 'file' : 'share-2';
