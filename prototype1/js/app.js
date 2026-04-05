@@ -1158,7 +1158,7 @@ function renderSystemsList(listTab) {
   }
 
   const colgroup = '<colgroup><col style="width:18%"><col style="width:28%"><col style="width:14%"><col style="width:10%"><col style="width:10%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Eigentümer</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   function sysRow(s) {
     const desc = getDefinitionText(s.description, lang);
