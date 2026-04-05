@@ -9,6 +9,7 @@ let currentSection = 'vocabulary';
 let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
+let vocabGrouping = 'domain'; // 'domain' or 'none'
 let termsGrouping = 'source'; // 'source' or 'none'
 let searchQuery = '';
 let lang = 'de';
@@ -454,7 +455,7 @@ function renderListView(section, listTab, collectionId) {
   }
 }
 
-function renderListTabBar(routeBase, activeTab, groupingOptions) {
+function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping) {
   let html = '<div class="tab-bar" role="tablist">';
   const tabs = [
     { id: 'table', label: '\u00dcbersicht' },
@@ -465,13 +466,13 @@ function renderListTabBar(routeBase, activeTab, groupingOptions) {
     html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
   });
   if (groupingOptions) {
-    const activeLabel = groupingOptions.find(o => o.id === termsGrouping)?.label || groupingOptions[0].label;
+    const activeLabel = groupingOptions.find(o => o.id === activeGrouping)?.label || groupingOptions[0].label;
     html += '<div class="tab-bar-spacer"></div>';
     html += '<div class="grouping-dropdown">';
     html += `<button class="grouping-btn" id="grouping-btn">Gruppierung: ${activeLabel} <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>`;
     html += '<div class="grouping-menu" id="grouping-menu">';
     groupingOptions.forEach(o => {
-      html += `<div class="grouping-option${o.id === termsGrouping ? ' active' : ''}" data-grouping="${o.id}">${o.label}</div>`;
+      html += `<div class="grouping-option${o.id === activeGrouping ? ' active' : ''}" data-grouping="${o.id}" data-grouping-section="${routeBase}">${o.label}</div>`;
     });
     html += '</div></div>';
   }
@@ -525,6 +526,25 @@ function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
   }
 
   html += '</div>';
+  return html;
+}
+
+function renderVocabularyDiagramFlat(allConcepts, collections) {
+  const collectionMap = {};
+  collections.forEach(col => { collectionMap[col.id] = col; });
+
+  let html = '<div class="diagram-canvas"><div class="diagram-flat-grid">';
+  allConcepts.forEach(c => {
+    const col = c.collection_id ? collectionMap[c.collection_id] : null;
+    const domainName = col ? n(col, 'name') : '';
+    const def = getDefinitionText(c.definition, lang);
+    const tooltip = def ? escapeHtml(n(c, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(c, 'name'));
+    html += `<a class="concept-box concept-box--flat" href="#/vocabulary/${c.id}" title="${tooltip}">`;
+    html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
+    if (domainName) html += `<span class="concept-box-domain">${escapeHtml(domainName)}</span>`;
+    html += `</a>`;
+  });
+  html += '</div></div>';
   return html;
 }
 
@@ -604,10 +624,18 @@ function renderVocabularyList(listTab, collectionId) {
     <div class="section-subtitle">${filteredCount} Konzepte</div>
   </div></div>`;
 
-  html += renderListTabBar(tabBaseRoute, listTab);
+  const vocabGroupOpts = activeCollection ? null : [
+    { id: 'domain', label: 'Domäne' },
+    { id: 'none', label: 'Keine' }
+  ];
+  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, vocabGrouping);
 
   if (listTab === 'diagram') {
-    html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped);
+    if (!activeCollection && vocabGrouping === 'none') {
+      html += renderVocabularyDiagramFlat(allConcepts, collections);
+    } else {
+      html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped);
+    }
     html += '</div>';
     return html;
   }
@@ -632,14 +660,39 @@ function renderVocabularyList(listTab, collectionId) {
     </tr>`;
   }
 
+  // Build collection lookup for flat mode
+  const collectionMap = {};
+  collections.forEach(col => { collectionMap[col.id] = col; });
+
+  function conceptRowFlat(c) {
+    const desc = getDefinitionText(c.definition, lang);
+    const col = c.collection_id ? collectionMap[c.collection_id] : null;
+    const domainName = col ? n(col, 'name') : '–';
+    return `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
+      <td>${escapeHtml(n(c, 'name'))}</td>
+      <td>${escapeHtml(domainName)}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
+      <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
+    </tr>`;
+  }
+
   const colgroup = '<colgroup><col style="width:20%"><col style="width:35%"><col style="width:10%"><col style="width:10%"><col style="width:25%"></colgroup>';
   const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Felder</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const colgroupFlat = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:10%"><col style="width:8%"><col style="width:22%"></colgroup>';
+  const theadFlat = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Felder</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   if (activeCollection) {
-    // Filtered by collection: flat table
+    // Filtered by collection: flat table (no domain column needed)
     const concepts = conceptsByCollection[collectionId] || [];
     html += `<table class="data-table">${colgroup}${thead}<tbody>`;
     concepts.forEach(c => { html += conceptRow(c); });
+    html += '</tbody></table>';
+  } else if (vocabGrouping === 'none') {
+    // Flat table with domain column
+    html += `<table class="data-table">${colgroupFlat}${theadFlat}<tbody>`;
+    allConcepts.forEach(c => { html += conceptRowFlat(c); });
     html += '</tbody></table>';
   } else {
     // Grouped by collection with collapsible headers
@@ -751,7 +804,7 @@ function renderTermsList(listTab) {
     { id: 'source', label: 'Quellentyp' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('terms', listTab, groupingOpts);
+  html += renderListTabBar('terms', listTab, groupingOpts, termsGrouping);
 
   if (totalCount === 0) {
     html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
@@ -2691,7 +2744,9 @@ document.addEventListener('click', function(e) {
   // Grouping option click
   const groupOpt = target.closest('.grouping-option[data-grouping]');
   if (groupOpt) {
-    termsGrouping = groupOpt.dataset.grouping;
+    const section = groupOpt.dataset.groupingSection;
+    if (section === 'vocabulary' || section?.startsWith('vocabulary/')) vocabGrouping = groupOpt.dataset.grouping;
+    else if (section === 'terms') termsGrouping = groupOpt.dataset.grouping;
     document.getElementById('grouping-menu')?.classList.remove('open');
     handleRoute();
     return;
