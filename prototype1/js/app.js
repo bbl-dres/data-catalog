@@ -7,9 +7,11 @@
 let db = null;
 let currentSection = 'vocabulary';
 let currentEntityId = null;
+let currentCollectionId = null;
 let currentTab = 'overview';
 let searchQuery = '';
 let lang = 'de';
+const expandedSections = new Set(['vocabulary']);
 let recents = [];
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
@@ -104,16 +106,19 @@ function formatDate(isoStr) {
 function statusBadge(status) {
   if (!status) return '';
   const s = status.toLowerCase();
-  let cls = 'badge-draft', dot = 'status-dot-draft', label = status;
-  if (s === 'approved' || s === 'certified' || s === 'active') {
-    cls = 'badge-certified'; dot = 'status-dot-certified';
-    label = s === 'active' ? 'Active' : 'Certified';
+  let cls = 'badge-draft', label = status;
+  if (s === 'approved' || s === 'certified') {
+    cls = 'badge-certified'; label = 'Freigegeben';
+  } else if (s === 'in_review' || s === 'in review') {
+    cls = 'badge-review'; label = 'In Pr\u00fcfung';
+  } else if (s === 'active') {
+    cls = 'badge-certified'; label = 'Aktiv';
   } else if (s === 'deprecated') {
-    cls = 'badge-deprecated'; dot = 'status-dot-deprecated'; label = 'Deprecated';
+    cls = 'badge-deprecated'; label = 'Veraltet';
   } else {
-    label = 'Draft';
+    cls = 'badge-draft'; label = 'Entwurf';
   }
-  return `<span class="badge ${cls}"><span class="status-dot ${dot}"></span> ${escapeHtml(label)}</span>`;
+  return `<span class="badge ${cls}">${escapeHtml(label)}</span>`;
 }
 
 function certifiedBadge(isCertified) {
@@ -165,15 +170,21 @@ function parseRoute() {
     return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview' };
   }
 
+  // Collection filter: #/vocabulary/collection/:collId/:tab
+  if (parts[1] === 'collection' && parts[2]) {
+    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null };
+  }
+
   // List-level tabs (table/diagram) — not an entity ID
   const listTabs = ['table', 'diagram'];
   if (parts[1] && listTabs.includes(parts[1])) {
-    return { section, entityId: null, tab: parts[1], subEntityId: null };
+    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null };
   }
 
   return {
     section,
     entityId: parts[1] || null,
+    collectionId: null,
     tab: parts[2] || 'overview',
     subEntityId: null
   };
@@ -183,20 +194,23 @@ function handleRoute() {
   const route = parseRoute();
   currentSection = route.section;
   currentEntityId = route.entityId;
+  currentCollectionId = route.collectionId || null;
   currentTab = route.tab || 'overview';
+
+  // Auto-expand the active section in sidebar
+  if (currentSection) expandedSections.add(currentSection);
 
   renderSidebar();
 
   if (route.section === 'search') {
     renderSearchResults();
   } else if (route.subEntityId) {
-    // Dataset detail under system
     currentTab = route.tab || 'overview';
     renderDatasetDetail(route.subEntityId, route.entityId);
   } else if (route.entityId) {
     renderDetailView(route.section, route.entityId, route.tab || 'overview');
   } else {
-    renderListView(route.section, route.tab || 'table');
+    renderListView(route.section, route.tab || 'table', route.collectionId);
   }
 
   lucide.createIcons();
@@ -250,15 +264,34 @@ function renderSidebar() {
 
   let html = '';
   ['vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
-    const active = currentSection === sec;
-    const activeClass = active ? ' active' : '';
-    const ariaCurrent = active ? ' aria-current="page"' : '';
+    const isActive = currentSection === sec;
+    const isExpanded = expandedSections.has(sec);
     const label = SECTION_LABELS[sec][lang] || SECTION_LABELS[sec]['en'];
-    html += `<div class="nav-item${activeClass}" data-nav="${sec}" role="link"${ariaCurrent}>
-      <i data-lucide="${SECTION_ICONS[sec]}" style="width:16px;height:16px;"></i>
+
+    // Section header — whole item is toggle + navigate
+    const isSelectedSection = isActive && !currentEntityId && !currentCollectionId;
+    const headerClass = 'nav-item' + (isSelectedSection ? ' active' : (isActive ? ' nav-item-parent' : ''));
+
+    html += `<div class="${headerClass}" data-nav="${sec}" role="link">
+      <i data-lucide="${SECTION_ICONS[sec]}" style="width:16px;height:16px;flex-shrink:0;"></i>
       <span>${escapeHtml(label)}</span>
       <span class="nav-count">${counts[sec]}</span>
     </div>`;
+
+    // Tree children (only for vocabulary for now)
+    if (isExpanded && sec === 'vocabulary') {
+      const collections = query(`SELECT col.*, COUNT(c.id) as concept_count
+        FROM collection col LEFT JOIN concept c ON c.collection_id = col.id
+        GROUP BY col.id ORDER BY col.sort_order`);
+      collections.forEach(col => {
+        const isColActive = currentCollectionId === col.id;
+        const colClass = 'nav-tree-item' + (isColActive ? ' active' : '');
+        html += `<div class="${colClass}" data-nav-collection="${col.id}">
+          <span>${escapeHtml(n(col, 'name'))}</span>
+          <span class="nav-count">${col.concept_count}</span>
+        </div>`;
+      });
+    }
   });
 
   if (recents.length > 0) {
@@ -279,11 +312,11 @@ function renderSidebar() {
 // ============================================================
 // List Views
 // ============================================================
-function renderListView(section, listTab) {
+function renderListView(section, listTab, collectionId) {
   const main = document.getElementById('main-content');
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   switch(section) {
-    case 'vocabulary': main.innerHTML = renderVocabularyList(listTab); break;
+    case 'vocabulary': main.innerHTML = renderVocabularyList(listTab, collectionId); break;
     case 'codelists': main.innerHTML = renderCodeListsList(listTab); break;
     case 'systems': main.innerHTML = renderSystemsList(listTab); break;
     case 'products': main.innerHTML = renderProductsList(listTab); break;
@@ -291,15 +324,15 @@ function renderListView(section, listTab) {
   }
 }
 
-function renderListTabBar(section, activeTab) {
+function renderListTabBar(routeBase, activeTab) {
   let html = '<div class="tab-bar" role="tablist">';
   const tabs = [
-    { id: 'table', label: '\u00dcbersicht', icon: 'table-2' },
-    { id: 'diagram', label: 'Diagramm', icon: 'network' }
+    { id: 'table', label: '\u00dcbersicht' },
+    { id: 'diagram', label: 'Diagramm' }
   ];
   tabs.forEach(t => {
     const isActive = t.id === activeTab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-section="${section}" role="tab" aria-selected="${isActive}"><i data-lucide="${t.icon}" style="width:14px;height:14px;margin-right:4px;vertical-align:-2px;"></i>${t.label}</button>`;
+    html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
   });
   html += '</div>';
   return html;
@@ -316,7 +349,76 @@ function renderDiagramPlaceholder(section) {
   return '<div class="content-section">' + renderEmptyState('network', l.title, l.desc + ' Wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
 }
 
-function renderVocabularyList(listTab) {
+const DOMAIN_COLORS = [
+  '#2E6EB5', // blue
+  '#1A9E55', // green
+  '#C9820B', // amber
+  '#8B5CF6', // violet
+  '#0891B2', // teal
+  '#DC2626', // red
+  '#7C3AED', // purple
+  '#0D9488', // cyan
+];
+
+function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
+  let html = '<div class="diagram-canvas">';
+
+  // Determine layout: smaller collections (<=3) can sit side by side
+  const large = [];
+  const small = [];
+  collections.forEach((col, i) => {
+    const concepts = conceptsByCollection[col.id] || [];
+    if (concepts.length <= 3) {
+      small.push({ col, concepts, colorIdx: i });
+    } else {
+      large.push({ col, concepts, colorIdx: i });
+    }
+  });
+
+  // Render large domain groups (full width)
+  large.forEach(g => {
+    html += renderDomainGroup(g.col, g.concepts);
+  });
+
+  // Render small domain groups side by side
+  if (small.length > 0) {
+    html += '<div class="diagram-row">';
+    small.forEach(g => {
+      html += renderDomainGroup(g.col, g.concepts);
+    });
+    html += '</div>';
+  }
+
+  // Ungrouped concepts
+  if (ungrouped.length > 0) {
+    html += renderDomainGroup({ id: 'ungrouped', ['name_' + lang]: 'Ungrouped', concept_count: ungrouped.length }, ungrouped);
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function renderDomainGroup(col, concepts) {
+  let html = `<div class="domain-group">`;
+  html += `<div class="domain-group-header">`;
+  html += `<span class="domain-group-title">${escapeHtml(n(col, 'name'))}</span>`;
+  html += `<span class="domain-group-count">${concepts.length}</span>`;
+  html += `</div>`;
+  html += '<div class="domain-group-concepts">';
+  concepts.forEach(c => {
+    const dotClass = c.status === 'approved' ? 'status-dot-approved' : 'status-dot-draft';
+    html += `<a class="concept-box" href="#/vocabulary/${c.id}" title="${escapeHtml(n(c, 'name'))}">`;
+    html += `<span class="status-dot ${dotClass}"></span>`;
+    html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
+    html += `</a>`;
+  });
+  html += '</div></div>';
+  return html;
+}
+
+const expandedCollections = new Set();
+
+function renderVocabularyList(listTab, collectionId) {
   const totalConcepts = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
 
   // Single query with LEFT JOIN to get collection concept counts (fix N+1)
@@ -348,79 +450,98 @@ function renderVocabularyList(listTab) {
     }
   });
 
+  // If filtered by collection
+  const activeCollection = collectionId ? collections.find(c => c.id === collectionId) : null;
+  const filteredCollections = activeCollection ? [activeCollection] : collections;
+  const filteredUngrouped = activeCollection ? [] : ungrouped;
+  const filteredCount = activeCollection ? (conceptsByCollection[collectionId] || []).length : totalConcepts;
+  const tabBaseRoute = activeCollection ? 'vocabulary/collection/' + collectionId : 'vocabulary';
+
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.vocabulary[lang] + '</span></nav>';
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">';
+  if (activeCollection) {
+    html += `<a class="breadcrumb-link" href="#/vocabulary">${SECTION_LABELS.vocabulary[lang]}</a>`;
+    html += '<span class="breadcrumb-separator"> / </span>';
+    html += `<span class="breadcrumb-current">${escapeHtml(n(activeCollection, 'name'))}</span>`;
+  } else {
+    html += `<span class="breadcrumb-current">${SECTION_LABELS.vocabulary[lang]}</span>`;
+  }
+  html += '</nav>';
+
   html += `<div class="section-header"><div>
-    <div class="section-title">${SECTION_LABELS.vocabulary[lang]}</div>
-    <div class="section-subtitle">${totalConcepts} Konzepte</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]}</div>
+    <div class="section-subtitle">${filteredCount} Konzepte</div>
   </div></div>`;
 
-  html += renderListTabBar('vocabulary', listTab);
+  html += renderListTabBar(tabBaseRoute, listTab);
 
   if (listTab === 'diagram') {
-    html += renderDiagramPlaceholder('vocabulary');
+    html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped);
     html += '</div>';
     return html;
   }
 
-  if (collections.length === 0 && ungrouped.length === 0) {
+  if (filteredCollections.length === 0 && filteredUngrouped.length === 0) {
     html += renderEmptyState('book-open', 'Keine Konzepte', 'Es wurden noch keine Konzepte angelegt.');
     html += '</div>';
     return html;
   }
 
   html += '<div class="list-panel">';
-  collections.forEach(col => {
-    const concepts = (conceptsByCollection[col.id] || []).slice(0, 5);
-    const isExpanded = concepts.length > 0;
-    html += `<div class="group-header" data-toggle-group="${col.id}">
-      <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" style="width:16px;height:16px;" class="group-chevron"></i>
-      <span class="group-header-title">${escapeHtml(n(col, 'name'))}</span>
-      <span class="group-header-count">${col.concept_count} Konzepte</span>
-    </div>`;
 
-    html += `<div class="group-content" data-group="${col.id}" ${isExpanded ? '' : 'style="display:none"'}>`;
-    html += '<table class="data-table"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:10%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Fields</th><th scope="col">Standard</th><th scope="col">Data Owner</th>';
-    html += '</tr></thead><tbody>';
-    concepts.forEach(c => {
-      const desc = getDefinitionText(c.definition, lang);
-      html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
-        <td>${escapeHtml(n(c, 'name'))}</td>
-        <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-        <td>${escapeHtml(c.standard_ref || '&ndash;')}</td>
-        <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
-      </tr>`;
-    });
+  // Helper to render a concept table row
+  function conceptRow(c) {
+    const desc = getDefinitionText(c.definition, lang);
+    return `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
+      <td>${escapeHtml(n(c, 'name'))}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
+      <td>${statusBadge(c.status)}</td>
+      <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
+      <td>${escapeHtml(c.standard_ref || '&ndash;')}</td>
+      <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
+    </tr>`;
+  }
+
+  const colgroup = '<colgroup><col style="width:20%"><col style="width:30%"><col style="width:10%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Fields</th><th scope="col">Standard</th><th scope="col">Data Owner</th></tr></thead>';
+
+  if (activeCollection) {
+    // Filtered: flat table, no group headers
+    const concepts = conceptsByCollection[collectionId] || [];
+    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+    concepts.forEach(c => { html += conceptRow(c); });
     html += '</tbody></table>';
-    if (col.concept_count > 5) {
-      html += `<div style="padding: var(--space-2) 0;"><a href="#/vocabulary" class="breadcrumb-link"
-        onclick="event.preventDefault();" style="font-size:var(--text-small);">Alle ${col.concept_count} Konzepte anzeigen</a></div>`;
-    }
-    html += '</div>';
-  });
-
-  if (ungrouped.length > 0) {
-    html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
-      <span class="group-header-title">Ungrouped</span>
-      <span class="group-header-count">${ungrouped.length} Konzepte</span></div>`;
-    html += '<div class="group-content"><table class="data-table"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:10%"><col style="width:10%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Description</th><th scope="col">Status</th><th scope="col">Fields</th><th scope="col">Standard</th><th scope="col">Data Owner</th>';
-    html += '</tr></thead><tbody>';
-    ungrouped.forEach(c => {
-      const desc = getDefinitionText(c.definition, lang);
-      html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
-        <td>${escapeHtml(n(c, 'name'))}</td>
-        <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-        <td>${escapeHtml(c.standard_ref || '&ndash;')}</td>
-        <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
-      </tr>`;
+  } else {
+    // All: grouped by collection with collapsible headers
+    filteredCollections.forEach(col => {
+      const allColConcepts = conceptsByCollection[col.id] || [];
+      const isFullyExpanded = expandedCollections.has(col.id);
+      const concepts = isFullyExpanded ? allColConcepts : allColConcepts.slice(0, 5);
+      const isExpanded = concepts.length > 0;
+      html += `<div class="group-header" data-toggle-group="${col.id}">
+        <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(n(col, 'name'))}</span>
+        <span class="group-header-count">${col.concept_count} Konzepte</span>
+      </div>`;
+      html += `<div class="group-content" data-group="${col.id}" ${isExpanded ? '' : 'style="display:none"'}>`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      concepts.forEach(c => { html += conceptRow(c); });
+      html += '</tbody></table>';
+      if (col.concept_count > 5 && !isFullyExpanded) {
+        html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Konzepte anzeigen &rarr;</a></div>`;
+      }
+      html += '</div>';
     });
-    html += '</tbody></table></div>';
+
+    if (filteredUngrouped.length > 0) {
+      html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
+        <span class="group-header-title">Ungrouped</span>
+        <span class="group-header-count">${filteredUngrouped.length} Konzepte</span></div>`;
+      html += `<div class="group-content"><table class="data-table">${colgroup}${thead}<tbody>`;
+      filteredUngrouped.forEach(c => { html += conceptRow(c); });
+      html += '</tbody></table></div>';
+    }
   }
 
   html += '</div>'; // close list-panel
@@ -455,7 +576,7 @@ function renderCodeListsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title">${SECTION_LABELS.codelists[lang]}</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]}</div>
     <div class="section-subtitle">${totalCount} Codelisten</div>
   </div></div>`;
 
@@ -516,7 +637,7 @@ function renderSystemsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title">${SECTION_LABELS.systems[lang]}</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]}</div>
     <div class="section-subtitle">${systems.length} Systeme</div>
   </div></div>`;
 
@@ -561,7 +682,7 @@ function renderProductsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title">${SECTION_LABELS.products[lang]}</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]}</div>
     <div class="section-subtitle">${products.length} Datenprodukte</div>
   </div></div>`;
 
@@ -639,14 +760,12 @@ function renderConceptDetail(conceptId, tab, main) {
   addRecent(n(concept, 'name') || concept.name_en, `#/vocabulary/${conceptId}`);
 
   const tabs = ['overview'];
-  if (attrCount > 0) tabs.push('contents');
+  if (attrCount > 0) tabs.push('fields');
   if (mappingCount > 0) tabs.push('mappings');
-  if (codeList) tabs.push('values');
   if (relCount > 0) tabs.push('relationships');
-  tabs.push('stakeholders');
-  tabs.push('feedback');
+  tabs.push('history');
 
-  const tabLabels = { overview: 'Overview', contents: 'Contents', mappings: 'Mappings', values: 'Values', relationships: 'Relationships', stakeholders: 'Stakeholders', feedback: 'Feedback' };
+  const tabLabels = { overview: 'Overview', fields: 'Fields', mappings: 'Mappings', relationships: 'Relationships', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -668,7 +787,11 @@ function renderConceptDetail(conceptId, tab, main) {
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name">${escapeHtml(n(concept, 'name'))}</div>`;
   html += '</div>';
-  html += `<div class="title-block-badge">${statusBadge(concept.status)}</div>`;
+  html += '<div class="title-block-actions">';
+  html += `${statusBadge(concept.status)}`;
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += '</div>';
   html += '</div>';
 
   // Tab bar with ARIA
@@ -682,13 +805,11 @@ function renderConceptDetail(conceptId, tab, main) {
   // Tab content
   html += '<div class="tab-content">';
   switch(tab) {
-    case 'overview': html += renderConceptOverview(concept, vocab); break;
-    case 'contents': html += renderConceptContents(conceptId); break;
+    case 'overview': html += renderConceptOverview(concept, vocab, steward); break;
+    case 'fields': html += renderConceptContents(conceptId); break;
     case 'mappings': html += renderConceptMappings(conceptId); break;
-    case 'values': html += renderConceptValues(conceptId, codeList); break;
     case 'relationships': html += renderConceptRelationships(conceptId); break;
-    case 'stakeholders': html += renderConceptStakeholders(concept); break;
-    case 'feedback': html += renderFeedbackTab(); break;
+    case 'history': html += renderHistoryTab(); break;
   }
   html += '</div></article></div>';
   main.innerHTML = html;
@@ -705,31 +826,39 @@ function renderFeedbackTab() {
   return '<div class="content-section">' + renderEmptyState('message-circle', 'Feedback & Kommentare', 'Feedback & Kommentare werden in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
 }
 
-function renderConceptOverview(concept, vocab) {
+function renderHistoryTab() {
+  return '<div class="content-section">' + renderEmptyState('clock', '\u00c4nderungsprotokoll', 'Das \u00c4nderungsprotokoll wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
+}
+
+function renderConceptOverview(concept, vocab, steward) {
   let html = '';
-  // Names with translation gap indicators
-  html += '<div class="content-section"><div class="section-label">NAMES</div>';
-  html += '<table class="names-table">';
-  ['en', 'de', 'fr', 'it'].forEach(l => {
-    const val = concept['name_' + l];
-    html += `<tr><td>${l.toUpperCase()}</td><td>${val ? escapeHtml(val) : '<span style="color:var(--color-text-placeholder);">&ndash;</span>'}${renderTranslationGap(val)}</td></tr>`;
-  });
-  html += '</table></div>';
 
   // Definition
   const def = getDefinitionText(concept.definition, lang);
   html += `<div class="content-section"><div class="section-label">DEFINITION</div>`;
   html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">No definition available.</p>'}</div></div>`;
 
-  // Properties
-  html += '<div class="content-section"><div class="section-label">PROPERTIES</div>';
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (concept.standard_ref) html += `<tr><td>Standard reference</td><td>${escapeHtml(concept.standard_ref)}</td></tr>`;
+  if (concept.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(concept.standard_ref)}</td></tr>`;
+  html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
   html += `<tr><td>EGID relevant</td><td>${concept.egid_relevant ? 'Yes' : 'No'}</td></tr>`;
   html += `<tr><td>EGRID relevant</td><td>${concept.egrid_relevant ? 'Yes' : 'No'}</td></tr>`;
-  html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
   if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
+  if (concept.approved_at) html += `<tr><td>Approved</td><td>${formatDate(concept.approved_at)}</td></tr>`;
+  html += `<tr><td>Modified</td><td>${formatDate(concept.modified_at)}</td></tr>`;
   html += '</table></div>';
+
+  // Stakeholders
+  html += '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
+  if (steward) {
+    html += renderStakeholderCard(steward.name, 'Data Steward · ' + (steward.department || ''), steward.email);
+  } else {
+    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">No stakeholders assigned.</p>';
+  }
+  html += '</div>';
+
   return html;
 }
 
@@ -742,7 +871,7 @@ function renderConceptContents(conceptId) {
 
   if (attrs.length === 0) return '<div class="content-section">' + renderEmptyState('list', 'Keine Attribute', 'Diesem Konzept sind noch keine Attribute zugeordnet.') + '</div>';
 
-  let html = '<div class="content-section"><div class="section-label">ATTRIBUTES</div>';
+  let html = '<div class="content-section"><div class="section-label">FIELDS</div>';
   html += '<table class="data-table"><thead><tr>';
   html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Required</th><th scope="col">Code List</th><th scope="col">Description</th>';
   html += '</tr></thead><tbody>';
@@ -823,32 +952,310 @@ function renderConceptValues(conceptId, codeList) {
 }
 
 function renderConceptRelationships(conceptId) {
-  const rels = query(`SELECT cr.*,
-    c1.${nameCol('name')} as source_name, c1.id as source_id,
-    c2.${nameCol('name')} as target_name, c2.id as target_id
-    FROM concept_relation cr
-    JOIN concept c1 ON cr.source_concept_id = c1.id
-    JOIN concept c2 ON cr.target_concept_id = c2.id
-    WHERE cr.source_concept_id = ? OR cr.target_concept_id = ?`, [conceptId, conceptId]);
+  const concept = queryOne("SELECT * FROM concept WHERE id = ?", [conceptId]);
 
-  if (rels.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen zu anderen Konzepten.') + '</div>';
+  // Mapped fields → datasets → systems
+  const mappings = query(`SELECT cm.match_type, f.name as field_name, f.id as field_id,
+    d.name as dataset_name, d.display_name, d.id as dataset_id,
+    s.${nameCol('name')} as system_name, s.id as system_id, s.technology_stack
+    FROM concept_mapping cm
+    JOIN field f ON cm.field_id = f.id
+    JOIN dataset d ON f.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE cm.concept_id = ?`, [conceptId]);
 
-  let html = '<div class="content-section"><div class="section-label">RELATIONSHIPS</div>';
-  html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Relation</th><th scope="col">Concept</th>';
-  html += '</tr></thead><tbody>';
-  rels.forEach(r => {
-    const isSource = r.source_concept_id === conceptId;
-    const otherName = isSource ? r.target_name : r.source_name;
-    const otherId = isSource ? r.target_id : r.source_id;
-    const relLabel = (r.relation_type || '').replace('skos:', '');
-    html += `<tr>
-      <td>${escapeHtml(relLabel)}</td>
-      <td><a href="#/vocabulary/${otherId}">${escapeHtml(otherName)}</a></td>
-    </tr>`;
+  // Stakeholder (steward)
+  const steward = concept.steward_id ? queryOne('SELECT * FROM "user" WHERE id = ?', [concept.steward_id]) : null;
+
+  // Data products linked through mapped datasets
+  const datasetIds = [...new Set(mappings.map(m => m.dataset_id))];
+  let products = [];
+  if (datasetIds.length > 0) {
+    const placeholders = datasetIds.map(() => '?').join(',');
+    products = query(`SELECT DISTINCT dp.id, dp.${nameCol('name')} as dp_name
+      FROM data_product dp
+      JOIN data_product_dataset dpd ON dpd.data_product_id = dp.id
+      WHERE dpd.dataset_id IN (${placeholders})`, datasetIds);
+  }
+
+  // Build satellite groups
+  const satellites = [];
+
+  // Systems
+  const systems = [];
+  const seenSys = new Set();
+  mappings.forEach(m => {
+    if (!seenSys.has(m.system_id)) {
+      seenSys.add(m.system_id);
+      systems.push({ label: m.system_name, href: '#/systems/' + m.system_id, icon: 'database', meta: 'Technology: ' + (m.technology_stack || '') });
+    }
   });
-  html += '</tbody></table></div>';
+  if (systems.length) satellites.push({ title: 'Systeme', items: systems, color: '#8B5CF6' });
+
+  // Datasets
+  const datasets = [];
+  const seenDs = new Set();
+  mappings.forEach(m => {
+    if (!seenDs.has(m.dataset_id)) {
+      seenDs.add(m.dataset_id);
+      datasets.push({ label: m.display_name || m.dataset_name, href: '#/systems/' + m.system_id + '/datasets/' + m.dataset_id, icon: 'table-2', meta: 'System: ' + m.system_name });
+    }
+  });
+  if (datasets.length) satellites.push({ title: 'Datasets', items: datasets, color: '#C9820B' });
+
+  // Users
+  if (steward) {
+    satellites.push({ title: 'Benutzer', items: [{ label: steward.name, icon: 'user', meta: 'Role: Data Steward' }], color: '#2E6EB5' });
+  }
+
+  // Products
+  if (products.length) {
+    satellites.push({ title: 'Datenprodukte', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#DC2626' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
+
+  // Store data and render container
+  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
+  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
+  html += '<div id="rel-canvas"></div>';
+  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
+  html += '<div id="rel-panel" class="rel-panel"></div>';
+  html += '</div></div>';
+
+  window._relGraphData = { conceptName: n(concept, 'name'), satellites };
+  setTimeout(initRelationshipSVG, 50);
   return html;
+}
+
+function initRelationshipSVG() {
+  const viewport = document.getElementById('rel-viewport');
+  const canvas = document.getElementById('rel-canvas');
+  const panel = document.getElementById('rel-panel');
+  if (!viewport || !canvas || !window._relGraphData) return;
+
+  const { conceptName, satellites } = window._relGraphData;
+
+  const canvasSize = 1000;
+  const cx = canvasSize / 2;
+  const cy = canvasSize / 2;
+  const orbitRadius = 300;
+  const minOuterR = 70;
+  const perItemR = 25; // extra radius per item
+  const ringGap = 20; // constant gap between outer and inner ring (all circles)
+
+  canvas.style.width = canvasSize + 'px';
+  canvas.style.height = canvasSize + 'px';
+  canvas.style.position = 'absolute';
+
+  // Calculate dynamic radius per satellite based on item count
+  // Badge always at -135° (top-left) from satellite center, constant offset from outer ring
+  const badgeOffset = 18; // gap from outer ring edge to badge center
+  const badgeAngleFixed = -Math.PI * 3 / 4; // -135° = top-left
+
+  const satData = satellites.map((sat, i) => {
+    const outerR = Math.max(minOuterR, 50 + sat.items.length * perItemR);
+    const innerR = outerR - ringGap;
+    const angle = (2 * Math.PI * i / satellites.length) - Math.PI / 2;
+    const x = cx + orbitRadius * Math.cos(angle);
+    const y = cy + orbitRadius * Math.sin(angle);
+    return { sat, x, y, outerR, innerR, angle };
+  });
+
+  // SVG: connector lines (center→satellite) + badge connector lines (badge→outer ring)
+  let svg = `<svg class="rel-svg" width="${canvasSize}" height="${canvasSize}" xmlns="http://www.w3.org/2000/svg">`;
+  satData.forEach(s => {
+    // Line from center to satellite
+    svg += `<line x1="${cx}" y1="${cy}" x2="${s.x}" y2="${s.y}" stroke="#D8D8D5" stroke-width="1.5"/>`;
+    // Badge connector: line from badge center to outer ring edge (both at -135°)
+    const badgeDist = s.outerR + badgeOffset;
+    const bx = s.x + badgeDist * Math.cos(badgeAngleFixed);
+    const by = s.y + badgeDist * Math.sin(badgeAngleFixed);
+    const ringX = s.x + s.outerR * Math.cos(badgeAngleFixed);
+    const ringY = s.y + s.outerR * Math.sin(badgeAngleFixed);
+    svg += `<line x1="${bx}" y1="${by}" x2="${ringX}" y2="${ringY}" stroke="#6B6B66" stroke-width="1.5"/>`;
+  });
+  svg += '</svg>';
+
+  let html = svg;
+
+  // Center node — use same ringGap
+  const centerInnerR = 34;
+  const centerOuterR = centerInnerR + ringGap;
+  html += `<div class="rel-center" style="left:${cx}px;top:${cy}px;">`;
+  html += `<div class="rel-center-outer" style="width:${centerOuterR*2}px;height:${centerOuterR*2}px;">`;
+  html += `<div class="rel-center-inner" style="width:${centerInnerR*2}px;height:${centerInnerR*2}px;">`;
+  html += '<i data-lucide="file-text" style="width:26px;height:26px;color:#fff;"></i>';
+  html += '</div></div>';
+  html += `<div class="rel-center-label">${escapeHtml(conceptName)}</div>`;
+  html += '</div>';
+
+  // Satellites
+  satData.forEach(s => {
+    const outerD = s.outerR * 2;
+    const innerD = s.innerR * 2;
+
+    html += `<div class="rel-satellite" data-group="${escapeHtml(s.sat.title)}" style="left:${s.x}px;top:${s.y}px;width:${outerD}px;height:${outerD}px;">`;
+    html += `<div class="rel-satellite-outer" style="width:${outerD}px;height:${outerD}px;">`;
+    html += `<div class="rel-satellite-inner" style="width:${innerD}px;height:${innerD}px;">`;
+    html += '<div class="rel-satellite-items">';
+
+    s.sat.items.forEach(item => {
+      const tag = item.href ? 'a' : 'div';
+      const hrefAttr = item.href ? ` href="${item.href}"` : '';
+      const meta = item.meta || '';
+      html += `<${tag} class="rel-item" data-rel-info="${escapeHtml(item.label)}" data-rel-type="${escapeHtml(s.sat.title)}" data-rel-meta="${escapeHtml(meta)}"${hrefAttr}>`;
+      html += `<i data-lucide="${item.icon}" style="width:22px;height:22px;color:${s.sat.color};"></i>`;
+      html += `<span class="rel-item-label">${escapeHtml(item.label.length > 14 ? item.label.substring(0, 13) + '\u2026' : item.label)}</span>`;
+      html += `</${tag}>`;
+    });
+
+    html += '</div></div></div>';
+    // Count badge — top-left 45°, constant offset from outer ring
+    const badgeDist = s.outerR + badgeOffset;
+    const badgeLocalX = s.outerR + badgeDist * Math.cos(badgeAngleFixed) - 12;
+    const badgeLocalY = s.outerR + badgeDist * Math.sin(badgeAngleFixed) - 12;
+    html += `<div class="rel-satellite-count" style="left:${badgeLocalX}px;top:${badgeLocalY}px;">${s.sat.items.length}</div>`;
+    html += `<div class="rel-satellite-title">${escapeHtml(s.sat.title)}</div>`;
+    html += '</div>';
+  });
+
+  canvas.innerHTML = html;
+
+  // --- Right panel: search + show checkboxes ---
+  let panelHtml = '<div class="rel-panel-nav">';
+  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-in" title="Zoom in"><i data-lucide="zoom-in" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-out" title="Zoom out"><i data-lucide="zoom-out" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '<button class="rel-panel-btn" id="rel-reset" title="Reset"><i data-lucide="maximize-2" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '</div>';
+  panelHtml += '<input type="text" class="rel-panel-search" id="rel-search" placeholder="Find...">';
+  panelHtml += '<div class="rel-panel-title">Show</div>';
+  satellites.forEach(sat => {
+    panelHtml += `<label class="rel-panel-item">
+      <input type="checkbox" checked data-rel-toggle="${escapeHtml(sat.title)}">
+      <span class="rel-panel-dot" style="background:${sat.color};"></span>
+      <span>${escapeHtml(sat.title)}</span>
+    </label>`;
+  });
+  panel.innerHTML = panelHtml;
+
+  lucide.createIcons({ nodes: [canvas] });
+
+  // --- Zoom & Pan ---
+  let scale = 1, panX = 0, panY = 0;
+  let isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    canvas.style.transformOrigin = '0 0';
+  }
+  function centerCanvas() {
+    const vw = viewport.offsetWidth;
+    const vh = viewport.offsetHeight;
+    panX = (vw - canvasSize) / 2;
+    panY = (vh - canvasSize) / 2;
+    applyTransform();
+  }
+  centerCanvas();
+
+  viewport.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(3, Math.max(0.3, scale * delta));
+    const rect = viewport.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    panX = mx - (mx - panX) * (newScale / scale);
+    panY = my - (my - panY) * (newScale / scale);
+    scale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  viewport.addEventListener('mousedown', function(e) {
+    if (e.target.closest('a') || e.target.closest('.rel-panel')) return;
+    isDragging = true;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    panStartX = panX; panStartY = panY;
+  });
+  window.addEventListener('mousemove', function(e) {
+    if (!isDragging) return;
+    panX = panStartX + (e.clientX - dragStartX);
+    panY = panStartY + (e.clientY - dragStartY);
+    applyTransform();
+  });
+  window.addEventListener('mouseup', function() { isDragging = false; });
+
+  // --- Tooltip (dark info box) ---
+  const tooltip = document.getElementById('rel-tooltip');
+  canvas.addEventListener('mouseover', function(e) {
+    const item = e.target.closest('[data-rel-info]');
+    if (item && tooltip) {
+      const name = item.dataset.relInfo;
+      const type = item.dataset.relType || '';
+      const meta = item.dataset.relMeta || '';
+      tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:2px;">' + escapeHtml(name) + '</div>'
+        + (type ? '<div style="opacity:0.7;font-size:11px;">Type: ' + escapeHtml(type) + '</div>' : '')
+        + (meta ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(meta) + '</div>' : '');
+      tooltip.style.display = 'block';
+    }
+  });
+  canvas.addEventListener('mousemove', function(e) {
+    if (tooltip && tooltip.style.display === 'block') {
+      const rect = viewport.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    }
+  });
+  canvas.addEventListener('mouseout', function(e) {
+    if (e.target.closest('[data-rel-info]') && tooltip) tooltip.style.display = 'none';
+  });
+
+  // --- Panel: toggle visibility ---
+  panel.addEventListener('change', function(e) {
+    const cb = e.target;
+    if (!cb.dataset.relToggle) return;
+    const groupName = cb.dataset.relToggle;
+    const satellite = canvas.querySelector('[data-group="' + groupName + '"]');
+    if (satellite) {
+      satellite.style.display = cb.checked ? '' : 'none';
+    }
+    // Also hide/show the SVG line for this group
+    const idx = satellites.findIndex(s => s.title === groupName);
+    const lines = canvas.querySelector('.rel-svg');
+    if (lines && lines.children[idx]) {
+      lines.children[idx].style.display = cb.checked ? '' : 'none';
+    }
+  });
+
+  // --- Panel: search filter ---
+  const searchInput = document.getElementById('rel-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      canvas.querySelectorAll('.rel-item').forEach(item => {
+        const name = (item.dataset.relInfo || '').toLowerCase();
+        item.style.display = !q || name.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // --- Panel: zoom/reset buttons ---
+  function zoomBy(factor) {
+    const newScale = Math.min(3, Math.max(0.3, scale * factor));
+    const vw = viewport.offsetWidth;
+    const vh = viewport.offsetHeight;
+    // Zoom toward center of viewport
+    panX = vw / 2 - (vw / 2 - panX) * (newScale / scale);
+    panY = vh / 2 - (vh / 2 - panY) * (newScale / scale);
+    scale = newScale;
+    applyTransform();
+  }
+  document.getElementById('rel-zoom-in')?.addEventListener('click', function() { zoomBy(1.25); });
+  document.getElementById('rel-zoom-out')?.addEventListener('click', function() { zoomBy(0.8); });
+  document.getElementById('rel-reset')?.addEventListener('click', function() { scale = 1; centerCanvas(); });
+
+  lucide.createIcons({ nodes: [panel] });
 }
 
 function renderConceptStakeholders(concept) {
@@ -919,6 +1326,10 @@ function renderCodeListDetail(codeListId, tab, main) {
   html += '<div class="title-block-icon"><i data-lucide="list-ordered" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name">${escapeHtml(n(cl, 'name'))}</div>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div></div>';
 
   // Tab bar with ARIA
@@ -1073,7 +1484,11 @@ function renderSystemDetail(systemId, tab, main) {
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name">${escapeHtml(n(sys, 'name'))}</div>`;
   html += '</div>';
-  html += `<div class="title-block-badge">${sys.active ? statusBadge('active') : statusBadge('deprecated')}</div>`;
+  html += '<div class="title-block-actions">';
+  html += `${sys.active ? statusBadge('active') : statusBadge('deprecated')}`;
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += '</div>';
   html += '</div>';
 
   html += '<div class="tab-bar" role="tablist">';
@@ -1236,9 +1651,11 @@ function renderDatasetDetail(datasetId, systemId) {
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name${restricted ? ' locked-name' : ''}">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</div>`;
   html += '</div>';
-  html += '<div class="title-block-badge">';
+  html += '<div class="title-block-actions">';
   html += certifiedBadge(ds.certified);
   if (restricted) html += ' <span class="badge badge-warning">Zugriff eingeschr&auml;nkt</span>';
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div>';
   html += '</div>';
 
@@ -1511,7 +1928,11 @@ function renderProductDetail(productId, tab, main) {
   html += '<div class="title-block-content">';
   html += `<div class="title-block-name">${escapeHtml(n(dp, 'name'))}</div>`;
   html += '</div>';
-  html += `<div class="title-block-badge">${certifiedBadge(dp.certified)}</div>`;
+  html += '<div class="title-block-actions">';
+  html += certifiedBadge(dp.certified);
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += '</div>';
   html += '</div>';
 
   html += '<div class="tab-bar" role="tablist">';
@@ -1794,10 +2215,34 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // Sidebar nav
+  // Sidebar: collection tree item click
+  const collItem = target.closest('[data-nav-collection]');
+  if (collItem) {
+    const collId = collItem.dataset.navCollection;
+    const tab = currentTab === 'diagram' ? 'diagram' : 'table';
+    navigate('#/vocabulary/collection/' + collId + '/' + tab);
+    return;
+  }
+
+  // Sidebar nav (section click — toggles expand + navigates)
   const navItem = target.closest('.nav-item[data-nav]');
   if (navItem) {
-    navigate('#/' + navItem.dataset.nav);
+    const sec = navItem.dataset.nav;
+    // If already on this section, toggle expand/collapse
+    if (currentSection === sec && !currentEntityId) {
+      if (expandedSections.has(sec)) {
+        expandedSections.delete(sec);
+      } else {
+        expandedSections.add(sec);
+      }
+      renderSidebar();
+      lucide.createIcons();
+      return;
+    }
+    // Navigate to section, expand it
+    expandedSections.add(sec);
+    const tab = (currentSection === sec && (currentTab === 'diagram' || currentTab === 'table')) ? currentTab : 'table';
+    navigate('#/' + sec + '/' + tab);
     return;
   }
 
@@ -1811,9 +2256,7 @@ document.addEventListener('click', function(e) {
   // List tab clicks (Übersicht / Diagramm)
   const listTabBtn = target.closest('.tab[data-list-tab]');
   if (listTabBtn) {
-    const section = listTabBtn.dataset.listSection;
-    const tab = listTabBtn.dataset.listTab;
-    navigate('#/' + section + '/' + tab);
+    navigate(listTabBtn.dataset.listRoute);
     return;
   }
 
@@ -1830,6 +2273,15 @@ document.addEventListener('click', function(e) {
   const clickable = target.closest('[data-href]');
   if (clickable) {
     navigate(clickable.dataset.href);
+    return;
+  }
+
+  // "Show all" expand link in vocabulary list
+  const expandLink = target.closest('[data-expand-collection]');
+  if (expandLink) {
+    e.preventDefault();
+    expandedCollections.add(expandLink.dataset.expandCollection);
+    handleRoute();
     return;
   }
 
