@@ -1943,7 +1943,7 @@ function renderCodeListDetail(codeListId, tab, main) {
   addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
 
   const tabs = ['overview', 'contents', 'mappings', 'relationships', 'history'];
-  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Werte', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -2025,20 +2025,21 @@ function renderCodeListContents(codeListId) {
 
   let html = '<div class="content-section">';
   html += `<div style="margin-bottom:var(--space-3);font-size:var(--text-small);color:var(--color-text-secondary);">
-    ${values.length} values
+    ${values.length} Werte
   </div>`;
 
-  html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Code</th><th scope="col">Label (DE)</th><th scope="col">Label (FR)</th><th scope="col">Label (EN)</th>';
+  html += '<table class="data-table"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:50%"></colgroup><thead><tr>';
+  html += '<th scope="col">Code</th><th scope="col">Bezeichnung</th><th scope="col">Beschreibung</th>';
   html += '</tr></thead><tbody>';
   values.forEach(v => {
     const isDeprecated = v.deprecated === 1;
     const style = isDeprecated ? ' style="color:var(--color-text-placeholder);font-style:italic;"' : '';
+    const label = v['label_' + lang] || v.label_de || v.label_en || '';
+    const desc = getDefinitionText(v.description, lang);
     html += `<tr${style}>
       <td class="cell-mono">${escapeHtml(v.code)}</td>
-      <td>${escapeHtml(v.label_de || '')}</td>
-      <td>${escapeHtml(v.label_fr || '')}</td>
-      <td>${escapeHtml(v.label_en || '')}</td>
+      <td>${escapeHtml(label)}</td>
+      <td>${desc ? escapeHtml(desc) : '&ndash;'}</td>
     </tr>`;
   });
   html += '</tbody></table></div>';
