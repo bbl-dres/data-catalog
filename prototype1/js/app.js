@@ -1257,7 +1257,7 @@ function renderProductsList(listTab) {
   }
 
   const colgroup = '<colgroup><col style="width:18%"><col style="width:27%"><col style="width:13%"><col style="width:12%"><col style="width:10%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Status</th><th scope="col">Herausgeber</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   function productRow(dp) {
     const desc = getDefinitionText(dp.description, lang);
