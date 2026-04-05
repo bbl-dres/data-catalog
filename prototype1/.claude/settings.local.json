@@ -33,7 +33,8 @@
       "Bash(node -e \"try { new Function\\(require\\('fs'\\).readFileSync\\('js/app.js','utf8'\\)\\); console.log\\('JS OK'\\); } catch\\(e\\) { console.log\\('ERR:', e.message\\); }\")",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
