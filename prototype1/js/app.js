@@ -400,7 +400,7 @@ function renderHome() {
   html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
   if (recentConcepts.length > 0) {
     html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
-    html += '<th scope="col">Geschäftsobjekt</th><th scope="col">Domäne</th><th scope="col">Status</th><th scope="col">Geändert</th>';
+    html += '<th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Status</th><th scope="col">Geändert</th>';
     html += '</tr></thead><tbody>';
     recentConcepts.forEach(c => {
       html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
@@ -708,14 +708,14 @@ function renderVocabularyList(listTab, collectionId) {
       <td>${escapeHtml(n(c, 'name'))}</td>
       <td>${escapeHtml(domainName)}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${statusBadge(c.status)}</td>
       <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
+      <td>${statusBadge(c.status)}</td>
       <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
     </tr>`;
   }
 
-  const colgroup = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:10%"><col style="width:8%"><col style="width:22%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Felder</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:8%"><col style="width:10%"><col style="width:22%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Felder</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   if (activeCollection || vocabGrouping === 'none') {
     // Flat table
@@ -834,8 +834,8 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:22%"><col style="width:15%"><col style="width:13%"><col style="width:28%"><col style="width:10%"><col style="width:12%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:22%"><col style="width:16%"><col style="width:35%"><col style="width:10%"><col style="width:17%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th></tr></thead>';
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
@@ -843,7 +843,6 @@ function renderCodeListsList(listTab) {
     return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
       <td>${cl.domain_name ? escapeHtml(cl.domain_name) : '&ndash;'}</td>
-      <td>${cl.source_ref ? escapeHtml(cl.source_ref) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
       <td>${statusBadge(clStatus)}</td>
@@ -933,8 +932,8 @@ function renderTermsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:32%"><col style="width:15%"><col style="width:10%"><col style="width:10%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Begriff</th><th scope="col">Domäne</th><th scope="col">Definition</th><th scope="col">Standard</th><th scope="col">Quellentyp</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:30%"><col style="width:12%"><col style="width:12%"><col style="width:13%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Quellentyp</th><th scope="col">Standard</th><th scope="col">Status</th></tr></thead>';
   const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
 
   html += '<div class="list-panel">';
@@ -946,8 +945,8 @@ function renderTermsList(listTab) {
       <td>${escapeHtml(n(t, 'name'))}</td>
       <td>${t.domain_name ? escapeHtml(t.domain_name) : '&ndash;'}</td>
       <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
-      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
       <td>${escapeHtml(srcLabel)}</td>
+      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
       <td>${statusBadge(t.status)}</td>
     </tr>`;
   }
@@ -1157,12 +1156,14 @@ function renderSystemsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:25%"><col style="width:20%"><col style="width:15%"><col style="width:10%"><col style="width:30%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Eigentümer</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:28%"><col style="width:14%"><col style="width:10%"><col style="width:10%"><col style="width:20%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Eigentümer</th></tr></thead>';
 
   function sysRow(s) {
+    const desc = getDefinitionText(s.description, lang);
     return `<tr class="clickable-row" data-href="#/systems/${s.id}">
       <td>${escapeHtml(n(s, 'name'))}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${s.technology_stack ? escapeHtml(s.technology_stack) : '&ndash;'}</td>
       <td>${s.dataset_count}</td>
       <td>${s.active ? statusBadge('active') : statusBadge('deprecated')}</td>
@@ -1254,16 +1255,17 @@ function renderProductsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:25%"><col style="width:15%"><col style="width:12%"><col style="width:15%"><col style="width:10%"><col style="width:23%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Häufigkeit</th><th scope="col">Distributionen</th><th scope="col">Formate</th><th scope="col">Status</th><th scope="col">Herausgeber</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:27%"><col style="width:13%"><col style="width:12%"><col style="width:10%"><col style="width:20%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Status</th><th scope="col">Herausgeber</th></tr></thead>';
 
   function productRow(dp) {
+    const desc = getDefinitionText(dp.description, lang);
     const formatStr = (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ');
     return `<tr class="clickable-row" data-href="#/products/${dp.id}">
       <td>${escapeHtml(n(dp, 'name'))}</td>
-      <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
-      <td>${dp.dist_count}</td>
+      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${formatStr || '&ndash;'}</td>
+      <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
       <td>${certifiedBadge(dp.certified)}</td>
       <td>${dp.publisher ? escapeHtml(dp.publisher) : '&ndash;'}</td>
     </tr>`;
