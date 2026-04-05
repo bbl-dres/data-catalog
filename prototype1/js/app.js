@@ -1,6 +1,7 @@
 (function() {
 'use strict';
 
+// ── State ──────────────────────────────────────────────────
 // ============================================================
 // State
 // ============================================================
@@ -36,9 +37,7 @@ const SECTION_ICONS = {
   products: 'package'
 };
 
-// ============================================================
-// Utility: Run SQL query, return array of objects
-// ============================================================
+// ── Utilities ──────────────────────────────────────────────
 function query(sql, params) {
   try {
     const stmt = db.prepare(sql);
@@ -180,9 +179,27 @@ function getInitials(name) {
   return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+function renderEmptyState(icon, title, description) {
+  return `<div class="empty-state">
+    <i data-lucide="${escapeHtml(icon)}" class="empty-state-icon" style="width:48px;height:48px;"></i>
+    <h3 class="empty-state-title">${escapeHtml(title)}</h3>
+    <p class="empty-state-description">${escapeHtml(description)}</p>
+  </div>`;
+}
+
 // ============================================================
-// Router
+// Reusable locked content message
 // ============================================================
+function renderLockedContent() {
+  return `<div class="locked-content-message">
+    <i data-lucide="lock" style="width:48px;height:48px;"></i>
+    <h3>Zugriff eingeschr&auml;nkt</h3>
+    <p>Dieser Inhalt ist klassifiziert. Zugriff anfordern, um die Details einzusehen.</p>
+    <a class="btn btn-ghost" href="mailto:datenkatalog@bbl.admin.ch?subject=Zugriffsanfrage">Zugriff anfordern &rarr;</a>
+  </div>`;
+}
+
+// ── Router ─────────────────────────────────────────────────
 function navigate(hash) {
   window.location.hash = hash;
 }
@@ -258,33 +275,268 @@ function handleRoute() {
 
 window.addEventListener('hashchange', handleRoute);
 
-// ============================================================
-// Sidebar
-// ============================================================
-// ============================================================
-// Reusable empty state renderer
-// ============================================================
-function renderEmptyState(icon, title, description) {
-  return `<div class="empty-state">
-    <i data-lucide="${escapeHtml(icon)}" class="empty-state-icon" style="width:48px;height:48px;"></i>
-    <h3 class="empty-state-title">${escapeHtml(title)}</h3>
-    <p class="empty-state-description">${escapeHtml(description)}</p>
+// ── Views: Relationship Graph ─────────────────────────────
+function renderRelGraph(centerLabel, satellites) {
+  if (satellites.length === 0) return '';
+  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
+  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
+  html += '<div id="rel-canvas"></div>';
+  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
+  html += '<div id="rel-panel" class="rel-panel"></div>';
+  html += '</div></div>';
+  relGraphData = { conceptName: centerLabel, satellites };
+  setTimeout(initRelationshipSVG, 50);
+  return html;
+}
+
+function initRelationshipSVG() {
+  const viewport = document.getElementById('rel-viewport');
+  const canvas = document.getElementById('rel-canvas');
+  const panel = document.getElementById('rel-panel');
+  if (!viewport || !canvas || !relGraphData) return;
+
+  const { conceptName, satellites } = relGraphData;
+
+  const canvasSize = 1000;
+  const cx = canvasSize / 2;
+  const cy = canvasSize / 2;
+  const orbitRadius = 300;
+  const minOuterR = 70;
+  const perItemR = 25; // extra radius per item
+  const ringGap = 20; // constant gap between outer and inner ring (all circles)
+
+  canvas.style.width = canvasSize + 'px';
+  canvas.style.height = canvasSize + 'px';
+  canvas.style.position = 'absolute';
+
+  // Calculate dynamic radius per satellite based on item count
+  // Badge always at -135° (top-left) from satellite center, constant offset from outer ring
+  const badgeOffset = 18; // gap from outer ring edge to badge center
+  const badgeAngleFixed = -Math.PI * 3 / 4; // -135° = top-left
+
+  const satData = satellites.map((sat, i) => {
+    const outerR = Math.max(minOuterR, 50 + sat.items.length * perItemR);
+    const innerR = outerR - ringGap;
+    const angle = (2 * Math.PI * i / satellites.length) - Math.PI / 2;
+    const x = cx + orbitRadius * Math.cos(angle);
+    const y = cy + orbitRadius * Math.sin(angle);
+    return { sat, x, y, outerR, innerR, angle };
+  });
+
+  // SVG: connector lines (center→satellite) + badge connector lines (badge→outer ring)
+  let svg = `<svg class="rel-svg" width="${canvasSize}" height="${canvasSize}" xmlns="http://www.w3.org/2000/svg">`;
+  satData.forEach(s => {
+    // Line from center to satellite
+    svg += `<line x1="${cx}" y1="${cy}" x2="${s.x}" y2="${s.y}" stroke="#D8D8D5" stroke-width="1.5"/>`;
+    // Badge connector: line from badge center to outer ring edge (both at -135°)
+    const badgeDist = s.outerR + badgeOffset;
+    const bx = s.x + badgeDist * Math.cos(badgeAngleFixed);
+    const by = s.y + badgeDist * Math.sin(badgeAngleFixed);
+    const ringX = s.x + s.outerR * Math.cos(badgeAngleFixed);
+    const ringY = s.y + s.outerR * Math.sin(badgeAngleFixed);
+    svg += `<line x1="${bx}" y1="${by}" x2="${ringX}" y2="${ringY}" stroke="#6B6B66" stroke-width="1.5"/>`;
+  });
+  svg += '</svg>';
+
+  let html = svg;
+
+  // Center node — use same ringGap
+  const centerInnerR = 34;
+  const centerOuterR = centerInnerR + ringGap;
+  html += `<div class="rel-center" style="left:${cx}px;top:${cy}px;">`;
+  html += `<div class="rel-center-outer" style="width:${centerOuterR*2}px;height:${centerOuterR*2}px;">`;
+  html += `<div class="rel-center-inner" style="width:${centerInnerR*2}px;height:${centerInnerR*2}px;">`;
+  html += '<i data-lucide="box" style="width:26px;height:26px;color:#fff;"></i>';
+  html += '</div></div>';
+  html += `<div class="rel-center-label">${escapeHtml(conceptName)}</div>`;
+  html += '</div>';
+
+  // Satellites
+  satData.forEach(s => {
+    const outerD = s.outerR * 2;
+    const innerD = s.innerR * 2;
+
+    html += `<div class="rel-satellite" data-group="${escapeHtml(s.sat.title)}" style="left:${s.x}px;top:${s.y}px;width:${outerD}px;height:${outerD}px;">`;
+    html += `<div class="rel-satellite-outer" style="width:${outerD}px;height:${outerD}px;">`;
+    html += `<div class="rel-satellite-inner" style="width:${innerD}px;height:${innerD}px;">`;
+    html += '<div class="rel-satellite-items">';
+
+    s.sat.items.forEach(item => {
+      const tag = item.href ? 'a' : 'div';
+      const hrefAttr = item.href ? ` href="${item.href}/relationships"` : '';
+      const meta = item.meta || '';
+      html += `<${tag} class="rel-item" data-rel-info="${escapeHtml(item.label)}" data-rel-type="${escapeHtml(s.sat.title)}" data-rel-meta="${escapeHtml(meta)}"${hrefAttr}>`;
+      html += `<i data-lucide="${item.icon}" style="width:22px;height:22px;color:${s.sat.color};"></i>`;
+      html += `<span class="rel-item-label">${escapeHtml(item.label.length > 14 ? item.label.substring(0, 13) + '\u2026' : item.label)}</span>`;
+      html += `</${tag}>`;
+    });
+
+    html += '</div></div></div>';
+    // Count badge — top-left 45°, constant offset from outer ring
+    const badgeDist = s.outerR + badgeOffset;
+    const badgeLocalX = s.outerR + badgeDist * Math.cos(badgeAngleFixed) - 12;
+    const badgeLocalY = s.outerR + badgeDist * Math.sin(badgeAngleFixed) - 12;
+    html += `<div class="rel-satellite-count" style="left:${badgeLocalX}px;top:${badgeLocalY}px;">${s.sat.items.length}</div>`;
+    html += `<div class="rel-satellite-title">${escapeHtml(s.sat.title)}</div>`;
+    html += '</div>';
+  });
+
+  canvas.innerHTML = html;
+
+  // --- Right panel: search + show checkboxes ---
+  let panelHtml = '<div class="rel-panel-nav">';
+  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-in" title="Zoom in"><i data-lucide="zoom-in" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-out" title="Zoom out"><i data-lucide="zoom-out" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '<button class="rel-panel-btn" id="rel-reset" title="Reset"><i data-lucide="maximize-2" style="width:16px;height:16px;"></i></button>';
+  panelHtml += '</div>';
+  panelHtml += '<input type="text" class="rel-panel-search" id="rel-search" placeholder="Find...">';
+  panelHtml += '<div class="rel-panel-title">Show</div>';
+  satellites.forEach(sat => {
+    panelHtml += `<label class="rel-panel-item">
+      <input type="checkbox" checked data-rel-toggle="${escapeHtml(sat.title)}">
+      <span>${escapeHtml(sat.title)}</span>
+    </label>`;
+  });
+  panel.innerHTML = panelHtml;
+
+  lucide.createIcons({ nodes: [canvas] });
+
+  // --- Zoom & Pan ---
+  let scale = 1, panX = 0, panY = 0;
+  let isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+    canvas.style.transformOrigin = '0 0';
+  }
+  function centerCanvas() {
+    const vw = viewport.offsetWidth;
+    const vh = viewport.offsetHeight;
+    panX = (vw - canvasSize) / 2;
+    panY = (vh - canvasSize) / 2;
+    applyTransform();
+  }
+  centerCanvas();
+
+  viewport.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(3, Math.max(0.3, scale * delta));
+    const rect = viewport.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    panX = mx - (mx - panX) * (newScale / scale);
+    panY = my - (my - panY) * (newScale / scale);
+    scale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  viewport.addEventListener('mousedown', function(e) {
+    if (e.target.closest('a') || e.target.closest('.rel-panel')) return;
+    isDragging = true;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    panStartX = panX; panStartY = panY;
+  });
+  const onMouseMove = function(e) {
+    if (!isDragging) return;
+    panX = panStartX + (e.clientX - dragStartX);
+    panY = panStartY + (e.clientY - dragStartY);
+    applyTransform();
+  };
+  const onMouseUp = function() { isDragging = false; };
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  relCleanup = function() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  };
+
+  // --- Tooltip (dark info box) ---
+  const tooltip = document.getElementById('rel-tooltip');
+  canvas.addEventListener('mouseover', function(e) {
+    const item = e.target.closest('[data-rel-info]');
+    if (item && tooltip) {
+      const name = item.dataset.relInfo;
+      const type = item.dataset.relType || '';
+      const meta = item.dataset.relMeta || '';
+      tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:2px;">' + escapeHtml(name) + '</div>'
+        + (type ? '<div style="opacity:0.7;font-size:11px;">Type: ' + escapeHtml(type) + '</div>' : '')
+        + (meta ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(meta) + '</div>' : '');
+      tooltip.style.display = 'block';
+    }
+  });
+  canvas.addEventListener('mousemove', function(e) {
+    if (tooltip && tooltip.style.display === 'block') {
+      const rect = viewport.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+    }
+  });
+  canvas.addEventListener('mouseout', function(e) {
+    if (e.target.closest('[data-rel-info]') && tooltip) tooltip.style.display = 'none';
+  });
+
+  // --- Panel: toggle visibility ---
+  panel.addEventListener('change', function(e) {
+    const cb = e.target;
+    if (!cb.dataset.relToggle) return;
+    const groupName = cb.dataset.relToggle;
+    const satellite = canvas.querySelector('[data-group="' + groupName + '"]');
+    if (satellite) {
+      satellite.style.display = cb.checked ? '' : 'none';
+    }
+    // Also hide/show the SVG line for this group
+    const idx = satellites.findIndex(s => s.title === groupName);
+    const lines = canvas.querySelector('.rel-svg');
+    if (lines && lines.children[idx]) {
+      lines.children[idx].style.display = cb.checked ? '' : 'none';
+    }
+  });
+
+  // --- Panel: search filter ---
+  const searchInput = document.getElementById('rel-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      canvas.querySelectorAll('.rel-item').forEach(item => {
+        const name = (item.dataset.relInfo || '').toLowerCase();
+        item.style.display = !q || name.includes(q) ? '' : 'none';
+      });
+    });
+  }
+
+  // --- Panel: zoom/reset buttons ---
+  function zoomBy(factor) {
+    const newScale = Math.min(3, Math.max(0.3, scale * factor));
+    const vw = viewport.offsetWidth;
+    const vh = viewport.offsetHeight;
+    // Zoom toward center of viewport
+    panX = vw / 2 - (vw / 2 - panX) * (newScale / scale);
+    panY = vh / 2 - (vh / 2 - panY) * (newScale / scale);
+    scale = newScale;
+    applyTransform();
+  }
+  document.getElementById('rel-zoom-in')?.addEventListener('click', function() { zoomBy(1.25); });
+  document.getElementById('rel-zoom-out')?.addEventListener('click', function() { zoomBy(0.8); });
+  document.getElementById('rel-reset')?.addEventListener('click', function() { scale = 1; centerCanvas(); });
+
+  lucide.createIcons({ nodes: [panel] });
+}
+
+
+function renderStakeholderCard(name, org, email) {
+  return `<div class="stakeholder-card">
+    <div class="stakeholder-avatar">${getInitials(name)}</div>
+    <div>
+      <div class="stakeholder-name">${escapeHtml(name)}</div>
+      ${org ? '<div class="stakeholder-org">' + escapeHtml(org) + '</div>' : ''}
+      ${email ? '<div class="stakeholder-email"><a href="mailto:' + escapeHtml(email) + '">' + escapeHtml(email) + '</a></div>' : ''}
+    </div>
   </div>`;
 }
 
-// ============================================================
-// Reusable locked content message
-// ============================================================
-function renderLockedContent() {
-  return `<div class="locked-content-message">
-    <i data-lucide="lock" style="width:48px;height:48px;"></i>
-    <h3>Zugriff eingeschr&auml;nkt</h3>
-    <p>Dieser Inhalt ist klassifiziert. Zugriff anfordern, um die Details einzusehen.</p>
-    <a class="btn btn-ghost" href="mailto:datenkatalog@bbl.admin.ch?subject=Zugriffsanfrage">Zugriff anfordern &rarr;</a>
-  </div>`;
-}
-
-// ============================================================
+// ── Views: Lists ───────────────────────────────────────────
 function renderSidebar() {
   if (!sidebarCounts) {
     sidebarCounts = {
@@ -338,12 +590,6 @@ function renderSidebar() {
   document.getElementById('sidebar').innerHTML = html;
 }
 
-// ============================================================
-// List Views
-// ============================================================
-// ============================================================
-// Home View
-// ============================================================
 function renderHome() {
   const conceptCount = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
   const termCount = query("SELECT COUNT(*) as c FROM term")[0]?.c || 0;
@@ -957,104 +1203,6 @@ function renderTermsList(listTab) {
 
 
 
-function renderTermDetail(termId, tab, main) {
-  const term = queryOne("SELECT * FROM term WHERE id = ?", [termId]);
-  if (!term) { main.innerHTML = '<p>Begriff nicht gefunden</p>'; return; }
-  addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
-
-  const tabs = ['overview', 'relationships', 'history'];
-  const tabLabels = { overview: 'Übersicht', relationships: 'Relationen', history: 'History' };
-  if (!tabs.includes(tab)) tab = 'overview';
-  currentTab = tab;
-
-  let html = '<div class="content-wrapper"><article>';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
-  html += `<a class="breadcrumb-link" href="#/terms">${SECTION_LABELS.terms[lang]}</a>`;
-  html += '<span class="breadcrumb-separator"> / </span>';
-  html += `<span class="breadcrumb-current">${escapeHtml(n(term, 'name'))}</span>`;
-  html += '</nav>';
-
-  html += '<div class="title-block">';
-  html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
-  html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(term, 'name'))}</div>`;
-  html += '</div>';
-  html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
-  html += '</div></div>';
-
-  // Tab bar
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/terms/${termId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
-
-  html += '<div class="tab-content">';
-  switch(tab) {
-    case 'overview': html += renderTermOverview(term); break;
-    case 'relationships': html += renderTermRelationships(termId, term); break;
-    case 'history': html += renderHistoryTab(); break;
-  }
-  html += '</div></article></div>';
-  main.innerHTML = html;
-}
-
-function renderTermOverview(term) {
-  let html = '';
-  const def = getDefinitionText(term.definition, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
-
-  // Derive domain from linked concepts
-  const termDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_term ct
-    JOIN concept c ON ct.concept_id = c.id
-    JOIN collection col ON c.collection_id = col.id
-    WHERE ct.term_id = ? LIMIT 1`, [term.id]);
-
-  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
-  html += `<tr><td>Status</td><td>${statusBadge(term.status)}</td></tr>`;
-  html += `<tr><td>Erstellt</td><td>${formatDate(term.created_at)}</td></tr>`;
-  html += `<tr><td>Geändert</td><td>${formatDate(term.modified_at)}</td></tr>`;
-  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
-  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
-  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
-  html += '</table></div>';
-
-  // Linked concepts
-  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [term.id]);
-  if (linkedConcepts.length > 0) {
-    html += '<div class="content-section"><div class="section-label">VERKNÜPFTE GESCHÄFTSOBJEKTE</div>';
-    html += '<div class="domain-group-concepts">';
-    linkedConcepts.forEach(c => {
-      html += `<a class="concept-box" href="#/vocabulary/${c.id}">`;
-      html += `<span class="concept-box-name">${escapeHtml(c.cname)}</span>`;
-      html += `</a>`;
-    });
-    html += '</div></div>';
-  }
-
-  return html;
-}
-
-function renderTermRelationships(termId, term) {
-  // Linked concepts via concept_term
-  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [termId]);
-
-  const satellites = [];
-
-  if (linkedConcepts.length) {
-    satellites.push({ title: 'Geschäftsobjekte', items: linkedConcepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
-  }
-
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieser Begriff hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
-  return renderRelGraph(n(term, 'name'), satellites);
-}
 
 function renderSystemsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
@@ -1250,6 +1398,109 @@ function renderProductsList(listTab) {
   return html;
 }
 
+
+function renderSearchResults() {
+  const main = document.getElementById('main-content');
+  const q = searchQuery.trim();
+  if (!q) {
+    main.innerHTML = '<div class="content-wrapper"><div class="section-header"><div><div class="section-title">Suche</div><div class="section-subtitle">Bitte geben Sie einen Suchbegriff ein.</div></div></div></div>';
+    return;
+  }
+
+  const likeQ = `%${q}%`;
+
+  const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
+    [likeQ, likeQ, likeQ, likeQ]);
+
+  const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
+    [likeQ, likeQ, likeQ, likeQ]);
+
+  const datasets = query(`SELECT d.id, d.name, d.display_name, d.dataset_type,
+    s.${nameCol('name')} as sys_name, sc.system_id as sys_id
+    FROM dataset d
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE d.name LIKE ? OR d.display_name LIKE ? LIMIT 10`,
+    [likeQ, likeQ]);
+
+  const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
+    [likeQ, likeQ, likeQ, likeQ]);
+
+  const totalResults = concepts.length + codeLists.length + datasets.length + products.length;
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
+  html += `<div class="section-header"><div>
+    <div class="section-title">Suchergebnisse</div>
+    <div class="section-subtitle">${totalResults} Ergebnisse fur "${escapeHtml(q)}"</div>
+  </div></div>`;
+
+  html += '<div class="list-panel">';
+  if (concepts.length > 0) {
+    html += '<div class="search-group-label">CONCEPTS</div>';
+    concepts.forEach(c => {
+      html += `<div class="search-result-item" data-href="#/vocabulary/${c.id}">
+        <div class="search-result-icon"><i data-lucide="box" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="search-result-name">${escapeHtml(n(c, 'name'))}</div>
+          <div class="search-result-type">Concept ${statusBadge(c.status)}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (codeLists.length > 0) {
+    html += '<div class="search-group-label">CODE LISTS</div>';
+    codeLists.forEach(cl => {
+      html += `<div class="search-result-item" data-href="#/codelists/${cl.id}">
+        <div class="search-result-icon"><i data-lucide="list-ordered" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="search-result-name">${escapeHtml(n(cl, 'name'))}</div>
+          <div class="search-result-type">Code List</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (datasets.length > 0) {
+    html += '<div class="search-group-label">DATASETS</div>';
+    datasets.forEach(d => {
+      html += `<div class="search-result-item" data-href="#/systems/${d.sys_id}/datasets/${d.id}">
+        <div class="search-result-icon"><i data-lucide="table-2" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="search-result-name">${escapeHtml(d.display_name || d.name)}</div>
+          <div class="search-result-type">${escapeHtml(d.dataset_type)} &middot; ${escapeHtml(d.sys_name)}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (products.length > 0) {
+    html += '<div class="search-group-label">DATA PRODUCTS</div>';
+    products.forEach(dp => {
+      html += `<div class="search-result-item" data-href="#/products/${dp.id}">
+        <div class="search-result-icon"><i data-lucide="package" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="search-result-name">${escapeHtml(n(dp, 'name'))}</div>
+          <div class="search-result-type">Data Product &middot; ${escapeHtml(dp.publisher || '')}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if (totalResults === 0) {
+    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Eintr\u00e4ge gefunden f\u00fcr "' + q + '".');
+  }
+
+  html += '</div>'; // close list-panel
+  html += '</div>'; // close content-wrapper
+  main.innerHTML = html;
+}
+
+// ── Views: Details ─────────────────────────────────────────
 // ============================================================
 // Detail Views
 // ============================================================
@@ -1332,19 +1583,6 @@ function renderConceptDetail(conceptId, tab, main) {
 
 function renderHistoryTab() {
   return '<div class="content-section">' + renderEmptyState('clock', '\u00c4nderungsprotokoll', 'Das \u00c4nderungsprotokoll wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
-}
-
-function renderRelGraph(centerLabel, satellites) {
-  if (satellites.length === 0) return '';
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-  relGraphData = { conceptName: centerLabel, satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
 }
 
 function renderCodeListRelationships(codeListId, cl) {
@@ -1632,253 +1870,6 @@ function renderConceptRelationships(conceptId) {
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
   return renderRelGraph(n(concept, 'name'), satellites);
-}
-
-function initRelationshipSVG() {
-  const viewport = document.getElementById('rel-viewport');
-  const canvas = document.getElementById('rel-canvas');
-  const panel = document.getElementById('rel-panel');
-  if (!viewport || !canvas || !relGraphData) return;
-
-  const { conceptName, satellites } = relGraphData;
-
-  const canvasSize = 1000;
-  const cx = canvasSize / 2;
-  const cy = canvasSize / 2;
-  const orbitRadius = 300;
-  const minOuterR = 70;
-  const perItemR = 25; // extra radius per item
-  const ringGap = 20; // constant gap between outer and inner ring (all circles)
-
-  canvas.style.width = canvasSize + 'px';
-  canvas.style.height = canvasSize + 'px';
-  canvas.style.position = 'absolute';
-
-  // Calculate dynamic radius per satellite based on item count
-  // Badge always at -135° (top-left) from satellite center, constant offset from outer ring
-  const badgeOffset = 18; // gap from outer ring edge to badge center
-  const badgeAngleFixed = -Math.PI * 3 / 4; // -135° = top-left
-
-  const satData = satellites.map((sat, i) => {
-    const outerR = Math.max(minOuterR, 50 + sat.items.length * perItemR);
-    const innerR = outerR - ringGap;
-    const angle = (2 * Math.PI * i / satellites.length) - Math.PI / 2;
-    const x = cx + orbitRadius * Math.cos(angle);
-    const y = cy + orbitRadius * Math.sin(angle);
-    return { sat, x, y, outerR, innerR, angle };
-  });
-
-  // SVG: connector lines (center→satellite) + badge connector lines (badge→outer ring)
-  let svg = `<svg class="rel-svg" width="${canvasSize}" height="${canvasSize}" xmlns="http://www.w3.org/2000/svg">`;
-  satData.forEach(s => {
-    // Line from center to satellite
-    svg += `<line x1="${cx}" y1="${cy}" x2="${s.x}" y2="${s.y}" stroke="#D8D8D5" stroke-width="1.5"/>`;
-    // Badge connector: line from badge center to outer ring edge (both at -135°)
-    const badgeDist = s.outerR + badgeOffset;
-    const bx = s.x + badgeDist * Math.cos(badgeAngleFixed);
-    const by = s.y + badgeDist * Math.sin(badgeAngleFixed);
-    const ringX = s.x + s.outerR * Math.cos(badgeAngleFixed);
-    const ringY = s.y + s.outerR * Math.sin(badgeAngleFixed);
-    svg += `<line x1="${bx}" y1="${by}" x2="${ringX}" y2="${ringY}" stroke="#6B6B66" stroke-width="1.5"/>`;
-  });
-  svg += '</svg>';
-
-  let html = svg;
-
-  // Center node — use same ringGap
-  const centerInnerR = 34;
-  const centerOuterR = centerInnerR + ringGap;
-  html += `<div class="rel-center" style="left:${cx}px;top:${cy}px;">`;
-  html += `<div class="rel-center-outer" style="width:${centerOuterR*2}px;height:${centerOuterR*2}px;">`;
-  html += `<div class="rel-center-inner" style="width:${centerInnerR*2}px;height:${centerInnerR*2}px;">`;
-  html += '<i data-lucide="box" style="width:26px;height:26px;color:#fff;"></i>';
-  html += '</div></div>';
-  html += `<div class="rel-center-label">${escapeHtml(conceptName)}</div>`;
-  html += '</div>';
-
-  // Satellites
-  satData.forEach(s => {
-    const outerD = s.outerR * 2;
-    const innerD = s.innerR * 2;
-
-    html += `<div class="rel-satellite" data-group="${escapeHtml(s.sat.title)}" style="left:${s.x}px;top:${s.y}px;width:${outerD}px;height:${outerD}px;">`;
-    html += `<div class="rel-satellite-outer" style="width:${outerD}px;height:${outerD}px;">`;
-    html += `<div class="rel-satellite-inner" style="width:${innerD}px;height:${innerD}px;">`;
-    html += '<div class="rel-satellite-items">';
-
-    s.sat.items.forEach(item => {
-      const tag = item.href ? 'a' : 'div';
-      const hrefAttr = item.href ? ` href="${item.href}/relationships"` : '';
-      const meta = item.meta || '';
-      html += `<${tag} class="rel-item" data-rel-info="${escapeHtml(item.label)}" data-rel-type="${escapeHtml(s.sat.title)}" data-rel-meta="${escapeHtml(meta)}"${hrefAttr}>`;
-      html += `<i data-lucide="${item.icon}" style="width:22px;height:22px;color:${s.sat.color};"></i>`;
-      html += `<span class="rel-item-label">${escapeHtml(item.label.length > 14 ? item.label.substring(0, 13) + '\u2026' : item.label)}</span>`;
-      html += `</${tag}>`;
-    });
-
-    html += '</div></div></div>';
-    // Count badge — top-left 45°, constant offset from outer ring
-    const badgeDist = s.outerR + badgeOffset;
-    const badgeLocalX = s.outerR + badgeDist * Math.cos(badgeAngleFixed) - 12;
-    const badgeLocalY = s.outerR + badgeDist * Math.sin(badgeAngleFixed) - 12;
-    html += `<div class="rel-satellite-count" style="left:${badgeLocalX}px;top:${badgeLocalY}px;">${s.sat.items.length}</div>`;
-    html += `<div class="rel-satellite-title">${escapeHtml(s.sat.title)}</div>`;
-    html += '</div>';
-  });
-
-  canvas.innerHTML = html;
-
-  // --- Right panel: search + show checkboxes ---
-  let panelHtml = '<div class="rel-panel-nav">';
-  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-in" title="Zoom in"><i data-lucide="zoom-in" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-out" title="Zoom out"><i data-lucide="zoom-out" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '<button class="rel-panel-btn" id="rel-reset" title="Reset"><i data-lucide="maximize-2" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '</div>';
-  panelHtml += '<input type="text" class="rel-panel-search" id="rel-search" placeholder="Find...">';
-  panelHtml += '<div class="rel-panel-title">Show</div>';
-  satellites.forEach(sat => {
-    panelHtml += `<label class="rel-panel-item">
-      <input type="checkbox" checked data-rel-toggle="${escapeHtml(sat.title)}">
-      <span>${escapeHtml(sat.title)}</span>
-    </label>`;
-  });
-  panel.innerHTML = panelHtml;
-
-  lucide.createIcons({ nodes: [canvas] });
-
-  // --- Zoom & Pan ---
-  let scale = 1, panX = 0, panY = 0;
-  let isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
-
-  function applyTransform() {
-    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-    canvas.style.transformOrigin = '0 0';
-  }
-  function centerCanvas() {
-    const vw = viewport.offsetWidth;
-    const vh = viewport.offsetHeight;
-    panX = (vw - canvasSize) / 2;
-    panY = (vh - canvasSize) / 2;
-    applyTransform();
-  }
-  centerCanvas();
-
-  viewport.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(3, Math.max(0.3, scale * delta));
-    const rect = viewport.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    panX = mx - (mx - panX) * (newScale / scale);
-    panY = my - (my - panY) * (newScale / scale);
-    scale = newScale;
-    applyTransform();
-  }, { passive: false });
-
-  viewport.addEventListener('mousedown', function(e) {
-    if (e.target.closest('a') || e.target.closest('.rel-panel')) return;
-    isDragging = true;
-    dragStartX = e.clientX; dragStartY = e.clientY;
-    panStartX = panX; panStartY = panY;
-  });
-  const onMouseMove = function(e) {
-    if (!isDragging) return;
-    panX = panStartX + (e.clientX - dragStartX);
-    panY = panStartY + (e.clientY - dragStartY);
-    applyTransform();
-  };
-  const onMouseUp = function() { isDragging = false; };
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
-
-  relCleanup = function() {
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-  };
-
-  // --- Tooltip (dark info box) ---
-  const tooltip = document.getElementById('rel-tooltip');
-  canvas.addEventListener('mouseover', function(e) {
-    const item = e.target.closest('[data-rel-info]');
-    if (item && tooltip) {
-      const name = item.dataset.relInfo;
-      const type = item.dataset.relType || '';
-      const meta = item.dataset.relMeta || '';
-      tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:2px;">' + escapeHtml(name) + '</div>'
-        + (type ? '<div style="opacity:0.7;font-size:11px;">Type: ' + escapeHtml(type) + '</div>' : '')
-        + (meta ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(meta) + '</div>' : '');
-      tooltip.style.display = 'block';
-    }
-  });
-  canvas.addEventListener('mousemove', function(e) {
-    if (tooltip && tooltip.style.display === 'block') {
-      const rect = viewport.getBoundingClientRect();
-      tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
-      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
-    }
-  });
-  canvas.addEventListener('mouseout', function(e) {
-    if (e.target.closest('[data-rel-info]') && tooltip) tooltip.style.display = 'none';
-  });
-
-  // --- Panel: toggle visibility ---
-  panel.addEventListener('change', function(e) {
-    const cb = e.target;
-    if (!cb.dataset.relToggle) return;
-    const groupName = cb.dataset.relToggle;
-    const satellite = canvas.querySelector('[data-group="' + groupName + '"]');
-    if (satellite) {
-      satellite.style.display = cb.checked ? '' : 'none';
-    }
-    // Also hide/show the SVG line for this group
-    const idx = satellites.findIndex(s => s.title === groupName);
-    const lines = canvas.querySelector('.rel-svg');
-    if (lines && lines.children[idx]) {
-      lines.children[idx].style.display = cb.checked ? '' : 'none';
-    }
-  });
-
-  // --- Panel: search filter ---
-  const searchInput = document.getElementById('rel-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      canvas.querySelectorAll('.rel-item').forEach(item => {
-        const name = (item.dataset.relInfo || '').toLowerCase();
-        item.style.display = !q || name.includes(q) ? '' : 'none';
-      });
-    });
-  }
-
-  // --- Panel: zoom/reset buttons ---
-  function zoomBy(factor) {
-    const newScale = Math.min(3, Math.max(0.3, scale * factor));
-    const vw = viewport.offsetWidth;
-    const vh = viewport.offsetHeight;
-    // Zoom toward center of viewport
-    panX = vw / 2 - (vw / 2 - panX) * (newScale / scale);
-    panY = vh / 2 - (vh / 2 - panY) * (newScale / scale);
-    scale = newScale;
-    applyTransform();
-  }
-  document.getElementById('rel-zoom-in')?.addEventListener('click', function() { zoomBy(1.25); });
-  document.getElementById('rel-zoom-out')?.addEventListener('click', function() { zoomBy(0.8); });
-  document.getElementById('rel-reset')?.addEventListener('click', function() { scale = 1; centerCanvas(); });
-
-  lucide.createIcons({ nodes: [panel] });
-}
-
-
-function renderStakeholderCard(name, org, email) {
-  return `<div class="stakeholder-card">
-    <div class="stakeholder-avatar">${getInitials(name)}</div>
-    <div>
-      <div class="stakeholder-name">${escapeHtml(name)}</div>
-      ${org ? '<div class="stakeholder-org">' + escapeHtml(org) + '</div>' : ''}
-      ${email ? '<div class="stakeholder-email"><a href="mailto:' + escapeHtml(email) + '">' + escapeHtml(email) + '</a></div>' : ''}
-    </div>
-  </div>`;
 }
 
 // ============================================================
@@ -2661,107 +2652,108 @@ function renderProductStakeholders(productId) {
 // ============================================================
 // Search
 // ============================================================
-function renderSearchResults() {
-  const main = document.getElementById('main-content');
-  const q = searchQuery.trim();
-  if (!q) {
-    main.innerHTML = '<div class="content-wrapper"><div class="section-header"><div><div class="section-title">Suche</div><div class="section-subtitle">Bitte geben Sie einen Suchbegriff ein.</div></div></div></div>';
-    return;
+
+function renderTermDetail(termId, tab, main) {
+  const term = queryOne("SELECT * FROM term WHERE id = ?", [termId]);
+  if (!term) { main.innerHTML = '<p>Begriff nicht gefunden</p>'; return; }
+  addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
+
+  const tabs = ['overview', 'relationships', 'history'];
+  const tabLabels = { overview: 'Übersicht', relationships: 'Relationen', history: 'History' };
+  if (!tabs.includes(tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/terms">${SECTION_LABELS.terms[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(term, 'name'))}</span>`;
+  html += '</nav>';
+
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<div class="title-block-name">${escapeHtml(n(term, 'name'))}</div>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
+  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += '</div></div>';
+
+  // Tab bar
+  html += '<div class="tab-bar" role="tablist">';
+  tabs.forEach(t => {
+    const isActive = t === tab;
+    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/terms/${termId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
+  });
+  html += '</div>';
+
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderTermOverview(term); break;
+    case 'relationships': html += renderTermRelationships(termId, term); break;
+    case 'history': html += renderHistoryTab(); break;
   }
-
-  const likeQ = `%${q}%`;
-
-  const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
-    [likeQ, likeQ, likeQ, likeQ]);
-
-  const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
-    [likeQ, likeQ, likeQ, likeQ]);
-
-  const datasets = query(`SELECT d.id, d.name, d.display_name, d.dataset_type,
-    s.${nameCol('name')} as sys_name, sc.system_id as sys_id
-    FROM dataset d
-    JOIN schema_ sc ON d.schema_id = sc.id
-    JOIN system s ON sc.system_id = s.id
-    WHERE d.name LIKE ? OR d.display_name LIKE ? LIMIT 10`,
-    [likeQ, likeQ]);
-
-  const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
-    [likeQ, likeQ, likeQ, likeQ]);
-
-  const totalResults = concepts.length + codeLists.length + datasets.length + products.length;
-
-  let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
-  html += `<div class="section-header"><div>
-    <div class="section-title">Suchergebnisse</div>
-    <div class="section-subtitle">${totalResults} Ergebnisse fur "${escapeHtml(q)}"</div>
-  </div></div>`;
-
-  html += '<div class="list-panel">';
-  if (concepts.length > 0) {
-    html += '<div class="search-group-label">CONCEPTS</div>';
-    concepts.forEach(c => {
-      html += `<div class="search-result-item" data-href="#/vocabulary/${c.id}">
-        <div class="search-result-icon"><i data-lucide="box" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(c, 'name'))}</div>
-          <div class="search-result-type">Concept ${statusBadge(c.status)}</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (codeLists.length > 0) {
-    html += '<div class="search-group-label">CODE LISTS</div>';
-    codeLists.forEach(cl => {
-      html += `<div class="search-result-item" data-href="#/codelists/${cl.id}">
-        <div class="search-result-icon"><i data-lucide="list-ordered" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(cl, 'name'))}</div>
-          <div class="search-result-type">Code List</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (datasets.length > 0) {
-    html += '<div class="search-group-label">DATASETS</div>';
-    datasets.forEach(d => {
-      html += `<div class="search-result-item" data-href="#/systems/${d.sys_id}/datasets/${d.id}">
-        <div class="search-result-icon"><i data-lucide="table-2" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(d.display_name || d.name)}</div>
-          <div class="search-result-type">${escapeHtml(d.dataset_type)} &middot; ${escapeHtml(d.sys_name)}</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (products.length > 0) {
-    html += '<div class="search-group-label">DATA PRODUCTS</div>';
-    products.forEach(dp => {
-      html += `<div class="search-result-item" data-href="#/products/${dp.id}">
-        <div class="search-result-icon"><i data-lucide="package" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(dp, 'name'))}</div>
-          <div class="search-result-type">Data Product &middot; ${escapeHtml(dp.publisher || '')}</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (totalResults === 0) {
-    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Eintr\u00e4ge gefunden f\u00fcr "' + q + '".');
-  }
-
-  html += '</div>'; // close list-panel
-  html += '</div>'; // close content-wrapper
+  html += '</div></article></div>';
   main.innerHTML = html;
 }
 
+function renderTermOverview(term) {
+  let html = '';
+  const def = getDefinitionText(term.definition, lang);
+  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
+  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Derive domain from linked concepts
+  const termDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_term ct
+    JOIN concept c ON ct.concept_id = c.id
+    JOIN collection col ON c.collection_id = col.id
+    WHERE ct.term_id = ? LIMIT 1`, [term.id]);
+
+  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<table class="props-table">';
+  if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
+  html += `<tr><td>Status</td><td>${statusBadge(term.status)}</td></tr>`;
+  html += `<tr><td>Erstellt</td><td>${formatDate(term.created_at)}</td></tr>`;
+  html += `<tr><td>Geändert</td><td>${formatDate(term.modified_at)}</td></tr>`;
+  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
+  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
+  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
+  html += '</table></div>';
+
+  // Linked concepts
+  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [term.id]);
+  if (linkedConcepts.length > 0) {
+    html += '<div class="content-section"><div class="section-label">VERKNÜPFTE GESCHÄFTSOBJEKTE</div>';
+    html += '<div class="domain-group-concepts">';
+    linkedConcepts.forEach(c => {
+      html += `<a class="concept-box" href="#/vocabulary/${c.id}">`;
+      html += `<span class="concept-box-name">${escapeHtml(c.cname)}</span>`;
+      html += `</a>`;
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function renderTermRelationships(termId, term) {
+  // Linked concepts via concept_term
+  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [termId]);
+
+  const satellites = [];
+
+  if (linkedConcepts.length) {
+    satellites.push({ title: 'Geschäftsobjekte', items: linkedConcepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieser Begriff hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  return renderRelGraph(n(term, 'name'), satellites);
+}
+
+
+// ── Event Delegation & Init ────────────────────────────────
 // ============================================================
 // Event Delegation
 // ============================================================
