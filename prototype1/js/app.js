@@ -13,6 +13,9 @@ let searchQuery = '';
 let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
 let recents = [];
+let sidebarCounts = null; // cached sidebar counts
+let relGraphData = null; // relationship graph data (replaces relGraphData)
+let relCleanup = null; // cleanup function for relationship graph event listeners
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
 const SECTION_LABELS = {
@@ -52,11 +55,6 @@ function queryOne(sql, params) {
   return r.length > 0 ? r[0] : null;
 }
 
-function exec(sql) {
-  try { db.exec(sql); } catch(e) { console.error('SQL exec error:', e.message); }
-}
-
-// Safe column name for lang
 function nameCol(prefix) {
   const validLangs = ['de', 'fr', 'it', 'en'];
   const l = validLangs.includes(lang) ? lang : 'en';
@@ -66,12 +64,6 @@ function nameCol(prefix) {
 function n(row, prefix) {
   const col = nameCol(prefix);
   return row[col] || row[prefix + '_en'] || row[prefix + '_de'] || '';
-}
-
-function labelCol() {
-  const validLangs = ['de', 'fr', 'it', 'en'];
-  const l = validLangs.includes(lang) ? lang : 'en';
-  return `label_${l}`;
 }
 
 function parseJSON(val) {
@@ -191,6 +183,7 @@ function parseRoute() {
 }
 
 function handleRoute() {
+  if (relCleanup) { relCleanup(); relCleanup = null; }
   const route = parseRoute();
   currentSection = route.section;
   currentEntityId = route.entityId;
@@ -213,7 +206,10 @@ function handleRoute() {
     renderListView(route.section, route.tab || 'table', route.collectionId);
   }
 
-  lucide.createIcons();
+  const mainEl = document.getElementById('main-content');
+  const sidebarEl = document.getElementById('sidebar');
+  if (mainEl) lucide.createIcons({ nodes: [mainEl] });
+  if (sidebarEl) lucide.createIcons({ nodes: [sidebarEl] });
 }
 
 window.addEventListener('hashchange', handleRoute);
@@ -245,22 +241,16 @@ function renderLockedContent() {
 }
 
 // ============================================================
-// Check if entity is access-restricted (sensitivity_level >= 2)
-// ============================================================
-function isAccessRestricted(datasetId) {
-  const cls = queryOne(`SELECT dc.sensitivity_level FROM data_classification dc
-    JOIN dataset_classification dsc ON dc.id = dsc.classification_id
-    WHERE dsc.dataset_id = ?`, [datasetId]);
-  return cls && cls.sensitivity_level >= 2;
-}
-
 function renderSidebar() {
-  const counts = {
-    vocabulary: query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0,
-    codelists: query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0,
-    systems: query("SELECT COUNT(*) as c FROM system")[0]?.c || 0,
-    products: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
-  };
+  if (!sidebarCounts) {
+    sidebarCounts = {
+      vocabulary: query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0,
+      codelists: query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0,
+      systems: query("SELECT COUNT(*) as c FROM system")[0]?.c || 0,
+      products: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
+    };
+  }
+  const counts = sidebarCounts;
 
   let html = '';
   ['vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
@@ -278,20 +268,6 @@ function renderSidebar() {
       <span class="nav-count">${counts[sec]}</span>
     </div>`;
 
-    // Tree children (only for vocabulary for now)
-    if (isExpanded && sec === 'vocabulary') {
-      const collections = query(`SELECT col.*, COUNT(c.id) as concept_count
-        FROM collection col LEFT JOIN concept c ON c.collection_id = col.id
-        GROUP BY col.id ORDER BY col.sort_order`);
-      collections.forEach(col => {
-        const isColActive = currentCollectionId === col.id;
-        const colClass = 'nav-tree-item' + (isColActive ? ' active' : '');
-        html += `<div class="${colClass}" data-nav-collection="${col.id}">
-          <span>${escapeHtml(n(col, 'name'))}</span>
-          <span class="nav-count">${col.concept_count}</span>
-        </div>`;
-      });
-    }
   });
 
   if (recents.length > 0) {
@@ -349,17 +325,6 @@ function renderDiagramPlaceholder(section) {
   return '<div class="content-section">' + renderEmptyState('network', l.title, l.desc + ' Wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
 }
 
-const DOMAIN_COLORS = [
-  '#2E6EB5', // blue
-  '#1A9E55', // green
-  '#C9820B', // amber
-  '#8B5CF6', // violet
-  '#0891B2', // teal
-  '#DC2626', // red
-  '#7C3AED', // purple
-  '#0D9488', // cyan
-];
-
 function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
   let html = '<div class="diagram-canvas">';
 
@@ -406,9 +371,9 @@ function renderDomainGroup(col, concepts) {
   html += `</div>`;
   html += '<div class="domain-group-concepts">';
   concepts.forEach(c => {
-    const dotClass = c.status === 'approved' ? 'status-dot-approved' : 'status-dot-draft';
-    html += `<a class="concept-box" href="#/vocabulary/${c.id}" title="${escapeHtml(n(c, 'name'))}">`;
-    html += `<span class="status-dot ${dotClass}"></span>`;
+    const def = getDefinitionText(c.definition, lang);
+    const tooltip = def ? escapeHtml(n(c, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(c, 'name'));
+    html += `<a class="concept-box" href="#/vocabulary/${c.id}" title="${tooltip}">`;
     html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
     html += `</a>`;
   });
@@ -498,7 +463,7 @@ function renderVocabularyList(listTab, collectionId) {
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${statusBadge(c.status)}</td>
       <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-      <td>${escapeHtml(c.standard_ref || '&ndash;')}</td>
+      <td>${c.standard_ref ? escapeHtml(c.standard_ref) : '&ndash;'}</td>
       <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
     </tr>`;
   }
@@ -528,8 +493,12 @@ function renderVocabularyList(listTab, collectionId) {
       html += `<table class="data-table">${colgroup}${thead}<tbody>`;
       concepts.forEach(c => { html += conceptRow(c); });
       html += '</tbody></table>';
-      if (col.concept_count > 5 && !isFullyExpanded) {
-        html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Konzepte anzeigen &rarr;</a></div>`;
+      if (col.concept_count > 5) {
+        if (!isFullyExpanded) {
+          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Konzepte anzeigen &rarr;</a></div>`;
+        } else {
+          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-collapse-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">&larr; Weniger anzeigen</a></div>`;
+        }
       }
       html += '</div>';
     });
@@ -580,14 +549,6 @@ function renderCodeListsList(listTab) {
     <div class="section-subtitle">${totalCount} Codelisten</div>
   </div></div>`;
 
-  html += renderListTabBar('codelists', listTab);
-
-  if (listTab === 'diagram') {
-    html += renderDiagramPlaceholder('codelists');
-    html += '</div>';
-    return html;
-  }
-
   if (totalCount === 0) {
     html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
     html += '</div>';
@@ -603,15 +564,16 @@ function renderCodeListsList(listTab) {
       <span class="group-header-count">${items.length} Listen</span>
     </div>`;
     html += `<div class="group-content" data-group="cl-${src}">`;
-    html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:35%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>';
-    html += '<th scope="col">Name (EN)</th><th scope="col">Name (DE)</th><th scope="col">Values</th><th scope="col">Version</th>';
+    html += '<table class="data-table"><colgroup><col style="width:30%"><col style="width:35%"><col style="width:15%"><col style="width:20%"></colgroup><thead><tr>';
+    html += '<th scope="col">Name</th><th scope="col">Description</th><th scope="col">Values</th><th scope="col">Version</th>';
     html += '</tr></thead><tbody>';
     items.forEach(cl => {
+      const desc = getDefinitionText(cl.description, lang);
       html += `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
-        <td>${escapeHtml(cl.name_en)}</td>
-        <td>${escapeHtml(cl.name_de || '')}</td>
+        <td>${escapeHtml(n(cl, 'name'))}</td>
+        <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
         <td>${cl.value_count} values</td>
-        <td>${escapeHtml(cl.version || '&ndash;')}</td>
+        <td>${cl.version ? escapeHtml(cl.version) : '&ndash;'}</td>
       </tr>`;
     });
     html += '</tbody></table></div>';
@@ -662,7 +624,7 @@ function renderSystemsList(listTab) {
   systems.forEach(s => {
     html += `<tr class="clickable-row" data-href="#/systems/${s.id}">
       <td>${escapeHtml(n(s, 'name'))}</td>
-      <td>${escapeHtml(s.technology_stack || '&ndash;')}</td>
+      <td>${s.technology_stack ? escapeHtml(s.technology_stack) : '&ndash;'}</td>
       <td>${s.schema_count}</td>
       <td>${s.dataset_count}</td>
       <td>${s.active ? statusBadge('active') : statusBadge('deprecated')}</td>
@@ -700,20 +662,24 @@ function renderProductsList(listTab) {
     return html;
   }
 
+  // Pre-fetch all formats in one query
+  const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
+  const formatMap = {};
+  allFormats.forEach(f => { formatMap[f.data_product_id] = f.formats || ''; });
+
   html += '<div class="list-panel">';
   html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:15%"><col style="width:12%"><col style="width:15%"><col style="width:10%"><col style="width:23%"></colgroup><thead><tr>';
   html += '<th scope="col">Name</th><th scope="col">Frequency</th><th scope="col">Distributions</th><th scope="col">Formats</th><th scope="col">Status</th><th scope="col">Publisher</th>';
   html += '</tr></thead><tbody>';
   products.forEach(dp => {
-    const formats = query("SELECT DISTINCT format FROM distribution WHERE data_product_id = ? AND format IS NOT NULL", [dp.id]);
-    const formatStr = formats.map(f => escapeHtml(f.format)).join(', ');
+    const formatStr = (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ');
     html += `<tr class="clickable-row" data-href="#/products/${dp.id}">
       <td>${escapeHtml(n(dp, 'name'))}</td>
       <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
       <td>${dp.dist_count}</td>
       <td>${formatStr || '&ndash;'}</td>
       <td>${certifiedBadge(dp.certified)}</td>
-      <td>${escapeHtml(dp.publisher || '&ndash;')}</td>
+      <td>${dp.publisher ? escapeHtml(dp.publisher) : '&ndash;'}</td>
     </tr>`;
   });
   html += '</tbody></table>';
@@ -921,35 +887,7 @@ function renderConceptMappings(conceptId) {
   return html;
 }
 
-function renderConceptValues(conceptId, codeList) {
-  if (!codeList) return '<div class="content-section">' + renderEmptyState('list-ordered', 'Keine Codeliste', 'Diesem Konzept ist keine Codeliste zugeordnet.') + '</div>';
 
-  const values = query(`SELECT * FROM code_list_value WHERE code_list_id = ? AND deprecated = 0 ORDER BY sort_order, code LIMIT 10`, [codeList.id]);
-  const totalCount = query("SELECT COUNT(*) as c FROM code_list_value WHERE code_list_id = ?", [codeList.id])[0]?.c || 0;
-
-  let html = `<div class="content-section"><div class="section-label">VALUES &mdash; linked to ${escapeHtml(n(codeList, 'name'))}</div>`;
-  html += `<div style="margin-bottom:var(--space-3);font-size:var(--text-small);color:var(--color-text-secondary);">
-    Source: ${escapeHtml(codeList.source_ref || '')} &middot; ${totalCount} values &middot; Version ${escapeHtml(codeList.version || '')}
-    <br><a href="#/codelists/${codeList.id}">View full code list</a>
-  </div>`;
-
-  html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Code</th><th scope="col">Label (DE)</th><th scope="col">Label (FR)</th>';
-  html += '</tr></thead><tbody>';
-  values.forEach(v => {
-    html += `<tr>
-      <td class="cell-mono">${escapeHtml(v.code)}</td>
-      <td>${escapeHtml(v.label_de || '')}</td>
-      <td>${escapeHtml(v.label_fr || '')}</td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  if (totalCount > 10) {
-    html += `<div style="padding:var(--space-3) 0;"><a href="#/codelists/${codeList.id}/contents">View all ${totalCount} values</a></div>`;
-  }
-  html += '</div>';
-  return html;
-}
 
 function renderConceptRelationships(conceptId) {
   const concept = queryOne("SELECT * FROM concept WHERE id = ?", [conceptId]);
@@ -1024,7 +962,7 @@ function renderConceptRelationships(conceptId) {
   html += '<div id="rel-panel" class="rel-panel"></div>';
   html += '</div></div>';
 
-  window._relGraphData = { conceptName: n(concept, 'name'), satellites };
+  relGraphData = { conceptName: n(concept, 'name'), satellites };
   setTimeout(initRelationshipSVG, 50);
   return html;
 }
@@ -1033,9 +971,9 @@ function initRelationshipSVG() {
   const viewport = document.getElementById('rel-viewport');
   const canvas = document.getElementById('rel-canvas');
   const panel = document.getElementById('rel-panel');
-  if (!viewport || !canvas || !window._relGraphData) return;
+  if (!viewport || !canvas || !relGraphData) return;
 
-  const { conceptName, satellites } = window._relGraphData;
+  const { conceptName, satellites } = relGraphData;
 
   const canvasSize = 1000;
   const cx = canvasSize / 2;
@@ -1178,13 +1116,20 @@ function initRelationshipSVG() {
     dragStartX = e.clientX; dragStartY = e.clientY;
     panStartX = panX; panStartY = panY;
   });
-  window.addEventListener('mousemove', function(e) {
+  const onMouseMove = function(e) {
     if (!isDragging) return;
     panX = panStartX + (e.clientX - dragStartX);
     panY = panStartY + (e.clientY - dragStartY);
     applyTransform();
-  });
-  window.addEventListener('mouseup', function() { isDragging = false; });
+  };
+  const onMouseUp = function() { isDragging = false; };
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
+
+  relCleanup = function() {
+    window.removeEventListener('mousemove', onMouseMove);
+    window.removeEventListener('mouseup', onMouseUp);
+  };
 
   // --- Tooltip (dark info box) ---
   const tooltip = document.getElementById('rel-tooltip');
@@ -1258,32 +1203,6 @@ function initRelationshipSVG() {
   lucide.createIcons({ nodes: [panel] });
 }
 
-function renderConceptStakeholders(concept) {
-  const steward = concept.steward_id ? queryOne('SELECT * FROM "user" WHERE id = ?', [concept.steward_id]) : null;
-  let html = '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
-
-  // Concept role groups per wireframe: Data Owner, Data Steward, Subject Matter Expert
-  const roleDescs = {
-    data_owner: { label: 'Dateneigent\u00fcmer', desc: 'Accountable for existence, quality standards, and use of this data.' },
-    data_steward: { label: 'Datenverantwortliche', desc: 'Maintains the catalog entry, enforces standards, approves mappings.' },
-    subject_matter_expert: { label: 'Fachexperte', desc: 'Provides domain knowledge about the data\'s meaning and edge cases.' }
-  };
-
-  Object.keys(roleDescs).forEach(role => {
-    const rd = roleDescs[role];
-    html += `<div class="stakeholder-section">`;
-    html += `<div class="stakeholder-role-title">${rd.label}</div>`;
-    html += `<div class="stakeholder-role-desc">${rd.desc}</div>`;
-    if (role === 'data_steward' && steward) {
-      html += renderStakeholderCard(steward.name, steward.department, steward.email);
-    } else {
-      html += `<div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${rd.label} zugewiesen</div>`;
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
-}
 
 function renderStakeholderCard(name, org, email) {
   return `<div class="stakeholder-card">
@@ -2215,15 +2134,6 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // Sidebar: collection tree item click
-  const collItem = target.closest('[data-nav-collection]');
-  if (collItem) {
-    const collId = collItem.dataset.navCollection;
-    const tab = currentTab === 'diagram' ? 'diagram' : 'table';
-    navigate('#/vocabulary/collection/' + collId + '/' + tab);
-    return;
-  }
-
   // Sidebar nav (section click — toggles expand + navigates)
   const navItem = target.closest('.nav-item[data-nav]');
   if (navItem) {
@@ -2276,11 +2186,18 @@ document.addEventListener('click', function(e) {
     return;
   }
 
-  // "Show all" expand link in vocabulary list
+  // "Show all" / "Show less" toggle in vocabulary list
   const expandLink = target.closest('[data-expand-collection]');
   if (expandLink) {
     e.preventDefault();
     expandedCollections.add(expandLink.dataset.expandCollection);
+    handleRoute();
+    return;
+  }
+  const collapseLink = target.closest('[data-collapse-collection]');
+  if (collapseLink) {
+    e.preventDefault();
+    expandedCollections.delete(collapseLink.dataset.collapseCollection);
     handleRoute();
     return;
   }

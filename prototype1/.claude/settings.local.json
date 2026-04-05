@@ -25,7 +25,11 @@
       "Bash(rm data/init-schema.sql data/seed-data.sql)",
       "Bash(ls docs/*.sql)",
       "Bash(sed -n '13,1083p' index.html)",
-      "Bash(sed -n '1159,3067p' index.html)"
+      "Bash(sed -n '1159,3067p' index.html)",
+      "Bash(python3 -c ':*)",
+      "Bash(node -e ':*)",
+      "Bash(node -e \"try { new Function\\(require\\('fs'\\).readFileSync\\('js/app.js','utf8'\\)\\); console.log\\('OK'\\); } catch\\(e\\) { console.log\\('ERR:', e.message\\); }\")",
+      "Bash(where gh:*)"
     ]
   }
 }
