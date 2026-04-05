@@ -1988,14 +1988,6 @@ function renderCodeListDetail(codeListId, tab, main) {
 
 function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   let html = '';
-  // Names with translation gap indicators
-  html += '<div class="content-section"><div class="section-label">NAMES</div>';
-  html += '<table class="names-table">';
-  ['en', 'de', 'fr', 'it'].forEach(l => {
-    const val = cl['name_' + l];
-    html += `<tr><td>${l.toUpperCase()}</td><td>${val ? escapeHtml(val) : '<span style="color:var(--color-text-placeholder);">&ndash;</span>'}${renderTranslationGap(val)}</td></tr>`;
-  });
-  html += '</table></div>';
 
   // Derive domain from linked concepts
   const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
