@@ -364,7 +364,7 @@ function renderHome() {
   html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
   if (recentConcepts.length > 0) {
     html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
-    html += '<th scope="col">Konzept</th><th scope="col">Dom\u00e4ne</th><th scope="col">Status</th><th scope="col">Ge\u00e4ndert</th>';
+    html += '<th scope="col">Geschäftsobjekt</th><th scope="col">Domäne</th><th scope="col">Status</th><th scope="col">Geändert</th>';
     html += '</tr></thead><tbody>';
     recentConcepts.forEach(c => {
       html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
@@ -388,7 +388,7 @@ function renderHome() {
   domains.forEach(d => {
     html += `<div class="home-domain-row clickable-row" data-href="#/vocabulary/table">
       <span>${escapeHtml(d.cname)}</span>
-      <span class="home-domain-count">${d.concept_count} ${d.concept_count === 1 ? 'Konzept' : 'Konzepte'}</span>
+      <span class="home-domain-count">${d.concept_count} ${d.concept_count === 1 ? 'Geschäftsobjekt' : 'Geschäftsobjekte'}</span>
     </div>`;
   });
   html += '</div>';
@@ -620,8 +620,8 @@ function renderVocabularyList(listTab, collectionId) {
   html += '</nav>';
 
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]}</div>
-    <div class="section-subtitle">${filteredCount} Konzepte</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${filteredCount})</div>
+    <div class="section-subtitle">Lösungsneutrale Geschäftsobjekte und ihre fachlichen Attribute.</div>
   </div></div>`;
 
   const vocabGroupOpts = activeCollection ? null : [
@@ -641,7 +641,7 @@ function renderVocabularyList(listTab, collectionId) {
   }
 
   if (filteredCollections.length === 0 && filteredUngrouped.length === 0) {
-    html += renderEmptyState('book-open', 'Keine Konzepte', 'Es wurden noch keine Konzepte angelegt.');
+    html += renderEmptyState('book-open', 'Keine Geschäftsobjekte', 'Es wurden noch keine Geschäftsobjekte angelegt.');
     html += '</div>';
     return html;
   }
@@ -703,8 +703,7 @@ function renderVocabularyList(listTab, collectionId) {
       const isExpanded = concepts.length > 0;
       html += `<div class="group-header" data-toggle-group="${col.id}">
         <i data-lucide="${isExpanded ? 'chevron-down' : 'chevron-right'}" style="width:16px;height:16px;" class="group-chevron"></i>
-        <span class="group-header-title">${escapeHtml(n(col, 'name'))}</span>
-        <span class="group-header-count">${col.concept_count} Konzepte</span>
+        <span class="group-header-title">${escapeHtml(n(col, 'name'))} (${col.concept_count})</span>
       </div>`;
       html += `<div class="group-content" data-group="${col.id}" ${isExpanded ? '' : 'style="display:none"'}>`;
       html += `<table class="data-table">${colgroup}${thead}<tbody>`;
@@ -712,7 +711,7 @@ function renderVocabularyList(listTab, collectionId) {
       html += '</tbody></table>';
       if (col.concept_count > 5) {
         if (!isFullyExpanded) {
-          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Konzepte anzeigen &rarr;</a></div>`;
+          html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-expand-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">Alle ${col.concept_count} Geschäftsobjekte anzeigen &rarr;</a></div>`;
         } else {
           html += `<div style="padding: var(--space-2) var(--space-3);"><a href="#" class="show-all-link" data-collapse-collection="${col.id}" style="font-size:var(--text-small);color:var(--color-text-link);text-decoration:none;">&larr; Weniger anzeigen</a></div>`;
         }
@@ -722,8 +721,7 @@ function renderVocabularyList(listTab, collectionId) {
 
     if (filteredUngrouped.length > 0) {
       html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
-        <span class="group-header-title">Ungrouped</span>
-        <span class="group-header-count">${filteredUngrouped.length} Konzepte</span></div>`;
+        <span class="group-header-title">Ungrouped (${filteredUngrouped.length})</span></div>`;
       html += `<div class="group-content"><table class="data-table">${colgroup}${thead}<tbody>`;
       filteredUngrouped.forEach(c => { html += conceptRow(c); });
       html += '</tbody></table></div>';
@@ -752,8 +750,8 @@ function renderCodeListsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]}</div>
-    <div class="section-subtitle">${codeLists.length} Codelisten</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${codeLists.length})</div>
+    <div class="section-subtitle">Standardisierte Wertelisten für Attribute der Geschäftsobjekte.</div>
   </div></div>`;
 
   if (codeLists.length === 0) {
@@ -764,7 +762,7 @@ function renderCodeListsList(listTab) {
 
   html += '<div class="list-panel">';
   html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:30%"><col style="width:15%"><col style="width:15%"><col style="width:15%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Description</th><th scope="col">Source</th><th scope="col">Values</th><th scope="col">Version</th>';
+  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Quelle</th><th scope="col">Werte</th><th scope="col">Version</th>';
   html += '</tr></thead><tbody>';
   codeLists.forEach(cl => {
     const desc = getDefinitionText(cl.description, lang);
@@ -796,8 +794,8 @@ function renderTermsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]}</div>
-    <div class="section-subtitle">${totalCount} Begriffe</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${totalCount})</div>
+    <div class="section-subtitle">Fachbegriffe und Definitionen aus Standards, Gesetzen und Normen.</div>
   </div></div>`;
 
   const groupingOpts = [
@@ -846,8 +844,7 @@ function renderTermsList(listTab) {
       const items = groups[src];
       html += `<div class="group-header" data-toggle-group="t-${src}">
         <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
-        <span class="group-header-title">${escapeHtml(src)}</span>
-        <span class="group-header-count">${items.length}</span>
+        <span class="group-header-title">${escapeHtml(src)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="t-${src}">`;
       html += `<table class="data-table">${colgroup}${thead}<tbody>`;
@@ -1044,8 +1041,8 @@ function renderSystemsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]}</div>
-    <div class="section-subtitle">${systems.length} Systeme</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${systems.length})</div>
+    <div class="section-subtitle">Physische Quellsysteme mit Schemas, Datasets und Feldern.</div>
   </div></div>`;
 
   html += renderListTabBar('systems', listTab);
@@ -1064,7 +1061,7 @@ function renderSystemsList(listTab) {
 
   html += '<div class="list-panel">';
   html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:20%"><col style="width:12%"><col style="width:12%"><col style="width:10%"><col style="width:21%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Technology</th><th scope="col">Schemas</th><th scope="col">Datasets</th><th scope="col">Status</th><th scope="col">Owner</th>';
+  html += '<th scope="col">Name</th><th scope="col">Technologie</th><th scope="col">Schemas</th><th scope="col">Datasets</th><th scope="col">Status</th><th scope="col">Eigentümer</th>';
   html += '</tr></thead><tbody>';
   systems.forEach(s => {
     html += `<tr class="clickable-row" data-href="#/systems/${s.id}">
@@ -1089,8 +1086,8 @@ function renderProductsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]}</div>
-    <div class="section-subtitle">${products.length} Datenprodukte</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${products.length})</div>
+    <div class="section-subtitle">Aufbereitete und publizierte Datensammlungen mit Distributionen.</div>
   </div></div>`;
 
   html += renderListTabBar('products', listTab);
@@ -1114,7 +1111,7 @@ function renderProductsList(listTab) {
 
   html += '<div class="list-panel">';
   html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:15%"><col style="width:12%"><col style="width:15%"><col style="width:10%"><col style="width:23%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Frequency</th><th scope="col">Distributions</th><th scope="col">Formats</th><th scope="col">Status</th><th scope="col">Publisher</th>';
+  html += '<th scope="col">Name</th><th scope="col">Häufigkeit</th><th scope="col">Distributionen</th><th scope="col">Formate</th><th scope="col">Status</th><th scope="col">Herausgeber</th>';
   html += '</tr></thead><tbody>';
   products.forEach(dp => {
     const formatStr = (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ');
@@ -1163,7 +1160,7 @@ function renderConceptDetail(conceptId, tab, main) {
 
   const tabs = ['overview', 'fields', 'mappings', 'relationships', 'history'];
 
-  const tabLabels = { overview: 'Overview', fields: 'Fields', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', fields: 'Felder', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -1826,7 +1823,7 @@ function renderCodeListDetail(codeListId, tab, main) {
   addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
 
   const tabs = ['overview', 'contents', 'mappings', 'relationships', 'history'];
-  const tabLabels = { overview: 'Overview', contents: 'Contents', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -1991,7 +1988,7 @@ function renderSystemDetail(systemId, tab, main) {
   addRecent(n(sys, 'name') || sys.name_en, `#/systems/${systemId}`);
 
   const tabs = ['overview', 'contents', 'relationships', 'stakeholders', 'history'];
-  const tabLabels = { overview: 'Overview', contents: 'Contents', relationships: 'Relationen', stakeholders: 'Stakeholders', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -2063,12 +2060,11 @@ function renderSystemContents(systemId, schemas) {
     html += `<div class="group-header" data-toggle-group="sc-${sc.id}">
       <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
       <i data-lucide="layers" style="width:16px;height:16px;color:var(--color-text-secondary);"></i>
-      <span class="group-header-title">${escapeHtml(sc.display_name || sc.name)}</span>
-      <span class="group-header-count">${datasets.length} datasets</span>
+      <span class="group-header-title">${escapeHtml(sc.display_name || sc.name)} (${datasets.length})</span>
     </div>`;
     html += `<div class="group-content" data-group="sc-${sc.id}">`;
     html += '<table class="data-table"><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Fields</th><th scope="col">Status</th>';
+    html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Status</th>';
     html += '</tr></thead><tbody>';
     datasets.forEach(d => {
       html += `<tr class="clickable-row" data-href="#/systems/${systemId}/datasets/${d.id}">
@@ -2149,7 +2145,7 @@ function renderDatasetDetail(datasetId, systemId) {
   const tab = currentTab || 'overview';
   const tabs = ['overview', 'contents', 'lineage', 'quality', 'relationships', 'stakeholders', 'history'];
 
-  const tabLabels = { overview: 'Overview', contents: 'Contents', lineage: 'Lineage', quality: 'Quality', relationships: 'Relationen', stakeholders: 'Stakeholders', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', lineage: 'Lineage', quality: 'Datenqualität', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
   if (!tabs.includes(currentTab)) currentTab = 'overview';
 
   const main = document.getElementById('main-content');
@@ -2255,7 +2251,7 @@ function renderDatasetContents(datasetId) {
 
   let html = '<div class="content-section"><div class="section-label">FIELDS</div>';
   html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Nullable</th><th scope="col">Key</th><th scope="col">Mapped Concepts</th>';
+  html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Nullable</th><th scope="col">Key</th><th scope="col">Geschäftsobjekte</th>';
   html += '</tr></thead><tbody>';
   fields.forEach(f => {
     let keyLabel = '&ndash;';
@@ -2435,7 +2431,7 @@ function renderProductDetail(productId, tab, main) {
 
   const tabs = ['overview', 'contents', 'lineage', 'relationships', 'stakeholders', 'history'];
 
-  const tabLabels = { overview: 'Overview', contents: 'Contents', lineage: 'Lineage', relationships: 'Relationen', stakeholders: 'Stakeholders', history: 'History' };
+  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', lineage: 'Lineage', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
