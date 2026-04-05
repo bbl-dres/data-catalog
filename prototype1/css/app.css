@@ -309,30 +309,10 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   font-weight: 500;
   color: var(--color-text-primary);
 }
-.nav-item .nav-count, .nav-tree-item .nav-count {
+.nav-item .nav-count {
   margin-left: auto;
   font-size: var(--text-small);
   opacity: 0.5;
-}
-.nav-tree-item {
-  display: flex; align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-1) var(--space-3) var(--space-1) 34px;
-  border-radius: var(--radius-md);
-  font-size: var(--text-small);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: background 120ms ease, color 120ms ease;
-  margin-bottom: 1px;
-}
-.nav-tree-item:hover {
-  background: var(--color-bg-surface-hover);
-  color: var(--color-text-primary);
-}
-.nav-tree-item.active {
-  background: var(--color-bg-accent);
-  color: var(--color-text-link);
-  font-weight: 500;
 }
 .nav-section-label {
   font-size: var(--text-label); font-weight: 500;
@@ -458,14 +438,10 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   border: 1px solid currentColor;
   white-space: nowrap;
 }
-.badge-certified { color: var(--color-status-certified); background: var(--color-status-certified-bg); }
-.badge-approved { color: var(--color-status-certified); background: var(--color-status-certified-bg); }
+.badge-certified, .badge-approved, .badge-active, .badge-public { color: var(--color-status-certified); background: var(--color-status-certified-bg); }
 .badge-draft { color: var(--color-status-draft); background: var(--color-status-draft-bg); }
 .badge-deprecated { color: var(--color-status-deprecated); background: var(--color-status-deprecated-bg); }
-.badge-review { color: var(--color-text-link); background: var(--color-bg-accent); }
-.badge-active { color: var(--color-status-certified); background: var(--color-status-certified-bg); }
-.badge-public { color: var(--color-status-certified); background: var(--color-status-certified-bg); }
-.badge-internal { color: var(--color-text-link); background: var(--color-bg-accent); }
+.badge-review, .badge-internal { color: var(--color-text-link); background: var(--color-bg-accent); }
 .badge-confidential { color: var(--color-status-draft); background: var(--color-status-draft-bg); }
 .badge-restricted { color: var(--color-error); background: var(--color-error-bg); }
 
@@ -473,11 +449,9 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   width: 6px; height: 6px; border-radius: 50%;
   display: inline-block;
 }
-.status-dot-certified { background: var(--color-status-certified); }
-.status-dot-approved { background: var(--color-status-certified); }
+.status-dot-certified, .status-dot-approved, .status-dot-active { background: var(--color-status-certified); }
 .status-dot-draft { border: 1.5px solid var(--color-status-draft); }
 .status-dot-deprecated { background: var(--color-status-deprecated); }
-.status-dot-active { background: var(--color-status-certified); }
 
 /* ============================================================
    Cards
