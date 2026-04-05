@@ -14,6 +14,7 @@ let vocabGrouping = 'domain'; // 'domain', 'status', 'steward', 'none'
 let termsGrouping = 'domain'; // 'domain', 'status', 'none'
 let codelistGrouping = 'domain'; // 'domain', 'source', 'none'
 let systemsGrouping = 'none'; // 'technology', 'status', 'none'
+let productsGrouping = 'none'; // 'publisher', 'status', 'none'
 let searchQuery = '';
 let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
@@ -833,19 +834,19 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:20%"><col style="width:14%"><col style="width:12%"><col style="width:24%"><col style="width:8%"><col style="width:10%"><col style="width:12%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Version</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:22%"><col style="width:15%"><col style="width:13%"><col style="width:28%"><col style="width:10%"><col style="width:12%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th></tr></thead>';
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
+    const clStatus = (cl.value_count > 0 && cl.deprecated_count === cl.value_count) ? 'deprecated' : 'approved';
     return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
       <td>${cl.domain_name ? escapeHtml(cl.domain_name) : '&ndash;'}</td>
       <td>${cl.source_ref ? escapeHtml(cl.source_ref) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
-      <td>${cl.version ? escapeHtml(cl.version) : '&ndash;'}</td>
-      <td>${cl.deprecated_count > 0 ? cl.deprecated_count + ' veraltet' : '&ndash;'}</td>
+      <td>${statusBadge(clStatus)}</td>
     </tr>`;
   }
 
@@ -1197,9 +1198,15 @@ function renderSystemsList(listTab) {
 }
 
 function renderProductsList(listTab) {
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   const products = query(`SELECT dp.*,
     (SELECT COUNT(*) FROM distribution dist WHERE dist.data_product_id = dp.id) as dist_count
     FROM data_product dp ORDER BY dp.${nameCol('name')}`);
+
+  // Pre-fetch all formats in one query
+  const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
+  const formatMap = {};
+  allFormats.forEach(f => { formatMap[f.data_product_id] = f.formats || ''; });
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
@@ -1208,13 +1215,12 @@ function renderProductsList(listTab) {
     <div class="section-subtitle">Aufbereitete und publizierte Datensammlungen mit Distributionen.</div>
   </div></div>`;
 
-  html += renderListTabBar('products', listTab);
-
-  if (listTab === 'diagram') {
-    html += renderDiagramPlaceholder('products');
-    html += '</div>';
-    return html;
-  }
+  const groupingOpts = [
+    { id: 'publisher', label: 'Herausgeber' },
+    { id: 'status', label: 'Status' },
+    { id: 'none', label: 'Keine' }
+  ];
+  html += renderListTabBar('products', listTab, groupingOpts, productsGrouping);
 
   if (products.length === 0) {
     html += renderEmptyState('package', 'Keine Datenprodukte', 'Es wurden noch keine Datenprodukte angelegt.');
@@ -1222,18 +1228,37 @@ function renderProductsList(listTab) {
     return html;
   }
 
-  // Pre-fetch all formats in one query
-  const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
-  const formatMap = {};
-  allFormats.forEach(f => { formatMap[f.data_product_id] = f.formats || ''; });
+  function getProductGroupKey(dp) {
+    if (productsGrouping === 'publisher') return dp.publisher || 'Unbekannt';
+    if (productsGrouping === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
+    return null;
+  }
 
-  html += '<div class="list-panel">';
-  html += '<table class="data-table"><colgroup><col style="width:25%"><col style="width:15%"><col style="width:12%"><col style="width:15%"><col style="width:10%"><col style="width:23%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Häufigkeit</th><th scope="col">Distributionen</th><th scope="col">Formate</th><th scope="col">Status</th><th scope="col">Herausgeber</th>';
-  html += '</tr></thead><tbody>';
-  products.forEach(dp => {
+  if (listTab === 'diagram') {
+    html += '<div class="diagram-canvas">';
+    if (productsGrouping === 'none') {
+      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Datensammlungen', concept_count: products.length }, products.map(dp => ({ id: dp.id, ['name_' + lang]: n(dp, 'name'), href: '#/products/' + dp.id })));
+    } else {
+      const groups = {};
+      products.forEach(dp => { const k = getProductGroupKey(dp); if (!groups[k]) groups[k] = []; groups[k].push(dp); });
+      const large = [], small = [];
+      Object.keys(groups).sort().forEach(k => {
+        const mapped = groups[k].map(dp => ({ id: dp.id, ['name_' + lang]: n(dp, 'name'), href: '#/products/' + dp.id }));
+        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
+      });
+      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
+      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+    }
+    html += '</div></div>';
+    return html;
+  }
+
+  const colgroup = '<colgroup><col style="width:25%"><col style="width:15%"><col style="width:12%"><col style="width:15%"><col style="width:10%"><col style="width:23%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Häufigkeit</th><th scope="col">Distributionen</th><th scope="col">Formate</th><th scope="col">Status</th><th scope="col">Herausgeber</th></tr></thead>';
+
+  function productRow(dp) {
     const formatStr = (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ');
-    html += `<tr class="clickable-row" data-href="#/products/${dp.id}">
+    return `<tr class="clickable-row" data-href="#/products/${dp.id}">
       <td>${escapeHtml(n(dp, 'name'))}</td>
       <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
       <td>${dp.dist_count}</td>
@@ -1241,8 +1266,28 @@ function renderProductsList(listTab) {
       <td>${certifiedBadge(dp.certified)}</td>
       <td>${dp.publisher ? escapeHtml(dp.publisher) : '&ndash;'}</td>
     </tr>`;
-  });
-  html += '</tbody></table>';
+  }
+
+  html += '<div class="list-panel">';
+  if (productsGrouping === 'none') {
+    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+    products.forEach(dp => { html += productRow(dp); });
+    html += '</tbody></table>';
+  } else {
+    const groups = {};
+    products.forEach(dp => { const k = getProductGroupKey(dp); if (!groups[k]) groups[k] = []; groups[k].push(dp); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="dp-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="dp-${k}">`;
+      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
+      items.forEach(dp => { html += productRow(dp); });
+      html += '</tbody></table></div>';
+    });
+  }
   html += '</div></div>';
   return html;
 }
@@ -2865,6 +2910,7 @@ document.addEventListener('click', function(e) {
     else if (section === 'terms') termsGrouping = groupOpt.dataset.grouping;
     else if (section === 'codelists') codelistGrouping = groupOpt.dataset.grouping;
     else if (section === 'systems') systemsGrouping = groupOpt.dataset.grouping;
+    else if (section === 'products') productsGrouping = groupOpt.dataset.grouping;
     document.getElementById('grouping-menu')?.classList.remove('open');
     handleRoute();
     return;
