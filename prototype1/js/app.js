@@ -11,8 +11,8 @@ let currentCollectionId = null;
 let currentTab = 'overview';
 let lastListTab = 'table'; // persists across sections
 let vocabGrouping = 'domain'; // 'domain', 'status', 'steward', 'none'
-let termsGrouping = 'source'; // 'source', 'status', 'none'
-let codelistGrouping = 'source'; // 'source', 'none'
+let termsGrouping = 'domain'; // 'domain', 'status', 'none'
+let codelistGrouping = 'domain'; // 'domain', 'source', 'none'
 let systemsGrouping = 'none'; // 'technology', 'status', 'none'
 let searchQuery = '';
 let lang = 'de';
@@ -767,9 +767,11 @@ function renderVocabularyList(listTab, collectionId) {
 
 function renderCodeListsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  // Fetch codelists with domain via concept_attribute → concept → collection
   const codeLists = query(`SELECT cl.*,
     COALESCE(vc.value_count, 0) as value_count,
-    COALESCE(vc.deprecated_count, 0) as deprecated_count
+    COALESCE(vc.deprecated_count, 0) as deprecated_count,
+    dom.domain_name
     FROM code_list cl
     LEFT JOIN (
       SELECT code_list_id,
@@ -777,6 +779,13 @@ function renderCodeListsList(listTab) {
         SUM(CASE WHEN deprecated = 1 THEN 1 ELSE 0 END) as deprecated_count
       FROM code_list_value GROUP BY code_list_id
     ) vc ON vc.code_list_id = cl.id
+    LEFT JOIN (
+      SELECT ca.code_list_id, GROUP_CONCAT(DISTINCT col.${nameCol('name')}) as domain_name
+      FROM concept_attribute ca
+      JOIN concept c ON ca.concept_id = c.id
+      JOIN collection col ON c.collection_id = col.id
+      GROUP BY ca.code_list_id
+    ) dom ON dom.code_list_id = cl.id
     ORDER BY cl.${nameCol('name')}`);
 
   let html = '<div class="content-wrapper">';
@@ -787,6 +796,7 @@ function renderCodeListsList(listTab) {
   </div></div>`;
 
   const groupingOpts = [
+    { id: 'domain', label: 'Domäne' },
     { id: 'source', label: 'Quelle' },
     { id: 'none', label: 'Keine' }
   ];
@@ -798,13 +808,19 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
+  function getClGroupKey(cl) {
+    if (codelistGrouping === 'domain') return cl.domain_name || 'Ohne Domäne';
+    if (codelistGrouping === 'source') return cl.source_ref || 'Andere';
+    return null;
+  }
+
   if (listTab === 'diagram') {
     html += '<div class="diagram-canvas">';
     if (codelistGrouping === 'none') {
       html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Codelisten', concept_count: codeLists.length }, codeLists.map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id })));
     } else {
       const groups = {};
-      codeLists.forEach(cl => { const k = cl.source_ref || 'Andere'; if (!groups[k]) groups[k] = []; groups[k].push(cl); });
+      codeLists.forEach(cl => { const k = getClGroupKey(cl); if (!groups[k]) groups[k] = []; groups[k].push(cl); });
       const large = [], small = [];
       Object.keys(groups).sort().forEach(k => {
         const mapped = groups[k].map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id }));
@@ -817,13 +833,14 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:22%"><col style="width:15%"><col style="width:28%"><col style="width:10%"><col style="width:12%"><col style="width:13%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Version</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:20%"><col style="width:14%"><col style="width:12%"><col style="width:24%"><col style="width:8%"><col style="width:10%"><col style="width:12%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Quelle</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Version</th><th scope="col">Status</th></tr></thead>';
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
     return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
+      <td>${cl.domain_name ? escapeHtml(cl.domain_name) : '&ndash;'}</td>
       <td>${cl.source_ref ? escapeHtml(cl.source_ref) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
@@ -839,7 +856,7 @@ function renderCodeListsList(listTab) {
     html += '</tbody></table>';
   } else {
     const groups = {};
-    codeLists.forEach(cl => { const k = cl.source_ref || 'Andere'; if (!groups[k]) groups[k] = []; groups[k].push(cl); });
+    codeLists.forEach(cl => { const k = getClGroupKey(cl); if (!groups[k]) groups[k] = []; groups[k].push(cl); });
     Object.keys(groups).sort().forEach(k => {
       const items = groups[k];
       html += `<div class="group-header" data-toggle-group="cl-${k}">
@@ -858,15 +875,16 @@ function renderCodeListsList(listTab) {
 
 function renderTermsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
-  const terms = query(`SELECT * FROM term ORDER BY ${nameCol('name')}`);
+  // Fetch terms with domain name via concept_term → concept → collection
+  const terms = query(`SELECT t.*,
+    GROUP_CONCAT(DISTINCT col.${nameCol('name')}) as domain_name
+    FROM term t
+    LEFT JOIN concept_term ct ON ct.term_id = t.id
+    LEFT JOIN concept c ON ct.concept_id = c.id
+    LEFT JOIN collection col ON c.collection_id = col.id
+    GROUP BY t.id
+    ORDER BY t.${nameCol('name')}`);
   const totalCount = terms.length;
-  const sourceLabels = { standard: 'Standards', law: 'Gesetze', regulation: 'Verordnungen', norm: 'Normen' };
-  const groups = {};
-  terms.forEach(t => {
-    const src = sourceLabels[t.source_type] || t.source_type;
-    if (!groups[src]) groups[src] = [];
-    groups[src].push(t);
-  });
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
@@ -876,7 +894,7 @@ function renderTermsList(listTab) {
   </div></div>`;
 
   const groupingOpts = [
-    { id: 'source', label: 'Quellentyp' },
+    { id: 'domain', label: 'Domäne' },
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
@@ -888,27 +906,47 @@ function renderTermsList(listTab) {
     return html;
   }
 
+  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
+
+  function getTermGroupKey(t) {
+    if (termsGrouping === 'domain') return t.domain_name || 'Ohne Domäne';
+    if (termsGrouping === 'status') return termStatusLabels[t.status] || t.status || 'Unbekannt';
+    return null;
+  }
+
   if (listTab === 'diagram') {
-    html += renderTermsDiagram(terms, groups);
-    html += '</div>';
+    html += '<div class="diagram-canvas">';
+    if (termsGrouping === 'none') {
+      html += renderTermGroup('Alle Begriffe', terms);
+    } else {
+      const groups = {};
+      terms.forEach(t => { const k = getTermGroupKey(t); if (!groups[k]) groups[k] = []; groups[k].push(t); });
+      const large = [], small = [];
+      Object.keys(groups).sort().forEach(k => {
+        if (groups[k].length > 3) large.push({ src: k, items: groups[k] }); else small.push({ src: k, items: groups[k] });
+      });
+      large.forEach(g => { html += renderTermGroup(g.src, g.items); });
+      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderTermGroup(g.src, g.items); }); html += '</div>'; }
+    }
+    html += '</div></div>';
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:20%"><col style="width:15%"><col style="width:35%"><col style="width:15%"><col style="width:15%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Begriff</th><th scope="col">Quellentyp</th><th scope="col">Definition</th><th scope="col">Standard</th><th scope="col">Status</th></tr></thead>';
+  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:32%"><col style="width:15%"><col style="width:10%"><col style="width:10%"></colgroup>';
+  const thead = '<thead><tr><th scope="col">Begriff</th><th scope="col">Domäne</th><th scope="col">Definition</th><th scope="col">Standard</th><th scope="col">Quellentyp</th><th scope="col">Status</th></tr></thead>';
+  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
 
   html += '<div class="list-panel">';
-
-  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
 
   function termRow(t) {
     const def = getDefinitionText(t.definition, lang);
     const srcLabel = sourceLabels[t.source_type] || t.source_type;
     return `<tr class="clickable-row" data-href="#/terms/${t.id}">
       <td>${escapeHtml(n(t, 'name'))}</td>
-      <td>${escapeHtml(srcLabel)}</td>
+      <td>${t.domain_name ? escapeHtml(t.domain_name) : '&ndash;'}</td>
       <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
       <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
+      <td>${escapeHtml(srcLabel)}</td>
       <td>${statusBadge(t.status)}</td>
     </tr>`;
   }
@@ -918,17 +956,8 @@ function renderTermsList(listTab) {
     terms.forEach(t => { html += termRow(t); });
     html += '</tbody></table>';
   } else {
-    // Build groups based on termsGrouping
     const activeGroups = {};
-    if (termsGrouping === 'status') {
-      terms.forEach(t => {
-        const k = termStatusLabels[t.status] || t.status || 'Unbekannt';
-        if (!activeGroups[k]) activeGroups[k] = [];
-        activeGroups[k].push(t);
-      });
-    } else {
-      Object.assign(activeGroups, groups);
-    }
+    terms.forEach(t => { const k = getTermGroupKey(t); if (!activeGroups[k]) activeGroups[k] = []; activeGroups[k].push(t); });
     Object.keys(activeGroups).sort().forEach(k => {
       const items = activeGroups[k];
       html += `<div class="group-header" data-toggle-group="t-${k}">
@@ -943,41 +972,6 @@ function renderTermsList(listTab) {
   }
 
   html += '</div></div>';
-  return html;
-}
-
-function renderTermsDiagram(terms, groups) {
-  const sourceLabels = { standard: 'Standards', law: 'Gesetze', regulation: 'Verordnungen', norm: 'Normen' };
-  const termStatusLabels = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
-
-  let html = '<div class="diagram-canvas">';
-  if (termsGrouping === 'none') {
-    html += renderTermGroup('Alle Begriffe', terms);
-  } else {
-    // Build groups based on termsGrouping
-    const activeGroups = {};
-    if (termsGrouping === 'status') {
-      terms.forEach(t => {
-        const k = termStatusLabels[t.status] || t.status || 'Unbekannt';
-        if (!activeGroups[k]) activeGroups[k] = [];
-        activeGroups[k].push(t);
-      });
-    } else {
-      Object.assign(activeGroups, groups);
-    }
-    const large = [], small = [];
-    Object.keys(activeGroups).sort().forEach(k => {
-      if (activeGroups[k].length > 3) large.push({ src: k, items: activeGroups[k] });
-      else small.push({ src: k, items: activeGroups[k] });
-    });
-    large.forEach(g => { html += renderTermGroup(g.src, g.items); });
-    if (small.length > 0) {
-      html += '<div class="diagram-row">';
-      small.forEach(g => { html += renderTermGroup(g.src, g.items); });
-      html += '</div>';
-    }
-  }
-  html += '</div>';
   return html;
 }
 
@@ -1051,8 +1045,15 @@ function renderTermOverview(term) {
   html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
   html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
+  // Derive domain from linked concepts
+  const termDomains = query(`SELECT DISTINCT col.${nameCol('name')} as dname FROM concept_term ct
+    JOIN concept c ON ct.concept_id = c.id
+    JOIN collection col ON c.collection_id = col.id
+    WHERE ct.term_id = ?`, [term.id]);
+
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
+  if (termDomains.length > 0) html += `<tr><td>Domäne</td><td>${termDomains.map(d => escapeHtml(d.dname)).join(', ')}</td></tr>`;
   if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
   const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
   html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
@@ -1518,14 +1519,16 @@ function renderConceptOverview(concept, vocab, steward) {
   }
 
   // Metadata
+  const conceptCollection = concept.col_id ? queryOne(`SELECT * FROM collection WHERE id = ?`, [concept.col_id]) : null;
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
+  if (conceptCollection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(conceptCollection, 'name'))}</td></tr>`;
   html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
   html += `<tr><td>EGID relevant</td><td>${concept.egid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
   html += `<tr><td>EGRID relevant</td><td>${concept.egrid_relevant ? 'Ja' : 'Nein'}</td></tr>`;
   if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
   if (concept.approved_at) html += `<tr><td>Freigegeben</td><td>${formatDate(concept.approved_at)}</td></tr>`;
-  html += `<tr><td>Ge\u00e4ndert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
+  html += `<tr><td>Geändert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
   html += '</table></div>';
 
   // Verantwortliche
@@ -1994,17 +1997,24 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   });
   html += '</table></div>';
 
+  // Derive domain from linked concepts
+  const clDomains = query(`SELECT DISTINCT col.${nameCol('name')} as dname FROM concept_attribute ca
+    JOIN concept c ON ca.concept_id = c.id
+    JOIN collection col ON c.collection_id = col.id
+    WHERE ca.code_list_id = ?`, [cl.id]);
+
   // Properties
-  html += '<div class="content-section"><div class="section-label">PROPERTIES</div>';
+  html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  if (cl.source_ref) html += `<tr><td>Source</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
+  if (clDomains.length > 0) html += `<tr><td>Domäne</td><td>${clDomains.map(d => escapeHtml(d.dname)).join(', ')}</td></tr>`;
+  if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
   if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
-  html += `<tr><td>Total values</td><td>${valueCount} (${valueCount - deprecatedCount} active${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' deprecated' : ''})</td></tr>`;
+  html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
 
   // Used by concepts
   if (cl.concept_id) {
     const concept = queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id]);
-    if (concept) html += `<tr><td>Used by concept</td><td><a href="#/vocabulary/${cl.concept_id}">${escapeHtml(concept.cname)}</a></td></tr>`;
+    if (concept) html += `<tr><td>Geschäftsobjekt</td><td><a href="#/vocabulary/${cl.concept_id}">${escapeHtml(concept.cname)}</a></td></tr>`;
   }
   html += '</table></div>';
 
