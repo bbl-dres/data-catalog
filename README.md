@@ -79,8 +79,8 @@ SQLite-backed data catalog with sidebar navigation, full-text search, detail vie
 **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-db/
 
 <p>
-  <img src="prototype-db/docs/informatica-overview1.JPG" width="45%" />
-  <img src="prototype-db/docs/informatica-dashboard2.JPG" width="45%" />
+  <img src="prototype-db/assets/preview1.jpg" width="45%" />
+  <img src="prototype-db/assets/previeww.jpg" width="45%" />
 </p>
 
 ---
@@ -90,6 +90,8 @@ SQLite-backed data catalog with sidebar navigation, full-text search, detail vie
 Interactive graph visualization for exploring data lineage across systems. Supports edge routing, zoom/pan, and node interactions — all in vanilla JS with no framework dependencies.
 
 **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
+
+![Preview](prototype-lineage/assets/Preview1.jpg)
 
 ---
 
