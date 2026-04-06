@@ -4,7 +4,7 @@
 
 A prototype for a data catalog for the Swiss Federal Office for Buildings and Logistics (BBL). Documents business objects and datasets according to the DCAT-AP CH v3.0 standard.
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog-immo/
+**Live Demo:** https://bbl-dres.github.io/data-catalog/
 
 ![Preview](images/readme/Preview.JPG)
 
@@ -63,7 +63,7 @@ meta-bv/
 
 A metadata catalog following the TOGAF three-layer architecture model (Conceptual → Logical → Physical). Hierarchical tree navigation, wiki-style documentation, cross-layer traceability, multilingual support (DE/EN/FR/IT), and dark/light theme.
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog-immo/prototype-dmbok/
+**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-dmbok/
 
 <p>
   <img src="prototype-dmbok/assets/preview1.jpg" width="45%" />
@@ -76,7 +76,7 @@ A metadata catalog following the TOGAF three-layer architecture model (Conceptua
 
 SQLite-backed data catalog with sidebar navigation, full-text search, detail views, and interactive lineage graphs. Uses sql.js to run queries entirely in the browser.
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog-immo/prototype-db/
+**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-db/
 
 <p>
   <img src="prototype-db/docs/informatica-overview1.JPG" width="45%" />
@@ -89,7 +89,7 @@ SQLite-backed data catalog with sidebar navigation, full-text search, detail vie
 
 Interactive graph visualization for exploring data lineage across systems. Supports edge routing, zoom/pan, and node interactions — all in vanilla JS with no framework dependencies.
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog-immo/prototype-lineage/
+**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
 
 ---
 
@@ -97,7 +97,7 @@ Interactive graph visualization for exploring data lineage across systems. Suppo
 
 A single-page app for creating ER diagrams and flowcharts with free-text names (spaces, umlauts, special characters). Built on Mermaid.js (loaded via CDN).
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog-immo/prototype-markdown/
+**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-markdown/
 
 <p>
   <img src="prototype-markdown/assets/Preview1.jpg" width="45%" />
