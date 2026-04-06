@@ -79,8 +79,8 @@ SQLite-backed data catalog with sidebar navigation, full-text search, detail vie
 **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-db/
 
 <p>
-  <img src="prototype-db/assets/preview1.jpg" width="45%" />
-  <img src="prototype-db/assets/previeww.jpg" width="45%" />
+  <img src="prototype-db/assets/Preview1.jpg" width="45%" />
+  <img src="prototype-db/assets/Preview2.jpg" width="45%" />
 </p>
 
 ---
