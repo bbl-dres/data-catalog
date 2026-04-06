@@ -15,7 +15,13 @@
       "Bash(cp about.html about-de.html)",
       "Bash(cp manual.html manual-de.html)",
       "Bash(python3 -c \"import json; d=json.load\\(open\\('c:/Users/DavidRasner/Documents/GitHub/data-catalog/data/i18n.json'\\)\\); print\\(len\\(d\\), 'keys'\\); print\\('\\\\\\\\n'.join\\(sorted\\(d.keys\\(\\)\\)[:20]\\)\\)\")",
-      "Bash(node -c js/app.js)"
+      "Bash(node -c js/app.js)",
+      "Bash(sed -f /tmp/renames.sed css/style.css)",
+      "Bash(cp /tmp/style_new.css css/style.css)",
+      "Bash(sed -f /tmp/renames.sed js/app.js)",
+      "Bash(cp /tmp/app_new.js js/app.js)",
+      "Bash(sed -f /tmp/renames.sed index.html)",
+      "Bash(cp /tmp/index_new.html index.html)"
     ]
   }
 }

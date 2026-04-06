@@ -17,33 +17,33 @@
     <a href="#main-content" class="skip-to-content">Zum Inhalt springen</a>
 
     <header>
-        <div class="header-branding-row">
-            <div class="header-branding-inner u-max-width">
-                <a href="#concept" class="branding">
-                    <div class="logo-wrapper">
+        <div class="top-header">
+            <div class="top-header__inner container">
+                <a href="#concept" class="logo">
+                    <div class="logo__flag">
                         <img src="assets/ch.png" alt="Wappen der Schweiz" data-i18n-alt="branding.coat_of_arms">
                     </div>
-                    <div class="branding-text">
+                    <div class="logo__title">
                         <strong data-i18n="branding.office">Bundesamt für Bauten und Logistik BBL</strong>
                         <span data-i18n="branding.division">Bereich Bauten</span>
                         <span data-i18n="branding.catalog">Datenkatalog</span>
                     </div>
                 </a>
-                <div class="top-meta">
+                <div class="meta-navigation">
                     <a href="mailto:dres@bbl.admin.ch" data-i18n="action.contact">Kontakt</a>
                     <a href="https://github.com/bbl-dres/data-catalog/tree/main/data" target="_blank" data-i18n="action.export">Export</a>
-                    <div class="lang-selector" id="lang-selector">
-                        <button class="lang-btn active" data-lang="de">DE</button>
-                        <button class="lang-btn" data-lang="fr">FR</button>
-                        <button class="lang-btn" data-lang="it">IT</button>
-                        <button class="lang-btn" data-lang="en">EN</button>
+                    <div class="language-switcher" id="language-switcher">
+                        <button class="language-switcher__btn active" data-lang="de">DE</button>
+                        <button class="language-switcher__btn" data-lang="fr">FR</button>
+                        <button class="language-switcher__btn" data-lang="it">IT</button>
+                        <button class="language-switcher__btn" data-lang="en">EN</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="header-nav-row">
-            <nav class="nav-tabs u-max-width" id="nav-tabs">
+        <div class="main-navigation">
+            <nav class="nav-tabs container" id="nav-tabs">
                 <button class="nav-link active" data-page="concept" data-i18n="nav.concepts">Konzepte</button>
                 <button class="nav-link" data-page="dataset" data-i18n="nav.datasets">Datensätze</button>
                 <button class="nav-link" data-page="about" data-i18n="nav.about">Über diesen Datenkatalog</button>
@@ -52,14 +52,14 @@
         </div>
     </header>
 
-    <div class="container u-max-width">
-        <div class="sub-header">
-            <div class="breadcrumbs" id="breadcrumbs">
+    <div class="main-wrapper container">
+        <div class="breadcrumb-bar">
+            <div class="breadcrumb" id="breadcrumb">
                 Startseite <span>&gt;</span> Konzepte
             </div>
-            <div class="action-icons">
-                <button class="icon-btn" id="btn-print" data-i18n-title="action.print" title="Drucken"><span class="material-symbols-rounded">print</span></button>
-                <button class="icon-btn" id="btn-share" data-i18n-title="action.share" title="Teilen"><span class="material-symbols-rounded">share</span></button>
+            <div class="breadcrumb-bar__actions">
+                <button class="btn--bare" id="btn-print" data-i18n-title="action.print" title="Drucken"><span class="material-symbols-rounded">print</span></button>
+                <button class="btn--bare" id="btn-share" data-i18n-title="action.share" title="Teilen"><span class="material-symbols-rounded">share</span></button>
             </div>
         </div>
 
@@ -68,9 +68,9 @@
             <div id="view-concept-catalog">
                 <h1 class="page-title" data-i18n="nav.concepts">Konzepte</h1>
                 <div class="toolbar">
-                    <div class="search-group">
-                        <div class="input-wrapper">
-                            <span class="material-symbols-rounded search-icon">search</span>
+                    <div class="search__group">
+                        <div class="form__group">
+                            <span class="material-symbols-rounded search__icon">search</span>
                             <input type="text" id="search-concept" data-i18n-placeholder="search.placeholder" placeholder="Suchen" data-i18n-aria="search.concepts_aria" aria-label="Konzepte durchsuchen">
                         </div>
                         <button class="btn-filter" data-type="concept">
@@ -103,7 +103,7 @@
                         </div>
                         <div class="filter-section">
                             <label class="filter-label" data-i18n="filter.keywords">Schlüsselwörter</label>
-                            <div class="tag-input-wrapper">
+                            <div class="tag-form__group">
                                 <div class="tag-input-field" data-type="concept">
                                     <input type="text" class="tag-search-input" data-type="concept" data-i18n-placeholder="filter.keyword_placeholder" placeholder="Neues Schlüsselwort...">
                                 </div>
@@ -138,7 +138,7 @@
                     </aside>
                     <div class="catalog-content">
                         <div id="concept-grid" class="grid"></div>
-                        <table id="concept-list" class="list-table hidden">
+                        <table id="concept-list" class="table hidden">
                             <thead>
                                 <tr>
                                     <th data-i18n="table.concept">KONZEPT</th>
@@ -156,9 +156,9 @@
             <div id="view-dataset-catalog" class="hidden">
                 <h1 class="page-title" data-i18n="nav.datasets">Datensätze</h1>
                 <div class="toolbar">
-                    <div class="search-group">
-                        <div class="input-wrapper">
-                            <span class="material-symbols-rounded search-icon">search</span>
+                    <div class="search__group">
+                        <div class="form__group">
+                            <span class="material-symbols-rounded search__icon">search</span>
                             <input type="text" id="search-dataset" data-i18n-placeholder="search.placeholder" placeholder="Suchen" data-i18n-aria="search.datasets_aria" aria-label="Datensätze durchsuchen">
                         </div>
                         <button class="btn-filter" data-type="dataset">
@@ -191,7 +191,7 @@
                         </div>
                         <div class="filter-section">
                             <label class="filter-label" data-i18n="filter.keywords">Schlüsselwörter</label>
-                            <div class="tag-input-wrapper">
+                            <div class="tag-form__group">
                                 <div class="tag-input-field" data-type="dataset">
                                     <input type="text" class="tag-search-input" data-type="dataset" data-i18n-placeholder="filter.keyword_placeholder" placeholder="Neues Schlüsselwort...">
                                 </div>
@@ -220,7 +220,7 @@
                     </aside>
                     <div class="catalog-content">
                         <div id="dataset-grid" class="grid"></div>
-                        <table id="dataset-list" class="list-table hidden">
+                        <table id="dataset-list" class="table hidden">
                             <thead>
                                 <tr>
                                     <th data-i18n="table.dataset">DATENSATZ</th>
@@ -237,29 +237,29 @@
             <!-- Detail Views -->
             <div id="view-concept-detail" class="hidden">
                 <h1 class="page-title" id="detail-concept-title"></h1>
-                <div class="detail-hero">
-                    <div class="detail-info">
-                        <p class="detail-desc" id="detail-concept-desc"></p>
-                        <div class="detail-tags" id="detail-concept-tags"></div>
+                <div class="hero">
+                    <div class="hero__content">
+                        <p class="hero__description" id="detail-concept-desc"></p>
+                        <div class="hero__tags" id="detail-concept-tags"></div>
                     </div>
-                    <div class="detail-image-box">
+                    <div class="hero__image">
                         <img id="detail-concept-img" src="data:," alt="">
                     </div>
                 </div>
-                <div class="responsible-box hidden" id="responsible-placeholder-concept">
-                    <div class="box-title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
-                    <div class="box-text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
+                <div class="box hidden" id="responsible-placeholder-concept">
+                    <div class="box__title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
+                    <div class="box__text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
                 </div>
-                <div class="responsible-section hidden" id="responsible-list-concept">
+                <div class="box-section hidden" id="responsible-list-concept">
                     <h3 class="section-title" data-i18n="detail.responsible_title">Verantwortliche Personen</h3>
-                    <div class="responsible-persons-list"></div>
+                    <div class="box-section__list"></div>
                 </div>
                 <h3 class="section-title" data-i18n="detail.metadata">Metadaten</h3>
                 <div class="meta-list" id="detail-concept-meta"></div>
                 <h3 class="section-title" data-i18n="detail.standards">Standards</h3>
                 <div class="meta-list" id="detail-concept-standards"></div>
                 <h3 class="section-title" data-i18n="detail.attributes">Attribute</h3>
-                <table class="attr-table">
+                <table class="table table--attributes">
                     <thead>
                         <tr>
                             <th class="attr-col-name" data-i18n="table.name">NAME</th>
@@ -271,27 +271,27 @@
                     </thead>
                     <tbody id="detail-concept-attrs"></tbody>
                 </table>
-                <div class="detail-spacer"></div>
+                <div class="section-spacer"></div>
             </div>
 
             <div id="view-dataset-detail" class="hidden">
                 <h1 class="page-title" id="detail-dataset-title"></h1>
-                <div class="detail-hero">
-                    <div class="detail-info">
-                        <p class="detail-desc" id="detail-dataset-desc"></p>
-                        <div class="detail-tags" id="detail-dataset-tags"></div>
+                <div class="hero">
+                    <div class="hero__content">
+                        <p class="hero__description" id="detail-dataset-desc"></p>
+                        <div class="hero__tags" id="detail-dataset-tags"></div>
                     </div>
-                    <div class="detail-image-box">
+                    <div class="hero__image">
                         <img id="detail-dataset-img" src="data:," alt="">
                     </div>
                 </div>
-                <div class="responsible-box hidden" id="responsible-placeholder-dataset">
-                    <div class="box-title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
-                    <div class="box-text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
+                <div class="box hidden" id="responsible-placeholder-dataset">
+                    <div class="box__title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
+                    <div class="box__text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
                 </div>
-                <div class="responsible-section hidden" id="responsible-list-dataset">
+                <div class="box-section hidden" id="responsible-list-dataset">
                     <h3 class="section-title" data-i18n="detail.responsible_title">Verantwortliche Personen</h3>
-                    <div class="responsible-persons-list"></div>
+                    <div class="box-section__list"></div>
                 </div>
                 <h3 class="section-title" data-i18n="detail.metadata">Metadaten</h3>
                 <div class="meta-list" id="detail-dataset-meta"></div>
@@ -299,7 +299,7 @@
                 <div class="distributions-list" id="detail-dataset-distributions"></div>
                 <h3 class="section-title" data-i18n="detail.publications">Publikationen in externen Katalogen</h3>
                 <div class="publications-list" id="detail-dataset-publications"></div>
-                <div class="detail-spacer"></div>
+                <div class="section-spacer"></div>
             </div>
 
             <!-- Content Pages -->
@@ -316,9 +316,9 @@
     </div>
 
     <footer>
-        <div class="footer-main">
-            <div class="footer-columns u-max-width">
-                <div class="footer-col">
+        <div class="footer-information">
+            <div class="footer-information__columns container">
+                <div class="footer-information__entry">
                     <h4 data-i18n="footer.about_heading">Über den Datenkatalog</h4>
                     <ul>
                         <li><a href="#about" data-i18n="footer.about_link">Über diesen Katalog</a></li>
@@ -326,14 +326,14 @@
                         <li><a href="https://github.com/bbl-dres/data-catalog" target="_blank" data-i18n="footer.source">Quellcode auf GitHub</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
+                <div class="footer-information__entry">
                     <h4 data-i18n="footer.contact_heading">Kontakt</h4>
                     <ul>
                         <li><a href="mailto:dres@bbl.admin.ch">dres@bbl.admin.ch</a></li>
                         <li><a href="https://www.bbl.admin.ch" target="_blank" data-i18n="footer.bbl_link">Bundesamt für Bauten und Logistik</a></li>
                     </ul>
                 </div>
-                <div class="footer-col">
+                <div class="footer-information__entry">
                     <h4 data-i18n="footer.legal_heading">Rechtliches</h4>
                     <ul>
                         <li><a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" data-i18n="footer.legal">Rechtliche Hinweise</a></li>
@@ -341,12 +341,12 @@
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">
-            <div class="footer-inner u-max-width">
-                <div class="footer-left">
+        <div class="footer-navigation">
+            <div class="footer-navigation__inner container">
+                <div class="footer-navigation__left">
                     <span class="footer-link">&copy; BBL</span>
                 </div>
-                <div class="footer-right">
+                <div class="footer-navigation__right">
                     Version 1.0.0
                 </div>
             </div>
@@ -354,15 +354,15 @@
     </footer>
 
     <!-- Share Modal -->
-    <div class="modal-overlay" id="share-modal">
-        <div class="modal-box">
-            <div class="modal-header">
+    <div class="modal__backdrop" id="share-modal">
+        <div class="modal__content">
+            <div class="modal__header">
                 <span data-i18n="share.title">Inhalt teilen</span>
-                <button class="modal-close" id="modal-close">
+                <button class="modal__close" id="modal__close">
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal__body">
                 <div class="share-icons">
                     <a href="#" class="share-icon-link" data-share="facebook" title="Facebook">
                         <svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>

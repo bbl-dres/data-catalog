@@ -101,7 +101,7 @@
         const titleVal = state.i18n['meta.title']?.[cachedLang];
         if (titleVal) document.title = titleVal;
 
-        $$('.lang-btn').forEach(btn => {
+        $$('.language-switcher__btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === cachedLang);
         });
     }
@@ -212,9 +212,9 @@
     function formatMetaValue(val, fieldDef) {
         if (!val || val === '-') return '-';
         if (fieldDef.type === 'enum' && fieldDef.enumPrefix) {
-            return `<span class="tag-pill">${t(fieldDef.enumPrefix + '.' + val)}</span>`;
+            return `<span class="badge">${t(fieldDef.enumPrefix + '.' + val)}</span>`;
         }
-        if (fieldDef.type === 'pill') return `<span class="tag-pill">${val}</span>`;
+        if (fieldDef.type === 'pill') return `<span class="badge">${val}</span>`;
         if (fieldDef.localized && typeof val === 'object') return t(val);
         if (fieldDef.type === 'link' && typeof val === 'string' && val.startsWith('http')) {
             return `<a href="${val}" target="_blank">${val}</a>`;
@@ -223,20 +223,20 @@
     }
 
     function createDataRow(label, value) {
-        return `<div class="data-row"><div class="data-row-key">${label}</div><div class="data-row-val">${value}</div></div>`;
+        return `<div class="data-row"><div class="data-row__key">${label}</div><div class="data-row__value">${value}</div></div>`;
     }
 
     function createTags(tagKeys, activeTags = []) {
         return tagKeys.map(key => {
             const isActive = activeTags.includes(key);
-            return `<span class="tag-pill${isActive ? ' tag-pill--active' : ''}" data-tag="${key}">${t('tag.' + key)}</span>`;
+            return `<span class="badge${isActive ? ' badge--active' : ''}" data-tag="${key}">${t('tag.' + key)}</span>`;
         }).join('');
     }
 
     function renderResponsiblePersons(type, persons) {
         const placeholder = $(`#responsible-placeholder-${type}`);
         const listSection = $(`#responsible-list-${type}`);
-        const listContainer = $(`#responsible-list-${type} .responsible-persons-list`);
+        const listContainer = $(`#responsible-list-${type} .box-section__list`);
 
         if (!persons || persons.length === 0) {
             placeholder.classList.remove('hidden');
@@ -251,8 +251,8 @@
             const admindirUrl = `https://admindir.verzeichnisse.admin.ch/person/${person.admindirId}`;
             return `
                 <div class="data-row">
-                    <div class="data-row-key">AdminDir ID: <a href="${admindirUrl}" target="_blank" class="responsible-person-link">${person.admindirId}</a></div>
-                    <div class="data-row-val"><span class="tag-pill">${person.role}</span></div>
+                    <div class="data-row__key">AdminDir ID: <a href="${admindirUrl}" target="_blank" class="link">${person.admindirId}</a></div>
+                    <div class="data-row__value"><span class="badge">${person.role}</span></div>
                 </div>
             `;
         }).join('');
@@ -357,12 +357,12 @@
 
         resetBtn.classList.toggle('hidden', activeFilterCount === 0);
 
-        const existingPills = inputField.querySelectorAll('.tag-pill-active');
+        const existingPills = inputField.querySelectorAll('.badge-filter--active');
         existingPills.forEach(pill => pill.remove());
 
         tags.forEach(tag => {
             const pill = document.createElement('span');
-            pill.className = 'tag-pill-active';
+            pill.className = 'badge-filter--active';
             pill.innerHTML = `${t('tag.' + tag)}<span class="remove" data-tag="${tag}">×</span>`;
             inputField.insertBefore(pill, searchInput);
         });
@@ -429,8 +429,8 @@
         if (items.length === 0) {
             const noResults = `
                 <div class="no-results">
-                    <div class="no-results-icon"><span class="material-symbols-rounded" style="font-size:48px">search_off</span></div>
-                    <div class="no-results-text">${t('noresults.text')}</div>
+                    <div class="no-results__icon"><span class="material-symbols-rounded" style="font-size:48px">search_off</span></div>
+                    <div class="no-results__text">${t('noresults.text')}</div>
                 </div>
             `;
             if (isGrid) {
@@ -446,16 +446,16 @@
         if (isGrid) {
             gridEl.innerHTML = items.map(item => `
                 <div class="card" data-id="${item.id}">
-                    <div class="card-img-wrap">
-                        <img src="${item.image}" class="card-img" alt="${t(item.title)}">
-                        <div class="tags-overlay"><span class="tag-label">${typeLabel}</span></div>
+                    <div class="card__image">
+                        <img src="${item.image}" class="card__img" alt="${t(item.title)}">
+                        <div class="card__badges"><span class="badge--overlay">${typeLabel}</span></div>
                     </div>
-                    <div class="card-body">
-                        <h3 class="card-title">${t(item.title)}</h3>
-                        <p class="card-desc">${t(item.description)}</p>
-                        <div class="card-footer">
-                            <div class="tags-bottom">${createTags((item.tags || []).slice(0, 3), tags)}</div>
-                            <div class="btn-arrow"><span class="material-symbols-rounded">arrow_forward</span></div>
+                    <div class="card__body">
+                        <h3 class="card__title">${t(item.title)}</h3>
+                        <p class="card__description">${t(item.description)}</p>
+                        <div class="card__footer">
+                            <div class="card__tags">${createTags((item.tags || []).slice(0, 3), tags)}</div>
+                            <div class="card__action"><span class="material-symbols-rounded">arrow_forward</span></div>
                         </div>
                     </div>
                 </div>
@@ -547,20 +547,20 @@
                     } else {
                         display = val || '-';
                     }
-                    return `<div class="distribution-detail-row"><div class="distribution-detail-key">${t(f.label)}</div><div class="distribution-detail-val">${display}</div></div>`;
+                    return `<div class="accordion__detail-row"><div class="accordion__detail-key">${t(f.label)}</div><div class="accordion__detail-val">${display}</div></div>`;
                 }).join('');
 
                 return `
-                    <div class="distribution-item" data-index="${i}">
-                        <div class="distribution-header">
-                            <div class="distribution-left">${t(d.name)}</div>
-                            <div class="distribution-right">
+                    <div class="accordion__item" data-index="${i}">
+                        <div class="accordion__button">
+                            <div class="accordion__title">${t(d.name)}</div>
+                            <div class="accordion__meta">
                                 <span class="material-symbols-rounded">${icon}</span>
-                                <span class="distribution-format">${d.format}</span>
-                                <span class="material-symbols-rounded expand-icon">expand_more</span>
+                                <span class="accordion__format">${d.format}</span>
+                                <span class="material-symbols-rounded accordion__arrow">expand_more</span>
                             </div>
                         </div>
-                        <div class="distribution-details">${detailRows}</div>
+                        <div class="accordion__drawer">${detailRows}</div>
                     </div>
                 `;
             }).join('');
@@ -603,7 +603,7 @@
             html += crumbs[page] || page;
         }
 
-        $('#breadcrumbs').innerHTML = html;
+        $('#breadcrumb').innerHTML = html;
     }
 
     function navigate(page) {
@@ -691,8 +691,8 @@
         });
 
         // Language switcher
-        $('#lang-selector').addEventListener('click', e => {
-            const btn = e.target.closest('.lang-btn');
+        $('#language-switcher').addEventListener('click', e => {
+            const btn = e.target.closest('.language-switcher__btn');
             if (btn && !btn.classList.contains('active')) {
                 switchLanguage(btn.dataset.lang);
             }
@@ -705,7 +705,7 @@
         $('#btn-share').addEventListener('click', openShareModal);
 
         // Close modal
-        $('#modal-close').addEventListener('click', closeShareModal);
+        $('#modal__close').addEventListener('click', closeShareModal);
 
         // Click outside modal to close
         $('#share-modal').addEventListener('click', e => {
@@ -787,7 +787,7 @@
 
         // Remove tag pill
         document.addEventListener('click', e => {
-            const removeBtn = e.target.closest('.tag-pill-active .remove');
+            const removeBtn = e.target.closest('.badge-filter--active .remove');
             if (removeBtn) {
                 e.stopPropagation();
                 removeTag(removeBtn.dataset.tag);
@@ -796,15 +796,15 @@
 
         // Click outside dropdown to close
         document.addEventListener('click', e => {
-            if (!e.target.closest('.tag-input-wrapper')) {
+            if (!e.target.closest('.tag-form__group')) {
                 $$('.tag-dropdown').forEach(d => d.classList.add('hidden'));
             }
         });
 
         // Tag pill click
         document.addEventListener('click', e => {
-            const tagPill = e.target.closest('.tag-pill[data-tag]');
-            if (tagPill && !e.target.closest('.tag-input-wrapper')) {
+            const tagPill = e.target.closest('.badge[data-tag]');
+            if (tagPill && !e.target.closest('.tag-form__group')) {
                 e.stopPropagation();
                 const tag = tagPill.dataset.tag;
                 const current = parseHash();
@@ -823,7 +823,7 @@
 
         // Card/row clicks
         document.addEventListener('click', e => {
-            if (e.target.closest('.tag-pill')) return;
+            if (e.target.closest('.badge')) return;
             const card = e.target.closest('.card');
             const row = e.target.closest('tr[data-id]');
             const target = card || row;
@@ -836,8 +836,8 @@
 
         // Distribution accordion
         document.addEventListener('click', e => {
-            const header = e.target.closest('.distribution-header');
-            if (header) header.closest('.distribution-item').classList.toggle('expanded');
+            const header = e.target.closest('.accordion__button');
+            if (header) header.closest('.accordion__item').classList.toggle('expanded');
         });
 
         // Search inputs (debounced)
