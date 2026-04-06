@@ -1,0 +1,82 @@
+[
+  {
+    "id": "sch-sap-refx",
+    "type": "schema",
+    "layer": "physical",
+    "name": "Building",
+    "description": {
+      "de": "Gebäude-Schema für Immobiliendaten",
+      "en": "Building schema for real estate data",
+      "fr": "Schéma Building pour les données immobilières",
+      "it": "Schema Building per i dati immobiliari"
+    },
+    "status": "active",
+    "system": "sys-sap",
+    "created": "2024-01-10",
+    "updated": "2025-01-15"
+  },
+  {
+    "id": "sch-sap-refx-parcel",
+    "type": "schema",
+    "layer": "physical",
+    "name": "Parcel",
+    "description": {
+      "de": "Parzellen-Schema für Katasterdaten",
+      "en": "Parcel schema for cadastral data",
+      "fr": "Schéma Parcel pour les données cadastrales",
+      "it": "Schema Parcel per i dati catastali"
+    },
+    "status": "active",
+    "system": "sys-sap",
+    "created": "2024-01-20",
+    "updated": "2025-01-21"
+  },
+  {
+    "id": "sch-sap-refx-measurements",
+    "type": "schema",
+    "layer": "physical",
+    "name": "Measurements",
+    "description": {
+      "de": "Vermessungs-Schema für Flächen und Messdaten",
+      "en": "Measurements schema for areas and measurement data",
+      "fr": "Schéma de mesures pour les surfaces et données de mesure",
+      "it": "Schema misurazioni per superfici e dati di misurazione"
+    },
+    "status": "active",
+    "system": "sys-sap",
+    "created": "2025-01-21",
+    "updated": "2025-01-21"
+  },
+  {
+    "id": "sch-postgis-geo",
+    "type": "schema",
+    "layer": "physical",
+    "name": "Building",
+    "description": {
+      "de": "Geodaten-Schema in PostGIS",
+      "en": "Geodata schema in PostGIS",
+      "fr": "Schéma de géodonnées dans PostGIS",
+      "it": "Schema geodati in PostGIS"
+    },
+    "status": "active",
+    "system": "sys-postgis",
+    "created": "2024-01-15",
+    "updated": "2025-01-10"
+  },
+  {
+    "id": "sch-sap-ps",
+    "type": "schema",
+    "layer": "physical",
+    "name": "ProjectManagement",
+    "description": {
+      "de": "Projektmanagement-Schema für Bauprojekte",
+      "en": "Project management schema for construction projects",
+      "fr": "Schéma de gestion de projets pour les projets de construction",
+      "it": "Schema di gestione progetti per i progetti di costruzione"
+    },
+    "status": "active",
+    "system": "sys-sap-ps",
+    "created": "2024-04-01",
+    "updated": "2025-01-10"
+  }
+]

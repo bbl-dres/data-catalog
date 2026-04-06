@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command:*)",
+      "Bash(node:*)",
+      "Bash(xxd:*)",
+      "Bash(find:*)",
+      "Bash(ls -la \"c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\meta-atlas\\\\data\"\" 2>/dev/null || dir \"c:UsersDavidRasnerDocumentsGitHubmeta-atlasdata\"\")"
+    ]
+  }
+}

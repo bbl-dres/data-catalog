@@ -1,0 +1,98 @@
+[
+  {
+    "id": "rel-building-plot",
+    "name": "Building on Plot",
+    "source": "ent-building",
+    "target": "ent-plot",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-rental-unit-building",
+    "name": "Rental Unit in Building",
+    "source": "ent-rental-unit",
+    "target": "ent-building",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-project-building",
+    "name": "Project concerns Building",
+    "source": "ent-project",
+    "target": "ent-building",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-project-cost-center",
+    "name": "Project charges Cost Center",
+    "source": "ent-project",
+    "target": "ent-cost-center",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-building-location",
+    "name": "Building has Location",
+    "source": "ent-building",
+    "target": "ent-location",
+    "cardinality": "1:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-building-address",
+    "name": "Building has Address",
+    "source": "ent-building",
+    "target": "ent-address",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-plot-address",
+    "name": "Plot has Address",
+    "source": "ent-plot",
+    "target": "ent-address",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-location-address",
+    "name": "Location has Address",
+    "source": "ent-location",
+    "target": "ent-address",
+    "cardinality": "1:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-rental-unit-plot",
+    "name": "Rental Unit on Plot",
+    "source": "ent-rental-unit",
+    "target": "ent-plot",
+    "cardinality": "n:1",
+    "type": "logical"
+  },
+  {
+    "id": "rel-sap-building-parcel",
+    "name": "VIPLOTREF",
+    "source": "sch-sap-refx",
+    "target": "sch-sap-refx-parcel",
+    "cardinality": "n:1",
+    "type": "physical"
+  },
+  {
+    "id": "rel-sap-meas-building",
+    "name": "EGID_REF",
+    "source": "sch-sap-refx-measurements",
+    "target": "sch-sap-refx",
+    "cardinality": "n:1",
+    "type": "physical"
+  },
+  {
+    "id": "rel-sap-ps-building",
+    "name": "EGID_REF",
+    "source": "sch-sap-ps",
+    "target": "sch-sap-refx",
+    "cardinality": "n:1",
+    "type": "physical"
+  }
+]

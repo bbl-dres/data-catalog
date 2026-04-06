@@ -1,0 +1,163 @@
+[
+  {
+    "id": "ent-building",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Gebäude",
+      "en": "Building",
+      "fr": "Bâtiment",
+      "it": "Edificio"
+    },
+    "description": {
+      "de": "Logische Entität für Gebäudedaten des Bundes",
+      "en": "Logical entity for federal building data",
+      "fr": "Entité logique pour les données de bâtiments fédéraux",
+      "it": "Entità logica per i dati degli edifici federali"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/71304",
+    "status": "active",
+    "domain": "dom-immo",
+    "physicalSchemas": ["sch-sap-refx", "sch-postgis-geo", "sch-sap-refx-measurements"],
+    "created": "2024-01-20",
+    "updated": "2025-01-21"
+  },
+  {
+    "id": "ent-plot",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Grundstück",
+      "en": "Plot",
+      "fr": "Bien-fonds",
+      "it": "Fondo"
+    },
+    "description": {
+      "de": "Logische Entität für Grundstücksdaten",
+      "en": "Logical entity for plot data",
+      "fr": "Entité logique pour les données de bien-fonds",
+      "it": "Entità logica per i dati dei fondi"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/55892",
+    "status": "active",
+    "domain": "dom-immo",
+    "physicalSchemas": ["sch-sap-refx-parcel", "sch-sap-refx"],
+    "created": "2024-01-20",
+    "updated": "2025-01-21"
+  },
+  {
+    "id": "ent-rental-unit",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Mietobjekt",
+      "en": "RentalUnit",
+      "fr": "Objet locatif",
+      "it": "Unità in affitto"
+    },
+    "description": {
+      "de": "Logische Entität für Mietobjekte",
+      "en": "Logical entity for rental units",
+      "fr": "Entité logique pour les objets locatifs",
+      "it": "Entità logica per le unità in affitto"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/169458",
+    "status": "active",
+    "domain": "dom-immo",
+    "physicalSchemas": ["sch-sap-refx"],
+    "created": "2024-02-05",
+    "updated": "2024-06-20"
+  },
+  {
+    "id": "ent-project",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Bauprojekt",
+      "en": "Project",
+      "fr": "Projet de construction",
+      "it": "Progetto di costruzione"
+    },
+    "description": {
+      "de": "Logische Entität für Bauprojekte",
+      "en": "Logical entity for construction projects",
+      "fr": "Entité logique pour les projets de construction",
+      "it": "Entità logica per i progetti di costruzione"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/84721",
+    "status": "active",
+    "domain": "dom-project",
+    "physicalSchemas": ["sch-sap-ps"],
+    "created": "2024-04-01",
+    "updated": "2025-01-15"
+  },
+  {
+    "id": "ent-cost-center",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Kostenstelle",
+      "en": "CostCenter",
+      "fr": "Centre de coûts",
+      "it": "Centro di costo"
+    },
+    "description": {
+      "de": "Logische Entität für Kostenstellen",
+      "en": "Logical entity for cost centers",
+      "fr": "Entité logique pour les centres de coûts",
+      "it": "Entità logica per i centri di costo"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/50285",
+    "status": "active",
+    "domain": "dom-project",
+    "physicalSchemas": ["sch-sap-ps"],
+    "created": "2024-04-15",
+    "updated": "2024-07-20"
+  },
+  {
+    "id": "ent-location",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Standort",
+      "en": "Location",
+      "fr": "Emplacement",
+      "it": "Posizione"
+    },
+    "description": {
+      "de": "Logische Entität für geografische Standorte",
+      "en": "Logical entity for geographic locations",
+      "fr": "Entité logique pour les emplacements géographiques",
+      "it": "Entità logica per le posizioni geografiche"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/168735",
+    "status": "active",
+    "domain": "dom-geo",
+    "physicalSchemas": ["sch-postgis-geo"],
+    "created": "2024-03-15",
+    "updated": "2025-01-05"
+  },
+  {
+    "id": "ent-address",
+    "type": "entity",
+    "layer": "logical",
+    "name": {
+      "de": "Adresse",
+      "en": "Address",
+      "fr": "Adresse",
+      "it": "Indirizzo"
+    },
+    "description": {
+      "de": "Logische Entität für postalische Adressen",
+      "en": "Logical entity for postal addresses",
+      "fr": "Entité logique pour les adresses postales",
+      "it": "Entità logica per gli indirizzi postali"
+    },
+    "termdatUrl": "https://www.termdat.bk.admin.ch/entry/52116",
+    "status": "active",
+    "domain": "dom-geo",
+    "physicalSchemas": ["sch-postgis-geo"],
+    "created": "2024-03-20",
+    "updated": "2025-01-05"
+  }
+]
