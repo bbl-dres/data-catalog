@@ -24,10 +24,10 @@
     "en": "Buildings Division"
   },
   "branding.catalog": {
-    "de": "Datenkatalog",
-    "fr": "Catalogue de données",
-    "it": "Catalogo dei dati",
-    "en": "Data Catalog"
+    "de": "Metadatenkatalog Immobilienmanagement",
+    "fr": "Catalogue de métadonnées Gestion immobilière",
+    "it": "Catalogo metadati Gestione immobiliare",
+    "en": "Metadata Catalog Real Estate Management"
   },
   "nav.concepts": {
     "de": "Konzepte",

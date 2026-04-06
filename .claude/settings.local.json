@@ -21,7 +21,11 @@
       "Bash(sed -f /tmp/renames.sed js/app.js)",
       "Bash(cp /tmp/app_new.js js/app.js)",
       "Bash(sed -f /tmp/renames.sed index.html)",
-      "Bash(cp /tmp/index_new.html index.html)"
+      "Bash(cp /tmp/index_new.html index.html)",
+      "Bash(xargs grep:*)",
+      "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/swiss-logo'*)",
+      "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/'*swiss*)",
+      "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/'*logo*)"
     ]
   }
 }

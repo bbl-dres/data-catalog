@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="meta.title">BBL Datenkatalog</title>
     <meta name="description" data-i18n-content="meta.description" content="Datenkatalog des Bundesamts für Bauten und Logistik (BBL) – Geschäftsobjekte und Datensätze nach DCAT-AP CH v3.0.">
-    <link rel="icon" href="assets/ch.png" type="image/png">
+    <link rel="icon" href="assets/swiss-logo-flag.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,14 +20,13 @@
         <div class="top-header">
             <div class="top-header__inner container">
                 <a href="#concept" class="logo">
-                    <div class="logo__flag">
-                        <img src="assets/ch.png" alt="Wappen der Schweiz" data-i18n-alt="branding.coat_of_arms">
-                    </div>
-                    <div class="logo__title">
+                    <img src="assets/swiss-logo-flag.svg" alt="Wappen der Schweiz" data-i18n-alt="branding.coat_of_arms" class="logo__flag">
+                    <img src="assets/swiss-logo-name.svg" alt="Schweizerische Eidgenossenschaft" class="logo__name">
+                    <span class="logo__separator"></span>
+                    <span class="logo__title">
                         <strong data-i18n="branding.office">Bundesamt für Bauten und Logistik BBL</strong>
-                        <span data-i18n="branding.division">Bereich Bauten</span>
-                        <span data-i18n="branding.catalog">Datenkatalog</span>
-                    </div>
+                        <span class="logo__subtitle" data-i18n="branding.catalog">Metadatenkatalog Immobilienmanagement</span>
+                    </span>
                 </a>
                 <div class="meta-navigation">
                     <a href="mailto:dres@bbl.admin.ch" data-i18n="action.contact">Kontakt</a>
@@ -53,14 +52,12 @@
     </header>
 
     <div class="main-wrapper container">
-        <div class="breadcrumb-bar">
-            <div class="breadcrumb" id="breadcrumb">
-                Startseite <span>&gt;</span> Konzepte
-            </div>
-            <div class="breadcrumb-bar__actions">
-                <button class="btn--bare" id="btn-print" data-i18n-title="action.print" title="Drucken"><span class="material-symbols-rounded">print</span></button>
-                <button class="btn--bare" id="btn-share" data-i18n-title="action.share" title="Teilen"><span class="material-symbols-rounded">share</span></button>
-            </div>
+        <div class="breadcrumb" id="breadcrumb">
+            Startseite <span>&gt;</span> Konzepte
+        </div>
+        <div class="share-bar">
+            <button class="btn--bare" id="btn-print" data-i18n-title="action.print" title="Drucken"><span class="material-symbols-rounded">print</span></button>
+            <button class="btn--bare" id="btn-share" data-i18n-title="action.share" title="Teilen"><span class="material-symbols-rounded">share</span></button>
         </div>
 
         <main id="main-content">
