@@ -1,5 +1,12 @@
 # Data Catalog / Datenkatalog IMMO
 
+![Social Preview](assets/Social1.jpg)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://bbl-dres.github.io/data-catalog/)
+[![Standard: DCAT-AP CH](https://img.shields.io/badge/standard-DCAT--AP%20CH%20v3.0-blue)](https://www.dcat-ap.ch/)
+[![No Dependencies](https://img.shields.io/badge/dependencies-zero-orange)]()
+
 **This is a prototype for demonstration purposes.**
 
 A prototype for a data catalog for the Swiss Federal Office for Buildings and Logistics (BBL). Documents business objects and datasets according to the DCAT-AP CH v3.0 standard.
