@@ -1,19 +1,44 @@
 [
   {
     "id": "1",
-    "title": "Aufzugsanlage",
-    "description": "Vertikale Beförderungsanlagen (Aufzüge, Fahrtreppen).",
-    "fullDescription": "Eine Aufzugsanlage ist eine technische Anlage, die dazu dient, Personen oder Lasten in einer Kabine oder auf einer Plattform vertikal oder schräg zwischen zwei oder mehreren Ebenen zu transportieren. Dazu gehören Personenaufzüge, Lastenaufzüge, Fahrtreppen und Fahrsteige. Die Anlagen müssen gemäss schweizerischen Sicherheitsvorschriften regelmässig gewartet und geprüft werden.",
-    "image": "images/concepts/Aufzugsanlage.jpg",
-    "tags": ["Architektonische Sicht", "Technische Objekte"],
+    "title": {
+      "de": "Aufzugsanlage",
+      "fr": "Installation d'ascenseur",
+      "it": "Impianto ascensore",
+      "en": "Elevator system"
+    },
+    "description": {
+      "de": "Vertikale Beförderungsanlagen (Aufzüge, Fahrtreppen).",
+      "fr": "Installations de transport vertical (ascenseurs, escaliers mécaniques).",
+      "it": "Impianti di trasporto verticale (ascensori, scale mobili).",
+      "en": "Vertical transportation systems (elevators, escalators)."
+    },
+    "fullDescription": {
+      "de": "Eine Aufzugsanlage ist eine technische Anlage, die dazu dient, Personen oder Lasten in einer Kabine oder auf einer Plattform vertikal oder schräg zwischen zwei oder mehreren Ebenen zu transportieren. Dazu gehören Personenaufzüge, Lastenaufzüge, Fahrtreppen und Fahrsteige. Die Anlagen müssen gemäss schweizerischen Sicherheitsvorschriften regelmässig gewartet und geprüft werden.",
+      "fr": "Une installation d'ascenseur est une installation technique servant à transporter des personnes ou des charges dans une cabine ou sur une plateforme, verticalement ou en oblique, entre deux ou plusieurs niveaux. Cela comprend les ascenseurs pour personnes, les monte-charges, les escaliers mécaniques et les trottoirs roulants. Les installations doivent être régulièrement entretenues et contrôlées conformément aux prescriptions suisses de sécurité.",
+      "it": "Un impianto ascensore è un impianto tecnico che serve a trasportare persone o carichi in una cabina o su una piattaforma, verticalmente o in obliquo, tra due o più livelli. Comprende ascensori per persone, montacarichi, scale mobili e tappeti mobili. Gli impianti devono essere regolarmente sottoposti a manutenzione e controllo conformemente alle prescrizioni svizzere di sicurezza.",
+      "en": "An elevator system is a technical installation used to transport people or loads in a cabin or on a platform vertically or at an incline between two or more levels. This includes passenger elevators, freight elevators, escalators and moving walkways. The systems must be regularly maintained and inspected in accordance with Swiss safety regulations."
+    },
+    "image": "assets/concepts/Aufzugsanlage.jpg",
+    "tags": ["arch_view", "tech_objects"],
     "meta": {
       "fachliche_id": "AUF-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/520737",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Vertikale Transportanlagen gemäss SIA 370",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Vertikale Transportanlagen gemäss SIA 370",
+        "fr": "Installations de transport vertical selon SIA 370",
+        "it": "Impianti di trasporto verticale secondo SIA 370",
+        "en": "Vertical transportation systems according to SIA 370"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -27,11 +52,31 @@
       { "name": "DIN 276", "value": "461 - Aufzugsanlagen" }
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation der Aufzugsanlage" },
-      { "name": "Gebäude_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Gebäude" },
-      { "name": "Tragfähigkeit", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Maximale Tragfähigkeit in kg" },
-      { "name": "Personenkapazität", "format": "Ganzzahl", "key": "-", "list": "-", "desc": "Maximale Personenzahl" },
-      { "name": "Anlagentyp", "format": "Text", "key": "-", "list": "Aufzugstypen", "desc": "Art der Anlage (Personenaufzug, Lastenaufzug, etc.)" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation der Aufzugsanlage", "fr": "Identification unique de l'installation d'ascenseur", "it": "Identificazione univoca dell'impianto ascensore", "en": "Unique identification of the elevator system" }
+      },
+      {
+        "name": { "de": "Gebäude_ID", "fr": "Bâtiment_ID", "it": "Edificio_ID", "en": "Building_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Gebäude", "fr": "Référence au bâtiment associé", "it": "Riferimento all'edificio associato", "en": "Reference to the associated building" }
+      },
+      {
+        "name": { "de": "Tragfähigkeit", "fr": "Capacité de charge", "it": "Portata", "en": "Load capacity" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Maximale Tragfähigkeit in kg", "fr": "Capacité de charge maximale en kg", "it": "Portata massima in kg", "en": "Maximum load capacity in kg" }
+      },
+      {
+        "name": { "de": "Personenkapazität", "fr": "Capacité en personnes", "it": "Capacità persone", "en": "Person capacity" },
+        "format": "Ganzzahl", "key": "-", "list": "-",
+        "desc": { "de": "Maximale Personenzahl", "fr": "Nombre maximal de personnes", "it": "Numero massimo di persone", "en": "Maximum number of persons" }
+      },
+      {
+        "name": { "de": "Anlagentyp", "fr": "Type d'installation", "it": "Tipo di impianto", "en": "System type" },
+        "format": "Text", "key": "-", "list": "Aufzugstypen",
+        "desc": { "de": "Art der Anlage (Personenaufzug, Lastenaufzug, etc.)", "fr": "Type d'installation (ascenseur pour personnes, monte-charge, etc.)", "it": "Tipo di impianto (ascensore per persone, montacarichi, ecc.)", "en": "Type of system (passenger elevator, freight elevator, etc.)" }
+      }
     ],
     "responsiblePersons": [
       { "admindirId": "p-4721938", "role": "Data Owner" }
@@ -39,19 +84,44 @@
   },
   {
     "id": "2",
-    "title": "Grundstück",
-    "description": "Räumlich abgrenzbare Bodeneinheit mit eigenständigen Eigentumsrechten gemäss ZGB Art. 655. Kann bebaut oder unbebaut sein.",
-    "fullDescription": "Ein Grundstück ist eine räumlich abgegrenzte Bodeneinheit, die im Grundbuch als selbständiges Objekt eingetragen ist. Es bildet die rechtliche Grundlage für Eigentum an Grund und Boden gemäss dem Schweizerischen Zivilgesetzbuch (ZGB Art. 655). Grundstücke können bebaut oder unbebaut sein und umfassen alle darauf errichteten Bauten sowie die damit verbundenen Rechte und Lasten.",
-    "image": "images/concepts/Grundstück.jpg",
-    "tags": ["Architektonische Sicht", "Räumliche Struktur"],
+    "title": {
+      "de": "Grundstück",
+      "fr": "Bien-fonds",
+      "it": "Fondo",
+      "en": "Land parcel"
+    },
+    "description": {
+      "de": "Räumlich abgrenzbare Bodeneinheit mit eigenständigen Eigentumsrechten gemäss ZGB Art. 655. Kann bebaut oder unbebaut sein.",
+      "fr": "Unité foncière délimitée spatialement avec des droits de propriété indépendants selon CC art. 655. Peut être bâti ou non bâti.",
+      "it": "Unità fondiaria delimitabile spazialmente con diritti di proprietà autonomi secondo CC art. 655. Può essere edificato o non edificato.",
+      "en": "Spatially delimited land unit with independent ownership rights according to SCC Art. 655. Can be built-up or undeveloped."
+    },
+    "fullDescription": {
+      "de": "Ein Grundstück ist eine räumlich abgegrenzte Bodeneinheit, die im Grundbuch als selbständiges Objekt eingetragen ist. Es bildet die rechtliche Grundlage für Eigentum an Grund und Boden gemäss dem Schweizerischen Zivilgesetzbuch (ZGB Art. 655). Grundstücke können bebaut oder unbebaut sein und umfassen alle darauf errichteten Bauten sowie die damit verbundenen Rechte und Lasten.",
+      "fr": "Un bien-fonds est une unité foncière délimitée spatialement, inscrite au registre foncier en tant qu'objet indépendant. Il constitue la base juridique de la propriété foncière selon le Code civil suisse (CC art. 655). Les biens-fonds peuvent être bâtis ou non bâtis et comprennent toutes les constructions qui y sont érigées ainsi que les droits et charges qui y sont liés.",
+      "it": "Un fondo è un'unità fondiaria delimitata spazialmente, iscritta nel registro fondiario come oggetto indipendente. Costituisce la base giuridica della proprietà fondiaria secondo il Codice civile svizzero (CC art. 655). I fondi possono essere edificati o non edificati e comprendono tutte le costruzioni ivi erette nonché i diritti e gli oneri ad essi collegati.",
+      "en": "A land parcel is a spatially delimited land unit registered in the land registry as an independent object. It forms the legal basis for land ownership according to the Swiss Civil Code (SCC Art. 655). Land parcels can be built-up or undeveloped and include all structures erected on them as well as the associated rights and encumbrances."
+    },
+    "image": "assets/concepts/Grundstück.jpg",
+    "tags": ["arch_view", "spatial_structure"],
     "meta": {
       "fachliche_id": "GRU-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/123456",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Grundstücksdefinition gemäss ZGB",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Grundstücksdefinition gemäss ZGB",
+        "fr": "Définition du bien-fonds selon CC",
+        "it": "Definizione del fondo secondo CC",
+        "en": "Land parcel definition according to SCC"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -65,11 +135,31 @@
       { "name": "DIN 276", "value": "100 - Grundstück" }
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation des Grundstücks" },
-      { "name": "Parzellennummer", "format": "Text", "key": "-", "list": "-", "desc": "Offizielle Parzellennummer gemäss Kataster" },
-      { "name": "Fläche", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Grundstücksfläche in m²" },
-      { "name": "Eigentümer", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum Eigentümer" },
-      { "name": "Nutzungszone", "format": "Text", "key": "-", "list": "Nutzungszonen", "desc": "Baurechtliche Nutzungszone" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation des Grundstücks", "fr": "Identification unique du bien-fonds", "it": "Identificazione univoca del fondo", "en": "Unique identification of the land parcel" }
+      },
+      {
+        "name": { "de": "Parzellennummer", "fr": "Numéro de parcelle", "it": "Numero di parcella", "en": "Parcel number" },
+        "format": "Text", "key": "-", "list": "-",
+        "desc": { "de": "Offizielle Parzellennummer gemäss Kataster", "fr": "Numéro de parcelle officiel selon le cadastre", "it": "Numero di parcella ufficiale secondo il catasto", "en": "Official parcel number according to the cadastre" }
+      },
+      {
+        "name": { "de": "Fläche", "fr": "Surface", "it": "Superficie", "en": "Area" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Grundstücksfläche in m²", "fr": "Surface du bien-fonds en m²", "it": "Superficie del fondo in m²", "en": "Land parcel area in m²" }
+      },
+      {
+        "name": { "de": "Eigentümer", "fr": "Propriétaire", "it": "Proprietario", "en": "Owner" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum Eigentümer", "fr": "Référence au propriétaire", "it": "Riferimento al proprietario", "en": "Reference to the owner" }
+      },
+      {
+        "name": { "de": "Nutzungszone", "fr": "Zone d'affectation", "it": "Zona di utilizzazione", "en": "Zoning designation" },
+        "format": "Text", "key": "-", "list": "Nutzungszonen",
+        "desc": { "de": "Baurechtliche Nutzungszone", "fr": "Zone d'affectation selon le droit des constructions", "it": "Zona di utilizzazione secondo il diritto edilizio", "en": "Zoning designation according to building law" }
+      }
     ],
     "responsiblePersons": [
       { "admindirId": "p-8293847", "role": "Data Owner" },
@@ -78,19 +168,44 @@
   },
   {
     "id": "3",
-    "title": "Bodenabdeckung",
-    "description": "Versiegelte und unversiegelte Flächen gemäss amtlicher Vermessung. Umfasst Gebäude, befestigte Flächen, Grünflächen etc.",
-    "fullDescription": "Die Bodenabdeckung beschreibt die Art der Oberflächenbedeckung eines Grundstücks gemäss der amtlichen Vermessung. Sie unterscheidet zwischen versiegelten Flächen (Gebäude, Strassen, Plätze) und unversiegelten Flächen (Grünflächen, Gewässer, landwirtschaftliche Nutzflächen). Diese Klassifikation ist wichtig für die Berechnung von Entwässerungsgebühren und ökologische Bewertungen.",
-    "image": "images/concepts/Bodenabdeckung.jpg",
-    "tags": ["Architektonische Sicht", "Räumliche Struktur"],
+    "title": {
+      "de": "Bodenabdeckung",
+      "fr": "Couverture du sol",
+      "it": "Copertura del suolo",
+      "en": "Land cover"
+    },
+    "description": {
+      "de": "Versiegelte und unversiegelte Flächen gemäss amtlicher Vermessung. Umfasst Gebäude, befestigte Flächen, Grünflächen etc.",
+      "fr": "Surfaces imperméabilisées et non imperméabilisées selon la mensuration officielle. Comprend bâtiments, surfaces durcies, espaces verts, etc.",
+      "it": "Superfici impermeabilizzate e non impermeabilizzate secondo la misurazione ufficiale. Comprende edifici, superfici consolidate, aree verdi, ecc.",
+      "en": "Sealed and unsealed surfaces according to the official survey. Includes buildings, paved surfaces, green areas, etc."
+    },
+    "fullDescription": {
+      "de": "Die Bodenabdeckung beschreibt die Art der Oberflächenbedeckung eines Grundstücks gemäss der amtlichen Vermessung. Sie unterscheidet zwischen versiegelten Flächen (Gebäude, Strassen, Plätze) und unversiegelten Flächen (Grünflächen, Gewässer, landwirtschaftliche Nutzflächen). Diese Klassifikation ist wichtig für die Berechnung von Entwässerungsgebühren und ökologische Bewertungen.",
+      "fr": "La couverture du sol décrit le type de revêtement de surface d'un bien-fonds selon la mensuration officielle. Elle distingue les surfaces imperméabilisées (bâtiments, routes, places) des surfaces non imperméabilisées (espaces verts, cours d'eau, surfaces agricoles). Cette classification est importante pour le calcul des taxes d'assainissement et les évaluations écologiques.",
+      "it": "La copertura del suolo descrive il tipo di rivestimento superficiale di un fondo secondo la misurazione ufficiale. Distingue tra superfici impermeabilizzate (edifici, strade, piazze) e superfici non impermeabilizzate (aree verdi, corsi d'acqua, superfici agricole). Questa classificazione è importante per il calcolo delle tasse di canalizzazione e le valutazioni ecologiche.",
+      "en": "Land cover describes the type of surface covering of a land parcel according to the official survey. It distinguishes between sealed surfaces (buildings, roads, squares) and unsealed surfaces (green areas, water bodies, agricultural land). This classification is important for calculating drainage fees and ecological assessments."
+    },
+    "image": "assets/concepts/Bodenabdeckung.jpg",
+    "tags": ["arch_view", "spatial_structure"],
     "meta": {
       "fachliche_id": "BOD-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/234567",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Klassifikation gemäss amtlicher Vermessung",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Klassifikation gemäss amtlicher Vermessung",
+        "fr": "Classification selon la mensuration officielle",
+        "it": "Classificazione secondo la misurazione ufficiale",
+        "en": "Classification according to the official survey"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -107,28 +222,73 @@
       ]}
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation der Bodenabdeckung" },
-      { "name": "Grundstück_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Grundstück" },
-      { "name": "Fläche", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Fläche in m²" },
-      { "name": "Versiegelungsgrad", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Anteil versiegelter Fläche in %" },
-      { "name": "Bedeckungsart", "format": "Text", "key": "-", "list": "Bedeckungsarten", "desc": "Art der Bodenbedeckung" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation der Bodenabdeckung", "fr": "Identification unique de la couverture du sol", "it": "Identificazione univoca della copertura del suolo", "en": "Unique identification of the land cover" }
+      },
+      {
+        "name": { "de": "Grundstück_ID", "fr": "Bien-fonds_ID", "it": "Fondo_ID", "en": "Parcel_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Grundstück", "fr": "Référence au bien-fonds associé", "it": "Riferimento al fondo associato", "en": "Reference to the associated land parcel" }
+      },
+      {
+        "name": { "de": "Fläche", "fr": "Surface", "it": "Superficie", "en": "Area" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Fläche in m²", "fr": "Surface en m²", "it": "Superficie in m²", "en": "Area in m²" }
+      },
+      {
+        "name": { "de": "Versiegelungsgrad", "fr": "Degré d'imperméabilisation", "it": "Grado di impermeabilizzazione", "en": "Sealing degree" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Anteil versiegelter Fläche in %", "fr": "Part de surface imperméabilisée en %", "it": "Quota di superficie impermeabilizzata in %", "en": "Share of sealed surface in %" }
+      },
+      {
+        "name": { "de": "Bedeckungsart", "fr": "Type de couverture", "it": "Tipo di copertura", "en": "Cover type" },
+        "format": "Text", "key": "-", "list": "Bedeckungsarten",
+        "desc": { "de": "Art der Bodenbedeckung", "fr": "Type de couverture du sol", "it": "Tipo di copertura del suolo", "en": "Type of land cover" }
+      }
     ]
   },
   {
     "id": "4",
-    "title": "Beleuchtungsanlage",
-    "description": "Beleuchtungssysteme inkl. Steuerung und Notbeleuchtung.",
-    "fullDescription": "Eine Beleuchtungsanlage umfasst alle technischen Einrichtungen zur künstlichen Beleuchtung von Innen- und Aussenräumen. Dazu gehören die Leuchtmittel, Leuchten, Verkabelung, Steuerungssysteme sowie Notbeleuchtungsanlagen. Die Planung erfolgt gemäss SIA 387/4 und berücksichtigt Aspekte wie Energieeffizienz, Lichtqualität und Sicherheitsanforderungen.",
-    "image": "images/concepts/Beleuchtungsanlage.jpg",
-    "tags": ["Architektonische Sicht", "Technische Objekte"],
+    "title": {
+      "de": "Beleuchtungsanlage",
+      "fr": "Installation d'éclairage",
+      "it": "Impianto di illuminazione",
+      "en": "Lighting system"
+    },
+    "description": {
+      "de": "Beleuchtungssysteme inkl. Steuerung und Notbeleuchtung.",
+      "fr": "Systèmes d'éclairage y compris commande et éclairage de secours.",
+      "it": "Sistemi di illuminazione inclusi comando e illuminazione di emergenza.",
+      "en": "Lighting systems including controls and emergency lighting."
+    },
+    "fullDescription": {
+      "de": "Eine Beleuchtungsanlage umfasst alle technischen Einrichtungen zur künstlichen Beleuchtung von Innen- und Aussenräumen. Dazu gehören die Leuchtmittel, Leuchten, Verkabelung, Steuerungssysteme sowie Notbeleuchtungsanlagen. Die Planung erfolgt gemäss SIA 387/4 und berücksichtigt Aspekte wie Energieeffizienz, Lichtqualität und Sicherheitsanforderungen.",
+      "fr": "Une installation d'éclairage comprend tous les équipements techniques pour l'éclairage artificiel des espaces intérieurs et extérieurs. Cela inclut les sources lumineuses, les luminaires, le câblage, les systèmes de commande ainsi que les installations d'éclairage de secours. La planification s'effectue selon SIA 387/4 et prend en compte des aspects tels que l'efficacité énergétique, la qualité de la lumière et les exigences de sécurité.",
+      "it": "Un impianto di illuminazione comprende tutte le attrezzature tecniche per l'illuminazione artificiale degli spazi interni ed esterni. Ciò include le sorgenti luminose, gli apparecchi di illuminazione, il cablaggio, i sistemi di comando e gli impianti di illuminazione di emergenza. La pianificazione avviene secondo SIA 387/4 e tiene conto di aspetti quali l'efficienza energetica, la qualità della luce e i requisiti di sicurezza.",
+      "en": "A lighting system encompasses all technical equipment for artificial lighting of indoor and outdoor spaces. This includes light sources, luminaires, cabling, control systems and emergency lighting installations. Planning is carried out according to SIA 387/4 and takes into account aspects such as energy efficiency, light quality and safety requirements."
+    },
+    "image": "assets/concepts/Beleuchtungsanlage.jpg",
+    "tags": ["arch_view", "tech_objects"],
     "meta": {
       "fachliche_id": "BEL-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/345678",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Beleuchtungsplanung gemäss SIA 387/4",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Beleuchtungsplanung gemäss SIA 387/4",
+        "fr": "Planification de l'éclairage selon SIA 387/4",
+        "it": "Pianificazione dell'illuminazione secondo SIA 387/4",
+        "en": "Lighting planning according to SIA 387/4"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -144,28 +304,73 @@
       { "name": "DIN 276", "value": "445 - Beleuchtungsanlagen" }
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation der Beleuchtungsanlage" },
-      { "name": "Raum_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Raum" },
-      { "name": "Leistung", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Installierte Leistung in Watt" },
-      { "name": "Beleuchtungsstärke", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Beleuchtungsstärke in Lux" },
-      { "name": "Steuerungsart", "format": "Text", "key": "-", "list": "Steuerungsarten", "desc": "Art der Lichtsteuerung" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation der Beleuchtungsanlage", "fr": "Identification unique de l'installation d'éclairage", "it": "Identificazione univoca dell'impianto di illuminazione", "en": "Unique identification of the lighting system" }
+      },
+      {
+        "name": { "de": "Raum_ID", "fr": "Local_ID", "it": "Locale_ID", "en": "Room_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Raum", "fr": "Référence au local associé", "it": "Riferimento al locale associato", "en": "Reference to the associated room" }
+      },
+      {
+        "name": { "de": "Leistung", "fr": "Puissance", "it": "Potenza", "en": "Power" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Installierte Leistung in Watt", "fr": "Puissance installée en watts", "it": "Potenza installata in watt", "en": "Installed power in watts" }
+      },
+      {
+        "name": { "de": "Beleuchtungsstärke", "fr": "Éclairement", "it": "Illuminamento", "en": "Illuminance" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Beleuchtungsstärke in Lux", "fr": "Éclairement en lux", "it": "Illuminamento in lux", "en": "Illuminance in lux" }
+      },
+      {
+        "name": { "de": "Steuerungsart", "fr": "Type de commande", "it": "Tipo di comando", "en": "Control type" },
+        "format": "Text", "key": "-", "list": "Steuerungsarten",
+        "desc": { "de": "Art der Lichtsteuerung", "fr": "Type de commande d'éclairage", "it": "Tipo di comando dell'illuminazione", "en": "Type of lighting control" }
+      }
     ]
   },
   {
     "id": "5",
-    "title": "Gebäude",
-    "description": "Mit dem Boden fest verbundenes Bauwerk mit eindeutiger Identifikation gemäss VGWR.",
-    "fullDescription": "Ein Gebäude ist ein dauerhaft mit dem Boden verbundenes Bauwerk, das einen oder mehrere Räume umschliesst und Menschen, Tieren oder Sachen Schutz bietet. Gemäss der Verordnung über das eidgenössische Gebäude- und Wohnungsregister (VGWR) erhält jedes Gebäude eine eindeutige Identifikationsnummer (EGID). Gebäude bilden die zentrale Struktureinheit im Immobilienmanagement.",
-    "image": "images/concepts/Gebäude.jpg",
-    "tags": ["Architektonische Sicht", "Räumliche Struktur"],
+    "title": {
+      "de": "Gebäude",
+      "fr": "Bâtiment",
+      "it": "Edificio",
+      "en": "Building"
+    },
+    "description": {
+      "de": "Mit dem Boden fest verbundenes Bauwerk mit eindeutiger Identifikation gemäss VGWR.",
+      "fr": "Ouvrage solidement lié au sol avec une identification unique selon l'ORDP.",
+      "it": "Opera edilizia saldamente collegata al suolo con identificazione univoca secondo l'OREA.",
+      "en": "Structure permanently connected to the ground with unique identification according to the BRWR."
+    },
+    "fullDescription": {
+      "de": "Ein Gebäude ist ein dauerhaft mit dem Boden verbundenes Bauwerk, das einen oder mehrere Räume umschliesst und Menschen, Tieren oder Sachen Schutz bietet. Gemäss der Verordnung über das eidgenössische Gebäude- und Wohnungsregister (VGWR) erhält jedes Gebäude eine eindeutige Identifikationsnummer (EGID). Gebäude bilden die zentrale Struktureinheit im Immobilienmanagement.",
+      "fr": "Un bâtiment est un ouvrage durablement lié au sol, qui enferme un ou plusieurs locaux et offre une protection aux personnes, aux animaux ou aux biens. Conformément à l'ordonnance sur le Registre fédéral des bâtiments et des logements (ORDP), chaque bâtiment reçoit un numéro d'identification unique (EGID). Les bâtiments constituent l'unité structurelle centrale de la gestion immobilière.",
+      "it": "Un edificio è un'opera edilizia durevolmente collegata al suolo che racchiude uno o più locali e offre protezione a persone, animali o cose. Conformemente all'ordinanza sul Registro federale degli edifici e delle abitazioni (OREA), ogni edificio riceve un numero di identificazione univoco (EGID). Gli edifici costituiscono l'unità strutturale centrale della gestione immobiliare.",
+      "en": "A building is a structure permanently connected to the ground that encloses one or more rooms and provides protection for people, animals or property. According to the Ordinance on the Federal Register of Buildings and Dwellings (BRWR), each building receives a unique identification number (EGID). Buildings form the central structural unit in real estate management."
+    },
+    "image": "assets/concepts/Gebäude.jpg",
+    "tags": ["arch_view", "spatial_structure"],
     "meta": {
       "fachliche_id": "GEB-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/456789",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Gebäudedefinition gemäss VGWR",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Gebäudedefinition gemäss VGWR",
+        "fr": "Définition du bâtiment selon l'ORDP",
+        "it": "Definizione dell'edificio secondo l'OREA",
+        "en": "Building definition according to the BRWR"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -181,11 +386,31 @@
       ]}
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation des Gebäudes" },
-      { "name": "EGID", "format": "Text", "key": "-", "list": "-", "desc": "Eidgenössischer Gebäudeidentifikator" },
-      { "name": "Grundstück_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Grundstück" },
-      { "name": "Baujahr", "format": "Ganzzahl", "key": "-", "list": "-", "desc": "Jahr der Fertigstellung" },
-      { "name": "Gebäudekategorie", "format": "Text", "key": "-", "list": "Gebäudekategorien", "desc": "Nutzungskategorie gemäss VGWR" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation des Gebäudes", "fr": "Identification unique du bâtiment", "it": "Identificazione univoca dell'edificio", "en": "Unique identification of the building" }
+      },
+      {
+        "name": { "de": "EGID", "fr": "EGID", "it": "EGID", "en": "EGID" },
+        "format": "Text", "key": "-", "list": "-",
+        "desc": { "de": "Eidgenössischer Gebäudeidentifikator", "fr": "Identificateur fédéral de bâtiment", "it": "Identificatore federale degli edifici", "en": "Federal building identifier" }
+      },
+      {
+        "name": { "de": "Grundstück_ID", "fr": "Bien-fonds_ID", "it": "Fondo_ID", "en": "Parcel_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Grundstück", "fr": "Référence au bien-fonds associé", "it": "Riferimento al fondo associato", "en": "Reference to the associated land parcel" }
+      },
+      {
+        "name": { "de": "Baujahr", "fr": "Année de construction", "it": "Anno di costruzione", "en": "Year of construction" },
+        "format": "Ganzzahl", "key": "-", "list": "-",
+        "desc": { "de": "Jahr der Fertigstellung", "fr": "Année d'achèvement", "it": "Anno di completamento", "en": "Year of completion" }
+      },
+      {
+        "name": { "de": "Gebäudekategorie", "fr": "Catégorie de bâtiment", "it": "Categoria di edificio", "en": "Building category" },
+        "format": "Text", "key": "-", "list": "Gebäudekategorien",
+        "desc": { "de": "Nutzungskategorie gemäss VGWR", "fr": "Catégorie d'utilisation selon l'ORDP", "it": "Categoria d'uso secondo l'OREA", "en": "Usage category according to the BRWR" }
+      }
     ],
     "responsiblePersons": [
       { "admindirId": "p-5647382", "role": "Data Steward" }
@@ -193,19 +418,44 @@
   },
   {
     "id": "6",
-    "title": "Geschoss",
-    "description": "Horizontale Gliederungsebene innerhalb eines Gebäudes mit eindeutiger Höhenlage.",
-    "fullDescription": "Ein Geschoss ist eine horizontale Ebene innerhalb eines Gebäudes, die durch Decken begrenzt wird. Geschosse werden von unten nach oben durchnummeriert, wobei das Erdgeschoss als Referenzebene dient. Untergeschosse, Zwischengeschosse und Dachgeschosse werden entsprechend ihrer Lage klassifiziert. Die Geschossdefinition folgt den Vorgaben der SIA 416.",
-    "image": "images/concepts/Geschoss.jpg",
-    "tags": ["Architektonische Sicht", "Räumliche Struktur"],
+    "title": {
+      "de": "Geschoss",
+      "fr": "Étage",
+      "it": "Piano",
+      "en": "Storey"
+    },
+    "description": {
+      "de": "Horizontale Gliederungsebene innerhalb eines Gebäudes mit eindeutiger Höhenlage.",
+      "fr": "Niveau de structuration horizontal au sein d'un bâtiment avec une altitude définie.",
+      "it": "Livello di suddivisione orizzontale all'interno di un edificio con un'altitudine definita.",
+      "en": "Horizontal structural level within a building with a defined elevation."
+    },
+    "fullDescription": {
+      "de": "Ein Geschoss ist eine horizontale Ebene innerhalb eines Gebäudes, die durch Decken begrenzt wird. Geschosse werden von unten nach oben durchnummeriert, wobei das Erdgeschoss als Referenzebene dient. Untergeschosse, Zwischengeschosse und Dachgeschosse werden entsprechend ihrer Lage klassifiziert. Die Geschossdefinition folgt den Vorgaben der SIA 416.",
+      "fr": "Un étage est un niveau horizontal au sein d'un bâtiment, délimité par des dalles. Les étages sont numérotés de bas en haut, le rez-de-chaussée servant de niveau de référence. Les sous-sols, les entresols et les combles sont classifiés selon leur position. La définition des étages suit les prescriptions de la SIA 416.",
+      "it": "Un piano è un livello orizzontale all'interno di un edificio, delimitato da solai. I piani sono numerati dal basso verso l'alto, con il piano terra che funge da livello di riferimento. I piani interrati, i mezzanini e i sottotetti sono classificati in base alla loro posizione. La definizione dei piani segue le prescrizioni della SIA 416.",
+      "en": "A storey is a horizontal level within a building, bounded by floor slabs. Storeys are numbered from bottom to top, with the ground floor serving as the reference level. Basements, mezzanines and attic storeys are classified according to their position. The storey definition follows the requirements of SIA 416."
+    },
+    "image": "assets/concepts/Geschoss.jpg",
+    "tags": ["arch_view", "spatial_structure"],
     "meta": {
       "fachliche_id": "GES-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/567890",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Geschossdefinition gemäss SIA 416",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Geschossdefinition gemäss SIA 416",
+        "fr": "Définition des étages selon SIA 416",
+        "it": "Definizione dei piani secondo SIA 416",
+        "en": "Storey definition according to SIA 416"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -219,28 +469,73 @@
       { "name": "SIA 416", "value": "Flächen und Volumen von Gebäuden" }
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation des Geschosses" },
-      { "name": "Gebäude_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Gebäude" },
-      { "name": "Geschossnummer", "format": "Ganzzahl", "key": "-", "list": "-", "desc": "Nummerierung des Geschosses" },
-      { "name": "Höhenlage", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Höhe über Referenzpunkt in m" },
-      { "name": "Geschosstyp", "format": "Text", "key": "-", "list": "Geschosstypen", "desc": "Art des Geschosses (EG, OG, UG, DG)" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation des Geschosses", "fr": "Identification unique de l'étage", "it": "Identificazione univoca del piano", "en": "Unique identification of the storey" }
+      },
+      {
+        "name": { "de": "Gebäude_ID", "fr": "Bâtiment_ID", "it": "Edificio_ID", "en": "Building_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Gebäude", "fr": "Référence au bâtiment associé", "it": "Riferimento all'edificio associato", "en": "Reference to the associated building" }
+      },
+      {
+        "name": { "de": "Geschossnummer", "fr": "Numéro d'étage", "it": "Numero di piano", "en": "Storey number" },
+        "format": "Ganzzahl", "key": "-", "list": "-",
+        "desc": { "de": "Nummerierung des Geschosses", "fr": "Numérotation de l'étage", "it": "Numerazione del piano", "en": "Numbering of the storey" }
+      },
+      {
+        "name": { "de": "Höhenlage", "fr": "Altitude", "it": "Altitudine", "en": "Elevation" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Höhe über Referenzpunkt in m", "fr": "Hauteur au-dessus du point de référence en m", "it": "Altezza sopra il punto di riferimento in m", "en": "Height above reference point in m" }
+      },
+      {
+        "name": { "de": "Geschosstyp", "fr": "Type d'étage", "it": "Tipo di piano", "en": "Storey type" },
+        "format": "Text", "key": "-", "list": "Geschosstypen",
+        "desc": { "de": "Art des Geschosses (EG, OG, UG, DG)", "fr": "Type d'étage (RDC, étage, sous-sol, combles)", "it": "Tipo di piano (PT, PS, PI, SA)", "en": "Type of storey (GF, UF, BF, AF)" }
+      }
     ]
   },
   {
     "id": "7",
-    "title": "Bauteil",
-    "description": "Physische Bauteile (Wände, Decken, Türen, Fenster).",
-    "fullDescription": "Ein Bauteil ist ein physisches Element eines Gebäudes, das eine bestimmte konstruktive oder funktionale Aufgabe erfüllt. Dazu gehören tragende Elemente wie Wände und Decken, sowie nicht-tragende Elemente wie Türen, Fenster und Fassadenverkleidungen. Bauteile werden nach ihrer Funktion, ihrem Material und ihrer Position im Gebäude klassifiziert und sind zentral für die Gebäudedokumentation und das Facility Management.",
-    "image": "images/concepts/Bauteil.jpg",
-    "tags": ["Architektonische Sicht", "Konstruktive Objekte"],
+    "title": {
+      "de": "Bauteil",
+      "fr": "Élément de construction",
+      "it": "Componente edilizio",
+      "en": "Building component"
+    },
+    "description": {
+      "de": "Physische Bauteile (Wände, Decken, Türen, Fenster).",
+      "fr": "Éléments de construction physiques (murs, dalles, portes, fenêtres).",
+      "it": "Componenti edilizi fisici (pareti, solai, porte, finestre).",
+      "en": "Physical building components (walls, slabs, doors, windows)."
+    },
+    "fullDescription": {
+      "de": "Ein Bauteil ist ein physisches Element eines Gebäudes, das eine bestimmte konstruktive oder funktionale Aufgabe erfüllt. Dazu gehören tragende Elemente wie Wände und Decken, sowie nicht-tragende Elemente wie Türen, Fenster und Fassadenverkleidungen. Bauteile werden nach ihrer Funktion, ihrem Material und ihrer Position im Gebäude klassifiziert und sind zentral für die Gebäudedokumentation und das Facility Management.",
+      "fr": "Un élément de construction est un composant physique d'un bâtiment qui remplit une fonction constructive ou fonctionnelle déterminée. Cela comprend les éléments porteurs tels que les murs et les dalles, ainsi que les éléments non porteurs tels que les portes, les fenêtres et les revêtements de façade. Les éléments de construction sont classifiés selon leur fonction, leur matériau et leur position dans le bâtiment et sont essentiels pour la documentation du bâtiment et la gestion des installations.",
+      "it": "Un componente edilizio è un elemento fisico di un edificio che svolge una determinata funzione costruttiva o funzionale. Comprende elementi portanti come pareti e solai, nonché elementi non portanti come porte, finestre e rivestimenti di facciata. I componenti edilizi sono classificati in base alla loro funzione, al materiale e alla posizione nell'edificio e sono centrali per la documentazione dell'edificio e il facility management.",
+      "en": "A building component is a physical element of a building that fulfils a specific structural or functional purpose. This includes load-bearing elements such as walls and slabs, as well as non-load-bearing elements such as doors, windows and facade cladding. Building components are classified by their function, material and position in the building and are central to building documentation and facility management."
+    },
+    "image": "assets/concepts/Bauteil.jpg",
+    "tags": ["arch_view", "structural_objects"],
     "meta": {
       "fachliche_id": "BAU-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/678901",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Bauteilklassifikation gemäss SIA",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Bauteilklassifikation gemäss SIA",
+        "fr": "Classification des éléments de construction selon SIA",
+        "it": "Classificazione dei componenti edilizi secondo SIA",
+        "en": "Building component classification according to SIA"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -268,28 +563,73 @@
       ]}
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation des Bauteils" },
-      { "name": "Geschoss_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum zugehörigen Geschoss" },
-      { "name": "Bauteiltyp", "format": "Text", "key": "-", "list": "Bauteiltypen", "desc": "Art des Bauteils (Wand, Decke, Tür, etc.)" },
-      { "name": "Material", "format": "Text", "key": "-", "list": "Materialien", "desc": "Hauptmaterial des Bauteils" },
-      { "name": "Tragend", "format": "Text", "key": "-", "list": "Ja/Nein", "desc": "Ist das Bauteil statisch tragend?" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation des Bauteils", "fr": "Identification unique de l'élément de construction", "it": "Identificazione univoca del componente edilizio", "en": "Unique identification of the building component" }
+      },
+      {
+        "name": { "de": "Geschoss_ID", "fr": "Étage_ID", "it": "Piano_ID", "en": "Storey_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum zugehörigen Geschoss", "fr": "Référence à l'étage associé", "it": "Riferimento al piano associato", "en": "Reference to the associated storey" }
+      },
+      {
+        "name": { "de": "Bauteiltyp", "fr": "Type d'élément", "it": "Tipo di componente", "en": "Component type" },
+        "format": "Text", "key": "-", "list": "Bauteiltypen",
+        "desc": { "de": "Art des Bauteils (Wand, Decke, Tür, etc.)", "fr": "Type d'élément de construction (mur, dalle, porte, etc.)", "it": "Tipo di componente edilizio (parete, solaio, porta, ecc.)", "en": "Type of building component (wall, slab, door, etc.)" }
+      },
+      {
+        "name": { "de": "Material", "fr": "Matériau", "it": "Materiale", "en": "Material" },
+        "format": "Text", "key": "-", "list": "Materialien",
+        "desc": { "de": "Hauptmaterial des Bauteils", "fr": "Matériau principal de l'élément de construction", "it": "Materiale principale del componente edilizio", "en": "Main material of the building component" }
+      },
+      {
+        "name": { "de": "Tragend", "fr": "Porteur", "it": "Portante", "en": "Load-bearing" },
+        "format": "Text", "key": "-", "list": "Ja/Nein",
+        "desc": { "de": "Ist das Bauteil statisch tragend?", "fr": "L'élément de construction est-il porteur?", "it": "Il componente edilizio è portante?", "en": "Is the building component load-bearing?" }
+      }
     ]
   },
   {
     "id": "8",
-    "title": "Bemessung",
-    "description": "Flächen, Volumen, Längen, Stückzahlen nach SIA 416 und anderen Standards.",
-    "fullDescription": "Die Bemessung umfasst alle quantitativen Angaben zu Gebäuden und deren Bestandteilen. Dazu gehören Flächenberechnungen (Geschossfläche, Nutzfläche, Verkehrsfläche), Volumenberechnungen (Gebäudevolumen, Rauminhalt), Längenangaben und Stückzahlen. Die Berechnung erfolgt nach den Vorgaben der SIA 416 und weiterer relevanter Normen. Diese Daten sind essentiell für Kostenberechnungen, Mietflächenermittlung und Gebäudebewertungen.",
-    "image": "images/concepts/Bemessung.jpg",
-    "tags": ["Architektonische Sicht", "Messungen/Performance"],
+    "title": {
+      "de": "Bemessung",
+      "fr": "Dimensionnement",
+      "it": "Dimensionamento",
+      "en": "Dimensioning"
+    },
+    "description": {
+      "de": "Flächen, Volumen, Längen, Stückzahlen nach SIA 416 und anderen Standards.",
+      "fr": "Surfaces, volumes, longueurs, quantités selon SIA 416 et autres normes.",
+      "it": "Superfici, volumi, lunghezze, quantità secondo SIA 416 e altre norme.",
+      "en": "Areas, volumes, lengths, quantities according to SIA 416 and other standards."
+    },
+    "fullDescription": {
+      "de": "Die Bemessung umfasst alle quantitativen Angaben zu Gebäuden und deren Bestandteilen. Dazu gehören Flächenberechnungen (Geschossfläche, Nutzfläche, Verkehrsfläche), Volumenberechnungen (Gebäudevolumen, Rauminhalt), Längenangaben und Stückzahlen. Die Berechnung erfolgt nach den Vorgaben der SIA 416 und weiterer relevanter Normen. Diese Daten sind essentiell für Kostenberechnungen, Mietflächenermittlung und Gebäudebewertungen.",
+      "fr": "Le dimensionnement comprend toutes les données quantitatives relatives aux bâtiments et à leurs composants. Cela inclut les calculs de surfaces (surface de plancher, surface utile, surface de circulation), les calculs de volumes (volume du bâtiment, volume des locaux), les indications de longueur et les quantités. Le calcul s'effectue selon les prescriptions de la SIA 416 et d'autres normes pertinentes. Ces données sont essentielles pour les calculs de coûts, la détermination des surfaces locatives et les évaluations immobilières.",
+      "it": "Il dimensionamento comprende tutti i dati quantitativi relativi agli edifici e ai loro componenti. Ciò include i calcoli delle superfici (superficie di piano, superficie utile, superficie di circolazione), i calcoli dei volumi (volume dell'edificio, volume dei locali), le indicazioni di lunghezza e le quantità. Il calcolo avviene secondo le prescrizioni della SIA 416 e di altre norme pertinenti. Questi dati sono essenziali per i calcoli dei costi, la determinazione delle superfici locative e le valutazioni immobiliari.",
+      "en": "Dimensioning encompasses all quantitative data relating to buildings and their components. This includes area calculations (floor area, usable area, circulation area), volume calculations (building volume, room volume), length measurements and quantities. Calculations are performed according to the requirements of SIA 416 and other relevant standards. This data is essential for cost calculations, rental area determination and building valuations."
+    },
+    "image": "assets/concepts/Bemessung.jpg",
+    "tags": ["arch_view", "measurements"],
     "meta": {
       "fachliche_id": "BEM-01",
       "termdat": "https://www.termdat.bk.admin.ch/entry/789012",
-      "fachbereich": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+      "fachbereich": {
+        "de": "Immobilienmanagement, Bundesamt für Bauten und Logistik BBL",
+        "fr": "Gestion immobilière, Office fédéral des constructions et de la logistique OFCL",
+        "it": "Gestione immobiliare, Ufficio federale delle costruzioni e della logistica UFCL",
+        "en": "Real estate management, Federal Office for Buildings and Logistics FOBL"
+      },
       "system": "ERP SAP RE-FX",
-      "klassifizierung": "Öffentlich",
-      "personenbezogen": "Keine",
-      "kommentar": "Flächenberechnung gemäss SIA 416",
+      "klassifizierung": "public",
+      "personenbezogen": "none",
+      "kommentar": {
+        "de": "Flächenberechnung gemäss SIA 416",
+        "fr": "Calcul des surfaces selon SIA 416",
+        "it": "Calcolo delle superfici secondo SIA 416",
+        "en": "Area calculation according to SIA 416"
+      },
       "version": "V 1.0"
     },
     "standards": [
@@ -304,11 +644,31 @@
       ]}
     ],
     "attributes": [
-      { "name": "Fachliche ID", "format": "Text", "key": "PK", "list": "-", "desc": "Eindeutige Identifikation der Bemessung" },
-      { "name": "Objekt_ID", "format": "Text", "key": "FK", "list": "-", "desc": "Referenz zum bemessenen Objekt" },
-      { "name": "Messtyp", "format": "Text", "key": "-", "list": "Messtypen", "desc": "Art der Messung (Fläche, Volumen, Länge)" },
-      { "name": "Wert", "format": "Dezimalzahl", "key": "-", "list": "-", "desc": "Gemessener Wert" },
-      { "name": "Einheit", "format": "Text", "key": "-", "list": "Einheiten", "desc": "Masseinheit (m², m³, m, Stk)" }
+      {
+        "name": { "de": "Fachliche ID", "fr": "ID métier", "it": "ID specialistico", "en": "Business ID" },
+        "format": "Text", "key": "PK", "list": "-",
+        "desc": { "de": "Eindeutige Identifikation der Bemessung", "fr": "Identification unique du dimensionnement", "it": "Identificazione univoca del dimensionamento", "en": "Unique identification of the dimensioning" }
+      },
+      {
+        "name": { "de": "Objekt_ID", "fr": "Objet_ID", "it": "Oggetto_ID", "en": "Object_ID" },
+        "format": "Text", "key": "FK", "list": "-",
+        "desc": { "de": "Referenz zum bemessenen Objekt", "fr": "Référence à l'objet dimensionné", "it": "Riferimento all'oggetto dimensionato", "en": "Reference to the dimensioned object" }
+      },
+      {
+        "name": { "de": "Messtyp", "fr": "Type de mesure", "it": "Tipo di misurazione", "en": "Measurement type" },
+        "format": "Text", "key": "-", "list": "Messtypen",
+        "desc": { "de": "Art der Messung (Fläche, Volumen, Länge)", "fr": "Type de mesure (surface, volume, longueur)", "it": "Tipo di misurazione (superficie, volume, lunghezza)", "en": "Type of measurement (area, volume, length)" }
+      },
+      {
+        "name": { "de": "Wert", "fr": "Valeur", "it": "Valore", "en": "Value" },
+        "format": "Dezimalzahl", "key": "-", "list": "-",
+        "desc": { "de": "Gemessener Wert", "fr": "Valeur mesurée", "it": "Valore misurato", "en": "Measured value" }
+      },
+      {
+        "name": { "de": "Einheit", "fr": "Unité", "it": "Unità", "en": "Unit" },
+        "format": "Text", "key": "-", "list": "Einheiten",
+        "desc": { "de": "Masseinheit (m², m³, m, Stk)", "fr": "Unité de mesure (m², m³, m, pce)", "it": "Unità di misura (m², m³, m, pz)", "en": "Unit of measurement (m², m³, m, pcs)" }
+      }
     ]
   }
 ]

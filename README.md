@@ -13,7 +13,7 @@ A prototype for a data catalog for the Swiss Federal Office for Buildings and Lo
 
 **Live Demo:** https://bbl-dres.github.io/data-catalog/
 
-![Preview](images/readme/Preview.JPG)
+![Preview](assets/readme/Preview.JPG)
 
 ## Features
 
@@ -52,14 +52,18 @@ python3 -m http.server 8000
 
 ```
 meta-bv/
-├── index.html              # Single-file web application
+├── index.html              # HTML structure
+├── css/
+│   └── style.css           # Styles
+├── js/
+│   └── app.js              # JavaScript application
 ├── content/
 │   ├── about.html          # About page
 │   └── manual.html         # User manual
 ├── data/
 │   ├── concepts.json       # Business object definitions
 │   └── datasets.json       # Dataset definitions
-└── images/
+└── assets/
     ├── concepts/           # Concept images
     └── datasets/           # Dataset images
 ```

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp -r images/concepts assets/)",
+      "Bash(cp -r images/datasets assets/)",
+      "Bash(cp -r images/readme assets/)",
+      "Bash(cp images/ch.png assets/)",
+      "Bash(cp \"images/BBL DCAT-AP CH.avif\" assets/)",
+      "Bash(sed -n '11,976p' index.html)",
+      "Bash(sed -n '1328,2178p' index.html)",
+      "Bash(sed -i 's/^        //' css/style.css)",
+      "Bash(sed -i 's/^    //' js/app.js)",
+      "Bash(sed -n '978,1326p' index.html)",
+      "Bash(mv index_new.html index.html)",
+      "Bash(cp about.html about-de.html)",
+      "Bash(cp manual.html manual-de.html)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('c:/Users/DavidRasner/Documents/GitHub/data-catalog/data/i18n.json'\\)\\); print\\(len\\(d\\), 'keys'\\); print\\('\\\\\\\\n'.join\\(sorted\\(d.keys\\(\\)\\)[:20]\\)\\)\")",
+      "Bash(node -c js/app.js)"
+    ]
+  }
+}

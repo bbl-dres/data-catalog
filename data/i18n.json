@@ -1,0 +1,716 @@
+{
+  "meta.title": {
+    "de": "BBL Datenkatalog",
+    "fr": "Catalogue de données BBL",
+    "it": "Catalogo dei dati BBL",
+    "en": "BBL Data Catalog"
+  },
+  "meta.description": {
+    "de": "Der Datenkatalog des Bundesamts für Bauten und Logistik (BBL) beschreibt die Geschäftsobjekte und Datensätze gemäss DCAT-AP CH v3.0.",
+    "fr": "Le catalogue de données de l'Office fédéral des constructions et de la logistique (OFCL) décrit les objets métier et les jeux de données conformément à DCAT-AP CH v3.0.",
+    "it": "Il catalogo dei dati dell'Ufficio federale delle costruzioni e della logistica (UFCL) descrive gli oggetti aziendali e i set di dati secondo DCAT-AP CH v3.0.",
+    "en": "The data catalog of the Federal Office for Buildings and Logistics (FOBL) describes business objects and datasets in accordance with DCAT-AP CH v3.0."
+  },
+  "branding.office": {
+    "de": "Bundesamt für Bauten und Logistik BBL",
+    "fr": "Office fédéral des constructions et de la logistique OFCL",
+    "it": "Ufficio federale delle costruzioni e della logistica UFCL",
+    "en": "Federal Office for Buildings and Logistics FOBL"
+  },
+  "branding.division": {
+    "de": "Bereich Bauten",
+    "fr": "Domaine Constructions",
+    "it": "Settore Costruzioni",
+    "en": "Buildings Division"
+  },
+  "branding.catalog": {
+    "de": "Datenkatalog",
+    "fr": "Catalogue de données",
+    "it": "Catalogo dei dati",
+    "en": "Data Catalog"
+  },
+  "nav.concepts": {
+    "de": "Konzepte",
+    "fr": "Concepts",
+    "it": "Concetti",
+    "en": "Concepts"
+  },
+  "nav.datasets": {
+    "de": "Datensätze",
+    "fr": "Jeux de données",
+    "it": "Set di dati",
+    "en": "Datasets"
+  },
+  "nav.about": {
+    "de": "Über diesen Datenkatalog",
+    "fr": "À propos de ce catalogue",
+    "it": "Informazioni su questo catalogo",
+    "en": "About this catalog"
+  },
+  "nav.manual": {
+    "de": "Handbuch",
+    "fr": "Manuel",
+    "it": "Manuale",
+    "en": "Manual"
+  },
+  "action.contact": {
+    "de": "Kontakt",
+    "fr": "Contact",
+    "it": "Contatto",
+    "en": "Contact"
+  },
+  "action.export": {
+    "de": "Export",
+    "fr": "Export",
+    "it": "Esportazione",
+    "en": "Export"
+  },
+  "action.print": {
+    "de": "Drucken",
+    "fr": "Imprimer",
+    "it": "Stampare",
+    "en": "Print"
+  },
+  "action.share": {
+    "de": "Teilen",
+    "fr": "Partager",
+    "it": "Condividere",
+    "en": "Share"
+  },
+  "breadcrumb.home": {
+    "de": "Startseite",
+    "fr": "Accueil",
+    "it": "Pagina iniziale",
+    "en": "Home"
+  },
+  "search.placeholder": {
+    "de": "Suchen",
+    "fr": "Rechercher",
+    "it": "Cercare",
+    "en": "Search"
+  },
+  "search.concepts_aria": {
+    "de": "Konzepte durchsuchen",
+    "fr": "Rechercher des concepts",
+    "it": "Cercare concetti",
+    "en": "Search concepts"
+  },
+  "search.datasets_aria": {
+    "de": "Datensätze durchsuchen",
+    "fr": "Rechercher des jeux de données",
+    "it": "Cercare set di dati",
+    "en": "Search datasets"
+  },
+  "filter.button": {
+    "de": "Filter",
+    "fr": "Filtre",
+    "it": "Filtro",
+    "en": "Filter"
+  },
+  "filter.reset": {
+    "de": "Reset",
+    "fr": "Réinitialiser",
+    "it": "Ripristina",
+    "en": "Reset"
+  },
+  "filter.reset_title": {
+    "de": "Filter zurücksetzen",
+    "fr": "Réinitialiser les filtres",
+    "it": "Ripristina filtri",
+    "en": "Reset filters"
+  },
+  "filter.title": {
+    "de": "Filter",
+    "fr": "Filtre",
+    "it": "Filtro",
+    "en": "Filter"
+  },
+  "filter.keywords": {
+    "de": "Schlüsselwörter",
+    "fr": "Mots-clés",
+    "it": "Parole chiave",
+    "en": "Keywords"
+  },
+  "filter.keyword_placeholder": {
+    "de": "Neues Schlüsselwort...",
+    "fr": "Nouveau mot-clé...",
+    "it": "Nuova parola chiave...",
+    "en": "New keyword..."
+  },
+  "filter.keyword_choose": {
+    "de": "Schlüsselwort wählen...",
+    "fr": "Choisir un mot-clé...",
+    "it": "Scegli parola chiave...",
+    "en": "Choose keyword..."
+  },
+  "filter.system": {
+    "de": "Führendes System",
+    "fr": "Système directeur",
+    "it": "Sistema principale",
+    "en": "Leading system"
+  },
+  "filter.personaldata": {
+    "de": "Personenbezogene Daten",
+    "fr": "Données personnelles",
+    "it": "Dati personali",
+    "en": "Personal data"
+  },
+  "filter.classification": {
+    "de": "Klassifizierung",
+    "fr": "Classification",
+    "it": "Classificazione",
+    "en": "Classification"
+  },
+  "filter.all": {
+    "de": "Alle",
+    "fr": "Tous",
+    "it": "Tutti",
+    "en": "All"
+  },
+  "filter.nomatch": {
+    "de": "Keine Treffer",
+    "fr": "Aucun résultat",
+    "it": "Nessun risultato",
+    "en": "No matches"
+  },
+  "view.grid_aria": {
+    "de": "Rasteransicht",
+    "fr": "Vue en grille",
+    "it": "Vista a griglia",
+    "en": "Grid view"
+  },
+  "view.list_aria": {
+    "de": "Listenansicht",
+    "fr": "Vue en liste",
+    "it": "Vista a lista",
+    "en": "List view"
+  },
+  "type.concept": {
+    "de": "Konzept",
+    "fr": "Concept",
+    "it": "Concetto",
+    "en": "Concept"
+  },
+  "type.dataset": {
+    "de": "Datensatz",
+    "fr": "Jeu de données",
+    "it": "Set di dati",
+    "en": "Dataset"
+  },
+  "table.concept": {
+    "de": "KONZEPT",
+    "fr": "CONCEPT",
+    "it": "CONCETTO",
+    "en": "CONCEPT"
+  },
+  "table.dataset": {
+    "de": "DATENSATZ",
+    "fr": "JEU DE DONNÉES",
+    "it": "SET DI DATI",
+    "en": "DATASET"
+  },
+  "table.description": {
+    "de": "BESCHREIBUNG",
+    "fr": "DESCRIPTION",
+    "it": "DESCRIZIONE",
+    "en": "DESCRIPTION"
+  },
+  "table.keywords": {
+    "de": "SCHLÜSSELWÖRTER",
+    "fr": "MOTS-CLÉS",
+    "it": "PAROLE CHIAVE",
+    "en": "KEYWORDS"
+  },
+  "table.name": {
+    "de": "NAME",
+    "fr": "NOM",
+    "it": "NOME",
+    "en": "NAME"
+  },
+  "table.format": {
+    "de": "FORMAT",
+    "fr": "FORMAT",
+    "it": "FORMATO",
+    "en": "FORMAT"
+  },
+  "table.key": {
+    "de": "SCHLÜSSEL",
+    "fr": "CLÉ",
+    "it": "CHIAVE",
+    "en": "KEY"
+  },
+  "table.valuelist": {
+    "de": "WERTELISTE",
+    "fr": "LISTE DE VALEURS",
+    "it": "LISTA VALORI",
+    "en": "VALUE LIST"
+  },
+  "noresults.text": {
+    "de": "Keine Ergebnisse gefunden",
+    "fr": "Aucun résultat trouvé",
+    "it": "Nessun risultato trovato",
+    "en": "No results found"
+  },
+  "detail.responsible_title": {
+    "de": "Verantwortliche Personen",
+    "fr": "Personnes responsables",
+    "it": "Persone responsabili",
+    "en": "Responsible persons"
+  },
+  "detail.responsible_empty": {
+    "de": "Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!",
+    "fr": "Personne ne se sent responsable de ce jeu de données – il est temps d'y remédier !",
+    "it": "Nessuno si sente responsabile di questo set di dati – è ora di assegnare qualcuno!",
+    "en": "Nobody feels responsible for this dataset – time to assign someone!"
+  },
+  "detail.metadata": {
+    "de": "Metadaten",
+    "fr": "Métadonnées",
+    "it": "Metadati",
+    "en": "Metadata"
+  },
+  "detail.standards": {
+    "de": "Standards",
+    "fr": "Standards",
+    "it": "Standard",
+    "en": "Standards"
+  },
+  "detail.attributes": {
+    "de": "Attribute",
+    "fr": "Attributs",
+    "it": "Attributi",
+    "en": "Attributes"
+  },
+  "detail.distributions": {
+    "de": "Bereitstellungsformen",
+    "fr": "Distributions",
+    "it": "Distribuzioni",
+    "en": "Distributions"
+  },
+  "detail.publications": {
+    "de": "Publikationen in externen Katalogen",
+    "fr": "Publications dans des catalogues externes",
+    "it": "Pubblicazioni in cataloghi esterni",
+    "en": "Publications in external catalogs"
+  },
+  "detail.no_metadata": {
+    "de": "Keine Metadaten",
+    "fr": "Aucune métadonnée",
+    "it": "Nessun metadato",
+    "en": "No metadata"
+  },
+  "detail.no_standards": {
+    "de": "Keine Standards definiert",
+    "fr": "Aucun standard défini",
+    "it": "Nessuno standard definito",
+    "en": "No standards defined"
+  },
+  "detail.no_attributes": {
+    "de": "Keine Attribute definiert",
+    "fr": "Aucun attribut défini",
+    "it": "Nessun attributo definito",
+    "en": "No attributes defined"
+  },
+  "detail.no_distributions": {
+    "de": "Keine Bereitstellungsformen definiert",
+    "fr": "Aucune distribution définie",
+    "it": "Nessuna distribuzione definita",
+    "en": "No distributions defined"
+  },
+  "detail.no_publications": {
+    "de": "Keine externen Publikationen",
+    "fr": "Aucune publication externe",
+    "it": "Nessuna pubblicazione esterna",
+    "en": "No external publications"
+  },
+  "share.title": {
+    "de": "Inhalt teilen",
+    "fr": "Partager le contenu",
+    "it": "Condividere il contenuto",
+    "en": "Share content"
+  },
+  "share.copy": {
+    "de": "URL kopieren",
+    "fr": "Copier l'URL",
+    "it": "Copia URL",
+    "en": "Copy URL"
+  },
+  "share.copied": {
+    "de": "Kopiert!",
+    "fr": "Copié !",
+    "it": "Copiato!",
+    "en": "Copied!"
+  },
+  "footer.source": {
+    "de": "Quellcode",
+    "fr": "Code source",
+    "it": "Codice sorgente",
+    "en": "Source code"
+  },
+  "footer.legal": {
+    "de": "Rechtliches",
+    "fr": "Informations juridiques",
+    "it": "Basi legali",
+    "en": "Legal information"
+  },
+  "meta.id": {
+    "de": "ID",
+    "fr": "ID",
+    "it": "ID",
+    "en": "ID"
+  },
+  "meta.termdat": {
+    "de": "TERMDAT",
+    "fr": "TERMDAT",
+    "it": "TERMDAT",
+    "en": "TERMDAT"
+  },
+  "meta.domain": {
+    "de": "Fachbereich",
+    "fr": "Domaine",
+    "it": "Settore",
+    "en": "Domain"
+  },
+  "meta.system": {
+    "de": "Führendes System",
+    "fr": "Système directeur",
+    "it": "Sistema principale",
+    "en": "Leading system"
+  },
+  "meta.classification": {
+    "de": "Klassifizierung",
+    "fr": "Classification",
+    "it": "Classificazione",
+    "en": "Classification"
+  },
+  "meta.personaldata": {
+    "de": "Personenbezogene Daten",
+    "fr": "Données personnelles",
+    "it": "Dati personali",
+    "en": "Personal data"
+  },
+  "meta.comment": {
+    "de": "Kommentar",
+    "fr": "Commentaire",
+    "it": "Commento",
+    "en": "Comment"
+  },
+  "meta.version": {
+    "de": "Version",
+    "fr": "Version",
+    "it": "Versione",
+    "en": "Version"
+  },
+  "meta.contact": {
+    "de": "Kontaktstelle",
+    "fr": "Point de contact",
+    "it": "Punto di contatto",
+    "en": "Contact point"
+  },
+  "meta.issued": {
+    "de": "Ausgabedatum",
+    "fr": "Date de publication",
+    "it": "Data di pubblicazione",
+    "en": "Issue date"
+  },
+  "meta.frequency": {
+    "de": "Aktualisierungsintervall",
+    "fr": "Fréquence de mise à jour",
+    "it": "Intervallo di aggiornamento",
+    "en": "Update frequency"
+  },
+  "meta.status": {
+    "de": "Status",
+    "fr": "Statut",
+    "it": "Stato",
+    "en": "Status"
+  },
+  "meta.archival": {
+    "de": "Archivwürdig",
+    "fr": "Digne d'archivage",
+    "it": "Degno di archiviazione",
+    "en": "Archival value"
+  },
+  "meta.theme": {
+    "de": "Thema",
+    "fr": "Thème",
+    "it": "Tema",
+    "en": "Theme"
+  },
+  "meta.legal_basis": {
+    "de": "Rechtsgrundlage",
+    "fr": "Base légale",
+    "it": "Base legale",
+    "en": "Legal basis"
+  },
+  "dist.identifier": {
+    "de": "Identifikator",
+    "fr": "Identifiant",
+    "it": "Identificatore",
+    "en": "Identifier"
+  },
+  "dist.title": {
+    "de": "Titel",
+    "fr": "Titre",
+    "it": "Titolo",
+    "en": "Title"
+  },
+  "dist.access_url": {
+    "de": "Zugriffs-URL",
+    "fr": "URL d'accès",
+    "it": "URL di accesso",
+    "en": "Access URL"
+  },
+  "dist.download_url": {
+    "de": "Download-URL",
+    "fr": "URL de téléchargement",
+    "it": "URL di download",
+    "en": "Download URL"
+  },
+  "dist.status": {
+    "de": "Status",
+    "fr": "Statut",
+    "it": "Stato",
+    "en": "Status"
+  },
+  "dist.format": {
+    "de": "Dateiformat",
+    "fr": "Format de fichier",
+    "it": "Formato file",
+    "en": "File format"
+  },
+  "dist.license": {
+    "de": "Lizenz",
+    "fr": "Licence",
+    "it": "Licenza",
+    "en": "License"
+  },
+  "dist.remarks": {
+    "de": "Zusätzliche Bemerkungen",
+    "fr": "Remarques supplémentaires",
+    "it": "Osservazioni aggiuntive",
+    "en": "Additional remarks"
+  },
+  "enum.classification.public": {
+    "de": "Öffentlich",
+    "fr": "Public",
+    "it": "Pubblico",
+    "en": "Public"
+  },
+  "enum.classification.internal": {
+    "de": "Intern",
+    "fr": "Interne",
+    "it": "Interno",
+    "en": "Internal"
+  },
+  "enum.classification.confidential": {
+    "de": "Vertraulich",
+    "fr": "Confidentiel",
+    "it": "Confidenziale",
+    "en": "Confidential"
+  },
+  "enum.classification.secret": {
+    "de": "Geheim",
+    "fr": "Secret",
+    "it": "Segreto",
+    "en": "Secret"
+  },
+  "enum.personaldata.none": {
+    "de": "Keine",
+    "fr": "Aucune",
+    "it": "Nessuno",
+    "en": "None"
+  },
+  "enum.personaldata.personal": {
+    "de": "Personenbezogene Daten",
+    "fr": "Données personnelles",
+    "it": "Dati personali",
+    "en": "Personal data"
+  },
+  "enum.personaldata.sensitive": {
+    "de": "Besonders schützenswerte Personendaten",
+    "fr": "Données personnelles sensibles",
+    "it": "Dati personali particolarmente degni di protezione",
+    "en": "Particularly sensitive personal data"
+  },
+  "enum.frequency.monthly": {
+    "de": "Monatlich",
+    "fr": "Mensuel",
+    "it": "Mensile",
+    "en": "Monthly"
+  },
+  "enum.frequency.weekly": {
+    "de": "Wöchentlich",
+    "fr": "Hebdomadaire",
+    "it": "Settimanale",
+    "en": "Weekly"
+  },
+  "enum.frequency.quarterly": {
+    "de": "Quartalsweise",
+    "fr": "Trimestriel",
+    "it": "Trimestrale",
+    "en": "Quarterly"
+  },
+  "enum.frequency.on_change": {
+    "de": "Bei Änderung",
+    "fr": "En cas de modification",
+    "it": "In caso di modifica",
+    "en": "On change"
+  },
+  "enum.status.published": {
+    "de": "Veröffentlicht",
+    "fr": "Publié",
+    "it": "Pubblicato",
+    "en": "Published"
+  },
+  "enum.archival.yes": {
+    "de": "Ja",
+    "fr": "Oui",
+    "it": "Sì",
+    "en": "Yes"
+  },
+  "enum.archival.no": {
+    "de": "Nein",
+    "fr": "Non",
+    "it": "No",
+    "en": "No"
+  },
+  "tag.arch_view": {
+    "de": "Architektonische Sicht",
+    "fr": "Vue architecturale",
+    "it": "Vista architettonica",
+    "en": "Architectural view"
+  },
+  "tag.tech_objects": {
+    "de": "Technische Objekte",
+    "fr": "Objets techniques",
+    "it": "Oggetti tecnici",
+    "en": "Technical objects"
+  },
+  "tag.spatial_structure": {
+    "de": "Räumliche Struktur",
+    "fr": "Structure spatiale",
+    "it": "Struttura spaziale",
+    "en": "Spatial structure"
+  },
+  "tag.structural_objects": {
+    "de": "Konstruktive Objekte",
+    "fr": "Éléments de construction",
+    "it": "Elementi costruttivi",
+    "en": "Structural elements"
+  },
+  "tag.measurements": {
+    "de": "Messungen/Performance",
+    "fr": "Mesures/Performance",
+    "it": "Misurazioni/Prestazioni",
+    "en": "Measurements/Performance"
+  },
+  "tag.contractual_view": {
+    "de": "Vertragliche Sicht",
+    "fr": "Vue contractuelle",
+    "it": "Vista contrattuale",
+    "en": "Contractual view"
+  },
+  "tag.construction_planning": {
+    "de": "Bau & Planung",
+    "fr": "Construction et planification",
+    "it": "Costruzione e pianificazione",
+    "en": "Construction & planning"
+  },
+  "tag.building": {
+    "de": "Gebäude",
+    "fr": "Bâtiment",
+    "it": "Edificio",
+    "en": "Building"
+  },
+  "tag.erp_immo": {
+    "de": "ERP IMMO",
+    "fr": "ERP IMMO",
+    "it": "ERP IMMO",
+    "en": "ERP IMMO"
+  },
+  "tag.land_parcel": {
+    "de": "Grundstück",
+    "fr": "Terrain",
+    "it": "Terreno",
+    "en": "Land parcel"
+  },
+  "tag.construction_project": {
+    "de": "Bauprojekt",
+    "fr": "Projet de construction",
+    "it": "Progetto di costruzione",
+    "en": "Construction project"
+  },
+  "tag.lease": {
+    "de": "Mietvertrag",
+    "fr": "Contrat de bail",
+    "it": "Contratto di locazione",
+    "en": "Lease"
+  },
+  "tag.systems_tech": {
+    "de": "Anlagen & Technik",
+    "fr": "Installations et technique",
+    "it": "Impianti e tecnica",
+    "en": "Systems & technology"
+  },
+  "tag.inventory": {
+    "de": "Inventar",
+    "fr": "Inventaire",
+    "it": "Inventario",
+    "en": "Inventory"
+  },
+  "tag.energy": {
+    "de": "Energie",
+    "fr": "Énergie",
+    "it": "Energia",
+    "en": "Energy"
+  },
+  "tag.gis_immo": {
+    "de": "GIS IMMO",
+    "fr": "GIS IMMO",
+    "it": "GIS IMMO",
+    "en": "GIS IMMO"
+  },
+  "tag.cde_federal": {
+    "de": "CDE Bund",
+    "fr": "CDE Confédération",
+    "it": "CDE Confederazione",
+    "en": "CDE Federal"
+  },
+  "tag.land_cover": {
+    "de": "Bodenabdeckung",
+    "fr": "Couverture du sol",
+    "it": "Copertura del suolo",
+    "en": "Land cover"
+  },
+  "tag.document": {
+    "de": "Dokument",
+    "fr": "Document",
+    "it": "Documento",
+    "en": "Document"
+  },
+  "tag.plan_archive_dala": {
+    "de": "Planarchiv DALA",
+    "fr": "Archives de plans DALA",
+    "it": "Archivio piani DALA",
+    "en": "Plan archive DALA"
+  },
+  "tag.tag1": {
+    "de": "Tag 1",
+    "fr": "Tag 1",
+    "it": "Tag 1",
+    "en": "Tag 1"
+  },
+  "tag.tag2": {
+    "de": "Tag 2",
+    "fr": "Tag 2",
+    "it": "Tag 2",
+    "en": "Tag 2"
+  },
+  "branding.coat_of_arms": {
+    "de": "Wappen der Schweiz",
+    "fr": "Armoiries de la Suisse",
+    "it": "Stemma della Svizzera",
+    "en": "Coat of arms of Switzerland"
+  }
+}

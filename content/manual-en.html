@@ -1,0 +1,113 @@
+<h3>The metadata model</h3>
+<p>The metadata model of the FOBL real estate catalogue is based on the Swiss DCAT Application Profile (DCAT-AP CH v3.0.0) and extends it minimally with specific components for managing the Confederation's real estate data.</p>
+
+<h3>Core architecture</h3>
+<p>The model consists of five main DCAT classes and one FOBL-specific extension:</p>
+
+<p><strong>DCAT standard classes:</strong></p>
+<ul>
+    <li><strong>dcat:Catalog</strong> - FOBL real estate catalogue as overall directory</li>
+    <li><strong>dcat:Dataset</strong> - Real estate data collections (building master data, energy data)</li>
+    <li><strong>dcat:DatasetSeries</strong> - Time series (annual reports, cost developments)</li>
+    <li><strong>dcat:Distribution</strong> - Distribution forms (Excel, API, PDF)</li>
+    <li><strong>dcat:DataService</strong> - Data services (SAP interfaces, REST APIs)</li>
+</ul>
+
+<p><strong>Schema modelling (DCAT-compliant):</strong></p>
+<ul>
+    <li><strong>dct:Standard</strong> - Business object schema (building, land parcel, lease)</li>
+    <li><strong>skos:ConceptScheme</strong> - Controlled vocabularies and value lists (building types, cantons)</li>
+    <li><strong>skos:Concept</strong> - Individual values in value lists</li>
+</ul>
+
+<p><strong>FOBL-specific extension:</strong></p>
+<ul>
+    <li><strong>bv:Attribute</strong> - Data fields with type definitions, validation rules and value list references</li>
+</ul>
+
+<img src="assets/BBL DCAT-AP CH.avif" alt="Diagram of the BBL DCAT-AP CH metadata model" class="manual-img">
+
+<h3>Business object modelling</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+dct:Standard "Gebäude-Schema"
+├── dct:identifier: "STD-001"
+├── dct:title: "Gebäude"@de, "Bâtiment"@fr, "Edificio"@it
+├── dct:description: Definition gemäss KBOB/TERMDAT
+├── bv:hasAttribute:
+│   ├── bv:Attribute "Baujahr"
+│   │   ├── dct:type: "xsd:gYear"
+│   │   ├── dct:required: true
+│   │   └── dct:conformsTo → skos:ConceptScheme "Jahre"
+│   └── bv:Attribute "Gebäudetyp"
+│       └── dct:conformsTo → skos:ConceptScheme "Gebäudetypen"
+└── dcat:version: "3.0.0"
+</pre>
+
+<h3>Versioning</h3>
+<p>All elements support full version control:</p>
+<ul>
+    <li><strong>dcat:version</strong> - Semantic versioning (MAJOR.MINOR.PATCH)</li>
+    <li><strong>dct:issued</strong> - Initial publication</li>
+    <li><strong>dct:modified</strong> - Last modification</li>
+    <li><strong>adms:versionNotes</strong> - Change description</li>
+    <li><strong>dcat:previousVersion</strong> - Reference to previous version</li>
+</ul>
+
+<h3>Governance and access control</h3>
+<p><strong>Role model:</strong></p>
+<ul>
+    <li><strong>bv:dataOwner</strong> (foaf:Agent) - Business manager for real estate management</li>
+    <li><strong>bv:dataSteward</strong> (foaf:Agent) - Data architect / data manager</li>
+    <li><strong>bv:dataCustodian</strong> (foaf:Agent) - Technical system administrator</li>
+</ul>
+
+<p><strong>Access rights and compliance:</strong></p>
+<ul>
+    <li><strong>dct:accessRights</strong> - Access restrictions (public/internal/confidential)</li>
+    <li><strong>dct:license</strong> - Terms of use</li>
+    <li><strong>bv:dsgCategory</strong> - FADP classification</li>
+    <li><strong>bv:isgClassification</strong> - Information security level</li>
+    <li><strong>dcatap:applicableLegislation</strong> - Legal bases (OIAF, FADP)</li>
+</ul>
+
+<h3>Structure example</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+BBL Immobilienkatalog (dcat:Catalog)
+├── Geschäftsobjekt-Schemas (Konzeptuelle Ebene)
+│   ├── dct:Standard "Gebäude-Schema" v3.0.0
+│   └── dct:Standard "Grundstück-Schema" v2.1.0
+│
+├── Datenattribute (Logische Ebene)
+│   ├── bv:Attribute "EGID" (required, unique)
+│   └── bv:Attribute "Nutzfläche" (decimal, m²)
+│
+├── Wertelisten (Referenzdaten)
+│   ├── skos:ConceptScheme "Gebäudetypen" v2.1.0
+│   └── skos:ConceptScheme "Kantone" v1.0.0
+│
+└── Datasets (Physische Ebene)
+    ├── dcat:Dataset "Gebäudestammdaten 2025"
+    │   └── dcat:Distribution (SAP-Export, REST-API)
+    └── dcat:DataService "IMMO-API v2"
+</pre>
+<p>This structure enables full traceability of data provenance, clearly defined responsibilities and meets all regulatory requirements of the Federal Administration.</p>
+
+<h3>Further information and standards</h3>
+<p><strong>Standards and specifications used:</strong></p>
+<ul>
+    <li><strong>DCAT v3 (W3C Recommendation)</strong><br>The foundation of our metadata model. The Qualified Forms for extended relationships are particularly relevant:<br><a href="https://www.w3.org/TR/vocab-dcat-3/#qualified-forms" target="_blank">https://www.w3.org/TR/vocab-dcat-3/#qualified-forms</a></li>
+
+    <li><strong>Dublin Core Metadata Terms</strong><br>Defines core properties such as dct:Standard, dct:conformsTo and dct:identifier:<br><a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard" target="_blank">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard</a></li>
+
+    <li><strong>DCAT-AP CH (eCH-0200)</strong><br>The Swiss application standard for data portals of the Federal Administration:<br><a href="https://ech.ch/de/ech/ech-0200/3.0" target="_blank">https://ech.ch/de/ech/ech-0200/3.0</a><br><a href="https://www.dcat-ap.ch/" target="_blank">https://www.dcat-ap.ch/</a></li>
+
+    <li><strong>SKOS (Simple Knowledge Organization System)</strong><br>For modelling value lists and controlled vocabularies:<br><a href="https://www.w3.org/TR/skos-reference/" target="_blank">https://www.w3.org/TR/skos-reference/</a></li>
+</ul>
+
+<p><strong>Governance roles according to NaDB</strong></p>
+<p>The role definitions are based on the National Data Management of the FSO:</p>
+<ul>
+    <li><strong>Data Owner</strong> - Business responsibility</li>
+    <li><strong>Data Steward</strong> - Data architecture and quality</li>
+    <li><strong>Data Custodian</strong> - Technical operations</li>
+</ul>

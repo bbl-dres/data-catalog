@@ -4,31 +4,29 @@ This document provides development guidelines for Claude Code when working on th
 
 ## Project Overview
 
-This is a **minimalist single-file web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. The entire application runs from `index.html` with zero external JavaScript dependencies.
+This is a **minimalist web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. The application runs from `index.html` with CSS and JavaScript in separate files and zero external JavaScript dependencies.
 
 ## Architecture
 
-### Single-File Design
-- All HTML, CSS, and JavaScript are contained in `index.html` (~2,180 lines)
+### Design
+- HTML structure in `index.html` (~360 lines)
+- CSS styles in `css/style.css` (~966 lines)
+- JavaScript application in `js/app.js` (~850 lines)
 - No build system, bundlers, or transpilers
 - Data loaded from JSON files at runtime
 - Hash-based client-side routing
 
-### Code Organization in index.html
+### Code Organization
 
 ```
-index.html
-├── <head>
-│   └── CSS styles (~900 lines)
-├── <body>
-│   └── HTML structure
-└── <script>
-    └── JavaScript application (~800 lines)
-        ├── State management
-        ├── Data loading
-        ├── Routing
-        ├── Rendering functions
-        └── Event handlers
+index.html          → HTML structure only
+css/style.css       → All styles (~966 lines)
+js/app.js           → JavaScript application (~850 lines)
+    ├── State management
+    ├── Data loading
+    ├── Routing
+    ├── Rendering functions
+    └── Event handlers
 ```
 
 ### Key Patterns
@@ -42,13 +40,16 @@ index.html
 
 | Purpose | Location |
 |---------|----------|
-| Main application | `index.html` |
+| HTML structure | `index.html` |
+| Styles | `css/style.css` |
+| JavaScript | `js/app.js` |
 | Business objects | `data/concepts.json` |
 | Dataset definitions | `data/datasets.json` |
-| About page content | `content/about.html` |
-| User manual | `content/manual.html` |
-| Concept images | `images/concepts/` |
-| Dataset images | `images/datasets/` |
+| UI translations | `data/i18n.json` |
+| About page content | `content/about-{de,fr,it,en}.html` |
+| User manual | `content/manual-{de,fr,it,en}.html` |
+| Concept images | `assets/concepts/` |
+| Dataset images | `assets/datasets/` |
 
 ## Development Commands
 
@@ -68,33 +69,46 @@ open http://localhost:8000
 
 1. Edit `data/concepts.json`
 2. Add a new object with required fields:
-   - `id`, `title`, `description`, `fullDescription`
-   - `image`, `tags`, `meta`, `standards`, `attributes`
+   - `id`, `title` (multilingual `{de,fr,it,en}` object), `description`, `fullDescription`
+   - `image`, `tags` (language-independent keys), `meta`, `standards`, `attributes`
    - Optional: `responsiblePersons`
-3. Add corresponding image to `images/concepts/`
+3. Add tag translations to `data/i18n.json` if using new tags
+4. Add corresponding image to `assets/concepts/`
 
 ### Adding a New Dataset
 
 1. Edit `data/datasets.json`
 2. Add a new object with required fields:
    - Same as concepts plus `distributions` and `publications`
-3. Add corresponding image to `images/datasets/`
+3. Add tag translations to `data/i18n.json` if using new tags
+4. Add corresponding image to `assets/datasets/`
+
+### i18n / Translations
+
+- **UI strings**: Add keys to `data/i18n.json` with `{de, fr, it, en}` values
+- **Data fields**: `title`, `description`, `fullDescription`, and selected meta fields are `{de,fr,it,en}` objects
+- **Tags**: Language-independent keys (e.g., `"arch_view"`), translated via `tag.*` keys in `i18n.json`
+- **Enums**: Internal keys (e.g., `"public"`, `"internal"`), translated via `enum.*` keys in `i18n.json`
+- **Content pages**: Per-language HTML files in `content/` (e.g., `about-de.html`, `about-fr.html`)
+- **Language state**: Stored in URL `lang` param and `localStorage`, default `de`
+- **Translation function**: `t(key)` resolves both i18n keys and inline `{de,fr,...}` objects
 
 ### Modifying Styles
 
-All CSS is in the `<style>` section of `index.html`. Key CSS variables:
+All CSS is in `css/style.css`. Key CSS variables:
 
 ```css
---primary-color: #DC0018;    /* Swiss Red - use for accents */
---text-dark: #2F4356;        /* Main text color */
---bg-light: #F5F5F5;         /* Light backgrounds */
---border-color: #e5e5e5;     /* Borders and dividers */
+--primary-500: #e53940;      /* Swiss Red - primary accent */
+--secondary-600: #2f4356;    /* Dark blue-grey */
+--text-900: #111827;         /* Main text color */
+--secondary-50: #f0f4f7;    /* Light backgrounds */
+--text-200: #e5e7eb;         /* Borders and dividers */
 ```
 
 ### Adding New Features
 
 When adding JavaScript functionality:
-1. Locate the relevant section in the `<script>` block
+1. Locate the relevant section in `js/app.js`
 2. Follow existing patterns for consistency
 3. Use the existing state management approach
 4. Update URL parameters if adding new filters

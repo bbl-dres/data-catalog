@@ -3,1008 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BBL Datenkatalog</title>
-    
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <title data-i18n="meta.title">BBL Datenkatalog</title>
+    <meta name="description" data-i18n-content="meta.description" content="Datenkatalog des Bundesamts für Bauten und Logistik (BBL) – Geschäftsobjekte und Datensätze nach DCAT-AP CH v3.0.">
+    <link rel="icon" href="assets/ch.png" type="image/png">
 
-    <style>
-        /* === 1. VARIABLES & RESET === */
-        :root {
-            --swiss-red: #DC0018;
-            --text-black: #000;
-            --text-dark: #2F4356;
-            --text-light: #666;
-            --border: #CCC;
-            --border-light: #E5E5E5;
-            --bg-gray: #F5F5F5;
-            --bg-hover: #F2F4F5;
-            --footer-bg: #263645;
-            --link-color: #06C;
-            --font-stack: "Frutiger", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            
-            --spacing-xs: 8px;
-            --spacing-sm: 15px;
-            --spacing-md: 20px;
-            --spacing-lg: 30px;
-            --spacing-xl: 50px;
-            
-            --radius-sm: 3px;
-            --radius-md: 4px;
-            --radius-pill: 20px;
-            
-            --shadow-card: 0 2px 5px rgba(0,0,0,0.02);
-            --shadow-card-hover: 0 10px 25px rgba(0,0,0,0.08);
-            
-            --filter-panel-width: 280px;
-            --border-input: #999;
-        }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" />
 
-        *, *::before, *::after { box-sizing: border-box; }
-        
-        body { 
-            margin: 0; 
-            font-family: var(--font-stack); 
-            color: var(--text-black); 
-            background: white;
-            -webkit-font-smoothing: antialiased;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-        
-        a { text-decoration: none; color: inherit; cursor: pointer; }
-        .hidden { display: none !important; }
-
-        .material-symbols-rounded {
-            font-size: 20px;
-            vertical-align: middle;
-            user-select: none;
-        }
-
-        /* === 2. LAYOUT === */
-        .u-max-width {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 var(--spacing-md);
-            width: 100%;
-        }
-
-        .container { flex: 1; }
-
-        /* === 3. HEADER & BRANDING === */
-        header {
-            width: 100%;
-        }
-        
-        .header-branding-row {
-            border-bottom: 1px solid var(--border);
-        }
-        
-        .header-branding-inner {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            padding-top: var(--spacing-lg);
-            padding-bottom: var(--spacing-md);
-        }
-
-        .branding { display: flex; align-items: flex-start; gap: var(--spacing-md); }
-        
-        .logo-wrapper {
-            width: 35px; 
-            height: 35px; 
-            flex-shrink: 0;
-        }
-        
-        .logo-wrapper img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: contain;
-        }
-
-        .branding-text {
-            border-left: 1px solid #999;
-            padding-left: var(--spacing-md);
-            font-size: 16px;
-            line-height: 1.3;
-        }
-        .branding-text strong { display: block; font-weight: 700; color: var(--text-black); }
-        .branding-text span { display: block; color: var(--text-black); font-size: 15px; }
-
-        .top-meta { 
-            font-size: 14px; 
-            display: flex; 
-            gap: 25px; 
-            color: var(--text-black);
-            align-items: center; 
-        }
-        
-        .lang-selector { 
-            display: flex; 
-            align-items: center; 
-            gap: 2px; 
-            cursor: pointer; 
-        }
-        .lang-selector .material-symbols-rounded { font-size: 18px; }
-
-        /* === 4. NAVIGATION === */
-        .header-nav-row {
-            border-bottom: 1px solid var(--border);
-            height: 64px;
-            display: flex;
-            align-items: stretch;
-        }
-        
-        .nav-tabs {
-            display: flex;
-            gap: 35px;
-            height: 100%;
-            align-items: stretch;
-        }
-        .nav-link {
-            padding: 0;
-            font-size: 16px;
-            color: var(--text-black);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-        .nav-link.active {
-            font-weight: normal;
-            color: var(--swiss-red);
-            border-bottom: 3px solid var(--swiss-red);
-            margin-bottom: 0;
-        }
-
-        /* === 5. BREADCRUMBS & ACTIONS === */
-        .sub-header {
-            display: block;
-            padding: 25px 0 15px 0;
-        }
-        .breadcrumbs { 
-            font-size: 14px; 
-            color: var(--text-light);
-            margin-bottom: 12px;
-        }
-        .breadcrumbs span { margin: 0 var(--spacing-xs); color: #999; }
-        .breadcrumbs a:hover { text-decoration: underline; }
-
-        .action-icons { display: flex; gap: 12px; color: #666; justify-content: flex-end; }
-        .icon-btn { 
-            cursor: pointer; 
-            padding: var(--spacing-xs);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.2s;
-        }
-        .icon-btn:hover { background-color: var(--bg-gray); color: var(--swiss-red); }
-        .icon-btn .material-symbols-rounded { font-size: 26px; }
-
-        /* === 6. PAGE TITLE & TOOLBAR === */
-        h1.page-title {
-            font-size: 32px;
-            font-weight: 400;
-            margin: 10px 0 40px 0;
-            color: var(--text-black);
-        }
-        
-        .page-title-h2 {
-            font-size: 32px !important;
-            font-weight: 400 !important;
-            margin: 10px 0 40px 0 !important;
-            color: var(--text-black) !important;
-        }
-
-        .toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-        }
-        .search-group { display: flex; gap: var(--spacing-sm); width: 100%; max-width: 500px; }
-        .input-wrapper {
-            width: 280px;
-            flex-shrink: 0;
-            position: relative;
-        }
-               
-        .input-wrapper input {
-            width: 100%; 
-            padding: 10px var(--spacing-sm) 10px 48px;
-            border: 1px solid var(--border-input); 
-            border-radius: var(--radius-sm); 
-            font-size: 16px; 
-            height: 46px;
-        }
-        .search-icon {
-            position: absolute; 
-            left: 14px; 
-            top: 50%; 
-            transform: translateY(-50%);
-            color: #666; 
-            pointer-events: none; 
-            font-size: 22px;
-        }
-        
-        .btn-filter {
-            height: 46px; 
-            padding: 0 24px; 
-            background: white;
-            border: 1px solid var(--border-input); 
-            border-radius: var(--radius-sm);
-            font-size: 15px; 
-            font-weight: bold;
-            display: flex; 
-            align-items: center; 
-            gap: var(--spacing-xs); 
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .btn-filter:hover {
-            background: var(--bg-gray);
-        }
-        
-        .filter-count {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #666;
-            color: white;
-            font-size: 13px;
-            font-weight: 700;
-            min-width: 24px;
-            height: 24px;
-            padding: 0 7px;
-            border-radius: 12px;
-        }
-        
-        .filter-count.hidden {
-            display: none;
-        }
-        
-        .btn-filter.active {
-            background: var(--text-dark);
-            color: white;
-            border-color: var(--text-dark);
-        }
-        
-        .btn-filter.active:hover {
-            background: #3d566b;
-        }
-        
-        .btn-reset {
-            height: 46px;
-            padding: 0 20px;
-            background: white;
-            border: 1px solid var(--border-input);
-            border-radius: var(--radius-sm);
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-        }
-        
-        .btn-reset:hover {
-            background: var(--bg-gray);
-            border-color: var(--text-dark);
-        }
-        
-        .btn-reset.hidden {
-            display: none;
-        }
-
-        .view-toggles { display: flex; gap: var(--spacing-sm); }
-        .toggle-icon {
-            width: 46px; 
-            height: 46px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            border-radius: var(--radius-sm); 
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .toggle-icon.active { background: var(--text-dark); color: white; pointer-events: none; }
-        .toggle-icon.inactive { background: white; color: var(--text-dark); border: 1px solid var(--border-input); }
-        .toggle-icon.inactive:hover { background: var(--bg-gray); }
-
-        /* === 7. CATALOG LAYOUT (Filter + Content) === */
-        .catalog-layout {
-            display: flex;
-            gap: var(--spacing-lg);
-            margin-bottom: 80px;
-        }
-        
-        .filter-panel {
-            width: var(--filter-panel-width);
-            flex-shrink: 0;
-            overflow: hidden;
-            transition: width 0.25s ease, opacity 0.25s ease, margin-right 0.25s ease;
-            opacity: 1;
-        }
-
-        .filter-panel.hidden {
-            width: 0;
-            opacity: 0;
-            margin-right: calc(-1 * var(--spacing-lg));
-        }
-        
-        .catalog-content {
-            flex: 1;
-            min-width: 0;
-        }
-
-        /* === 8. FILTER PANEL === */
-        .filter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: var(--spacing-md);
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 1px solid var(--border-light);
-        }
-        
-        .filter-title {
-            font-size: 20px;
-            font-weight: 400;
-            color: var(--text-black);
-        }
-        
-        .filter-reset {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            color: var(--text-light);
-            font-size: 14px;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-        }
-        
-        .filter-reset:hover {
-            background: var(--bg-gray);
-            color: var(--text-dark);
-        }
-        
-        .filter-section {
-            margin-bottom: var(--spacing-md);
-        }
-        
-        .filter-label {
-            display: block;
-            font-size: 12px;
-            color: var(--text-light);
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .filter-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-input);
-            border-radius: var(--radius-sm);
-            background: white;
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text-dark);
-            cursor: pointer;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-        }
-
-        .filter-select:focus {
-            outline: none;
-            border-color: var(--text-dark);
-            box-shadow: 0 0 0 1px var(--text-dark);
-        }
-
-        .filter-select:hover {
-            border-color: var(--text-light);
-        }
-
-        /* Tag Input Component */
-        .tag-input-wrapper {
-            position: relative;
-        }
-        
-        .tag-input-field {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 10px;
-            border: 1px solid var(--border-input);
-            border-radius: var(--radius-sm);
-            background: white;
-            cursor: text;
-            min-height: 42px;
-        }
-        
-        .tag-input-field:focus-within {
-            border-color: var(--text-dark);
-            box-shadow: 0 0 0 1px var(--text-dark);
-        }
-        
-        .tag-pill-active {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: var(--text-dark);
-            color: white;
-            padding: 4px 8px 4px 12px;
-            border-radius: var(--radius-pill);
-            font-size: 14px;
-            white-space: nowrap;
-        }
-        
-        .tag-pill-active .remove {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 18px;
-            line-height: 1;
-            opacity: 0.7;
-        }
-        
-        .tag-pill-active .remove:hover {
-            opacity: 1;
-            background: rgba(255,255,255,0.2);
-        }
-        
-        .tag-search-input {
-            border: none;
-            outline: none;
-            flex: 1;
-            min-width: 100px;
-            font-size: 14px;
-            font-family: inherit;
-            background: transparent;
-        }
-        
-        .tag-search-input::placeholder {
-            color: #999;
-        }
-        
-        .tag-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 1px solid var(--border);
-            border-top: none;
-            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .tag-dropdown.hidden {
-            display: none;
-        }
-        
-        .tag-option {
-            padding: 10px 12px;
-            cursor: pointer;
-            font-size: 14px;
-            color: var(--text-dark);
-        }
-        
-        .tag-option:hover {
-            background: var(--bg-hover);
-        }
-        
-        .tag-option-empty {
-            padding: 10px 12px;
-            font-size: 14px;
-            color: var(--text-light);
-            font-style: italic;
-        }
-
-        /* === 9. CARDS & GRID === */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 30px;
-        }
-        
-        @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
-
-        .card {
-            background: white;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            display: flex; 
-            flex-direction: column;
-            box-shadow: var(--shadow-card);
-            transition: all 0.2s;
-            cursor: pointer;
-            width: 100%;
-        }
-        .card:hover {
-            box-shadow: var(--shadow-card-hover);
-            transform: translateY(-3px);
-            border-color: var(--border);
-        }
-        .card-img-wrap { height: 220px; position: relative; background: #eee; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .tags-overlay { position: absolute; top: var(--spacing-md); left: var(--spacing-md); display: flex; gap: 10px; }
-
-        .card-body { padding: var(--spacing-lg); display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-size: 16px; font-weight: 700; margin: 0 0 var(--spacing-sm) 0; color: var(--text-black); }
-        .card-desc { font-size: 16px; line-height: 1.5; color: var(--text-black); margin: 0 0 25px 0; flex-grow: 1; }
-        .card-footer { display: flex; justify-content: space-between; align-items: flex-end; }
-        .tags-bottom { display: flex; flex-wrap: wrap; gap: var(--spacing-xs); }
-
-        .btn-arrow {
-            width: 40px; 
-            height: 40px; 
-            border: 1px solid var(--border-light); 
-            border-radius: 2px;
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            color: var(--swiss-red); 
-            flex-shrink: 0; 
-            transition: all 0.2s;
-        }
-        .btn-arrow:hover { border-color: var(--swiss-red); background: var(--swiss-red); color: white; }
-
-        /* === 10. TAG PILL (Universal) === */
-        .tag-pill {
-            background: white;
-            border: 1px solid #999;
-            padding: var(--spacing-xs) 14px;
-            border-radius: var(--radius-pill);
-            font-size: 14px;
-            color: #444;
-            font-weight: 400;
-            cursor: pointer;
-            display: inline-block;
-            white-space: nowrap;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .tag-pill:hover {
-            background-color: var(--border-light);
-            border-color: #666;
-            color: #000;
-        }
-        
-        .tag-pill.tag-pill--active {
-            background: var(--text-dark);
-            color: white;
-            border-color: var(--text-dark);
-        }
-        
-        .tag-pill.tag-pill--active:hover {
-            background: #3d566b;
-            border-color: #3d566b;
-        }
-
-        /* Tag Label (nicht anklickbar, nur visuell) */
-        .tag-label {
-            background: rgba(0, 0, 0, 0.5);
-            border: none;
-            padding: var(--spacing-xs) 14px;
-            border-radius: var(--radius-pill);
-            font-size: 13px;
-            color: white;
-            font-weight: 500;
-            display: inline-block;
-            white-space: nowrap;
-            cursor: default;
-            pointer-events: none;
-        }
-
-        /* === 11. LIST VIEW === */
-        .list-table { width: 100%; border-collapse: collapse; font-size: 15px; }
-        .list-table th {
-            text-align: left; 
-            background: var(--bg-hover); 
-            padding: var(--spacing-sm);
-            color: #666; 
-            font-size: 13px; 
-            font-weight: 700; 
-            text-transform: uppercase;
-        }
-        .list-table td { 
-            padding: var(--spacing-md) var(--spacing-sm); 
-            border-bottom: 1px solid var(--border-light); 
-            vertical-align: top; 
-        }
-        .list-table tbody tr { cursor: pointer; transition: background-color 0.1s; }
-        .list-table tbody tr:hover { background-color: var(--bg-hover); }
-        
-        .col-title { font-weight: 700; font-size: 16px; color: var(--text-black); width: 25%; }
-        .col-desc { color: var(--text-black); line-height: 1.5; }
-        .col-tags { width: 30%; text-align: right; }
-        .col-tags .tag-pill { margin-left: 5px; margin-bottom: 5px; }
-
-        /* === 12. DETAIL VIEW === */
-        .detail-hero { display: flex; gap: var(--spacing-xl); margin-bottom: 60px; margin-top: var(--spacing-md); }
-        .detail-info { flex: 1; }
-        .detail-image-box { flex: 1; max-width: 600px; }
-        .detail-image-box img { width: 100%; height: auto; border-radius: 2px; }
-        .detail-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; }
-        .detail-desc { font-size: 16px; line-height: 1.6; margin-bottom: var(--spacing-lg); }
-
-        .responsible-box {
-            background: var(--bg-gray); 
-            padding: var(--spacing-lg); 
-            margin: var(--spacing-xl) 0; 
-            border-left: 5px solid #ddd;
-        }
-        .box-title { font-weight: bold; margin-bottom: var(--spacing-xs); font-size: 18px; }
-        .box-text { font-size: 16px; font-style: italic; color: #666; }
-
-        /* Responsible Section (white rows with gray lines) */
-        .responsible-section {
-            margin: var(--spacing-xl) 0;
-        }
-        .responsible-section .section-title {
-            margin-top: 0;
-        }
-        .responsible-persons-list {
-            border-top: 1px solid var(--border-light);
-        }
-        .responsible-person-link {
-            color: var(--link-color);
-            text-decoration: underline;
-        }
-        .responsible-person-link:hover {
-            text-decoration: none;
-        }
-
-        .section-title { font-size: 24px; font-weight: 400; margin: var(--spacing-xl) 0 25px 0; }
-
-        /* === 13. DATA ROWS (Shared pattern) === */
-        .data-row {
-            display: flex;
-            padding: 16px var(--spacing-sm);
-            border-bottom: 1px solid var(--border-light);
-            font-size: 16px;
-            align-items: center;
-            transition: background-color 0.1s;
-        }
-        .data-row:hover { background-color: var(--bg-hover); }
-        .data-row-key { width: 280px; font-weight: 400; flex-shrink: 0; color: var(--text-black); }
-        .data-row-val { color: var(--text-black); display: flex; align-items: center; flex-wrap: wrap; gap: var(--spacing-xs); }
-
-        .meta-list, .distributions-list, .publications-list { border-top: 1px solid var(--border-light); }
-
-        /* === 14. DISTRIBUTION ACCORDION === */
-        .distribution-item { border-bottom: 1px solid var(--border-light); }
-        
-        .distribution-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px var(--spacing-sm);
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.1s;
-        }
-        .distribution-header:hover { background-color: var(--bg-hover); }
-        
-        .distribution-left { color: var(--text-black); flex-grow: 1; }
-        .distribution-right {
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            color: var(--text-light);
-        }
-        .distribution-right .expand-icon {
-            font-size: 24px;
-            transition: transform 0.2s ease;
-        }
-        .distribution-item.expanded .expand-icon { transform: rotate(180deg); }
-        .distribution-format { font-size: 14px; font-weight: 500; }
-        
-        .distribution-details {
-            display: none;
-            padding: 0 var(--spacing-sm) var(--spacing-md) var(--spacing-sm);
-            background-color: #FAFAFA;
-        }
-        .distribution-item.expanded .distribution-details { display: block; }
-        
-        .distribution-detail-row {
-            display: flex;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-light);
-            font-size: 15px;
-        }
-        .distribution-detail-row:last-child { border-bottom: none; }
-        .distribution-detail-key { width: 200px; flex-shrink: 0; color: var(--text-light); }
-        .distribution-detail-val { color: var(--text-black); word-break: break-all; }
-
-        /* === 15. ATTRIBUTES TABLE === */
-        .attr-table { width: 100%; border-collapse: collapse; font-size: 16px; margin-top: var(--spacing-md); }
-        .attr-table th {
-            text-align: left; 
-            background: var(--bg-hover); 
-            padding: 16px;
-            color: #666; 
-            font-size: 13px; 
-            font-weight: 700; 
-            text-transform: uppercase;
-        }
-        .attr-table td { 
-            padding: 16px; 
-            border-bottom: 1px solid var(--border-light); 
-            vertical-align: top; 
-            line-height: 1.5; 
-        }
-        .attr-table tbody tr:hover { background-color: var(--bg-hover); }
-
-        /* === 16. CONTENT PAGES (About, Manual) === */
-        .content-page { padding-bottom: 80px; }
-        .content-page h2 { font-size: 28px; font-weight: 700; margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md); }
-        .content-page h3 { font-size: 24px; font-weight: 700; margin-top: 40px; margin-bottom: var(--spacing-sm); }
-        .content-page p { font-size: 16px; line-height: 1.6; margin-bottom: var(--spacing-md); }
-        .content-page ul { list-style-type: disc; padding-left: 25px; margin-bottom: var(--spacing-md); }
-        .content-page li { font-size: 16px; line-height: 1.6; margin-bottom: var(--spacing-xs); }
-        .content-page strong { font-weight: 700; }
-        .content-page .info-link { margin-top: var(--spacing-lg); }
-        .content-page a:not(.footer-link) { color: var(--link-color); text-decoration: underline; }
-        .content-page a:not(.footer-link):hover { text-decoration: none; }
-        
-        .manual-img {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            margin: var(--spacing-lg) 0;
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-md);
-        }
-
-        /* === 17. FOOTER === */
-        footer {
-            background-color: var(--footer-bg);
-            color: white;
-            height: 40px;
-            margin-top: auto;
-            display: flex;
-            align-items: center;
-        }
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-        }
-        .footer-left { display: flex; gap: var(--spacing-lg); }
-        .footer-link {
-            color: white;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .footer-link:hover { text-decoration: underline; }
-        .footer-link .material-symbols-rounded { font-size: 16px; }
-        .footer-right { color: #ccc; }
-
-        /* === 18. DETAIL VIEW LINKS === */
-        #view-concept-detail a:not(.footer-link),
-        #view-dataset-detail a:not(.footer-link) {
-            color: var(--link-color);
-            text-decoration: underline;
-        }
-        #view-concept-detail a:not(.footer-link):hover,
-        #view-dataset-detail a:not(.footer-link):hover {
-            text-decoration: none;
-        }
-        
-        /* === 19. NO RESULTS === */
-        .no-results {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-light);
-        }
-        
-        .no-results-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-        
-        .no-results-text {
-            font-size: 16px;
-        }
-        
-        /* === 20. SHARE MODAL === */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.2s, visibility 0.2s;
-        }
-        
-        .modal-overlay.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-box {
-            background: white;
-            width: 100%;
-            max-width: 420px;
-            border-radius: var(--radius-sm);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            overflow: hidden;
-            transform: translateY(-20px);
-            transition: transform 0.2s;
-        }
-        
-        .modal-overlay.visible .modal-box {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            background: var(--footer-bg);
-            color: white;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 400;
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            color: white;
-            cursor: pointer;
-            padding: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        
-        .modal-close:hover {
-            opacity: 1;
-        }
-        
-        .modal-close .material-symbols-rounded {
-            font-size: 24px;
-        }
-        
-        .modal-body {
-            padding: 30px 20px;
-        }
-        
-        .share-icons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .share-icon-link {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-dark);
-            transition: color 0.2s;
-        }
-        
-        .share-icon-link:hover {
-            color: var(--swiss-red);
-        }
-        
-        .share-icon-link svg {
-            width: 24px;
-            height: 24px;
-            fill: currentColor;
-        }
-        
-        .share-url-group {
-            margin-bottom: 15px;
-        }
-        
-        .share-url-input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-family: inherit;
-            color: var(--text-dark);
-            background: white;
-        }
-        
-        .share-url-input:focus {
-            outline: none;
-            border-color: var(--text-dark);
-        }
-        
-        .btn-copy-url {
-            display: inline-block;
-            padding: 10px 20px;
-            border: 1px solid var(--swiss-red);
-            border-radius: var(--radius-sm);
-            background: white;
-            color: var(--swiss-red);
-            font-size: 14px;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-copy-url:hover {
-            background: var(--swiss-red);
-            color: white;
-        }
-        
-        .btn-copy-url.copied {
-            background: var(--text-dark);
-            border-color: var(--text-dark);
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <a href="#main-content" class="skip-to-content">Zum Inhalt springen</a>
 
     <header>
         <div class="header-branding-row">
             <div class="header-branding-inner u-max-width">
-                <div class="branding">
+                <a href="#concept" class="branding">
                     <div class="logo-wrapper">
-                        <img src="images/ch.png" alt="Wappen der Schweiz">
+                        <img src="assets/ch.png" alt="Wappen der Schweiz" data-i18n-alt="branding.coat_of_arms">
                     </div>
                     <div class="branding-text">
-                        <strong>Bundesamt für Bauten und Logistik BBL</strong>
-                        <span>Bereich Bauten</span>
-                        <span>Datenkatalog</span>
+                        <strong data-i18n="branding.office">Bundesamt für Bauten und Logistik BBL</strong>
+                        <span data-i18n="branding.division">Bereich Bauten</span>
+                        <span data-i18n="branding.catalog">Datenkatalog</span>
                     </div>
-                </div>
+                </a>
                 <div class="top-meta">
-                    <a href="mailto:dres@bbl.admin.ch">Kontakt</a>
-                    <a href="https://github.com/davras5/meta-bv/tree/main/data" target="_blank">Export</a>
-                    <div class="lang-selector">DE <span class="material-symbols-rounded">expand_more</span></div>
+                    <a href="mailto:dres@bbl.admin.ch" data-i18n="action.contact">Kontakt</a>
+                    <a href="https://github.com/bbl-dres/data-catalog/tree/main/data" target="_blank" data-i18n="action.export">Export</a>
+                    <div class="lang-selector" id="lang-selector">
+                        <button class="lang-btn active" data-lang="de">DE</button>
+                        <button class="lang-btn" data-lang="fr">FR</button>
+                        <button class="lang-btn" data-lang="it">IT</button>
+                        <button class="lang-btn" data-lang="en">EN</button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="header-nav-row">
             <nav class="nav-tabs u-max-width" id="nav-tabs">
-                <div class="nav-link active" data-page="concept">Konzepte</div>
-                <div class="nav-link" data-page="dataset">Datensätze</div>
-                <div class="nav-link" data-page="about">über diesen Datenkatalog</div>
-                <div class="nav-link" data-page="manual">Handbuch</div>
+                <button class="nav-link active" data-page="concept" data-i18n="nav.concepts">Konzepte</button>
+                <button class="nav-link" data-page="dataset" data-i18n="nav.datasets">Datensätze</button>
+                <button class="nav-link" data-page="about" data-i18n="nav.about">Über diesen Datenkatalog</button>
+                <button class="nav-link" data-page="manual" data-i18n="nav.manual">Handbuch</button>
             </nav>
         </div>
     </header>
@@ -1015,81 +58,81 @@
                 Startseite <span>&gt;</span> Konzepte
             </div>
             <div class="action-icons">
-                <div class="icon-btn" id="btn-print" title="Print"><span class="material-symbols-rounded">print</span></div>
-                <div class="icon-btn" id="btn-share" title="Share"><span class="material-symbols-rounded">share</span></div>
+                <button class="icon-btn" id="btn-print" data-i18n-title="action.print" title="Drucken"><span class="material-symbols-rounded">print</span></button>
+                <button class="icon-btn" id="btn-share" data-i18n-title="action.share" title="Teilen"><span class="material-symbols-rounded">share</span></button>
             </div>
         </div>
 
-        <main>
+        <main id="main-content">
             <!-- Concept Catalog View -->
             <div id="view-concept-catalog">
-                <h1 class="page-title">Konzepte</h1>
+                <h1 class="page-title" data-i18n="nav.concepts">Konzepte</h1>
                 <div class="toolbar">
                     <div class="search-group">
                         <div class="input-wrapper">
                             <span class="material-symbols-rounded search-icon">search</span>
-                            <input type="text" id="search-concept" placeholder="Suchen">
+                            <input type="text" id="search-concept" data-i18n-placeholder="search.placeholder" placeholder="Suchen" data-i18n-aria="search.concepts_aria" aria-label="Konzepte durchsuchen">
                         </div>
                         <button class="btn-filter" data-type="concept">
                             <span class="material-symbols-rounded">filter_list</span>
-                            Filter
+                            <span data-i18n="filter.button">Filter</span>
                             <span class="filter-count hidden" id="filter-count-concept">0</span>
                         </button>
                         <button class="btn-reset hidden" data-type="concept">
                             <span class="material-symbols-rounded">replay</span>
-                            Reset
+                            <span data-i18n="filter.reset">Reset</span>
                         </button>
                     </div>
                     <div class="view-toggles">
-                        <div class="toggle-icon" data-view="grid" data-type="concept">
+                        <button class="toggle-icon" data-view="grid" data-type="concept" data-i18n-aria="view.grid_aria" aria-label="Rasteransicht">
                             <span class="material-symbols-rounded">grid_view</span>
-                        </div>
-                        <div class="toggle-icon" data-view="list" data-type="concept">
+                        </button>
+                        <button class="toggle-icon" data-view="list" data-type="concept" data-i18n-aria="view.list_aria" aria-label="Listenansicht">
                             <span class="material-symbols-rounded">view_list</span>
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div class="catalog-layout">
                     <aside class="filter-panel hidden" id="filter-panel-concept">
                         <div class="filter-header">
-                            <span class="filter-title">Filter</span>
-                            <button class="filter-reset" data-type="concept" title="Filter zurücksetzen">
+                            <span class="filter-title" data-i18n="filter.title">Filter</span>
+                            <button class="filter-reset" data-type="concept" data-i18n-title="filter.reset_title" title="Filter zurücksetzen">
                                 <span class="material-symbols-rounded">replay</span>
-                                reset
+                                <span data-i18n="filter.reset">reset</span>
                             </button>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Schlüsselwörter</label>
+                            <label class="filter-label" data-i18n="filter.keywords">Schlüsselwörter</label>
                             <div class="tag-input-wrapper">
                                 <div class="tag-input-field" data-type="concept">
-                                    <input type="text" class="tag-search-input" data-type="concept" placeholder="Neues Schlüsselwort...">
+                                    <input type="text" class="tag-search-input" data-type="concept" data-i18n-placeholder="filter.keyword_placeholder" placeholder="Neues Schlüsselwort...">
                                 </div>
                                 <div class="tag-dropdown hidden" id="tag-dropdown-concept"></div>
                             </div>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Führendes System</label>
+                            <label class="filter-label" data-i18n="filter.system">Führendes System</label>
                             <select class="filter-select" id="filter-system-concept" data-type="concept">
-                                <option value="">Alle</option>
+                                <option value="" data-i18n="filter.all">Alle</option>
                             </select>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Personenbezogene Daten</label>
+                            <label class="filter-label" data-i18n="filter.personaldata">Personenbezogene Daten</label>
                             <select class="filter-select" id="filter-personenbezogen-concept" data-type="concept">
-                                <option value="">Alle</option>
-                                <option value="Keine">Keine</option>
-                                <option value="Personenbezogene Daten">Personenbezogene Daten</option>
-                                <option value="Besonders schützenswerte Personendaten">Besonders schützenswerte Personendaten</option>
+                                <option value="" data-i18n="filter.all">Alle</option>
+                                <option value="none" data-i18n="enum.personaldata.none">Keine</option>
+                                <option value="personal" data-i18n="enum.personaldata.personal">Personenbezogene Daten</option>
+                                <option value="sensitive" data-i18n="enum.personaldata.sensitive">Besonders schützenswerte Personendaten</option>
                             </select>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Klassifizierung</label>
+                            <label class="filter-label" data-i18n="filter.classification">Klassifizierung</label>
                             <select class="filter-select" id="filter-klassifizierung-concept" data-type="concept">
-                                <option value="">Alle</option>
-                                <option value="Öffentlich">Öffentlich</option>
-                                <option value="Intern">Intern</option>
-                                <option value="Vertraulich">Vertraulich</option>
-                                <option value="Geheim">Geheim</option>
+                                <option value="" data-i18n="filter.all">Alle</option>
+                                <option value="public" data-i18n="enum.classification.public">Öffentlich</option>
+                                <option value="internal" data-i18n="enum.classification.internal">Intern</option>
+                                <option value="confidential" data-i18n="enum.classification.confidential">Vertraulich</option>
+                                <option value="secret" data-i18n="enum.classification.secret">Geheim</option>
                             </select>
                         </div>
                     </aside>
@@ -1098,9 +141,9 @@
                         <table id="concept-list" class="list-table hidden">
                             <thead>
                                 <tr>
-                                    <th>KONZEPT</th>
-                                    <th>BESCHREIBUNG</th>
-                                    <th style="text-align:right">SCHLÜSSELWÖRTER</th>
+                                    <th data-i18n="table.concept">KONZEPT</th>
+                                    <th data-i18n="table.description">BESCHREIBUNG</th>
+                                    <th data-i18n="table.keywords">SCHLÜSSELWÖRTER</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1111,67 +154,67 @@
 
             <!-- Dataset Catalog View -->
             <div id="view-dataset-catalog" class="hidden">
-                <h1 class="page-title">Datensätze</h1>
+                <h1 class="page-title" data-i18n="nav.datasets">Datensätze</h1>
                 <div class="toolbar">
                     <div class="search-group">
                         <div class="input-wrapper">
                             <span class="material-symbols-rounded search-icon">search</span>
-                            <input type="text" id="search-dataset" placeholder="Suchen">
+                            <input type="text" id="search-dataset" data-i18n-placeholder="search.placeholder" placeholder="Suchen" data-i18n-aria="search.datasets_aria" aria-label="Datensätze durchsuchen">
                         </div>
                         <button class="btn-filter" data-type="dataset">
                             <span class="material-symbols-rounded">filter_list</span>
-                            Filter
+                            <span data-i18n="filter.button">Filter</span>
                             <span class="filter-count hidden" id="filter-count-dataset">0</span>
                         </button>
                         <button class="btn-reset hidden" data-type="dataset">
                             <span class="material-symbols-rounded">replay</span>
-                            Reset
+                            <span data-i18n="filter.reset">Reset</span>
                         </button>
                     </div>
                     <div class="view-toggles">
-                        <div class="toggle-icon" data-view="grid" data-type="dataset">
+                        <button class="toggle-icon" data-view="grid" data-type="dataset" data-i18n-aria="view.grid_aria" aria-label="Rasteransicht">
                             <span class="material-symbols-rounded">grid_view</span>
-                        </div>
-                        <div class="toggle-icon" data-view="list" data-type="dataset">
+                        </button>
+                        <button class="toggle-icon" data-view="list" data-type="dataset" data-i18n-aria="view.list_aria" aria-label="Listenansicht">
                             <span class="material-symbols-rounded">view_list</span>
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div class="catalog-layout">
                     <aside class="filter-panel hidden" id="filter-panel-dataset">
                         <div class="filter-header">
-                            <span class="filter-title">Filter</span>
-                            <button class="filter-reset" data-type="dataset" title="Filter zurücksetzen">
+                            <span class="filter-title" data-i18n="filter.title">Filter</span>
+                            <button class="filter-reset" data-type="dataset" data-i18n-title="filter.reset_title" title="Filter zurücksetzen">
                                 <span class="material-symbols-rounded">replay</span>
-                                reset
+                                <span data-i18n="filter.reset">reset</span>
                             </button>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Schlüsselwörter</label>
+                            <label class="filter-label" data-i18n="filter.keywords">Schlüsselwörter</label>
                             <div class="tag-input-wrapper">
                                 <div class="tag-input-field" data-type="dataset">
-                                    <input type="text" class="tag-search-input" data-type="dataset" placeholder="Neues Schlüsselwort...">
+                                    <input type="text" class="tag-search-input" data-type="dataset" data-i18n-placeholder="filter.keyword_placeholder" placeholder="Neues Schlüsselwort...">
                                 </div>
                                 <div class="tag-dropdown hidden" id="tag-dropdown-dataset"></div>
                             </div>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Personenbezogene Daten</label>
+                            <label class="filter-label" data-i18n="filter.personaldata">Personenbezogene Daten</label>
                             <select class="filter-select" id="filter-personenbezogen-dataset" data-type="dataset">
-                                <option value="">Alle</option>
-                                <option value="Keine">Keine</option>
-                                <option value="Personenbezogene Daten">Personenbezogene Daten</option>
-                                <option value="Besonders schützenswerte Personendaten">Besonders schützenswerte Personendaten</option>
+                                <option value="" data-i18n="filter.all">Alle</option>
+                                <option value="none" data-i18n="enum.personaldata.none">Keine</option>
+                                <option value="personal" data-i18n="enum.personaldata.personal">Personenbezogene Daten</option>
+                                <option value="sensitive" data-i18n="enum.personaldata.sensitive">Besonders schützenswerte Personendaten</option>
                             </select>
                         </div>
                         <div class="filter-section">
-                            <label class="filter-label">Klassifizierung</label>
+                            <label class="filter-label" data-i18n="filter.classification">Klassifizierung</label>
                             <select class="filter-select" id="filter-klassifizierung-dataset" data-type="dataset">
-                                <option value="">Alle</option>
-                                <option value="Öffentlich">Öffentlich</option>
-                                <option value="Intern">Intern</option>
-                                <option value="Vertraulich">Vertraulich</option>
-                                <option value="Geheim">Geheim</option>
+                                <option value="" data-i18n="filter.all">Alle</option>
+                                <option value="public" data-i18n="enum.classification.public">Öffentlich</option>
+                                <option value="internal" data-i18n="enum.classification.internal">Intern</option>
+                                <option value="confidential" data-i18n="enum.classification.confidential">Vertraulich</option>
+                                <option value="secret" data-i18n="enum.classification.secret">Geheim</option>
                             </select>
                         </div>
                     </aside>
@@ -1180,9 +223,9 @@
                         <table id="dataset-list" class="list-table hidden">
                             <thead>
                                 <tr>
-                                    <th>DATENSATZ</th>
-                                    <th>BESCHREIBUNG</th>
-                                    <th style="text-align:right">SCHLÜSSELWÖRTER</th>
+                                    <th data-i18n="table.dataset">DATENSATZ</th>
+                                    <th data-i18n="table.description">BESCHREIBUNG</th>
+                                    <th data-i18n="table.keywords">SCHLÜSSELWÖRTER</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -1200,35 +243,35 @@
                         <div class="detail-tags" id="detail-concept-tags"></div>
                     </div>
                     <div class="detail-image-box">
-                        <img id="detail-concept-img" src="" alt="">
+                        <img id="detail-concept-img" src="data:," alt="">
                     </div>
                 </div>
                 <div class="responsible-box hidden" id="responsible-placeholder-concept">
-                    <div class="box-title">Verantwortliche Personen</div>
-                    <div class="box-text">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
+                    <div class="box-title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
+                    <div class="box-text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
                 </div>
                 <div class="responsible-section hidden" id="responsible-list-concept">
-                    <h3 class="section-title">Verantwortliche Personen</h3>
+                    <h3 class="section-title" data-i18n="detail.responsible_title">Verantwortliche Personen</h3>
                     <div class="responsible-persons-list"></div>
                 </div>
-                <h3 class="section-title">Metadaten</h3>
+                <h3 class="section-title" data-i18n="detail.metadata">Metadaten</h3>
                 <div class="meta-list" id="detail-concept-meta"></div>
-                <h3 class="section-title">Standards</h3>
+                <h3 class="section-title" data-i18n="detail.standards">Standards</h3>
                 <div class="meta-list" id="detail-concept-standards"></div>
-                <h3 class="section-title">Attribute</h3>
+                <h3 class="section-title" data-i18n="detail.attributes">Attribute</h3>
                 <table class="attr-table">
                     <thead>
                         <tr>
-                            <th style="width:20%">NAME</th>
-                            <th style="width:15%">FORMAT</th>
-                            <th style="width:10%">SCHLÜSSEL</th>
-                            <th style="width:15%">WERTELISTE</th>
-                            <th>BESCHREIBUNG</th>
+                            <th class="attr-col-name" data-i18n="table.name">NAME</th>
+                            <th class="attr-col-format" data-i18n="table.format">FORMAT</th>
+                            <th class="attr-col-key" data-i18n="table.key">SCHLÜSSEL</th>
+                            <th class="attr-col-list" data-i18n="table.valuelist">WERTELISTE</th>
+                            <th data-i18n="table.description">BESCHREIBUNG</th>
                         </tr>
                     </thead>
                     <tbody id="detail-concept-attrs"></tbody>
                 </table>
-                <div style="height:100px;"></div>
+                <div class="detail-spacer"></div>
             </div>
 
             <div id="view-dataset-detail" class="hidden">
@@ -1239,47 +282,73 @@
                         <div class="detail-tags" id="detail-dataset-tags"></div>
                     </div>
                     <div class="detail-image-box">
-                        <img id="detail-dataset-img" src="" alt="">
+                        <img id="detail-dataset-img" src="data:," alt="">
                     </div>
                 </div>
                 <div class="responsible-box hidden" id="responsible-placeholder-dataset">
-                    <div class="box-title">Verantwortliche Personen</div>
-                    <div class="box-text">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
+                    <div class="box-title" data-i18n="detail.responsible_title">Verantwortliche Personen</div>
+                    <div class="box-text" data-i18n="detail.responsible_empty">Niemand fühlt sich für diesen Datensatz zuständig – höchste Zeit, jemandem diese Ehre zu erteilen!</div>
                 </div>
                 <div class="responsible-section hidden" id="responsible-list-dataset">
-                    <h3 class="section-title">Verantwortliche Personen</h3>
+                    <h3 class="section-title" data-i18n="detail.responsible_title">Verantwortliche Personen</h3>
                     <div class="responsible-persons-list"></div>
                 </div>
-                <h3 class="section-title">Metadaten</h3>
+                <h3 class="section-title" data-i18n="detail.metadata">Metadaten</h3>
                 <div class="meta-list" id="detail-dataset-meta"></div>
-                <h3 class="section-title">Bereitstellungsformen</h3>
+                <h3 class="section-title" data-i18n="detail.distributions">Bereitstellungsformen</h3>
                 <div class="distributions-list" id="detail-dataset-distributions"></div>
-                <h3 class="section-title">Publikationen in externen Katalogen</h3>
+                <h3 class="section-title" data-i18n="detail.publications">Publikationen in externen Katalogen</h3>
                 <div class="publications-list" id="detail-dataset-publications"></div>
-                <div style="height:100px;"></div>
+                <div class="detail-spacer"></div>
             </div>
 
             <!-- Content Pages -->
             <div id="view-about" class="hidden content-page">
-                <h1 class="page-title">Über diesen Datenkatalog</h1>
+                <h1 class="page-title" data-i18n="nav.about">Über diesen Datenkatalog</h1>
                 <div id="about-content"></div>
             </div>
 
             <div id="view-manual" class="hidden content-page">
-                <h1 class="page-title">Handbuch</h1>
+                <h1 class="page-title" data-i18n="nav.manual">Handbuch</h1>
                 <div id="manual-content"></div>
             </div>
         </main>
     </div>
 
     <footer>
-        <div class="footer-inner u-max-width">
-            <div class="footer-left">
-                <a href="https://github.com/davras5/meta-bv/" target="_blank" class="footer-link">Quellcode</a>
-                <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" class="footer-link">Rechtliches</a>
+        <div class="footer-main">
+            <div class="footer-columns u-max-width">
+                <div class="footer-col">
+                    <h4 data-i18n="footer.about_heading">Über den Datenkatalog</h4>
+                    <ul>
+                        <li><a href="#about" data-i18n="footer.about_link">Über diesen Katalog</a></li>
+                        <li><a href="#manual" data-i18n="footer.manual_link">Handbuch</a></li>
+                        <li><a href="https://github.com/bbl-dres/data-catalog" target="_blank" data-i18n="footer.source">Quellcode auf GitHub</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 data-i18n="footer.contact_heading">Kontakt</h4>
+                    <ul>
+                        <li><a href="mailto:dres@bbl.admin.ch">dres@bbl.admin.ch</a></li>
+                        <li><a href="https://www.bbl.admin.ch" target="_blank" data-i18n="footer.bbl_link">Bundesamt für Bauten und Logistik</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4 data-i18n="footer.legal_heading">Rechtliches</h4>
+                    <ul>
+                        <li><a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" data-i18n="footer.legal">Rechtliche Hinweise</a></li>
+                    </ul>
+                </div>
             </div>
-            <div class="footer-right">
-                Version 1.0.0
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-inner u-max-width">
+                <div class="footer-left">
+                    <span class="footer-link">&copy; BBL</span>
+                </div>
+                <div class="footer-right">
+                    Version 1.0.0
+                </div>
             </div>
         </div>
     </footer>
@@ -1288,30 +357,25 @@
     <div class="modal-overlay" id="share-modal">
         <div class="modal-box">
             <div class="modal-header">
-                <span>Inhalt teilen</span>
+                <span data-i18n="share.title">Inhalt teilen</span>
                 <button class="modal-close" id="modal-close">
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="share-icons">
-                    <!-- Facebook -->
                     <a href="#" class="share-icon-link" data-share="facebook" title="Facebook">
                         <svg viewBox="0 0 24 24"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
                     </a>
-                    <!-- X (Twitter) -->
                     <a href="#" class="share-icon-link" data-share="twitter" title="X">
                         <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     </a>
-                    <!-- LinkedIn -->
                     <a href="#" class="share-icon-link" data-share="linkedin" title="LinkedIn">
                         <svg viewBox="0 0 24 24"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
                     </a>
-                    <!-- Xing -->
                     <a href="#" class="share-icon-link" data-share="xing" title="Xing">
                         <svg viewBox="0 0 24 24"><path d="M18.188 0c-.517 0-.741.325-.927.66 0 0-7.455 13.224-7.702 13.657.015.024 4.919 9.023 4.919 9.023.17.308.436.66.967.66h3.454c.211 0 .375-.078.463-.22.089-.151.089-.346-.009-.536l-4.879-8.916c-.004-.006-.004-.016 0-.022L22.139.756c.095-.191.097-.387.006-.535C22.056.078 21.894 0 21.686 0h-3.498zM3.648 4.74c-.211 0-.385.074-.473.216-.09.149-.078.339.02.531l2.34 4.05c.004.01.004.016 0 .021L1.86 16.051c-.099.188-.093.381 0 .529.085.142.239.234.45.234h3.461c.518 0 .766-.348.945-.667l3.734-6.609-2.378-4.155c-.172-.315-.434-.659-.962-.659H3.648v.016z"/></svg>
                     </a>
-                    <!-- WhatsApp (Phone) -->
                     <a href="#" class="share-icon-link" data-share="whatsapp" title="WhatsApp">
                         <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
                     </a>
@@ -1319,863 +383,11 @@
                 <div class="share-url-group">
                     <input type="text" class="share-url-input" id="share-url-input" readonly>
                 </div>
-                <button class="btn-copy-url" id="btn-copy-url">URL kopieren</button>
+                <button class="btn-copy-url" id="btn-copy-url" data-i18n="share.copy">URL kopieren</button>
             </div>
         </div>
     </div>
 
-    <script>
-    (function() {
-        // === STATE (minimal - most state is in URL) ===
-        const state = {
-            data: { concept: [], dataset: [] },
-            ui: {
-                filterPanelOpen: false,
-                view: 'grid'
-            },
-            contentLoaded: { about: false, manual: false }
-        };
-
-        // === CONFIG ===
-        const config = {
-            views: ['view-concept-catalog', 'view-dataset-catalog', 'view-concept-detail', 'view-dataset-detail', 'view-about', 'view-manual'],
-            typeLabels: {
-                concept: 'Konzept',
-                dataset: 'Datensatz'
-            },
-            metaFields: {
-                concept: [
-                    { key: 'fachliche_id', label: 'ID', type: 'text' },
-                    { key: 'termdat', label: 'TERMDAT', type: 'link' },
-                    { key: 'fachbereich', label: 'Fachbereich', type: 'text' },
-                    { key: 'system', label: 'Führendes System', type: 'pill' },
-                    { key: 'klassifizierung', label: 'Klassifizierung', type: 'pill' },
-                    { key: 'personenbezogen', label: 'Personenbezogene Daten', type: 'pill' },
-                    { key: 'kommentar', label: 'Kommentar', type: 'text' },
-                    { key: 'version', label: 'Version', type: 'text' }
-                ],
-                dataset: [
-                    { key: 'kontaktstelle', label: 'Kontaktstelle', type: 'text' },
-                    { key: 'ausgabedatum', label: 'Ausgabedatum', type: 'text' },
-                    { key: 'aktualisierungsintervall', label: 'Aktualisierungsintervall', type: 'pill' },
-                    { key: 'status', label: 'Status', type: 'pill' },
-                    { key: 'klassifizierung', label: 'Klassifizierung', type: 'pill' },
-                    { key: 'personenbezogen', label: 'Personenbezogene Daten', type: 'pill' },
-                    { key: 'archivwuerdig', label: 'Archivwürdig', type: 'pill' },
-                    { key: 'thema', label: 'Thema', type: 'pill' },
-                    { key: 'rechtsgrundlage', label: 'Rechtsgrundlage', type: 'text' },
-                    { key: 'kommentar', label: 'Kommentar', type: 'text' }
-                ]
-            },
-            distributionFields: [
-                { key: 'identifikator', label: 'Identifikator' },
-                { key: 'titel', label: 'Titel', fallback: 'name' },
-                { key: 'zugriffsUrl', label: 'Zugriffs-URL', isLink: true },
-                { key: 'downloadUrl', label: 'Download-URL', isLink: true },
-                { key: 'status', label: 'Status' },
-                { key: 'dateiformat', label: 'Dateiformat', fallback: 'format' },
-                { key: 'lizenz', label: 'Lizenz' },
-                { key: 'bemerkungen', label: 'Zusätzliche Bemerkungen' }
-            ],
-            shareUrls: {
-                facebook: 'https://www.facebook.com/sharer/sharer.php?u=',
-                twitter: 'https://twitter.com/intent/tweet?url=',
-                linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=',
-                xing: 'https://www.xing.com/spi/shares/new?url=',
-                whatsapp: 'https://wa.me/?text='
-            }
-        };
-
-        // === UTILITIES ===
-        const $ = (sel, ctx = document) => ctx.querySelector(sel);
-        const $$ = (sel, ctx = document) => ctx.querySelectorAll(sel);
-
-        // === URL PARSING ===
-        function parseHash() {
-            const hash = location.hash.slice(1) || '/concept';
-            const [pathPart, queryPart] = hash.split('?');
-            const params = new URLSearchParams(queryPart || '');
-            
-            const pathSegments = pathPart.split('/').filter(Boolean);
-            const type = pathSegments[0] || 'concept';
-            const id = pathSegments[1] || null;
-            
-            return {
-                type,
-                id,
-                tags: params.get('tags')?.split(',').filter(Boolean) || [],
-                view: params.get('view') || 'grid',
-                filter: params.get('filter') === 'open',
-                system: params.get('system') || '',
-                personenbezogen: params.get('personenbezogen') || '',
-                klassifizierung: params.get('klassifizierung') || ''
-            };
-        }
-
-        function buildHash(type, id = null, params = {}) {
-            let hash = `#/${type}`;
-            if (id) hash += `/${id}`;
-            
-            const urlParams = new URLSearchParams();
-            if (params.tags?.length) urlParams.set('tags', params.tags.join(','));
-            if (params.view && params.view !== 'grid') urlParams.set('view', params.view);
-            if (params.filter) urlParams.set('filter', 'open');
-            if (params.system) urlParams.set('system', params.system);
-            if (params.personenbezogen) urlParams.set('personenbezogen', params.personenbezogen);
-            if (params.klassifizierung) urlParams.set('klassifizierung', params.klassifizierung);
-
-            const queryString = urlParams.toString();
-            return queryString ? `${hash}?${queryString}` : hash;
-        }
-
-        function updateUrl(params, replace = false) {
-            const current = parseHash();
-            const newHash = buildHash(
-                params.type ?? current.type,
-                params.id ?? current.id,
-                {
-                    tags: params.tags ?? current.tags,
-                    view: params.view ?? current.view,
-                    filter: params.filter ?? current.filter,
-                    system: params.system ?? current.system,
-                    personenbezogen: params.personenbezogen ?? current.personenbezogen,
-                    klassifizierung: params.klassifizierung ?? current.klassifizierung
-                }
-            );
-            
-            if (replace) {
-                history.replaceState(null, '', newHash);
-            } else {
-                location.hash = newHash;
-            }
-        }
-
-        // === TAG MANAGEMENT ===
-        function getAllTags(type) {
-            const tags = new Set();
-            state.data[type].forEach(item => {
-                (item.tags || []).forEach(t => tags.add(t));
-            });
-            return Array.from(tags).sort((a, b) => a.localeCompare(b, 'de'));
-        }
-
-        function addTag(tag) {
-            const current = parseHash();
-            if (!current.tags.includes(tag)) {
-                updateUrl({ tags: [...current.tags, tag] });
-            }
-        }
-
-        function removeTag(tag) {
-            const current = parseHash();
-            updateUrl({ tags: current.tags.filter(t => t !== tag) });
-        }
-
-        function clearTags() {
-            updateUrl({ tags: [] });
-        }
-
-        function clearAllFilters() {
-            updateUrl({ tags: [], system: '', personenbezogen: '', klassifizierung: '' });
-        }
-
-        // === FORMATTING UTILITIES ===
-        function formatValue(val, type) {
-            if (!val || val === '-') return '-';
-            if (type === 'pill') return `<span class="tag-pill">${val}</span>`;
-            if (type === 'pills' && Array.isArray(val)) return val.map(v => `<span class="tag-pill">${v}</span>`).join('');
-            if (type === 'link' && val.startsWith('http')) return `<a href="${val}" target="_blank">${val}</a>`;
-            return val;
-        }
-
-        function createDataRow(label, value, type = 'text') {
-            return `<div class="data-row"><div class="data-row-key">${label}</div><div class="data-row-val">${formatValue(value, type)}</div></div>`;
-        }
-
-        function createTags(tags, activeTags = []) {
-            return tags.map(t => {
-                const isActive = activeTags.includes(t);
-                return `<span class="tag-pill${isActive ? ' tag-pill--active' : ''}" data-tag="${t}">${t}</span>`;
-            }).join('');
-        }
-
-        function renderResponsiblePersons(type, persons) {
-            const placeholder = $(`#responsible-placeholder-${type}`);
-            const listSection = $(`#responsible-list-${type}`);
-            const listContainer = $(`#responsible-list-${type} .responsible-persons-list`);
-
-            if (!persons || persons.length === 0) {
-                // Show placeholder, hide list
-                placeholder.classList.remove('hidden');
-                listSection.classList.add('hidden');
-                return;
-            }
-
-            // Hide placeholder, show list
-            placeholder.classList.add('hidden');
-            listSection.classList.remove('hidden');
-
-            const html = persons.map(person => {
-                const admindirUrl = `https://admindir.verzeichnisse.admin.ch/person/${person.admindirId}`;
-                return `
-                    <div class="data-row">
-                        <div class="data-row-key">AdminDir ID: <a href="${admindirUrl}" target="_blank" class="responsible-person-link">${person.admindirId}</a></div>
-                        <div class="data-row-val"><span class="tag-pill">${person.role}</span></div>
-                    </div>
-                `;
-            }).join('');
-
-            listContainer.innerHTML = html;
-        }
-
-        // === FILTERING ===
-        function filterItems(items, searchText, filters) {
-            const { tags = [], system = '', personenbezogen = '', klassifizierung = '' } = filters;
-
-            return items.filter(item => {
-                // Text search
-                const text = searchText.toLowerCase();
-                const matchesText = !text ||
-                    item.title.toLowerCase().includes(text) ||
-                    item.description.toLowerCase().includes(text);
-
-                // Tag filter (AND logic) - nur tags
-                const itemTags = item.tags || [];
-                const matchesTags = tags.length === 0 ||
-                    tags.every(tag => itemTags.includes(tag));
-
-                // Meta filters (AND logic)
-                const meta = item.meta || {};
-                const matchesSystem = !system || meta.system === system;
-                const matchesPersonenbezogen = !personenbezogen || meta.personenbezogen === personenbezogen;
-                const matchesKlassifizierung = !klassifizierung || meta.klassifizierung === klassifizierung;
-
-                return matchesText && matchesTags && matchesSystem && matchesPersonenbezogen && matchesKlassifizierung;
-            });
-        }
-
-        // Helper function to get unique systems from concepts
-        function getUniqueSystems() {
-            const systems = new Set();
-            state.data.concept.forEach(item => {
-                if (item.meta?.system) systems.add(item.meta.system);
-            });
-            return Array.from(systems).sort((a, b) => a.localeCompare(b, 'de'));
-        }
-
-        // === DATA LOADING ===
-        async function loadData() {
-            try {
-                const [conceptRes, datasetRes] = await Promise.all([
-                    fetch('data/concepts.json'),
-                    fetch('data/datasets.json').catch(() => ({ ok: false }))
-                ]);
-                
-                state.data.concept = await conceptRes.json();
-                state.data.dataset = datasetRes.ok ? await datasetRes.json() : [];
-            } catch (e) {
-                console.error('Data load failed:', e);
-            }
-        }
-
-        async function loadContent(type) {
-            if (state.contentLoaded[type]) return;
-            try {
-                const res = await fetch(`content/${type}.html`);
-                if (res.ok) {
-                    $(`#${type}-content`).innerHTML = await res.text();
-                    state.contentLoaded[type] = true;
-                }
-            } catch (e) {
-                console.error(`Failed to load ${type}.html:`, e);
-            }
-        }
-
-        // === FILTER PANEL RENDERING ===
-        function renderFilterPanel(type) {
-            const { tags, filter, system, personenbezogen, klassifizierung } = parseHash();
-            const panel = $(`#filter-panel-${type}`);
-            const countEl = $(`#filter-count-${type}`);
-            const filterBtn = $(`.btn-filter[data-type="${type}"]`);
-            const resetBtn = $(`.btn-reset[data-type="${type}"]`);
-            const inputField = $(`.tag-input-field[data-type="${type}"]`);
-            const searchInput = $(`.tag-search-input[data-type="${type}"]`);
-
-            // Update filter panel visibility
-            panel.classList.toggle('hidden', !filter);
-            state.ui.filterPanelOpen = filter;
-
-            // Update filter button active state
-            filterBtn.classList.toggle('active', filter);
-
-            // Count active filters (tags + meta filters)
-            let activeFilterCount = tags.length;
-            if (system) activeFilterCount++;
-            if (personenbezogen) activeFilterCount++;
-            if (klassifizierung) activeFilterCount++;
-
-            // Update filter count badge
-            if (activeFilterCount > 0) {
-                countEl.textContent = activeFilterCount;
-                countEl.classList.remove('hidden');
-            } else {
-                countEl.classList.add('hidden');
-            }
-
-            // Show/hide reset button based on active filters
-            resetBtn.classList.toggle('hidden', activeFilterCount === 0);
-
-            // Render active tags in input field
-            const existingPills = inputField.querySelectorAll('.tag-pill-active');
-            existingPills.forEach(pill => pill.remove());
-
-            tags.forEach(tag => {
-                const pill = document.createElement('span');
-                pill.className = 'tag-pill-active';
-                pill.innerHTML = `${tag}<span class="remove" data-tag="${tag}">×</span>`;
-                inputField.insertBefore(pill, searchInput);
-            });
-
-            // Update placeholder
-            searchInput.placeholder = tags.length > 0 ? 'Neues Schlüsselwort...' : 'Schlüsselwort wählen...';
-
-            // Populate system dropdown dynamically (only for concepts)
-            if (type === 'concept') {
-                const systemSelect = $(`#filter-system-${type}`);
-                if (systemSelect) {
-                    const systems = getUniqueSystems();
-                    // Keep "Alle" option and add system options
-                    systemSelect.innerHTML = '<option value="">Alle</option>' +
-                        systems.map(s => `<option value="${s}"${s === system ? ' selected' : ''}>${s}</option>`).join('');
-                }
-            }
-
-            // Set dropdown values from URL
-            const personenbezogenSelect = $(`#filter-personenbezogen-${type}`);
-            if (personenbezogenSelect) {
-                personenbezogenSelect.value = personenbezogen;
-            }
-
-            const klassifizierungSelect = $(`#filter-klassifizierung-${type}`);
-            if (klassifizierungSelect) {
-                klassifizierungSelect.value = klassifizierung;
-            }
-        }
-
-        function renderTagDropdown(type, filterText = '') {
-            const { tags } = parseHash();
-            const dropdown = $(`#tag-dropdown-${type}`);
-            const allTags = getAllTags(type);
-            
-            // Filter out already selected tags and apply search filter
-            const availableTags = allTags.filter(tag => 
-                !tags.includes(tag) && 
-                tag.toLowerCase().includes(filterText.toLowerCase())
-            );
-            
-            if (availableTags.length === 0) {
-                dropdown.innerHTML = '<div class="tag-option-empty">Keine Treffer</div>';
-            } else {
-                dropdown.innerHTML = availableTags
-                    .map(tag => `<div class="tag-option" data-tag="${tag}">${tag}</div>`)
-                    .join('');
-            }
-        }
-
-        // === CATALOG RENDERING ===
-        function renderCatalog(type) {
-            const { tags, view, system, personenbezogen, klassifizierung } = parseHash();
-            const searchText = $(`#search-${type}`)?.value || '';
-            const items = filterItems(state.data[type], searchText, { tags, system, personenbezogen, klassifizierung });
-            const isGrid = view === 'grid';
-            
-            // Update view state
-            state.ui.view = view;
-            
-            const gridEl = $(`#${type}-grid`);
-            const listEl = $(`#${type}-list`);
-            
-            gridEl.classList.toggle('hidden', !isGrid);
-            listEl.classList.toggle('hidden', isGrid);
-            
-            // Update view toggle buttons
-            $$(`[data-type="${type}"].toggle-icon`).forEach(btn => {
-                const isActive = btn.dataset.view === view;
-                btn.classList.toggle('active', isActive);
-                btn.classList.toggle('inactive', !isActive);
-            });
-
-            if (items.length === 0) {
-                const noResults = `
-                    <div class="no-results">
-                        <div class="no-results-icon"><span class="material-symbols-rounded" style="font-size:48px">search_off</span></div>
-                        <div class="no-results-text">Keine Ergebnisse gefunden</div>
-                    </div>
-                `;
-                if (isGrid) {
-                    gridEl.innerHTML = noResults;
-                } else {
-                    $('tbody', listEl).innerHTML = `<tr><td colspan="3">${noResults}</td></tr>`;
-                }
-                return;
-            }
-
-            // Typ-Label aus Config (nicht anklickbar)
-            const typeLabel = config.typeLabels[type] || '';
-
-            if (isGrid) {
-                gridEl.innerHTML = items.map(item => `
-                    <div class="card" data-id="${item.id}">
-                        <div class="card-img-wrap">
-                            <img src="${item.image}" class="card-img" alt="${item.title}">
-                            <div class="tags-overlay"><span class="tag-label">${typeLabel}</span></div>
-                        </div>
-                        <div class="card-body">
-                            <h3 class="card-title">${item.title}</h3>
-                            <p class="card-desc">${item.description}</p>
-                            <div class="card-footer">
-                                <div class="tags-bottom">${createTags((item.tags || []).slice(0, 3), tags)}</div>
-                                <div class="btn-arrow"><span class="material-symbols-rounded">arrow_forward</span></div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                $('tbody', listEl).innerHTML = items.map(item => `
-                    <tr data-id="${item.id}">
-                        <td class="col-title">${item.title}</td>
-                        <td class="col-desc">${item.description}</td>
-                        <td class="col-tags">${createTags(item.tags || [], tags)}</td>
-                    </tr>
-                `).join('');
-            }
-            
-            // Render filter panel
-            renderFilterPanel(type);
-        }
-
-        // === DETAIL RENDERING ===
-        function renderDetail(type, id) {
-            const item = state.data[type].find(x => x.id === id);
-            if (!item) return navigate(type);
-
-            showView(`view-${type}-detail`);
-            setActiveTab(type);
-            setBreadcrumbs(`${type}-detail`, item.title);
-
-            // Common fields
-            $(`#detail-${type}-title`).textContent = item.title;
-            $(`#detail-${type}-desc`).textContent = item.fullDescription || item.description;
-            $(`#detail-${type}-img`).src = item.image || '';
-            $(`#detail-${type}-tags`).innerHTML = createTags(item.tags || []);
-
-            // Responsible Persons
-            renderResponsiblePersons(type, item.responsiblePersons);
-
-            // Metadata
-            const metaHtml = item.meta 
-                ? config.metaFields[type].map(f => createDataRow(f.label, item.meta[f.key], f.type)).join('')
-                : '<div class="data-row">Keine Metadaten</div>';
-            $(`#detail-${type}-meta`).innerHTML = metaHtml;
-
-            // Type-specific rendering
-            if (type === 'concept') {
-                renderConceptSpecific(item);
-            } else {
-                renderDatasetSpecific(item);
-            }
-        }
-
-        function renderConceptSpecific(item) {
-            // Standards - support for array values (multiple values per standard)
-            const stdHtml = item.standards?.length
-                ? item.standards.map(s => {
-                    const displayValue = Array.isArray(s.value)
-                        ? s.value.join('<br>')
-                        : s.value;
-                    return createDataRow(s.name, displayValue);
-                }).join('')
-                : '<div class="data-row">Keine Standards definiert</div>';
-            $('#detail-concept-standards').innerHTML = stdHtml;
-
-            // Attributes
-            const attrHtml = item.attributes?.length
-                ? item.attributes.map(a => `
-                    <tr>
-                        <td>${a.name}</td>
-                        <td>${a.format}</td>
-                        <td>${a.key}</td>
-                        <td>${a.list}</td>
-                        <td>${a.desc}</td>
-                    </tr>
-                `).join('')
-                : '<tr><td colspan="5">Keine Attribute definiert</td></tr>';
-            $('#detail-concept-attrs').innerHTML = attrHtml;
-        }
-
-        function renderDatasetSpecific(item) {
-            // Distributions
-            const distContainer = $('#detail-dataset-distributions');
-            if (item.distributions?.length) {
-                distContainer.innerHTML = item.distributions.map((d, i) => {
-                    const icon = ['Excel', 'XLSX', 'XLS', 'CSV'].includes(d.format) ? 'description' : 'code';
-                    const detailRows = config.distributionFields.map(f => {
-                        const val = d[f.key] || d[f.fallback] || '';
-                        const display = f.isLink && val ? `<a href="${val}" target="_blank">${val}</a>` : (val || '-');
-                        return `<div class="distribution-detail-row"><div class="distribution-detail-key">${f.label}</div><div class="distribution-detail-val">${display}</div></div>`;
-                    }).join('');
-
-                    return `
-                        <div class="distribution-item" data-index="${i}">
-                            <div class="distribution-header">
-                                <div class="distribution-left">${d.name}</div>
-                                <div class="distribution-right">
-                                    <span class="material-symbols-rounded">${icon}</span>
-                                    <span class="distribution-format">${d.format}</span>
-                                    <span class="material-symbols-rounded expand-icon">expand_more</span>
-                                </div>
-                            </div>
-                            <div class="distribution-details">${detailRows}</div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                distContainer.innerHTML = '<div class="data-row">Keine Bereitstellungsformen definiert</div>';
-            }
-
-            // Publications
-            const pubHtml = item.publications?.length
-                ? item.publications.map(p => createDataRow(p.catalog, p.value)).join('')
-                : '<div class="data-row">Keine externen Publikationen</div>';
-            $('#detail-dataset-publications').innerHTML = pubHtml;
-        }
-
-        // === NAVIGATION ===
-        function showView(viewId) {
-            config.views.forEach(id => $(`#${id}`).classList.add('hidden'));
-            $(`#${viewId}`).classList.remove('hidden');
-        }
-
-        function setActiveTab(page) {
-            $$('.nav-link').forEach(tab => tab.classList.remove('active'));
-            const tabPage = (page === 'concept-detail') ? 'concept' : (page === 'dataset-detail') ? 'dataset' : page;
-            $(`.nav-link[data-page="${tabPage}"]`)?.classList.add('active');
-        }
-
-        function setBreadcrumbs(page, title = '') {
-            const crumbs = { 
-                concept: 'Konzepte', 
-                dataset: 'Datensätze', 
-                about: 'Über diesen Datenkatalog', 
-                manual: 'Handbuch'
-            };
-            
-            let html = `<a href="#/concept">Startseite</a> <span>&gt;</span> `;
-            
-            if (page.includes('-detail')) {
-                const type = page.replace('-detail', '');
-                html += `<a href="#/${type}">${crumbs[type]}</a> <span>&gt;</span> ${title}`;
-            } else {
-                html += crumbs[page] || page;
-            }
-            
-            $('#breadcrumbs').innerHTML = html;
-        }
-
-        function navigate(page) {
-            showView(`view-${page}-catalog`);
-            setActiveTab(page);
-            setBreadcrumbs(page);
-            renderCatalog(page);
-        }
-
-        async function handleRoute() {
-            const { type, id, filter } = parseHash();
-            
-            // Update UI state
-            state.ui.filterPanelOpen = filter;
-
-            if (type === 'concept' && id) {
-                renderDetail('concept', id);
-            } else if (type === 'dataset' && id) {
-                renderDetail('dataset', id);
-            } else if (type === 'about') {
-                await loadContent('about');
-                showView('view-about');
-                setActiveTab('about');
-                setBreadcrumbs('about');
-            } else if (type === 'manual') {
-                await loadContent('manual');
-                showView('view-manual');
-                setActiveTab('manual');
-                setBreadcrumbs('manual');
-            } else if (type === 'dataset') {
-                navigate('dataset');
-            } else {
-                navigate('concept');
-            }
-        }
-
-        // === SHARE MODAL ===
-        function openShareModal() {
-            const modal = $('#share-modal');
-            const urlInput = $('#share-url-input');
-            const copyBtn = $('#btn-copy-url');
-            
-            // Set current URL
-            urlInput.value = window.location.href;
-            
-            // Reset copy button state
-            copyBtn.textContent = 'URL kopieren';
-            copyBtn.classList.remove('copied');
-            
-            // Show modal
-            modal.classList.add('visible');
-            
-            // Update share links
-            const currentUrl = encodeURIComponent(window.location.href);
-            $$('.share-icon-link').forEach(link => {
-                const platform = link.dataset.share;
-                if (config.shareUrls[platform]) {
-                    link.href = config.shareUrls[platform] + currentUrl;
-                    link.target = '_blank';
-                }
-            });
-        }
-
-        function closeShareModal() {
-            $('#share-modal').classList.remove('visible');
-        }
-
-        function copyUrlToClipboard() {
-            const urlInput = $('#share-url-input');
-            const copyBtn = $('#btn-copy-url');
-            
-            navigator.clipboard.writeText(urlInput.value).then(() => {
-                copyBtn.textContent = 'Kopiert!';
-                copyBtn.classList.add('copied');
-                
-                setTimeout(() => {
-                    copyBtn.textContent = 'URL kopieren';
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                // Fallback: select the input
-                urlInput.select();
-            });
-        }
-
-        // === EVENT HANDLERS ===
-        function setupEventListeners() {
-            // Navigation tabs
-            $('#nav-tabs').addEventListener('click', e => {
-                const tab = e.target.closest('.nav-link');
-                if (tab) {
-                    // Reset filters when switching tabs
-                    location.hash = `#/${tab.dataset.page}`;
-                }
-            });
-
-            // Print button
-            $('#btn-print').addEventListener('click', () => {
-                window.print();
-            });
-
-            // Share button
-            $('#btn-share').addEventListener('click', openShareModal);
-
-            // Close modal
-            $('#modal-close').addEventListener('click', closeShareModal);
-
-            // Click outside modal to close
-            $('#share-modal').addEventListener('click', e => {
-                if (e.target === e.currentTarget) {
-                    closeShareModal();
-                }
-            });
-
-            // Escape key to close modal
-            document.addEventListener('keydown', e => {
-                if (e.key === 'Escape' && $('#share-modal').classList.contains('visible')) {
-                    closeShareModal();
-                }
-            });
-
-            // Copy URL button
-            $('#btn-copy-url').addEventListener('click', copyUrlToClipboard);
-
-            // Filter button toggle
-            document.addEventListener('click', e => {
-                const filterBtn = e.target.closest('.btn-filter');
-                if (filterBtn) {
-                    const current = parseHash();
-                    updateUrl({ filter: !current.filter });
-                }
-            });
-
-            // Filter reset button (in panel)
-            document.addEventListener('click', e => {
-                const resetBtn = e.target.closest('.filter-reset');
-                if (resetBtn) {
-                    clearAllFilters();
-                }
-            });
-
-            // Reset button (in toolbar, next to filter button)
-            document.addEventListener('click', e => {
-                const resetBtn = e.target.closest('.btn-reset');
-                if (resetBtn) {
-                    clearAllFilters();
-                }
-            });
-
-            // Filter dropdown change handlers
-            document.addEventListener('change', e => {
-                const select = e.target.closest('.filter-select');
-                if (select) {
-                    const id = select.id;
-                    if (id.startsWith('filter-system-')) {
-                        updateUrl({ system: select.value });
-                    } else if (id.startsWith('filter-personenbezogen-')) {
-                        updateUrl({ personenbezogen: select.value });
-                    } else if (id.startsWith('filter-klassifizierung-')) {
-                        updateUrl({ klassifizierung: select.value });
-                    }
-                }
-            });
-
-            // View toggles
-            document.addEventListener('click', e => {
-                const toggle = e.target.closest('.toggle-icon');
-                if (!toggle || toggle.classList.contains('active')) return;
-                updateUrl({ view: toggle.dataset.view });
-            });
-
-            // Tag input field focus - show dropdown
-            document.addEventListener('focusin', e => {
-                const input = e.target.closest('.tag-search-input');
-                if (input) {
-                    const type = input.dataset.type;
-                    renderTagDropdown(type, input.value);
-                    $(`#tag-dropdown-${type}`).classList.remove('hidden');
-                }
-            });
-
-            // Tag search input
-            document.addEventListener('input', e => {
-                const input = e.target.closest('.tag-search-input');
-                if (input) {
-                    const type = input.dataset.type;
-                    renderTagDropdown(type, input.value);
-                }
-            });
-
-            // Tag dropdown option click
-            document.addEventListener('click', e => {
-                const option = e.target.closest('.tag-option');
-                if (option) {
-                    const tag = option.dataset.tag;
-                    addTag(tag);
-                    
-                    // Clear input and hide dropdown
-                    const type = parseHash().type;
-                    const input = $(`.tag-search-input[data-type="${type}"]`);
-                    if (input) {
-                        input.value = '';
-                    }
-                    $(`#tag-dropdown-${type}`).classList.add('hidden');
-                }
-            });
-
-            // Remove tag pill
-            document.addEventListener('click', e => {
-                const removeBtn = e.target.closest('.tag-pill-active .remove');
-                if (removeBtn) {
-                    e.stopPropagation();
-                    removeTag(removeBtn.dataset.tag);
-                }
-            });
-
-            // Click outside dropdown to close
-            document.addEventListener('click', e => {
-                if (!e.target.closest('.tag-input-wrapper')) {
-                    $$('.tag-dropdown').forEach(d => d.classList.add('hidden'));
-                }
-            });
-
-            // Tag pill click in cards/list (add to filter) or detail view (navigate with filter)
-            document.addEventListener('click', e => {
-                const tagPill = e.target.closest('.tag-pill[data-tag]');
-                if (tagPill && !e.target.closest('.tag-input-wrapper')) {
-                    e.stopPropagation();
-                    const tag = tagPill.dataset.tag;
-                    const current = parseHash();
-
-                    // Check if we're in a detail view
-                    const detailView = e.target.closest('[id^="view-"][id$="-detail"]');
-                    if (detailView) {
-                        // Navigate to gallery with this tag as filter
-                        const type = detailView.id.includes('concept') ? 'concept' : 'dataset';
-                        location.hash = buildHash(type, null, { tags: [tag], view: current.view });
-                    } else {
-                        // Add tag to filter (don't toggle panel)
-                        if (!current.tags.includes(tag)) {
-                            updateUrl({ tags: [...current.tags, tag] });
-                        }
-                    }
-                }
-            });
-
-            // Card/row clicks (navigate to detail)
-            document.addEventListener('click', e => {
-                // Don't navigate if clicking on a tag
-                if (e.target.closest('.tag-pill')) return;
-                
-                const card = e.target.closest('.card');
-                const row = e.target.closest('tr[data-id]');
-                const target = card || row;
-                
-                if (!target) return;
-                
-                const container = target.closest('[id^="view-"]');
-                if (!container) return;
-                
-                const type = container.id.includes('concept') ? 'concept' : 'dataset';
-                window.location.hash = `#/${type}/${target.dataset.id}`;
-            });
-
-            // Distribution accordion
-            document.addEventListener('click', e => {
-                const header = e.target.closest('.distribution-header');
-                if (header) {
-                    header.closest('.distribution-item').classList.toggle('expanded');
-                }
-            });
-
-            // Search inputs
-            ['concept', 'dataset'].forEach(type => {
-                $(`#search-${type}`)?.addEventListener('input', () => {
-                    renderCatalog(type);
-                });
-            });
-
-            // Hash change
-            window.addEventListener('hashchange', handleRoute);
-        }
-
-        // === INIT ===
-        async function init() {
-            await loadData();
-            setupEventListeners();
-            handleRoute();
-        }
-
-        init();
-
-        // Debug exposure
-        window.catalogState = state;
-    })();
-    </script>
+    <script src="js/app.js"></script>
 </body>
 </html>
