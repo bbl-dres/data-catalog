@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBL IMMO Datenmodell - Netzwerk Graph</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: white;
+            height: 100vh;
+            overflow: auto;
+        }
+        .container {
+            background-color: white;
+            padding: 5px;
+            margin: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin: 5px 0;
+            font-size: 20px;
+        }
+        #network {
+            width: 100%;
+            height: calc(100vh - 120px);
+            border: none;
+            background: #fafafa;
+        }
+        .controls {
+            margin: 5px 0;
+            text-align: center;
+        }
+        .controls button {
+            margin: 2px;
+            padding: 5px 10px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        .controls button:hover {
+            background-color: #5a67d8;
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f7f7f7;
+            border-radius: 3px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 2px 10px;
+            font-size: 11px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 1px solid #fff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .info {
+            margin-top: 5px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #666;
+        }
+        .stats {
+            display: inline-block;
+            margin-left: 20px;
+            padding: 5px 10px;
+            background-color: #e8e8e8;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #333;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BBL IMMO Datenmodell - Netzwerk Visualisierung</h1>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #E0E0E0;"></div>
+                <span>Übergreifend</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #B3D9FF;"></div>
+                <span>Rechtlich</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #90EE90;"></div>
+                <span>Räumlich</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FFD4A3;"></div>
+                <span>Technisch</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #D9CCFF;"></div>
+                <span>Konstruktiv</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #FFB3BA;"></div>
+                <span>Messung</span>
+            </div>
+            <div class="stats">
+                📊 <span id="nodeCount">22</span> Entitäten | 🔗 <span id="edgeCount">44</span> Beziehungen
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="network.fit()">Ansicht zentrieren</button>
+            <button onclick="togglePhysics()">Physik Ein/Aus</button>
+            <button onclick="changeLayout('hierarchical')">Hierarchisches Layout</button>
+            <button onclick="changeLayout('force')">Force Layout</button>
+            <button onclick="changeLayout('circular')">Kreisförmiges Layout</button>
+        </div>
+
+        <div id="network"></div>
+        
+        <div class="info">
+            <strong>Interaktive Funktionen:</strong> 
+            • Knoten mit der Maus ziehen und verschieben 
+            • Scrollen zum Zoomen 
+            • Doppelklick auf einen Knoten für Fokus 
+            • Kanten zeigen Beziehungstypen beim Hover
+        </div>
+    </div>
+
+    <script>
+        // Knoten definieren mit Kategorien
+        var nodes = [
+            // Übergreifende Entitäten
+            {id: 1, label: 'Standort/\nCampus', group: 'uebergreifend', shape: 'box', icon: '📍'},
+            {id: 17, label: 'System', group: 'uebergreifend', shape: 'box'},
+            {id: 18, label: 'Produkt', group: 'uebergreifend', shape: 'box'},
+            {id: 19, label: 'Adresse', group: 'uebergreifend', shape: 'ellipse'},
+            {id: 20, label: 'Koordinate', group: 'uebergreifend', shape: 'ellipse'},
+            {id: 21, label: 'Fläche/\nBemessung', group: 'messung', shape: 'ellipse'},
+            {id: 22, label: 'Zertifikat', group: 'uebergreifend', shape: 'ellipse'},
+            
+            // Rechtliche Entitäten
+            {id: 3, label: 'Eigentumsrecht', group: 'rechtlich', shape: 'box'},
+            
+            // Räumliche Entitäten
+            {id: 2, label: 'Grundstück/\nParzelle', group: 'raeumlich', shape: 'box'},
+            {id: 4, label: 'Aussenfläche/\nBodenabdeckung', group: 'raeumlich', shape: 'box'},
+            {id: 5, label: 'Gebäude', group: 'raeumlich', shape: 'box'},
+            {id: 6, label: 'Gebäudeeingang', group: 'raeumlich', shape: 'box'},
+            {id: 7, label: 'Geschoss', group: 'raeumlich', shape: 'box'},
+            {id: 9, label: 'Nutzungseinheit', group: 'raeumlich', shape: 'box'},
+            {id: 11, label: 'Raum', group: 'raeumlich', shape: 'box'},
+            {id: 12, label: 'Zone', group: 'raeumlich', shape: 'box'},
+            
+            // Technische Entitäten
+            {id: 8, label: 'Technische\nAnlage', group: 'technisch', shape: 'box'},
+            {id: 13, label: 'Komponente', group: 'technisch', shape: 'box'},
+            {id: 14, label: 'Sensor', group: 'technisch', shape: 'box'},
+            {id: 15, label: 'Sensormessung', group: 'messung', shape: 'box'},
+            
+            // Konstruktive Entitäten
+            {id: 10, label: 'Bauteil', group: 'konstruktiv', shape: 'box'}
+        ];
+
+        // Kanten definieren (Beziehungen)
+        var edges = [
+            // Feste Beziehungen (durchgezogene Linien)
+            {from: 1, to: 2, label: 'gruppiert [1..*]', arrows: 'to'},
+            {from: 3, to: 2, label: 'bezieht sich auf [1..*]', arrows: 'to'},
+            {from: 4, to: 2, label: 'gehört zu [1]', arrows: 'to'},
+            {from: 2, to: 5, label: 'enthält [1..*]', arrows: 'to'},
+            {from: 2, to: 6, label: 'hat [0..*]', arrows: 'to'},
+            {from: 6, to: 5, label: 'erschliesst [1]', arrows: 'to'},
+            {from: 5, to: 7, label: 'enthält [1..*]', arrows: 'to'},
+            {from: 5, to: 8, label: 'enthält [0..*]', arrows: 'to'},
+            {from: 7, to: 9, label: 'verortet [0..*]', arrows: 'to'},
+            {from: 7, to: 10, label: 'verortet [0..*]', arrows: 'to'},
+            {from: 7, to: 11, label: 'verortet [1..*]', arrows: 'to'},
+            {from: 12, to: 11, label: 'gruppiert [1..*]', arrows: 'to'},
+            {from: 7, to: 12, label: 'verortet [0..*]', arrows: 'to'},
+            {from: 8, to: 13, label: 'gruppiert [1..*]', arrows: 'to'},
+            {from: 14, to: 15, label: 'erzeugt [1..*]', arrows: 'to'},
+            {from: 17, to: 8, label: 'gruppiert [0..*]', arrows: 'to'},
+            {from: 17, to: 13, label: 'gruppiert [0..*]', arrows: 'to'},
+            {from: 17, to: 10, label: 'gruppiert [0..*]', arrows: 'to'},
+            {from: 13, to: 18, label: 'ist [0..1]', arrows: 'to'},
+            {from: 10, to: 18, label: 'kann sein [0..1]', arrows: 'to'},
+            {from: 8, to: 14, label: 'gruppiert [1..*]', arrows: 'to'},
+            {from: 11, to: 13, label: 'verortet [0..*]', arrows: 'to'},
+            
+            // Gestrichelte Beziehungen
+            {from: 19, to: 5, label: 'ist Adresse von [0..*]', arrows: 'to', dashes: true},
+            {from: 19, to: 6, label: 'ist Adresse von [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 2, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 5, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 6, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 4, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 11, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 20, to: 13, label: 'verortet [0..*]', arrows: 'to', dashes: true},
+            {from: 21, to: 2, label: 'bemisst [0..*]', arrows: 'to', dashes: true},
+            {from: 21, to: 5, label: 'bemisst [0..*]', arrows: 'to', dashes: true},
+            {from: 21, to: 7, label: 'bemisst [0..*]', arrows: 'to', dashes: true},
+            {from: 21, to: 11, label: 'bemisst [0..*]', arrows: 'to', dashes: true},
+            {from: 21, to: 4, label: 'bemisst [0..*]', arrows: 'to', dashes: true},
+            {from: 22, to: 5, label: 'zertifiziert [0..*]', arrows: 'to', dashes: true},
+            {from: 22, to: 8, label: 'zertifiziert [0..*]', arrows: 'to', dashes: true},
+            {from: 22, to: 13, label: 'zertifiziert [0..*]', arrows: 'to', dashes: true},
+            {from: 22, to: 18, label: 'zertifiziert [0..*]', arrows: 'to', dashes: true},
+            {from: 4, to: 5, label: 'definiert Grundriss [0..1]', arrows: 'to', dashes: true},
+            {from: 14, to: 13, label: 'typ von [0..1]', arrows: 'to', dashes: true},
+            {from: 9, to: 11, label: 'besteht aus [1..*]', arrows: 'to', dashes: true}
+        ];
+
+        // Netzwerk-Optionen
+        var options = {
+            nodes: {
+                font: {
+                    size: 14,
+                    face: 'Arial'
+                },
+                borderWidth: 2,
+                shadow: true
+            },
+            edges: {
+                width: 2,
+                font: {
+                    size: 10,
+                    align: 'middle',
+                    background: 'white'
+                },
+                color: {
+                    color: '#848484',
+                    highlight: '#333333',
+                    hover: '#333333'
+                },
+                smooth: {
+                    type: 'continuous',
+                    roundness: 0.5
+                }
+            },
+            groups: {
+                uebergreifend: {color: {background: '#E0E0E0', border: '#666'}},
+                rechtlich: {color: {background: '#B3D9FF', border: '#4682B4'}},
+                raeumlich: {color: {background: '#90EE90', border: '#5D8A2E'}},
+                technisch: {color: {background: '#FFD4A3', border: '#D2691E'}},
+                konstruktiv: {color: {background: '#D9CCFF', border: '#6B5FB3'}},
+                messung: {color: {background: '#FFB3BA', border: '#DC143C'}}
+            },
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -8000,
+                    centralGravity: 0.3,
+                    springLength: 150,
+                    springConstant: 0.04,
+                    damping: 0.09
+                },
+                stabilization: {
+                    iterations: 2500
+                }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 200,
+                hideEdgesOnDrag: true
+            }
+        };
+
+        // Netzwerk erstellen
+        var container = document.getElementById('network');
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var network = new vis.Network(container, data, options);
+
+        // Funktionen für Steuerung
+        var physicsEnabled = true;
+        
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            network.setOptions({physics: {enabled: physicsEnabled}});
+        }
+
+        function changeLayout(type) {
+            var newOptions = {};
+            
+            if (type === 'hierarchical') {
+                newOptions = {
+                    layout: {
+                        hierarchical: {
+                            direction: 'UD',
+                            sortMethod: 'directed',
+                            levelSeparation: 150,
+                            nodeSpacing: 200
+                        }
+                    },
+                    physics: false
+                };
+            } else if (type === 'circular') {
+                // Knoten in Kreis anordnen
+                var radius = 400;
+                var center = {x: 0, y: 0};
+                
+                nodes.forEach(function(node, index) {
+                    var angle = (2 * Math.PI * index) / nodes.length;
+                    node.x = center.x + radius * Math.cos(angle);
+                    node.y = center.y + radius * Math.sin(angle);
+                });
+                
+                network.setData({nodes: nodes, edges: edges});
+                network.setOptions({physics: false});
+                network.fit();
+                return;
+            } else {
+                // Force Layout (Standard)
+                newOptions = {
+                    layout: {
+                        hierarchical: false
+                    },
+                    physics: {
+                        enabled: true,
+                        barnesHut: {
+                            gravitationalConstant: -8000,
+                            centralGravity: 0.3,
+                            springLength: 150,
+                            springConstant: 0.04,
+                            damping: 0.09
+                        }
+                    }
+                };
+            }
+            
+            network.setOptions(newOptions);
+            network.redraw();
+            network.fit();
+        }
+
+        // Ereignis: Beim Doppelklick auf Knoten
+        network.on("doubleClick", function (params) {
+            if (params.nodes.length > 0) {
+                network.focus(params.nodes[0], {
+                    scale: 1.5,
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        });
+
+        // Initial zentrieren
+        network.once('stabilizationIterationsDone', function() {
+            network.fit();
+        });
+
+        // Elementzähler aktualisieren
+        function updateCounts() {
+            document.getElementById('nodeCount').textContent = nodes.length;
+            document.getElementById('edgeCount').textContent = edges.length;
+        }
+
+        // Initial die Zähler setzen
+        updateCounts();
+    </script>
+</body>
+</html>
