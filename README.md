@@ -28,19 +28,6 @@ Main catalog. Browse business objects and datasets with search, filters, grid/li
 
 ---
 
-### Architecture Layer Browser
-
-Hierarchical metadata browser following a three-layer architecture model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
-
-- Link: https://bbl-dres.github.io/data-catalog/prototype-layers/
-
-<p>
-  <img src="prototype-layers/assets/preview1.jpg" width="45%" />
-  <img src="prototype-layers/assets/preview2.jpg" width="45%" />
-</p>
-
----
-
 ### SQLite Catalog Explorer
 
 Data catalog backed by a SQLite file that runs entirely in the browser via sql.js. Sidebar navigation, full-text search, detail views for every entity, and interactive lineage graphs.
@@ -50,6 +37,19 @@ Data catalog backed by a SQLite file that runs entirely in the browser via sql.j
 <p>
   <img src="prototype-sqlite/assets/Preview1.jpg" width="45%" />
   <img src="prototype-sqlite/assets/Preview2.jpg" width="45%" />
+</p>
+
+---
+
+### Architecture Layer Browser
+
+Hierarchical metadata browser following a three-layer architecture model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
+
+- Link: https://bbl-dres.github.io/data-catalog/prototype-layers/
+
+<p>
+  <img src="prototype-layers/assets/preview1.jpg" width="45%" />
+  <img src="prototype-layers/assets/preview2.jpg" width="45%" />
 </p>
 
 ---
