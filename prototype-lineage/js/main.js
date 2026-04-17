@@ -85,7 +85,15 @@ window.LineageApp = window.LineageApp || {};
         ]
     };
 
+    function applySelectedLayoutPreset(nodeCount) {
+        var selector = document.getElementById('layout-selector');
+        var preset = selector ? selector.value : undefined;
+        if (!preset) return;
+        Graph.setLayoutOptions(Graph.resolvePreset(preset, nodeCount));
+    }
+
     function renderData(data) {
+        applySelectedLayoutPreset(data.nodes.length);
         Graph.init(data);
         Renderer.renderAllNodes();
         Renderer.renderAllEdges();

@@ -54,18 +54,14 @@ window.LineageApp.Renderer = (function () {
      * Tables group by "database.schema", pipelines/dashboards group by "platform".
      */
     function renderGroups() {
+        var opts = Graph.getLayoutOptions();
+        if (!opts.showGroups) return;
+
         var state = Graph.getState();
         var groups = {};
 
         state.nodes.forEach(function (node) {
-            var groupKey;
-            if (node.system) {
-                groupKey = node.system;
-            } else if (node.type === 'table' && node.database) {
-                groupKey = node.database + (node.schema ? '.' + node.schema : '');
-            } else if (node.platform) {
-                groupKey = node.platform;
-            }
+            var groupKey = Graph.getGroupKey(node, opts.includePlatformGroups);
             if (!groupKey) return;
 
             if (!groups[groupKey]) {

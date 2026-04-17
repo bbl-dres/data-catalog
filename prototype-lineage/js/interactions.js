@@ -85,7 +85,27 @@ window.LineageApp.Interactions = (function () {
             toggleBtn.addEventListener('click', toggleEditorPane);
         }
 
+        var layoutSelector = document.getElementById('layout-selector');
+        if (layoutSelector) {
+            layoutSelector.addEventListener('change', onLayoutChange);
+        }
+
         applyTransform();
+    }
+
+    function onLayoutChange(e) {
+        var preset = e.target.value;
+        var state = Graph.getState();
+        var opts = Graph.resolvePreset(preset, state.nodes.length);
+        Graph.setLayoutOptions(opts);
+        Graph.collapseAll();
+        Graph.relayout();
+        Renderer.renderAllNodes();
+        Renderer.renderAllEdges();
+        Renderer.clearHighlights();
+        requestAnimationFrame(function () {
+            fitToScreen();
+        });
     }
 
     function toggleEditorPane() {
