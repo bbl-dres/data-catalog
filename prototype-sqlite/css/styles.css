@@ -500,6 +500,7 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 }
 .tab-bar-spacer { flex: 1; }
 .tab-bar > .grouping-btn { margin-left: var(--space-2); }
+.tab-bar > .grouping-dropdown { margin-left: var(--space-2); }
 
 /* Grouping dropdown */
 .grouping-dropdown { position: relative; display: flex; align-items: center; }
@@ -534,6 +535,95 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 .grouping-option.active { color: var(--color-text-link); font-weight: 500; }
 
 /* ============================================================
+   Filter panel, pills, toggle
+   ============================================================ */
+.filter-toggle { display: inline-flex; align-items: center; gap: var(--space-1); }
+.filter-toggle.open {
+  border-color: var(--color-border-accent);
+  color: var(--color-text-link);
+  background: var(--color-bg-accent);
+}
+.filter-toggle .filter-toggle-chevron { transition: transform 120ms ease; }
+.filter-toggle.open .filter-toggle-chevron { transform: rotate(180deg); }
+.filter-toggle-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--color-bg-accent-strong); color: var(--color-text-on-accent);
+  border-radius: 9px; font-size: var(--text-label); font-weight: 500;
+  margin-left: 2px;
+}
+
+.filter-panel {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-3);
+  display: flex; flex-wrap: wrap; gap: var(--space-5);
+}
+.filter-panel[hidden] { display: none; }
+.filter-group { min-width: 180px; flex: 1 1 220px; }
+.filter-group-label {
+  font-size: var(--text-label); font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+.filter-group-options { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 2px 0;
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+.filter-chip input[type="checkbox"] {
+  width: 14px; height: 14px;
+  accent-color: var(--color-bg-accent-strong);
+  cursor: pointer;
+  margin: 0;
+  flex-shrink: 0;
+}
+.filter-chip:hover { color: var(--color-text-link); }
+.filter-chip.active { color: var(--color-text-link); font-weight: 500; }
+
+.filter-pill-row {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.filter-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 4px 2px var(--space-2);
+  background: var(--color-bg-accent);
+  border: 1px solid var(--color-border-accent);
+  border-radius: 999px;
+  font-size: var(--text-small);
+  color: var(--color-text-link);
+  line-height: 1.4;
+}
+.filter-pill-dim { color: var(--color-text-secondary); font-weight: 400; }
+.filter-pill-val { font-weight: 500; }
+.filter-pill-remove {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; margin-left: 2px;
+  background: transparent; border: none; border-radius: 50%;
+  color: var(--color-text-link); cursor: pointer;
+}
+.filter-pill-remove:hover { background: rgba(31, 78, 138, 0.12); }
+.filter-reset {
+  background: transparent; border: none;
+  color: var(--color-text-link);
+  font-size: var(--text-small); font-family: var(--font-sans);
+  cursor: pointer;
+  padding: 2px var(--space-2);
+  margin-left: var(--space-1);
+}
+.filter-reset:hover { text-decoration: underline; color: var(--color-text-link-hover); }
+
+/* ============================================================
    Badges
    ============================================================ */
 .badge {
@@ -553,6 +643,9 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 .badge-review, .badge-internal { color: var(--color-text-link); background: var(--color-bg-accent); }
 .badge-confidential { color: var(--color-text-secondary); background: transparent; border: 1px solid var(--color-border-default); }
 .badge-restricted { color: var(--color-error); background: var(--color-error-bg); }
+.badge-domain { color: var(--color-text-secondary); background: var(--color-bg-surface-hover); border: 1px solid var(--color-border-subtle); }
+.badge-filterable { cursor: pointer; transition: background 100ms ease, border-color 100ms ease, color 100ms ease; }
+.badge-filterable:hover { color: var(--color-text-link); background: var(--color-bg-accent); border-color: var(--color-border-accent); }
 
 .status-dot {
   width: 6px; height: 6px; border-radius: 50%;

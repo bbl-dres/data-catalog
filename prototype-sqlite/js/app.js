@@ -21,6 +21,10 @@ const expandedConcepts = new Set();
 let sidebarCounts = null; // cached sidebar counts
 let relGraphData = null; // relationship graph data (replaces relGraphData)
 let relCleanup = null; // cleanup function for relationship graph event listeners
+// activeFilters[section] = { [dimensionId]: [value, ...] } — rebuilt from URL each route
+let activeFilters = {};
+let currentQueryStr = ''; // preserved across tab switches within a section
+let filterPanelOpen = false; // preserved across re-renders so selecting a checkbox doesn't collapse the panel
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
 const SECTION_LABELS = {
@@ -136,7 +140,7 @@ function sortTableByColumn(th) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
-function statusBadge(status) {
+function statusBadge(status, filterDim) {
   if (!status) return '';
   const s = status.toLowerCase();
   let cls = 'badge-draft', label = status;
@@ -151,12 +155,27 @@ function statusBadge(status) {
   } else {
     cls = 'badge-draft'; label = 'Entwurf';
   }
-  return `<span class="badge ${cls}">${escapeHtml(label)}</span>`;
+  const filterAttrs = filterDim
+    ? ` badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(status)}" title="Nach dieser Freigabe filtern`
+    : '';
+  return `<span class="badge ${cls}${filterAttrs}">${escapeHtml(label)}</span>`;
 }
 
-function certifiedBadge(isCertified) {
-  if (isCertified) return statusBadge('approved');
-  return statusBadge('draft');
+function certifiedBadge(isCertified, filterDim) {
+  return statusBadge(isCertified ? 'approved' : 'draft', filterDim);
+}
+
+// Generic filterable cell badge (Domäne, Technologie, Herausgeber, Quelle, …)
+// variant maps to a CSS class that controls color; defaults to .badge-domain (grey).
+function filterBadge(text, filterDim, value, variant) {
+  if (text == null || text === '') return '&ndash;';
+  const cls = variant || 'badge-domain';
+  return `<span class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(String(value))}" title="Filter anwenden">${escapeHtml(String(text))}</span>`;
+}
+
+function sectionCountLabel(totalCount, filteredCount, filterCtx) {
+  if (filterCtx && filterCtx.count > 0) return `${filteredCount} / ${totalCount}`;
+  return String(totalCount);
 }
 
 function classificationBadge(row) {
@@ -200,6 +219,118 @@ function renderLockedContent() {
   </div>`;
 }
 
+// ── Filter helpers (URL-backed, modular) ──────────────────
+// Filter definition shape: { id, label, options: [{value, label}], match: (item, values) => bool }
+// Active filters shape:     { [dimId]: [value, value, ...] }  (AND across dims, OR within a dim)
+function parseFilterQuery(queryStr) {
+  const out = {};
+  if (!queryStr) return out;
+  queryStr.split('&').forEach(pair => {
+    if (!pair) return;
+    const eq = pair.indexOf('=');
+    const k = decodeURIComponent(eq >= 0 ? pair.slice(0, eq) : pair);
+    const v = eq >= 0 ? decodeURIComponent(pair.slice(eq + 1)) : '';
+    if (!k || k === 'q') return; // q is reserved for search
+    out[k] = v ? v.split(',').filter(Boolean) : [];
+  });
+  return out;
+}
+
+function buildFilterQuery(filters) {
+  const parts = [];
+  Object.keys(filters || {}).forEach(k => {
+    const vals = filters[k];
+    if (vals && vals.length) {
+      parts.push(encodeURIComponent(k) + '=' + vals.map(encodeURIComponent).join(','));
+    }
+  });
+  return parts.length ? '?' + parts.join('&') : '';
+}
+
+function getCurrentPathPart() {
+  const hash = window.location.hash || '';
+  const qIdx = hash.indexOf('?');
+  return qIdx >= 0 ? hash.slice(0, qIdx) : hash;
+}
+
+function navigateWithFilters(filters) {
+  window.location.hash = getCurrentPathPart() + buildFilterQuery(filters);
+}
+
+function applyFilterDefs(items, filterDefs, filters) {
+  if (!filters || !Object.keys(filters).length) return items;
+  return items.filter(item => {
+    for (const def of filterDefs) {
+      const vals = filters[def.id];
+      if (!vals || !vals.length) continue;
+      if (!def.match(item, vals)) return false;
+    }
+    return true;
+  });
+}
+
+function countActiveFilters(filters) {
+  let n = 0;
+  Object.keys(filters || {}).forEach(k => { n += (filters[k] || []).length; });
+  return n;
+}
+
+// Returns { toggleHtml, panelHtml, pillsHtml, queryStr, filtered }
+// Pure renderers — caller places pieces wherever it wants.
+function createFilterContext(filterDefs, filters) {
+  const queryStr = buildFilterQuery(filters);
+  const count = countActiveFilters(filters);
+
+  const toggleHtml = `<button type="button" class="grouping-btn filter-toggle${filterPanelOpen ? ' open' : ''}" id="filter-toggle" aria-expanded="${filterPanelOpen}" aria-controls="filter-panel">
+    <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i>
+    <span>Filter</span>${count > 0 ? `<span class="filter-toggle-badge">${count}</span>` : ''}
+    <i data-lucide="chevron-down" style="width:14px;height:14px;" class="filter-toggle-chevron"></i>
+  </button>`;
+
+  let panelHtml = `<div class="filter-panel" id="filter-panel"${filterPanelOpen ? '' : ' hidden'}>`;
+  filterDefs.forEach(def => {
+    const active = new Set((filters[def.id] || []).map(String));
+    panelHtml += '<div class="filter-group">';
+    panelHtml += `<div class="filter-group-label">${escapeHtml(def.label)}</div>`;
+    panelHtml += '<div class="filter-group-options">';
+    def.options.forEach(opt => {
+      const val = String(opt.value);
+      const checked = active.has(val);
+      panelHtml += `<label class="filter-chip${checked ? ' active' : ''}">
+        <input type="checkbox" class="filter-checkbox" data-filter-dim="${escapeHtml(def.id)}" data-filter-value="${escapeHtml(val)}"${checked ? ' checked' : ''}>
+        <span>${escapeHtml(opt.label)}</span>
+      </label>`;
+    });
+    panelHtml += '</div></div>';
+  });
+  panelHtml += '</div>';
+
+  let pillsHtml = '';
+  if (count > 0) {
+    pillsHtml = '<div class="filter-pill-row">';
+    filterDefs.forEach(def => {
+      const vals = filters[def.id] || [];
+      if (!vals.length) return;
+      const optMap = {};
+      def.options.forEach(o => { optMap[String(o.value)] = o.label; });
+      vals.forEach(v => {
+        const label = optMap[String(v)] || v;
+        pillsHtml += `<span class="filter-pill">
+          <span class="filter-pill-dim">${escapeHtml(def.label)}:</span>
+          <span class="filter-pill-val">${escapeHtml(label)}</span>
+          <button type="button" class="filter-pill-remove" data-filter-remove-dim="${escapeHtml(def.id)}" data-filter-remove-value="${escapeHtml(String(v))}" aria-label="Filter entfernen">
+            <i data-lucide="x" style="width:12px;height:12px;"></i>
+          </button>
+        </span>`;
+      });
+    });
+    pillsHtml += '<button type="button" class="filter-reset" id="filter-reset">Alle Filter zurücksetzen</button>';
+    pillsHtml += '</div>';
+  }
+
+  return { toggleHtml, panelHtml, pillsHtml, queryStr, count, filters, filterDefs };
+}
+
 // ── Router ─────────────────────────────────────────────────
 function navigate(hash) {
   window.location.hash = hash;
@@ -210,29 +341,31 @@ function parseRoute() {
   // Strip query string before splitting path so "#/search?q=sap" → section "search"
   const qSplit = hash.indexOf('?');
   const pathPart = qSplit >= 0 ? hash.slice(0, qSplit) : hash;
+  const queryStr = qSplit >= 0 ? hash.slice(qSplit + 1) : '';
   const parts = pathPart.replace('#/', '').split('/');
   const section = parts[0] || 'home';
+  const filters = parseFilterQuery(queryStr);
 
   if (section === 'search') {
     const qStart = hash.indexOf('?q=');
     searchQuery = qStart >= 0 ? decodeURIComponent(hash.slice(qStart + 3)) : '';
-    return { section: 'search', entityId: null, tab: null, subEntityId: null };
+    return { section: 'search', entityId: null, tab: null, subEntityId: null, filters: {}, queryStr: '' };
   }
 
   // Handle systems/:id/datasets/:did/:tab
   if (section === 'systems' && parts.length >= 4 && parts[2] === 'datasets') {
-    return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview' };
+    return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview', filters, queryStr };
   }
 
   // Collection filter: #/vocabulary/collection/:collId/:tab
   if (parts[1] === 'collection' && parts[2]) {
-    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null };
+    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null, filters, queryStr };
   }
 
   // List-level tabs (table/diagram) — not an entity ID
   const listTabs = ['table', 'diagram'];
   if (parts[1] && listTabs.includes(parts[1])) {
-    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null };
+    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null, filters, queryStr };
   }
 
   return {
@@ -240,7 +373,9 @@ function parseRoute() {
     entityId: parts[1] || null,
     collectionId: null,
     tab: parts[2] || 'overview',
-    subEntityId: null
+    subEntityId: null,
+    filters,
+    queryStr
   };
 }
 
@@ -252,6 +387,8 @@ function handleRoute() {
   currentEntityId = route.entityId;
   currentCollectionId = route.collectionId || null;
   currentTab = route.tab || 'overview';
+  activeFilters[currentSection] = route.filters || {};
+  currentQueryStr = route.queryStr || '';
 
   // Auto-expand the active section in sidebar
   if (currentSection) expandedSections.add(currentSection);
@@ -740,7 +877,8 @@ function renderListView(section, listTab, collectionId) {
   }
 }
 
-function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping, extraControls) {
+function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping, extraControls, filterCtx) {
+  const qs = filterCtx?.queryStr || '';
   let html = '<div class="tab-bar" role="tablist">';
   const tabs = [
     { id: 'table', label: '\u00dcbersicht' },
@@ -748,10 +886,13 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
   ];
   tabs.forEach(t => {
     const isActive = t.id === activeTab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
+    html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}${qs}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
   });
-  if (groupingOptions || extraControls) {
+  if (groupingOptions || extraControls || filterCtx) {
     html += '<div class="tab-bar-spacer"></div>';
+  }
+  if (filterCtx) {
+    html += filterCtx.toggleHtml;
   }
   if (groupingOptions) {
     const activeLabel = groupingOptions.find(o => o.id === activeGrouping)?.label || groupingOptions[0].label;
@@ -914,7 +1055,7 @@ function renderVocabularyList(listTab, collectionId) {
     ORDER BY col.sort_order, col.${nameCol('name')}`);
 
   // Pre-fetch all concepts with mapping counts and steward name in one query
-  const allConcepts = query(`SELECT c.*,
+  const allConceptsUnfiltered = query(`SELECT c.*,
     COALESCE(mc.mapping_count, 0) as mapping_count,
     u.name as steward_name
     FROM concept c
@@ -922,7 +1063,46 @@ function renderVocabularyList(listTab, collectionId) {
     LEFT JOIN "user" u ON c.steward_id = u.id
     ORDER BY c.${nameCol('name')}`);
 
-  // Group concepts by collection_id
+  // If filtered by collection
+  const activeCollection = collectionId ? collections.find(c => c.id === collectionId) : null;
+
+  // Build filter definitions (only in unscoped vocabulary view)
+  const stewardOpts = [];
+  const seenStewards = new Set();
+  allConceptsUnfiltered.forEach(c => {
+    const key = c.steward_id || '__none__';
+    const label = c.steward_name || 'Nicht zugewiesen';
+    if (!seenStewards.has(key)) { seenStewards.add(key); stewardOpts.push({ value: key, label }); }
+  });
+  stewardOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const vocabFilterDefs = activeCollection ? [] : [
+    {
+      id: 'domain',
+      label: 'Domäne',
+      options: collections.filter(col => col.concept_count > 0).map(col => ({ value: col.id, label: n(col, 'name') })),
+      match: (c, vals) => vals.includes(c.collection_id)
+    },
+    {
+      id: 'status',
+      label: 'Freigabe',
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      match: (c, vals) => vals.includes(c.status)
+    },
+    {
+      id: 'steward',
+      label: 'Verantwortlich',
+      options: stewardOpts,
+      match: (c, vals) => vals.includes(c.steward_id || '__none__')
+    }
+  ];
+  const currentFilters = activeFilters.vocabulary || {};
+  const filterCtx = vocabFilterDefs.length ? createFilterContext(vocabFilterDefs, currentFilters) : null;
+
+  // Apply filters
+  const allConcepts = filterCtx ? applyFilterDefs(allConceptsUnfiltered, vocabFilterDefs, currentFilters) : allConceptsUnfiltered;
+
+  // Group concepts by collection_id (after filtering)
   const conceptsByCollection = {};
   const ungrouped = [];
   allConcepts.forEach(c => {
@@ -934,11 +1114,15 @@ function renderVocabularyList(listTab, collectionId) {
     }
   });
 
-  // If filtered by collection
-  const activeCollection = collectionId ? collections.find(c => c.id === collectionId) : null;
-  const filteredCollections = activeCollection ? [activeCollection] : collections;
+  const hasActiveFilters = filterCtx && filterCtx.count > 0;
+  const filteredCollections = activeCollection
+    ? [activeCollection]
+    : (hasActiveFilters ? collections.filter(col => (conceptsByCollection[col.id] || []).length > 0) : collections);
   const filteredUngrouped = activeCollection ? [] : ungrouped;
-  const filteredCount = activeCollection ? (conceptsByCollection[collectionId] || []).length : totalConcepts;
+  const filteredCount = activeCollection
+    ? (conceptsByCollection[collectionId] || []).length
+    : (filterCtx && filterCtx.count > 0 ? allConcepts.length : totalConcepts);
+  const countLabel = (filterCtx && filterCtx.count > 0) ? `${allConcepts.length} / ${totalConcepts}` : filteredCount;
   const tabBaseRoute = activeCollection ? 'vocabulary/collection/' + collectionId : 'vocabulary';
 
   let html = '<div class="content-wrapper">';
@@ -954,7 +1138,7 @@ function renderVocabularyList(listTab, collectionId) {
   html += '</nav>';
 
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${filteredCount})</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${countLabel})</div>
     <div class="section-subtitle">Lösungsneutrale Geschäftsobjekte und ihre fachlichen Attribute.</div>
   </div></div>`;
 
@@ -971,7 +1155,11 @@ function renderVocabularyList(listTab, collectionId) {
     const label = anyExpanded ? 'Alle einklappen' : 'Alle erweitern';
     toggleAllCtrl = `<button class="grouping-btn" data-toggle-all-concepts type="button">${label} <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i></button>`;
   }
-  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary, toggleAllCtrl);
+  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary, toggleAllCtrl, filterCtx);
+  if (filterCtx) {
+    html += filterCtx.panelHtml;
+    html += filterCtx.pillsHtml;
+  }
 
   // Build collection lookup
   const collectionMap = {};
@@ -1026,7 +1214,11 @@ function renderVocabularyList(listTab, collectionId) {
   }
 
   if (allConcepts.length === 0) {
-    html += renderEmptyState('book-open', 'Keine Geschäftsobjekte', 'Es wurden noch keine Geschäftsobjekte angelegt.');
+    if (filterCtx && filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Geschäftsobjekte entsprechen den aktiven Filtern.');
+    } else {
+      html += renderEmptyState('book-open', 'Keine Geschäftsobjekte', 'Es wurden noch keine Geschäftsobjekte angelegt.');
+    }
     html += '</div>';
     return html;
   }
@@ -1037,13 +1229,12 @@ function renderVocabularyList(listTab, collectionId) {
   function conceptRow(c) {
     const desc = getDefinitionText(c.definition, lang);
     const col = c.collection_id ? collectionMap[c.collection_id] : null;
-    const domainName = col ? n(col, 'name') : '–';
     return `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
       <td>${escapeHtml(n(c, 'name'))}</td>
-      <td>${escapeHtml(domainName)}</td>
+      <td>${col ? filterBadge(n(col, 'name'), 'domain', col.id) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-      <td>${statusBadge(c.status)}</td>
+      <td>${statusBadge(c.status, 'status')}</td>
       <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
     </tr>`;
   }
@@ -1103,7 +1294,7 @@ function renderVocabularyList(listTab, collectionId) {
 function renderCodeListsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   // Fetch codelists with domain via concept_attribute → concept → collection
-  const codeLists = query(`SELECT cl.*,
+  const allCodeLists = query(`SELECT cl.*,
     COALESCE(vc.value_count, 0) as value_count,
     COALESCE(vc.deprecated_count, 0) as deprecated_count,
     dom.domain_name
@@ -1122,11 +1313,55 @@ function renderCodeListsList(listTab) {
       GROUP BY ca.code_list_id
     ) dom ON dom.code_list_id = cl.id
     ORDER BY cl.${nameCol('name')}`);
+  const totalCount = allCodeLists.length;
+
+  function clStatus(cl) {
+    return (cl.value_count > 0 && cl.deprecated_count === cl.value_count) ? 'deprecated' : 'approved';
+  }
+
+  // Build filter options from data
+  const domainOpts = [];
+  const seenDomains = new Set();
+  allCodeLists.forEach(cl => {
+    const key = cl.domain_name || '__none__';
+    if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: cl.domain_name || 'Ohne Domäne' }); }
+  });
+  domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const sourceOpts = [];
+  const seenSources = new Set();
+  allCodeLists.forEach(cl => {
+    const key = cl.source_ref || '__none__';
+    if (!seenSources.has(key)) { seenSources.add(key); sourceOpts.push({ value: key, label: cl.source_ref || 'Andere' }); }
+  });
+  sourceOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const codelistFilterDefs = [
+    {
+      id: 'domain', label: 'Domäne', options: domainOpts,
+      match: (cl, vals) => vals.includes(cl.domain_name || '__none__')
+    },
+    {
+      id: 'source', label: 'Quelle', options: sourceOpts,
+      match: (cl, vals) => vals.includes(cl.source_ref || '__none__')
+    },
+    {
+      id: 'status', label: 'Freigabe',
+      options: [
+        { value: 'approved', label: 'Freigegeben' },
+        { value: 'deprecated', label: 'Veraltet' }
+      ],
+      match: (cl, vals) => vals.includes(clStatus(cl))
+    }
+  ];
+  const currentFilters = activeFilters.codelists || {};
+  const filterCtx = createFilterContext(codelistFilterDefs, currentFilters);
+  const codeLists = applyFilterDefs(allCodeLists, codelistFilterDefs, currentFilters);
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${codeLists.length})</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${sectionCountLabel(totalCount, codeLists.length, filterCtx)})</div>
     <div class="section-subtitle">Standardisierte Wertelisten für Attribute der Geschäftsobjekte.</div>
   </div></div>`;
 
@@ -1135,10 +1370,16 @@ function renderCodeListsList(listTab) {
     { id: 'source', label: 'Quelle' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists);
+  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
 
   if (codeLists.length === 0) {
-    html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Codelisten entsprechen den aktiven Filtern.');
+    } else {
+      html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
+    }
     html += '</div>';
     return html;
   }
@@ -1173,13 +1414,12 @@ function renderCodeListsList(listTab) {
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
-    const clStatus = (cl.value_count > 0 && cl.deprecated_count === cl.value_count) ? 'deprecated' : 'approved';
     return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
-      <td>${cl.domain_name ? escapeHtml(cl.domain_name) : '&ndash;'}</td>
+      <td>${cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.domain_name) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
-      <td>${statusBadge(clStatus)}</td>
+      <td>${statusBadge(clStatus(cl), 'status')}</td>
       <td><span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span></td>
     </tr>`;
   }
@@ -1211,7 +1451,7 @@ function renderCodeListsList(listTab) {
 function renderTermsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   // Fetch terms with domain name via concept_term → concept → collection
-  const terms = query(`SELECT t.*,
+  const allTerms = query(`SELECT t.*,
     MIN(col.${nameCol('name')}) as domain_name
     FROM term t
     LEFT JOIN concept_term ct ON ct.term_id = t.id
@@ -1219,12 +1459,49 @@ function renderTermsList(listTab) {
     LEFT JOIN collection col ON c.collection_id = col.id
     GROUP BY t.id
     ORDER BY t.${nameCol('name')}`);
-  const totalCount = terms.length;
+  const totalCount = allTerms.length;
+
+  // Build filter options from data
+  const domainOpts = [];
+  const seenDomains = new Set();
+  allTerms.forEach(t => {
+    const key = t.domain_name || '__none__';
+    if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: t.domain_name || 'Ohne Domäne' }); }
+  });
+  domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const SOURCE_TYPE_LABELS = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  const sourceOpts = [];
+  const seenSources = new Set();
+  allTerms.forEach(t => {
+    if (!t.source_type || seenSources.has(t.source_type)) return;
+    seenSources.add(t.source_type);
+    sourceOpts.push({ value: t.source_type, label: SOURCE_TYPE_LABELS[t.source_type] || t.source_type });
+  });
+
+  const termFilterDefs = [
+    {
+      id: 'domain', label: 'Domäne', options: domainOpts,
+      match: (t, vals) => vals.includes(t.domain_name || '__none__')
+    },
+    {
+      id: 'status', label: 'Freigabe',
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      match: (t, vals) => vals.includes(t.status)
+    },
+    {
+      id: 'source', label: 'Quelle', options: sourceOpts,
+      match: (t, vals) => vals.includes(t.source_type)
+    }
+  ];
+  const currentFilters = activeFilters.terms || {};
+  const filterCtx = createFilterContext(termFilterDefs, currentFilters);
+  const terms = applyFilterDefs(allTerms, termFilterDefs, currentFilters);
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${totalCount})</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${sectionCountLabel(totalCount, terms.length, filterCtx)})</div>
     <div class="section-subtitle">Fachbegriffe und Definitionen aus Standards, Gesetzen und Normen.</div>
   </div></div>`;
 
@@ -1233,15 +1510,19 @@ function renderTermsList(listTab) {
     { id: 'status', label: 'Freigabe' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms);
+  html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
 
-  if (totalCount === 0) {
-    html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
+  if (terms.length === 0) {
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Begriffe entsprechen den aktiven Filtern.');
+    } else {
+      html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
+    }
     html += '</div>';
     return html;
   }
-
-
 
   function getTermGroupKey(t) {
     if (grouping.terms === 'domain') return t.domain_name || 'Ohne Domäne';
@@ -1276,9 +1557,9 @@ function renderTermsList(listTab) {
     const def = getDefinitionText(t.definition, lang);
     return `<tr class="clickable-row" data-href="#/terms/${t.id}">
       <td>${escapeHtml(n(t, 'name'))}</td>
-      <td>${t.domain_name ? escapeHtml(t.domain_name) : '&ndash;'}</td>
+      <td>${t.domain_name ? filterBadge(t.domain_name, 'domain', t.domain_name) : '&ndash;'}</td>
       <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
-      <td>${statusBadge(t.status)}</td>
+      <td>${statusBadge(t.status, 'status')}</td>
       <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
     </tr>`;
   }
@@ -1312,18 +1593,46 @@ function renderTermsList(listTab) {
 
 function renderSystemsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
-  const systems = query(`SELECT s.*,
+  const allSystems = query(`SELECT s.*,
     c.name as owner_name, c.organisation as owner_org,
     COALESCE(ds_counts.dataset_count, 0) as dataset_count
     FROM system s
     LEFT JOIN contact c ON s.owner_id = c.id
     LEFT JOIN (SELECT sc.system_id, COUNT(*) as dataset_count FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id GROUP BY sc.system_id) ds_counts ON ds_counts.system_id = s.id
     ORDER BY s.${nameCol('name')}`);
+  const totalCount = allSystems.length;
+
+  // Filter option collection
+  const techOpts = [];
+  const seenTech = new Set();
+  allSystems.forEach(s => {
+    const key = s.technology_stack || '__none__';
+    if (!seenTech.has(key)) { seenTech.add(key); techOpts.push({ value: key, label: s.technology_stack || 'Unbekannt' }); }
+  });
+  techOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const systemFilterDefs = [
+    {
+      id: 'technology', label: 'Technologie', options: techOpts,
+      match: (s, vals) => vals.includes(s.technology_stack || '__none__')
+    },
+    {
+      id: 'status', label: 'Status',
+      options: [
+        { value: 'active', label: 'Aktiv' },
+        { value: 'deprecated', label: 'Veraltet' }
+      ],
+      match: (s, vals) => vals.includes(s.active ? 'active' : 'deprecated')
+    }
+  ];
+  const currentFilters = activeFilters.systems || {};
+  const filterCtx = createFilterContext(systemFilterDefs, currentFilters);
+  const systems = applyFilterDefs(allSystems, systemFilterDefs, currentFilters);
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${systems.length})</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${sectionCountLabel(totalCount, systems.length, filterCtx)})</div>
     <div class="section-subtitle">Physische Quellsysteme mit Tabellen, Datasets und Feldern.</div>
   </div></div>`;
 
@@ -1332,10 +1641,16 @@ function renderSystemsList(listTab) {
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems);
+  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
 
   if (systems.length === 0) {
-    html += renderEmptyState('database', 'Keine Systeme', 'Es wurden noch keine Systeme registriert.');
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Systeme entsprechen den aktiven Filtern.');
+    } else {
+      html += renderEmptyState('database', 'Keine Systeme', 'Es wurden noch keine Systeme registriert.');
+    }
     html += '</div>';
     return html;
   }
@@ -1371,9 +1686,9 @@ function renderSystemsList(listTab) {
     return `<tr class="clickable-row" data-href="#/systems/${s.id}">
       <td>${escapeHtml(n(s, 'name'))}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${s.technology_stack ? escapeHtml(s.technology_stack) : '&ndash;'}</td>
+      <td>${s.technology_stack ? filterBadge(s.technology_stack, 'technology', s.technology_stack) : '&ndash;'}</td>
       <td>${s.dataset_count}</td>
-      <td>${s.active ? statusBadge('active') : statusBadge('deprecated')}</td>
+      <td>${statusBadge(s.active ? 'active' : 'deprecated', 'status')}</td>
       <td>${s.owner_name ? escapeHtml(s.owner_name) : '&ndash;'}</td>
     </tr>`;
   }
@@ -1408,21 +1723,49 @@ function renderSystemsList(listTab) {
 
 function renderProductsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
-  const products = query(`SELECT dp.*,
+  const allProducts = query(`SELECT dp.*,
     COALESCE(dc.dist_count, 0) as dist_count
     FROM data_product dp
     LEFT JOIN (SELECT data_product_id, COUNT(*) as dist_count FROM distribution GROUP BY data_product_id) dc ON dc.data_product_id = dp.id
     ORDER BY dp.${nameCol('name')}`);
+  const totalCount = allProducts.length;
 
   // Pre-fetch all formats in one query
   const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
   const formatMap = {};
   allFormats.forEach(f => { formatMap[f.data_product_id] = f.formats || ''; });
 
+  // Filter options
+  const publisherOpts = [];
+  const seenPubs = new Set();
+  allProducts.forEach(dp => {
+    const key = dp.publisher || '__none__';
+    if (!seenPubs.has(key)) { seenPubs.add(key); publisherOpts.push({ value: key, label: dp.publisher || 'Unbekannt' }); }
+  });
+  publisherOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const productFilterDefs = [
+    {
+      id: 'publisher', label: 'Herausgeber', options: publisherOpts,
+      match: (dp, vals) => vals.includes(dp.publisher || '__none__')
+    },
+    {
+      id: 'status', label: 'Freigabe',
+      options: [
+        { value: 'approved', label: 'Freigegeben' },
+        { value: 'draft', label: 'Entwurf' }
+      ],
+      match: (dp, vals) => vals.includes(dp.certified ? 'approved' : 'draft')
+    }
+  ];
+  const currentFilters = activeFilters.products || {};
+  const filterCtx = createFilterContext(productFilterDefs, currentFilters);
+  const products = applyFilterDefs(allProducts, productFilterDefs, currentFilters);
+
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${products.length})</div>
+    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</div>
     <div class="section-subtitle">Aufbereitete und publizierte Datensammlungen mit Distributionen.</div>
   </div></div>`;
 
@@ -1431,10 +1774,16 @@ function renderProductsList(listTab) {
     { id: 'status', label: 'Freigabe' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('products', listTab, groupingOpts, grouping.products);
+  html += renderListTabBar('products', listTab, groupingOpts, grouping.products, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
 
   if (products.length === 0) {
-    html += renderEmptyState('package', 'Keine Datenprodukte', 'Es wurden noch keine Datenprodukte angelegt.');
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Datensammlungen entsprechen den aktiven Filtern.');
+    } else {
+      html += renderEmptyState('package', 'Keine Datenprodukte', 'Es wurden noch keine Datenprodukte angelegt.');
+    }
     html += '</div>';
     return html;
   }
@@ -1475,8 +1824,8 @@ function renderProductsList(listTab) {
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${formatStr || '&ndash;'}</td>
       <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
-      <td>${certifiedBadge(dp.certified)}</td>
-      <td>${dp.publisher ? escapeHtml(dp.publisher) : '&ndash;'}</td>
+      <td>${certifiedBadge(dp.certified, 'status')}</td>
+      <td>${dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;'}</td>
     </tr>`;
   }
 
@@ -3019,6 +3368,23 @@ function renderTermRelationships(termId, term) {
 // ============================================================
 // Event Delegation
 // ============================================================
+document.addEventListener('change', function(e) {
+  const cb = e.target.closest('.filter-checkbox[data-filter-dim]');
+  if (!cb) return;
+  const dim = cb.dataset.filterDim;
+  const val = cb.dataset.filterValue;
+  const next = { ...(activeFilters[currentSection] || {}) };
+  const list = (next[dim] || []).slice();
+  if (cb.checked) {
+    if (!list.includes(val)) list.push(val);
+    next[dim] = list;
+  } else {
+    const filtered = list.filter(v => String(v) !== String(val));
+    if (filtered.length) next[dim] = filtered; else delete next[dim];
+  }
+  navigateWithFilters(next);
+});
+
 document.addEventListener('click', function(e) {
   const target = e.target;
 
@@ -3049,6 +3415,52 @@ document.addEventListener('click', function(e) {
   }
   if (!target.closest('.header-search')) {
     hideSearchDropdown();
+  }
+
+  // Filter panel toggle
+  if (target.closest('#filter-toggle')) {
+    e.preventDefault();
+    filterPanelOpen = !filterPanelOpen;
+    const btn = document.getElementById('filter-toggle');
+    const panel = document.getElementById('filter-panel');
+    if (panel) {
+      if (filterPanelOpen) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+    }
+    btn?.setAttribute('aria-expanded', String(filterPanelOpen));
+    btn?.classList.toggle('open', filterPanelOpen);
+    return;
+  }
+  // Filter badge (in-table): add value to active filters
+  const filterAdd = target.closest('[data-filter-add-dim]');
+  if (filterAdd) {
+    e.preventDefault();
+    e.stopPropagation();
+    const dim = filterAdd.dataset.filterAddDim;
+    const val = filterAdd.dataset.filterAddValue;
+    const next = { ...(activeFilters[currentSection] || {}) };
+    const list = (next[dim] || []).slice();
+    if (!list.includes(val)) list.push(val);
+    next[dim] = list;
+    navigateWithFilters(next);
+    return;
+  }
+  // Filter pill: remove single value
+  const pillRemove = target.closest('[data-filter-remove-dim]');
+  if (pillRemove) {
+    e.preventDefault();
+    const dim = pillRemove.dataset.filterRemoveDim;
+    const val = pillRemove.dataset.filterRemoveValue;
+    const next = { ...(activeFilters[currentSection] || {}) };
+    next[dim] = (next[dim] || []).filter(v => String(v) !== String(val));
+    if (!next[dim].length) delete next[dim];
+    navigateWithFilters(next);
+    return;
+  }
+  // Reset all filters
+  if (target.closest('#filter-reset')) {
+    e.preventDefault();
+    navigateWithFilters({});
+    return;
   }
 
   // Grouping dropdown toggle
