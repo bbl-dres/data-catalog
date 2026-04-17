@@ -614,9 +614,9 @@ INSERT INTO code_list_value (id, code_list_id, code, label_en, label_de, label_f
 -- 9. SYSTEMS
 -- ─────────────────────────────────────────────────────────────────────────────
 
-INSERT INTO system (id, name_en, name_de, description, archimate_type, technology_stack, base_url, scanner_class, owner_id, last_scanned_at, active, created_at) VALUES
+INSERT INTO system (id, name_en, name_de, name_fr, name_it, description, archimate_type, technology_stack, base_url, scanner_class, owner_id, last_scanned_at, active, created_at) VALUES
   ('uuid-sys-001',
-   'SAP RE-FX', 'SAP RE-FX',
+   'SAP RE-FX', 'SAP RE-FX', 'SAP RE-FX', 'SAP RE-FX',
    '{"en": "Enterprise resource planning system for real estate management. Contains master data for buildings, rental units, lease contracts, conditions, and business partners.", "de": "ERP-System für die Immobilienbewirtschaftung. Enthält Stammdaten zu Gebäuden, Mietobjekten, Mietverträgen, Konditionen und Geschäftspartnern."}',
    'Application Component', 'SAP S/4HANA',
    'https://sap-refx.bbl.admin.ch', 'SapRefxScanner',
@@ -624,7 +624,7 @@ INSERT INTO system (id, name_en, name_de, description, archimate_type, technolog
    1, '2024-01-15T07:00:00Z'),
 
   ('uuid-sys-002',
-   'GIS IMMO', 'GIS IMMO',
+   'GIS IMMO', 'GIS IMMO', 'GIS IMMO', 'GIS IMMO',
    '{"en": "Geographic information system for federal real estate. Contains spatial data for buildings, land parcels, and energy infrastructure.", "de": "Geoinformationssystem für die Bundesimmobilien. Enthält Geodaten zu Gebäuden, Grundstücken und Energieinfrastruktur."}',
    'Application Component', 'ArcGIS Enterprise',
    'https://gis-immo.bbl.admin.ch', 'ArcGisScanner',
@@ -632,7 +632,7 @@ INSERT INTO system (id, name_en, name_de, description, archimate_type, technolog
    1, '2024-01-15T07:00:00Z'),
 
   ('uuid-sys-003',
-   'ActaNova GEVER', 'ActaNova GEVER',
+   'ActaNova GEVER', 'ActaNova GEVER', 'ActaNova GEVER', 'ActaNova GEVER',
    '{"en": "Document management and electronic records system (GEVER) for building-related documents, contracts, and correspondence.", "de": "Dokumentenmanagementsystem und elektronische Geschäftsverwaltung (GEVER) für Gebäudedokumente, Verträge und Korrespondenz."}',
    'Application Component', 'Acta Nova (Rubicon)',
    'https://actanova.bbl.admin.ch', 'ActaNovaScanner',

@@ -237,6 +237,8 @@ CREATE TABLE IF NOT EXISTS system (
     id                  TEXT NOT NULL PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
     name_en             TEXT NOT NULL,
     name_de             TEXT,
+    name_fr             TEXT,
+    name_it             TEXT,
     description         TEXT,  -- JSON
     archimate_type      TEXT NOT NULL,  -- Application Component
     technology_stack    TEXT,

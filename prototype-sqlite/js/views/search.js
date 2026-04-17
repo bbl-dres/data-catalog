@@ -7,11 +7,9 @@
 // ============================================================
 
 // Runs the 5 entity LIKE queries shared by the header dropdown and the /search page.
-// `system` only has name_en/name_de (no fr/it) — unlike the other entity tables.
 function searchCatalog(q, limit) {
   const likeQ = `%${q}%`;
   const all = [likeQ, likeQ, likeQ, likeQ];
-  const deEn = [likeQ, likeQ];
   return {
     terms: query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
       WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
@@ -21,8 +19,8 @@ function searchCatalog(q, limit) {
       WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
     products: query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
       WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
-    systems: query(`SELECT id, name_en, name_de, technology_stack FROM system
-      WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${limit}`, deEn)
+    systems: query(`SELECT id, name_en, name_de, name_fr, name_it, technology_stack FROM system
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all)
   };
 }
 
