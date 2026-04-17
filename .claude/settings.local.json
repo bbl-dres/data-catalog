@@ -75,7 +75,9 @@
       "Bash(sed -n '139,386p' js/app.js)",
       "Bash(sed -i '1i // ============================================================\\\\n// views/graph: relationship-graph renderer \\(SVG + zoom/pan canvas\\).\\\\n//\\\\n// Exposes renderRelGraph\\(centerLabel, satellites\\) and the async\\\\n// initializer initRelationshipSVG\\(\\). Manages its own DOM event\\\\n// listeners and stores a cleanup function in the app.js global\\\\n// `relCleanup` so handleRoute can tear down on route change.\\\\n//\\\\n// Reads the app.js globals relGraphData and relCleanup.\\\\n// Depends on components.js \\(escapeHtml\\).\\\\n// ============================================================\\\\n' js/views/graph.js)",
       "Bash(sed -i '139,386d' js/app.js)",
-      "Bash(node --check js/views/graph.js)"
+      "Bash(node --check js/views/graph.js)",
+      "Bash(sed -i 's|if \\(!tabs\\\\.includes\\(tab\\)\\) tab = .overview.;|if \\(!tabs.some\\(t => t.id === tab\\)\\) tab = \\\\x27overview\\\\x27;|g' js/app.js)",
+      "Bash(sed -i 's|if \\(!tabs\\\\.includes\\(currentTab\\)\\) currentTab = .overview.;|if \\(!tabs.some\\(t => t.id === currentTab\\)\\) currentTab = \\\\x27overview\\\\x27;|g' js/app.js)"
     ]
   }
 }

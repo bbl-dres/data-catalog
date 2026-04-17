@@ -1667,7 +1667,7 @@ function renderCodeListDetail(codeListId, tab, main) {
     { id: 'relationships', label: 'Relationen' },
     { id: 'history',       label: 'History' }
   ];
-  if (!tabs.includes(tab)) tab = 'overview';
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
@@ -1816,10 +1816,9 @@ function renderSystemDetail(systemId, tab, main) {
     { id: 'overview',      label: 'Übersicht' },
     { id: 'contents',      label: 'Tabellen' },
     { id: 'relationships', label: 'Relationen' },
-    { id: 'stakeholders',  label: 'Verantwortliche' },
     { id: 'history',       label: 'History' }
   ];
-  if (!tabs.includes(tab)) tab = 'overview';
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
@@ -1847,7 +1846,6 @@ function renderSystemDetail(systemId, tab, main) {
     case 'overview': html += renderSystemOverview(sys, schemas, datasetCount); break;
     case 'contents': html += renderSystemContents(systemId, schemas); break;
     case 'relationships': html += renderSystemRelationships(systemId, sys); break;
-    case 'stakeholders': html += renderSystemStakeholders(sys); break;
     case 'history': html += renderHistoryTab(); break;
   }
   html += '</div></article></div>';
@@ -1900,54 +1898,21 @@ function renderSystemContents(systemId, schemas) {
     return '<div class="content-section">' + renderEmptyState('table-2', 'Keine Tabellen', 'Diesem System sind noch keine Tabellen zugeordnet.') + '</div>';
   }
 
-  let html = '<div class="content-section">';
-  html += '<table class="data-table"><colgroup><col style="width:30%"><col style="width:30%"><col style="width:15%"><col style="width:10%"><col style="width:15%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Freigabe</th>';
-  html += '</tr></thead><tbody>';
-  datasets.forEach(d => {
-    const desc = getDefinitionText(d.description, lang);
-    html += `<tr class="clickable-row" data-href="#/systems/${systemId}/datasets/${d.id}">
-      <td>${escapeHtml(d.display_name || d.name)}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${escapeHtml(d.dataset_type)}</td>
-      <td>${d.field_count}</td>
-      <td>${certifiedBadge(d.certified)}</td>
-    </tr>`;
-  });
-  html += '</tbody></table></div>';
-  return html;
+  const columns = [
+    { label: 'Name',         width: '30%', render: d => escapeHtml(d.display_name || d.name) },
+    { label: 'Beschreibung', width: '30%', render: d => {
+        const desc = getDefinitionText(d.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Typ',          width: '15%', render: d => escapeHtml(d.dataset_type) },
+    { label: 'Felder',       width: '10%', render: d => d.field_count },
+    { label: 'Freigabe',     width: '15%', render: d => certifiedBadge(d.certified) }
+  ];
+  return '<div class="content-section">'
+    + renderDataTable(columns, datasets, { rowHref: d => `#/systems/${systemId}/datasets/${d.id}` })
+    + '</div>';
 }
 
-function renderSystemStakeholders(sys) {
-  // System role groups per wireframe: Data Owner, Data Custodian
-  const roleDescs = {
-    data_owner: { label: 'Dateneigent\u00fcmer', desc: 'Accountable for existence, quality standards, and use of this data.' },
-    data_custodian: { label: 'Datenbetreuer', desc: 'Technically operates the system: access management, backup, availability.' }
-  };
-
-  let html = '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
-
-  // Data Owner
-  html += `<div class="stakeholder-section">
-    <div class="stakeholder-role-title">${roleDescs.data_owner.label}</div>
-    <div class="stakeholder-role-desc">${roleDescs.data_owner.desc}</div>`;
-  if (sys.owner_name) {
-    html += renderStakeholderCard(sys.owner_name, sys.owner_org, sys.owner_email);
-  } else {
-    html += `<div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${roleDescs.data_owner.label} zugewiesen</div>`;
-  }
-  html += '</div>';
-
-  // Data Custodian
-  html += `<div class="stakeholder-section">
-    <div class="stakeholder-role-title">${roleDescs.data_custodian.label}</div>
-    <div class="stakeholder-role-desc">${roleDescs.data_custodian.desc}</div>
-    <div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${roleDescs.data_custodian.label} zugewiesen</div>
-  </div>`;
-
-  html += '</div>';
-  return html;
-}
 
 // ============================================================
 // Dataset Detail
@@ -1986,7 +1951,7 @@ function renderDatasetDetail(datasetId, systemId) {
     { id: 'stakeholders',  label: 'Verantwortliche' },
     { id: 'history',       label: 'History' }
   ];
-  if (!tabs.includes(currentTab)) currentTab = 'overview';
+  if (!tabs.some(t => t.id === currentTab)) currentTab = 'overview';
 
   const main = document.getElementById('main-content');
   let html = '<div class="content-wrapper"><article>';
@@ -2270,7 +2235,7 @@ function renderProductDetail(productId, tab, main) {
     { id: 'stakeholders',  label: 'Verantwortliche' },
     { id: 'history',       label: 'History' }
   ];
-  if (!tabs.includes(tab)) tab = 'overview';
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
@@ -2443,7 +2408,7 @@ function renderTermDetail(termId, tab, main) {
     { id: 'relationships', label: 'Relationen' },
     { id: 'history',       label: 'History' }
   ];
-  if (!tabs.includes(tab)) tab = 'overview';
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
