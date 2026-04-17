@@ -32,11 +32,11 @@ Main catalog. Browse business objects and datasets with search, filters, grid/li
 
 Hierarchical metadata browser following a three-layer architecture model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-dmbok/
+- Link: https://bbl-dres.github.io/data-catalog/prototype-layers/
 
 <p>
-  <img src="prototype-dmbok/assets/preview1.jpg" width="45%" />
-  <img src="prototype-dmbok/assets/preview2.jpg" width="45%" />
+  <img src="prototype-layers/assets/preview1.jpg" width="45%" />
+  <img src="prototype-layers/assets/preview2.jpg" width="45%" />
 </p>
 
 ---
@@ -45,11 +45,11 @@ Hierarchical metadata browser following a three-layer architecture model (Concep
 
 Data catalog backed by a SQLite file that runs entirely in the browser via sql.js. Sidebar navigation, full-text search, detail views for every entity, and interactive lineage graphs.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-db/
+- Link: https://bbl-dres.github.io/data-catalog/prototype-sqlite/
 
 <p>
-  <img src="prototype-db/assets/Preview1.jpg" width="45%" />
-  <img src="prototype-db/assets/Preview2.jpg" width="45%" />
+  <img src="prototype-sqlite/assets/Preview1.jpg" width="45%" />
+  <img src="prototype-sqlite/assets/Preview2.jpg" width="45%" />
 </p>
 
 ---
@@ -68,10 +68,10 @@ Interactive graph for exploring data lineage across systems. Live JSON editor on
 
 Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-markdown/
+- Link: https://bbl-dres.github.io/data-catalog/prototype-mermaid/
 
 <p>
-  <img src="prototype-markdown/assets/Preview1.jpg" width="45%" />
+  <img src="prototype-mermaid/assets/Preview1.jpg" width="45%" />
 </p>
 
 ## Run locally
@@ -88,7 +88,7 @@ python3 -m http.server 8000
 npx http-server
 ```
 
-Open <http://localhost:8000> — the root page redirects to the main catalog. Append `/prototype-dmbok/`, `/prototype-db/`, `/prototype-lineage/`, or `/prototype-markdown/` for the others.
+Open <http://localhost:8000> — the root page redirects to the main catalog. Append `/prototype-layers/`, `/prototype-sqlite/`, `/prototype-lineage/`, or `/prototype-mermaid/` for the others.
 
 ## Repository layout
 
@@ -96,10 +96,10 @@ Open <http://localhost:8000> — the root page redirects to the main catalog. Ap
 data-catalog/
 ├── index.html              # Redirect to prototype-main/
 ├── prototype-main/         # Business Object & Dataset Catalog (Datenkatalog IMMO)
-├── prototype-dmbok/        # Architecture Layer Browser (Meta-Atlas)
-├── prototype-db/           # SQLite Catalog Explorer
+├── prototype-layers/        # Architecture Layer Browser (Meta-Atlas)
+├── prototype-sqlite/           # SQLite Catalog Explorer
 ├── prototype-lineage/      # Data Lineage Viewer
-├── prototype-markdown/     # Mermaid Diagram Editor (Simple Chart)
+├── prototype-mermaid/     # Mermaid Diagram Editor (Simple Chart)
 ├── assets/                 # Shared repo assets (social preview)
 └── docs-concepts/          # Shared concept docs
 ```

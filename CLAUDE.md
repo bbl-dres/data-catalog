@@ -10,10 +10,10 @@ The repo hosts **five sibling prototypes** under `prototype-*/` folders, plus a 
 data-catalog/
 ├── index.html              # Redirect to prototype-main/
 ├── prototype-main/         # Business Object & Dataset Catalog (Datenkatalog IMMO)
-├── prototype-dmbok/        # Architecture Layer Browser (Meta-Atlas)
-├── prototype-db/           # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
+├── prototype-layers/        # Architecture Layer Browser (Meta-Atlas)
+├── prototype-sqlite/           # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
 ├── prototype-lineage/      # Data Lineage Viewer
-├── prototype-markdown/     # Mermaid Diagram Editor (Simple Chart)
+├── prototype-mermaid/     # Mermaid Diagram Editor (Simple Chart)
 ├── assets/                 # Shared repo assets (social preview only)
 └── docs-concepts/          # Shared concept docs
 ```

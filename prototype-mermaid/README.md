@@ -4,7 +4,7 @@ Single-page editor for **ER diagrams** and **flowcharts** with free-text names â
 
 ![Preview](assets/Preview1.jpg)
 
-**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-markdown/
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-mermaid/
 
 ## Features
 

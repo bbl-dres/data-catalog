@@ -7,7 +7,7 @@ Metadata catalog prototype for navigating enterprise data assets across a three-
   <img src="assets/preview2.jpg" width="45%" />
 </p>
 
-**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-dmbok/
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-layers/
 
 ## Features
 

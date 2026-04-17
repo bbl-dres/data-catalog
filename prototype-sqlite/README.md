@@ -7,7 +7,7 @@ Data catalog backed by a SQLite file that runs entirely in the browser. Sidebar 
   <img src="assets/Preview2.jpg" width="45%" />
 </p>
 
-**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-db/
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-sqlite/
 
 ## Features
 
