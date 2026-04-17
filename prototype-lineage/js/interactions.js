@@ -98,7 +98,6 @@ window.LineageApp.Interactions = (function () {
         var state = Graph.getState();
         var opts = Graph.resolvePreset(preset, state.nodes.length);
         Graph.setLayoutOptions(opts);
-        Graph.collapseAll();
         Graph.relayout();
         Renderer.renderAllNodes();
         Renderer.renderAllEdges();
@@ -383,31 +382,24 @@ window.LineageApp.Interactions = (function () {
 
     function onExpandAll() {
         Graph.expandAll();
-        var state = Graph.getState();
-        state.nodes.forEach(function (n) {
-            if (n.type === 'table') {
-                var el = document.querySelector('[data-node-id="' + n.id + '"]');
-                if (el) el.classList.add('node--expanded');
-            }
+        Graph.relayout();
+        Renderer.renderAllNodes();
+        Renderer.renderAllEdges();
+        Renderer.clearHighlights();
+        requestAnimationFrame(function () {
+            fitToScreen();
         });
-        setTimeout(function () {
-            Renderer.renderAllEdges();
-            Renderer.renderColumnEdges(getTransform());
-            Renderer.updateGroups();
-        }, 300);
     }
 
     function onCollapseAll() {
         Graph.collapseAll();
-        var allNodes = document.querySelectorAll('.node--expanded');
-        allNodes.forEach(function (el) {
-            el.classList.remove('node--expanded');
+        Graph.relayout();
+        Renderer.renderAllNodes();
+        Renderer.renderAllEdges();
+        Renderer.clearHighlights();
+        requestAnimationFrame(function () {
+            fitToScreen();
         });
-        setTimeout(function () {
-            Renderer.renderAllEdges();
-            Renderer.renderColumnEdges(getTransform());
-            Renderer.updateGroups();
-        }, 300);
     }
 
     function onContainerClick(e) {

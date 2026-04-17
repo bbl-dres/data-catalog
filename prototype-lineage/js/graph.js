@@ -133,7 +133,8 @@ window.LineageApp.Graph = (function () {
 
         nodes.forEach(function (node) {
             var w = NODE_WIDTHS[node.type] || 240;
-            var h = estimateCollapsedHeight(node);
+            var expanded = !!state.expandedNodes[node.id];
+            var h = expanded ? estimateExpandedHeight(node) : estimateCollapsedHeight(node);
             g.setNode(node.id, { width: w, height: h });
             if (cluster) {
                 var key = getGroupKey(node, false);
