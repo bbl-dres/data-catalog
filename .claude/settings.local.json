@@ -56,7 +56,26 @@
       "Bash(curl -s -I http://localhost:8766/js/app.js)",
       "Bash(sqlite3 --version)",
       "Read(//c/Users/DavidRasner/Documents/**)",
-      "Bash(sed -n '259,270p' prototype-sqlite/docs/seed-data.sql)"
+      "Bash(sed -n '259,270p' prototype-sqlite/docs/seed-data.sql)",
+      "Bash(node --check js/app.js)",
+      "Bash(sed -i \"s#STATUS_LABELS\\\\[c.status\\\\] || c.status || 'Unbekannt'#tStatus\\(c.status\\) || c.status || tr\\('unknown'\\)#g\" js/app.js)",
+      "Bash(sed -i \"s#STATUS_LABELS\\\\[t.status\\\\] || t.status || 'Unbekannt'#tStatus\\(t.status\\) || t.status || tr\\('unknown'\\)#g\" js/app.js)",
+      "Bash(node --check js/i18n.js)",
+      "Bash(node --check js/db.js)",
+      "Bash(node --check js/components.js)",
+      "Bash(sed -i 's|<div class=\"section-title\">|<h2 class=\"section-title\">|g' js/app.js)",
+      "Bash(sed -i 's|</div><!-- /section-title -->|</h2>|g' js/app.js)",
+      "Bash(mv /tmp/h js/views/home.js)",
+      "Bash(sed -i '1i // ============================================================\\\\n// views/home: dashboard view \\(renderHome + renderKpiCard\\).\\\\n//\\\\n// Depends on i18n.js \\(tr, n, nameCol, formatDate\\), db.js \\(query,\\\\n// queryOne\\), components.js \\(escapeHtml, statusBadge\\).\\\\n// ============================================================' js/views/home.js)",
+      "Bash(sed -n '1731,1998p' js/app.js)",
+      "Bash(sed -i '1i // ============================================================\\\\n// views/search: global search \\(header typeahead dropdown + /search\\\\n// results page\\), plus the chat-view placeholder.\\\\n//\\\\n// Depends on i18n.js \\(tr, n, nameCol, formatDate\\), db.js \\(query\\),\\\\n// components.js \\(escapeHtml, renderEmptyState, statusBadge, n\\(\\)\\).\\\\n// ============================================================\\\\n' js/views/search.js)",
+      "Bash(node --check js/views/home.js)",
+      "Bash(node --check js/views/search.js)",
+      "Bash(node --check js/filters.js)",
+      "Bash(sed -n '139,386p' js/app.js)",
+      "Bash(sed -i '1i // ============================================================\\\\n// views/graph: relationship-graph renderer \\(SVG + zoom/pan canvas\\).\\\\n//\\\\n// Exposes renderRelGraph\\(centerLabel, satellites\\) and the async\\\\n// initializer initRelationshipSVG\\(\\). Manages its own DOM event\\\\n// listeners and stores a cleanup function in the app.js global\\\\n// `relCleanup` so handleRoute can tear down on route change.\\\\n//\\\\n// Reads the app.js globals relGraphData and relCleanup.\\\\n// Depends on components.js \\(escapeHtml\\).\\\\n// ============================================================\\\\n' js/views/graph.js)",
+      "Bash(sed -i '139,386d' js/app.js)",
+      "Bash(node --check js/views/graph.js)"
     ]
   }
 }

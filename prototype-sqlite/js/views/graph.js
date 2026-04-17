@@ -1,3 +1,16 @@
+// ============================================================
+// views/graph: relationship-graph renderer (SVG + zoom/pan canvas).
+//
+// Exposes renderRelGraph(centerLabel, satellites) and the async
+// initializer initRelationshipSVG(). Manages its own DOM event
+// listeners and stores a cleanup function in the app.js global
+// `relCleanup` so handleRoute can tear down on route change.
+//
+// Reads the app.js globals relGraphData and relCleanup.
+// Depends on components.js (escapeHtml).
+// ============================================================
+
+// ── Views: Relationship Graph ─────────────────────────────
 function renderRelGraph(centerLabel, satellites) {
   if (satellites.length === 0) return '';
   let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
@@ -244,16 +257,4 @@ function initRelationshipSVG() {
   document.getElementById('rel-reset')?.addEventListener('click', function() { scale = 1; centerCanvas(); });
 
   lucide.createIcons({ nodes: [panel] });
-}
-
-
-function renderStakeholderCard(name, org, email) {
-  return `<div class="stakeholder-card">
-    <div class="stakeholder-avatar">${getInitials(name)}</div>
-    <div>
-      <div class="stakeholder-name">${escapeHtml(name)}</div>
-      ${org ? '<div class="stakeholder-org">' + escapeHtml(org) + '</div>' : ''}
-      ${email ? '<div class="stakeholder-email"><a href="mailto:' + escapeHtml(email) + '">' + escapeHtml(email) + '</a></div>' : ''}
-    </div>
-  </div>`;
 }

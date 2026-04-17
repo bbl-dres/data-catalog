@@ -1,20 +1,16 @@
-(function() {
 'use strict';
 
 // ── State ──────────────────────────────────────────────────
 // ============================================================
 // State
 // ============================================================
-let db = null;
 let currentSection = 'vocabulary';
 let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
 let lastListTab = 'table';
 const grouping = { vocabulary: 'domain', terms: 'domain', codelists: 'domain', systems: 'none', products: 'none' };
-const STATUS_LABELS = { approved: 'Freigegeben', draft: 'Entwurf', in_review: 'In Prüfung', deprecated: 'Veraltet' };
 let searchQuery = '';
-let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
 let recents = [];
 const expandedConcepts = new Set();
@@ -28,374 +24,21 @@ let filterPanelOpen = false; // preserved across re-renders so selecting a check
 let pendingFocus = null; // descriptor captured before navigation, restored after re-render
 let attrsMode = 'show'; // 'show' | 'hide' — diagram-view attribute visibility. Default is show; absence = show, ?attrs=0 = hide.
 
-const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
-const SECTION_LABELS = {
-  vocabulary: { de: 'Geschäftsobjekte', fr: 'Objets métier', it: 'Oggetti di business', en: 'Business Objects' },
-  terms: { de: 'Begriffe', fr: 'Termes', it: 'Termini', en: 'Terms' },
-  codelists: { de: 'Codelisten', fr: 'Listes de codes', it: 'Liste di codici', en: 'Code Lists' },
-  systems: { de: 'Systeme', fr: 'Systemes', it: 'Sistemi', en: 'Systems' },
-  products: { de: 'Datensammlungen', fr: 'Collections de données', it: 'Raccolte di dati', en: 'Data Collections' }
-};
-const SECTION_ICONS = {
-  vocabulary: 'box',
-  terms: 'book-open',
-  codelists: 'list-ordered',
-  systems: 'database',
-  products: 'package'
-};
-
-// ── Utilities ──────────────────────────────────────────────
-function query(sql, params) {
-  try {
-    const stmt = db.prepare(sql);
-    if (params) stmt.bind(params);
-    const results = [];
-    while (stmt.step()) {
-      results.push(stmt.getAsObject());
-    }
-    stmt.free();
-    return results;
-  } catch (e) {
-    console.error('SQL Error:', e.message, '\nQuery:', sql);
-    return [];
-  }
-}
-
-function queryOne(sql, params) {
-  const r = query(sql, params);
-  return r.length > 0 ? r[0] : null;
-}
-
-function nameCol(prefix) {
-  const validLangs = ['de', 'fr', 'it', 'en'];
-  const l = validLangs.includes(lang) ? lang : 'en';
-  return `${prefix}_${l}`;
-}
-
-function n(row, prefix) {
-  const col = nameCol(prefix);
-  return row[col] || row[prefix + '_en'] || row[prefix + '_de'] || '';
-}
-
-function parseJSON(val) {
-  if (!val) return null;
-  try { return JSON.parse(val); } catch { return null; }
-}
-
-function getDefinitionText(jsonStr, locale) {
-  const obj = parseJSON(jsonStr);
-  if (!obj) return '';
-  return obj[locale] || obj['en'] || obj['de'] || '';
-}
-
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function breadcrumbHome() {
-  return '<a class="breadcrumb-link" href="#/home">Home</a><span class="breadcrumb-separator"> / </span>';
-}
-
-function formatNumber(num) {
-  if (num == null || num === '') return '';
-  return new Intl.NumberFormat(lang === 'de' ? 'de-CH' : lang === 'fr' ? 'fr-CH' : lang === 'it' ? 'it-CH' : 'en-CH').format(num);
-}
-
-function formatDate(isoStr) {
-  if (!isoStr) return '';
-  try {
-    const d = new Date(isoStr);
-    return new Intl.DateTimeFormat(lang === 'de' ? 'de-CH' : lang === 'fr' ? 'fr-CH' : 'en-CH', { dateStyle: 'medium' }).format(d);
-  } catch { return isoStr; }
-}
-
-function sortTableByColumn(th) {
-  const table = th.closest('table');
-  const tbody = table?.querySelector('tbody');
-  if (!tbody) return;
-  const idx = Array.from(th.parentNode.children).indexOf(th);
-  const allThs = th.parentNode.querySelectorAll('th');
-
-  // Determine direction: toggle if same column, else asc
-  const wasAsc = th.classList.contains('sort-asc');
-  const dir = wasAsc ? 'desc' : 'asc';
-
-  // Clear all sort classes
-  allThs.forEach(h => h.classList.remove('sort-asc', 'sort-desc'));
-  th.classList.add('sort-' + dir);
-
-  const rows = Array.from(tbody.rows);
-  rows.sort((a, b) => {
-    const aVal = (a.cells[idx]?.textContent || '').trim();
-    const bVal = (b.cells[idx]?.textContent || '').trim();
-    // Try numeric comparison
-    const aNum = parseFloat(aVal.replace(/[^\d.-]/g, ''));
-    const bNum = parseFloat(bVal.replace(/[^\d.-]/g, ''));
-    if (!isNaN(aNum) && !isNaN(bNum) && aVal.match(/^[\d.,% –-]+$/)) {
-      return dir === 'asc' ? aNum - bNum : bNum - aNum;
-    }
-    // String comparison (locale-aware)
-    const cmp = aVal.localeCompare(bVal, 'de', { sensitivity: 'base' });
-    return dir === 'asc' ? cmp : -cmp;
-  });
-  rows.forEach(r => tbody.appendChild(r));
-}
-
-function isFilterValueActive(filterDim, value) {
-  const vals = activeFilters[currentSection]?.[filterDim];
-  if (!vals) return false;
-  return vals.some(v => String(v) === String(value));
-}
-
-function statusBadge(status, filterDim) {
-  if (!status) return '';
-  const s = status.toLowerCase();
-  let cls = 'badge-draft', label = status;
-  if (s === 'approved' || s === 'certified') {
-    cls = 'badge-certified'; label = 'Freigegeben';
-  } else if (s === 'in_review' || s === 'in review') {
-    cls = 'badge-review'; label = 'In Pr\u00fcfung';
-  } else if (s === 'active') {
-    cls = 'badge-certified'; label = 'Aktiv';
-  } else if (s === 'deprecated') {
-    cls = 'badge-deprecated'; label = 'Veraltet';
-  } else {
-    cls = 'badge-draft'; label = 'Entwurf';
-  }
-  if (filterDim) {
-    const active = isFilterValueActive(filterDim, status);
-    const aria = active ? `Filter ${label} entfernen` : `Filter ${label} anwenden`;
-    return `<button type="button" class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(status)}" aria-pressed="${active}" aria-label="${escapeHtml(aria)}">${escapeHtml(label)}</button>`;
-  }
-  return `<span class="badge ${cls}">${escapeHtml(label)}</span>`;
-}
-
-function certifiedBadge(isCertified, filterDim) {
-  return statusBadge(isCertified ? 'approved' : 'draft', filterDim);
-}
-
-// Generic filterable cell badge (Domäne, Technologie, Herausgeber, Quelle, …)
-// variant maps to a CSS class that controls color; defaults to .badge-domain (grey).
-function filterBadge(text, filterDim, value, variant) {
-  if (text == null || text === '') return '&ndash;';
-  const cls = variant || 'badge-domain';
-  const safeText = escapeHtml(String(text));
-  const active = isFilterValueActive(filterDim, value);
-  const aria = active ? `Filter ${safeText} entfernen` : `Filter ${safeText} anwenden`;
-  return `<button type="button" class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(String(value))}" aria-pressed="${active}" aria-label="${aria}">${safeText}</button>`;
-}
-
-function sectionCountLabel(totalCount, filteredCount, filterCtx) {
-  if (filterCtx && filterCtx.count > 0) return `${filteredCount} / ${totalCount}`;
-  return String(totalCount);
-}
-
-function classificationBadge(row) {
-  if (!row) return '';
-  const lvl = row.sensitivity_level;
-  const name = n(row, 'name');
-  if (lvl === 0) return `<span class="badge badge-public">${escapeHtml(name)}</span>`;
-  if (lvl === 1) return `<span class="badge badge-internal">${escapeHtml(name)}</span>`;
-  if (lvl === 2) return `<span class="badge badge-confidential">${escapeHtml(name)}</span>`;
-  return `<span class="badge badge-restricted">${escapeHtml(name)}</span>`;
-}
-
+// ── State-coupled helpers ──────────────────────────────────
 function addRecent(title, hash) {
   recents = recents.filter(r => r.hash !== hash);
   recents.unshift({ title, hash });
   if (recents.length > 4) recents.length = 4;
 }
 
-function getInitials(name) {
-  if (!name) return '?';
-  return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function renderEmptyState(icon, title, description) {
-  return `<div class="empty-state">
-    <i data-lucide="${escapeHtml(icon)}" class="empty-state-icon" style="width:48px;height:48px;"></i>
-    <h3 class="empty-state-title">${escapeHtml(title)}</h3>
-    <p class="empty-state-description">${escapeHtml(description)}</p>
-  </div>`;
-}
-
-// ============================================================
-// Reusable locked content message
-// ============================================================
-function renderLockedContent() {
-  return `<div class="locked-content-message">
-    <i data-lucide="lock" style="width:48px;height:48px;"></i>
-    <h3>Zugriff eingeschr&auml;nkt</h3>
-    <p>Dieser Inhalt ist klassifiziert. Zugriff anfordern, um die Details einzusehen.</p>
-    <a class="btn btn-ghost" href="mailto:datenkatalog@bbl.admin.ch?subject=Zugriffsanfrage">Zugriff anfordern &rarr;</a>
-  </div>`;
-}
-
-// ── Filter helpers (URL-backed, modular) ──────────────────
-// Filter definition shape: { id, label, options: [{value, label}], match: (item, values) => bool }
-// Active filters shape:     { [dimId]: [value, value, ...] }  (AND across dims, OR within a dim)
-const RESERVED_QUERY_KEYS = new Set(['q', 'attrs']); // never treated as filter dimensions
-function parseFilterQuery(queryStr) {
-  const out = {};
-  if (!queryStr) return out;
-  queryStr.split('&').forEach(pair => {
-    if (!pair) return;
-    const eq = pair.indexOf('=');
-    const k = decodeURIComponent(eq >= 0 ? pair.slice(0, eq) : pair);
-    const v = eq >= 0 ? decodeURIComponent(pair.slice(eq + 1)) : '';
-    if (!k || RESERVED_QUERY_KEYS.has(k)) return;
-    out[k] = v ? v.split(',').filter(Boolean) : [];
-  });
-  return out;
-}
-
-function parseAttrsMode(queryStr) {
-  if (!queryStr) return 'show';
-  return /(^|&)attrs=0(&|$)/.test(queryStr) ? 'hide' : 'show';
-}
-
-function buildFullQuery(filters, mode) {
-  const filterPart = buildFilterQuery(filters);
-  if (mode === 'show') return filterPart; // default state: no attrs param needed
-  return filterPart ? filterPart + '&attrs=0' : '?attrs=0';
-}
-
-function buildFilterQuery(filters) {
-  const parts = [];
-  Object.keys(filters || {}).forEach(k => {
-    const vals = filters[k];
-    if (vals && vals.length) {
-      parts.push(encodeURIComponent(k) + '=' + vals.map(encodeURIComponent).join(','));
-    }
-  });
-  return parts.length ? '?' + parts.join('&') : '';
-}
-
-function getCurrentPathPart() {
-  const hash = window.location.hash || '';
-  const qIdx = hash.indexOf('?');
-  return qIdx >= 0 ? hash.slice(0, qIdx) : hash;
-}
-
-function navigateWithFilters(filters) {
-  pendingFocus = captureFilterFocus();
-  window.location.hash = getCurrentPathPart() + buildFullQuery(filters, attrsMode);
-}
-
-function navigateWithAttrsMode(mode) {
-  pendingFocus = captureFilterFocus();
-  const currentFilters = activeFilters[currentSection] || {};
-  window.location.hash = getCurrentPathPart() + buildFullQuery(currentFilters, mode);
-}
-
-// Capture focus descriptor before a filter navigation so we can restore it after re-render.
-function captureFilterFocus() {
-  const el = document.activeElement;
-  if (!el || el === document.body) return null;
-  if (el.id) return { sel: '#' + el.id };
-  if (el.dataset.filterDim) return { sel: `.filter-checkbox[data-filter-dim="${el.dataset.filterDim}"][data-filter-value="${CSS.escape(el.dataset.filterValue || '')}"]` };
-  if (el.dataset.filterAddDim) return { sel: `[data-filter-add-dim="${el.dataset.filterAddDim}"][data-filter-add-value="${CSS.escape(el.dataset.filterAddValue || '')}"]` };
-  if (el.hasAttribute('data-attrs-toggle')) return { sel: '[data-attrs-toggle]' };
-  if (el.dataset.toggleConcept) return { sel: `[data-toggle-concept="${CSS.escape(el.dataset.toggleConcept)}"]` };
-  // For pill-remove: the pill disappears; send focus to the filter toggle as a reasonable fallback.
-  if (el.dataset.filterRemoveDim) return { sel: '#filter-toggle' };
-  return null;
-}
-
-function restorePendingFocus() {
-  if (!pendingFocus) return;
-  const { sel } = pendingFocus;
-  pendingFocus = null;
-  try {
-    const el = document.querySelector(sel);
-    if (el) el.focus({ preventScroll: true });
-  } catch { /* invalid selector — ignore */ }
-}
-
-// Announce filtered result count to screen readers via the permanent #sr-live region.
-function announceFilterResult(sectionLabel, filteredCount, totalCount, filterCount) {
+// Announce a route change to assistive tech via the polite #sr-live region.
+// Uses the page's first heading when available.
+function announceRoute() {
   const live = document.getElementById('sr-live');
   if (!live) return;
-  if (filterCount > 0) {
-    live.textContent = `${filteredCount} von ${totalCount} ${sectionLabel} angezeigt, ${filterCount} Filter aktiv.`;
-  } else {
-    live.textContent = '';
-  }
-}
-
-function applyFilterDefs(items, filterDefs, filters) {
-  if (!filters || !Object.keys(filters).length) return items;
-  return items.filter(item => {
-    for (const def of filterDefs) {
-      const vals = filters[def.id];
-      if (!vals || !vals.length) continue;
-      if (!def.match(item, vals)) return false;
-    }
-    return true;
-  });
-}
-
-function countActiveFilters(filters) {
-  let n = 0;
-  Object.keys(filters || {}).forEach(k => { n += (filters[k] || []).length; });
-  return n;
-}
-
-// Returns { toggleHtml, panelHtml, pillsHtml, queryStr, filtered }
-// Pure renderers — caller places pieces wherever it wants.
-function createFilterContext(filterDefs, filters) {
-  const queryStr = buildFilterQuery(filters);
-  const count = countActiveFilters(filters);
-
-  const toggleHtml = `<button type="button" class="grouping-btn filter-toggle${filterPanelOpen ? ' open' : ''}" id="filter-toggle" aria-expanded="${filterPanelOpen}" aria-controls="filter-panel">
-    <i data-lucide="sliders-horizontal" style="width:14px;height:14px;"></i>
-    <span>Filter</span>${count > 0 ? `<span class="filter-toggle-badge">${count}</span>` : ''}
-    <i data-lucide="chevron-down" style="width:14px;height:14px;" class="filter-toggle-chevron"></i>
-  </button>`;
-
-  let panelHtml = `<div class="filter-panel" id="filter-panel"${filterPanelOpen ? '' : ' hidden'}>`;
-  filterDefs.forEach(def => {
-    const active = new Set((filters[def.id] || []).map(String));
-    panelHtml += '<div class="filter-group">';
-    panelHtml += `<div class="filter-group-label">${escapeHtml(def.label)}</div>`;
-    panelHtml += '<div class="filter-group-options">';
-    def.options.forEach(opt => {
-      const val = String(opt.value);
-      const checked = active.has(val);
-      panelHtml += `<label class="filter-chip${checked ? ' active' : ''}">
-        <input type="checkbox" class="filter-checkbox" data-filter-dim="${escapeHtml(def.id)}" data-filter-value="${escapeHtml(val)}"${checked ? ' checked' : ''}>
-        <span>${escapeHtml(opt.label)}</span>
-      </label>`;
-    });
-    panelHtml += '</div></div>';
-  });
-  panelHtml += '</div>';
-
-  let pillsHtml = '';
-  if (count > 0) {
-    pillsHtml = `<div class="filter-pill-row"${filterPanelOpen ? ' hidden' : ''}>`;
-    filterDefs.forEach(def => {
-      const vals = filters[def.id] || [];
-      if (!vals.length) return;
-      const optMap = {};
-      def.options.forEach(o => { optMap[String(o.value)] = o.label; });
-      vals.forEach(v => {
-        const label = optMap[String(v)] || v;
-        pillsHtml += `<span class="filter-pill">
-          <span class="filter-pill-dim">${escapeHtml(def.label)}:</span>
-          <span class="filter-pill-val">${escapeHtml(label)}</span>
-          <button type="button" class="filter-pill-remove" data-filter-remove-dim="${escapeHtml(def.id)}" data-filter-remove-value="${escapeHtml(String(v))}" aria-label="Filter ${escapeHtml(def.label)}: ${escapeHtml(label)} entfernen">
-            <i data-lucide="x" style="width:12px;height:12px;"></i>
-          </button>
-        </span>`;
-      });
-    });
-    pillsHtml += '<button type="button" class="filter-reset" id="filter-reset">Alle Filter zurücksetzen</button>';
-    pillsHtml += '</div>';
-  }
-
-  return { toggleHtml, panelHtml, pillsHtml, queryStr, count, filters, filterDefs };
+  const heading = document.querySelector('#main-content h1, #main-content h2');
+  const text = heading?.textContent?.trim();
+  if (text) live.textContent = text;
 }
 
 // ── Router ─────────────────────────────────────────────────
@@ -488,258 +131,11 @@ function handleRoute() {
   if (mainEl) lucide.createIcons({ nodes: [mainEl] });
   if (sidebarEl) lucide.createIcons({ nodes: [sidebarEl] });
   restorePendingFocus();
+  announceRoute();
 }
 
 window.addEventListener('hashchange', handleRoute);
 
-// ── Views: Relationship Graph ─────────────────────────────
-function renderRelGraph(centerLabel, satellites) {
-  if (satellites.length === 0) return '';
-  let html = '<div class="content-section" style="padding:0;overflow:hidden;">';
-  html += '<div id="rel-viewport" class="rel-viewport" style="width:100%;height:calc(100vh - 240px);min-height:400px;">';
-  html += '<div id="rel-canvas"></div>';
-  html += '<div id="rel-tooltip" class="rel-tooltip"></div>';
-  html += '<div id="rel-panel" class="rel-panel"></div>';
-  html += '</div></div>';
-  relGraphData = { conceptName: centerLabel, satellites };
-  setTimeout(initRelationshipSVG, 50);
-  return html;
-}
-
-function initRelationshipSVG() {
-  const viewport = document.getElementById('rel-viewport');
-  const canvas = document.getElementById('rel-canvas');
-  const panel = document.getElementById('rel-panel');
-  if (!viewport || !canvas || !relGraphData) return;
-
-  const { conceptName, satellites } = relGraphData;
-
-  const canvasSize = 1000;
-  const cx = canvasSize / 2;
-  const cy = canvasSize / 2;
-  const orbitRadius = 300;
-  const minOuterR = 70;
-  const perItemR = 25; // extra radius per item
-  const ringGap = 20; // constant gap between outer and inner ring (all circles)
-
-  canvas.style.width = canvasSize + 'px';
-  canvas.style.height = canvasSize + 'px';
-  canvas.style.position = 'absolute';
-
-  // Calculate dynamic radius per satellite based on item count
-  // Badge always at -135° (top-left) from satellite center, constant offset from outer ring
-  const badgeOffset = 18; // gap from outer ring edge to badge center
-  const badgeAngleFixed = -Math.PI * 3 / 4; // -135° = top-left
-
-  const satData = satellites.map((sat, i) => {
-    const outerR = Math.max(minOuterR, 50 + sat.items.length * perItemR);
-    const innerR = outerR - ringGap;
-    const angle = (2 * Math.PI * i / satellites.length) - Math.PI / 2;
-    const x = cx + orbitRadius * Math.cos(angle);
-    const y = cy + orbitRadius * Math.sin(angle);
-    return { sat, x, y, outerR, innerR, angle };
-  });
-
-  // SVG: connector lines (center→satellite) + badge connector lines (badge→outer ring)
-  let svg = `<svg class="rel-svg" width="${canvasSize}" height="${canvasSize}" xmlns="http://www.w3.org/2000/svg">`;
-  satData.forEach(s => {
-    // Line from center to satellite
-    svg += `<line x1="${cx}" y1="${cy}" x2="${s.x}" y2="${s.y}" stroke="#D8D8D5" stroke-width="1.5"/>`;
-    // Badge connector: line from badge center to outer ring edge (both at -135°)
-    const badgeDist = s.outerR + badgeOffset;
-    const bx = s.x + badgeDist * Math.cos(badgeAngleFixed);
-    const by = s.y + badgeDist * Math.sin(badgeAngleFixed);
-    const ringX = s.x + s.outerR * Math.cos(badgeAngleFixed);
-    const ringY = s.y + s.outerR * Math.sin(badgeAngleFixed);
-    svg += `<line x1="${bx}" y1="${by}" x2="${ringX}" y2="${ringY}" stroke="#6B6B66" stroke-width="1.5"/>`;
-  });
-  svg += '</svg>';
-
-  let html = svg;
-
-  // Center node — use same ringGap
-  const centerInnerR = 34;
-  const centerOuterR = centerInnerR + ringGap;
-  html += `<div class="rel-center" style="left:${cx}px;top:${cy}px;">`;
-  html += `<div class="rel-center-outer" style="width:${centerOuterR*2}px;height:${centerOuterR*2}px;">`;
-  html += `<div class="rel-center-inner" style="width:${centerInnerR*2}px;height:${centerInnerR*2}px;">`;
-  html += '<i data-lucide="box" style="width:26px;height:26px;color:#fff;"></i>';
-  html += '</div></div>';
-  html += `<div class="rel-center-label">${escapeHtml(conceptName)}</div>`;
-  html += '</div>';
-
-  // Satellites
-  satData.forEach(s => {
-    const outerD = s.outerR * 2;
-    const innerD = s.innerR * 2;
-
-    html += `<div class="rel-satellite" data-group="${escapeHtml(s.sat.title)}" style="left:${s.x}px;top:${s.y}px;width:${outerD}px;height:${outerD}px;">`;
-    html += `<div class="rel-satellite-outer" style="width:${outerD}px;height:${outerD}px;">`;
-    html += `<div class="rel-satellite-inner" style="width:${innerD}px;height:${innerD}px;">`;
-    html += '<div class="rel-satellite-items">';
-
-    s.sat.items.forEach(item => {
-      const tag = item.href ? 'a' : 'div';
-      const hrefAttr = item.href ? ` href="${item.href}/relationships"` : '';
-      const meta = item.meta || '';
-      html += `<${tag} class="rel-item" data-rel-info="${escapeHtml(item.label)}" data-rel-type="${escapeHtml(s.sat.title)}" data-rel-meta="${escapeHtml(meta)}"${hrefAttr}>`;
-      html += `<i data-lucide="${item.icon}" style="width:22px;height:22px;color:${s.sat.color};"></i>`;
-      html += `<span class="rel-item-label">${escapeHtml(item.label.length > 14 ? item.label.substring(0, 13) + '\u2026' : item.label)}</span>`;
-      html += `</${tag}>`;
-    });
-
-    html += '</div></div></div>';
-    // Count badge — top-left 45°, constant offset from outer ring
-    const badgeDist = s.outerR + badgeOffset;
-    const badgeLocalX = s.outerR + badgeDist * Math.cos(badgeAngleFixed) - 12;
-    const badgeLocalY = s.outerR + badgeDist * Math.sin(badgeAngleFixed) - 12;
-    html += `<div class="rel-satellite-count" style="left:${badgeLocalX}px;top:${badgeLocalY}px;">${s.sat.items.length}</div>`;
-    html += `<div class="rel-satellite-title">${escapeHtml(s.sat.title)}</div>`;
-    html += '</div>';
-  });
-
-  canvas.innerHTML = html;
-
-  // --- Right panel: search + show checkboxes ---
-  let panelHtml = '<div class="rel-panel-nav">';
-  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-in" title="Zoom in"><i data-lucide="zoom-in" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '<button class="rel-panel-btn" id="rel-zoom-out" title="Zoom out"><i data-lucide="zoom-out" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '<button class="rel-panel-btn" id="rel-reset" title="Reset"><i data-lucide="maximize-2" style="width:16px;height:16px;"></i></button>';
-  panelHtml += '</div>';
-  panelHtml += '<input type="text" class="rel-panel-search" id="rel-search" placeholder="Find...">';
-  panelHtml += '<div class="rel-panel-title">Show</div>';
-  satellites.forEach(sat => {
-    panelHtml += `<label class="rel-panel-item">
-      <input type="checkbox" checked data-rel-toggle="${escapeHtml(sat.title)}">
-      <span>${escapeHtml(sat.title)}</span>
-    </label>`;
-  });
-  panel.innerHTML = panelHtml;
-
-  lucide.createIcons({ nodes: [canvas] });
-
-  // --- Zoom & Pan ---
-  let scale = 1, panX = 0, panY = 0;
-  let isDragging = false, dragStartX = 0, dragStartY = 0, panStartX = 0, panStartY = 0;
-
-  function applyTransform() {
-    canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
-    canvas.style.transformOrigin = '0 0';
-  }
-  function centerCanvas() {
-    const vw = viewport.offsetWidth;
-    const vh = viewport.offsetHeight;
-    panX = (vw - canvasSize) / 2;
-    panY = (vh - canvasSize) / 2;
-    applyTransform();
-  }
-  centerCanvas();
-
-  viewport.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.min(3, Math.max(0.3, scale * delta));
-    const rect = viewport.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-    panX = mx - (mx - panX) * (newScale / scale);
-    panY = my - (my - panY) * (newScale / scale);
-    scale = newScale;
-    applyTransform();
-  }, { passive: false });
-
-  viewport.addEventListener('mousedown', function(e) {
-    if (e.target.closest('a') || e.target.closest('.rel-panel')) return;
-    isDragging = true;
-    dragStartX = e.clientX; dragStartY = e.clientY;
-    panStartX = panX; panStartY = panY;
-  });
-  const onMouseMove = function(e) {
-    if (!isDragging) return;
-    panX = panStartX + (e.clientX - dragStartX);
-    panY = panStartY + (e.clientY - dragStartY);
-    applyTransform();
-  };
-  const onMouseUp = function() { isDragging = false; };
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseup', onMouseUp);
-
-  relCleanup = function() {
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseup', onMouseUp);
-  };
-
-  // --- Tooltip (dark info box) ---
-  const tooltip = document.getElementById('rel-tooltip');
-  canvas.addEventListener('mouseover', function(e) {
-    const item = e.target.closest('[data-rel-info]');
-    if (item && tooltip) {
-      const name = item.dataset.relInfo;
-      const type = item.dataset.relType || '';
-      const meta = item.dataset.relMeta || '';
-      tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:2px;">' + escapeHtml(name) + '</div>'
-        + (type ? '<div style="opacity:0.7;font-size:11px;">Type: ' + escapeHtml(type) + '</div>' : '')
-        + (meta ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(meta) + '</div>' : '');
-      tooltip.style.display = 'block';
-    }
-  });
-  canvas.addEventListener('mousemove', function(e) {
-    if (tooltip && tooltip.style.display === 'block') {
-      const rect = viewport.getBoundingClientRect();
-      tooltip.style.left = (e.clientX - rect.left + 14) + 'px';
-      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
-    }
-  });
-  canvas.addEventListener('mouseout', function(e) {
-    if (e.target.closest('[data-rel-info]') && tooltip) tooltip.style.display = 'none';
-  });
-
-  // --- Panel: toggle visibility ---
-  panel.addEventListener('change', function(e) {
-    const cb = e.target;
-    if (!cb.dataset.relToggle) return;
-    const groupName = cb.dataset.relToggle;
-    const satellite = canvas.querySelector('[data-group="' + groupName + '"]');
-    if (satellite) {
-      satellite.style.display = cb.checked ? '' : 'none';
-    }
-    // Also hide/show the SVG line for this group
-    const idx = satellites.findIndex(s => s.title === groupName);
-    const lines = canvas.querySelector('.rel-svg');
-    if (lines && lines.children[idx]) {
-      lines.children[idx].style.display = cb.checked ? '' : 'none';
-    }
-  });
-
-  // --- Panel: search filter ---
-  const searchInput = document.getElementById('rel-search');
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      canvas.querySelectorAll('.rel-item').forEach(item => {
-        const name = (item.dataset.relInfo || '').toLowerCase();
-        item.style.display = !q || name.includes(q) ? '' : 'none';
-      });
-    });
-  }
-
-  // --- Panel: zoom/reset buttons ---
-  function zoomBy(factor) {
-    const newScale = Math.min(3, Math.max(0.3, scale * factor));
-    const vw = viewport.offsetWidth;
-    const vh = viewport.offsetHeight;
-    // Zoom toward center of viewport
-    panX = vw / 2 - (vw / 2 - panX) * (newScale / scale);
-    panY = vh / 2 - (vh / 2 - panY) * (newScale / scale);
-    scale = newScale;
-    applyTransform();
-  }
-  document.getElementById('rel-zoom-in')?.addEventListener('click', function() { zoomBy(1.25); });
-  document.getElementById('rel-zoom-out')?.addEventListener('click', function() { zoomBy(0.8); });
-  document.getElementById('rel-reset')?.addEventListener('click', function() { scale = 1; centerCanvas(); });
-
-  lucide.createIcons({ nodes: [panel] });
-}
 
 
 function renderStakeholderCard(name, org, email) {
@@ -772,7 +168,7 @@ function renderSidebar() {
   const homeActive = currentSection === 'home';
   html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link">
     <i data-lucide="home" style="width:16px;height:16px;flex-shrink:0;"></i>
-    <span>Home</span>
+    <span>${escapeHtml(tr('home'))}</span>
   </div>`;
   const chatActive = currentSection === 'chat';
   html += `<div class="nav-item${chatActive ? ' active' : ''}" data-nav="chat" role="link">
@@ -807,137 +203,11 @@ function renderSidebar() {
 
   html += '<div class="nav-divider"></div>';
   html += '<div class="nav-section-label">Bookmarks</div>';
-  html += '<div style="padding: var(--space-1) var(--space-3); font-size: 13px; color: var(--color-text-placeholder);">Keine Lesezeichen</div>';
+  html += `<div style="padding: var(--space-1) var(--space-3); font-size: 13px; color: var(--color-text-placeholder);">${escapeHtml(tr('no_bookmarks'))}</div>`;
 
   document.getElementById('sidebar').innerHTML = html;
 }
 
-function renderHome() {
-  const conceptCount = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
-  const termCount = query("SELECT COUNT(*) as c FROM term")[0]?.c || 0;
-  const codelistCount = query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0;
-  const systemCount = query("SELECT COUNT(*) as c FROM system")[0]?.c || 0;
-  const productCount = query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0;
-
-  const approvedCount = query("SELECT COUNT(*) as c FROM concept WHERE status = 'approved'")[0]?.c || 0;
-  const draftCount = conceptCount - approvedCount;
-  const valueCount = query("SELECT COUNT(*) as c FROM code_list_value")[0]?.c || 0;
-  const fieldCount = query("SELECT COUNT(*) as c FROM field")[0]?.c || 0;
-  const distCount = query("SELECT COUNT(*) as c FROM distribution")[0]?.c || 0;
-
-  // Recent activity: 5 most recently modified concepts
-  const recentConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname, c.status, c.modified_at,
-    col.${nameCol('name')} as col_name
-    FROM concept c
-    LEFT JOIN collection col ON c.collection_id = col.id
-    ORDER BY c.modified_at DESC LIMIT 5`);
-
-  // Domains
-  const domains = query(`SELECT col.id, col.${nameCol('name')} as cname, COUNT(c.id) as concept_count
-    FROM collection col
-    LEFT JOIN concept c ON c.collection_id = col.id
-    GROUP BY col.id ORDER BY col.sort_order`);
-
-  // Quality averages
-  const quality = queryOne(`SELECT
-    ROUND(AVG(completeness_score), 2) as avg_completeness,
-    ROUND(AVG(format_validity_score), 2) as avg_validity,
-    ROUND(AVG(timeliness_score), 2) as avg_timeliness,
-    ROUND(AVG(accuracy_score), 2) as avg_accuracy,
-    ROUND(AVG(consistency_score), 2) as avg_consistency,
-    ROUND(AVG(uniqueness_score), 2) as avg_uniqueness,
-    ROUND(AVG(null_percentage), 2) as avg_null
-    FROM data_profile`);
-
-  let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb"><span class="breadcrumb-current">Home</span></nav>';
-  html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="home" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Home</div>
-    <div class="section-subtitle">BBL Datenkatalog</div>
-  </div></div>`;
-
-  // KPI cards
-  html += '<div class="home-kpi-grid">';
-  html += renderKpiCard('box', conceptCount, 'Geschäftsobjekte', `${approvedCount} Freigegeben \u00b7 ${draftCount} Entwurf`, '#/vocabulary/table');
-  html += renderKpiCard('book-open', termCount, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
-  html += renderKpiCard('list-ordered', codelistCount, 'Codelisten', `${valueCount} Werte`, '#/codelists');
-  html += renderKpiCard('database', systemCount, 'Systeme', `${fieldCount} Felder`, '#/systems/table');
-  html += renderKpiCard('package', productCount, 'Datensammlungen', `${distCount} Distributionen`, '#/products/table');
-  html += '</div>';
-
-  // Recent activity
-  html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
-  if (recentConcepts.length > 0) {
-    html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Freigabe</th><th scope="col">Geändert</th>';
-    html += '</tr></thead><tbody>';
-    recentConcepts.forEach(c => {
-      html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
-        <td>${escapeHtml(c.cname)}</td>
-        <td>${c.col_name ? escapeHtml(c.col_name) : '&ndash;'}</td>
-        <td>${statusBadge(c.status)}</td>
-        <td>${formatDate(c.modified_at)}</td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-  } else {
-    html += '<p style="color:var(--color-text-secondary);">Keine Aktivit\u00e4t</p>';
-  }
-  html += '</div>';
-
-  // Bottom row: domains + quality
-  html += '<div class="home-bottom-grid">';
-
-  // Domains card
-  html += '<div class="content-section"><div class="section-label">DOM\u00c4NEN</div>';
-  domains.forEach(d => {
-    html += `<div class="home-domain-row clickable-row" data-href="#/vocabulary/table">
-      <span>${escapeHtml(d.cname)}</span>
-      <span class="home-domain-count">${d.concept_count} ${d.concept_count === 1 ? 'Geschäftsobjekt' : 'Geschäftsobjekte'}</span>
-    </div>`;
-  });
-  html += '</div>';
-
-  // Quality card — 6 dimensions
-  html += '<div class="content-section"><div class="section-label">DATENQUALIT\u00c4T</div>';
-  const dims = [
-    { icon: 'check-circle', label: 'Vollständigkeit', score: quality?.avg_completeness },
-    { icon: 'clock', label: 'Aktualität', score: quality?.avg_timeliness },
-    { icon: 'target', label: 'Genauigkeit', score: quality?.avg_accuracy },
-    { icon: 'git-compare', label: 'Konsistenz', score: quality?.avg_consistency },
-    { icon: 'shield-check', label: 'Formatkonformität', score: quality?.avg_validity },
-    { icon: 'fingerprint', label: 'Eindeutigkeit', score: quality?.avg_uniqueness }
-  ];
-  dims.forEach(d => {
-    const hasScore = d.score != null;
-    const pct = hasScore ? Math.round(d.score * 100) : null;
-    const scoreColor = hasScore ? (pct >= 80 ? 'var(--color-quality-complete)' : pct >= 50 ? 'var(--color-quality-null)' : 'var(--color-status-error, #DC0018)') : null;
-    html += `<div class="quality-bar-container">
-      <i data-lucide="${d.icon}" style="width:15px;height:15px;color:var(--color-text-secondary);flex-shrink:0;"></i>
-      <span class="quality-bar-label">${d.label}</span>
-      <div class="quality-bar">`;
-    if (hasScore) {
-      html += `<div class="quality-bar-fill-complete" style="width:${pct}%;background:${scoreColor};"></div>`;
-    }
-    html += `</div>
-      <span class="quality-bar-value">${hasScore ? pct + '%' : '&ndash;'}</span>
-    </div>`;
-  });
-  html += '</div>';
-
-  html += '</div>'; // close bottom grid
-  html += '</div>'; // close content-wrapper
-  return html;
-}
-
-function renderKpiCard(icon, count, label, subtitle, href) {
-  return `<div class="home-kpi-card clickable-row" data-href="${href}">
-    <div class="home-kpi-icon"><i data-lucide="${icon}" style="width:20px;height:20px;"></i></div>
-    <div class="home-kpi-count">${count}</div>
-    <div class="home-kpi-label">${escapeHtml(label)}</div>
-    <div class="home-kpi-sub">${escapeHtml(subtitle)}</div>
-  </div>`;
-}
 
 
 
@@ -1270,7 +540,7 @@ function renderVocabularyList(listTab, collectionId) {
     {
       id: 'status',
       label: 'Freigabe',
-      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (c, vals) => vals.includes(c.status)
     },
     {
@@ -1322,7 +592,7 @@ function renderVocabularyList(listTab, collectionId) {
   html += '</nav>';
 
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${countLabel})</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${countLabel})</h2>
     <div class="section-subtitle">Lösungsneutrale Geschäftsobjekte und ihre fachlichen Attribute.</div>
   </div></div>`;
 
@@ -1352,7 +622,7 @@ function renderVocabularyList(listTab, collectionId) {
       const col = c.collection_id ? collectionMap[c.collection_id] : null;
       return col ? n(col, 'name') : 'Ohne Domäne';
     }
-    if (grouping.vocabulary === 'status') return STATUS_LABELS[c.status] || c.status || 'Unbekannt';
+    if (grouping.vocabulary === 'status') return tStatus(c.status) || c.status || tr('unknown');
     if (grouping.vocabulary === 'steward') return c.steward_name || 'Nicht zugewiesen';
     return null;
   }
@@ -1401,31 +671,26 @@ function renderVocabularyList(listTab, collectionId) {
 
   html += '<div class="list-panel">';
 
-  // Row renderer — always includes Domäne column
-  function conceptRow(c) {
-    const desc = getDefinitionText(c.definition, lang);
-    const col = c.collection_id ? collectionMap[c.collection_id] : null;
-    return `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
-      <td>${escapeHtml(n(c, 'name'))}</td>
-      <td>${col ? filterBadge(n(col, 'name'), 'domain', col.id) : '&ndash;'}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${c.mapping_count > 0 ? c.mapping_count : '&ndash;'}</td>
-      <td>${statusBadge(c.status, 'status')}</td>
-      <td>${c.steward_name ? escapeHtml(c.steward_name) : '&ndash;'}</td>
-    </tr>`;
-  }
-
-  const colgroup = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:8%"><col style="width:10%"><col style="width:22%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Felder</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const conceptColumns = [
+    { label: 'Name',          width: '17%', render: c => escapeHtml(n(c, 'name')) },
+    { label: 'Domäne',        width: '15%', render: c => {
+        const col = c.collection_id ? collectionMap[c.collection_id] : null;
+        return col ? filterBadge(n(col, 'name'), 'domain', col.id) : '&ndash;';
+      } },
+    { label: 'Beschreibung',  width: '28%', render: c => {
+        const desc = getDefinitionText(c.definition, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Felder',        width: '8%',  render: c => c.mapping_count > 0 ? c.mapping_count : '&ndash;' },
+    { label: 'Freigabe',      width: '10%', render: c => statusBadge(c.status, 'status') },
+    { label: 'Verantwortlich', width: '22%', render: c => c.steward_name ? escapeHtml(c.steward_name) : '&ndash;' }
+  ];
+  const conceptTableOpts = { rowHref: c => '#/vocabulary/' + c.id };
 
   if (activeCollection || grouping.vocabulary === 'none') {
-    // Flat table
     const concepts = activeCollection ? (conceptsByCollection[collectionId] || []) : allConcepts;
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    concepts.forEach(c => { html += conceptRow(c); });
-    html += '</tbody></table>';
+    html += renderDataTable(conceptColumns, concepts, conceptTableOpts);
   } else if (grouping.vocabulary === 'domain') {
-    // Grouped by collection
     filteredCollections.forEach(col => {
       const concepts = conceptsByCollection[col.id] || [];
       html += `<div class="group-header" data-toggle-group="${col.id}">
@@ -1433,20 +698,18 @@ function renderVocabularyList(listTab, collectionId) {
         <span class="group-header-title">${escapeHtml(n(col, 'name'))} (${col.concept_count})</span>
       </div>`;
       html += `<div class="group-content" data-group="${col.id}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      concepts.forEach(c => { html += conceptRow(c); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(conceptColumns, concepts, conceptTableOpts);
+      html += '</div>';
     });
 
     if (filteredUngrouped.length > 0) {
       html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
         <span class="group-header-title">Ohne Domäne (${filteredUngrouped.length})</span></div>`;
-      html += `<div class="group-content"><table class="data-table">${colgroup}${thead}<tbody>`;
-      filteredUngrouped.forEach(c => { html += conceptRow(c); });
-      html += '</tbody></table></div>';
+      html += `<div class="group-content">`;
+      html += renderDataTable(conceptColumns, filteredUngrouped, conceptTableOpts);
+      html += '</div>';
     }
   } else {
-    // Generic grouping (status, steward)
     const groups = {};
     allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
     Object.keys(groups).sort().forEach(k => {
@@ -1456,9 +719,8 @@ function renderVocabularyList(listTab, collectionId) {
         <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="g-${k}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(c => { html += conceptRow(c); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(conceptColumns, items, conceptTableOpts);
+      html += '</div>';
     });
   }
 
@@ -1521,7 +783,7 @@ function renderCodeListsList(listTab) {
     },
     {
       id: 'status', label: 'Freigabe',
-      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (cl, vals) => vals.includes(cl.status)
     }
   ];
@@ -1532,7 +794,7 @@ function renderCodeListsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${sectionCountLabel(totalCount, codeLists.length, filterCtx)})</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${sectionCountLabel(totalCount, codeLists.length, filterCtx)})</h2>
     <div class="section-subtitle">Standardisierte Wertelisten für Attribute der Geschäftsobjekte.</div>
   </div></div>`;
 
@@ -1586,26 +848,22 @@ function renderCodeListsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:14%"><col style="width:25%"><col style="width:8%"><col style="width:12%"><col style="width:23%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
-
-  function clRow(cl) {
-    const desc = getDefinitionText(cl.description, lang);
-    return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
-      <td>${escapeHtml(n(cl, 'name'))}</td>
-      <td>${cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;'}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${cl.value_count}</td>
-      <td>${statusBadge(cl.status, 'status')}</td>
-      <td>${cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>'}</td>
-    </tr>`;
-  }
+  const clColumns = [
+    { label: 'Name',         width: '18%', render: cl => escapeHtml(n(cl, 'name')) },
+    { label: 'Domäne',       width: '14%', render: cl => cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;' },
+    { label: 'Beschreibung', width: '25%', render: cl => {
+        const desc = getDefinitionText(cl.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Werte',        width: '8%',  render: cl => cl.value_count },
+    { label: 'Freigabe',     width: '12%', render: cl => statusBadge(cl.status, 'status') },
+    { label: 'Verantwortlich', width: '23%', render: cl => cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>' }
+  ];
+  const clTableOpts = { rowHref: cl => '#/codelists/' + cl.id };
 
   html += '<div class="list-panel">';
   if (grouping.codelists === 'none') {
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    codeLists.forEach(cl => { html += clRow(cl); });
-    html += '</tbody></table>';
+    html += renderDataTable(clColumns, codeLists, clTableOpts);
   } else {
     const groups = {};
     codeLists.forEach(cl => { const k = getClGroupKey(cl); if (!groups[k]) groups[k] = []; groups[k].push(cl); });
@@ -1616,9 +874,8 @@ function renderCodeListsList(listTab) {
         <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="cl-${k}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(cl => { html += clRow(cl); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(clColumns, items, clTableOpts);
+      html += '</div>';
     });
   }
   html += '</div></div>';
@@ -1664,7 +921,7 @@ function renderTermsList(listTab) {
     },
     {
       id: 'status', label: 'Freigabe',
-      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (t, vals) => vals.includes(t.status)
     },
     {
@@ -1679,7 +936,7 @@ function renderTermsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${sectionCountLabel(totalCount, terms.length, filterCtx)})</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${sectionCountLabel(totalCount, terms.length, filterCtx)})</h2>
     <div class="section-subtitle">Fachbegriffe und Definitionen aus Standards, Gesetzen und Normen.</div>
   </div></div>`;
 
@@ -1705,7 +962,7 @@ function renderTermsList(listTab) {
 
   function getTermGroupKey(t) {
     if (grouping.terms === 'domain') return t.domain_name || 'Ohne Domäne';
-    if (grouping.terms === 'status') return STATUS_LABELS[t.status] || t.status || 'Unbekannt';
+    if (grouping.terms === 'status') return tStatus(t.status) || t.status || tr('unknown');
     return null;
   }
 
@@ -1724,26 +981,22 @@ function renderTermsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:35%"><col style="width:12%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Freigabe</th><th scope="col">Standard</th></tr></thead>';
+  const termColumns = [
+    { label: 'Name',         width: '18%', render: t => escapeHtml(n(t, 'name')) },
+    { label: 'Domäne',       width: '15%', render: t => t.domain_name ? filterBadge(t.domain_name, 'domain', t.collection_id) : '&ndash;' },
+    { label: 'Beschreibung', width: '35%', render: t => {
+        const def = getDefinitionText(t.definition, lang);
+        return def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Freigabe',     width: '12%', render: t => statusBadge(t.status, 'status') },
+    { label: 'Standard',     width: '20%', render: t => t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;' }
+  ];
+  const termTableOpts = { rowHref: t => '#/terms/' + t.id };
 
   html += '<div class="list-panel">';
 
-  function termRow(t) {
-    const def = getDefinitionText(t.definition, lang);
-    return `<tr class="clickable-row" data-href="#/terms/${t.id}">
-      <td>${escapeHtml(n(t, 'name'))}</td>
-      <td>${t.domain_name ? filterBadge(t.domain_name, 'domain', t.collection_id) : '&ndash;'}</td>
-      <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
-      <td>${statusBadge(t.status, 'status')}</td>
-      <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
-    </tr>`;
-  }
-
   if (grouping.terms === 'none') {
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    terms.forEach(t => { html += termRow(t); });
-    html += '</tbody></table>';
+    html += renderDataTable(termColumns, terms, termTableOpts);
   } else {
     const activeGroups = {};
     terms.forEach(t => { const k = getTermGroupKey(t); if (!activeGroups[k]) activeGroups[k] = []; activeGroups[k].push(t); });
@@ -1754,9 +1007,8 @@ function renderTermsList(listTab) {
         <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="t-${k}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(t => { html += termRow(t); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(termColumns, items, termTableOpts);
+      html += '</div>';
     });
   }
 
@@ -1808,7 +1060,7 @@ function renderSystemsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${sectionCountLabel(totalCount, systems.length, filterCtx)})</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${sectionCountLabel(totalCount, systems.length, filterCtx)})</h2>
     <div class="section-subtitle">Physische Quellsysteme mit Tabellen, Datasets und Feldern.</div>
   </div></div>`;
 
@@ -1859,26 +1111,22 @@ function renderSystemsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:28%"><col style="width:14%"><col style="width:10%"><col style="width:10%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Technologie</th><th scope="col">Tabellen</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
-
-  function sysRow(s) {
-    const desc = getDefinitionText(s.description, lang);
-    return `<tr class="clickable-row" data-href="#/systems/${s.id}">
-      <td>${escapeHtml(n(s, 'name'))}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${s.technology_stack ? filterBadge(s.technology_stack, 'technology', s.technology_stack) : '&ndash;'}</td>
-      <td>${s.dataset_count}</td>
-      <td>${statusBadge(s.active ? 'active' : 'deprecated', 'status')}</td>
-      <td>${s.owner_name ? escapeHtml(s.owner_name) : '&ndash;'}</td>
-    </tr>`;
-  }
+  const sysColumns = [
+    { label: 'Name',          width: '18%', render: s => escapeHtml(n(s, 'name')) },
+    { label: 'Beschreibung',  width: '28%', render: s => {
+        const desc = getDefinitionText(s.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Technologie',   width: '14%', render: s => s.technology_stack ? filterBadge(s.technology_stack, 'technology', s.technology_stack) : '&ndash;' },
+    { label: 'Tabellen',      width: '10%', render: s => s.dataset_count },
+    { label: 'Status',        width: '10%', render: s => statusBadge(s.active ? 'active' : 'deprecated', 'status') },
+    { label: 'Verantwortlich', width: '20%', render: s => s.owner_name ? escapeHtml(s.owner_name) : '&ndash;' }
+  ];
+  const sysTableOpts = { rowHref: s => '#/systems/' + s.id };
 
   html += '<div class="list-panel">';
   if (grouping.systems === 'none') {
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    systems.forEach(s => { html += sysRow(s); });
-    html += '</tbody></table>';
+    html += renderDataTable(sysColumns, systems, sysTableOpts);
   } else {
     const groups = {};
     systems.forEach(s => {
@@ -1893,9 +1141,8 @@ function renderSystemsList(listTab) {
         <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="sys-${k}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(s => { html += sysRow(s); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(sysColumns, items, sysTableOpts);
+      html += '</div>';
     });
   }
   html += '</div></div>';
@@ -1946,7 +1193,7 @@ function renderProductsList(listTab) {
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</h2>
     <div class="section-subtitle">Aufbereitete und publizierte Datensammlungen mit Distributionen.</div>
   </div></div>`;
 
@@ -1991,27 +1238,22 @@ function renderProductsList(listTab) {
     return html;
   }
 
-  const colgroup = '<colgroup><col style="width:18%"><col style="width:27%"><col style="width:13%"><col style="width:12%"><col style="width:10%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
-
-  function productRow(dp) {
-    const desc = getDefinitionText(dp.description, lang);
-    const formatStr = (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ');
-    return `<tr class="clickable-row" data-href="#/products/${dp.id}">
-      <td>${escapeHtml(n(dp, 'name'))}</td>
-      <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
-      <td>${formatStr || '&ndash;'}</td>
-      <td>${dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;'}</td>
-      <td>${certifiedBadge(dp.certified, 'status')}</td>
-      <td>${dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;'}</td>
-    </tr>`;
-  }
+  const productColumns = [
+    { label: 'Name',          width: '18%', render: dp => escapeHtml(n(dp, 'name')) },
+    { label: 'Beschreibung',  width: '27%', render: dp => {
+        const desc = getDefinitionText(dp.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Formate',       width: '13%', render: dp => (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ') || '&ndash;' },
+    { label: 'Häufigkeit',    width: '12%', render: dp => dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;' },
+    { label: 'Freigabe',      width: '10%', render: dp => certifiedBadge(dp.certified, 'status') },
+    { label: 'Verantwortlich', width: '20%', render: dp => dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;' }
+  ];
+  const productTableOpts = { rowHref: dp => '#/products/' + dp.id };
 
   html += '<div class="list-panel">';
   if (grouping.products === 'none') {
-    html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-    products.forEach(dp => { html += productRow(dp); });
-    html += '</tbody></table>';
+    html += renderDataTable(productColumns, products, productTableOpts);
   } else {
     const groups = {};
     products.forEach(dp => { const k = getProductGroupKey(dp); if (!groups[k]) groups[k] = []; groups[k].push(dp); });
@@ -2022,9 +1264,8 @@ function renderProductsList(listTab) {
         <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
       </div>`;
       html += `<div class="group-content" data-group="dp-${k}">`;
-      html += `<table class="data-table">${colgroup}${thead}<tbody>`;
-      items.forEach(dp => { html += productRow(dp); });
-      html += '</tbody></table></div>';
+      html += renderDataTable(productColumns, items, productTableOpts);
+      html += '</div>';
     });
   }
   html += '</div></div>';
@@ -2032,262 +1273,6 @@ function renderProductsList(listTab) {
 }
 
 
-// Runs the 5 entity LIKE queries shared by the header dropdown and the /search page.
-// `system` only has name_en/name_de (no fr/it) — unlike the other entity tables.
-function searchCatalog(q, limit) {
-  const likeQ = `%${q}%`;
-  const all = [likeQ, likeQ, likeQ, likeQ];
-  const deEn = [likeQ, likeQ];
-  return {
-    terms: query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
-    concepts: query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
-    codeLists: query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
-    products: query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
-    systems: query(`SELECT id, name_en, name_de, technology_stack FROM system
-      WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${limit}`, deEn)
-  };
-}
-
-function syncHeaderSearch(q) {
-  const input = document.getElementById('search-input');
-  if (input && input.value !== q) input.value = q;
-  const clearBtn = document.getElementById('search-clear');
-  const shortcut = document.getElementById('search-shortcut');
-  if (clearBtn) clearBtn.hidden = q.length === 0;
-  if (shortcut) shortcut.hidden = q.length > 0;
-}
-
-function renderSearchResults() {
-  const main = document.getElementById('main-content');
-  const q = searchQuery.trim();
-  syncHeaderSearch(q);
-
-  let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
-
-  if (!q) {
-    const counts = sidebarCounts || { terms: 0, vocabulary: 0, codelists: 0, products: 0, systems: 0 };
-    html += `<div class="section-header"><div>
-      <div class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suche</div>
-      <div class="section-subtitle">Geben Sie oben einen Suchbegriff ein. Tipp: mit Ctrl+K öffnen Sie die Suche jederzeit.</div>
-    </div></div>`;
-
-    html += '<div class="content-section"><div class="section-label">NACH TYP DURCHSUCHEN</div>';
-    html += '<div class="home-kpi-grid">';
-    html += renderKpiCard('book-open', counts.terms, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
-    html += renderKpiCard('box', counts.vocabulary, 'Geschäftsobjekte', 'Lösungsneutrale Objekte', '#/vocabulary/table');
-    html += renderKpiCard('list-ordered', counts.codelists, 'Codelisten', 'Standardisierte Wertelisten', '#/codelists');
-    html += renderKpiCard('package', counts.products, 'Datensammlungen', 'Publizierte Daten', '#/products/table');
-    html += renderKpiCard('database', counts.systems, 'Systeme', 'Quellsysteme', '#/systems/table');
-    html += '</div></div>';
-
-    html += '</div>';
-    main.innerHTML = html;
-    lucide.createIcons({ nodes: [main] });
-    document.getElementById('search-input')?.focus();
-    return;
-  }
-
-  const LIMIT = 20;
-  const { terms, concepts, codeLists, products, systems } = searchCatalog(q, LIMIT);
-  const likeQ = `%${q}%`;
-  const datasets = query(`SELECT d.id, d.name, d.display_name, d.dataset_type,
-    s.${nameCol('name')} as sys_name, sc.system_id as sys_id
-    FROM dataset d
-    JOIN schema_ sc ON d.schema_id = sc.id
-    JOIN system s ON sc.system_id = s.id
-    WHERE d.name LIKE ? OR d.display_name LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ]);
-
-  const totalResults = terms.length + concepts.length + codeLists.length + products.length + systems.length + datasets.length;
-
-  html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suchergebnisse</div>
-    <div class="section-subtitle">${totalResults} ${totalResults === 1 ? 'Ergebnis' : 'Ergebnisse'} für „${escapeHtml(q)}"</div>
-  </div></div>`;
-
-  if (totalResults === 0) {
-    html += '<div class="list-panel">';
-    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Einträge gefunden für „' + escapeHtml(q) + '". Versuchen Sie einen anderen Begriff oder fragen Sie den KI-Assistenten.');
-    html += '</div>';
-    html += '</div>';
-    main.innerHTML = html;
-    lucide.createIcons({ nodes: [main] });
-    return;
-  }
-
-  html += '<div class="list-panel">';
-
-  function group(label, icon, items, mapper) {
-    if (!items.length) return '';
-    let h = `<div class="search-group-label">${label} <span style="color:var(--color-text-placeholder);font-weight:500;margin-left:4px;">${items.length}</span></div>`;
-    items.forEach(it => {
-      const m = mapper(it);
-      h += `<div class="search-result-item" data-href="${m.href}">
-        <div class="search-result-icon"><i data-lucide="${icon}" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(m.name)}</div>
-          <div class="search-result-type">${m.meta}</div>
-        </div>
-      </div>`;
-    });
-    return h;
-  }
-
-  html += group('Begriffe', 'book-open', terms, t => ({
-    href: '#/terms/' + t.id,
-    name: n(t, 'name'),
-    meta: escapeHtml(t.standard_ref || 'Fachbegriff')
-  }));
-  html += group('Geschäftsobjekte', 'box', concepts, c => ({
-    href: '#/vocabulary/' + c.id,
-    name: n(c, 'name'),
-    meta: 'Geschäftsobjekt ' + statusBadge(c.status)
-  }));
-  html += group('Codelisten', 'list-ordered', codeLists, cl => ({
-    href: '#/codelists/' + cl.id,
-    name: n(cl, 'name'),
-    meta: 'Codeliste'
-  }));
-  html += group('Datensammlungen', 'package', products, dp => ({
-    href: '#/products/' + dp.id,
-    name: n(dp, 'name'),
-    meta: 'Datensammlung' + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
-  }));
-  html += group('Systeme', 'database', systems, s => ({
-    href: '#/systems/' + s.id,
-    name: n(s, 'name'),
-    meta: 'System' + (s.technology_stack ? ' · ' + escapeHtml(s.technology_stack) : '')
-  }));
-  html += group('Tabellen', 'table-2', datasets, d => ({
-    href: '#/systems/' + d.sys_id + '/datasets/' + d.id,
-    name: d.display_name || d.name,
-    meta: escapeHtml(d.dataset_type || 'Tabelle') + ' · ' + escapeHtml(d.sys_name)
-  }));
-
-  html += '</div>'; // close list-panel
-  html += '</div>'; // close content-wrapper
-  main.innerHTML = html;
-  lucide.createIcons({ nodes: [main] });
-}
-
-// ── View: Chat (placeholder) ───────────────────────────────
-function renderChatView() {
-  const main = document.getElementById('main-content');
-  let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">KI-Assistent</span></nav>';
-  html += `<div class="section-header"><div>
-    <div class="section-title"><i data-lucide="sparkles" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>KI-Assistent</div>
-    <div class="section-subtitle">Stellen Sie Fragen zum BBL Datenkatalog. Diese Funktion ist ein Platzhalter.</div>
-  </div></div>`;
-  html += `<div class="chat-placeholder">
-    <div class="chat-placeholder-body">
-      <i data-lucide="message-square-text" style="width:56px;height:56px;"></i>
-      <h3 class="chat-placeholder-title">Chat-Funktion noch nicht verfügbar</h3>
-      <p class="chat-placeholder-description">In einer zukünftigen Version können Sie hier mit einem KI-Assistenten über die Inhalte des Datenkatalogs sprechen. Der Assistent wird Begriffe erklären, Zusammenhänge zwischen Geschäftsobjekten aufzeigen und Sie bei der Navigation durch den Katalog unterstützen.</p>
-    </div>
-    <div class="chat-placeholder-input">
-      <input type="text" disabled placeholder="Stellen Sie eine Frage zum Datenmodell…">
-      <button class="btn btn-primary" disabled>Senden</button>
-    </div>
-  </div>`;
-  html += '</div>';
-  main.innerHTML = html;
-}
-
-// ── Search Dropdown ────────────────────────────────────────
-let searchDropdownDebounce = null;
-
-function renderDropdownGroup(label, icon, items, mapper) {
-  let h = `<div class="search-dropdown-group">
-    <div class="search-dropdown-group-label">${label}</div>`;
-  items.forEach(item => {
-    const m = mapper(item);
-    h += `<div class="search-dropdown-item" data-href="${m.href}" role="option">
-      <div class="search-dropdown-item-icon"><i data-lucide="${icon}" style="width:16px;height:16px;"></i></div>
-      <div>
-        <div class="search-dropdown-item-name">${escapeHtml(m.name)}</div>
-        <div class="search-dropdown-item-meta">${escapeHtml(m.meta)}</div>
-      </div>
-    </div>`;
-  });
-  h += `</div>`;
-  return h;
-}
-
-function renderSearchDropdown(q) {
-  const dropdown = document.getElementById('search-dropdown');
-  if (!dropdown) return;
-
-  const trimmed = (q || '').trim();
-  const ctaSubtitle = trimmed
-    ? `„${escapeHtml(trimmed)}" an den Assistenten senden`
-    : 'Stellen Sie eine Frage zum Datenmodell';
-
-  let html = `<div class="search-dropdown-cta" data-href="#/chat" role="option">
-    <div class="search-dropdown-cta-icon"><i data-lucide="sparkles" style="width:16px;height:16px;"></i></div>
-    <div>
-      <div class="search-dropdown-cta-title">KI-Assistent fragen</div>
-      <div class="search-dropdown-cta-subtitle">${ctaSubtitle}</div>
-    </div>
-  </div>`;
-
-  if (trimmed) {
-    const { terms, concepts, codeLists, products, systems } = searchCatalog(trimmed, 5);
-    const total = terms.length + concepts.length + codeLists.length + products.length + systems.length;
-
-    if (total === 0) {
-      html += `<div class="search-dropdown-empty">Keine Ergebnisse für „${escapeHtml(trimmed)}"</div>`;
-    } else {
-      if (terms.length) html += renderDropdownGroup('Begriffe', 'book-open', terms, t => ({
-        href: '#/terms/' + t.id,
-        name: n(t, 'name'),
-        meta: t.standard_ref || 'Fachbegriff'
-      }));
-      if (concepts.length) html += renderDropdownGroup('Geschäftsobjekte', 'box', concepts, c => ({
-        href: '#/vocabulary/' + c.id,
-        name: n(c, 'name'),
-        meta: 'Geschäftsobjekt'
-      }));
-      if (codeLists.length) html += renderDropdownGroup('Codelisten', 'list-ordered', codeLists, cl => ({
-        href: '#/codelists/' + cl.id,
-        name: n(cl, 'name'),
-        meta: 'Codeliste'
-      }));
-      if (products.length) html += renderDropdownGroup('Datensammlungen', 'package', products, dp => ({
-        href: '#/products/' + dp.id,
-        name: n(dp, 'name'),
-        meta: dp.publisher || 'Datensammlung'
-      }));
-      if (systems.length) html += renderDropdownGroup('Systeme', 'database', systems, s => ({
-        href: '#/systems/' + s.id,
-        name: n(s, 'name'),
-        meta: s.technology_stack || 'System'
-      }));
-    }
-    html += `<div class="search-dropdown-footer"><kbd>Enter</kbd> für alle Ergebnisse</div>`;
-  }
-
-  dropdown.innerHTML = html;
-  dropdown.hidden = false;
-  lucide.createIcons({ nodes: [dropdown] });
-}
-
-function hideSearchDropdown() {
-  if (searchDropdownDebounce) {
-    clearTimeout(searchDropdownDebounce);
-    searchDropdownDebounce = null;
-  }
-  const dropdown = document.getElementById('search-dropdown');
-  if (dropdown && !dropdown.hidden) {
-    dropdown.hidden = true;
-    dropdown.innerHTML = '';
-  }
-}
 
 // ── Views: Details ─────────────────────────────────────────
 // ============================================================
@@ -2319,10 +1304,14 @@ function renderConceptDetail(conceptId, tab, main) {
 
   addRecent(n(concept, 'name') || concept.name_en, `#/vocabulary/${conceptId}`);
 
-  const tabs = ['overview', 'fields', 'mappings', 'relationships', 'history'];
-
-  const tabLabels = { overview: 'Übersicht', fields: 'Felder', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
-  if (!tabs.includes(tab)) tab = 'overview';
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'fields',        label: 'Felder' },
+    { id: 'mappings',      label: 'Mappings' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'history',       label: 'History' }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
 
   let html = '<div class="content-wrapper"><article>';
@@ -2341,7 +1330,7 @@ function renderConceptDetail(conceptId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="box" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(concept, 'name'))}</div>`;
+  html += `<h1 class="title-block-name">${escapeHtml(n(concept, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
@@ -2349,13 +1338,7 @@ function renderConceptDetail(conceptId, tab, main) {
   html += '</div>';
   html += '</div>';
 
-  // Tab bar with ARIA
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/vocabulary/${conceptId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, tab, '#/vocabulary/' + conceptId);
 
   // Tab content
   html += '<div class="tab-content">';
@@ -2511,14 +1494,15 @@ function renderConceptOverview(concept, collection, vocab, steward) {
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  if (collection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(collection, 'name'))}</td></tr>`;
-  html += `<tr><td>Freigabe</td><td>${statusBadge(concept.status)}</td></tr>`;
-  if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
-  html += `<tr><td>Erstellt</td><td>${formatDate(concept.created_at)}</td></tr>`;
-  html += `<tr><td>Geändert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
-  if (concept.approved_at) html += `<tr><td>Freigegeben</td><td>${formatDate(concept.approved_at)}</td></tr>`;
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',      value: collection ? escapeHtml(n(collection, 'name')) : null },
+    { label: 'Freigabe',    value: statusBadge(concept.status) },
+    { label: 'Vocabulary',  value: vocab ? escapeHtml(n(vocab, 'name')) + (vocab.version ? ' v' + escapeHtml(vocab.version) : '') : null },
+    { label: 'Erstellt',    value: formatDate(concept.created_at) },
+    { label: 'Geändert',    value: formatDate(concept.modified_at) },
+    { label: 'Freigegeben', value: concept.approved_at ? formatDate(concept.approved_at) : null }
+  ]);
+  html += '</div>';
 
   // Verantwortliche
   html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
@@ -2676,8 +1660,13 @@ function renderCodeListDetail(codeListId, tab, main) {
 
   addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
 
-  const tabs = ['overview', 'contents', 'mappings', 'relationships', 'history'];
-  const tabLabels = { overview: 'Übersicht', contents: 'Werte', mappings: 'Mappings', relationships: 'Relationen', history: 'History' };
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'contents',      label: 'Werte' },
+    { id: 'mappings',      label: 'Mappings' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'history',       label: 'History' }
+  ];
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -2693,20 +1682,14 @@ function renderCodeListDetail(codeListId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="list-ordered" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(cl, 'name'))}</div>`;
+  html += `<h1 class="title-block-name">${escapeHtml(n(cl, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div></div>';
 
-  // Tab bar with ARIA
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/codelists/${codeListId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, tab, '#/codelists/' + codeListId);
 
   html += '<div class="tab-content">';
   switch(tab) {
@@ -2736,18 +1719,19 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   const owner = cl.owner_id ? queryOne("SELECT name, email, organisation, role FROM contact WHERE id = ?", [cl.owner_id]) : null;
 
   // Metadata
+  const clLinkedConcept = cl.concept_id
+    ? queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id])
+    : null;
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  if (clDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(clDomain.dname)}</td></tr>`;
-  html += `<tr><td>Freigabe</td><td>${statusBadge(cl.status)}</td></tr>`;
-  if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
-  html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
-  if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
-  if (cl.concept_id) {
-    const concept = queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id]);
-    if (concept) html += `<tr><td>Geschäftsobjekt</td><td><a href="#/vocabulary/${cl.concept_id}">${escapeHtml(concept.cname)}</a></td></tr>`;
-  }
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',         value: clDomain ? escapeHtml(clDomain.dname) : null },
+    { label: 'Freigabe',       value: statusBadge(cl.status) },
+    { label: 'Version',        value: cl.version ? escapeHtml(cl.version) : null },
+    { label: 'Werte',          value: `${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})` },
+    { label: 'Quelle',         value: cl.source_ref ? escapeHtml(cl.source_ref) : null },
+    { label: 'Geschäftsobjekt', value: clLinkedConcept ? `<a href="#/vocabulary/${cl.concept_id}">${escapeHtml(clLinkedConcept.cname)}</a>` : null }
+  ]);
+  html += '</div>';
 
   // Verantwortliche — real owner from code_list.owner_id → contact
   html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
@@ -2828,8 +1812,13 @@ function renderSystemDetail(systemId, tab, main) {
 
   addRecent(n(sys, 'name') || sys.name_en, `#/systems/${systemId}`);
 
-  const tabs = ['overview', 'contents', 'relationships', 'stakeholders', 'history'];
-  const tabLabels = { overview: 'Übersicht', contents: 'Tabellen', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'contents',      label: 'Tabellen' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'stakeholders',  label: 'Verantwortliche' },
+    { id: 'history',       label: 'History' }
+  ];
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -2843,7 +1832,7 @@ function renderSystemDetail(systemId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="database" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(sys, 'name'))}</div>`;
+  html += `<h1 class="title-block-name">${escapeHtml(n(sys, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
@@ -2851,12 +1840,7 @@ function renderSystemDetail(systemId, tab, main) {
   html += '</div>';
   html += '</div>';
 
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/systems/${systemId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, tab, '#/systems/' + systemId);
 
   html += '<div class="tab-content">';
   switch(tab) {
@@ -2880,13 +1864,14 @@ function renderSystemOverview(sys, schemas, datasetCount) {
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  html += `<tr><td>Status</td><td>${sys.active ? statusBadge('active') : statusBadge('deprecated')}</td></tr>`;
-  if (sys.technology_stack) html += `<tr><td>Technologie</td><td>${escapeHtml(sys.technology_stack)}</td></tr>`;
-  html += `<tr><td>Tabellen</td><td>${datasetCount}</td></tr>`;
-  html += `<tr><td>Erstellt</td><td>${formatDate(sys.created_at)}</td></tr>`;
-  if (sys.last_scanned_at) html += `<tr><td>Letzter Scan</td><td>${formatDate(sys.last_scanned_at)}</td></tr>`;
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Status',       value: statusBadge(sys.active ? 'active' : 'deprecated') },
+    { label: 'Technologie',  value: sys.technology_stack ? escapeHtml(sys.technology_stack) : null },
+    { label: 'Tabellen',     value: datasetCount },
+    { label: 'Erstellt',     value: formatDate(sys.created_at) },
+    { label: 'Letzter Scan', value: sys.last_scanned_at ? formatDate(sys.last_scanned_at) : null }
+  ]);
+  html += '</div>';
 
   // Verantwortliche (owner)
   html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
@@ -2992,9 +1977,15 @@ function renderDatasetDetail(datasetId, systemId) {
   const restricted = classification && classification.sensitivity_level >= 2;
 
   const tab = currentTab || 'overview';
-  const tabs = ['overview', 'contents', 'lineage', 'quality', 'relationships', 'stakeholders', 'history'];
-
-  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', lineage: 'Lineage', quality: 'Datenqualität', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'contents',      label: 'Inhalt' },
+    { id: 'lineage',       label: 'Lineage' },
+    { id: 'quality',       label: 'Datenqualität' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'stakeholders',  label: 'Verantwortliche' },
+    { id: 'history',       label: 'History' }
+  ];
   if (!tabs.includes(currentTab)) currentTab = 'overview';
 
   const main = document.getElementById('main-content');
@@ -3013,7 +2004,7 @@ function renderDatasetDetail(datasetId, systemId) {
   html += '<div class="title-block">';
   html += `<div class="title-block-icon"><i data-lucide="${restricted ? 'lock' : 'table-2'}" style="width:24px;height:24px;"></i></div>`;
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name${restricted ? ' locked-name' : ''}">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</div>`;
+  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
@@ -3029,13 +2020,7 @@ function renderDatasetDetail(datasetId, systemId) {
     return;
   }
 
-  // Tab bar with ARIA
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === currentTab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/systems/${ds.system_id}/datasets/${datasetId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, currentTab, `#/systems/${ds.system_id}/datasets/${datasetId}`);
 
   html += '<div class="tab-content">';
   switch(currentTab) {
@@ -3061,18 +2046,17 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  html += `<tr><td>Freigabe</td><td>${certifiedBadge(ds.certified)}</td></tr>`;
-  html += `<tr><td>System</td><td>${escapeHtml(ds.system_name)}</td></tr>`;
-  html += `<tr><td>Typ</td><td>${escapeHtml(ds.dataset_type)}</td></tr>`;
-  if (ds.row_count_approx) html += `<tr><td>Datensätze (ca.)</td><td>${formatNumber(ds.row_count_approx)}</td></tr>`;
-  html += `<tr><td>Felder</td><td>${fieldCount}</td></tr>`;
-  if (classification) {
-    html += `<tr><td>Klassifizierung</td><td>${classificationBadge(classification)}</td></tr>`;
-  }
-  html += `<tr><td>Erstellt</td><td>${formatDate(ds.created_at)}</td></tr>`;
-  html += `<tr><td>Geändert</td><td>${formatDate(ds.modified_at)}</td></tr>`;
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Freigabe',          value: certifiedBadge(ds.certified) },
+    { label: 'System',            value: escapeHtml(ds.system_name) },
+    { label: 'Typ',               value: escapeHtml(ds.dataset_type) },
+    { label: 'Datensätze (ca.)',  value: ds.row_count_approx ? formatNumber(ds.row_count_approx) : null },
+    { label: 'Felder',            value: fieldCount },
+    { label: 'Klassifizierung',   value: classification ? classificationBadge(classification) : null },
+    { label: 'Erstellt',          value: formatDate(ds.created_at) },
+    { label: 'Geändert',          value: formatDate(ds.modified_at) }
+  ]);
+  html += '</div>';
 
   // Linked concepts
   if (mappingCount > 0) {
@@ -3278,9 +2262,14 @@ function renderProductDetail(productId, tab, main) {
 
   addRecent(n(dp, 'name') || dp.name_en, `#/products/${productId}`);
 
-  const tabs = ['overview', 'contents', 'lineage', 'relationships', 'stakeholders', 'history'];
-
-  const tabLabels = { overview: 'Übersicht', contents: 'Inhalt', lineage: 'Lineage', relationships: 'Relationen', stakeholders: 'Verantwortliche', history: 'History' };
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'contents',      label: 'Inhalt' },
+    { id: 'lineage',       label: 'Lineage' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'stakeholders',  label: 'Verantwortliche' },
+    { id: 'history',       label: 'History' }
+  ];
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -3294,7 +2283,7 @@ function renderProductDetail(productId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="package" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(dp, 'name'))}</div>`;
+  html += `<h1 class="title-block-name">${escapeHtml(n(dp, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
@@ -3302,12 +2291,7 @@ function renderProductDetail(productId, tab, main) {
   html += '</div>';
   html += '</div>';
 
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/products/${productId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, tab, '#/products/' + productId);
 
   html += '<div class="tab-content">';
   switch(tab) {
@@ -3332,14 +2316,15 @@ function renderProductOverview(dp) {
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  html += `<tr><td>Freigabe</td><td>${certifiedBadge(dp.certified)}</td></tr>`;
-  if (dp.publisher) html += `<tr><td>Herausgeber</td><td>${escapeHtml(dp.publisher)}</td></tr>`;
-  if (dp.update_frequency) html += `<tr><td>Aktualisierung</td><td>${escapeHtml(dp.update_frequency)}</td></tr>`;
-  if (dp.license) html += `<tr><td>Lizenz</td><td>${escapeHtml(dp.license)}</td></tr>`;
-  if (dp.issued) html += `<tr><td>Erstellt</td><td>${formatDate(dp.issued)}</td></tr>`;
-  if (dp.modified) html += `<tr><td>Geändert</td><td>${formatDate(dp.modified)}</td></tr>`;
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Freigabe',      value: certifiedBadge(dp.certified) },
+    { label: 'Herausgeber',   value: dp.publisher ? escapeHtml(dp.publisher) : null },
+    { label: 'Aktualisierung', value: dp.update_frequency ? escapeHtml(dp.update_frequency) : null },
+    { label: 'Lizenz',        value: dp.license ? escapeHtml(dp.license) : null },
+    { label: 'Erstellt',      value: dp.issued ? formatDate(dp.issued) : null },
+    { label: 'Geändert',      value: dp.modified ? formatDate(dp.modified) : null }
+  ]);
+  html += '</div>';
 
   // Distributions summary
   const dists = query("SELECT * FROM distribution WHERE data_product_id = ? ORDER BY name_en", [dp.id]);
@@ -3453,8 +2438,11 @@ function renderTermDetail(termId, tab, main) {
   if (!term) { main.innerHTML = '<p>Begriff nicht gefunden</p>'; return; }
   addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
 
-  const tabs = ['overview', 'relationships', 'history'];
-  const tabLabels = { overview: 'Übersicht', relationships: 'Relationen', history: 'History' };
+  const tabs = [
+    { id: 'overview',      label: 'Übersicht' },
+    { id: 'relationships', label: 'Relationen' },
+    { id: 'history',       label: 'History' }
+  ];
   if (!tabs.includes(tab)) tab = 'overview';
   currentTab = tab;
 
@@ -3468,20 +2456,14 @@ function renderTermDetail(termId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<div class="title-block-name">${escapeHtml(n(term, 'name'))}</div>`;
+  html += `<h1 class="title-block-name">${escapeHtml(n(term, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
   html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
   html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
   html += '</div></div>';
 
-  // Tab bar
-  html += '<div class="tab-bar" role="tablist">';
-  tabs.forEach(t => {
-    const isActive = t === tab;
-    html += `<button class="tab${isActive ? ' active' : ''}" data-tab="${t}" data-base="#/terms/${termId}" role="tab" aria-selected="${isActive}">${tabLabels[t]}</button>`;
-  });
-  html += '</div>';
+  html += renderTabBar(tabs, tab, '#/terms/' + termId);
 
   html += '<div class="tab-content">';
   switch(tab) {
@@ -3507,15 +2489,16 @@ function renderTermOverview(term) {
 
   const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
-  html += '<table class="props-table">';
-  if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
-  html += `<tr><td>Freigabe</td><td>${statusBadge(term.status)}</td></tr>`;
-  html += `<tr><td>Erstellt</td><td>${formatDate(term.created_at)}</td></tr>`;
-  html += `<tr><td>Geändert</td><td>${formatDate(term.modified_at)}</td></tr>`;
-  html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
-  if (term.standard_ref) html += `<tr><td>Standard</td><td>${escapeHtml(term.standard_ref)}</td></tr>`;
-  if (term.source_document) html += `<tr><td>Quelldokument</td><td>${escapeHtml(term.source_document)}</td></tr>`;
-  html += '</table></div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',       value: termDomain ? escapeHtml(termDomain.dname) : null },
+    { label: 'Freigabe',     value: statusBadge(term.status) },
+    { label: 'Erstellt',     value: formatDate(term.created_at) },
+    { label: 'Geändert',     value: formatDate(term.modified_at) },
+    { label: 'Quellentyp',   value: escapeHtml(sourceLabels[term.source_type] || term.source_type) },
+    { label: 'Standard',     value: term.standard_ref ? escapeHtml(term.standard_ref) : null },
+    { label: 'Quelldokument', value: term.source_document ? escapeHtml(term.source_document) : null }
+  ]);
+  html += '</div>';
 
   // Linked concepts
   const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [term.id]);
@@ -3550,6 +2533,20 @@ function renderTermRelationships(termId, term) {
 
 // ── Event Delegation & Init ────────────────────────────────
 // ============================================================
+// Lang-dropdown open/close helpers (keeps aria-expanded in sync)
+// ============================================================
+function isLangDropdownOpen() {
+  return document.getElementById('lang-dropdown')?.classList.contains('open') || false;
+}
+function setLangDropdownOpen(open) {
+  const dd = document.getElementById('lang-dropdown');
+  const btn = document.getElementById('lang-btn');
+  if (!dd || !btn) return;
+  dd.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+}
+
+// ============================================================
 // Event Delegation
 // ============================================================
 document.addEventListener('change', function(e) {
@@ -3575,7 +2572,7 @@ document.addEventListener('click', function(e) {
   // Language dropdown
   if (target.closest('#lang-btn')) {
     e.preventDefault();
-    document.getElementById('lang-dropdown').classList.toggle('open');
+    setLangDropdownOpen(!isLangDropdownOpen());
     return;
   }
   if (target.closest('.lang-option')) {
@@ -3583,16 +2580,20 @@ document.addEventListener('click', function(e) {
     if (newLang) {
       lang = newLang;
       document.getElementById('lang-label').textContent = LANG_LABELS[lang];
-      document.getElementById('lang-dropdown').classList.remove('open');
-      // Update active state
-      document.querySelectorAll('.lang-option').forEach(el => el.classList.toggle('active', el.dataset.lang === lang));
+      setLangDropdownOpen(false);
+      document.querySelectorAll('.lang-option').forEach(el => {
+        const match = el.dataset.lang === lang;
+        el.classList.toggle('active', match);
+        el.setAttribute('aria-checked', String(match));
+      });
+      document.getElementById('lang-btn')?.focus();
       handleRoute();
     }
     return;
   }
   // Close dropdown on outside click
   if (!target.closest('.lang-switcher')) {
-    document.getElementById('lang-dropdown')?.classList.remove('open');
+    setLangDropdownOpen(false);
   }
   if (!target.closest('.grouping-dropdown')) {
     document.getElementById('grouping-menu')?.classList.remove('open');
@@ -3792,9 +2793,10 @@ document.addEventListener('click', function(e) {
 });
 
 // ============================================================
-// Search: Ctrl+K and Enter
+// Keyboard shortcuts + dropdown navigation
 // ============================================================
 document.addEventListener('keydown', function(e) {
+  // Search focus: Ctrl+K and /
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
     e.preventDefault();
     document.getElementById('search-input')?.focus();
@@ -3804,6 +2806,39 @@ document.addEventListener('keydown', function(e) {
     e.preventDefault();
     document.getElementById('search-input')?.focus();
     return;
+  }
+
+  // Lang dropdown: open with ArrowDown from button, navigate with arrows inside menu, Escape closes
+  const active = document.activeElement;
+  if (active?.id === 'lang-btn' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault();
+    setLangDropdownOpen(true);
+    const items = document.querySelectorAll('#lang-dropdown .lang-option');
+    const target = e.key === 'ArrowDown' ? items[0] : items[items.length - 1];
+    target?.focus();
+    return;
+  }
+  if (active?.classList.contains('lang-option')) {
+    const items = Array.from(document.querySelectorAll('#lang-dropdown .lang-option'));
+    const idx = items.indexOf(active);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items[(idx + 1) % items.length].focus();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(idx - 1 + items.length) % items.length].focus();
+      return;
+    }
+    if (e.key === 'Home') { e.preventDefault(); items[0].focus(); return; }
+    if (e.key === 'End')  { e.preventDefault(); items[items.length - 1].focus(); return; }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setLangDropdownOpen(false);
+      document.getElementById('lang-btn')?.focus();
+      return;
+    }
   }
 });
 
@@ -3826,7 +2861,35 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   searchInput.addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('search-dropdown');
+    const items = dropdown && !dropdown.hidden
+      ? Array.from(dropdown.querySelectorAll('[role="option"]'))
+      : [];
+
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      const cur = items.findIndex(el => el.getAttribute('aria-selected') === 'true');
+      const next = (cur + 1) % items.length;
+      setSearchDropdownActive(items, next);
+      return;
+    }
+    if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      const cur = items.findIndex(el => el.getAttribute('aria-selected') === 'true');
+      const next = (cur <= 0 ? items.length : cur) - 1;
+      setSearchDropdownActive(items, next);
+      return;
+    }
     if (e.key === 'Enter') {
+      // If an item is actively selected in the dropdown, follow it.
+      const selected = items.find(el => el.getAttribute('aria-selected') === 'true');
+      if (selected && selected.dataset.href) {
+        e.preventDefault();
+        hideSearchDropdown();
+        this.blur();
+        navigate(selected.dataset.href);
+        return;
+      }
       const q = this.value.trim();
       if (q) {
         hideSearchDropdown();
@@ -3918,7 +2981,11 @@ async function initApp() {
     document.getElementById('app').style.display = '';
 
     // Set default lang option active
-    document.querySelectorAll('.lang-option').forEach(el => el.classList.toggle('active', el.dataset.lang === lang));
+    document.querySelectorAll('.lang-option').forEach(el => {
+      const match = el.dataset.lang === lang;
+      el.classList.toggle('active', match);
+      el.setAttribute('aria-checked', String(match));
+    });
 
     // Initial render
     lucide.createIcons();
@@ -3938,5 +3005,3 @@ async function initApp() {
 }
 
 initApp();
-
-})();
