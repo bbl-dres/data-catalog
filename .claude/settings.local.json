@@ -25,7 +25,22 @@
       "Bash(xargs grep:*)",
       "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/swiss-logo'*)",
       "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/'*swiss*)",
-      "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/'*logo*)"
+      "Bash(ls 'C:/Users/DavidRasner/Documents/GitHub/data-catalog/assets/'*logo*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/prototype-lineage/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/prototype-lineage/js/editor.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8000/prototype-lineage/css/styles.css)",
+      "Bash(curl -s http://localhost:8000/)",
+      "Bash(curl -s -o /dev/null -w \"index=%{http_code}\\\\n\" http://localhost:8000/prototype-lineage/)",
+      "Bash(curl -s -o /dev/null -w \"editor=%{http_code}\\\\n\" http://localhost:8000/prototype-lineage/js/editor.js)",
+      "Bash(curl -s -o /dev/null -w \"css=%{http_code}\\\\n\" http://localhost:8000/prototype-lineage/css/styles.css)",
+      "Bash(curl -s -o /dev/null -w \"json=%{http_code}\\\\n\" http://localhost:8000/prototype-lineage/data/lineage.json)",
+      "Bash(curl -s -o /dev/null -w \"index=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/)",
+      "Bash(curl -s -o /dev/null -w \"editor=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/js/editor.js)",
+      "Bash(curl -s -o /dev/null -w \"css=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/css/styles.css)",
+      "Bash(curl -s -o /dev/null -w \"json=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/lineage.json)",
+      "Bash(curl -s http://localhost:8123/prototype-lineage/)",
+      "Bash(curl -s -o /dev/null -w \"buildings=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/buildings.json)",
+      "Bash(curl -s -o /dev/null -w \"streaming=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/streaming.json)"
     ]
   }
 }

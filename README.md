@@ -1,125 +1,91 @@
-# Data Catalog / Datenkatalog IMMO
+# Data Catalog Prototypes
 
 ![Social Preview](assets/Social1.jpg)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://bbl-dres.github.io/data-catalog/)
 [![Standard: DCAT-AP CH](https://img.shields.io/badge/standard-DCAT--AP%20CH%20v3.0-blue)](https://www.dcat-ap.ch/)
-[![No Dependencies](https://img.shields.io/badge/dependencies-zero-orange)]()
 
-**This is a prototype for demonstration purposes.**
+## What is this?
 
-A prototype for a data catalog for the Swiss Federal Office for Buildings and Logistics (BBL). Documents business objects and datasets according to the DCAT-AP CH v3.0 standard.
+A set of **five experimental web prototypes** exploring different ways to browse, search, and document the data assets of a large organisation — here, the Swiss Federal Office for Buildings and Logistics (BBL).
 
-**Live Demo:** https://bbl-dres.github.io/data-catalog/
+Each prototype tackles the same underlying question — *"how should people inside BBL find out what data exists, what it means, and where it lives?"* — but from a different angle: a polished catalog, a metadata atlas, a SQL-backed explorer, a lineage graph, and a diagramming tool.
 
+All five are unofficial mockups. They are **not** production systems — they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
+
+## Try them in the browser
+
+You don't need to install anything. Every prototype is deployed on GitHub Pages:
+
+| Prototype | What it does | Demo |
+|---|---|---|
+| **Datenkatalog IMMO** | Main catalog — browse business objects and datasets with search, filters, grid/list views, and detail pages. DCAT-AP CH compliant. | [Open ›](https://bbl-dres.github.io/data-catalog/) |
+| **Meta-Atlas** | Hierarchical metadata atlas following the TOGAF three-layer model (Conceptual → Logical → Physical), with wiki-style docs and cross-layer traceability. Multilingual (DE/EN/FR/IT), dark/light theme. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-dmbok/) |
+| **BBL Datenkatalog (DB)** | SQLite-backed catalog running entirely in the browser via sql.js. Sidebar navigation, full-text search, and interactive lineage graphs. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-db/) |
+| **Data Lineage Viewer** | Interactive graph for exploring data lineage across systems. Edge routing, zoom/pan, node interactions — vanilla JS, no framework. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-lineage/) |
+| **Simple Chart** | Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-markdown/) |
+
+### Previews
+
+**Datenkatalog IMMO**
 ![Preview](assets/readme/Preview.JPG)
 
-## Features
-
-- Browse business object concepts and datasets with full metadata
-- Full-text search across titles, descriptions, and tags
-- Filter by tags, system, classification, and personal data status
-- Grid and list view modes
-- Print and share functionality
-- Mobile-responsive design
-
-## Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| HTML5 | Structure and semantic markup |
-| CSS3 | Styling with CSS variables |
-| Vanilla JavaScript | Hash-based routing, dynamic UI |
-| JSON | Data storage |
-
-**Zero dependencies** - No build step, runs directly in any browser.
-
-## Getting Started
-
-```bash
-# Clone the repository
-git clone https://github.com/davras5/meta-bv.git
-cd meta-bv
-
-# Start a local server
-python3 -m http.server 8000
-
-# Open http://localhost:8000
-```
-
-## Project Structure
-
-```
-meta-bv/
-├── index.html              # HTML structure
-├── css/
-│   └── style.css           # Styles
-├── js/
-│   └── app.js              # JavaScript application
-├── content/
-│   ├── about.html          # About page
-│   └── manual.html         # User manual
-├── data/
-│   ├── concepts.json       # Business object definitions
-│   └── datasets.json       # Dataset definitions
-└── assets/
-    ├── concepts/           # Concept images
-    └── datasets/           # Dataset images
-```
-
-## Prototypes
-
-### Meta-Atlas (prototype-dmbok)
-
-A metadata catalog following the TOGAF three-layer architecture model (Conceptual → Logical → Physical). Hierarchical tree navigation, wiki-style documentation, cross-layer traceability, multilingual support (DE/EN/FR/IT), and dark/light theme.
-
-**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-dmbok/
-
+**Meta-Atlas**
 <p>
   <img src="prototype-dmbok/assets/preview1.jpg" width="45%" />
   <img src="prototype-dmbok/assets/preview2.jpg" width="45%" />
 </p>
 
----
-
-### BBL Datenkatalog (prototype-db)
-
-SQLite-backed data catalog with sidebar navigation, full-text search, detail views, and interactive lineage graphs. Uses sql.js to run queries entirely in the browser.
-
-**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-db/
-
+**BBL Datenkatalog (DB)**
 <p>
   <img src="prototype-db/assets/Preview1.jpg" width="45%" />
   <img src="prototype-db/assets/Preview2.jpg" width="45%" />
 </p>
 
----
-
-### Data Lineage Viewer (prototype-lineage)
-
-Interactive graph visualization for exploring data lineage across systems. Supports edge routing, zoom/pan, and node interactions — all in vanilla JS with no framework dependencies.
-
-**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
-
+**Data Lineage Viewer**
 ![Preview](prototype-lineage/assets/Preview1.jpg)
 
----
-
-### Simple Chart (prototype-markdown)
-
-A single-page app for creating ER diagrams and flowcharts with free-text names (spaces, umlauts, special characters). Built on Mermaid.js (loaded via CDN).
-
-**Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-markdown/
-
+**Simple Chart**
 <p>
   <img src="prototype-markdown/assets/Preview1.jpg" width="45%" />
 </p>
 
+## Run locally
+
+All prototypes are plain HTML/CSS/JS with **zero build step and zero npm dependencies**. Any static file server will do:
+
+```bash
+git clone https://github.com/bbl-dres/data-catalog.git
+cd data-catalog
+
+# then either:
+python3 -m http.server 8000
+# or:
+npx http-server
+```
+
+Open <http://localhost:8000> for the main catalog, or append `/prototype-dmbok/`, `/prototype-db/`, `/prototype-lineage/`, `/prototype-markdown/` for the others.
+
+## Repository layout
+
+```
+data-catalog/
+├── index.html              # Main catalog (Datenkatalog IMMO)
+├── css/  js/  data/        # Its styles, logic, and JSON data
+├── content/                # About + user manual (DE/FR/IT/EN)
+├── assets/                 # Images for the main catalog
+├── prototype-dmbok/        # Meta-Atlas
+├── prototype-db/           # BBL Datenkatalog (SQLite in browser)
+├── prototype-lineage/      # Data Lineage Viewer
+├── prototype-markdown/     # Simple Chart (Mermaid.js)
+└── docs-concepts/          # Shared concept docs
+```
+
 ## License
 
-Licensed under [MIT](https://opensource.org/licenses/MIT)
+Licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
 
-*Unofficial mockup for demonstration purposes.*
+*Unofficial mockup — not affiliated with or endorsed by BBL.*

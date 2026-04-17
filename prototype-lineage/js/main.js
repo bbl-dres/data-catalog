@@ -85,32 +85,62 @@ window.LineageApp = window.LineageApp || {};
         ]
     };
 
-    async function init() {
-        var data;
-
-        try {
-            var response = await fetch('data/lineage.json');
-            data = await response.json();
-        } catch (err) {
-            console.warn('Could not fetch lineage.json, using fallback data:', err.message);
-            data = FALLBACK_DATA;
-        }
-
-        // Initialize graph model and compute layout
+    function renderData(data) {
         Graph.init(data);
-
-        // Initialize renderer and draw everything
-        Renderer.init();
         Renderer.renderAllNodes();
         Renderer.renderAllEdges();
-
-        // Initialize interactions (pan, zoom, drag, etc.)
-        Interactions.init();
-
-        // Fit the graph to screen after a frame so DOM measurements are accurate
         requestAnimationFrame(function () {
             Interactions.fitToScreen();
         });
+    }
+
+    async function loadExample(url) {
+        var response = await fetch(url);
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        var rawText = await response.text();
+        return { data: JSON.parse(rawText), rawText: rawText };
+    }
+
+    async function init() {
+        var Editor = window.LineageApp.Editor;
+        var selector = document.getElementById('example-selector');
+        var defaultUrl = selector ? selector.value : 'data/lineage.json';
+
+        var loaded;
+        try {
+            loaded = await loadExample(defaultUrl);
+        } catch (err) {
+            console.warn('Could not fetch ' + defaultUrl + ', using fallback data:', err.message);
+            loaded = {
+                data: FALLBACK_DATA,
+                rawText: JSON.stringify(FALLBACK_DATA, null, 2)
+            };
+        }
+
+        Renderer.init();
+        renderData(loaded.data);
+        Interactions.init();
+
+        // Wire the live editor — re-render on every valid JSON edit
+        if (Editor) {
+            Editor.init(loaded.rawText, function (newData) {
+                renderData(newData);
+            });
+        }
+
+        // Wire the example dropdown — swap the JSON file on change
+        if (selector) {
+            selector.addEventListener('change', async function (e) {
+                var url = e.target.value;
+                try {
+                    var next = await loadExample(url);
+                    if (Editor) Editor.setContent(next.rawText);
+                    renderData(next.data);
+                } catch (err) {
+                    console.error('Failed to load example ' + url + ':', err);
+                }
+            });
+        }
     }
 
     // Start

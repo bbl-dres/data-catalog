@@ -51,6 +51,11 @@ html, body {
     -webkit-font-smoothing: antialiased;
 }
 
+body {
+    display: flex;
+    flex-direction: column;
+}
+
 /* ===== Toolbar ===== */
 .toolbar {
     display: flex;
@@ -80,10 +85,63 @@ html, body {
     color: var(--color-text);
 }
 
+.toolbar__hint {
+    margin-left: 8px;
+    padding-left: 10px;
+    border-left: 1px solid var(--color-border);
+    font-size: 11px;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
 .toolbar__actions {
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+.toolbar__right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar__label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.toolbar__select {
+    height: 32px;
+    padding: 0 28px 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-btn);
+    background: #fff;
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.toolbar__select:hover {
+    border-color: #ccc;
+    background-color: var(--color-hover);
+}
+
+.toolbar__select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
 .toolbar__btn {
@@ -129,10 +187,129 @@ html, body {
     margin: 0 6px;
 }
 
+/* ===== Split Layout ===== */
+.split {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ===== Editor Pane (left) ===== */
+.editor-pane {
+    width: 38%;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-right: 1px solid var(--color-border);
+}
+
+.editor-pane__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.editor-pane__title {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.editor-pane__status {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 10px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.editor-pane__status--ok {
+    background: var(--color-tag-pk);
+    color: var(--color-tag-pk-text);
+}
+
+.editor-pane__status--typing {
+    background: var(--color-hover);
+    color: var(--color-text-secondary);
+}
+
+.editor-pane__status--error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.editor-pane__textarea {
+    flex: 1;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--color-text);
+    background: #fff;
+    tab-size: 2;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* ===== Viewer Pane (right) ===== */
+.viewer-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.viewer-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    background: #fafbfc;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.viewer-toolbar__push {
+    margin-left: auto;
+}
+
+.toolbar__btn--active {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.toolbar__btn--active:hover {
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.split--editor-hidden .editor-pane {
+    display: none;
+}
+
 /* ===== Graph Container ===== */
 .graph-container {
+    flex: 1;
     width: 100%;
-    height: calc(100vh - var(--toolbar-height));
+    min-height: 0;
     overflow: hidden;
     position: relative;
     cursor: grab;
@@ -512,3 +689,40 @@ html, body {
 
 /* ===== Minimap placeholder ===== */
 /* (stretch goal) */
+
+/* ===== Footer ===== */
+.footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: #fff;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.footer__version {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.footer__sep {
+    opacity: 0.5;
+}
+
+.footer a {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.footer__hint {
+    font-style: italic;
+}

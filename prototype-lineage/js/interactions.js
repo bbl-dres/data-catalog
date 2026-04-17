@@ -80,7 +80,29 @@ window.LineageApp.Interactions = (function () {
         document.getElementById('btn-expand-all').addEventListener('click', onExpandAll);
         document.getElementById('btn-collapse-all').addEventListener('click', onCollapseAll);
 
+        var toggleBtn = document.getElementById('btn-toggle-editor');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', toggleEditorPane);
+        }
+
         applyTransform();
+    }
+
+    function toggleEditorPane() {
+        var split = document.querySelector('.split');
+        var btn = document.getElementById('btn-toggle-editor');
+        if (!split || !btn) return;
+
+        split.classList.toggle('split--editor-hidden');
+        var isHidden = split.classList.contains('split--editor-hidden');
+        btn.classList.toggle('toolbar__btn--active', isHidden);
+        btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+        btn.setAttribute('title', isHidden ? 'Show code panel' : 'Hide code panel');
+
+        // Graph container just resized — refit after layout settles
+        requestAnimationFrame(function () {
+            fitToScreen();
+        });
     }
 
     // ---- Pan ----

@@ -1,0 +1,158 @@
+{
+  "nodes": [
+    {
+      "id": "raw_playback_events",
+      "type": "table",
+      "label": "raw_playback_events",
+      "database": "streaming_lake",
+      "schema": "raw",
+      "columns": [
+        { "name": "event_id", "dataType": "UUID", "tags": ["PK"] },
+        { "name": "user_id", "dataType": "INT", "tags": ["FK"] },
+        { "name": "track_id", "dataType": "INT", "tags": ["FK"] },
+        { "name": "device_type", "dataType": "VARCHAR" },
+        { "name": "event_type", "dataType": "VARCHAR" },
+        { "name": "event_ts", "dataType": "TIMESTAMP" },
+        { "name": "duration_ms", "dataType": "INT" }
+      ]
+    },
+    {
+      "id": "raw_tracks",
+      "type": "table",
+      "label": "raw_tracks",
+      "database": "streaming_lake",
+      "schema": "raw",
+      "columns": [
+        { "name": "track_id", "dataType": "INT", "tags": ["PK"] },
+        { "name": "title", "dataType": "VARCHAR" },
+        { "name": "artist_id", "dataType": "INT", "tags": ["FK"] },
+        { "name": "album_id", "dataType": "INT", "tags": ["FK"] },
+        { "name": "genre", "dataType": "VARCHAR" },
+        { "name": "duration_ms", "dataType": "INT" },
+        { "name": "isrc", "dataType": "VARCHAR" },
+        { "name": "release_date", "dataType": "DATE" }
+      ]
+    },
+    {
+      "id": "raw_users",
+      "type": "table",
+      "label": "raw_users",
+      "database": "streaming_lake",
+      "schema": "raw",
+      "columns": [
+        { "name": "user_id", "dataType": "INT", "tags": ["PK"] },
+        { "name": "country_code", "dataType": "VARCHAR" },
+        { "name": "subscription_tier", "dataType": "VARCHAR" },
+        { "name": "signup_date", "dataType": "DATE" },
+        { "name": "age_bucket", "dataType": "VARCHAR" },
+        { "name": "preferred_genre", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "etl_session_enrichment",
+      "type": "pipeline",
+      "label": "session_enrichment_etl",
+      "description": "Stitches playback events into listening sessions, joins user and track metadata, derives skip and completion rates",
+      "platform": "Spark Streaming"
+    },
+    {
+      "id": "fact_listening_sessions",
+      "type": "table",
+      "label": "fact_listening_sessions",
+      "database": "analytics_dw",
+      "schema": "marts",
+      "columns": [
+        { "name": "session_key", "dataType": "BIGINT", "tags": ["PK"] },
+        { "name": "user_key", "dataType": "BIGINT", "tags": ["FK"] },
+        { "name": "track_id", "dataType": "INT" },
+        { "name": "genre", "dataType": "VARCHAR" },
+        { "name": "session_start", "dataType": "TIMESTAMP" },
+        { "name": "session_duration_ms", "dataType": "BIGINT" },
+        { "name": "completed_plays", "dataType": "INT" },
+        { "name": "skip_count", "dataType": "INT" },
+        { "name": "country_code", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "dim_user",
+      "type": "table",
+      "label": "dim_user",
+      "database": "analytics_dw",
+      "schema": "marts",
+      "columns": [
+        { "name": "user_key", "dataType": "BIGINT", "tags": ["PK"] },
+        { "name": "user_id", "dataType": "INT" },
+        { "name": "country_code", "dataType": "VARCHAR" },
+        { "name": "subscription_tier", "dataType": "VARCHAR" },
+        { "name": "signup_date", "dataType": "DATE" },
+        { "name": "preferred_genre", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "dashboard_engagement",
+      "type": "dashboard",
+      "label": "Listener Engagement Dashboard",
+      "platform": "Looker",
+      "charts": ["DAU / MAU", "Retention Cohorts", "Top 100 Tracks", "Genre Mix by Country", "Skip Rate by Tier"]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "raw_playback_events",
+      "target": "etl_session_enrichment",
+      "columnMapping": []
+    },
+    {
+      "id": "e2",
+      "source": "raw_tracks",
+      "target": "etl_session_enrichment",
+      "columnMapping": []
+    },
+    {
+      "id": "e3",
+      "source": "raw_users",
+      "target": "etl_session_enrichment",
+      "columnMapping": []
+    },
+    {
+      "id": "e4",
+      "source": "etl_session_enrichment",
+      "target": "fact_listening_sessions",
+      "columnMapping": [
+        { "sourceNode": "raw_playback_events", "sourceColumn": "user_id", "targetColumn": "user_key" },
+        { "sourceNode": "raw_playback_events", "sourceColumn": "track_id", "targetColumn": "track_id" },
+        { "sourceNode": "raw_playback_events", "sourceColumn": "event_ts", "targetColumn": "session_start" },
+        { "sourceNode": "raw_playback_events", "sourceColumn": "duration_ms", "targetColumn": "session_duration_ms" },
+        { "sourceNode": "raw_playback_events", "sourceColumn": "event_type", "targetColumn": "completed_plays" },
+        { "sourceNode": "raw_playback_events", "sourceColumn": "event_type", "targetColumn": "skip_count" },
+        { "sourceNode": "raw_tracks", "sourceColumn": "genre", "targetColumn": "genre" },
+        { "sourceNode": "raw_users", "sourceColumn": "country_code", "targetColumn": "country_code" }
+      ]
+    },
+    {
+      "id": "e5",
+      "source": "etl_session_enrichment",
+      "target": "dim_user",
+      "columnMapping": [
+        { "sourceNode": "raw_users", "sourceColumn": "user_id", "targetColumn": "user_id" },
+        { "sourceNode": "raw_users", "sourceColumn": "country_code", "targetColumn": "country_code" },
+        { "sourceNode": "raw_users", "sourceColumn": "subscription_tier", "targetColumn": "subscription_tier" },
+        { "sourceNode": "raw_users", "sourceColumn": "signup_date", "targetColumn": "signup_date" },
+        { "sourceNode": "raw_users", "sourceColumn": "preferred_genre", "targetColumn": "preferred_genre" }
+      ]
+    },
+    {
+      "id": "e6",
+      "source": "fact_listening_sessions",
+      "target": "dashboard_engagement",
+      "columnMapping": []
+    },
+    {
+      "id": "e7",
+      "source": "dim_user",
+      "target": "dashboard_engagement",
+      "columnMapping": []
+    }
+  ]
+}

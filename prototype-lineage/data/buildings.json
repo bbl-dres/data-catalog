@@ -1,0 +1,391 @@
+{
+  "nodes": [
+    {
+      "id": "cadaster_real_estate",
+      "type": "table",
+      "label": "real_estate",
+      "database": "cadaster",
+      "schema": "grundbuch",
+      "columns": [
+        { "name": "real_estate_nr", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "kanton", "dataType": "VARCHAR" },
+        { "name": "gemeinde", "dataType": "VARCHAR" },
+        { "name": "flaeche_m2", "dataType": "DECIMAL" },
+        { "name": "nutzungszone", "dataType": "VARCHAR" },
+        { "name": "eigentuemer", "dataType": "VARCHAR" },
+        { "name": "lv95_koordinaten", "dataType": "VARCHAR" },
+        { "name": "mutation_datum", "dataType": "DATE" }
+      ]
+    },
+    {
+      "id": "gwr_building",
+      "type": "table",
+      "label": "building",
+      "database": "gwr",
+      "schema": "register",
+      "columns": [
+        { "name": "egid", "dataType": "INT", "tags": ["PK"] },
+        { "name": "real_estate_nr", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "strasse", "dataType": "VARCHAR" },
+        { "name": "hausnummer", "dataType": "VARCHAR" },
+        { "name": "plz", "dataType": "INT" },
+        { "name": "ort", "dataType": "VARCHAR" },
+        { "name": "baujahr", "dataType": "INT" },
+        { "name": "gebaeudekategorie", "dataType": "VARCHAR" },
+        { "name": "anzahl_geschosse", "dataType": "INT" }
+      ]
+    },
+    {
+      "id": "etl_parcel_ingest",
+      "type": "pipeline",
+      "label": "parcel_ingest_etl",
+      "description": "Synchronisiert Parzellen vom kantonalen Grundbuch in die RE-FX Parzellen-Stammdaten",
+      "platform": "Airflow"
+    },
+    {
+      "id": "etl_building_ingest",
+      "type": "pipeline",
+      "label": "building_ingest_etl",
+      "description": "Synchronisiert Gebaeude aus dem GWR in die RE-FX Gebaeude-Stammdaten",
+      "platform": "Airflow"
+    },
+    {
+      "id": "refx_parcel",
+      "type": "table",
+      "label": "parcel",
+      "database": "refx",
+      "schema": "master",
+      "columns": [
+        { "name": "parcel_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "real_estate_nr", "dataType": "VARCHAR" },
+        { "name": "kanton", "dataType": "VARCHAR" },
+        { "name": "gemeinde", "dataType": "VARCHAR" },
+        { "name": "flaeche_m2", "dataType": "DECIMAL" },
+        { "name": "nutzungsart", "dataType": "VARCHAR" },
+        { "name": "status", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "refx_building",
+      "type": "table",
+      "label": "building",
+      "database": "refx",
+      "schema": "master",
+      "columns": [
+        { "name": "building_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "egid", "dataType": "INT" },
+        { "name": "parcel_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "standort", "dataType": "VARCHAR" },
+        { "name": "baujahr", "dataType": "INT" },
+        { "name": "gebaeudekategorie", "dataType": "VARCHAR" },
+        { "name": "buchungskreis", "dataType": "VARCHAR" },
+        { "name": "verantwortlicher", "dataType": "VARCHAR" },
+        { "name": "status", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "refx_measurement",
+      "type": "table",
+      "label": "measurement",
+      "database": "refx",
+      "schema": "master",
+      "columns": [
+        { "name": "measurement_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "building_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "messart", "dataType": "VARCHAR" },
+        { "name": "wert", "dataType": "DECIMAL" },
+        { "name": "einheit", "dataType": "VARCHAR" },
+        { "name": "mess_datum", "dataType": "DATE" },
+        { "name": "gueltig_ab", "dataType": "DATE" },
+        { "name": "gueltig_bis", "dataType": "DATE" },
+        { "name": "quelle", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "etl_refx_master_publish",
+      "type": "pipeline",
+      "label": "refx_master_publish",
+      "description": "Publiziert RE-FX Gebaeude-Stammdaten an nachgelagerte Systeme (CDE und Energy Data Management)",
+      "platform": "Kafka Connect"
+    },
+    {
+      "id": "cde_building",
+      "type": "table",
+      "label": "building",
+      "database": "cde",
+      "schema": "structure",
+      "columns": [
+        { "name": "cde_building_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "refx_building_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "ifc_version", "dataType": "VARCHAR" },
+        { "name": "bim_modell_pfad", "dataType": "VARCHAR" },
+        { "name": "letzte_aktualisierung", "dataType": "TIMESTAMP" }
+      ]
+    },
+    {
+      "id": "cde_floor",
+      "type": "table",
+      "label": "floor",
+      "database": "cde",
+      "schema": "structure",
+      "columns": [
+        { "name": "floor_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "cde_building_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "stockwerk_nr", "dataType": "INT" },
+        { "name": "bezeichnung", "dataType": "VARCHAR" },
+        { "name": "geschossflaeche_m2", "dataType": "DECIMAL" },
+        { "name": "geschosshoehe_m", "dataType": "DECIMAL" }
+      ]
+    },
+    {
+      "id": "cde_room",
+      "type": "table",
+      "label": "room",
+      "database": "cde",
+      "schema": "structure",
+      "columns": [
+        { "name": "room_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "floor_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "bezeichnung", "dataType": "VARCHAR" },
+        { "name": "nutzflaeche_m2", "dataType": "DECIMAL" },
+        { "name": "raum_nutzung", "dataType": "VARCHAR" },
+        { "name": "ebf_anteil", "dataType": "DECIMAL" }
+      ]
+    },
+    {
+      "id": "etl_cde_area_aggregation",
+      "type": "pipeline",
+      "label": "cde_area_aggregation_etl",
+      "description": "Aggregiert Raum- und Geschossflaechen aus dem BIM-Modell zu Gebaeude-Messdokumenten in RE-FX",
+      "platform": "Airflow"
+    },
+    {
+      "id": "edm_building",
+      "type": "table",
+      "label": "building",
+      "database": "edm",
+      "schema": "assets",
+      "columns": [
+        { "name": "edm_building_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "refx_building_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "onboarding_datum", "dataType": "DATE" },
+        { "name": "datenqualitaet", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "edm_technical_system",
+      "type": "table",
+      "label": "technical_system",
+      "database": "edm",
+      "schema": "assets",
+      "columns": [
+        { "name": "system_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "edm_building_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "system_typ", "dataType": "VARCHAR" },
+        { "name": "energietraeger", "dataType": "VARCHAR" },
+        { "name": "installationsjahr", "dataType": "INT" }
+      ]
+    },
+    {
+      "id": "edm_component",
+      "type": "table",
+      "label": "component",
+      "database": "edm",
+      "schema": "assets",
+      "columns": [
+        { "name": "component_id", "dataType": "VARCHAR", "tags": ["PK"] },
+        { "name": "system_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "component_typ", "dataType": "VARCHAR" },
+        { "name": "hersteller", "dataType": "VARCHAR" },
+        { "name": "einheit", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "edm_consumption_reading",
+      "type": "table",
+      "label": "consumption_reading",
+      "database": "edm",
+      "schema": "timeseries",
+      "columns": [
+        { "name": "reading_id", "dataType": "BIGINT", "tags": ["PK"] },
+        { "name": "component_id", "dataType": "VARCHAR", "tags": ["FK"] },
+        { "name": "zeitpunkt", "dataType": "TIMESTAMP" },
+        { "name": "wert", "dataType": "DECIMAL" },
+        { "name": "einheit", "dataType": "VARCHAR" },
+        { "name": "qualitaet", "dataType": "VARCHAR" }
+      ]
+    },
+    {
+      "id": "etl_energy_aggregation",
+      "type": "pipeline",
+      "label": "energy_aggregation_etl",
+      "description": "Aggregiert Zaehlerwerte pro Komponente und technischem System zu monatlichen Energieverbrauchs-Messdokumenten in RE-FX",
+      "platform": "Spark"
+    },
+    {
+      "id": "etl_netzero_report",
+      "type": "pipeline",
+      "label": "netzero_report_etl",
+      "description": "Erstellt den Netto-Null 2050 Fortschrittsbericht aus RE-FX Messdokumenten, Gebaeuden und Parzellen",
+      "platform": "dbt Cloud"
+    },
+    {
+      "id": "netzero_report",
+      "type": "dashboard",
+      "label": "Netto-Null 2050 Report",
+      "platform": "Power BI",
+      "charts": ["CO2 Emissionen pro Bundesbau", "Energietraeger-Mix Portfolio", "Sanierungs-Fortschritt", "Zielerreichung 2030", "Top 10 Verbraucher"]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "source": "cadaster_real_estate",
+      "target": "etl_parcel_ingest",
+      "columnMapping": []
+    },
+    {
+      "id": "e2",
+      "source": "etl_parcel_ingest",
+      "target": "refx_parcel",
+      "columnMapping": [
+        { "sourceNode": "cadaster_real_estate", "sourceColumn": "real_estate_nr", "targetColumn": "real_estate_nr" },
+        { "sourceNode": "cadaster_real_estate", "sourceColumn": "kanton", "targetColumn": "kanton" },
+        { "sourceNode": "cadaster_real_estate", "sourceColumn": "gemeinde", "targetColumn": "gemeinde" },
+        { "sourceNode": "cadaster_real_estate", "sourceColumn": "flaeche_m2", "targetColumn": "flaeche_m2" },
+        { "sourceNode": "cadaster_real_estate", "sourceColumn": "nutzungszone", "targetColumn": "nutzungsart" }
+      ]
+    },
+    {
+      "id": "e3",
+      "source": "gwr_building",
+      "target": "etl_building_ingest",
+      "columnMapping": []
+    },
+    {
+      "id": "e4",
+      "source": "etl_building_ingest",
+      "target": "refx_building",
+      "columnMapping": [
+        { "sourceNode": "gwr_building", "sourceColumn": "egid", "targetColumn": "egid" },
+        { "sourceNode": "gwr_building", "sourceColumn": "real_estate_nr", "targetColumn": "parcel_id" },
+        { "sourceNode": "gwr_building", "sourceColumn": "strasse", "targetColumn": "standort" },
+        { "sourceNode": "gwr_building", "sourceColumn": "hausnummer", "targetColumn": "standort" },
+        { "sourceNode": "gwr_building", "sourceColumn": "baujahr", "targetColumn": "baujahr" },
+        { "sourceNode": "gwr_building", "sourceColumn": "gebaeudekategorie", "targetColumn": "gebaeudekategorie" }
+      ]
+    },
+    {
+      "id": "e5",
+      "source": "refx_building",
+      "target": "etl_refx_master_publish",
+      "columnMapping": []
+    },
+    {
+      "id": "e6",
+      "source": "etl_refx_master_publish",
+      "target": "cde_building",
+      "columnMapping": [
+        { "sourceNode": "refx_building", "sourceColumn": "building_id", "targetColumn": "refx_building_id" }
+      ]
+    },
+    {
+      "id": "e7",
+      "source": "etl_refx_master_publish",
+      "target": "edm_building",
+      "columnMapping": [
+        { "sourceNode": "refx_building", "sourceColumn": "building_id", "targetColumn": "refx_building_id" }
+      ]
+    },
+    {
+      "id": "e8",
+      "source": "cde_building",
+      "target": "etl_cde_area_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e9",
+      "source": "cde_floor",
+      "target": "etl_cde_area_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e10",
+      "source": "cde_room",
+      "target": "etl_cde_area_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e11",
+      "source": "etl_cde_area_aggregation",
+      "target": "refx_measurement",
+      "columnMapping": [
+        { "sourceNode": "cde_building", "sourceColumn": "refx_building_id", "targetColumn": "building_id" },
+        { "sourceNode": "cde_floor", "sourceColumn": "geschossflaeche_m2", "targetColumn": "wert" },
+        { "sourceNode": "cde_room", "sourceColumn": "nutzflaeche_m2", "targetColumn": "wert" },
+        { "sourceNode": "cde_room", "sourceColumn": "ebf_anteil", "targetColumn": "wert" }
+      ]
+    },
+    {
+      "id": "e12",
+      "source": "edm_building",
+      "target": "etl_energy_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e13",
+      "source": "edm_technical_system",
+      "target": "etl_energy_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e14",
+      "source": "edm_component",
+      "target": "etl_energy_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e15",
+      "source": "edm_consumption_reading",
+      "target": "etl_energy_aggregation",
+      "columnMapping": []
+    },
+    {
+      "id": "e16",
+      "source": "etl_energy_aggregation",
+      "target": "refx_measurement",
+      "columnMapping": [
+        { "sourceNode": "edm_building", "sourceColumn": "refx_building_id", "targetColumn": "building_id" },
+        { "sourceNode": "edm_technical_system", "sourceColumn": "energietraeger", "targetColumn": "messart" },
+        { "sourceNode": "edm_consumption_reading", "sourceColumn": "wert", "targetColumn": "wert" },
+        { "sourceNode": "edm_consumption_reading", "sourceColumn": "einheit", "targetColumn": "einheit" },
+        { "sourceNode": "edm_consumption_reading", "sourceColumn": "zeitpunkt", "targetColumn": "mess_datum" },
+        { "sourceNode": "edm_component", "sourceColumn": "einheit", "targetColumn": "einheit" }
+      ]
+    },
+    {
+      "id": "e17",
+      "source": "refx_parcel",
+      "target": "etl_netzero_report",
+      "columnMapping": []
+    },
+    {
+      "id": "e18",
+      "source": "refx_building",
+      "target": "etl_netzero_report",
+      "columnMapping": []
+    },
+    {
+      "id": "e19",
+      "source": "refx_measurement",
+      "target": "etl_netzero_report",
+      "columnMapping": []
+    },
+    {
+      "id": "e20",
+      "source": "etl_netzero_report",
+      "target": "netzero_report",
+      "columnMapping": []
+    }
+  ]
+}
