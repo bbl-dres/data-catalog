@@ -17,6 +17,7 @@ let searchQuery = '';
 let lang = 'de';
 const expandedSections = new Set(['vocabulary']);
 let recents = [];
+const expandedConcepts = new Set();
 let sidebarCounts = null; // cached sidebar counts
 let relGraphData = null; // relationship graph data (replaces relGraphData)
 let relCleanup = null; // cleanup function for relationship graph event listeners
@@ -739,7 +740,7 @@ function renderListView(section, listTab, collectionId) {
   }
 }
 
-function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping) {
+function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping, extraControls) {
   let html = '<div class="tab-bar" role="tablist">';
   const tabs = [
     { id: 'table', label: '\u00dcbersicht' },
@@ -749,9 +750,11 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping)
     const isActive = t.id === activeTab;
     html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
   });
+  if (groupingOptions || extraControls) {
+    html += '<div class="tab-bar-spacer"></div>';
+  }
   if (groupingOptions) {
     const activeLabel = groupingOptions.find(o => o.id === activeGrouping)?.label || groupingOptions[0].label;
-    html += '<div class="tab-bar-spacer"></div>';
     html += '<div class="grouping-dropdown">';
     html += `<button class="grouping-btn" id="grouping-btn">Gruppierung: ${activeLabel} <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>`;
     html += '<div class="grouping-menu" id="grouping-menu">';
@@ -760,13 +763,14 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping)
     });
     html += '</div></div>';
   }
+  if (extraControls) html += extraControls;
   html += '</div>';
   return html;
 }
 
 
 
-function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
+function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped, attributesById) {
   let html = '<div class="diagram-canvas">';
 
   // Determine layout: smaller collections (<=3) can sit side by side
@@ -781,32 +785,29 @@ function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped) {
     }
   });
 
-  // Render large domain groups (full width)
   large.forEach(g => {
-    html += renderDomainGroup(g.col, g.concepts);
+    html += renderVocabularyDomainGroup(g.col, g.concepts, attributesById);
   });
 
-  // Render small domain groups side by side
   if (small.length > 0) {
     html += '<div class="diagram-row">';
     small.forEach(g => {
-      html += renderDomainGroup(g.col, g.concepts);
+      html += renderVocabularyDomainGroup(g.col, g.concepts, attributesById);
     });
     html += '</div>';
   }
 
-  // Ungrouped concepts
   if (ungrouped.length > 0) {
-    html += renderDomainGroup({ id: 'ungrouped', ['name_' + lang]: 'Ungrouped', concept_count: ungrouped.length }, ungrouped);
+    html += renderVocabularyDomainGroup({ id: 'ungrouped', ['name_' + lang]: 'Ungrouped', concept_count: ungrouped.length }, ungrouped, attributesById);
   }
 
   html += '</div>';
   return html;
 }
 
-function renderVocabularyDiagramFlat(allConcepts) {
+function renderVocabularyDiagramFlat(allConcepts, attributesById) {
   let html = '<div class="diagram-canvas">';
-  html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Geschäftsobjekte', concept_count: allConcepts.length }, allConcepts);
+  html += renderVocabularyDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Geschäftsobjekte', concept_count: allConcepts.length }, allConcepts, attributesById);
   html += '</div>';
   return html;
 }
@@ -827,6 +828,77 @@ function renderDomainGroup(col, concepts) {
   });
   html += '</div></div>';
   return html;
+}
+
+// Vocabulary-specific: renders concepts with a chevron toggle for inline details (attributes).
+// `attributesById` is a { [conceptId]: attr[] } lookup for concepts currently expanded.
+function renderVocabularyDomainGroup(col, concepts, attributesById) {
+  let html = `<div class="domain-group">`;
+  html += `<div class="domain-group-header">`;
+  html += `<span class="domain-group-title">${escapeHtml(n(col, 'name'))}</span>`;
+  html += `<span class="domain-group-count">${concepts.length}</span>`;
+  html += `</div>`;
+  html += '<div class="domain-group-concepts">';
+  concepts.forEach(c => {
+    html += renderConceptBox(c, expandedConcepts.has(c.id), attributesById[c.id] || []);
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderConceptBox(c, isExpanded, attributes) {
+  const name = escapeHtml(n(c, 'name'));
+  const href = '#/vocabulary/' + c.id;
+  const chevron = isExpanded ? 'chevron-up' : 'chevron-down';
+
+  if (!isExpanded) {
+    const def = getDefinitionText(c.definition, lang);
+    const tooltip = def ? name + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : name;
+    return `<div class="concept-box clickable-row" data-href="${href}" title="${tooltip}">
+      <span class="concept-box-name">${name}</span>
+      <button class="concept-box-toggle" data-toggle-concept="${c.id}" aria-label="Details anzeigen" type="button">
+        <i data-lucide="${chevron}" style="width:14px;height:14px;"></i>
+      </button>
+    </div>`;
+  }
+
+  const def = getDefinitionText(c.definition, lang);
+  const descHtml = def
+    ? `<div class="concept-box-description">${escapeHtml(def.substring(0, 180))}${def.length > 180 ? '…' : ''}</div>`
+    : '';
+
+  const MAX_ATTRS = 5;
+  const shown = attributes.slice(0, MAX_ATTRS);
+  const extra = attributes.length - shown.length;
+  let attrsHtml = '';
+  if (shown.length) {
+    attrsHtml = '<div class="concept-box-attrs">';
+    shown.forEach(a => {
+      const required = a.required ? '<span class="concept-box-attr-required" title="Pflichtfeld">*</span>' : '<span class="concept-box-attr-required">&nbsp;</span>';
+      attrsHtml += `<div class="concept-box-attr">
+        ${required}
+        <span class="concept-box-attr-name">${escapeHtml(n(a, 'name'))}</span>
+        <span class="concept-box-attr-type">${escapeHtml(a.value_type || '')}</span>
+      </div>`;
+    });
+    if (extra > 0) {
+      attrsHtml += `<a class="concept-box-more" href="${href}">+ ${extra} weitere →</a>`;
+    }
+    attrsHtml += '</div>';
+  } else {
+    attrsHtml = '<div class="concept-box-empty">Keine Attribute erfasst</div>';
+  }
+
+  return `<div class="concept-box concept-box--expanded">
+    <div class="concept-box-header">
+      <a class="concept-box-name" href="${href}">${name}</a>
+      <button class="concept-box-toggle" data-toggle-concept="${c.id}" aria-label="Einklappen" type="button">
+        <i data-lucide="${chevron}" style="width:14px;height:14px;"></i>
+      </button>
+    </div>
+    ${descHtml}
+    ${attrsHtml}
+  </div>`;
 }
 
 
@@ -892,7 +964,14 @@ function renderVocabularyList(listTab, collectionId) {
     { id: 'steward', label: 'Verantwortlich' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary);
+
+  let toggleAllCtrl = '';
+  if (listTab === 'diagram') {
+    const anyExpanded = allConcepts.some(c => expandedConcepts.has(c.id));
+    const label = anyExpanded ? 'Alle einklappen' : 'Alle erweitern';
+    toggleAllCtrl = `<button class="grouping-btn" data-toggle-all-concepts type="button">${label} <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i></button>`;
+  }
+  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary, toggleAllCtrl);
 
   // Build collection lookup
   const collectionMap = {};
@@ -912,19 +991,35 @@ function renderVocabularyList(listTab, collectionId) {
 
   // Diagram
   if (listTab === 'diagram') {
+    // Batch-fetch attributes for currently-expanded concepts (no N+1)
+    const expandedIds = allConcepts.map(c => c.id).filter(id => expandedConcepts.has(id));
+    const attributesById = {};
+    if (expandedIds.length > 0) {
+      const placeholders = expandedIds.map(() => '?').join(',');
+      const attrs = query(
+        `SELECT concept_id, name_en, name_de, name_fr, name_it, value_type, required, code_list_id
+         FROM concept_attribute
+         WHERE concept_id IN (${placeholders})
+         ORDER BY sort_order, name_en`,
+        expandedIds
+      );
+      attrs.forEach(a => {
+        (attributesById[a.concept_id] = attributesById[a.concept_id] || []).push(a);
+      });
+    }
+
     if (!activeCollection && grouping.vocabulary === 'none') {
-      html += renderVocabularyDiagramFlat(allConcepts);
+      html += renderVocabularyDiagramFlat(allConcepts, attributesById);
     } else if (!activeCollection && grouping.vocabulary !== 'domain') {
-      // Generic grouped diagram
       const groups = {};
       allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
       html += '<div class="diagram-canvas">';
       Object.keys(groups).forEach(k => {
-        html += renderDomainGroup({ id: k, ['name_' + lang]: k, concept_count: groups[k].length }, groups[k]);
+        html += renderVocabularyDomainGroup({ id: k, ['name_' + lang]: k, concept_count: groups[k].length }, groups[k], attributesById);
       });
       html += '</div>';
     } else {
-      html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped);
+      html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped, attributesById);
     }
     html += '</div>';
     return html;
@@ -2976,6 +3071,34 @@ document.addEventListener('click', function(e) {
   if (target.closest('#header-logo')) {
     e.preventDefault();
     navigate('#/vocabulary');
+    return;
+  }
+
+  // Concept box: single toggle (chevron) — must run before the data-href nav handler
+  const conceptToggle = target.closest('[data-toggle-concept]');
+  if (conceptToggle) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = conceptToggle.dataset.toggleConcept;
+    if (expandedConcepts.has(id)) expandedConcepts.delete(id);
+    else expandedConcepts.add(id);
+    handleRoute();
+    return;
+  }
+
+  // Concept box: expand/collapse all (tab-bar button)
+  const toggleAll = target.closest('[data-toggle-all-concepts]');
+  if (toggleAll) {
+    e.preventDefault();
+    const ids = Array.from(document.querySelectorAll('[data-toggle-concept]'))
+      .map(el => el.dataset.toggleConcept);
+    const anyExpanded = ids.some(id => expandedConcepts.has(id));
+    if (anyExpanded) {
+      ids.forEach(id => expandedConcepts.delete(id));
+    } else {
+      ids.forEach(id => expandedConcepts.add(id));
+    }
+    handleRoute();
     return;
   }
 

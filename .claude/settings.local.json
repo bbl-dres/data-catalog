@@ -49,7 +49,8 @@
       "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8123__TRACKED_VAR__)",
       "Bash(curl -s http://localhost:8123/)",
       "Bash(read img *)",
-      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8123/__TRACKED_VAR__)"
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8123/__TRACKED_VAR__)",
+      "Bash(node --check \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/js/app.js\")"
     ]
   }
 }

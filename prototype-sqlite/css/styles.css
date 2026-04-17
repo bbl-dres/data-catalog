@@ -499,10 +499,12 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   border-bottom-color: var(--color-bg-accent-strong);
 }
 .tab-bar-spacer { flex: 1; }
+.tab-bar > .grouping-btn { margin-left: var(--space-2); }
 
 /* Grouping dropdown */
 .grouping-dropdown { position: relative; display: flex; align-items: center; }
 .grouping-btn {
+  align-self: center;
   display: flex; align-items: center; gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   font-size: var(--text-small); font-family: var(--font-sans);
@@ -882,9 +884,20 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   border-radius: var(--radius-sm);
 }
 .domain-group-concepts {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: var(--space-2);
+  align-items: start;
+}
+/* In the grid, compact pills fill their cell and truncate long names */
+.domain-group-concepts > .concept-box:not(.concept-box--expanded) {
+  display: flex;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.domain-group-concepts > .concept-box:not(.concept-box--expanded) .concept-box-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .concept-box {
   display: inline-flex;
@@ -908,6 +921,111 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   background: var(--color-bg-accent);
   text-decoration: none;
   color: var(--color-bg-accent-strong);
+}
+
+/* Chevron toggle button inside a concept box */
+.concept-box-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-placeholder);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 100ms ease, background 100ms ease;
+}
+.concept-box-toggle:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-surface-hover);
+}
+
+/* Expanded variant: spans 2 grid columns (~360-500px per card) so multiple
+   expanded cards can sit side by side on wide containers. Collapses to whatever
+   columns exist on narrow layouts. */
+.concept-box--expanded {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  grid-column: span 2;
+  white-space: normal;
+  cursor: default;
+}
+.concept-box--expanded:hover {
+  border-color: var(--color-border-default);
+  box-shadow: none;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+.concept-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.concept-box--expanded .concept-box-name {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.concept-box--expanded .concept-box-name:hover {
+  color: var(--color-text-link);
+  text-decoration: underline;
+}
+.concept-box-description {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.concept-box-attrs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.concept-box-attr {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+}
+.concept-box-attr-required {
+  color: var(--color-status-draft);
+  font-weight: 700;
+  text-align: center;
+  line-height: 1;
+}
+.concept-box-attr-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono);
+}
+.concept-box-attr-type {
+  color: var(--color-text-placeholder);
+  font-size: var(--text-label);
+  text-transform: lowercase;
+}
+.concept-box-more {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+.concept-box-more:hover { text-decoration: underline; }
+.concept-box-empty {
+  font-size: var(--text-small);
+  color: var(--color-text-placeholder);
+  font-style: italic;
 }
 
 /* Flat diagram grid */
