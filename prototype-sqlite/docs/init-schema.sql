@@ -176,11 +176,15 @@ CREATE TABLE IF NOT EXISTS code_list (
     name_fr     TEXT,
     name_it     TEXT,
     source_ref  TEXT,
-    version     TEXT
+    version     TEXT,
+    status      TEXT NOT NULL DEFAULT 'approved' CHECK (status IN ('draft','approved','deprecated')),
+    owner_id    TEXT REFERENCES contact(id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_code_list_concept_id ON code_list(concept_id);
 CREATE INDEX IF NOT EXISTS idx_code_list_name_en ON code_list(name_en);
+CREATE INDEX IF NOT EXISTS idx_code_list_status ON code_list(status);
+CREATE INDEX IF NOT EXISTS idx_code_list_owner_id ON code_list(owner_id);
 
 -- ---------------------------------------------------------------------------
 -- 6.4   Concept Attribute
@@ -197,12 +201,14 @@ CREATE TABLE IF NOT EXISTS concept_attribute (
     code_list_id    TEXT REFERENCES code_list(id),
     required        INTEGER NOT NULL DEFAULT 0,
     standard_ref    TEXT,
-    sort_order      INTEGER
+    sort_order      INTEGER,
+    key_role        TEXT CHECK (key_role IS NULL OR key_role IN ('PK','FK','UK'))  -- PK = primary, FK = foreign, UK = alternate unique
 );
 
 CREATE INDEX IF NOT EXISTS idx_concept_attribute_concept_id ON concept_attribute(concept_id);
 CREATE INDEX IF NOT EXISTS idx_concept_attribute_code_list_id ON concept_attribute(code_list_id);
 CREATE INDEX IF NOT EXISTS idx_concept_attribute_value_type ON concept_attribute(value_type);
+CREATE INDEX IF NOT EXISTS idx_concept_attribute_key_role ON concept_attribute(key_role);
 
 -- ---------------------------------------------------------------------------
 -- 6.6   Code List Value (skos:Concept in code list)
@@ -503,6 +509,10 @@ CREATE TABLE IF NOT EXISTS data_profile (
     max_value               TEXT,
     completeness_score      REAL,    -- 0.0-1.0
     format_validity_score   REAL,    -- 0.0-1.0
+    timeliness_score        REAL,    -- 0.0-1.0  Aktualität
+    accuracy_score          REAL,    -- 0.0-1.0  Genauigkeit
+    consistency_score       REAL,    -- 0.0-1.0  Konsistenz
+    uniqueness_score        REAL,    -- 0.0-1.0  Eindeutigkeit
     sample_values           TEXT,    -- JSON array
     profiled_at             TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     profiler                TEXT

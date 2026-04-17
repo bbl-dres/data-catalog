@@ -53,7 +53,10 @@
       "Bash(node --check \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/js/app.js\")",
       "Bash(node -c prototype-sqlite/js/app.js)",
       "Bash(curl -s http://localhost:8765/js/app.js)",
-      "Bash(curl -s -I http://localhost:8766/js/app.js)"
+      "Bash(curl -s -I http://localhost:8766/js/app.js)",
+      "Bash(sqlite3 --version)",
+      "Read(//c/Users/DavidRasner/Documents/**)",
+      "Bash(sed -n '259,270p' prototype-sqlite/docs/seed-data.sql)"
     ]
   }
 }

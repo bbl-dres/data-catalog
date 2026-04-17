@@ -26,6 +26,7 @@ let activeFilters = {};
 let currentQueryStr = ''; // preserved across tab switches within a section
 let filterPanelOpen = false; // preserved across re-renders so selecting a checkbox doesn't collapse the panel
 let pendingFocus = null; // descriptor captured before navigation, restored after re-render
+let attrsMode = 'show'; // 'show' | 'hide' — diagram-view attribute visibility. Default is show; absence = show, ?attrs=0 = hide.
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
 const SECTION_LABELS = {
@@ -234,6 +235,7 @@ function renderLockedContent() {
 // ── Filter helpers (URL-backed, modular) ──────────────────
 // Filter definition shape: { id, label, options: [{value, label}], match: (item, values) => bool }
 // Active filters shape:     { [dimId]: [value, value, ...] }  (AND across dims, OR within a dim)
+const RESERVED_QUERY_KEYS = new Set(['q', 'attrs']); // never treated as filter dimensions
 function parseFilterQuery(queryStr) {
   const out = {};
   if (!queryStr) return out;
@@ -242,10 +244,21 @@ function parseFilterQuery(queryStr) {
     const eq = pair.indexOf('=');
     const k = decodeURIComponent(eq >= 0 ? pair.slice(0, eq) : pair);
     const v = eq >= 0 ? decodeURIComponent(pair.slice(eq + 1)) : '';
-    if (!k || k === 'q') return; // q is reserved for search
+    if (!k || RESERVED_QUERY_KEYS.has(k)) return;
     out[k] = v ? v.split(',').filter(Boolean) : [];
   });
   return out;
+}
+
+function parseAttrsMode(queryStr) {
+  if (!queryStr) return 'show';
+  return /(^|&)attrs=0(&|$)/.test(queryStr) ? 'hide' : 'show';
+}
+
+function buildFullQuery(filters, mode) {
+  const filterPart = buildFilterQuery(filters);
+  if (mode === 'show') return filterPart; // default state: no attrs param needed
+  return filterPart ? filterPart + '&attrs=0' : '?attrs=0';
 }
 
 function buildFilterQuery(filters) {
@@ -267,7 +280,13 @@ function getCurrentPathPart() {
 
 function navigateWithFilters(filters) {
   pendingFocus = captureFilterFocus();
-  window.location.hash = getCurrentPathPart() + buildFilterQuery(filters);
+  window.location.hash = getCurrentPathPart() + buildFullQuery(filters, attrsMode);
+}
+
+function navigateWithAttrsMode(mode) {
+  pendingFocus = captureFilterFocus();
+  const currentFilters = activeFilters[currentSection] || {};
+  window.location.hash = getCurrentPathPart() + buildFullQuery(currentFilters, mode);
 }
 
 // Capture focus descriptor before a filter navigation so we can restore it after re-render.
@@ -277,6 +296,8 @@ function captureFilterFocus() {
   if (el.id) return { sel: '#' + el.id };
   if (el.dataset.filterDim) return { sel: `.filter-checkbox[data-filter-dim="${el.dataset.filterDim}"][data-filter-value="${CSS.escape(el.dataset.filterValue || '')}"]` };
   if (el.dataset.filterAddDim) return { sel: `[data-filter-add-dim="${el.dataset.filterAddDim}"][data-filter-add-value="${CSS.escape(el.dataset.filterAddValue || '')}"]` };
+  if (el.hasAttribute('data-attrs-toggle')) return { sel: '[data-attrs-toggle]' };
+  if (el.dataset.toggleConcept) return { sel: `[data-toggle-concept="${CSS.escape(el.dataset.toggleConcept)}"]` };
   // For pill-remove: the pill disappears; send focus to the filter toggle as a reasonable fallback.
   if (el.dataset.filterRemoveDim) return { sel: '#filter-toggle' };
   return null;
@@ -391,27 +412,28 @@ function parseRoute() {
   const parts = pathPart.replace('#/', '').split('/');
   const section = parts[0] || 'home';
   const filters = parseFilterQuery(queryStr);
+  const attrs = parseAttrsMode(queryStr);
 
   if (section === 'search') {
     const qStart = hash.indexOf('?q=');
     searchQuery = qStart >= 0 ? decodeURIComponent(hash.slice(qStart + 3)) : '';
-    return { section: 'search', entityId: null, tab: null, subEntityId: null, filters: {}, queryStr: '' };
+    return { section: 'search', entityId: null, tab: null, subEntityId: null, filters: {}, queryStr: '', attrsMode: 'hide' };
   }
 
   // Handle systems/:id/datasets/:did/:tab
   if (section === 'systems' && parts.length >= 4 && parts[2] === 'datasets') {
-    return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview', filters, queryStr };
+    return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview', filters, queryStr, attrsMode: attrs };
   }
 
   // Collection filter: #/vocabulary/collection/:collId/:tab
   if (parts[1] === 'collection' && parts[2]) {
-    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null, filters, queryStr };
+    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null, filters, queryStr, attrsMode: attrs };
   }
 
   // List-level tabs (table/diagram) — not an entity ID
   const listTabs = ['table', 'diagram'];
   if (parts[1] && listTabs.includes(parts[1])) {
-    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null, filters, queryStr };
+    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null, filters, queryStr, attrsMode: attrs };
   }
 
   return {
@@ -421,7 +443,8 @@ function parseRoute() {
     tab: parts[2] || 'overview',
     subEntityId: null,
     filters,
-    queryStr
+    queryStr,
+    attrsMode: attrs
   };
 }
 
@@ -437,6 +460,7 @@ function handleRoute() {
   currentTab = route.tab || 'overview';
   activeFilters[currentSection] = route.filters || {};
   currentQueryStr = route.queryStr || '';
+  attrsMode = route.attrsMode || 'show';
 
   // Auto-expand the active section in sidebar
   if (currentSection) expandedSections.add(currentSection);
@@ -816,9 +840,13 @@ function renderHome() {
 
   // Quality averages
   const quality = queryOne(`SELECT
-    ROUND(AVG(completeness_score), 1) as avg_completeness,
-    ROUND(AVG(format_validity_score), 1) as avg_validity,
-    ROUND(AVG(null_percentage), 1) as avg_null
+    ROUND(AVG(completeness_score), 2) as avg_completeness,
+    ROUND(AVG(format_validity_score), 2) as avg_validity,
+    ROUND(AVG(timeliness_score), 2) as avg_timeliness,
+    ROUND(AVG(accuracy_score), 2) as avg_accuracy,
+    ROUND(AVG(consistency_score), 2) as avg_consistency,
+    ROUND(AVG(uniqueness_score), 2) as avg_uniqueness,
+    ROUND(AVG(null_percentage), 2) as avg_null
     FROM data_profile`);
 
   let html = '<div class="content-wrapper">';
@@ -874,11 +902,11 @@ function renderHome() {
   html += '<div class="content-section"><div class="section-label">DATENQUALIT\u00c4T</div>';
   const dims = [
     { icon: 'check-circle', label: 'Vollständigkeit', score: quality?.avg_completeness },
-    { icon: 'clock', label: 'Aktualität', score: null },
-    { icon: 'target', label: 'Genauigkeit', score: null },
-    { icon: 'git-compare', label: 'Konsistenz', score: null },
+    { icon: 'clock', label: 'Aktualität', score: quality?.avg_timeliness },
+    { icon: 'target', label: 'Genauigkeit', score: quality?.avg_accuracy },
+    { icon: 'git-compare', label: 'Konsistenz', score: quality?.avg_consistency },
     { icon: 'shield-check', label: 'Formatkonformität', score: quality?.avg_validity },
-    { icon: 'fingerprint', label: 'Eindeutigkeit', score: null }
+    { icon: 'fingerprint', label: 'Eindeutigkeit', score: quality?.avg_uniqueness }
   ];
   dims.forEach(d => {
     const hasScore = d.score != null;
@@ -930,7 +958,7 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
   const qs = filterCtx?.queryStr || '';
   let html = '<div class="tab-bar" role="tablist">';
   const tabs = [
-    { id: 'table', label: '\u00dcbersicht' },
+    { id: 'table', label: 'Tabelle' },
     { id: 'diagram', label: 'Diagramm' }
   ];
   tabs.forEach(t => {
@@ -940,6 +968,8 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
   if (groupingOptions || extraControls || filterCtx) {
     html += '<div class="tab-bar-spacer"></div>';
   }
+  // Order: [extraControls (Attribute toggle)] → [Filter] → [Gruppierung]
+  if (extraControls) html += extraControls;
   if (filterCtx) {
     html += filterCtx.toggleHtml;
   }
@@ -953,142 +983,247 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
     });
     html += '</div></div>';
   }
-  if (extraControls) html += extraControls;
   html += '</div>';
   return html;
 }
 
 
 
-function renderVocabularyDiagram(collections, conceptsByCollection, ungrouped, attributesById) {
-  let html = '<div class="diagram-canvas">';
+// Read the data-driven key role from a concept_attribute row.
+// Values: 'PK' | 'FK' | 'UK' | '' (seeded in prototype-sqlite/docs/seed-data.sql).
+function conceptAttrKey(a) {
+  return a.key_role || '';
+}
 
-  // Determine layout: smaller collections (<=3) can sit side by side
-  const large = [];
-  const small = [];
-  collections.forEach((col, i) => {
-    const concepts = conceptsByCollection[col.id] || [];
-    if (concepts.length <= 3) {
-      small.push({ col, concepts, colorIdx: i });
-    } else {
-      large.push({ col, concepts, colorIdx: i });
+// ──────────────────────────────────────────────────────────
+// Section card config — drives the expandable UML card content.
+// Each section that wants expandable cards declares what rows to show (Attribute / Werte / Tabellen / …),
+// the empty-state label, max row count, and a batch fetcher that returns { [itemId]: row[] }.
+// Each row: { marker, name, type } — rendered as a monospace UML-attribute-style line.
+// Sections not in this map fall through to simple (non-expandable) cards.
+// ──────────────────────────────────────────────────────────
+const SECTION_CARD_CONFIG = {
+  vocabulary: {
+    rowLabel: 'Attribute',
+    emptyLabel: 'Keine Attribute',
+    maxRows: 8,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT concept_id, name_en, name_de, name_fr, name_it, value_type, required, code_list_id, key_role
+         FROM concept_attribute WHERE concept_id IN (${placeholders})
+         ORDER BY sort_order, name_en`,
+        ids
+      );
+      rows.forEach(a => {
+        const type = a.value_type === 'code' && a.code_list_id ? 'code' : (a.value_type || '');
+        const name = n(a, 'name') || '';
+        (out[a.concept_id] = out[a.concept_id] || []).push({ name, type, key: conceptAttrKey(a, name) });
+      });
+      return out;
     }
-  });
-
-  large.forEach(g => {
-    html += renderVocabularyDomainGroup(g.col, g.concepts, attributesById);
-  });
-
-  if (small.length > 0) {
-    html += '<div class="diagram-row">';
-    small.forEach(g => {
-      html += renderVocabularyDomainGroup(g.col, g.concepts, attributesById);
-    });
-    html += '</div>';
+  },
+  codelists: {
+    rowLabel: 'Werte',
+    emptyLabel: 'Keine Werte',
+    maxRows: 10,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT code_list_id, code, label_en, label_de, label_fr, label_it, deprecated
+         FROM code_list_value WHERE code_list_id IN (${placeholders})
+         ORDER BY sort_order, code`,
+        ids
+      );
+      rows.forEach(v => {
+        (out[v.code_list_id] = out[v.code_list_id] || []).push({
+          name: n(v, 'label') || v.code,
+          type: v.code
+        });
+      });
+      return out;
+    }
+  },
+  systems: {
+    rowLabel: 'Tabellen',
+    emptyLabel: 'Keine Tabellen',
+    maxRows: 12,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT sc.system_id, d.id, d.name, d.display_name, d.dataset_type
+         FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id
+         WHERE sc.system_id IN (${placeholders})
+         ORDER BY d.name`,
+        ids
+      );
+      rows.forEach(d => {
+        (out[d.system_id] = out[d.system_id] || []).push({
+          name: d.display_name || d.name,
+          type: d.dataset_type || ''
+        });
+      });
+      return out;
+    }
   }
+};
 
-  if (ungrouped.length > 0) {
-    html += renderVocabularyDomainGroup({ id: 'ungrouped', ['name_' + lang]: 'Ungrouped', concept_count: ungrouped.length }, ungrouped, attributesById);
-  }
-
-  html += '</div>';
-  return html;
-}
-
-function renderVocabularyDiagramFlat(allConcepts, attributesById) {
+// ──────────────────────────────────────────────────────────
+// Reusable UML diagram module
+// ──────────────────────────────────────────────────────────
+// Renders grouped list items as class-box cards in a uniform grid.
+//   groups:          [{ id, title, items }]  — empty groups are skipped
+//   renderCard:      (item) => HTML for one card
+//   groupIdPrefix:   string prefix for data-toggle-group ids (namespacing across sections)
+function renderUmlDiagram(groups, renderCard, groupIdPrefix) {
   let html = '<div class="diagram-canvas">';
-  html += renderVocabularyDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Geschäftsobjekte', concept_count: allConcepts.length }, allConcepts, attributesById);
+  groups.forEach(g => {
+    if (!g.items || g.items.length === 0) return;
+    const gid = groupIdPrefix + '-' + g.id;
+    html += '<div class="diagram-group">';
+    html += `<div class="group-header" data-toggle-group="${escapeHtml(gid)}">
+      <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+      <span class="group-header-title">${escapeHtml(g.title)} (${g.items.length})</span>
+    </div>`;
+    html += `<div class="group-content diagram-group-grid" data-group="${escapeHtml(gid)}">`;
+    g.items.forEach(item => { html += renderCard(item); });
+    html += '</div></div>';
+  });
   html += '</div>';
   return html;
 }
 
-function renderDomainGroup(col, concepts) {
-  let html = `<div class="domain-group">`;
-  html += `<div class="domain-group-header">`;
-  html += `<span class="domain-group-title">${escapeHtml(n(col, 'name'))}</span>`;
-  html += `<span class="domain-group-count">${concepts.length}</span>`;
-  html += `</div>`;
-  html += '<div class="domain-group-concepts">';
-  concepts.forEach(c => {
-    const def = getDefinitionText(c.definition, lang);
-    const tooltip = def ? escapeHtml(n(c, 'name')) + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : escapeHtml(n(c, 'name'));
-    html += `<a class="concept-box" href="${c.href || '#/vocabulary/' + c.id}" title="${tooltip}">`;
-    html += `<span class="concept-box-name">${escapeHtml(n(c, 'name'))}</span>`;
-    html += `</a>`;
-  });
-  html += '</div></div>';
-  return html;
+// Builds the diagram-view "Attribute/Werte/Tabellen anzeigen/ausblenden" toggle button.
+// Returns '' for sections without a SECTION_CARD_CONFIG entry.
+function buildAttrsToggleHtml(section) {
+  const cfg = SECTION_CARD_CONFIG[section];
+  if (!cfg) return '';
+  const shown = attrsMode === 'show';
+  const label = shown ? `${cfg.rowLabel} ausblenden` : `${cfg.rowLabel} anzeigen`;
+  const icon = shown ? 'eye-off' : 'eye';
+  return `<button class="grouping-btn" data-attrs-toggle type="button" aria-pressed="${shown}"><i data-lucide="${icon}" style="width:14px;height:14px;"></i> ${label}</button>`;
 }
 
-// Vocabulary-specific: renders concepts with a chevron toggle for inline details (attributes).
-// `attributesById` is a { [conceptId]: attr[] } lookup for concepts currently expanded.
-function renderVocabularyDomainGroup(col, concepts, attributesById) {
-  let html = `<div class="domain-group">`;
-  html += `<div class="domain-group-header">`;
-  html += `<span class="domain-group-title">${escapeHtml(n(col, 'name'))}</span>`;
-  html += `<span class="domain-group-count">${concepts.length}</span>`;
-  html += `</div>`;
-  html += '<div class="domain-group-concepts">';
-  concepts.forEach(c => {
-    html += renderConceptBox(c, expandedConcepts.has(c.id), attributesById[c.id] || []);
-  });
-  html += '</div></div>';
-  return html;
-}
-
-function renderConceptBox(c, isExpanded, attributes) {
-  const name = escapeHtml(n(c, 'name'));
-  const href = '#/vocabulary/' + c.id;
-  const chevron = isExpanded ? 'chevron-up' : 'chevron-down';
-
-  if (!isExpanded) {
-    const def = getDefinitionText(c.definition, lang);
-    const tooltip = def ? name + '&#10;&#10;' + escapeHtml(def.substring(0, 150)) + (def.length > 150 ? '...' : '') : name;
-    return `<div class="concept-box clickable-row" data-href="${href}" title="${tooltip}">
-      <span class="concept-box-name">${name}</span>
-      <button class="concept-box-toggle" data-toggle-concept="${c.id}" aria-label="Details anzeigen" type="button">
-        <i data-lucide="${chevron}" style="width:14px;height:14px;"></i>
-      </button>
-    </div>`;
+// Simple UML card — name only, whole card navigates. For non-expandable sections.
+// Uses the same .uml-card-header layout as expandable cards (left-aligned, same padding/typography)
+// for visual consistency; just no chevron and no button behavior.
+function renderSimpleCard(href, name, tooltip) {
+  const safeName = escapeHtml(name);
+  let titleAttr = '';
+  if (tooltip) {
+    const trimmed = tooltip.length > 240 ? tooltip.substring(0, 240) + '…' : tooltip;
+    titleAttr = ` title="${escapeHtml(trimmed)}"`;
   }
+  return `<div class="uml-card clickable-row" data-href="${escapeHtml(href)}"${titleAttr}>
+    <div class="uml-card-header uml-card-header--static">
+      <span class="uml-card-name">${safeName}</span>
+    </div>
+  </div>`;
+}
 
-  const def = getDefinitionText(c.definition, lang);
-  const descHtml = def
-    ? `<div class="concept-box-description">${escapeHtml(def.substring(0, 180))}${def.length > 180 ? '…' : ''}</div>`
+// Effective expanded state for one concept card: global default flipped by any per-card override.
+function isCardExpanded(conceptId) {
+  const overridden = expandedConcepts.has(conceptId);
+  const defaultShown = attrsMode === 'show';
+  return defaultShown ? !overridden : overridden;
+}
+
+// Generic rows compartment used by all expandable cards (class name kept for historical reasons).
+// rows:    [{ name, type }]
+// opts:    { emptyLabel, maxRows, moreHref }
+function renderUmlRowsSection(rows, opts) {
+  opts = opts || {};
+  if (!rows.length) return `<div class="uml-card-empty">${escapeHtml(opts.emptyLabel || 'Keine Einträge')}</div>`;
+  const max = opts.maxRows || rows.length;
+  const shown = rows.slice(0, max);
+  const extra = rows.length - shown.length;
+  let html = '<div class="uml-card-attrs">';
+  shown.forEach(r => {
+    const keyPill = r.key ? `<span class="uml-card-attr-key" title="${escapeHtml(r.key)}">${escapeHtml(r.key)}</span>` : '';
+    html += `<div class="uml-card-attr">
+      <span class="uml-card-attr-name">${escapeHtml(r.name || '')}</span>
+      <span class="uml-card-attr-type">${keyPill}${escapeHtml(r.type || '')}</span>
+    </div>`;
+  });
+  if (extra > 0 && opts.moreHref) {
+    html += `<a class="uml-card-more" href="${escapeHtml(opts.moreHref)}">+ ${extra} weitere &rarr;</a>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Expandable UML card — used by sections registered in SECTION_CARD_CONFIG.
+// cardData: { id, href, name, tooltip }
+// rows:     already in generic shape [{ marker, name, type }]
+// opts:     { rowLabel, emptyLabel, maxRows } — typically SECTION_CARD_CONFIG[section]
+function renderExpandableCard(cardData, isExpanded, rows, opts) {
+  opts = opts || {};
+  const name = escapeHtml(cardData.name);
+  const href = cardData.href;
+  const chevron = isExpanded ? 'chevron-up' : 'chevron-down';
+  const tooltip = cardData.tooltip
+    ? escapeHtml(cardData.tooltip.substring(0, 240)) + (cardData.tooltip.length > 240 ? '…' : '')
+    : '';
+  const expandedCls = isExpanded ? ' uml-card--expanded' : '';
+  const rowLabel = opts.rowLabel || 'Details';
+  const chevronLabel = isExpanded ? `${rowLabel} ausblenden` : `${rowLabel} anzeigen`;
+  const rowsHtml = isExpanded
+    ? renderUmlRowsSection(rows, { emptyLabel: opts.emptyLabel, maxRows: opts.maxRows, moreHref: href })
     : '';
 
-  const MAX_ATTRS = 5;
-  const shown = attributes.slice(0, MAX_ATTRS);
-  const extra = attributes.length - shown.length;
-  let attrsHtml = '';
-  if (shown.length) {
-    attrsHtml = '<div class="concept-box-attrs">';
-    shown.forEach(a => {
-      const required = a.required ? '<span class="concept-box-attr-required" title="Pflichtfeld">*</span>' : '<span class="concept-box-attr-required">&nbsp;</span>';
-      attrsHtml += `<div class="concept-box-attr">
-        ${required}
-        <span class="concept-box-attr-name">${escapeHtml(n(a, 'name'))}</span>
-        <span class="concept-box-attr-type">${escapeHtml(a.value_type || '')}</span>
-      </div>`;
-    });
-    if (extra > 0) {
-      attrsHtml += `<a class="concept-box-more" href="${href}">+ ${extra} weitere →</a>`;
-    }
-    attrsHtml += '</div>';
+  return `<div class="uml-card clickable-row${expandedCls}" data-href="${escapeHtml(href)}"${tooltip ? ` title="${tooltip}"` : ''}>
+    <button class="uml-card-header" type="button" data-toggle-concept="${escapeHtml(cardData.id)}" aria-label="${escapeHtml(chevronLabel)}" aria-expanded="${isExpanded}">
+      <span class="uml-card-name">${name}</span>
+      <i data-lucide="${chevron}" class="uml-card-chevron" style="width:14px;height:14px;" aria-hidden="true"></i>
+    </button>
+    ${rowsHtml}
+  </div>`;
+}
+
+// Surgical toggle for a single UML card — no full re-render, no flicker.
+// Uses SECTION_CARD_CONFIG[currentSection] to fetch the right rows (attrs / values / tables / …).
+function toggleConceptCardInPlace(id) {
+  const header = document.querySelector(`.uml-card > .uml-card-header[data-toggle-concept="${CSS.escape(id)}"]`);
+  if (!header) return false;
+  const card = header.closest('.uml-card');
+  const cfg = SECTION_CARD_CONFIG[currentSection];
+  if (!cfg) return false;
+  const willExpand = !card.classList.contains('uml-card--expanded');
+  const rowLabel = cfg.rowLabel;
+
+  if (willExpand) {
+    const rows = cfg.fetchRowsBatch([id])[id] || [];
+    const href = card.dataset.href || '';
+    card.insertAdjacentHTML('beforeend', renderUmlRowsSection(rows, {
+      emptyLabel: cfg.emptyLabel,
+      maxRows: cfg.maxRows,
+      moreHref: href
+    }));
+    card.classList.add('uml-card--expanded');
+    header.setAttribute('aria-expanded', 'true');
+    header.setAttribute('aria-label', `${rowLabel} ausblenden`);
   } else {
-    attrsHtml = '<div class="concept-box-empty">Keine Attribute erfasst</div>';
+    card.querySelector('.uml-card-attrs, .uml-card-empty')?.remove();
+    card.classList.remove('uml-card--expanded');
+    header.setAttribute('aria-expanded', 'false');
+    header.setAttribute('aria-label', `${rowLabel} anzeigen`);
   }
 
-  return `<div class="concept-box concept-box--expanded">
-    <div class="concept-box-header">
-      <a class="concept-box-name" href="${href}">${name}</a>
-      <button class="concept-box-toggle" data-toggle-concept="${c.id}" aria-label="Einklappen" type="button">
-        <i data-lucide="${chevron}" style="width:14px;height:14px;"></i>
-      </button>
-    </div>
-    ${descHtml}
-    ${attrsHtml}
-  </div>`;
+  const chevronEl = header.querySelector('.uml-card-chevron');
+  if (chevronEl) {
+    chevronEl.outerHTML = `<i data-lucide="chevron-${willExpand ? 'up' : 'down'}" class="uml-card-chevron" style="width:14px;height:14px;" aria-hidden="true"></i>`;
+    lucide.createIcons({ nodes: [header] });
+  }
+
+  if (expandedConcepts.has(id)) expandedConcepts.delete(id);
+  else expandedConcepts.add(id);
+  return true;
 }
 
 
@@ -1198,12 +1333,7 @@ function renderVocabularyList(listTab, collectionId) {
     { id: 'none', label: 'Keine' }
   ];
 
-  let toggleAllCtrl = '';
-  if (listTab === 'diagram') {
-    const anyExpanded = allConcepts.some(c => expandedConcepts.has(c.id));
-    const label = anyExpanded ? 'Alle einklappen' : 'Alle erweitern';
-    toggleAllCtrl = `<button class="grouping-btn" data-toggle-all-concepts type="button">${label} <i data-lucide="chevrons-up-down" style="width:14px;height:14px;"></i></button>`;
-  }
+  const toggleAllCtrl = listTab === 'diagram' ? buildAttrsToggleHtml('vocabulary') : '';
   html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary, toggleAllCtrl, filterCtx);
   if (filterCtx) {
     html += filterCtx.panelHtml;
@@ -1229,36 +1359,32 @@ function renderVocabularyList(listTab, collectionId) {
 
   // Diagram
   if (listTab === 'diagram') {
-    // Batch-fetch attributes for currently-expanded concepts (no N+1)
-    const expandedIds = allConcepts.map(c => c.id).filter(id => expandedConcepts.has(id));
-    const attributesById = {};
-    if (expandedIds.length > 0) {
-      const placeholders = expandedIds.map(() => '?').join(',');
-      const attrs = query(
-        `SELECT concept_id, name_en, name_de, name_fr, name_it, value_type, required, code_list_id
-         FROM concept_attribute
-         WHERE concept_id IN (${placeholders})
-         ORDER BY sort_order, name_en`,
-        expandedIds
-      );
-      attrs.forEach(a => {
-        (attributesById[a.concept_id] = attributesById[a.concept_id] || []).push(a);
-      });
-    }
+    const cfg = SECTION_CARD_CONFIG.vocabulary;
+    const expandedIds = allConcepts.filter(c => isCardExpanded(c.id)).map(c => c.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
 
-    if (!activeCollection && grouping.vocabulary === 'none') {
-      html += renderVocabularyDiagramFlat(allConcepts, attributesById);
-    } else if (!activeCollection && grouping.vocabulary !== 'domain') {
-      const groups = {};
-      allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
-      html += '<div class="diagram-canvas">';
-      Object.keys(groups).forEach(k => {
-        html += renderVocabularyDomainGroup({ id: k, ['name_' + lang]: k, concept_count: groups[k].length }, groups[k], attributesById);
+    const groups = [];
+    if (activeCollection) {
+      groups.push({ id: activeCollection.id, title: n(activeCollection, 'name'), items: conceptsByCollection[activeCollection.id] || [] });
+    } else if (grouping.vocabulary === 'none') {
+      groups.push({ id: 'all', title: 'Alle Geschäftsobjekte', items: allConcepts });
+    } else if (grouping.vocabulary === 'domain') {
+      filteredCollections.forEach(col => {
+        groups.push({ id: col.id, title: n(col, 'name'), items: conceptsByCollection[col.id] || [] });
       });
-      html += '</div>';
+      if (filteredUngrouped.length) groups.push({ id: 'ungrouped', title: 'Ohne Domäne', items: filteredUngrouped });
     } else {
-      html += renderVocabularyDiagram(filteredCollections, conceptsByCollection, filteredUngrouped, attributesById);
+      const byKey = {};
+      allConcepts.forEach(c => { const k = getGroupKey(c); (byKey[k] = byKey[k] || []).push(c); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
+    const renderCard = c => renderExpandableCard(
+      { id: c.id, href: '#/vocabulary/' + c.id, name: n(c, 'name'), tooltip: getDefinitionText(c.definition, lang) },
+      isCardExpanded(c.id),
+      rowsById[c.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-vocab');
     html += '</div>';
     return html;
   }
@@ -1347,7 +1473,8 @@ function renderCodeListsList(listTab) {
   const allCodeLists = query(`SELECT cl.*,
     COALESCE(vc.value_count, 0) as value_count,
     COALESCE(vc.deprecated_count, 0) as deprecated_count,
-    dom.domain_name
+    dom.domain_name,
+    c.name as owner_name
     FROM code_list cl
     LEFT JOIN (
       SELECT code_list_id,
@@ -1362,12 +1489,9 @@ function renderCodeListsList(listTab) {
       JOIN collection col ON c.collection_id = col.id
       GROUP BY ca.code_list_id
     ) dom ON dom.code_list_id = cl.id
+    LEFT JOIN contact c ON c.id = cl.owner_id
     ORDER BY cl.${nameCol('name')}`);
   const totalCount = allCodeLists.length;
-
-  function clStatus(cl) {
-    return (cl.value_count > 0 && cl.deprecated_count === cl.value_count) ? 'deprecated' : 'approved';
-  }
 
   // Build filter options from data — value is collection_id (stable) for bookmark safety
   const domainOpts = [];
@@ -1397,11 +1521,8 @@ function renderCodeListsList(listTab) {
     },
     {
       id: 'status', label: 'Freigabe',
-      options: [
-        { value: 'approved', label: 'Freigegeben' },
-        { value: 'deprecated', label: 'Veraltet' }
-      ],
-      match: (cl, vals) => vals.includes(clStatus(cl))
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: STATUS_LABELS[k] })),
+      match: (cl, vals) => vals.includes(cl.status)
     }
   ];
   const currentFilters = activeFilters.codelists || {};
@@ -1420,7 +1541,7 @@ function renderCodeListsList(listTab) {
     { id: 'source', label: 'Quelle' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, '', filterCtx);
+  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, listTab === 'diagram' ? buildAttrsToggleHtml('codelists') : '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
   announceFilterResult(SECTION_LABELS.codelists[lang], codeLists.length, totalCount, filterCtx.count);
@@ -1442,21 +1563,26 @@ function renderCodeListsList(listTab) {
   }
 
   if (listTab === 'diagram') {
-    html += '<div class="diagram-canvas">';
+    const cfg = SECTION_CARD_CONFIG.codelists;
+    const expandedIds = codeLists.filter(cl => isCardExpanded(cl.id)).map(cl => cl.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
+
+    const groups = [];
     if (grouping.codelists === 'none') {
-      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Codelisten', concept_count: codeLists.length }, codeLists.map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id })));
+      groups.push({ id: 'all', title: 'Alle Codelisten', items: codeLists });
     } else {
-      const groups = {};
-      codeLists.forEach(cl => { const k = getClGroupKey(cl); if (!groups[k]) groups[k] = []; groups[k].push(cl); });
-      const large = [], small = [];
-      Object.keys(groups).sort().forEach(k => {
-        const mapped = groups[k].map(cl => ({ id: cl.id, ['name_' + lang]: n(cl, 'name'), href: '#/codelists/' + cl.id }));
-        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
-      });
-      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
-      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+      const byKey = {};
+      codeLists.forEach(cl => { const k = getClGroupKey(cl); (byKey[k] = byKey[k] || []).push(cl); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
-    html += '</div></div>';
+    const renderCard = cl => renderExpandableCard(
+      { id: cl.id, href: '#/codelists/' + cl.id, name: n(cl, 'name'), tooltip: getDefinitionText(cl.description, lang) },
+      isCardExpanded(cl.id),
+      rowsById[cl.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-cl');
+    html += '</div>';
     return html;
   }
 
@@ -1470,8 +1596,8 @@ function renderCodeListsList(listTab) {
       <td>${cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
-      <td>${statusBadge(clStatus(cl), 'status')}</td>
-      <td><span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span></td>
+      <td>${statusBadge(cl.status, 'status')}</td>
+      <td>${cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>'}</td>
     </tr>`;
   }
 
@@ -1584,20 +1710,17 @@ function renderTermsList(listTab) {
   }
 
   if (listTab === 'diagram') {
-    html += '<div class="diagram-canvas">';
+    const groups = [];
     if (grouping.terms === 'none') {
-      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Begriffe' }, terms.map(t => ({ ...t, href: '#/terms/' + t.id })));
+      groups.push({ id: 'all', title: 'Alle Begriffe', items: terms });
     } else {
-      const groups = {};
-      terms.forEach(t => { const k = getTermGroupKey(t); if (!groups[k]) groups[k] = []; groups[k].push(t); });
-      const large = [], small = [];
-      Object.keys(groups).sort().forEach(k => {
-        if (groups[k].length > 3) large.push({ src: k, items: groups[k] }); else small.push({ src: k, items: groups[k] });
-      });
-      large.forEach(g => { html += renderDomainGroup({ id: g.src, ['name_' + lang]: g.src }, g.items.map(t => ({ ...t, href: '#/terms/' + t.id }))); });
-      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.src, ['name_' + lang]: g.src }, g.items.map(t => ({ ...t, href: '#/terms/' + t.id }))); }); html += '</div>'; }
+      const byKey = {};
+      terms.forEach(t => { const k = getTermGroupKey(t); (byKey[k] = byKey[k] || []).push(t); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
-    html += '</div></div>';
+    const renderCard = t => renderSimpleCard('#/terms/' + t.id, n(t, 'name'), getDefinitionText(t.definition, lang));
+    html += renderUmlDiagram(groups, renderCard, 'diag-term');
+    html += '</div>';
     return html;
   }
 
@@ -1694,7 +1817,7 @@ function renderSystemsList(listTab) {
     { id: 'status', label: 'Status' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, '', filterCtx);
+  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, listTab === 'diagram' ? buildAttrsToggleHtml('systems') : '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
   announceFilterResult(SECTION_LABELS.systems[lang], systems.length, totalCount, filterCtx.count);
@@ -1710,25 +1833,29 @@ function renderSystemsList(listTab) {
   }
 
   if (listTab === 'diagram') {
-    html += '<div class="diagram-canvas">';
+    const cfg = SECTION_CARD_CONFIG.systems;
+    const expandedIds = systems.filter(s => isCardExpanded(s.id)).map(s => s.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
+
+    const groups = [];
     if (grouping.systems === 'none') {
-      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Systeme', concept_count: systems.length }, systems.map(s => ({ id: s.id, ['name_' + lang]: n(s, 'name'), href: '#/systems/' + s.id })));
+      groups.push({ id: 'all', title: 'Alle Systeme', items: systems });
     } else {
-      const groups = {};
+      const byKey = {};
       systems.forEach(s => {
         const k = grouping.systems === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
-        if (!groups[k]) groups[k] = [];
-        groups[k].push(s);
+        (byKey[k] = byKey[k] || []).push(s);
       });
-      const large = [], small = [];
-      Object.keys(groups).sort().forEach(k => {
-        const mapped = groups[k].map(s => ({ id: s.id, ['name_' + lang]: n(s, 'name'), href: '#/systems/' + s.id }));
-        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
-      });
-      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
-      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
-    html += '</div></div>';
+    const renderCard = s => renderExpandableCard(
+      { id: s.id, href: '#/systems/' + s.id, name: n(s, 'name'), tooltip: getDefinitionText(s.description, lang) },
+      isCardExpanded(s.id),
+      rowsById[s.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-sys');
+    html += '</div>';
     return html;
   }
 
@@ -1850,21 +1977,17 @@ function renderProductsList(listTab) {
   }
 
   if (listTab === 'diagram') {
-    html += '<div class="diagram-canvas">';
+    const groups = [];
     if (grouping.products === 'none') {
-      html += renderDomainGroup({ id: 'all', ['name_' + lang]: 'Alle Datensammlungen', concept_count: products.length }, products.map(dp => ({ id: dp.id, ['name_' + lang]: n(dp, 'name'), href: '#/products/' + dp.id })));
+      groups.push({ id: 'all', title: 'Alle Datensammlungen', items: products });
     } else {
-      const groups = {};
-      products.forEach(dp => { const k = getProductGroupKey(dp); if (!groups[k]) groups[k] = []; groups[k].push(dp); });
-      const large = [], small = [];
-      Object.keys(groups).sort().forEach(k => {
-        const mapped = groups[k].map(dp => ({ id: dp.id, ['name_' + lang]: n(dp, 'name'), href: '#/products/' + dp.id }));
-        if (mapped.length > 3) large.push({ k, items: mapped }); else small.push({ k, items: mapped });
-      });
-      large.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); });
-      if (small.length) { html += '<div class="diagram-row">'; small.forEach(g => { html += renderDomainGroup({ id: g.k, ['name_' + lang]: g.k, concept_count: g.items.length }, g.items); }); html += '</div>'; }
+      const byKey = {};
+      products.forEach(dp => { const k = getProductGroupKey(dp); (byKey[k] = byKey[k] || []).push(dp); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
-    html += '</div></div>';
+    const renderCard = dp => renderSimpleCard('#/products/' + dp.id, n(dp, 'name'), getDefinitionText(dp.description, lang));
+    html += renderUmlDiagram(groups, renderCard, 'diag-prod');
+    html += '</div>';
     return html;
   }
 
@@ -2420,13 +2543,15 @@ function renderConceptContents(conceptId) {
 
   let html = '<div class="content-section"><div class="section-label">FIELDS</div>';
   html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Required</th><th scope="col">Code List</th><th scope="col">Description</th>';
+  html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Key</th><th scope="col">Required</th><th scope="col">Code List</th><th scope="col">Description</th>';
   html += '</tr></thead><tbody>';
   attrs.forEach(a => {
     const def = getDefinitionText(a.definition, lang);
+    const key = conceptAttrKey(a);
     html += `<tr>
       <td class="cell-mono">${escapeHtml(n(a, 'name'))}</td>
       <td class="cell-mono">${escapeHtml(a.value_type)}</td>
+      <td>${key ? `<span class="uml-card-attr-key">${key}</span>` : '&ndash;'}</td>
       <td>${a.required ? 'Yes' : 'No'}</td>
       <td>${a.cl_id ? '<a href="#/codelists/' + a.cl_id + '">' + escapeHtml(a.code_list_name || '') + '</a>' : '&ndash;'}</td>
       <td>${escapeHtml(def || '')}</td>
@@ -2603,18 +2728,18 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
   html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
-  // Derive domain from linked concepts
+  // Derive domain from linked concepts (display-only join; not stored on code_list)
   const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
     JOIN concept c ON ca.concept_id = c.id
     JOIN collection col ON c.collection_id = col.id
     WHERE ca.code_list_id = ? LIMIT 1`, [cl.id]);
-  const clStatus = (valueCount > 0 && deprecatedCount === valueCount) ? 'deprecated' : 'approved';
+  const owner = cl.owner_id ? queryOne("SELECT name, email, organisation, role FROM contact WHERE id = ?", [cl.owner_id]) : null;
 
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (clDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(clDomain.dname)}</td></tr>`;
-  html += `<tr><td>Freigabe</td><td>${statusBadge(clStatus)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${statusBadge(cl.status)}</td></tr>`;
   if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
   html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
   if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
@@ -2624,9 +2749,13 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   }
   html += '</table></div>';
 
-  // Verantwortliche
+  // Verantwortliche — real owner from code_list.owner_id → contact
   html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
-  html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
+  if (owner) {
+    html += renderStakeholderCard(owner.name, owner.organisation, owner.email);
+  } else {
+    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
+  }
   html += '</div>';
 
   return html;
@@ -3054,11 +3183,11 @@ function renderDatasetQuality(datasetId) {
 
   const dimensions = [
     { key: 'completeness', icon: 'check-circle', label: 'Vollständigkeit', desc: 'Anteil der befüllten Pflichtfelder am Gesamtbestand.', score: profile?.completeness_score },
-    { key: 'timeliness', icon: 'clock', label: 'Aktualität', desc: 'Alter der Daten im Vergleich zum erwarteten Aktualisierungszyklus.', score: null },
-    { key: 'accuracy', icon: 'target', label: 'Genauigkeit', desc: 'Übereinstimmung der Werte mit autoritativen Quellen (z.\u00a0B. GWR, Grundbuch).', score: null },
-    { key: 'consistency', icon: 'git-compare', label: 'Konsistenz', desc: 'Systemübergreifende Übereinstimmung (z.\u00a0B. gleiche EGID = gleiche Adresse).', score: null },
+    { key: 'timeliness', icon: 'clock', label: 'Aktualität', desc: 'Alter der Daten im Vergleich zum erwarteten Aktualisierungszyklus.', score: profile?.timeliness_score },
+    { key: 'accuracy', icon: 'target', label: 'Genauigkeit', desc: 'Übereinstimmung der Werte mit autoritativen Quellen (z.\u00a0B. GWR, Grundbuch).', score: profile?.accuracy_score },
+    { key: 'consistency', icon: 'git-compare', label: 'Konsistenz', desc: 'Systemübergreifende Übereinstimmung (z.\u00a0B. gleiche EGID = gleiche Adresse).', score: profile?.consistency_score },
     { key: 'validity', icon: 'shield-check', label: 'Formatkonformität', desc: 'Anteil der Werte, die dem erwarteten Format, Wertebereich oder der Codeliste entsprechen.', score: profile?.format_validity_score },
-    { key: 'uniqueness', icon: 'fingerprint', label: 'Eindeutigkeit', desc: 'Anteil der Datensätze ohne unbeabsichtigte Duplikate.', score: null }
+    { key: 'uniqueness', icon: 'fingerprint', label: 'Eindeutigkeit', desc: 'Anteil der Datensätze ohne unbeabsichtigte Duplikate.', score: profile?.uniqueness_score }
   ];
 
   let html = '<div class="content-section"><div class="section-label">DATENQUALITÄT</div>';
@@ -3546,7 +3675,7 @@ document.addEventListener('click', function(e) {
   // Header logo
   if (target.closest('#header-logo')) {
     e.preventDefault();
-    navigate('#/vocabulary');
+    navigate('#/home');
     return;
   }
 
@@ -3556,25 +3685,22 @@ document.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
     const id = conceptToggle.dataset.toggleConcept;
+    // Surgical DOM update for UML cards — avoids the flicker of a full re-render.
+    if (toggleConceptCardInPlace(id)) return;
+    // Fallback (no matching uml-card in DOM): do a full re-render as before.
     if (expandedConcepts.has(id)) expandedConcepts.delete(id);
     else expandedConcepts.add(id);
+    pendingFocus = { sel: `[data-toggle-concept="${CSS.escape(id)}"]` };
     handleRoute();
     return;
   }
 
-  // Concept box: expand/collapse all (tab-bar button)
-  const toggleAll = target.closest('[data-toggle-all-concepts]');
-  if (toggleAll) {
+  // Diagram: global attribute visibility toggle (URL-backed via ?attrs=1)
+  if (target.closest('[data-attrs-toggle]')) {
     e.preventDefault();
-    const ids = Array.from(document.querySelectorAll('[data-toggle-concept]'))
-      .map(el => el.dataset.toggleConcept);
-    const anyExpanded = ids.some(id => expandedConcepts.has(id));
-    if (anyExpanded) {
-      ids.forEach(id => expandedConcepts.delete(id));
-    } else {
-      ids.forEach(id => expandedConcepts.add(id));
-    }
-    handleRoute();
+    const nextMode = attrsMode === 'show' ? 'hide' : 'show';
+    expandedConcepts.clear(); // per-card overrides reset on global toggle
+    navigateWithAttrsMode(nextMode);
     return;
   }
 

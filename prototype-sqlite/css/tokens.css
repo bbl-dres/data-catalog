@@ -8,6 +8,7 @@
   --color-bg-surface-hover: #F7F7F6;
   --color-bg-accent: #E8EEF6;
   --color-bg-accent-strong: #1F4E8A;
+  --color-bg-accent-strong-rgb: 31, 78, 138; /* use with rgba(var(--color-bg-accent-strong-rgb), α) */
   --color-bg-overlay: #262626;
 
   /* Colors — Border */
