@@ -127,10 +127,9 @@ window.LineageApp.Interactions = (function () {
     // ---- Pan ----
 
     function onPanStart(e) {
-        // Only pan from background — skip if clicking on a node
+        // Only pan from background — skip if clicking on a node or overlay
         if (e.target.closest('.node')) return;
-        // Skip if clicking toolbar buttons
-        if (e.target.closest('.toolbar')) return;
+        if (e.target.closest('.graph-error-card')) return;
 
         isPanning = true;
         panStartX = e.clientX;

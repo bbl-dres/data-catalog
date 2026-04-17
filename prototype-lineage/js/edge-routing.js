@@ -6,26 +6,69 @@ window.LineageApp = window.LineageApp || {};
 window.LineageApp.EdgeRouting = (function () {
 
     /**
-     * Compute a cubic bezier SVG path from the right edge of source to left edge of target.
-     * @param {{x:number, y:number, width:number, height:number}} src - source node rect
-     * @param {{x:number, y:number, width:number, height:number}} tgt - target node rect
+     * Compute a cubic bezier SVG path between two node rects, honouring the
+     * current layout direction so edges exit the correct face of each box.
+     *
+     * @param {{x:number, y:number, width:number, height:number}} src
+     * @param {{x:number, y:number, width:number, height:number}} tgt
+     * @param {'LR'|'RL'|'TB'|'BT'} [direction='LR']
      * @returns {string} SVG path d attribute
      */
-    function computeEdgePath(src, tgt) {
-        var x1 = src.x + src.width;
-        var y1 = src.y + src.height / 2;
-        var x2 = tgt.x;
-        var y2 = tgt.y + tgt.height / 2;
+    function computeEdgePath(src, tgt, direction) {
+        direction = direction || 'LR';
 
-        var dx = Math.max(Math.abs(x2 - x1) * 0.5, 60);
+        var x1, y1, x2, y2, cp1x, cp1y, cp2x, cp2y, delta;
+
+        switch (direction) {
+            case 'TB':
+                x1 = src.x + src.width / 2;
+                y1 = src.y + src.height;
+                x2 = tgt.x + tgt.width / 2;
+                y2 = tgt.y;
+                delta = Math.max(Math.abs(y2 - y1) * 0.5, 60);
+                cp1x = x1; cp1y = y1 + delta;
+                cp2x = x2; cp2y = y2 - delta;
+                break;
+            case 'BT':
+                x1 = src.x + src.width / 2;
+                y1 = src.y;
+                x2 = tgt.x + tgt.width / 2;
+                y2 = tgt.y + tgt.height;
+                delta = Math.max(Math.abs(y2 - y1) * 0.5, 60);
+                cp1x = x1; cp1y = y1 - delta;
+                cp2x = x2; cp2y = y2 + delta;
+                break;
+            case 'RL':
+                x1 = src.x;
+                y1 = src.y + src.height / 2;
+                x2 = tgt.x + tgt.width;
+                y2 = tgt.y + tgt.height / 2;
+                delta = Math.max(Math.abs(x2 - x1) * 0.5, 60);
+                cp1x = x1 - delta; cp1y = y1;
+                cp2x = x2 + delta; cp2y = y2;
+                break;
+            case 'LR':
+            default:
+                x1 = src.x + src.width;
+                y1 = src.y + src.height / 2;
+                x2 = tgt.x;
+                y2 = tgt.y + tgt.height / 2;
+                delta = Math.max(Math.abs(x2 - x1) * 0.5, 60);
+                cp1x = x1 + delta; cp1y = y1;
+                cp2x = x2 - delta; cp2y = y2;
+                break;
+        }
+
         return 'M ' + x1 + ' ' + y1 +
-               ' C ' + (x1 + dx) + ' ' + y1 +
-               ', ' + (x2 - dx) + ' ' + y2 +
+               ' C ' + cp1x + ' ' + cp1y +
+               ', ' + cp2x + ' ' + cp2y +
                ', ' + x2 + ' ' + y2;
     }
 
     /**
      * Compute a cubic bezier SVG path between two port positions (column-level).
+     * Column ports live on the left/right of each row, so these edges stay
+     * horizontal regardless of the overall layout direction.
      * @param {{x:number, y:number}} from
      * @param {{x:number, y:number}} to
      * @returns {string} SVG path d attribute

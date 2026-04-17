@@ -9,81 +9,7 @@ window.LineageApp = window.LineageApp || {};
     var Renderer = window.LineageApp.Renderer;
     var Interactions = window.LineageApp.Interactions;
 
-    // Fallback sample data in case fetch fails (e.g. file:// protocol)
-    var FALLBACK_DATA = {
-        nodes: [
-            { id: "raw_orders", type: "table", label: "raw_orders", database: "ecommerce_db", schema: "shopify", columns: [
-                { name: "order_id", dataType: "INT", tags: ["PK"] },
-                { name: "customer_id", dataType: "INT", tags: ["FK"] },
-                { name: "product_id", dataType: "INT", tags: ["FK"] },
-                { name: "order_date", dataType: "TIMESTAMP" },
-                { name: "quantity", dataType: "INT" },
-                { name: "total_amount", dataType: "DECIMAL" },
-                { name: "status", dataType: "VARCHAR" },
-                { name: "shipping_address", dataType: "VARCHAR" },
-                { name: "shipping_date", dataType: "DATE" }
-            ]},
-            { id: "raw_customers", type: "table", label: "raw_customers", database: "ecommerce_db", schema: "shopify", columns: [
-                { name: "customer_id", dataType: "INT", tags: ["PK"] },
-                { name: "first_name", dataType: "VARCHAR" },
-                { name: "last_name", dataType: "VARCHAR" },
-                { name: "email", dataType: "VARCHAR" },
-                { name: "membership", dataType: "VARCHAR" },
-                { name: "created_at", dataType: "TIMESTAMP" }
-            ]},
-            { id: "raw_products", type: "table", label: "raw_products", database: "ecommerce_db", schema: "shopify", columns: [
-                { name: "product_id", dataType: "INT", tags: ["PK"] },
-                { name: "product_name", dataType: "VARCHAR" },
-                { name: "category", dataType: "VARCHAR" },
-                { name: "vendor", dataType: "VARCHAR" },
-                { name: "price", dataType: "DECIMAL" }
-            ]},
-            { id: "etl_order_enrichment", type: "pipeline", label: "order_enrichment_etl", description: "Joins orders with customer and product data, computes derived fields", platform: "Airflow" },
-            { id: "fact_orders", type: "table", label: "fact_orders", database: "ecommerce_dw", schema: "analytics", columns: [
-                { name: "order_key", dataType: "INT", tags: ["PK"] },
-                { name: "order_id", dataType: "INT" },
-                { name: "customer_key", dataType: "INT", tags: ["FK"] },
-                { name: "product_name", dataType: "VARCHAR" },
-                { name: "category", dataType: "VARCHAR" },
-                { name: "order_date", dataType: "DATE" },
-                { name: "quantity", dataType: "INT" },
-                { name: "total_amount", dataType: "DECIMAL" },
-                { name: "status", dataType: "VARCHAR" }
-            ]},
-            { id: "dim_customer", type: "table", label: "dim_customer", database: "ecommerce_dw", schema: "analytics", columns: [
-                { name: "customer_key", dataType: "INT", tags: ["PK"] },
-                { name: "customer_id", dataType: "INT" },
-                { name: "full_name", dataType: "VARCHAR" },
-                { name: "email", dataType: "VARCHAR" },
-                { name: "membership", dataType: "VARCHAR" }
-            ]},
-            { id: "dashboard_sales", type: "dashboard", label: "Sales Overview Dashboard", platform: "Looker", charts: ["Revenue by Month", "Top Customers", "Order Status", "Category Breakdown"] }
-        ],
-        edges: [
-            { id: "e1", source: "raw_orders", target: "etl_order_enrichment", columnMapping: [] },
-            { id: "e2", source: "raw_customers", target: "etl_order_enrichment", columnMapping: [] },
-            { id: "e3", source: "raw_products", target: "etl_order_enrichment", columnMapping: [] },
-            { id: "e4", source: "etl_order_enrichment", target: "fact_orders", columnMapping: [
-                { sourceNode: "raw_orders", sourceColumn: "order_id", targetColumn: "order_id" },
-                { sourceNode: "raw_orders", sourceColumn: "order_date", targetColumn: "order_date" },
-                { sourceNode: "raw_orders", sourceColumn: "quantity", targetColumn: "quantity" },
-                { sourceNode: "raw_orders", sourceColumn: "total_amount", targetColumn: "total_amount" },
-                { sourceNode: "raw_orders", sourceColumn: "status", targetColumn: "status" },
-                { sourceNode: "raw_products", sourceColumn: "product_name", targetColumn: "product_name" },
-                { sourceNode: "raw_products", sourceColumn: "category", targetColumn: "category" },
-                { sourceNode: "raw_orders", sourceColumn: "customer_id", targetColumn: "customer_key" }
-            ]},
-            { id: "e5", source: "etl_order_enrichment", target: "dim_customer", columnMapping: [
-                { sourceNode: "raw_customers", sourceColumn: "customer_id", targetColumn: "customer_id" },
-                { sourceNode: "raw_customers", sourceColumn: "first_name", targetColumn: "full_name" },
-                { sourceNode: "raw_customers", sourceColumn: "last_name", targetColumn: "full_name" },
-                { sourceNode: "raw_customers", sourceColumn: "email", targetColumn: "email" },
-                { sourceNode: "raw_customers", sourceColumn: "membership", targetColumn: "membership" }
-            ]},
-            { id: "e6", source: "fact_orders", target: "dashboard_sales", columnMapping: [] },
-            { id: "e7", source: "dim_customer", target: "dashboard_sales", columnMapping: [] }
-        ]
-    };
+    var ERROR_CARD_ID = 'graph-error-card';
 
     function applySelectedLayoutPreset(nodeCount) {
         var selector = document.getElementById('layout-selector');
@@ -93,6 +19,7 @@ window.LineageApp = window.LineageApp || {};
     }
 
     function renderData(data) {
+        hideLoadError();
         applySelectedLayoutPreset(data.nodes.length);
         Graph.init(data);
         Renderer.renderAllNodes();
@@ -109,45 +36,80 @@ window.LineageApp = window.LineageApp || {};
         return { data: JSON.parse(rawText), rawText: rawText };
     }
 
+    function showLoadError(url, err) {
+        var container = document.getElementById('graph-container');
+        if (!container) return;
+
+        var existing = document.getElementById(ERROR_CARD_ID);
+        if (existing) existing.remove();
+
+        var card = document.createElement('div');
+        card.id = ERROR_CARD_ID;
+        card.className = 'graph-error-card';
+
+        var title = document.createElement('div');
+        title.className = 'graph-error-card__title';
+        title.textContent = 'Could not load ' + url;
+        card.appendChild(title);
+
+        var detail = document.createElement('div');
+        detail.className = 'graph-error-card__detail';
+        detail.textContent = err && err.message ? err.message : String(err);
+        card.appendChild(detail);
+
+        var hint = document.createElement('div');
+        hint.className = 'graph-error-card__hint';
+        hint.textContent = 'Check that the file exists and is valid JSON, or pick another example.';
+        card.appendChild(hint);
+
+        container.appendChild(card);
+    }
+
+    function hideLoadError() {
+        var existing = document.getElementById(ERROR_CARD_ID);
+        if (existing) existing.remove();
+    }
+
+    function clearGraph() {
+        Graph.init({ nodes: [], edges: [] });
+        Renderer.renderAllNodes();
+        Renderer.renderAllEdges();
+    }
+
     async function init() {
         var Editor = window.LineageApp.Editor;
-        var selector = document.getElementById('example-selector');
-        var defaultUrl = selector ? selector.value : 'data/lineage.json';
-
-        var loaded;
-        try {
-            loaded = await loadExample(defaultUrl);
-        } catch (err) {
-            console.warn('Could not fetch ' + defaultUrl + ', using fallback data:', err.message);
-            loaded = {
-                data: FALLBACK_DATA,
-                rawText: JSON.stringify(FALLBACK_DATA, null, 2)
-            };
-        }
 
         Renderer.init();
-        renderData(loaded.data);
         Interactions.init();
 
-        // Wire the live editor — re-render on every valid JSON edit
         if (Editor) {
-            Editor.init(loaded.rawText, function (newData) {
+            Editor.init('', function (newData) {
                 renderData(newData);
             });
         }
 
-        // Wire the example dropdown — swap the JSON file on change
+        var selector = document.getElementById('example-selector');
+        var defaultUrl = selector ? selector.value : 'data/lineage.json';
+
+        await loadAndRender(defaultUrl, Editor);
+
         if (selector) {
-            selector.addEventListener('change', async function (e) {
-                var url = e.target.value;
-                try {
-                    var next = await loadExample(url);
-                    if (Editor) Editor.setContent(next.rawText);
-                    renderData(next.data);
-                } catch (err) {
-                    console.error('Failed to load example ' + url + ':', err);
-                }
+            selector.addEventListener('change', function (e) {
+                loadAndRender(e.target.value, Editor);
             });
+        }
+    }
+
+    async function loadAndRender(url, Editor) {
+        try {
+            var loaded = await loadExample(url);
+            if (Editor) Editor.setContent(loaded.rawText);
+            renderData(loaded.data);
+        } catch (err) {
+            console.warn('Could not load ' + url + ':', err.message);
+            clearGraph();
+            if (Editor) Editor.setContent('');
+            showLoadError(url, err);
         }
     }
 

@@ -264,7 +264,8 @@ window.LineageApp.Renderer = (function () {
         srcRect = Graph.getNodeRect(edge.source);
         tgtRect = Graph.getNodeRect(edge.target);
 
-        var d = EdgeRouting.computeEdgePath(srcRect, tgtRect);
+        var direction = Graph.getLayoutOptions().direction;
+        var d = EdgeRouting.computeEdgePath(srcRect, tgtRect, direction);
 
         var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         path.setAttribute('d', d);

@@ -41,13 +41,86 @@ window.LineageApp.Editor = (function () {
             return;
         }
 
-        if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
-            setStatus('error', 'Schema error', 'Root object must have "nodes" and "edges" arrays');
+        var schemaError = validateSchema(data);
+        if (schemaError) {
+            setStatus('error', 'Schema error', schemaError);
             return;
         }
 
         setStatus('ok', 'Synced');
         if (onValidChange) onValidChange(data);
+    }
+
+    /**
+     * Check shape + every id reference. Returns null when valid, otherwise a
+     * short human-readable message naming the offending element.
+     */
+    function validateSchema(data) {
+        if (!data || typeof data !== 'object') {
+            return 'Root must be an object';
+        }
+        if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+            return 'Root object must have "nodes" and "edges" arrays';
+        }
+
+        var nodesById = {};
+        for (var i = 0; i < data.nodes.length; i++) {
+            var n = data.nodes[i];
+            if (!n || typeof n !== 'object') return 'nodes[' + i + '] is not an object';
+            if (!n.id) return 'nodes[' + i + '] is missing "id"';
+            if (nodesById[n.id]) return 'Duplicate node id "' + n.id + '"';
+            nodesById[n.id] = n;
+        }
+
+        var edgeIds = {};
+        for (var j = 0; j < data.edges.length; j++) {
+            var e = data.edges[j];
+            if (!e || typeof e !== 'object') return 'edges[' + j + '] is not an object';
+            if (!e.id) return 'edges[' + j + '] is missing "id"';
+            if (edgeIds[e.id]) return 'Duplicate edge id "' + e.id + '"';
+            edgeIds[e.id] = true;
+
+            if (!nodesById[e.source]) {
+                return 'Edge "' + e.id + '" source "' + e.source + '" is not a node';
+            }
+            if (!nodesById[e.target]) {
+                return 'Edge "' + e.id + '" target "' + e.target + '" is not a node';
+            }
+
+            if (e.columnMapping != null && !Array.isArray(e.columnMapping)) {
+                return 'Edge "' + e.id + '" columnMapping must be an array';
+            }
+
+            if (Array.isArray(e.columnMapping)) {
+                var targetNode = nodesById[e.target];
+                for (var k = 0; k < e.columnMapping.length; k++) {
+                    var cm = e.columnMapping[k];
+                    var cmLabel = 'Edge "' + e.id + '" columnMapping[' + k + ']';
+                    if (!cm || typeof cm !== 'object') return cmLabel + ' is not an object';
+
+                    var srcNode = nodesById[cm.sourceNode];
+                    if (!srcNode) {
+                        return cmLabel + ' sourceNode "' + cm.sourceNode + '" is not a node';
+                    }
+                    if (srcNode.columns && !columnExists(srcNode.columns, cm.sourceColumn)) {
+                        return cmLabel + ' sourceColumn "' + cm.sourceColumn + '" not found on "' + cm.sourceNode + '"';
+                    }
+                    if (targetNode.columns && !columnExists(targetNode.columns, cm.targetColumn)) {
+                        return cmLabel + ' targetColumn "' + cm.targetColumn + '" not found on "' + e.target + '"';
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    function columnExists(columns, name) {
+        if (!Array.isArray(columns)) return false;
+        for (var i = 0; i < columns.length; i++) {
+            if (columns[i] && columns[i].name === name) return true;
+        }
+        return false;
     }
 
     /**
