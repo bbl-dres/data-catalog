@@ -25,6 +25,7 @@ let relCleanup = null; // cleanup function for relationship graph event listener
 let activeFilters = {};
 let currentQueryStr = ''; // preserved across tab switches within a section
 let filterPanelOpen = false; // preserved across re-renders so selecting a checkbox doesn't collapse the panel
+let pendingFocus = null; // descriptor captured before navigation, restored after re-render
 
 const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
 const SECTION_LABELS = {
@@ -140,6 +141,12 @@ function sortTableByColumn(th) {
   rows.forEach(r => tbody.appendChild(r));
 }
 
+function isFilterValueActive(filterDim, value) {
+  const vals = activeFilters[currentSection]?.[filterDim];
+  if (!vals) return false;
+  return vals.some(v => String(v) === String(value));
+}
+
 function statusBadge(status, filterDim) {
   if (!status) return '';
   const s = status.toLowerCase();
@@ -155,10 +162,12 @@ function statusBadge(status, filterDim) {
   } else {
     cls = 'badge-draft'; label = 'Entwurf';
   }
-  const filterAttrs = filterDim
-    ? ` badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(status)}" title="Nach dieser Freigabe filtern`
-    : '';
-  return `<span class="badge ${cls}${filterAttrs}">${escapeHtml(label)}</span>`;
+  if (filterDim) {
+    const active = isFilterValueActive(filterDim, status);
+    const aria = active ? `Filter ${label} entfernen` : `Filter ${label} anwenden`;
+    return `<button type="button" class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(status)}" aria-pressed="${active}" aria-label="${escapeHtml(aria)}">${escapeHtml(label)}</button>`;
+  }
+  return `<span class="badge ${cls}">${escapeHtml(label)}</span>`;
 }
 
 function certifiedBadge(isCertified, filterDim) {
@@ -170,7 +179,10 @@ function certifiedBadge(isCertified, filterDim) {
 function filterBadge(text, filterDim, value, variant) {
   if (text == null || text === '') return '&ndash;';
   const cls = variant || 'badge-domain';
-  return `<span class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(String(value))}" title="Filter anwenden">${escapeHtml(String(text))}</span>`;
+  const safeText = escapeHtml(String(text));
+  const active = isFilterValueActive(filterDim, value);
+  const aria = active ? `Filter ${safeText} entfernen` : `Filter ${safeText} anwenden`;
+  return `<button type="button" class="badge ${cls} badge-filterable" data-filter-add-dim="${escapeHtml(filterDim)}" data-filter-add-value="${escapeHtml(String(value))}" aria-pressed="${active}" aria-label="${aria}">${safeText}</button>`;
 }
 
 function sectionCountLabel(totalCount, filteredCount, filterCtx) {
@@ -254,7 +266,41 @@ function getCurrentPathPart() {
 }
 
 function navigateWithFilters(filters) {
+  pendingFocus = captureFilterFocus();
   window.location.hash = getCurrentPathPart() + buildFilterQuery(filters);
+}
+
+// Capture focus descriptor before a filter navigation so we can restore it after re-render.
+function captureFilterFocus() {
+  const el = document.activeElement;
+  if (!el || el === document.body) return null;
+  if (el.id) return { sel: '#' + el.id };
+  if (el.dataset.filterDim) return { sel: `.filter-checkbox[data-filter-dim="${el.dataset.filterDim}"][data-filter-value="${CSS.escape(el.dataset.filterValue || '')}"]` };
+  if (el.dataset.filterAddDim) return { sel: `[data-filter-add-dim="${el.dataset.filterAddDim}"][data-filter-add-value="${CSS.escape(el.dataset.filterAddValue || '')}"]` };
+  // For pill-remove: the pill disappears; send focus to the filter toggle as a reasonable fallback.
+  if (el.dataset.filterRemoveDim) return { sel: '#filter-toggle' };
+  return null;
+}
+
+function restorePendingFocus() {
+  if (!pendingFocus) return;
+  const { sel } = pendingFocus;
+  pendingFocus = null;
+  try {
+    const el = document.querySelector(sel);
+    if (el) el.focus({ preventScroll: true });
+  } catch { /* invalid selector — ignore */ }
+}
+
+// Announce filtered result count to screen readers via the permanent #sr-live region.
+function announceFilterResult(sectionLabel, filteredCount, totalCount, filterCount) {
+  const live = document.getElementById('sr-live');
+  if (!live) return;
+  if (filterCount > 0) {
+    live.textContent = `${filteredCount} von ${totalCount} ${sectionLabel} angezeigt, ${filterCount} Filter aktiv.`;
+  } else {
+    live.textContent = '';
+  }
 }
 
 function applyFilterDefs(items, filterDefs, filters) {
@@ -307,7 +353,7 @@ function createFilterContext(filterDefs, filters) {
 
   let pillsHtml = '';
   if (count > 0) {
-    pillsHtml = '<div class="filter-pill-row">';
+    pillsHtml = `<div class="filter-pill-row"${filterPanelOpen ? ' hidden' : ''}>`;
     filterDefs.forEach(def => {
       const vals = filters[def.id] || [];
       if (!vals.length) return;
@@ -318,7 +364,7 @@ function createFilterContext(filterDefs, filters) {
         pillsHtml += `<span class="filter-pill">
           <span class="filter-pill-dim">${escapeHtml(def.label)}:</span>
           <span class="filter-pill-val">${escapeHtml(label)}</span>
-          <button type="button" class="filter-pill-remove" data-filter-remove-dim="${escapeHtml(def.id)}" data-filter-remove-value="${escapeHtml(String(v))}" aria-label="Filter entfernen">
+          <button type="button" class="filter-pill-remove" data-filter-remove-dim="${escapeHtml(def.id)}" data-filter-remove-value="${escapeHtml(String(v))}" aria-label="Filter ${escapeHtml(def.label)}: ${escapeHtml(label)} entfernen">
             <i data-lucide="x" style="width:12px;height:12px;"></i>
           </button>
         </span>`;
@@ -383,6 +429,8 @@ function handleRoute() {
   if (relCleanup) { relCleanup(); relCleanup = null; }
   hideSearchDropdown();
   const route = parseRoute();
+  // Close filter panel when switching to a different section (dimensions differ).
+  if (currentSection && route.section !== currentSection) filterPanelOpen = false;
   currentSection = route.section;
   currentEntityId = route.entityId;
   currentCollectionId = route.collectionId || null;
@@ -415,6 +463,7 @@ function handleRoute() {
   const sidebarEl = document.getElementById('sidebar');
   if (mainEl) lucide.createIcons({ nodes: [mainEl] });
   if (sidebarEl) lucide.createIcons({ nodes: [sidebarEl] });
+  restorePendingFocus();
 }
 
 window.addEventListener('hashchange', handleRoute);
@@ -1159,6 +1208,7 @@ function renderVocabularyList(listTab, collectionId) {
   if (filterCtx) {
     html += filterCtx.panelHtml;
     html += filterCtx.pillsHtml;
+    announceFilterResult(SECTION_LABELS.vocabulary[lang], allConcepts.length, totalConcepts, filterCtx.count);
   }
 
   // Build collection lookup
@@ -1306,7 +1356,7 @@ function renderCodeListsList(listTab) {
       FROM code_list_value GROUP BY code_list_id
     ) vc ON vc.code_list_id = cl.id
     LEFT JOIN (
-      SELECT ca.code_list_id, MIN(col.${nameCol('name')}) as domain_name
+      SELECT ca.code_list_id, MIN(col.id) as collection_id, MIN(col.${nameCol('name')}) as domain_name
       FROM concept_attribute ca
       JOIN concept c ON ca.concept_id = c.id
       JOIN collection col ON c.collection_id = col.id
@@ -1319,11 +1369,11 @@ function renderCodeListsList(listTab) {
     return (cl.value_count > 0 && cl.deprecated_count === cl.value_count) ? 'deprecated' : 'approved';
   }
 
-  // Build filter options from data
+  // Build filter options from data — value is collection_id (stable) for bookmark safety
   const domainOpts = [];
   const seenDomains = new Set();
   allCodeLists.forEach(cl => {
-    const key = cl.domain_name || '__none__';
+    const key = cl.collection_id || '__none__';
     if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: cl.domain_name || 'Ohne Domäne' }); }
   });
   domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
@@ -1339,7 +1389,7 @@ function renderCodeListsList(listTab) {
   const codelistFilterDefs = [
     {
       id: 'domain', label: 'Domäne', options: domainOpts,
-      match: (cl, vals) => vals.includes(cl.domain_name || '__none__')
+      match: (cl, vals) => vals.includes(cl.collection_id || '__none__')
     },
     {
       id: 'source', label: 'Quelle', options: sourceOpts,
@@ -1373,6 +1423,7 @@ function renderCodeListsList(listTab) {
   html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.codelists[lang], codeLists.length, totalCount, filterCtx.count);
 
   if (codeLists.length === 0) {
     if (filterCtx.count > 0) {
@@ -1416,7 +1467,7 @@ function renderCodeListsList(listTab) {
     const desc = getDefinitionText(cl.description, lang);
     return `<tr class="clickable-row" data-href="#/codelists/${cl.id}">
       <td>${escapeHtml(n(cl, 'name'))}</td>
-      <td>${cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.domain_name) : '&ndash;'}</td>
+      <td>${cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;'}</td>
       <td>${desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;'}</td>
       <td>${cl.value_count}</td>
       <td>${statusBadge(clStatus(cl), 'status')}</td>
@@ -1452,6 +1503,7 @@ function renderTermsList(listTab) {
   if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
   // Fetch terms with domain name via concept_term → concept → collection
   const allTerms = query(`SELECT t.*,
+    MIN(col.id) as collection_id,
     MIN(col.${nameCol('name')}) as domain_name
     FROM term t
     LEFT JOIN concept_term ct ON ct.term_id = t.id
@@ -1461,11 +1513,11 @@ function renderTermsList(listTab) {
     ORDER BY t.${nameCol('name')}`);
   const totalCount = allTerms.length;
 
-  // Build filter options from data
+  // Build filter options from data — value is collection_id (stable) for bookmark safety
   const domainOpts = [];
   const seenDomains = new Set();
   allTerms.forEach(t => {
-    const key = t.domain_name || '__none__';
+    const key = t.collection_id || '__none__';
     if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: t.domain_name || 'Ohne Domäne' }); }
   });
   domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
@@ -1482,7 +1534,7 @@ function renderTermsList(listTab) {
   const termFilterDefs = [
     {
       id: 'domain', label: 'Domäne', options: domainOpts,
-      match: (t, vals) => vals.includes(t.domain_name || '__none__')
+      match: (t, vals) => vals.includes(t.collection_id || '__none__')
     },
     {
       id: 'status', label: 'Freigabe',
@@ -1513,6 +1565,7 @@ function renderTermsList(listTab) {
   html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms, '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.terms[lang], terms.length, totalCount, filterCtx.count);
 
   if (terms.length === 0) {
     if (filterCtx.count > 0) {
@@ -1557,7 +1610,7 @@ function renderTermsList(listTab) {
     const def = getDefinitionText(t.definition, lang);
     return `<tr class="clickable-row" data-href="#/terms/${t.id}">
       <td>${escapeHtml(n(t, 'name'))}</td>
-      <td>${t.domain_name ? filterBadge(t.domain_name, 'domain', t.domain_name) : '&ndash;'}</td>
+      <td>${t.domain_name ? filterBadge(t.domain_name, 'domain', t.collection_id) : '&ndash;'}</td>
       <td>${def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;'}</td>
       <td>${statusBadge(t.status, 'status')}</td>
       <td>${t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;'}</td>
@@ -1644,6 +1697,7 @@ function renderSystemsList(listTab) {
   html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.systems[lang], systems.length, totalCount, filterCtx.count);
 
   if (systems.length === 0) {
     if (filterCtx.count > 0) {
@@ -1777,6 +1831,7 @@ function renderProductsList(listTab) {
   html += renderListTabBar('products', listTab, groupingOpts, grouping.products, '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.products[lang], products.length, totalCount, filterCtx.count);
 
   if (products.length === 0) {
     if (filterCtx.count > 0) {
@@ -3423,14 +3478,17 @@ document.addEventListener('click', function(e) {
     filterPanelOpen = !filterPanelOpen;
     const btn = document.getElementById('filter-toggle');
     const panel = document.getElementById('filter-panel');
+    const pillRow = document.querySelector('.filter-pill-row');
     if (panel) {
       if (filterPanelOpen) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
     }
+    // Hide pill row while panel is open to avoid duplicate state surface
+    if (pillRow) pillRow.hidden = filterPanelOpen;
     btn?.setAttribute('aria-expanded', String(filterPanelOpen));
     btn?.classList.toggle('open', filterPanelOpen);
     return;
   }
-  // Filter badge (in-table): add value to active filters
+  // Filter badge (in-table): toggle value in active filters
   const filterAdd = target.closest('[data-filter-add-dim]');
   if (filterAdd) {
     e.preventDefault();
@@ -3439,8 +3497,14 @@ document.addEventListener('click', function(e) {
     const val = filterAdd.dataset.filterAddValue;
     const next = { ...(activeFilters[currentSection] || {}) };
     const list = (next[dim] || []).slice();
-    if (!list.includes(val)) list.push(val);
-    next[dim] = list;
+    const idx = list.findIndex(v => String(v) === String(val));
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      if (list.length) next[dim] = list; else delete next[dim];
+    } else {
+      list.push(val);
+      next[dim] = list;
+    }
     navigateWithFilters(next);
     return;
   }

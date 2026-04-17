@@ -534,22 +534,28 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 .grouping-option:hover { background: var(--color-bg-surface-hover); }
 .grouping-option.active { color: var(--color-text-link); font-weight: 500; }
 
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 /* ============================================================
    Filter panel, pills, toggle
    ============================================================ */
 .filter-toggle { display: inline-flex; align-items: center; gap: var(--space-1); }
 .filter-toggle.open {
-  border-color: var(--color-border-accent);
   color: var(--color-text-link);
-  background: var(--color-bg-accent);
+  border-color: var(--color-border-default);
+  background: transparent;
 }
 .filter-toggle .filter-toggle-chevron { transition: transform 120ms ease; }
 .filter-toggle.open .filter-toggle-chevron { transform: rotate(180deg); }
 .filter-toggle-badge {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 18px; height: 18px; padding: 0 5px;
-  background: var(--color-bg-accent-strong); color: var(--color-text-on-accent);
-  border-radius: 9px; font-size: var(--text-label); font-weight: 500;
+  background: var(--color-bg-accent); color: var(--color-text-link);
+  border-radius: var(--radius-sm); font-size: var(--text-label); font-weight: 500;
   margin-left: 2px;
 }
 
@@ -566,11 +572,15 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 .filter-group { min-width: 180px; flex: 1 1 220px; }
 .filter-group-label {
   font-size: var(--text-label); font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.04em;
+  text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--color-text-secondary);
   margin-bottom: var(--space-2);
 }
-.filter-group-options { display: flex; flex-direction: column; gap: var(--space-1); }
+.filter-group-options {
+  display: flex; flex-direction: column; gap: var(--space-1);
+  max-height: 240px; overflow-y: auto;
+  padding-right: var(--space-1);
+}
 .filter-chip {
   display: inline-flex; align-items: center; gap: var(--space-2);
   padding: 2px 0;
@@ -594,6 +604,7 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   margin-top: var(--space-3);
   margin-bottom: var(--space-3);
 }
+.filter-pill-row[hidden] { display: none; }
 .filter-pill {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 2px 4px 2px var(--space-2);
@@ -604,7 +615,7 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   color: var(--color-text-link);
   line-height: 1.4;
 }
-.filter-pill-dim { color: var(--color-text-secondary); font-weight: 400; }
+.filter-pill-dim { color: var(--color-text-primary); font-weight: 400; }
 .filter-pill-val { font-weight: 500; }
 .filter-pill-remove {
   display: inline-flex; align-items: center; justify-content: center;
@@ -613,6 +624,7 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   color: var(--color-text-link); cursor: pointer;
 }
 .filter-pill-remove:hover { background: rgba(31, 78, 138, 0.12); }
+.filter-pill-remove:focus-visible { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
 .filter-reset {
   background: transparent; border: none;
   color: var(--color-text-link);
@@ -622,6 +634,9 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   margin-left: var(--space-1);
 }
 .filter-reset:hover { text-decoration: underline; color: var(--color-text-link-hover); }
+.filter-reset:focus-visible { outline: 2px solid var(--color-border-accent); outline-offset: 2px; border-radius: var(--radius-sm); }
+.grouping-btn:focus-visible { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
+.filter-checkbox:focus-visible { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
 
 /* ============================================================
    Badges
@@ -630,9 +645,9 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
   display: inline-flex; align-items: center;
   gap: var(--space-1);
   padding: 2px 8px;
-  font-size: var(--text-label); font-weight: 600;
-  letter-spacing: 0.02em;
-  border-radius: 10px;
+  font-size: var(--text-label); font-weight: 500;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-sm);
   border: none;
   white-space: nowrap;
 }
@@ -643,9 +658,19 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
 .badge-review, .badge-internal { color: var(--color-text-link); background: var(--color-bg-accent); }
 .badge-confidential { color: var(--color-text-secondary); background: transparent; border: 1px solid var(--color-border-default); }
 .badge-restricted { color: var(--color-error); background: var(--color-error-bg); }
-.badge-domain { color: var(--color-text-secondary); background: var(--color-bg-surface-hover); border: 1px solid var(--color-border-subtle); }
-.badge-filterable { cursor: pointer; transition: background 100ms ease, border-color 100ms ease, color 100ms ease; }
+.badge-domain { color: var(--color-text-primary); background: var(--color-bg-surface-hover); border: 1px solid var(--color-border-subtle); }
+button.badge-filterable {
+  font-family: inherit; font-size: var(--text-label); font-weight: 500; letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease, color 100ms ease, box-shadow 100ms ease;
+}
 .badge-filterable:hover { color: var(--color-text-link); background: var(--color-bg-accent); border-color: var(--color-border-accent); }
+.badge-filterable:focus-visible { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
+.badge-filterable[aria-pressed="true"] {
+  color: var(--color-text-link);
+  background: var(--color-bg-accent);
+  border-color: var(--color-border-accent);
+}
 
 .status-dot {
   width: 6px; height: 6px; border-radius: 50%;
