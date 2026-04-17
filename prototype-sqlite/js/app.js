@@ -206,12 +206,15 @@ function navigate(hash) {
 
 function parseRoute() {
   const hash = window.location.hash || '#/home';
-  const parts = hash.replace('#/', '').split('/');
+  // Strip query string before splitting path so "#/search?q=sap" → section "search"
+  const qSplit = hash.indexOf('?');
+  const pathPart = qSplit >= 0 ? hash.slice(0, qSplit) : hash;
+  const parts = pathPart.replace('#/', '').split('/');
   const section = parts[0] || 'home';
 
   if (section === 'search') {
-    const qIdx = hash.indexOf('?q=');
-    searchQuery = qIdx >= 0 ? decodeURIComponent(hash.slice(qIdx + 3)) : '';
+    const qStart = hash.indexOf('?q=');
+    searchQuery = qStart >= 0 ? decodeURIComponent(hash.slice(qStart + 3)) : '';
     return { section: 'search', entityId: null, tab: null, subEntityId: null };
   }
 
@@ -242,6 +245,7 @@ function parseRoute() {
 
 function handleRoute() {
   if (relCleanup) { relCleanup(); relCleanup = null; }
+  hideSearchDropdown();
   const route = parseRoute();
   currentSection = route.section;
   currentEntityId = route.entityId;
@@ -258,6 +262,8 @@ function handleRoute() {
     main.innerHTML = renderHome();
   } else if (route.section === 'search') {
     renderSearchResults();
+  } else if (route.section === 'chat') {
+    renderChatView();
   } else if (route.subEntityId) {
     currentTab = route.tab || 'overview';
     renderDatasetDetail(route.subEntityId, route.entityId);
@@ -551,11 +557,16 @@ function renderSidebar() {
 
   let html = '';
 
-  // Home item
+  // Home + utility items
   const homeActive = currentSection === 'home';
   html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link">
     <i data-lucide="home" style="width:16px;height:16px;flex-shrink:0;"></i>
     <span>Home</span>
+  </div>`;
+  const chatActive = currentSection === 'chat';
+  html += `<div class="nav-item${chatActive ? ' active' : ''}" data-nav="chat" role="link">
+    <i data-lucide="sparkles" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>KI-Assistent</span>
   </div>`;
   html += '<div class="nav-divider"></div>';
 
@@ -643,7 +654,7 @@ function renderHome() {
   html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
   if (recentConcepts.length > 0) {
     html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
-    html += '<th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Status</th><th scope="col">Geändert</th>';
+    html += '<th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Freigabe</th><th scope="col">Geändert</th>';
     html += '</tr></thead><tbody>';
     recentConcepts.forEach(c => {
       html += `<tr class="clickable-row" data-href="#/vocabulary/${c.id}">
@@ -877,7 +888,7 @@ function renderVocabularyList(listTab, collectionId) {
 
   const vocabGroupOpts = activeCollection ? null : [
     { id: 'domain', label: 'Domäne' },
-    { id: 'status', label: 'Status' },
+    { id: 'status', label: 'Freigabe' },
     { id: 'steward', label: 'Verantwortlich' },
     { id: 'none', label: 'Keine' }
   ];
@@ -943,7 +954,7 @@ function renderVocabularyList(listTab, collectionId) {
   }
 
   const colgroup = '<colgroup><col style="width:17%"><col style="width:15%"><col style="width:28%"><col style="width:8%"><col style="width:10%"><col style="width:22%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Felder</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Felder</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   if (activeCollection || grouping.vocabulary === 'none') {
     // Flat table
@@ -1063,7 +1074,7 @@ function renderCodeListsList(listTab) {
   }
 
   const colgroup = '<colgroup><col style="width:18%"><col style="width:14%"><col style="width:25%"><col style="width:8%"><col style="width:12%"><col style="width:23%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Werte</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   function clRow(cl) {
     const desc = getDefinitionText(cl.description, lang);
@@ -1124,7 +1135,7 @@ function renderTermsList(listTab) {
 
   const groupingOpts = [
     { id: 'domain', label: 'Domäne' },
-    { id: 'status', label: 'Status' },
+    { id: 'status', label: 'Freigabe' },
     { id: 'none', label: 'Keine' }
   ];
   html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms);
@@ -1162,7 +1173,7 @@ function renderTermsList(listTab) {
   }
 
   const colgroup = '<colgroup><col style="width:18%"><col style="width:15%"><col style="width:35%"><col style="width:12%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Status</th><th scope="col">Standard</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Beschreibung</th><th scope="col">Freigabe</th><th scope="col">Standard</th></tr></thead>';
 
   html += '<div class="list-panel">';
 
@@ -1322,7 +1333,7 @@ function renderProductsList(listTab) {
 
   const groupingOpts = [
     { id: 'publisher', label: 'Herausgeber' },
-    { id: 'status', label: 'Status' },
+    { id: 'status', label: 'Freigabe' },
     { id: 'none', label: 'Keine' }
   ];
   html += renderListTabBar('products', listTab, groupingOpts, grouping.products);
@@ -1359,7 +1370,7 @@ function renderProductsList(listTab) {
   }
 
   const colgroup = '<colgroup><col style="width:18%"><col style="width:27%"><col style="width:13%"><col style="width:12%"><col style="width:10%"><col style="width:20%"></colgroup>';
-  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Status</th><th scope="col">Verantwortlich</th></tr></thead>';
+  const thead = '<thead><tr><th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Formate</th><th scope="col">Häufigkeit</th><th scope="col">Freigabe</th><th scope="col">Verantwortlich</th></tr></thead>';
 
   function productRow(dp) {
     const desc = getDefinitionText(dp.description, lang);
@@ -1402,102 +1413,266 @@ function renderProductsList(listTab) {
 function renderSearchResults() {
   const main = document.getElementById('main-content');
   const q = searchQuery.trim();
+
+  // Keep header input in sync with URL (so shared links repopulate the search bar)
+  const searchInput = document.getElementById('search-input');
+  if (searchInput && searchInput.value !== q) searchInput.value = q;
+  const clearBtn = document.getElementById('search-clear');
+  const shortcut = document.getElementById('search-shortcut');
+  if (clearBtn) clearBtn.hidden = q.length === 0;
+  if (shortcut) shortcut.hidden = q.length > 0;
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
+
   if (!q) {
-    main.innerHTML = '<div class="content-wrapper"><div class="section-header"><div><div class="section-title">Suche</div><div class="section-subtitle">Bitte geben Sie einen Suchbegriff ein.</div></div></div></div>';
+    const counts = sidebarCounts || { terms: 0, vocabulary: 0, codelists: 0, products: 0, systems: 0 };
+    html += `<div class="section-header"><div>
+      <div class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suche</div>
+      <div class="section-subtitle">Geben Sie oben einen Suchbegriff ein. Tipp: mit Ctrl+K öffnen Sie die Suche jederzeit.</div>
+    </div></div>`;
+
+    html += '<div class="content-section"><div class="section-label">NACH TYP DURCHSUCHEN</div>';
+    html += '<div class="home-kpi-grid">';
+    html += renderKpiCard('book-open', counts.terms, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
+    html += renderKpiCard('box', counts.vocabulary, 'Geschäftsobjekte', 'Lösungsneutrale Objekte', '#/vocabulary/table');
+    html += renderKpiCard('list-ordered', counts.codelists, 'Codelisten', 'Standardisierte Wertelisten', '#/codelists');
+    html += renderKpiCard('package', counts.products, 'Datensammlungen', 'Publizierte Daten', '#/products/table');
+    html += renderKpiCard('database', counts.systems, 'Systeme', 'Quellsysteme', '#/systems/table');
+    html += '</div></div>';
+
+    html += '</div>';
+    main.innerHTML = html;
+    lucide.createIcons({ nodes: [main] });
+    // Auto-focus header search so the user can start typing immediately
+    document.getElementById('search-input')?.focus();
     return;
   }
 
   const likeQ = `%${q}%`;
+  const LIMIT = 20;
 
+  const terms = query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+    [likeQ, likeQ, likeQ, likeQ]);
   const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
     [likeQ, likeQ, likeQ, likeQ]);
-
   const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
     [likeQ, likeQ, likeQ, likeQ]);
-
+  const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
+    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+    [likeQ, likeQ, likeQ, likeQ]);
+  const systems = query(`SELECT id, name_en, name_de, technology_stack FROM system
+    WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${LIMIT}`,
+    [likeQ, likeQ]);
   const datasets = query(`SELECT d.id, d.name, d.display_name, d.dataset_type,
     s.${nameCol('name')} as sys_name, sc.system_id as sys_id
     FROM dataset d
     JOIN schema_ sc ON d.schema_id = sc.id
     JOIN system s ON sc.system_id = s.id
-    WHERE d.name LIKE ? OR d.display_name LIKE ? LIMIT 10`,
+    WHERE d.name LIKE ? OR d.display_name LIKE ? LIMIT ${LIMIT}`,
     [likeQ, likeQ]);
 
-  const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT 10`,
-    [likeQ, likeQ, likeQ, likeQ]);
+  const totalResults = terms.length + concepts.length + codeLists.length + products.length + systems.length + datasets.length;
 
-  const totalResults = concepts.length + codeLists.length + datasets.length + products.length;
-
-  let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
   html += `<div class="section-header"><div>
-    <div class="section-title">Suchergebnisse</div>
-    <div class="section-subtitle">${totalResults} Ergebnisse fur "${escapeHtml(q)}"</div>
+    <div class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suchergebnisse</div>
+    <div class="section-subtitle">${totalResults} ${totalResults === 1 ? 'Ergebnis' : 'Ergebnisse'} für „${escapeHtml(q)}"</div>
   </div></div>`;
 
-  html += '<div class="list-panel">';
-  if (concepts.length > 0) {
-    html += '<div class="search-group-label">CONCEPTS</div>';
-    concepts.forEach(c => {
-      html += `<div class="search-result-item" data-href="#/vocabulary/${c.id}">
-        <div class="search-result-icon"><i data-lucide="box" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(c, 'name'))}</div>
-          <div class="search-result-type">Concept ${statusBadge(c.status)}</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (codeLists.length > 0) {
-    html += '<div class="search-group-label">CODE LISTS</div>';
-    codeLists.forEach(cl => {
-      html += `<div class="search-result-item" data-href="#/codelists/${cl.id}">
-        <div class="search-result-icon"><i data-lucide="list-ordered" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(cl, 'name'))}</div>
-          <div class="search-result-type">Code List</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (datasets.length > 0) {
-    html += '<div class="search-group-label">DATASETS</div>';
-    datasets.forEach(d => {
-      html += `<div class="search-result-item" data-href="#/systems/${d.sys_id}/datasets/${d.id}">
-        <div class="search-result-icon"><i data-lucide="table-2" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(d.display_name || d.name)}</div>
-          <div class="search-result-type">${escapeHtml(d.dataset_type)} &middot; ${escapeHtml(d.sys_name)}</div>
-        </div>
-      </div>`;
-    });
-  }
-
-  if (products.length > 0) {
-    html += '<div class="search-group-label">DATA PRODUCTS</div>';
-    products.forEach(dp => {
-      html += `<div class="search-result-item" data-href="#/products/${dp.id}">
-        <div class="search-result-icon"><i data-lucide="package" style="width:16px;height:16px;"></i></div>
-        <div>
-          <div class="search-result-name">${escapeHtml(n(dp, 'name'))}</div>
-          <div class="search-result-type">Data Product &middot; ${escapeHtml(dp.publisher || '')}</div>
-        </div>
-      </div>`;
-    });
-  }
-
   if (totalResults === 0) {
-    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Eintr\u00e4ge gefunden f\u00fcr "' + q + '".');
+    html += '<div class="list-panel">';
+    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Einträge gefunden für „' + escapeHtml(q) + '". Versuchen Sie einen anderen Begriff oder fragen Sie den KI-Assistenten.');
+    html += '</div>';
+    html += '</div>';
+    main.innerHTML = html;
+    lucide.createIcons({ nodes: [main] });
+    return;
   }
+
+  html += '<div class="list-panel">';
+
+  function group(label, icon, items, mapper) {
+    if (!items.length) return '';
+    let h = `<div class="search-group-label">${label} <span style="color:var(--color-text-placeholder);font-weight:500;margin-left:4px;">${items.length}</span></div>`;
+    items.forEach(it => {
+      const m = mapper(it);
+      h += `<div class="search-result-item" data-href="${m.href}">
+        <div class="search-result-icon"><i data-lucide="${icon}" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="search-result-name">${escapeHtml(m.name)}</div>
+          <div class="search-result-type">${m.meta}</div>
+        </div>
+      </div>`;
+    });
+    return h;
+  }
+
+  html += group('Begriffe', 'book-open', terms, t => ({
+    href: '#/terms/' + t.id,
+    name: n(t, 'name'),
+    meta: escapeHtml(t.standard_ref || 'Fachbegriff')
+  }));
+  html += group('Geschäftsobjekte', 'box', concepts, c => ({
+    href: '#/vocabulary/' + c.id,
+    name: n(c, 'name'),
+    meta: 'Geschäftsobjekt ' + statusBadge(c.status)
+  }));
+  html += group('Codelisten', 'list-ordered', codeLists, cl => ({
+    href: '#/codelists/' + cl.id,
+    name: n(cl, 'name'),
+    meta: 'Codeliste'
+  }));
+  html += group('Datensammlungen', 'package', products, dp => ({
+    href: '#/products/' + dp.id,
+    name: n(dp, 'name'),
+    meta: 'Datensammlung' + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
+  }));
+  html += group('Systeme', 'database', systems, s => ({
+    href: '#/systems/' + s.id,
+    name: n(s, 'name'),
+    meta: 'System' + (s.technology_stack ? ' · ' + escapeHtml(s.technology_stack) : '')
+  }));
+  html += group('Tabellen', 'table-2', datasets, d => ({
+    href: '#/systems/' + d.sys_id + '/datasets/' + d.id,
+    name: d.display_name || d.name,
+    meta: escapeHtml(d.dataset_type || 'Tabelle') + ' · ' + escapeHtml(d.sys_name)
+  }));
 
   html += '</div>'; // close list-panel
   html += '</div>'; // close content-wrapper
   main.innerHTML = html;
+  lucide.createIcons({ nodes: [main] });
+}
+
+// ── View: Chat (placeholder) ───────────────────────────────
+function renderChatView() {
+  const main = document.getElementById('main-content');
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">KI-Assistent</span></nav>';
+  html += `<div class="section-header"><div>
+    <div class="section-title"><i data-lucide="sparkles" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>KI-Assistent</div>
+    <div class="section-subtitle">Stellen Sie Fragen zum BBL Datenkatalog. Diese Funktion ist ein Platzhalter.</div>
+  </div></div>`;
+  html += `<div class="chat-placeholder">
+    <div class="chat-placeholder-body">
+      <i data-lucide="message-square-text" style="width:56px;height:56px;"></i>
+      <h3 class="chat-placeholder-title">Chat-Funktion noch nicht verfügbar</h3>
+      <p class="chat-placeholder-description">In einer zukünftigen Version können Sie hier mit einem KI-Assistenten über die Inhalte des Datenkatalogs sprechen. Der Assistent wird Begriffe erklären, Zusammenhänge zwischen Geschäftsobjekten aufzeigen und Sie bei der Navigation durch den Katalog unterstützen.</p>
+    </div>
+    <div class="chat-placeholder-input">
+      <input type="text" disabled placeholder="Stellen Sie eine Frage zum Datenmodell…">
+      <button class="btn btn-primary" disabled>Senden</button>
+    </div>
+  </div>`;
+  html += '</div>';
+  main.innerHTML = html;
+}
+
+// ── Search Dropdown ────────────────────────────────────────
+let searchDropdownDebounce = null;
+
+function renderDropdownGroup(label, icon, items, mapper) {
+  let h = `<div class="search-dropdown-group">
+    <div class="search-dropdown-group-label">${label}</div>`;
+  items.forEach(item => {
+    const m = mapper(item);
+    h += `<div class="search-dropdown-item" data-href="${m.href}" role="option">
+      <div class="search-dropdown-item-icon"><i data-lucide="${icon}" style="width:16px;height:16px;"></i></div>
+      <div>
+        <div class="search-dropdown-item-name">${escapeHtml(m.name)}</div>
+        <div class="search-dropdown-item-meta">${escapeHtml(m.meta)}</div>
+      </div>
+    </div>`;
+  });
+  h += `</div>`;
+  return h;
+}
+
+function renderSearchDropdown(q) {
+  const dropdown = document.getElementById('search-dropdown');
+  if (!dropdown) return;
+
+  const trimmed = (q || '').trim();
+  const ctaSubtitle = trimmed
+    ? `„${escapeHtml(trimmed)}" an den Assistenten senden`
+    : 'Stellen Sie eine Frage zum Datenmodell';
+
+  let html = `<div class="search-dropdown-cta" data-href="#/chat" role="option">
+    <div class="search-dropdown-cta-icon"><i data-lucide="sparkles" style="width:16px;height:16px;"></i></div>
+    <div>
+      <div class="search-dropdown-cta-title">KI-Assistent fragen</div>
+      <div class="search-dropdown-cta-subtitle">${ctaSubtitle}</div>
+    </div>
+  </div>`;
+
+  if (trimmed) {
+    const likeQ = `%${trimmed}%`;
+    const LIMIT = 5;
+
+    const terms = query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+      [likeQ, likeQ, likeQ, likeQ]);
+    const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it FROM concept
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+      [likeQ, likeQ, likeQ, likeQ]);
+    const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+      [likeQ, likeQ, likeQ, likeQ]);
+    const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
+      [likeQ, likeQ, likeQ, likeQ]);
+    const systems = query(`SELECT id, name_en, name_de, technology_stack FROM system
+      WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${LIMIT}`,
+      [likeQ, likeQ]);
+
+    const total = terms.length + concepts.length + codeLists.length + products.length + systems.length;
+
+    if (total === 0) {
+      html += `<div class="search-dropdown-empty">Keine Ergebnisse für „${escapeHtml(trimmed)}"</div>`;
+    } else {
+      if (terms.length) html += renderDropdownGroup('Begriffe', 'book-open', terms, t => ({
+        href: '#/terms/' + t.id,
+        name: n(t, 'name'),
+        meta: t.standard_ref || 'Fachbegriff'
+      }));
+      if (concepts.length) html += renderDropdownGroup('Geschäftsobjekte', 'box', concepts, c => ({
+        href: '#/vocabulary/' + c.id,
+        name: n(c, 'name'),
+        meta: 'Geschäftsobjekt'
+      }));
+      if (codeLists.length) html += renderDropdownGroup('Codelisten', 'list-ordered', codeLists, cl => ({
+        href: '#/codelists/' + cl.id,
+        name: n(cl, 'name'),
+        meta: 'Codeliste'
+      }));
+      if (products.length) html += renderDropdownGroup('Datensammlungen', 'package', products, dp => ({
+        href: '#/products/' + dp.id,
+        name: n(dp, 'name'),
+        meta: dp.publisher || 'Datensammlung'
+      }));
+      if (systems.length) html += renderDropdownGroup('Systeme', 'database', systems, s => ({
+        href: '#/systems/' + s.id,
+        name: n(s, 'name'),
+        meta: s.technology_stack || 'System'
+      }));
+    }
+    html += `<div class="search-dropdown-footer"><kbd>Enter</kbd> für alle Ergebnisse</div>`;
+  }
+
+  dropdown.innerHTML = html;
+  dropdown.hidden = false;
+  lucide.createIcons({ nodes: [dropdown] });
+}
+
+function hideSearchDropdown() {
+  const dropdown = document.getElementById('search-dropdown');
+  if (dropdown) {
+    dropdown.hidden = true;
+    dropdown.innerHTML = '';
+  }
 }
 
 // ── Views: Details ─────────────────────────────────────────
@@ -1724,7 +1899,7 @@ function renderConceptOverview(concept, collection, vocab, steward) {
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (collection) html += `<tr><td>Domäne</td><td>${escapeHtml(n(collection, 'name'))}</td></tr>`;
-  html += `<tr><td>Status</td><td>${statusBadge(concept.status)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${statusBadge(concept.status)}</td></tr>`;
   if (vocab) html += `<tr><td>Vocabulary</td><td>${escapeHtml(n(vocab, 'name'))} ${vocab.version ? 'v' + escapeHtml(vocab.version) : ''}</td></tr>`;
   html += `<tr><td>Erstellt</td><td>${formatDate(concept.created_at)}</td></tr>`;
   html += `<tr><td>Geändert</td><td>${formatDate(concept.modified_at)}</td></tr>`;
@@ -1948,7 +2123,7 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (clDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(clDomain.dname)}</td></tr>`;
-  html += `<tr><td>Status</td><td>${statusBadge(clStatus)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${statusBadge(clStatus)}</td></tr>`;
   if (cl.version) html += `<tr><td>Version</td><td>${escapeHtml(cl.version)}</td></tr>`;
   html += `<tr><td>Werte</td><td>${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})</td></tr>`;
   if (cl.source_ref) html += `<tr><td>Quelle</td><td>${escapeHtml(cl.source_ref)}</td></tr>`;
@@ -2086,7 +2261,7 @@ function renderSystemOverview(sys, schemas, datasetCount) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  html += `<tr><td>Status</td><td>${sys.active ? statusBadge('approved') : statusBadge('deprecated')}</td></tr>`;
+  html += `<tr><td>Status</td><td>${sys.active ? statusBadge('active') : statusBadge('deprecated')}</td></tr>`;
   if (sys.technology_stack) html += `<tr><td>Technologie</td><td>${escapeHtml(sys.technology_stack)}</td></tr>`;
   html += `<tr><td>Tabellen</td><td>${datasetCount}</td></tr>`;
   html += `<tr><td>Erstellt</td><td>${formatDate(sys.created_at)}</td></tr>`;
@@ -2122,7 +2297,7 @@ function renderSystemContents(systemId, schemas) {
 
   let html = '<div class="content-section">';
   html += '<table class="data-table"><colgroup><col style="width:30%"><col style="width:30%"><col style="width:15%"><col style="width:10%"><col style="width:15%"></colgroup><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Status</th>';
+  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Felder</th><th scope="col">Freigabe</th>';
   html += '</tr></thead><tbody>';
   datasets.forEach(d => {
     const desc = getDefinitionText(d.description, lang);
@@ -2267,7 +2442,7 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  html += `<tr><td>Status</td><td>${certifiedBadge(ds.certified)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${certifiedBadge(ds.certified)}</td></tr>`;
   html += `<tr><td>System</td><td>${escapeHtml(ds.system_name)}</td></tr>`;
   html += `<tr><td>Typ</td><td>${escapeHtml(ds.dataset_type)}</td></tr>`;
   if (ds.row_count_approx) html += `<tr><td>Datensätze (ca.)</td><td>${formatNumber(ds.row_count_approx)}</td></tr>`;
@@ -2538,7 +2713,7 @@ function renderProductOverview(dp) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
-  html += `<tr><td>Status</td><td>${certifiedBadge(dp.certified)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${certifiedBadge(dp.certified)}</td></tr>`;
   if (dp.publisher) html += `<tr><td>Herausgeber</td><td>${escapeHtml(dp.publisher)}</td></tr>`;
   if (dp.update_frequency) html += `<tr><td>Aktualisierung</td><td>${escapeHtml(dp.update_frequency)}</td></tr>`;
   if (dp.license) html += `<tr><td>Lizenz</td><td>${escapeHtml(dp.license)}</td></tr>`;
@@ -2714,7 +2889,7 @@ function renderTermOverview(term) {
   html += '<div class="content-section"><div class="section-label">METADATA</div>';
   html += '<table class="props-table">';
   if (termDomain) html += `<tr><td>Domäne</td><td>${escapeHtml(termDomain.dname)}</td></tr>`;
-  html += `<tr><td>Status</td><td>${statusBadge(term.status)}</td></tr>`;
+  html += `<tr><td>Freigabe</td><td>${statusBadge(term.status)}</td></tr>`;
   html += `<tr><td>Erstellt</td><td>${formatDate(term.created_at)}</td></tr>`;
   html += `<tr><td>Geändert</td><td>${formatDate(term.modified_at)}</td></tr>`;
   html += `<tr><td>Quellentyp</td><td>${escapeHtml(sourceLabels[term.source_type] || term.source_type)}</td></tr>`;
@@ -2785,6 +2960,9 @@ document.addEventListener('click', function(e) {
   if (!target.closest('.grouping-dropdown')) {
     document.getElementById('grouping-menu')?.classList.remove('open');
   }
+  if (!target.closest('.header-search')) {
+    hideSearchDropdown();
+  }
 
   // Grouping dropdown toggle
   if (target.closest('#grouping-btn')) {
@@ -2814,6 +2992,7 @@ document.addEventListener('click', function(e) {
   if (navItem) {
     const sec = navItem.dataset.nav;
     if (sec === 'home') { navigate('#/home'); return; }
+    if (sec === 'chat') { navigate('#/chat'); return; }
     // If already on this section, toggle expand/collapse
     if (currentSection === sec && !currentEntityId) {
       if (expandedSections.has(sec)) {
@@ -2913,17 +3092,54 @@ document.addEventListener('keydown', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('search-input');
-  if (searchInput) {
-    searchInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        const q = this.value.trim();
-        if (q) {
-          searchQuery = q;
-          navigate('#/search?q=' + encodeURIComponent(q));
-        }
-      }
-      if (e.key === 'Escape') {
+  if (!searchInput) return;
+  const searchClear = document.getElementById('search-clear');
+  const searchShortcut = document.getElementById('search-shortcut');
+
+  function updateClearVisibility() {
+    const hasValue = searchInput.value.length > 0;
+    if (searchClear) searchClear.hidden = !hasValue;
+    if (searchShortcut) searchShortcut.hidden = hasValue;
+  }
+
+  searchInput.addEventListener('input', function() {
+    const q = this.value;
+    updateClearVisibility();
+    if (searchDropdownDebounce) clearTimeout(searchDropdownDebounce);
+    searchDropdownDebounce = setTimeout(() => renderSearchDropdown(q), 120);
+  });
+
+  searchInput.addEventListener('focus', function() {
+    renderSearchDropdown(this.value);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      const q = this.value.trim();
+      if (q) {
+        hideSearchDropdown();
         this.blur();
+        searchQuery = q;
+        navigate('#/search?q=' + encodeURIComponent(q));
+      }
+    }
+    if (e.key === 'Escape') {
+      hideSearchDropdown();
+      this.blur();
+    }
+  });
+
+  if (searchClear) {
+    searchClear.addEventListener('click', function(e) {
+      e.preventDefault();
+      searchInput.value = '';
+      updateClearVisibility();
+      renderSearchDropdown('');
+      searchInput.focus();
+      // If we're on a search results page, drop the ?q= so the view updates too
+      if (currentSection === 'search' && (window.location.hash || '').indexOf('?q=') >= 0) {
+        searchQuery = '';
+        navigate('#/search');
       }
     });
   }
