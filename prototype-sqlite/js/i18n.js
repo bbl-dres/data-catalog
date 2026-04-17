@@ -54,7 +54,39 @@ const I18N = {
   access_restricted_body: { de: 'Dieser Inhalt ist klassifiziert. Zugriff anfordern, um die Details einzusehen.', fr: 'Ce contenu est classifié. Demandez l\'accès pour consulter les détails.', it: 'Questo contenuto è riservato. Richiedi l\'accesso per visualizzare i dettagli.', en: 'This content is classified. Request access to view the details.' },
   request_access:         { de: 'Zugriff anfordern',   fr: 'Demander l\'accès', it: 'Richiedi accesso',  en: 'Request access' },
   unknown:                { de: 'Unbekannt',           fr: 'Inconnu',           it: 'Sconosciuto',       en: 'Unknown' },
-  not_found:              { de: 'Nicht gefunden',      fr: 'Introuvable',       it: 'Non trovato',       en: 'Not found' }
+  not_found:              { de: 'Nicht gefunden',      fr: 'Introuvable',       it: 'Non trovato',       en: 'Not found' },
+  sidebar_collapse:       { de: 'Seitenleiste einklappen', fr: 'Réduire la barre latérale', it: 'Riduci la barra laterale', en: 'Collapse sidebar' },
+  sidebar_expand:         { de: 'Seitenleiste ausklappen', fr: 'Développer la barre latérale', it: 'Espandi la barra laterale', en: 'Expand sidebar' },
+
+  // ── Workflows & API ─────────────────────────────────────
+  workflows_api:          { de: 'Workflows & API',     fr: 'Workflows & API',   it: 'Workflows & API',   en: 'Workflows & API' },
+
+  // Excel export section
+  export_excel_label:     { de: 'EXCEL EXPORT',        fr: 'EXPORT EXCEL',      it: 'ESPORTAZIONE EXCEL', en: 'EXCEL EXPORT' },
+  export_excel_intro:     { de: 'Den gesamten Katalog als eine Excel-Datei herunterladen — eine Registerkarte pro Tabelle.', fr: 'Télécharger tout le catalogue dans un seul fichier Excel — un onglet par table.', it: 'Scarica l\'intero catalogo come unico file Excel — una scheda per tabella.', en: 'Download the full catalog as a single Excel file — one sheet per table.' },
+  export_tables:          { de: 'Tabellen',            fr: 'tables',            it: 'tabelle',           en: 'tables' },
+  export_rows:            { de: 'Zeilen',              fr: 'lignes',            it: 'righe',             en: 'rows' },
+  export_download_xlsx:   { de: 'Excel herunterladen', fr: 'Télécharger Excel', it: 'Scarica Excel',     en: 'Download Excel' },
+
+  // Excel import section (placeholder until Phase 2)
+  import_excel_label:     { de: 'EXCEL IMPORT',        fr: 'IMPORT EXCEL',      it: 'IMPORTAZIONE EXCEL', en: 'EXCEL IMPORT' },
+  import_excel_intro:     { de: 'Eine zuvor exportierte und bearbeitete Excel-Datei hochladen, um Änderungen in den Katalog zu übernehmen.', fr: 'Téléverser un fichier Excel exporté puis modifié pour appliquer les changements au catalogue.', it: 'Carica un file Excel precedentemente esportato e modificato per applicare le modifiche al catalogo.', en: 'Upload a previously exported and edited Excel file to apply changes to the catalog.' },
+  import_choose_file:     { de: 'Datei auswählen',     fr: 'Choisir un fichier', it: 'Scegli file',      en: 'Choose file' },
+  import_coming_soon:     { de: 'Wird in einer späteren Version unterstützt.', fr: 'Disponible dans une version ultérieure.', it: 'Disponibile in una versione futura.', en: 'Available in a later version.' },
+
+  // SQL database download section
+  db_download_label:      { de: 'SQL DATENBANK DOWNLOAD', fr: 'TÉLÉCHARGEMENT DE LA BASE SQL', it: 'DOWNLOAD DATABASE SQL', en: 'SQL DATABASE DOWNLOAD' },
+  db_download_intro:      { de: 'Laden Sie die aktuelle SQLite-Datenbank zur Sicherung oder Offline-Analyse herunter.', fr: 'Téléchargez la base SQLite actuelle pour sauvegarde ou analyse hors ligne.', it: 'Scarica il database SQLite corrente per backup o analisi offline.', en: 'Download the current SQLite database for backup or offline analysis.' },
+  db_download_button:     { de: 'catalog.db herunterladen', fr: 'Télécharger catalog.db', it: 'Scarica catalog.db', en: 'Download catalog.db' },
+
+  // REST API section
+  rest_api_label:         { de: 'REST API',            fr: 'API REST',          it: 'API REST',          en: 'REST API' },
+  rest_api_intro:         { de: 'Programmatischer Zugriff auf den Katalog über eine REST-Schnittstelle. Die OpenAPI/Swagger-Dokumentation beschreibt alle verfügbaren Endpunkte.', fr: 'Accès programmatique au catalogue via une interface REST. La documentation OpenAPI/Swagger décrit tous les points de terminaison disponibles.', it: 'Accesso programmatico al catalogo tramite un\'interfaccia REST. La documentazione OpenAPI/Swagger descrive tutti gli endpoint disponibili.', en: 'Programmatic access to the catalog via a REST interface. The OpenAPI/Swagger documentation describes all available endpoints.' },
+  rest_api_open_docs:     { de: 'API-Dokumentation öffnen', fr: 'Ouvrir la documentation API', it: 'Apri la documentazione API', en: 'Open API documentation' },
+
+  // API docs stub page
+  api_docs_title:         { de: 'API-Dokumentation',   fr: 'Documentation API', it: 'Documentazione API', en: 'API documentation' },
+  api_docs_coming_soon:   { de: 'Die Swagger-UI mit der OpenAPI-Spezifikation folgt in einer späteren Version.', fr: 'L\'interface Swagger avec la spécification OpenAPI suivra dans une version ultérieure.', it: 'L\'interfaccia Swagger con la specifica OpenAPI arriverà in una versione futura.', en: 'The Swagger UI with the OpenAPI specification will follow in a later version.' }
 };
 
 function tr(key, vars) {

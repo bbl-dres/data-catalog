@@ -1,5 +1,13 @@
 'use strict';
 
+// Apply persisted sidebar state before first render so the UI doesn't
+// flash expanded → collapsed on pages loaded with the rail mode saved.
+try {
+  if (localStorage.getItem('sidebar-collapsed') === '1') {
+    document.body.classList.add('sidebar-collapsed');
+  }
+} catch {}
+
 // ── State ──────────────────────────────────────────────────
 // ============================================================
 // State
@@ -117,6 +125,10 @@ function handleRoute() {
     renderSearchResults();
   } else if (route.section === 'chat') {
     renderChatView();
+  } else if (route.section === 'export') {
+    renderExportView();
+  } else if (route.section === 'api-docs') {
+    renderApiDocsView();
   } else if (route.subEntityId) {
     currentTab = route.tab || 'overview';
     renderDatasetDetail(route.subEntityId, route.entityId);
@@ -161,21 +173,34 @@ function renderSidebar() {
     };
   }
   const counts = sidebarCounts;
+  const collapsed = document.body.classList.contains('sidebar-collapsed');
 
   let html = '';
 
+  // Collapse/expand toggle — always the first row, reachable in both states.
+  html += `<button type="button" class="sidebar-toggle" id="sidebar-toggle"
+      aria-label="${escapeHtml(tr(collapsed ? 'sidebar_expand' : 'sidebar_collapse'))}"
+      aria-expanded="${!collapsed}" title="${escapeHtml(tr(collapsed ? 'sidebar_expand' : 'sidebar_collapse'))}">
+    <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
+  </button>`;
+
   // Home + utility items
   const homeActive = currentSection === 'home';
-  html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link">
+  html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link" title="${escapeHtml(tr('home'))}">
     <i data-lucide="home" style="width:16px;height:16px;flex-shrink:0;"></i>
     <span>${escapeHtml(tr('home'))}</span>
   </div>`;
   const chatActive = currentSection === 'chat';
-  html += `<div class="nav-item${chatActive ? ' active' : ''}" data-nav="chat" role="link">
+  html += `<div class="nav-item${chatActive ? ' active' : ''}" data-nav="chat" role="link" title="KI-Assistent">
     <i data-lucide="sparkles" style="width:16px;height:16px;flex-shrink:0;"></i>
     <span>KI-Assistent</span>
   </div>`;
-  html += '<div class="nav-divider"></div>';
+  const exportActive = currentSection === 'export' || currentSection === 'api-docs';
+  html += `<div class="nav-item${exportActive ? ' active' : ''}" data-nav="export" role="link" title="${escapeHtml(tr('workflows_api'))}">
+    <i data-lucide="workflow" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>${escapeHtml(tr('workflows_api'))}</span>
+  </div>`;
+  html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
 
   ['terms', 'vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
     const isActive = currentSection === sec;
@@ -185,7 +210,7 @@ function renderSidebar() {
     // Section header — active whenever user is anywhere in this section
     const headerClass = 'nav-item' + (isActive ? ' active' : '');
 
-    html += `<div class="${headerClass}" data-nav="${sec}" role="link">
+    html += `<div class="${headerClass}" data-nav="${sec}" role="link" title="${escapeHtml(label)}">
       <i data-lucide="${SECTION_ICONS[sec]}" style="width:16px;height:16px;flex-shrink:0;"></i>
       <span>${escapeHtml(label)}</span>
       <span class="nav-count">${counts[sec]}</span>
@@ -194,16 +219,16 @@ function renderSidebar() {
   });
 
   if (recents.length > 0) {
-    html += '<div class="nav-divider"></div>';
+    html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
     html += '<div class="nav-section-label">Recents</div>';
     recents.forEach(r => {
       html += `<div class="nav-recent-item" data-hash="${escapeHtml(r.hash)}">${escapeHtml(r.title)}</div>`;
     });
   }
 
-  html += '<div class="nav-divider"></div>';
+  html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
   html += '<div class="nav-section-label">Bookmarks</div>';
-  html += `<div style="padding: var(--space-1) var(--space-3); font-size: 13px; color: var(--color-text-placeholder);">${escapeHtml(tr('no_bookmarks'))}</div>`;
+  html += `<div class="sidebar-collapsed-hide" style="padding: var(--space-1) var(--space-3); font-size: 13px; color: var(--color-text-placeholder);">${escapeHtml(tr('no_bookmarks'))}</div>`;
 
   document.getElementById('sidebar').innerHTML = html;
 }
@@ -2645,6 +2670,30 @@ document.addEventListener('click', function(e) {
     return;
   }
 
+  // Sidebar collapse toggle
+  if (target.closest('#sidebar-toggle')) {
+    e.preventDefault();
+    const nextCollapsed = !document.body.classList.contains('sidebar-collapsed');
+    document.body.classList.toggle('sidebar-collapsed', nextCollapsed);
+    try { localStorage.setItem('sidebar-collapsed', nextCollapsed ? '1' : '0'); } catch {}
+    // Re-render sidebar so the toggle's aria-label / title reflect the new state.
+    renderSidebar();
+    lucide.createIcons({ nodes: [document.getElementById('sidebar')] });
+    return;
+  }
+
+  // Data-export buttons
+  if (target.closest('[data-export-full]')) {
+    e.preventDefault();
+    exportFullCatalog();
+    return;
+  }
+  if (target.closest('[data-export-db]')) {
+    e.preventDefault();
+    exportDatabase();
+    return;
+  }
+
   // Concept box: single toggle (chevron) — must run before the data-href nav handler
   const conceptToggle = target.closest('[data-toggle-concept]');
   if (conceptToggle) {
@@ -2676,6 +2725,7 @@ document.addEventListener('click', function(e) {
     const sec = navItem.dataset.nav;
     if (sec === 'home') { navigate('#/home'); return; }
     if (sec === 'chat') { navigate('#/chat'); return; }
+    if (sec === 'export') { navigate('#/export'); return; }
     // If already on this section, toggle expand/collapse
     if (currentSection === sec && !currentEntityId) {
       if (expandedSections.has(sec)) {

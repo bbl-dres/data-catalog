@@ -79,7 +79,10 @@
       "Bash(sed -i 's|if \\(!tabs\\\\.includes\\(tab\\)\\) tab = .overview.;|if \\(!tabs.some\\(t => t.id === tab\\)\\) tab = \\\\x27overview\\\\x27;|g' js/app.js)",
       "Bash(sed -i 's|if \\(!tabs\\\\.includes\\(currentTab\\)\\) currentTab = .overview.;|if \\(!tabs.some\\(t => t.id === currentTab\\)\\) currentTab = \\\\x27overview\\\\x27;|g' js/app.js)",
       "Bash(grep -v \"//\")",
-      "Bash(python3 -c \"import sqlite3; c = sqlite3.connect\\('data/catalog.db'\\).execute\\('PRAGMA table_info\\(system\\)'\\); [print\\(r\\) for r in c]\")"
+      "Bash(python3 -c \"import sqlite3; c = sqlite3.connect\\('data/catalog.db'\\).execute\\('PRAGMA table_info\\(system\\)'\\); [print\\(r\\) for r in c]\")",
+      "Bash(node --check js/xlsx_io.js)",
+      "Bash(node --check js/views/export.js)",
+      "Bash(curl -sI https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js)"
     ]
   }
 }

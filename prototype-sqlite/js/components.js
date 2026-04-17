@@ -74,7 +74,10 @@ function renderDataTable(columns, rows, opts) {
     }).join('');
     return openTag + cells + '</tr>';
   }).join('');
-  return `<table class="data-table">${colgroup}${thead}<tbody>${body}</tbody></table>`;
+  // Wrap in a scroll container so narrow viewports scroll the table
+  // instead of cramping every column. The table's own min-width comes
+  // from CSS so cells stay readable when scrolled horizontally.
+  return `<div class="data-table-wrap"><table class="data-table">${colgroup}${thead}<tbody>${body}</tbody></table></div>`;
 }
 
 function sortTableByColumn(th) {
