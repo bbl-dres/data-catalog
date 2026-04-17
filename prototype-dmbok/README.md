@@ -1,53 +1,37 @@
-# Meta-Atlas
+# Architecture Layer Browser
 
-A metadata catalog prototype for documenting and navigating enterprise data assets across multiple architecture layers.
+Metadata catalog prototype for navigating enterprise data assets across a three-layer architecture model (Conceptual → Logical → Physical). In-app branding: *Meta-Atlas*. Part of the [BBL Data Catalog prototypes](../README.md).
 
-## Overview
-
-Meta-Atlas provides a unified view of data assets spanning from conceptual business domains down to physical database implementations, following the TOGAF three-layer architecture model:
-
-- **Conceptual Layer** - Business domains, concepts, and definitions
-- **Logical Layer** - Data entities, attributes, and relationships
-- **Physical Layer** - Systems, database tables, and columns
-
-<p align="center">
-  <img src="assets/preview1.jpg" width="45%" style="vertical-align: top;"/>
-  <img src="assets/preview2.jpg" width="45%" style="vertical-align: top;"/>
+<p>
+  <img src="assets/preview1.jpg" width="45%" />
+  <img src="assets/preview2.jpg" width="45%" />
 </p>
+
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-dmbok/
 
 ## Features
 
-- Hierarchical tree navigation with layer switching
+- Hierarchical tree navigation with layer switching (Conceptual / Logical / Physical)
 - Full-text search across all entities
-- Wiki-style documentation views
-- Cross-layer traceability mapping
-- Multilingual support (DE/EN/FR/IT)
-- Dark/light theme
+- Wiki-style detail pages
+- Cross-layer traceability
+- Multilingual: DE / EN / FR / IT (stored in URL + `localStorage`)
+- Dark and light themes
 - Responsive design
 
-## Getting Started
-
-No build step required. Simply serve the files with any HTTP server:
+## Run locally
 
 ```bash
-# Using Python
 python -m http.server 8000
-
-# Using Node.js
-npx serve
-
-# Or use VS Code Live Server extension
+# open http://localhost:8000
 ```
 
-Then open `http://localhost:8000` in your browser.
+Any static file server works.
 
-## Tech Stack
+## Tech notes
 
-- Vanilla JavaScript (ES6+)
-- CSS3 with custom properties
-- JSON data files
-- No external dependencies
+Vanilla JavaScript (ES6+), CSS custom properties, JSON data files. No build step, no npm dependencies.
 
 ## License
 
-MIT
+MIT — see repo root [LICENSE](../LICENSE).

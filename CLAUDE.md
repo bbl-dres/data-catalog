@@ -1,17 +1,35 @@
 # CLAUDE.md
 
-This document provides development guidelines for Claude Code when working on the BBL Buildings Data Catalog (meta-bv) project.
+This document provides development guidelines for Claude Code when working on the BBL Buildings Data Catalog project.
+
+## Repository Layout
+
+The repo hosts **five sibling prototypes** under `prototype-*/` folders, plus a root `index.html` that redirects to the main catalog.
+
+```
+data-catalog/
+├── index.html              # Redirect to prototype-main/
+├── prototype-main/         # Business Object & Dataset Catalog (Datenkatalog IMMO)
+├── prototype-dmbok/        # Architecture Layer Browser (Meta-Atlas)
+├── prototype-db/           # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
+├── prototype-lineage/      # Data Lineage Viewer
+├── prototype-markdown/     # Mermaid Diagram Editor (Simple Chart)
+├── assets/                 # Shared repo assets (social preview only)
+└── docs-concepts/          # Shared concept docs
+```
+
+The guidelines below document **`prototype-main/`** specifically (the main DCAT-AP catalog). Each other prototype has its own README.
 
 ## Project Overview
 
-This is a **minimalist web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. The application runs from `index.html` with CSS and JavaScript in separate files and zero external JavaScript dependencies.
+`prototype-main/` is a **minimalist web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. It runs from `prototype-main/index.html` with CSS and JavaScript in separate files and zero external JavaScript dependencies.
 
 ## Architecture
 
 ### Design
-- HTML structure in `index.html` (~360 lines)
-- CSS styles in `css/style.css` (~966 lines)
-- JavaScript application in `js/app.js` (~850 lines)
+- HTML structure in `prototype-main/index.html` (~360 lines)
+- CSS styles in `prototype-main/css/style.css` (~966 lines)
+- JavaScript application in `prototype-main/js/app.js` (~850 lines)
 - No build system, bundlers, or transpilers
 - Data loaded from JSON files at runtime
 - Hash-based client-side routing
@@ -19,9 +37,10 @@ This is a **minimalist web application** for cataloging business objects and dat
 ### Code Organization
 
 ```
-index.html          → HTML structure only
-css/style.css       → All styles (~966 lines)
-js/app.js           → JavaScript application (~850 lines)
+prototype-main/
+├── index.html          → HTML structure only
+├── css/style.css       → All styles (~966 lines)
+└── js/app.js           → JavaScript application (~850 lines)
     ├── State management
     ├── Data loading
     ├── Routing
@@ -38,49 +57,53 @@ js/app.js           → JavaScript application (~850 lines)
 
 ## File Locations
 
+All paths below are inside `prototype-main/`.
+
 | Purpose | Location |
 |---------|----------|
-| HTML structure | `index.html` |
-| Styles | `css/style.css` |
-| JavaScript | `js/app.js` |
-| Business objects | `data/concepts.json` |
-| Dataset definitions | `data/datasets.json` |
-| UI translations | `data/i18n.json` |
-| About page content | `content/about-{de,fr,it,en}.html` |
-| User manual | `content/manual-{de,fr,it,en}.html` |
-| Concept images | `assets/concepts/` |
-| Dataset images | `assets/datasets/` |
+| HTML structure | `prototype-main/index.html` |
+| Styles | `prototype-main/css/style.css` |
+| JavaScript | `prototype-main/js/app.js` |
+| Business objects | `prototype-main/data/concepts.json` |
+| Dataset definitions | `prototype-main/data/datasets.json` |
+| UI translations | `prototype-main/data/i18n.json` |
+| About page content | `prototype-main/content/about-{de,fr,it,en}.html` |
+| User manual | `prototype-main/content/manual-{de,fr,it,en}.html` |
+| Concept images | `prototype-main/assets/concepts/` |
+| Dataset images | `prototype-main/assets/datasets/` |
 
 ## Development Commands
 
 ```bash
-# Start local development server
+# From the repo root, start a static server
 python3 -m http.server 8000
 # or
 npx http-server
 
-# Open in browser
+# Open in browser — root redirects to the main catalog
 open http://localhost:8000
+# direct URL for the main catalog:
+open http://localhost:8000/prototype-main/
 ```
 
 ## Making Changes
 
 ### Adding a New Concept
 
-1. Edit `data/concepts.json`
+1. Edit `prototype-main/data/concepts.json`
 2. Add a new object with required fields:
    - `id`, `title` (multilingual `{de,fr,it,en}` object), `description`, `fullDescription`
    - `image`, `tags` (language-independent keys), `meta`, `standards`, `attributes`
    - Optional: `responsiblePersons`
-3. Add tag translations to `data/i18n.json` if using new tags
+3. Add tag translations to `prototype-main/data/i18n.json` if using new tags
 4. Add corresponding image to `assets/concepts/`
 
 ### Adding a New Dataset
 
-1. Edit `data/datasets.json`
+1. Edit `prototype-main/data/datasets.json`
 2. Add a new object with required fields:
    - Same as concepts plus `distributions` and `publications`
-3. Add tag translations to `data/i18n.json` if using new tags
+3. Add tag translations to `prototype-main/data/i18n.json` if using new tags
 4. Add corresponding image to `assets/datasets/`
 
 ### i18n / Translations

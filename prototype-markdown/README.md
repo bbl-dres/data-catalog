@@ -1,14 +1,30 @@
-# Simple Chart
+# Mermaid Diagram Editor
 
-A single-page vanilla JS app for creating **ER diagrams** and **flowcharts** with free-text names — spaces, umlauts, special characters all work out of the box.
+Single-page editor for **ER diagrams** and **flowcharts** with free-text names — spaces, umlauts, and special characters all work out of the box. Built on [Mermaid](https://github.com/mermaid-js/mermaid). In-app branding: *Simple Chart*. Part of the [BBL Data Catalog prototypes](../README.md).
 
-Built on top of [Mermaid](https://github.com/mermaid-js/mermaid) (MIT licensed, loaded via CDN).
+![Preview](assets/Preview1.jpg)
 
-## Usage
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-markdown/
 
-Open `index.html` in a browser. No build step required.
+## Features
 
-## ER Diagram Syntax
+- Live Mermaid diagram preview as you type
+- ER diagrams with name-first attribute syntax (key and comment as shorthand)
+- Flowcharts with free-text quoted labels (auto-generated IDs)
+- Direction (TD / BT / LR / RL), layout, and theme dropdowns
+- Zoom / pan and SVG / PNG export
+- Bundled examples in German and English
+
+## Run locally
+
+```bash
+python -m http.server 8000
+# open http://localhost:8000
+```
+
+Any static file server works.
+
+## ER diagram syntax
 
 Attributes use a **name-first, comma-separated** format:
 
@@ -16,12 +32,12 @@ Attributes use a **name-first, comma-separated** format:
 Name, Type, Key, "Comment"
 ```
 
-| Column  | Required | Example                        |
-|---------|----------|--------------------------------|
-| Name    | yes      | `Gebäude ID`                   |
+| Column  | Required | Example                          |
+|---------|----------|----------------------------------|
+| Name    | yes      | `Gebäude ID`                     |
 | Type    | yes      | `int`, `string`, `float`, `date` |
-| Key     | optional | `PK`, `FK`, `UK`               |
-| Comment | optional | `"Büro, Wohnung, Lager"`       |
+| Key     | optional | `PK`, `FK`, `UK`                 |
+| Comment | optional | `"Büro, Wohnung, Lager"`         |
 
 ```
 erDiagram
@@ -37,9 +53,9 @@ erDiagram
     }
 ```
 
-## Flowchart Syntax
+## Flowchart syntax
 
-Use quoted strings for free-text node labels. IDs are auto-generated.
+Quoted strings become free-text node labels; IDs are generated automatically.
 
 ```
 flowchart TD
@@ -49,12 +65,16 @@ flowchart TD
     "Unterlagen vollständig?" -->|"Nein"| "Antrag einreichen"
 ```
 
-## How It Works
+## How it works
 
-1. **Preprocessing** — free-text names are sanitized to valid Mermaid identifiers
+1. **Preprocessing** — free-text names are sanitized into valid Mermaid identifiers
 2. **Rendering** — sanitized code is passed to Mermaid
-3. **Post-processing** — original display names are swapped back into the SVG
+3. **Post-processing** — original display names are swapped back into the rendered SVG
+
+## Tech notes
+
+[Mermaid](https://github.com/mermaid-js/mermaid) (MIT) loaded via CDN. No build step, no npm dependencies.
 
 ## License
 
-MIT
+MIT — see repo root [LICENSE](../LICENSE).

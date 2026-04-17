@@ -43,7 +43,13 @@
       "Bash(curl -s -o /dev/null -w \"streaming=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/streaming.json)",
       "Bash(node -e ' *)",
       "Bash(curl -s -o /dev/null -w \"lineage=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/)",
-      "Bash(curl -s -o /dev/null -w \"nonexistent=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/does-not-exist.json)"
+      "Bash(curl -s -o /dev/null -w \"nonexistent=%{http_code}\\\\n\" http://localhost:8123/prototype-lineage/data/does-not-exist.json)",
+      "Bash(grep -nE \"Social1|ch\\\\\\\\.png|swiss-logo|BBL DCAT|readme/Preview|assets/concepts|assets/datasets|assets/i18n\" c:/Users/DavidRasner/Documents/GitHub/data-catalog/index.html c:/Users/DavidRasner/Documents/GitHub/data-catalog/README.md)",
+      "Bash(grep -nE \"\\(\\\\\\\\./\\)?\\(assets|data|css|js|content\\)/\" c:/Users/DavidRasner/Documents/GitHub/data-catalog/content/manual-en.html)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8123__TRACKED_VAR__)",
+      "Bash(curl -s http://localhost:8123/)",
+      "Bash(read img *)",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8123/__TRACKED_VAR__)"
     ]
   }
 }
