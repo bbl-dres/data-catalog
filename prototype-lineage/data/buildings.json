@@ -4,6 +4,7 @@
       "id": "cadaster_real_estate",
       "type": "table",
       "label": "real_estate",
+      "system": "Cadaster",
       "database": "cadaster",
       "schema": "grundbuch",
       "columns": [
@@ -21,6 +22,7 @@
       "id": "gwr_building",
       "type": "table",
       "label": "building",
+      "system": "GWR",
       "database": "gwr",
       "schema": "register",
       "columns": [
@@ -53,6 +55,7 @@
       "id": "refx_parcel",
       "type": "table",
       "label": "parcel",
+      "system": "RE-FX",
       "database": "refx",
       "schema": "master",
       "columns": [
@@ -69,6 +72,7 @@
       "id": "refx_building",
       "type": "table",
       "label": "building",
+      "system": "RE-FX",
       "database": "refx",
       "schema": "master",
       "columns": [
@@ -87,6 +91,7 @@
       "id": "refx_measurement",
       "type": "table",
       "label": "measurement",
+      "system": "RE-FX",
       "database": "refx",
       "schema": "master",
       "columns": [
@@ -112,6 +117,7 @@
       "id": "cde_building",
       "type": "table",
       "label": "building",
+      "system": "CDE",
       "database": "cde",
       "schema": "structure",
       "columns": [
@@ -126,6 +132,7 @@
       "id": "cde_floor",
       "type": "table",
       "label": "floor",
+      "system": "CDE",
       "database": "cde",
       "schema": "structure",
       "columns": [
@@ -141,6 +148,7 @@
       "id": "cde_room",
       "type": "table",
       "label": "room",
+      "system": "CDE",
       "database": "cde",
       "schema": "structure",
       "columns": [
@@ -163,6 +171,7 @@
       "id": "edm_building",
       "type": "table",
       "label": "building",
+      "system": "Energy Data Management",
       "database": "edm",
       "schema": "assets",
       "columns": [
@@ -176,6 +185,7 @@
       "id": "edm_technical_system",
       "type": "table",
       "label": "technical_system",
+      "system": "Energy Data Management",
       "database": "edm",
       "schema": "assets",
       "columns": [
@@ -190,6 +200,7 @@
       "id": "edm_component",
       "type": "table",
       "label": "component",
+      "system": "Energy Data Management",
       "database": "edm",
       "schema": "assets",
       "columns": [
@@ -204,6 +215,7 @@
       "id": "edm_consumption_reading",
       "type": "table",
       "label": "consumption_reading",
+      "system": "Energy Data Management",
       "database": "edm",
       "schema": "timeseries",
       "columns": [
@@ -233,6 +245,7 @@
       "id": "netzero_report",
       "type": "dashboard",
       "label": "Netto-Null 2050 Report",
+      "system": "Net Zero Reporting",
       "platform": "Power BI",
       "charts": ["CO2 Emissionen pro Bundesbau", "Energietraeger-Mix Portfolio", "Sanierungs-Fortschritt", "Zielerreichung 2030", "Top 10 Verbraucher"]
     }

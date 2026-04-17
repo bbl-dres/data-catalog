@@ -59,7 +59,9 @@ window.LineageApp.Renderer = (function () {
 
         state.nodes.forEach(function (node) {
             var groupKey;
-            if (node.type === 'table' && node.database) {
+            if (node.system) {
+                groupKey = node.system;
+            } else if (node.type === 'table' && node.database) {
                 groupKey = node.database + (node.schema ? '.' + node.schema : '');
             } else if (node.platform) {
                 groupKey = node.platform;

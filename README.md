@@ -14,39 +14,62 @@ Each prototype tackles the same underlying question — *"how should people insi
 
 All five are unofficial mockups. They are **not** production systems — they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
 
-## Try them in the browser
+## Prototypes
 
-You don't need to install anything. Every prototype is deployed on GitHub Pages:
+You don't need to install anything — every prototype is deployed on GitHub Pages.
 
-| Prototype | What it does | Demo |
-|---|---|---|
-| **Datenkatalog IMMO** | Main catalog — browse business objects and datasets with search, filters, grid/list views, and detail pages. DCAT-AP CH compliant. | [Open ›](https://bbl-dres.github.io/data-catalog/) |
-| **Meta-Atlas** | Hierarchical metadata atlas following the TOGAF three-layer model (Conceptual → Logical → Physical), with wiki-style docs and cross-layer traceability. Multilingual (DE/EN/FR/IT), dark/light theme. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-dmbok/) |
-| **BBL Datenkatalog (DB)** | SQLite-backed catalog running entirely in the browser via sql.js. Sidebar navigation, full-text search, and interactive lineage graphs. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-db/) |
-| **Data Lineage Viewer** | Interactive graph for exploring data lineage across systems. Edge routing, zoom/pan, node interactions — vanilla JS, no framework. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-lineage/) |
-| **Simple Chart** | Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js. | [Open ›](https://bbl-dres.github.io/data-catalog/prototype-markdown/) |
+### Datenkatalog IMMO
 
-### Previews
+Main catalog. Browse business objects and datasets with search, filters, grid/list views, and detail pages. Follows the DCAT-AP CH v3.0 standard.
 
-**Datenkatalog IMMO**
+- links: https://bbl-dres.github.io/data-catalog/
+
 ![Preview](assets/readme/Preview.JPG)
 
-**Meta-Atlas**
+---
+
+### Meta-Atlas
+
+Hierarchical metadata atlas following the TOGAF three-layer model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
+
+- links: https://bbl-dres.github.io/data-catalog/prototype-dmbok/
+
 <p>
   <img src="prototype-dmbok/assets/preview1.jpg" width="45%" />
   <img src="prototype-dmbok/assets/preview2.jpg" width="45%" />
 </p>
 
-**BBL Datenkatalog (DB)**
+---
+
+### BBL Datenkatalog (DB)
+
+SQLite-backed catalog running entirely in the browser via sql.js. Sidebar navigation, full-text search, detail views, and interactive lineage graphs.
+
+- links: https://bbl-dres.github.io/data-catalog/prototype-db/
+
 <p>
   <img src="prototype-db/assets/Preview1.jpg" width="45%" />
   <img src="prototype-db/assets/Preview2.jpg" width="45%" />
 </p>
 
-**Data Lineage Viewer**
+---
+
+### Data Lineage Viewer
+
+Interactive graph for exploring data lineage across systems. Live JSON editor on the left, viewer with pan / zoom / fit / expand on the right. Edge routing, column-level mappings, system-based grouping — vanilla JS, no framework.
+
+- links: https://bbl-dres.github.io/data-catalog/prototype-lineage/
+
 ![Preview](prototype-lineage/assets/Preview1.jpg)
 
-**Simple Chart**
+---
+
+### Simple Chart
+
+Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js.
+
+- links: https://bbl-dres.github.io/data-catalog/prototype-markdown/
+
 <p>
   <img src="prototype-markdown/assets/Preview1.jpg" width="45%" />
 </p>
