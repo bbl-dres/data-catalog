@@ -1410,17 +1410,39 @@ function renderProductsList(listTab) {
 }
 
 
-function renderSearchResults() {
-  const main = document.getElementById('main-content');
-  const q = searchQuery.trim();
+// Runs the 5 entity LIKE queries shared by the header dropdown and the /search page.
+// `system` only has name_en/name_de (no fr/it) — unlike the other entity tables.
+function searchCatalog(q, limit) {
+  const likeQ = `%${q}%`;
+  const all = [likeQ, likeQ, likeQ, likeQ];
+  const deEn = [likeQ, likeQ];
+  return {
+    terms: query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
+    concepts: query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
+    codeLists: query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
+    products: query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
+      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${limit}`, all),
+    systems: query(`SELECT id, name_en, name_de, technology_stack FROM system
+      WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${limit}`, deEn)
+  };
+}
 
-  // Keep header input in sync with URL (so shared links repopulate the search bar)
-  const searchInput = document.getElementById('search-input');
-  if (searchInput && searchInput.value !== q) searchInput.value = q;
+function syncHeaderSearch(q) {
+  const input = document.getElementById('search-input');
+  if (input && input.value !== q) input.value = q;
   const clearBtn = document.getElementById('search-clear');
   const shortcut = document.getElementById('search-shortcut');
   if (clearBtn) clearBtn.hidden = q.length === 0;
   if (shortcut) shortcut.hidden = q.length > 0;
+}
+
+function renderSearchResults() {
+  const main = document.getElementById('main-content');
+  const q = searchQuery.trim();
+  syncHeaderSearch(q);
 
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
@@ -1444,29 +1466,13 @@ function renderSearchResults() {
     html += '</div>';
     main.innerHTML = html;
     lucide.createIcons({ nodes: [main] });
-    // Auto-focus header search so the user can start typing immediately
     document.getElementById('search-input')?.focus();
     return;
   }
 
-  const likeQ = `%${q}%`;
   const LIMIT = 20;
-
-  const terms = query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ, likeQ, likeQ]);
-  const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it, status FROM concept
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ, likeQ, likeQ]);
-  const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ, likeQ, likeQ]);
-  const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
-    WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ, likeQ, likeQ]);
-  const systems = query(`SELECT id, name_en, name_de, technology_stack FROM system
-    WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${LIMIT}`,
-    [likeQ, likeQ]);
+  const { terms, concepts, codeLists, products, systems } = searchCatalog(q, LIMIT);
+  const likeQ = `%${q}%`;
   const datasets = query(`SELECT d.id, d.name, d.display_name, d.dataset_type,
     s.${nameCol('name')} as sys_name, sc.system_id as sys_id
     FROM dataset d
@@ -1609,25 +1615,7 @@ function renderSearchDropdown(q) {
   </div>`;
 
   if (trimmed) {
-    const likeQ = `%${trimmed}%`;
-    const LIMIT = 5;
-
-    const terms = query(`SELECT id, name_en, name_de, name_fr, name_it, standard_ref FROM term
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-      [likeQ, likeQ, likeQ, likeQ]);
-    const concepts = query(`SELECT id, name_en, name_de, name_fr, name_it FROM concept
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-      [likeQ, likeQ, likeQ, likeQ]);
-    const codeLists = query(`SELECT id, name_en, name_de, name_fr, name_it FROM code_list
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-      [likeQ, likeQ, likeQ, likeQ]);
-    const products = query(`SELECT id, name_en, name_de, name_fr, name_it, publisher FROM data_product
-      WHERE name_en LIKE ? OR name_de LIKE ? OR name_fr LIKE ? OR name_it LIKE ? LIMIT ${LIMIT}`,
-      [likeQ, likeQ, likeQ, likeQ]);
-    const systems = query(`SELECT id, name_en, name_de, technology_stack FROM system
-      WHERE name_en LIKE ? OR name_de LIKE ? LIMIT ${LIMIT}`,
-      [likeQ, likeQ]);
-
+    const { terms, concepts, codeLists, products, systems } = searchCatalog(trimmed, 5);
     const total = terms.length + concepts.length + codeLists.length + products.length + systems.length;
 
     if (total === 0) {
@@ -1668,8 +1656,12 @@ function renderSearchDropdown(q) {
 }
 
 function hideSearchDropdown() {
+  if (searchDropdownDebounce) {
+    clearTimeout(searchDropdownDebounce);
+    searchDropdownDebounce = null;
+  }
   const dropdown = document.getElementById('search-dropdown');
-  if (dropdown) {
+  if (dropdown && !dropdown.hidden) {
     dropdown.hidden = true;
     dropdown.innerHTML = '';
   }
@@ -3094,22 +3086,17 @@ document.addEventListener('DOMContentLoaded', function() {
   const searchInput = document.getElementById('search-input');
   if (!searchInput) return;
   const searchClear = document.getElementById('search-clear');
-  const searchShortcut = document.getElementById('search-shortcut');
-
-  function updateClearVisibility() {
-    const hasValue = searchInput.value.length > 0;
-    if (searchClear) searchClear.hidden = !hasValue;
-    if (searchShortcut) searchShortcut.hidden = hasValue;
-  }
 
   searchInput.addEventListener('input', function() {
     const q = this.value;
-    updateClearVisibility();
+    syncHeaderSearch(q);
     if (searchDropdownDebounce) clearTimeout(searchDropdownDebounce);
     searchDropdownDebounce = setTimeout(() => renderSearchDropdown(q), 120);
   });
 
   searchInput.addEventListener('focus', function() {
+    // On empty /search, the page itself is the search entry point — don't open a duplicate dropdown
+    if (currentSection === 'search' && !this.value) return;
     renderSearchDropdown(this.value);
   });
 
@@ -3133,7 +3120,7 @@ document.addEventListener('DOMContentLoaded', function() {
     searchClear.addEventListener('click', function(e) {
       e.preventDefault();
       searchInput.value = '';
-      updateClearVisibility();
+      syncHeaderSearch('');
       renderSearchDropdown('');
       searchInput.focus();
       // If we're on a search results page, drop the ?q= so the view updates too
