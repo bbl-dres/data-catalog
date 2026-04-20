@@ -57,7 +57,11 @@
       "WebFetch(domain:dam-api.bfs.admin.ch)",
       "Bash(command -v pdftotext)",
       "Bash(pip install *)",
-      "Bash(pdftotext -layout \"C:/Users/DavidRasner/.claude/projects/c--Users-DavidRasner-Documents-GitHub-data-catalog-prototype-sqlite/d6a01fd5-a968-4243-a420-934691f4d155/tool-results/webfetch-1776715631965-j8czio.pdf\" \"/tmp/bfs-roles.txt\")"
+      "Bash(pdftotext -layout \"C:/Users/DavidRasner/.claude/projects/c--Users-DavidRasner-Documents-GitHub-data-catalog-prototype-sqlite/d6a01fd5-a968-4243-a420-934691f4d155/tool-results/webfetch-1776715631965-j8czio.pdf\" \"/tmp/bfs-roles.txt\")",
+      "Bash(PYTHONIOENCODING=utf-8 python _scan_i18n.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python _replace_i18n.py)",
+      "Bash(node -c js/xlsx_io.js)",
+      "Bash(node -c js/views/graph.js)"
     ]
   }
 }

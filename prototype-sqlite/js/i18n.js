@@ -2,23 +2,27 @@
 // i18n: current language, translation dictionaries, and locale
 // helpers for multilingual DB rows.
 //
+// Dictionaries live in `data/i18n.json` and are loaded once during
+// app boot via `loadI18n()`. The module-level vars below start empty
+// and are populated in place so existing `tr()` / `tSection()` /
+// `tStatus()` call sites keep working unchanged.
+//
 // All user-visible strings that are not data should go through
-// t(), tStatus(), or tSection(). Data-row language columns
+// tr(), tStatus(), or tSection(). Data-row language columns
 // (name_de, name_fr, …) are resolved through nameCol/n.
 // ============================================================
 
 let lang = 'de';
 
-const LANG_LABELS = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
+// Populated by loadI18n() from data/i18n.json. Kept as let so the
+// assignment is visible to the helpers below without module rebinding.
+let LANG_LABELS    = { de: 'DE', fr: 'FR', it: 'IT', en: 'EN' };
+let SECTION_LABELS = {};
+let STATUS_LABELS  = {};
+let I18N           = {};
 
-const SECTION_LABELS = {
-  vocabulary: { de: 'Geschäftsobjekte', fr: 'Objets métier',       it: 'Oggetti di business', en: 'Business Objects' },
-  terms:      { de: 'Begriffe',         fr: 'Termes',              it: 'Termini',             en: 'Terms' },
-  codelists:  { de: 'Codelisten',       fr: 'Listes de codes',     it: 'Liste di codici',     en: 'Code Lists' },
-  systems:    { de: 'Systeme',          fr: 'Systèmes',            it: 'Sistemi',             en: 'Systems' },
-  datasets:   { de: 'Datensätze',       fr: 'Jeux de données',     it: 'Insiemi di dati',     en: 'Datasets' }
-};
-
+// Icons are not translation data — keep them next to the labels so
+// the sidebar renderer has a single source of mapping.
 const SECTION_ICONS = {
   vocabulary: 'box',
   terms: 'book-open',
@@ -27,134 +31,21 @@ const SECTION_ICONS = {
   datasets: 'package'
 };
 
-const STATUS_LABELS = {
-  approved:   { de: 'Freigegeben', fr: 'Approuvé',   it: 'Approvato',    en: 'Approved' },
-  draft:      { de: 'Entwurf',     fr: 'Brouillon',  it: 'Bozza',        en: 'Draft' },
-  in_review:  { de: 'In Prüfung',  fr: 'En revue',   it: 'In revisione', en: 'In review' },
-  deprecated: { de: 'Veraltet',    fr: 'Obsolète',   it: 'Obsoleto',     en: 'Deprecated' },
-  active:     { de: 'Aktiv',       fr: 'Actif',      it: 'Attivo',       en: 'Active' }
-};
-
-// General chrome strings. Keep keys short and kebab-free for grep-ability.
-const I18N = {
-  home:                   { de: 'Home',                fr: 'Accueil',           it: 'Home',              en: 'Home' },
-  filter:                 { de: 'Filter',              fr: 'Filtres',           it: 'Filtri',            en: 'Filters' },
-  filter_reset:           { de: 'Alle Filter zurücksetzen', fr: 'Réinitialiser tous les filtres', it: 'Reimposta tutti i filtri', en: 'Reset all filters' },
-  filter_apply_aria:      { de: 'Filter {label} anwenden',  fr: 'Appliquer le filtre {label}',  it: 'Applica filtro {label}',  en: 'Apply filter {label}' },
-  filter_remove_aria:     { de: 'Filter {label} entfernen', fr: 'Retirer le filtre {label}',    it: 'Rimuovi filtro {label}',  en: 'Remove filter {label}' },
-  filter_live_message:    { de: '{filtered} von {total} {section} angezeigt, {count} Filter aktiv.', fr: '{filtered} sur {total} {section} affichés, {count} filtres actifs.', it: '{filtered} di {total} {section} mostrati, {count} filtri attivi.', en: '{filtered} of {total} {section} shown, {count} filters active.' },
-  no_hits_title:          { de: 'Keine Treffer',       fr: 'Aucun résultat',    it: 'Nessun risultato',  en: 'No matches' },
-  no_entries:             { de: 'Keine Einträge',      fr: 'Aucune entrée',     it: 'Nessuna voce',      en: 'No entries' },
-  no_attributes:          { de: 'Keine Attribute',     fr: 'Aucun attribut',    it: 'Nessun attributo',  en: 'No attributes' },
-  no_values:              { de: 'Keine Werte',         fr: 'Aucune valeur',     it: 'Nessun valore',     en: 'No values' },
-  no_tables:              { de: 'Keine Tabellen',      fr: 'Aucune table',      it: 'Nessuna tabella',   en: 'No tables' },
-  no_activity:            { de: 'Keine Aktivität',     fr: 'Aucune activité',   it: 'Nessuna attività',  en: 'No activity' },
-  no_bookmarks:           { de: 'Keine Lesezeichen',   fr: 'Aucun signet',      it: 'Nessun segnalibro', en: 'No bookmarks' },
-  access_restricted:      { de: 'Zugriff eingeschränkt', fr: 'Accès restreint', it: 'Accesso limitato',  en: 'Access restricted' },
-  access_restricted_body: { de: 'Dieser Inhalt ist klassifiziert. Zugriff anfordern, um die Details einzusehen.', fr: 'Ce contenu est classifié. Demandez l\'accès pour consulter les détails.', it: 'Questo contenuto è riservato. Richiedi l\'accesso per visualizzare i dettagli.', en: 'This content is classified. Request access to view the details.' },
-  request_access:         { de: 'Zugriff anfordern',   fr: 'Demander l\'accès', it: 'Richiedi accesso',  en: 'Request access' },
-  unknown:                { de: 'Unbekannt',           fr: 'Inconnu',           it: 'Sconosciuto',       en: 'Unknown' },
-  not_found:              { de: 'Nicht gefunden',      fr: 'Introuvable',       it: 'Non trovato',       en: 'Not found' },
-  sidebar_collapse:       { de: 'Seitenleiste einklappen', fr: 'Réduire la barre latérale', it: 'Riduci la barra laterale', en: 'Collapse sidebar' },
-  sidebar_expand:         { de: 'Seitenleiste ausklappen', fr: 'Développer la barre latérale', it: 'Espandi la barra laterale', en: 'Expand sidebar' },
-
-  // ── Workflows & API ─────────────────────────────────────
-  workflows_api:          { de: 'Workflows & API',     fr: 'Workflows & API',   it: 'Workflows & API',   en: 'Workflows & API' },
-
-  // Excel export section
-  export_excel_label:     { de: 'EXCEL EXPORT',        fr: 'EXPORT EXCEL',      it: 'ESPORTAZIONE EXCEL', en: 'EXCEL EXPORT' },
-  export_excel_intro:     { de: 'Den gesamten Katalog als eine Excel-Datei herunterladen — eine Registerkarte pro Tabelle.', fr: 'Télécharger tout le catalogue dans un seul fichier Excel — un onglet par table.', it: 'Scarica l\'intero catalogo come unico file Excel — una scheda per tabella.', en: 'Download the full catalog as a single Excel file — one sheet per table.' },
-  export_tables:          { de: 'Tabellen',            fr: 'tables',            it: 'tabelle',           en: 'tables' },
-  export_rows:            { de: 'Zeilen',              fr: 'lignes',            it: 'righe',             en: 'rows' },
-  export_download_xlsx:   { de: 'Excel herunterladen', fr: 'Télécharger Excel', it: 'Scarica Excel',     en: 'Download Excel' },
-
-  // Excel import section (placeholder until Phase 2)
-  import_excel_label:     { de: 'EXCEL IMPORT',        fr: 'IMPORT EXCEL',      it: 'IMPORTAZIONE EXCEL', en: 'EXCEL IMPORT' },
-  import_excel_intro:     { de: 'Eine zuvor exportierte und bearbeitete Excel-Datei hochladen, um Änderungen in den Katalog zu übernehmen.', fr: 'Téléverser un fichier Excel exporté puis modifié pour appliquer les changements au catalogue.', it: 'Carica un file Excel precedentemente esportato e modificato per applicare le modifiche al catalogo.', en: 'Upload a previously exported and edited Excel file to apply changes to the catalog.' },
-  import_choose_file:     { de: 'Datei auswählen',     fr: 'Choisir un fichier', it: 'Scegli file',      en: 'Choose file' },
-  import_coming_soon:     { de: 'Wird in einer späteren Version unterstützt.', fr: 'Disponible dans une version ultérieure.', it: 'Disponibile in una versione futura.', en: 'Available in a later version.' },
-
-  // SQL database download section
-  db_download_label:      { de: 'SQL DATENBANK DOWNLOAD', fr: 'TÉLÉCHARGEMENT DE LA BASE SQL', it: 'DOWNLOAD DATABASE SQL', en: 'SQL DATABASE DOWNLOAD' },
-  db_download_intro:      { de: 'Laden Sie die aktuelle SQLite-Datenbank zur Sicherung oder Offline-Analyse herunter.', fr: 'Téléchargez la base SQLite actuelle pour sauvegarde ou analyse hors ligne.', it: 'Scarica il database SQLite corrente per backup o analisi offline.', en: 'Download the current SQLite database for backup or offline analysis.' },
-  db_download_button:     { de: 'catalog.db herunterladen', fr: 'Télécharger catalog.db', it: 'Scarica catalog.db', en: 'Download catalog.db' },
-
-  // REST API section
-  rest_api_label:         { de: 'REST API',            fr: 'API REST',          it: 'API REST',          en: 'REST API' },
-  rest_api_intro:         { de: 'Programmatischer Zugriff auf den Katalog über eine REST-Schnittstelle. Die OpenAPI/Swagger-Dokumentation beschreibt alle verfügbaren Endpunkte.', fr: 'Accès programmatique au catalogue via une interface REST. La documentation OpenAPI/Swagger décrit tous les points de terminaison disponibles.', it: 'Accesso programmatico al catalogo tramite un\'interfaccia REST. La documentazione OpenAPI/Swagger descrive tutti gli endpoint disponibili.', en: 'Programmatic access to the catalog via a REST interface. The OpenAPI/Swagger documentation describes all available endpoints.' },
-  rest_api_open_docs:     { de: 'API-Dokumentation öffnen', fr: 'Ouvrir la documentation API', it: 'Apri la documentazione API', en: 'Open API documentation' },
-
-  // API docs stub page
-  api_docs_title:         { de: 'API-Dokumentation',   fr: 'Documentation API', it: 'Documentazione API', en: 'API documentation' },
-  api_docs_coming_soon:   { de: 'Die Swagger-UI mit der OpenAPI-Spezifikation folgt in einer späteren Version.', fr: 'L\'interface Swagger avec la spécification OpenAPI suivra dans une version ultérieure.', it: 'L\'interfaccia Swagger con la specifica OpenAPI arriverà in una versione futura.', en: 'The Swagger UI with the OpenAPI specification will follow in a later version.' },
-
-  // Section labels (rendered uppercase via CSS text-transform on .section-label)
-  sec_definition:         { de: 'Definition',               fr: 'Définition',                 it: 'Definizione',                en: 'Definition' },
-  sec_metadata:           { de: 'Metadaten',                fr: 'Métadonnées',                it: 'Metadati',                   en: 'Metadata' },
-  sec_stakeholders:       { de: 'Verantwortliche',          fr: 'Responsables',               it: 'Responsabili',               en: 'Stakeholders' },
-  sec_attributes:         { de: 'Attribute',                fr: 'Attributs',                  it: 'Attributi',                  en: 'Attributes' },
-  sec_fields:             { de: 'Felder',                   fr: 'Champs',                     it: 'Campi',                      en: 'Fields' },
-  sec_mappings:           { de: 'Zuordnungen — {count} Felder', fr: 'Correspondances — {count} champs', it: 'Associazioni — {count} campi', en: 'Mappings — {count} fields' },
-  sec_linked_concepts:    { de: 'Verknüpfte Geschäftsobjekte', fr: 'Objets métier liés',      it: 'Oggetti di business collegati', en: 'Linked Business Objects' },
-  sec_used_by_concepts:   { de: 'Verwendet von Geschäftsobjekten', fr: 'Utilisé par les objets métier', it: 'Utilizzato da oggetti di business', en: 'Used by Business Objects' },
-  sec_terms:              { de: 'Begriffe',                 fr: 'Termes',                     it: 'Termini',                    en: 'Terms' },
-  sec_source_datasets:    { de: 'Quelldatensätze',          fr: 'Jeux de données sources',    it: 'Insiemi di dati di origine', en: 'Source Datasets' },
-  sec_distributions:      { de: 'Distributionen',           fr: 'Distributions',              it: 'Distribuzioni',              en: 'Distributions' },
-  sec_data_quality:       { de: 'Datenqualität',            fr: 'Qualité des données',        it: 'Qualità dei dati',           en: 'Data Quality' },
-  sec_lineage:            { de: 'Lineage',                  fr: 'Lineage',                    it: 'Lineage',                    en: 'Lineage' },
-  sec_recent_activity:    { de: 'Letzte Aktivität',         fr: 'Activité récente',           it: 'Attività recente',           en: 'Recent Activity' },
-  sec_domains:            { de: 'Domänen',                  fr: 'Domaines',                   it: 'Domini',                     en: 'Domains' },
-  sec_search_by_type:     { de: 'Nach Typ durchsuchen',     fr: 'Parcourir par type',         it: 'Sfoglia per tipo',           en: 'Browse by Type' },
-
-  // Stakeholder role titles — aligned with BFS NaDB role model
-  // (Bericht vom 25.11.2020, Prozesse/Rollen/Verantwortlichkeiten NaDB).
-  role_data_owner:        { de: 'Dateninhaber',             fr: 'Propriétaire des données',     it: 'Titolare dei dati',            en: 'Data Owner' },
-  role_data_steward:      { de: 'Datenverwalter',           fr: 'Intendant des données',        it: 'Gestore dei dati',             en: 'Data Steward' },
-  role_data_custodian:    { de: 'Datenhalter',              fr: 'Gardien des données',          it: 'Custode dei dati',             en: 'Data Custodian' },
-  role_application_owner: { de: 'Anwendungsverantwortliche',fr: 'Responsable d\'application',   it: 'Responsabile dell\'applicazione', en: 'Application Owner' },
-  role_publisher:         { de: 'Herausgeber',              fr: 'Éditeur',                      it: 'Editore',                      en: 'Publisher' },
-
-  // Stakeholder role descriptions — paraphrased from BFS NaBD role model
-  role_data_owner_desc:   { de: 'Entscheidet über Zweck und Inhalt der Datensammlung; verantwortlich für Qualität, Zugriff und Schutz gemäss rechtlichen Grundlagen.',
-                            fr: 'Décide de la finalité et du contenu de la collection de données ; responsable de la qualité, de l\'accès et de la protection selon les bases légales.',
-                            it: 'Decide in merito allo scopo e al contenuto della raccolta di dati; responsabile di qualità, accesso e protezione secondo le basi legali.',
-                            en: 'Decides on the purpose and content of the data collection; accountable for quality, access, and protection under the applicable legal basis.' },
-  role_data_steward_desc: { de: 'Standardisiert und harmonisiert Daten und Metadaten; verantwortet die korrekte und vollständige Beschreibung im Katalog.',
-                            fr: 'Standardise et harmonise données et métadonnées ; responsable de la description correcte et complète dans le catalogue.',
-                            it: 'Standardizza e armonizza dati e metadati; responsabile della descrizione corretta e completa nel catalogo.',
-                            en: 'Standardises and harmonises data and metadata; responsible for the correct and complete description in the catalog.' },
-  role_data_custodian_desc: { de: 'Verantwortlich für die sichere Haltung und Übermittlung der Daten; stellt sie legitimierten Nutzern bereit (entspricht einem Systemadministrator).',
-                              fr: 'Responsable de la conservation sécurisée et de la transmission des données ; les met à disposition des utilisateurs légitimes (équivalent administrateur système).',
-                              it: 'Responsabile della conservazione sicura e della trasmissione dei dati; li mette a disposizione degli utenti autorizzati (equivale a un amministratore di sistema).',
-                              en: 'Responsible for secure custody and transmission of the data; makes it available to authorised users (corresponds to a system administrator).' },
-  role_application_owner_desc: { de: 'Fachliche Verantwortung für die Anwendung: Funktionalität, Weiterentwicklung, Releaseplanung (Product Owner auf Systemebene).',
-                                 fr: 'Responsabilité métier de l\'application : fonctionnalités, évolution, planification des versions (Product Owner au niveau système).',
-                                 it: 'Responsabilità funzionale dell\'applicazione: funzionalità, evoluzione, pianificazione dei rilasci (Product Owner a livello di sistema).',
-                                 en: 'Business ownership of the application: functionality, roadmap, release planning (Product Owner at the system level).' },
-  role_publisher_desc:    { de: 'Veröffentlicht und verteilt den Datensatz.',
-                            fr: 'Publie et distribue le jeu de données.',
-                            it: 'Pubblica e distribuisce l\'insieme di dati.',
-                            en: 'Publishes and distributes the dataset.' },
-
-  // Stakeholder empty state — displayed as a visible warning, not muted placeholder
-  stakeholders_empty_warning: { de: 'Kein(e) {role} zugewiesen — bitte Verantwortliche zuweisen.',
-                                fr: 'Aucun(e) {role} assigné(e) — veuillez désigner un responsable.',
-                                it: 'Nessun(a) {role} assegnato(a) — assegnare un responsabile.',
-                                en: 'No {role} assigned — please assign someone.' },
-
-  // Inline edit mode (visual mockup only — no persistence)
-  edit_button:        { de: 'Bearbeiten',      fr: 'Modifier',       it: 'Modifica',       en: 'Edit' },
-  edit_save:          { de: 'Speichern',       fr: 'Enregistrer',    it: 'Salva',          en: 'Save' },
-  edit_cancel:        { de: 'Abbrechen',       fr: 'Annuler',        it: 'Annulla',        en: 'Cancel' },
-  edit_banner:        { de: 'Bearbeiten-Modus aktiv — Änderungen sind nicht persistent (Mockup).',
-                        fr: 'Mode édition actif — les modifications ne sont pas persistantes (maquette).',
-                        it: 'Modalità modifica attiva — le modifiche non sono persistenti (mockup).',
-                        en: 'Edit mode active — changes are not persisted (mockup).' },
-  edit_toast_saved:   { de: 'Änderungen gespeichert (Mockup)',
-                        fr: 'Modifications enregistrées (maquette)',
-                        it: 'Modifiche salvate (mockup)',
-                        en: 'Changes saved (mockup)' }
-};
+async function loadI18n() {
+  try {
+    const resp = await fetch('data/i18n.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (data.langLabels)    LANG_LABELS    = data.langLabels;
+    if (data.sectionLabels) SECTION_LABELS = data.sectionLabels;
+    if (data.statusLabels)  STATUS_LABELS  = data.statusLabels;
+    if (data.keys)          I18N           = data.keys;
+  } catch (e) {
+    console.error('Failed to load data/i18n.json:', e.message);
+    // Empty dicts fall through — tr() returns the key, which is at
+    // least a legible identifier for debugging.
+  }
+}
 
 function tr(key, vars) {
   const entry = I18N[key];

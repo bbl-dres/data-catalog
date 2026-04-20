@@ -50,11 +50,11 @@ function renderHome() {
 
   // KPI cards
   html += '<div class="home-kpi-grid">';
-  html += renderKpiCard('box', conceptCount, 'Geschäftsobjekte', `${approvedCount} Freigegeben \u00b7 ${draftCount} Entwurf`, '#/vocabulary/table');
-  html += renderKpiCard('book-open', termCount, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
-  html += renderKpiCard('list-ordered', codelistCount, 'Codelisten', `${valueCount} Werte`, '#/codelists');
-  html += renderKpiCard('database', systemCount, 'Systeme', `${fieldCount} Felder`, '#/systems/table');
-  html += renderKpiCard('package', productCount, 'Datensätze', `${distCount} Distributionen`, '#/datasets/table');
+  html += renderKpiCard('box',          conceptCount,  tSection('vocabulary'), tr('home_subtitle_concepts', { approved: approvedCount, draft: draftCount }), '#/vocabulary/table');
+  html += renderKpiCard('book-open',    termCount,     tSection('terms'),      tr('home_subtitle_terms'),                                                    '#/terms');
+  html += renderKpiCard('list-ordered', codelistCount, tSection('codelists'),  tr('home_subtitle_codelists', { values: valueCount }),                        '#/codelists');
+  html += renderKpiCard('database',     systemCount,   tSection('systems'),    tr('home_subtitle_systems',   { fields: fieldCount }),                        '#/systems/table');
+  html += renderKpiCard('package',      productCount,  tSection('datasets'),   tr('home_subtitle_datasets',  { dist: distCount }),                           '#/datasets/table');
   html += '</div>';
 
   // Recent activity
@@ -85,7 +85,7 @@ function renderHome() {
   domains.forEach(d => {
     html += `<div class="home-domain-row clickable-row" data-href="#/vocabulary/table">
       <span>${escapeHtml(d.cname)}</span>
-      <span class="home-domain-count">${d.concept_count} ${d.concept_count === 1 ? 'Geschäftsobjekt' : 'Geschäftsobjekte'}</span>
+      <span class="home-domain-count">${d.concept_count} ${d.concept_count === 1 ? tr('entity_concept_singular') : tSection('vocabulary')}</span>
     </div>`;
   });
   html += '</div>';

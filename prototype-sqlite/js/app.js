@@ -366,8 +366,8 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
   // clipped by the scroll context.
   let html = '<div class="tab-bar" role="tablist"><div class="tab-bar-scroll">';
   const tabs = [
-    { id: 'table', label: 'Tabelle' },
-    { id: 'diagram', label: 'Diagramm' }
+    { id: 'table', label: tr('list_tab_table') },
+    { id: 'diagram', label: tr('list_tab_diagram') }
   ];
   tabs.forEach(t => {
     const isActive = t.id === activeTab;
@@ -383,7 +383,7 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
   if (groupingOptions) {
     const activeLabel = groupingOptions.find(o => o.id === activeGrouping)?.label || groupingOptions[0].label;
     html += '<div class="grouping-dropdown">';
-    html += `<button class="grouping-btn" id="grouping-btn">Gruppierung: ${activeLabel} <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>`;
+    html += `<button class="grouping-btn" id="grouping-btn">${tr('group_label')}: ${activeLabel} <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>`;
     html += '<div class="grouping-menu" id="grouping-menu">';
     groupingOptions.forEach(o => {
       html += `<div class="grouping-option${o.id === activeGrouping ? ' active' : ''}" data-grouping="${o.id}" data-grouping-section="${routeBase}">${o.label}</div>`;
@@ -409,10 +409,12 @@ function conceptAttrKey(a) {
 // Each row: { marker, name, type } — rendered as a monospace UML-attribute-style line.
 // Sections not in this map fall through to simple (non-expandable) cards.
 // ──────────────────────────────────────────────────────────
+// Store i18n keys; callers resolve via tr() at render time so the config
+// doesn't snapshot empty strings before loadI18n() has populated I18N.
 const SECTION_CARD_CONFIG = {
   vocabulary: {
-    rowLabel: 'Attribute',
-    emptyLabel: 'Keine Attribute',
+    rowLabelKey: 'sec_attributes',
+    emptyLabelKey: 'no_attributes',
     maxRows: 8,
     fetchRowsBatch: (ids) => {
       const out = {};
@@ -433,8 +435,8 @@ const SECTION_CARD_CONFIG = {
     }
   },
   codelists: {
-    rowLabel: 'Werte',
-    emptyLabel: 'Keine Werte',
+    rowLabelKey: 'col_values',
+    emptyLabelKey: 'no_values',
     maxRows: 10,
     fetchRowsBatch: (ids) => {
       const out = {};
@@ -456,8 +458,8 @@ const SECTION_CARD_CONFIG = {
     }
   },
   systems: {
-    rowLabel: 'Tabellen',
-    emptyLabel: 'Keine Tabellen',
+    rowLabelKey: 'col_tables',
+    emptyLabelKey: 'no_tables',
     maxRows: 12,
     fetchRowsBatch: (ids) => {
       const out = {};
@@ -512,7 +514,8 @@ function buildAttrsToggleHtml(section) {
   const cfg = SECTION_CARD_CONFIG[section];
   if (!cfg) return '';
   const shown = attrsMode === 'show';
-  const label = shown ? `${cfg.rowLabel} ausblenden` : `${cfg.rowLabel} anzeigen`;
+  const rowLabel = tr(cfg.rowLabelKey);
+  const label = tr(shown ? 'aria_hide_rows' : 'aria_show_rows', { label: rowLabel });
   const icon = shown ? 'eye-off' : 'eye';
   return `<button class="grouping-btn" data-attrs-toggle type="button" aria-pressed="${shown}"><i data-lucide="${icon}" style="width:14px;height:14px;"></i> ${label}</button>`;
 }
@@ -546,7 +549,7 @@ function isCardExpanded(conceptId) {
 // opts:    { emptyLabel, maxRows, moreHref }
 function renderUmlRowsSection(rows, opts) {
   opts = opts || {};
-  if (!rows.length) return `<div class="uml-card-empty">${escapeHtml(opts.emptyLabel || 'Keine Einträge')}</div>`;
+  if (!rows.length) return `<div class="uml-card-empty">${escapeHtml(opts.emptyLabel || tr('no_entries'))}</div>`;
   const max = opts.maxRows || rows.length;
   const shown = rows.slice(0, max);
   const extra = rows.length - shown.length;
@@ -578,10 +581,11 @@ function renderExpandableCard(cardData, isExpanded, rows, opts) {
     ? escapeHtml(cardData.tooltip.substring(0, 240)) + (cardData.tooltip.length > 240 ? '…' : '')
     : '';
   const expandedCls = isExpanded ? ' uml-card--expanded' : '';
-  const rowLabel = opts.rowLabel || 'Details';
-  const chevronLabel = isExpanded ? `${rowLabel} ausblenden` : `${rowLabel} anzeigen`;
+  const rowLabel = opts.rowLabelKey ? tr(opts.rowLabelKey) : (opts.rowLabel || 'Details');
+  const emptyLabel = opts.emptyLabelKey ? tr(opts.emptyLabelKey) : (opts.emptyLabel || tr('no_entries'));
+  const chevronLabel = tr(isExpanded ? 'aria_hide_rows' : 'aria_show_rows', { label: rowLabel });
   const rowsHtml = isExpanded
-    ? renderUmlRowsSection(rows, { emptyLabel: opts.emptyLabel, maxRows: opts.maxRows, moreHref: href })
+    ? renderUmlRowsSection(rows, { emptyLabel, maxRows: opts.maxRows, moreHref: href })
     : '';
 
   return `<div class="uml-card clickable-row${expandedCls}" data-href="${escapeHtml(href)}"${tooltip ? ` title="${tooltip}"` : ''}>
@@ -602,24 +606,24 @@ function toggleConceptCardInPlace(id) {
   const cfg = SECTION_CARD_CONFIG[currentSection];
   if (!cfg) return false;
   const willExpand = !card.classList.contains('uml-card--expanded');
-  const rowLabel = cfg.rowLabel;
+  const rowLabel = tr(cfg.rowLabelKey);
 
   if (willExpand) {
     const rows = cfg.fetchRowsBatch([id])[id] || [];
     const href = card.dataset.href || '';
     card.insertAdjacentHTML('beforeend', renderUmlRowsSection(rows, {
-      emptyLabel: cfg.emptyLabel,
+      emptyLabel: tr(cfg.emptyLabelKey),
       maxRows: cfg.maxRows,
       moreHref: href
     }));
     card.classList.add('uml-card--expanded');
     header.setAttribute('aria-expanded', 'true');
-    header.setAttribute('aria-label', `${rowLabel} ausblenden`);
+    header.setAttribute('aria-label', tr('aria_hide_rows', { label: rowLabel }));
   } else {
     card.querySelector('.uml-card-attrs, .uml-card-empty')?.remove();
     card.classList.remove('uml-card--expanded');
     header.setAttribute('aria-expanded', 'false');
-    header.setAttribute('aria-label', `${rowLabel} anzeigen`);
+    header.setAttribute('aria-label', tr('aria_show_rows', { label: rowLabel }));
   }
 
   const chevronEl = header.querySelector('.uml-card-chevron');
@@ -662,7 +666,7 @@ function renderVocabularyList(listTab, collectionId) {
   const seenStewards = new Set();
   allConceptsUnfiltered.forEach(c => {
     const key = c.steward_id || '__none__';
-    const label = c.steward_name || 'Nicht zugewiesen';
+    const label = c.steward_name || tr('val_unassigned');
     if (!seenStewards.has(key)) { seenStewards.add(key); stewardOpts.push({ value: key, label }); }
   });
   stewardOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
@@ -676,13 +680,13 @@ function renderVocabularyList(listTab, collectionId) {
     },
     {
       id: 'status',
-      label: 'Freigabe',
+      label: tr('col_approval'),
       options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (c, vals) => vals.includes(c.status)
     },
     {
       id: 'steward',
-      label: 'Verantwortlich',
+      label: tr('col_responsible'),
       options: stewardOpts,
       match: (c, vals) => vals.includes(c.steward_id || '__none__')
     }
@@ -735,9 +739,9 @@ function renderVocabularyList(listTab, collectionId) {
 
   const vocabGroupOpts = activeCollection ? null : [
     { id: 'domain', label: 'Domäne' },
-    { id: 'status', label: 'Freigabe' },
-    { id: 'steward', label: 'Verantwortlich' },
-    { id: 'none', label: 'Keine' }
+    { id: 'status', label: tr('col_approval') },
+    { id: 'steward', label: tr('col_responsible') },
+    { id: 'none', label: tr('group_none') }
   ];
 
   const toggleAllCtrl = listTab === 'diagram' ? buildAttrsToggleHtml('vocabulary') : '';
@@ -760,7 +764,7 @@ function renderVocabularyList(listTab, collectionId) {
       return col ? n(col, 'name') : 'Ohne Domäne';
     }
     if (grouping.vocabulary === 'status') return tStatus(c.status) || c.status || tr('unknown');
-    if (grouping.vocabulary === 'steward') return c.steward_name || 'Nicht zugewiesen';
+    if (grouping.vocabulary === 'steward') return c.steward_name || tr('val_unassigned');
     return null;
   }
 
@@ -774,7 +778,7 @@ function renderVocabularyList(listTab, collectionId) {
     if (activeCollection) {
       groups.push({ id: activeCollection.id, title: n(activeCollection, 'name'), items: conceptsByCollection[activeCollection.id] || [] });
     } else if (grouping.vocabulary === 'none') {
-      groups.push({ id: 'all', title: 'Alle Geschäftsobjekte', items: allConcepts });
+      groups.push({ id: 'all', title: tr('group_all_concepts'), items: allConcepts });
     } else if (grouping.vocabulary === 'domain') {
       filteredCollections.forEach(col => {
         groups.push({ id: col.id, title: n(col, 'name'), items: conceptsByCollection[col.id] || [] });
@@ -798,9 +802,9 @@ function renderVocabularyList(listTab, collectionId) {
 
   if (allConcepts.length === 0) {
     if (filterCtx && filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Geschäftsobjekte entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_concepts'));
     } else {
-      html += renderEmptyState('book-open', 'Keine Geschäftsobjekte', 'Es wurden noch keine Geschäftsobjekte angelegt.');
+      html += renderEmptyState('book-open', tr('no_concepts'), tr('empty_body_concepts'));
     }
     html += '</div>';
     return html;
@@ -809,18 +813,18 @@ function renderVocabularyList(listTab, collectionId) {
   html += '<div class="list-panel">';
 
   const conceptColumns = [
-    { label: 'Name',          width: '17%', render: c => escapeHtml(n(c, 'name')) },
+    { label: tr('col_name'),          width: '17%', render: c => escapeHtml(n(c, 'name')) },
     { label: 'Domäne',        width: '15%', render: c => {
         const col = c.collection_id ? collectionMap[c.collection_id] : null;
         return col ? filterBadge(n(col, 'name'), 'domain', col.id) : '&ndash;';
       } },
-    { label: 'Beschreibung',  width: '28%', render: c => {
+    { label: tr('col_description'),  width: '28%', render: c => {
         const desc = getDefinitionText(c.definition, lang);
         return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
       } },
-    { label: 'Felder',        width: '8%',  render: c => c.mapping_count > 0 ? c.mapping_count : '&ndash;' },
-    { label: 'Freigabe',      width: '10%', render: c => statusBadge(c.status, 'status') },
-    { label: 'Verantwortlich', width: '22%', render: c => c.steward_name ? escapeHtml(c.steward_name) : '&ndash;' }
+    { label: tr('col_fields'),        width: '8%',  render: c => c.mapping_count > 0 ? c.mapping_count : '&ndash;' },
+    { label: tr('col_approval'),      width: '10%', render: c => statusBadge(c.status, 'status') },
+    { label: tr('col_responsible'), width: '22%', render: c => c.steward_name ? escapeHtml(c.steward_name) : '&ndash;' }
   ];
   const conceptTableOpts = { rowHref: c => '#/vocabulary/' + c.id };
 
@@ -915,11 +919,11 @@ function renderCodeListsList(listTab) {
       match: (cl, vals) => vals.includes(cl.collection_id || '__none__')
     },
     {
-      id: 'source', label: 'Quelle', options: sourceOpts,
+      id: 'source', label: tr('col_source'), options: sourceOpts,
       match: (cl, vals) => vals.includes(cl.source_ref || '__none__')
     },
     {
-      id: 'status', label: 'Freigabe',
+      id: 'status', label: tr('col_approval'),
       options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (cl, vals) => vals.includes(cl.status)
     }
@@ -937,8 +941,8 @@ function renderCodeListsList(listTab) {
 
   const groupingOpts = [
     { id: 'domain', label: 'Domäne' },
-    { id: 'source', label: 'Quelle' },
-    { id: 'none', label: 'Keine' }
+    { id: 'source', label: tr('col_source') },
+    { id: 'none', label: tr('group_none') }
   ];
   html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, listTab === 'diagram' ? buildAttrsToggleHtml('codelists') : '', filterCtx);
   html += filterCtx.panelHtml;
@@ -947,9 +951,9 @@ function renderCodeListsList(listTab) {
 
   if (codeLists.length === 0) {
     if (filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Codelisten entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_codelists'));
     } else {
-      html += renderEmptyState('list-ordered', 'Keine Codelisten', 'Es wurden noch keine Codelisten angelegt.');
+      html += renderEmptyState('list-ordered', tr('no_codelists'), tr('empty_body_codelists'));
     }
     html += '</div>';
     return html;
@@ -968,7 +972,7 @@ function renderCodeListsList(listTab) {
 
     const groups = [];
     if (grouping.codelists === 'none') {
-      groups.push({ id: 'all', title: 'Alle Codelisten', items: codeLists });
+      groups.push({ id: 'all', title: tr('group_all_codelists'), items: codeLists });
     } else {
       const byKey = {};
       codeLists.forEach(cl => { const k = getClGroupKey(cl); (byKey[k] = byKey[k] || []).push(cl); });
@@ -986,15 +990,15 @@ function renderCodeListsList(listTab) {
   }
 
   const clColumns = [
-    { label: 'Name',         width: '18%', render: cl => escapeHtml(n(cl, 'name')) },
+    { label: tr('col_name'),         width: '18%', render: cl => escapeHtml(n(cl, 'name')) },
     { label: 'Domäne',       width: '14%', render: cl => cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;' },
-    { label: 'Beschreibung', width: '25%', render: cl => {
+    { label: tr('col_description'), width: '25%', render: cl => {
         const desc = getDefinitionText(cl.description, lang);
         return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
       } },
-    { label: 'Werte',        width: '8%',  render: cl => cl.value_count },
-    { label: 'Freigabe',     width: '12%', render: cl => statusBadge(cl.status, 'status') },
-    { label: 'Verantwortlich', width: '23%', render: cl => cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>' }
+    { label: tr('col_values'),        width: '8%',  render: cl => cl.value_count },
+    { label: tr('col_approval'),     width: '12%', render: cl => statusBadge(cl.status, 'status') },
+    { label: tr('col_responsible'), width: '23%', render: cl => cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>' }
   ];
   const clTableOpts = { rowHref: cl => '#/codelists/' + cl.id };
 
@@ -1057,12 +1061,12 @@ function renderTermsList(listTab) {
       match: (t, vals) => vals.includes(t.collection_id || '__none__')
     },
     {
-      id: 'status', label: 'Freigabe',
+      id: 'status', label: tr('col_approval'),
       options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
       match: (t, vals) => vals.includes(t.status)
     },
     {
-      id: 'source', label: 'Quelle', options: sourceOpts,
+      id: 'source', label: tr('col_source'), options: sourceOpts,
       match: (t, vals) => vals.includes(t.source_type)
     }
   ];
@@ -1079,8 +1083,8 @@ function renderTermsList(listTab) {
 
   const groupingOpts = [
     { id: 'domain', label: 'Domäne' },
-    { id: 'status', label: 'Freigabe' },
-    { id: 'none', label: 'Keine' }
+    { id: 'status', label: tr('col_approval') },
+    { id: 'none', label: tr('group_none') }
   ];
   html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms, '', filterCtx);
   html += filterCtx.panelHtml;
@@ -1089,9 +1093,9 @@ function renderTermsList(listTab) {
 
   if (terms.length === 0) {
     if (filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Begriffe entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_terms'));
     } else {
-      html += renderEmptyState('book-open', 'Keine Begriffe', 'Es wurden noch keine Begriffe angelegt.');
+      html += renderEmptyState('book-open', tr('no_terms'), tr('empty_body_terms'));
     }
     html += '</div>';
     return html;
@@ -1106,7 +1110,7 @@ function renderTermsList(listTab) {
   if (listTab === 'diagram') {
     const groups = [];
     if (grouping.terms === 'none') {
-      groups.push({ id: 'all', title: 'Alle Begriffe', items: terms });
+      groups.push({ id: 'all', title: tr('group_all_terms'), items: terms });
     } else {
       const byKey = {};
       terms.forEach(t => { const k = getTermGroupKey(t); (byKey[k] = byKey[k] || []).push(t); });
@@ -1119,13 +1123,13 @@ function renderTermsList(listTab) {
   }
 
   const termColumns = [
-    { label: 'Name',         width: '18%', render: t => escapeHtml(n(t, 'name')) },
+    { label: tr('col_name'),         width: '18%', render: t => escapeHtml(n(t, 'name')) },
     { label: 'Domäne',       width: '15%', render: t => t.domain_name ? filterBadge(t.domain_name, 'domain', t.collection_id) : '&ndash;' },
-    { label: 'Beschreibung', width: '35%', render: t => {
+    { label: tr('col_description'), width: '35%', render: t => {
         const def = getDefinitionText(t.definition, lang);
         return def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;';
       } },
-    { label: 'Freigabe',     width: '12%', render: t => statusBadge(t.status, 'status') },
+    { label: tr('col_approval'),     width: '12%', render: t => statusBadge(t.status, 'status') },
     { label: 'Standard',     width: '20%', render: t => t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;' }
   ];
   const termTableOpts = { rowHref: t => '#/terms/' + t.id };
@@ -1172,7 +1176,7 @@ function renderSystemsList(listTab) {
   const seenTech = new Set();
   allSystems.forEach(s => {
     const key = s.technology_stack || '__none__';
-    if (!seenTech.has(key)) { seenTech.add(key); techOpts.push({ value: key, label: s.technology_stack || 'Unbekannt' }); }
+    if (!seenTech.has(key)) { seenTech.add(key); techOpts.push({ value: key, label: s.technology_stack || tr('unknown') }); }
   });
   techOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
 
@@ -1182,9 +1186,9 @@ function renderSystemsList(listTab) {
       match: (s, vals) => vals.includes(s.technology_stack || '__none__')
     },
     {
-      id: 'status', label: 'Status',
+      id: 'status', label: tr('col_status'),
       options: [
-        { value: 'active', label: 'Aktiv' },
+        { value: 'active', label: tr('val_active') },
         { value: 'deprecated', label: 'Veraltet' }
       ],
       match: (s, vals) => vals.includes(s.active ? 'active' : 'deprecated')
@@ -1203,8 +1207,8 @@ function renderSystemsList(listTab) {
 
   const groupingOpts = [
     { id: 'technology', label: 'Technologie' },
-    { id: 'status', label: 'Status' },
-    { id: 'none', label: 'Keine' }
+    { id: 'status', label: tr('col_status') },
+    { id: 'none', label: tr('group_none') }
   ];
   html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, listTab === 'diagram' ? buildAttrsToggleHtml('systems') : '', filterCtx);
   html += filterCtx.panelHtml;
@@ -1213,9 +1217,9 @@ function renderSystemsList(listTab) {
 
   if (systems.length === 0) {
     if (filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Systeme entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_systems'));
     } else {
-      html += renderEmptyState('database', 'Keine Systeme', 'Es wurden noch keine Systeme registriert.');
+      html += renderEmptyState('database', tr('no_systems'), tr('empty_body_systems'));
     }
     html += '</div>';
     return html;
@@ -1228,11 +1232,11 @@ function renderSystemsList(listTab) {
 
     const groups = [];
     if (grouping.systems === 'none') {
-      groups.push({ id: 'all', title: 'Alle Systeme', items: systems });
+      groups.push({ id: 'all', title: tr('group_all_systems'), items: systems });
     } else {
       const byKey = {};
       systems.forEach(s => {
-        const k = grouping.systems === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+        const k = grouping.systems === 'technology' ? (s.technology_stack || tr('unknown')) : (s.active ? tr('val_active') : 'Veraltet');
         (byKey[k] = byKey[k] || []).push(s);
       });
       Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
@@ -1249,15 +1253,15 @@ function renderSystemsList(listTab) {
   }
 
   const sysColumns = [
-    { label: 'Name',          width: '18%', render: s => escapeHtml(n(s, 'name')) },
-    { label: 'Beschreibung',  width: '28%', render: s => {
+    { label: tr('col_name'),          width: '18%', render: s => escapeHtml(n(s, 'name')) },
+    { label: tr('col_description'),  width: '28%', render: s => {
         const desc = getDefinitionText(s.description, lang);
         return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
       } },
     { label: 'Technologie',   width: '14%', render: s => s.technology_stack ? filterBadge(s.technology_stack, 'technology', s.technology_stack) : '&ndash;' },
-    { label: 'Tabellen',      width: '10%', render: s => s.dataset_count },
-    { label: 'Status',        width: '10%', render: s => statusBadge(s.active ? 'active' : 'deprecated', 'status') },
-    { label: 'Verantwortlich', width: '20%', render: s => s.owner_name ? escapeHtml(s.owner_name) : '&ndash;' }
+    { label: tr('col_tables'),      width: '10%', render: s => s.dataset_count },
+    { label: tr('col_status'),        width: '10%', render: s => statusBadge(s.active ? 'active' : 'deprecated', 'status') },
+    { label: tr('col_responsible'), width: '20%', render: s => s.owner_name ? escapeHtml(s.owner_name) : '&ndash;' }
   ];
   const sysTableOpts = { rowHref: s => '#/systems/' + s.id };
 
@@ -1267,7 +1271,7 @@ function renderSystemsList(listTab) {
   } else {
     const groups = {};
     systems.forEach(s => {
-      const k = grouping.systems === 'technology' ? (s.technology_stack || 'Unbekannt') : (s.active ? 'Aktiv' : 'Veraltet');
+      const k = grouping.systems === 'technology' ? (s.technology_stack || tr('unknown')) : (s.active ? tr('val_active') : 'Veraltet');
       if (!groups[k]) groups[k] = [];
       groups[k].push(s);
     });
@@ -1295,27 +1299,22 @@ function renderProductsList(listTab) {
     ORDER BY dp.${nameCol('name')}`);
   const totalCount = allProducts.length;
 
-  // Pre-fetch all formats in one query
-  const allFormats = query("SELECT data_product_id, GROUP_CONCAT(DISTINCT format) as formats FROM distribution WHERE format IS NOT NULL GROUP BY data_product_id");
-  const formatMap = {};
-  allFormats.forEach(f => { formatMap[f.data_product_id] = f.formats || ''; });
-
   // Filter options
   const publisherOpts = [];
   const seenPubs = new Set();
   allProducts.forEach(dp => {
     const key = dp.publisher || '__none__';
-    if (!seenPubs.has(key)) { seenPubs.add(key); publisherOpts.push({ value: key, label: dp.publisher || 'Unbekannt' }); }
+    if (!seenPubs.has(key)) { seenPubs.add(key); publisherOpts.push({ value: key, label: dp.publisher || tr('unknown') }); }
   });
   publisherOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
 
   const productFilterDefs = [
     {
-      id: 'publisher', label: 'Herausgeber', options: publisherOpts,
+      id: 'publisher', label: tr('col_publisher'), options: publisherOpts,
       match: (dp, vals) => vals.includes(dp.publisher || '__none__')
     },
     {
-      id: 'status', label: 'Freigabe',
+      id: 'status', label: tr('col_approval'),
       options: [
         { value: 'approved', label: 'Freigegeben' },
         { value: 'draft', label: 'Entwurf' }
@@ -1335,9 +1334,9 @@ function renderProductsList(listTab) {
   </div></div>`;
 
   const groupingOpts = [
-    { id: 'publisher', label: 'Herausgeber' },
-    { id: 'status', label: 'Freigabe' },
-    { id: 'none', label: 'Keine' }
+    { id: 'publisher', label: tr('col_publisher') },
+    { id: 'status', label: tr('col_approval') },
+    { id: 'none', label: tr('group_none') }
   ];
   html += renderListTabBar('datasets', listTab, groupingOpts, grouping.datasets, '', filterCtx);
   html += filterCtx.panelHtml;
@@ -1346,24 +1345,24 @@ function renderProductsList(listTab) {
 
   if (products.length === 0) {
     if (filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Datensätze entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_datasets'));
     } else {
-      html += renderEmptyState('package', 'Keine Datensätze', 'Es wurden noch keine Datensätze angelegt.');
+      html += renderEmptyState('package', tr('no_datasets'), tr('empty_body_datasets'));
     }
     html += '</div>';
     return html;
   }
 
   function getProductGroupKey(dp) {
-    if (grouping.datasets === 'publisher') return dp.publisher || 'Unbekannt';
-    if (grouping.datasets === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
+    if (grouping.datasets === 'publisher') return dp.publisher || tr('unknown');
+    if (grouping.datasets === 'status') return dp.certified ? tr('val_certified') : tr('val_not_certified');
     return null;
   }
 
   if (listTab === 'diagram') {
     const groups = [];
     if (grouping.datasets === 'none') {
-      groups.push({ id: 'all', title: 'Alle Datensätze', items: products });
+      groups.push({ id: 'all', title: tr('group_all_datasets'), items: products });
     } else {
       const byKey = {};
       products.forEach(dp => { const k = getProductGroupKey(dp); (byKey[k] = byKey[k] || []).push(dp); });
@@ -1376,15 +1375,13 @@ function renderProductsList(listTab) {
   }
 
   const productColumns = [
-    { label: 'Name',          width: '18%', render: dp => escapeHtml(n(dp, 'name')) },
-    { label: 'Beschreibung',  width: '27%', render: dp => {
+    { label: tr('col_name'),         width: '25%', render: dp => escapeHtml(n(dp, 'name')) },
+    { label: tr('col_description'),  width: '40%', render: dp => {
         const desc = getDefinitionText(dp.description, lang);
-        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+        return desc ? escapeHtml(desc.substring(0, 120)) + (desc.length > 120 ? '...' : '') : '&ndash;';
       } },
-    { label: 'Formate',       width: '13%', render: dp => (formatMap[dp.id] || '').split(',').map(f => escapeHtml(f.trim())).filter(Boolean).join(', ') || '&ndash;' },
-    { label: 'Häufigkeit',    width: '12%', render: dp => dp.update_frequency ? escapeHtml(dp.update_frequency) : '&ndash;' },
-    { label: 'Freigabe',      width: '10%', render: dp => certifiedBadge(dp.certified, 'status') },
-    { label: 'Verantwortlich', width: '20%', render: dp => dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;' }
+    { label: tr('col_approval'),     width: '15%', render: dp => certifiedBadge(dp.certified, 'status') },
+    { label: tr('col_responsible'),  width: '20%', render: dp => dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;' }
   ];
   const productTableOpts = { rowHref: dp => '#/datasets/' + dp.id };
 
@@ -1442,11 +1439,11 @@ function renderConceptDetail(conceptId, tab, main) {
   addRecent(n(concept, 'name') || concept.name_en, `#/vocabulary/${conceptId}`);
 
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'fields',        label: 'Felder' },
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'fields',        label: tr('col_fields') },
     { id: 'mappings',      label: 'Mappings' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
@@ -1499,10 +1496,10 @@ function renderCodeListRelationships(codeListId, cl) {
 
   const satellites = [];
   if (concepts.length) {
-    satellites.push({ title: 'Geschäftsobjekte', items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Diese Codeliste hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_codelist_relations')) + '</div>';
   return renderRelGraph(n(cl, 'name'), satellites);
 }
 
@@ -1533,13 +1530,13 @@ function renderSystemRelationships(systemId, sys) {
     satellites.push({ title: 'Datasets', items: datasets.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + systemId + '/datasets/' + d.id, icon: 'table-2', meta: '' })), color: '#C9820B' });
   }
   if (concepts.length) {
-    satellites.push({ title: 'Geschäftsobjekte', items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
   if (products.length) {
-    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses System hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses System hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
   return renderRelGraph(n(sys, 'name'), satellites);
 }
 
@@ -1567,10 +1564,10 @@ function renderDatasetRelationships(datasetId, ds) {
     satellites.push({ title: 'System', items: [{ label: sys.sname, href: '#/systems/' + sys.id, icon: 'database', meta: '' }], color: '#059669' });
   }
   if (concepts.length) {
-    satellites.push({ title: 'Geschäftsobjekte', items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
   if (products.length) {
-    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
   if (upstream.length) {
     satellites.push({ title: 'Upstream', items: upstream.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + ds.system_id + '/datasets/' + d.id, icon: 'arrow-left', meta: '' })), color: '#2E6EB5' });
@@ -1579,7 +1576,7 @@ function renderDatasetRelationships(datasetId, ds) {
     satellites.push({ title: 'Downstream', items: downstream.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + ds.system_id + '/datasets/' + d.id, icon: 'arrow-right', meta: '' })), color: '#C9820B' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Dataset hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses Dataset hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
   return renderRelGraph(ds.display_name || ds.name, satellites);
 }
 
@@ -1603,7 +1600,7 @@ function renderProductRelationships(productId, dp) {
     satellites.push({ title: 'Distributionen', items: dists.map(d => ({ label: d.name || d.format, icon: 'file-output', meta: d.format || '' })), color: '#0891B2' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Datensatz hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_dataset_relations')) + '</div>';
   return renderRelGraph(n(dp, 'name'), satellites);
 }
 
@@ -1632,10 +1629,10 @@ function renderConceptOverview(concept, collection, vocab, steward) {
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',      value: collection ? escapeHtml(n(collection, 'name')) : null },
-    { label: 'Freigabe',    value: statusBadge(concept.status) },
+    { label: tr('col_approval'),    value: statusBadge(concept.status) },
     { label: 'Vocabulary',  value: vocab ? escapeHtml(n(vocab, 'name')) + (vocab.version ? ' v' + escapeHtml(vocab.version) : '') : null },
-    { label: 'Erstellt',    value: formatDate(concept.created_at) },
-    { label: 'Geändert',    value: formatDate(concept.modified_at) },
+    { label: tr('col_created'),    value: formatDate(concept.created_at) },
+    { label: tr('col_modified'),    value: formatDate(concept.modified_at) },
     { label: 'Freigegeben', value: concept.approved_at ? formatDate(concept.approved_at) : null }
   ]);
   html += '</div>';
@@ -1656,7 +1653,7 @@ function renderConceptContents(conceptId) {
     WHERE ca.concept_id = ?
     ORDER BY ca.sort_order, ca.${nameCol('name')}`, [conceptId]);
 
-  if (attrs.length === 0) return '<div class="content-section">' + renderEmptyState('list', 'Keine Attribute', 'Diesem Konzept sind noch keine Attribute zugeordnet.') + '</div>';
+  if (attrs.length === 0) return '<div class="content-section">' + renderEmptyState('list', tr('no_attributes'), tr('empty_body_concept_attributes')) + '</div>';
 
   let html = '<div class="content-section"><div class="section-label">' + tr('sec_attributes') + '</div>';
   html += '<table class="data-table"><thead><tr>';
@@ -1691,7 +1688,7 @@ function renderConceptMappings(conceptId) {
     WHERE cm.concept_id = ?
     ORDER BY s.name_en, d.name`, [conceptId]);
 
-  if (mappings.length === 0) return '<div class="content-section">' + renderEmptyState('link', 'Keine Mappings', 'Es gibt noch keine physischen Felder, die dieses Konzept realisieren.') + '</div>';
+  if (mappings.length === 0) return '<div class="content-section">' + renderEmptyState('link', tr('no_mappings'), tr('empty_body_concept_mappings')) + '</div>';
 
   let html = `<div class="content-section"><div class="section-label">${tr('sec_mappings', { count: mappings.length })}</div>`;
   html += '<table class="data-table"><thead><tr>';
@@ -1752,7 +1749,7 @@ function renderConceptRelationships(conceptId) {
   // Codelisten (concept_attribute → code_list)
   const codeLists = query(`SELECT DISTINCT cl.id, cl.${nameCol('name')} as clname FROM concept_attribute ca JOIN code_list cl ON ca.code_list_id = cl.id WHERE ca.concept_id = ?`, [conceptId]);
   if (codeLists.length) {
-    satellites.push({ title: 'Codelisten', items: codeLists.map(cl => ({ label: cl.clname, href: '#/codelists/' + cl.id, icon: 'list-ordered', meta: '' })), color: '#0891B2' });
+    satellites.push({ title: tSection('codelists'), items: codeLists.map(cl => ({ label: cl.clname, href: '#/codelists/' + cl.id, icon: 'list-ordered', meta: '' })), color: '#0891B2' });
   }
 
   // Tabellen (datasets)
@@ -1764,7 +1761,7 @@ function renderConceptRelationships(conceptId) {
       datasets.push({ label: m.display_name || m.dataset_name, href: '#/systems/' + m.system_id + '/datasets/' + m.dataset_id, icon: 'table-2', meta: 'System: ' + m.system_name });
     }
   });
-  if (datasets.length) satellites.push({ title: 'Tabellen', items: datasets, color: '#C9820B' });
+  if (datasets.length) satellites.push({ title: tr('col_tables'), items: datasets, color: '#C9820B' });
 
   // Benutzer
   if (steward) {
@@ -1773,10 +1770,10 @@ function renderConceptRelationships(conceptId) {
 
   // Datensätze
   if (products.length) {
-    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
   return renderRelGraph(n(concept, 'name'), satellites);
 }
 
@@ -1794,11 +1791,11 @@ function renderCodeListDetail(codeListId, tab, main) {
   addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
 
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'contents',      label: 'Werte' },
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_values') },
     { id: 'mappings',      label: 'Mappings' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
@@ -1857,11 +1854,11 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',         value: clDomain ? escapeHtml(clDomain.dname) : null },
-    { label: 'Freigabe',       value: statusBadge(cl.status) },
+    { label: tr('col_approval'),       value: statusBadge(cl.status) },
     { label: 'Version',        value: cl.version ? escapeHtml(cl.version) : null },
-    { label: 'Werte',          value: `${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})` },
-    { label: 'Quelle',         value: cl.source_ref ? escapeHtml(cl.source_ref) : null },
-    { label: 'Geschäftsobjekt', value: clLinkedConcept ? `<a href="#/vocabulary/${cl.concept_id}">${escapeHtml(clLinkedConcept.cname)}</a>` : null }
+    { label: tr('col_values'),          value: `${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})` },
+    { label: tr('col_source'),         value: cl.source_ref ? escapeHtml(cl.source_ref) : null },
+    { label: tr('col_concept'), value: clLinkedConcept ? `<a href="#/vocabulary/${cl.concept_id}">${escapeHtml(clLinkedConcept.cname)}</a>` : null }
   ]);
   html += '</div>';
 
@@ -1875,7 +1872,7 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
 function renderCodeListContents(codeListId) {
   const values = query(`SELECT * FROM code_list_value WHERE code_list_id = ? ORDER BY sort_order, code`, [codeListId]);
 
-  if (values.length === 0) return '<div class="content-section">' + renderEmptyState('list-ordered', 'Keine Werte', 'Diese Codeliste enth\u00e4lt noch keine Werte.') + '</div>';
+  if (values.length === 0) return '<div class="content-section">' + renderEmptyState('list-ordered', tr('no_values'), 'Diese Codeliste enth\u00e4lt noch keine Werte.') + '</div>';
 
   let html = '<div class="content-section">';
   html += `<div style="margin-bottom:var(--space-3);font-size:var(--text-small);color:var(--color-text-secondary);">
@@ -1921,7 +1918,7 @@ function renderCodeListMappings(codeListId) {
   }
 
   if (attrs.length === 0) {
-    html += renderEmptyState('link', 'Keine Mappings', 'Diese Codeliste wird von keinem Konzeptattribut referenziert.');
+    html += renderEmptyState('link', tr('no_mappings'), tr('empty_body_codelist_mappings'));
   }
   html += '</div>';
   return html;
@@ -1940,10 +1937,10 @@ function renderSystemDetail(systemId, tab, main) {
   addRecent(n(sys, 'name') || sys.name_en, `#/systems/${systemId}`);
 
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'contents',      label: 'Tabellen' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_tables') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
@@ -1989,11 +1986,11 @@ function renderSystemOverview(sys, schemas, datasetCount) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
-    { label: 'Status',       value: statusBadge(sys.active ? 'active' : 'deprecated') },
+    { label: tr('col_status'),       value: statusBadge(sys.active ? 'active' : 'deprecated') },
     { label: 'Technologie',  value: sys.technology_stack ? escapeHtml(sys.technology_stack) : null },
-    { label: 'Tabellen',     value: datasetCount },
-    { label: 'Erstellt',     value: formatDate(sys.created_at) },
-    { label: 'Letzter Scan', value: sys.last_scanned_at ? formatDate(sys.last_scanned_at) : null }
+    { label: tr('col_tables'),     value: datasetCount },
+    { label: tr('col_created'),     value: formatDate(sys.created_at) },
+    { label: tr('col_last_scan'), value: sys.last_scanned_at ? formatDate(sys.last_scanned_at) : null }
   ]);
   html += '</div>';
 
@@ -2020,18 +2017,18 @@ function renderSystemContents(systemId, schemas) {
     ORDER BY d.name`, [systemId]);
 
   if (datasets.length === 0) {
-    return '<div class="content-section">' + renderEmptyState('table-2', 'Keine Tabellen', 'Diesem System sind noch keine Tabellen zugeordnet.') + '</div>';
+    return '<div class="content-section">' + renderEmptyState('table-2', tr('no_tables'), tr('empty_body_system_tables')) + '</div>';
   }
 
   const columns = [
-    { label: 'Name',         width: '30%', render: d => escapeHtml(d.display_name || d.name) },
-    { label: 'Beschreibung', width: '30%', render: d => {
+    { label: tr('col_name'),         width: '30%', render: d => escapeHtml(d.display_name || d.name) },
+    { label: tr('col_description'), width: '30%', render: d => {
         const desc = getDefinitionText(d.description, lang);
         return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
       } },
-    { label: 'Typ',          width: '15%', render: d => escapeHtml(d.dataset_type) },
-    { label: 'Felder',       width: '10%', render: d => d.field_count },
-    { label: 'Freigabe',     width: '15%', render: d => certifiedBadge(d.certified) }
+    { label: tr('col_type'),          width: '15%', render: d => escapeHtml(d.dataset_type) },
+    { label: tr('col_fields'),       width: '10%', render: d => d.field_count },
+    { label: tr('col_approval'),     width: '15%', render: d => certifiedBadge(d.certified) }
   ];
   return '<div class="content-section">'
     + renderDataTable(columns, datasets, { rowHref: d => `#/systems/${systemId}/datasets/${d.id}` })
@@ -2068,12 +2065,12 @@ function renderDatasetDetail(datasetId, systemId) {
 
   const tab = currentTab || 'overview';
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'contents',      label: 'Felder' },
-    { id: 'lineage',       label: 'Lineage' },
-    { id: 'quality',       label: 'Datenqualität' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_fields') },
+    { id: 'lineage', label: tr('tab_lineage') },
+    { id: 'quality', label: tr('tab_quality') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === currentTab)) currentTab = 'overview';
 
@@ -2134,14 +2131,14 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
-    { label: 'Freigabe',          value: certifiedBadge(ds.certified) },
+    { label: tr('col_approval'),          value: certifiedBadge(ds.certified) },
     { label: 'System',            value: escapeHtml(ds.system_name) },
-    { label: 'Typ',               value: escapeHtml(ds.dataset_type) },
-    { label: 'Datensätze (ca.)',  value: ds.row_count_approx ? formatNumber(ds.row_count_approx) : null },
-    { label: 'Felder',            value: fieldCount },
-    { label: 'Klassifizierung',   value: classification ? classificationBadge(classification) : null },
-    { label: 'Erstellt',          value: formatDate(ds.created_at) },
-    { label: 'Geändert',          value: formatDate(ds.modified_at) }
+    { label: tr('col_type'),               value: escapeHtml(ds.dataset_type) },
+    { label: tr('col_rows_approx'),  value: ds.row_count_approx ? formatNumber(ds.row_count_approx) : null },
+    { label: tr('col_fields'),            value: fieldCount },
+    { label: tr('col_classification'),   value: classification ? classificationBadge(classification) : null },
+    { label: tr('col_created'),          value: formatDate(ds.created_at) },
+    { label: tr('col_modified'),          value: formatDate(ds.modified_at) }
   ]);
   html += '</div>';
 
@@ -2169,7 +2166,7 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
 function renderDatasetContents(datasetId) {
   const fields = query(`SELECT f.* FROM field f WHERE f.dataset_id = ? ORDER BY f.sort_order, f.name`, [datasetId]);
 
-  if (fields.length === 0) return '<div class="content-section">' + renderEmptyState('table-2', 'Keine Felder', 'Diesem Dataset sind noch keine Felder zugeordnet.') + '</div>';
+  if (fields.length === 0) return '<div class="content-section">' + renderEmptyState('table-2', tr('no_fields'), tr('empty_body_dataset_fields')) + '</div>';
 
   let html = '<div class="content-section"><div class="section-label">' + tr('sec_fields') + '</div>';
   html += '<table class="data-table"><thead><tr>';
@@ -2256,20 +2253,20 @@ function renderDatasetQuality(datasetId) {
   const profile = queryOne("SELECT * FROM data_profile WHERE dataset_id = ? ORDER BY profiled_at DESC LIMIT 1", [datasetId]);
 
   const dimensions = [
-    { key: 'completeness', icon: 'check-circle', label: 'Vollständigkeit', desc: 'Anteil der befüllten Pflichtfelder am Gesamtbestand.', score: profile?.completeness_score },
-    { key: 'timeliness', icon: 'clock', label: 'Aktualität', desc: 'Alter der Daten im Vergleich zum erwarteten Aktualisierungszyklus.', score: profile?.timeliness_score },
-    { key: 'accuracy', icon: 'target', label: 'Genauigkeit', desc: 'Übereinstimmung der Werte mit autoritativen Quellen (z.\u00a0B. GWR, Grundbuch).', score: profile?.accuracy_score },
-    { key: 'consistency', icon: 'git-compare', label: 'Konsistenz', desc: 'Systemübergreifende Übereinstimmung (z.\u00a0B. gleiche EGID = gleiche Adresse).', score: profile?.consistency_score },
-    { key: 'validity', icon: 'shield-check', label: 'Formatkonformität', desc: 'Anteil der Werte, die dem erwarteten Format, Wertebereich oder der Codeliste entsprechen.', score: profile?.format_validity_score },
-    { key: 'uniqueness', icon: 'fingerprint', label: 'Eindeutigkeit', desc: 'Anteil der Datensätze ohne unbeabsichtigte Duplikate.', score: profile?.uniqueness_score }
+    { key: 'completeness', icon: 'check-circle', label: tr('quality_label_completeness'), desc: tr('quality_dim_completeness'), score: profile?.completeness_score },
+    { key: 'timeliness',   icon: 'clock',        label: tr('quality_label_timeliness'),   desc: tr('quality_dim_timeliness'),   score: profile?.timeliness_score },
+    { key: 'accuracy',     icon: 'target',       label: tr('quality_label_accuracy'),     desc: tr('quality_dim_accuracy'),     score: profile?.accuracy_score },
+    { key: 'consistency',  icon: 'git-compare',  label: tr('quality_label_consistency'),  desc: tr('quality_dim_cross_system'),score: profile?.consistency_score },
+    { key: 'validity',     icon: 'shield-check', label: tr('quality_label_validity'),     desc: tr('quality_dim_consistency'),  score: profile?.format_validity_score },
+    { key: 'uniqueness',   icon: 'fingerprint',  label: tr('quality_label_uniqueness'),   desc: tr('quality_dim_uniqueness'),   score: profile?.uniqueness_score }
   ];
 
   let html = '<div class="content-section"><div class="section-label">' + tr('sec_data_quality') + '</div>';
 
   if (profile) {
     html += `<div style="font-size:var(--text-small);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
-      Letztes Profiling: ${formatDate(profile.profiled_at)}${profile.profiler ? ' &middot; ' + escapeHtml(profile.profiler) : ''}
-      ${profile.row_count ? ' &middot; ' + formatNumber(profile.row_count) + ' Datensätze' : ''}
+      ${escapeHtml(tr('quality_profiling_prefix'))} ${formatDate(profile.profiled_at)}${profile.profiler ? ' &middot; ' + escapeHtml(profile.profiler) : ''}
+      ${profile.row_count ? ' &middot; ' + formatNumber(profile.row_count) + ' ' + escapeHtml(tr('quality_records_suffix')) : ''}
     </div>`;
   }
 
@@ -2322,10 +2319,10 @@ function renderProductDetail(productId, tab, main) {
   addRecent(n(dp, 'name') || dp.name_en, `#/datasets/${productId}`);
 
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'lineage',       label: 'Lineage' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'lineage', label: tr('tab_lineage') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
@@ -2371,12 +2368,12 @@ function renderProductOverview(dp) {
   // Metadata
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
-    { label: 'Freigabe',      value: certifiedBadge(dp.certified) },
-    { label: 'Herausgeber',   value: dp.publisher ? escapeHtml(dp.publisher) : null },
-    { label: 'Aktualisierung', value: dp.update_frequency ? escapeHtml(dp.update_frequency) : null },
-    { label: 'Lizenz',        value: dp.license ? escapeHtml(dp.license) : null },
-    { label: 'Erstellt',      value: dp.issued ? formatDate(dp.issued) : null },
-    { label: 'Geändert',      value: dp.modified ? formatDate(dp.modified) : null }
+    { label: tr('col_approval'),      value: certifiedBadge(dp.certified) },
+    { label: tr('col_publisher'),   value: dp.publisher ? escapeHtml(dp.publisher) : null },
+    { label: tr('col_update_freq'), value: dp.update_frequency ? escapeHtml(dp.update_frequency) : null },
+    { label: tr('col_license'),        value: dp.license ? escapeHtml(dp.license) : null },
+    { label: tr('col_created'),      value: dp.issued ? formatDate(dp.issued) : null },
+    { label: tr('col_modified'),      value: dp.modified ? formatDate(dp.modified) : null }
   ]);
   html += '</div>';
 
@@ -2413,7 +2410,7 @@ function renderProductLineage(productId) {
     JOIN system s ON sc.system_id = s.id
     WHERE dpd.data_product_id = ?`, [productId]);
 
-  if (sources.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Quelldatasets', 'Diesem Datensatz sind noch keine Quelldatasets zugeordnet.') + '</div>';
+  if (sources.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_source_datasets'), tr('empty_body_product_sources')) + '</div>';
 
   let html = '<div class="content-section"><div class="section-label">' + tr('sec_source_datasets') + '</div>';
   html += '<table class="data-table"><thead><tr>';
@@ -2448,9 +2445,9 @@ function renderTermDetail(termId, tab, main) {
   addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
 
   const tabs = [
-    { id: 'overview',      label: 'Übersicht' },
-    { id: 'relationships', label: 'Relationen' },
-    { id: 'history',       label: 'History' }
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
   currentTab = tab;
@@ -2499,10 +2496,10 @@ function renderTermOverview(term) {
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',       value: termDomain ? escapeHtml(termDomain.dname) : null },
-    { label: 'Freigabe',     value: statusBadge(term.status) },
-    { label: 'Erstellt',     value: formatDate(term.created_at) },
-    { label: 'Geändert',     value: formatDate(term.modified_at) },
-    { label: 'Quellentyp',   value: escapeHtml(sourceLabels[term.source_type] || term.source_type) },
+    { label: tr('col_approval'),     value: statusBadge(term.status) },
+    { label: tr('col_created'),     value: formatDate(term.created_at) },
+    { label: tr('col_modified'),     value: formatDate(term.modified_at) },
+    { label: tr('col_source_type'),   value: escapeHtml(sourceLabels[term.source_type] || term.source_type) },
     { label: 'Standard',     value: term.standard_ref ? escapeHtml(term.standard_ref) : null },
     { label: 'Quelldokument', value: term.source_document ? escapeHtml(term.source_document) : null }
   ]);
@@ -2531,10 +2528,10 @@ function renderTermRelationships(termId, term) {
   const satellites = [];
 
   if (linkedConcepts.length) {
-    satellites.push({ title: 'Geschäftsobjekte', items: linkedConcepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+    satellites.push({ title: tSection('vocabulary'), items: linkedConcepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieser Begriff hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_term_relations')) + '</div>';
   return renderRelGraph(n(term, 'name'), satellites);
 }
 
@@ -2993,9 +2990,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 async function initApp() {
   try {
-    const SQL = await initSqlJs({
-      locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.wasm'
-    });
+    // Load i18n dictionary in parallel with the sql.js wasm bootstrap.
+    const [SQL] = await Promise.all([
+      initSqlJs({
+        locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.wasm'
+      }),
+      loadI18n()
+    ]);
 
     // Try to load pre-built database file first
     let dbLoaded = false;

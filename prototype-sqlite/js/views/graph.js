@@ -196,7 +196,7 @@ function initRelationshipSVG() {
       const type = item.dataset.relType || '';
       const meta = item.dataset.relMeta || '';
       tooltip.innerHTML = '<div style="font-weight:600;margin-bottom:2px;">' + escapeHtml(name) + '</div>'
-        + (type ? '<div style="opacity:0.7;font-size:11px;">Type: ' + escapeHtml(type) + '</div>' : '')
+        + (type ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(tr('graph_type_prefix')) + ' ' + escapeHtml(type) + '</div>' : '')
         + (meta ? '<div style="opacity:0.7;font-size:11px;">' + escapeHtml(meta) + '</div>' : '');
       tooltip.style.display = 'block';
     }

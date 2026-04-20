@@ -44,17 +44,17 @@ function renderSearchResults() {
   if (!q) {
     const counts = sidebarCounts || { terms: 0, vocabulary: 0, codelists: 0, datasets: 0, systems: 0 };
     html += `<div class="section-header"><div>
-      <h2 class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suche</h2>
-      <div class="section-subtitle">Geben Sie oben einen Suchbegriff ein. Tipp: mit Ctrl+K öffnen Sie die Suche jederzeit.</div>
+      <h2 class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${escapeHtml(tr('search_title'))}</h2>
+      <div class="section-subtitle">${escapeHtml(tr('search_subtitle'))}</div>
     </div></div>`;
 
     html += '<div class="content-section"><div class="section-label">' + tr('sec_search_by_type') + '</div>';
     html += '<div class="home-kpi-grid">';
-    html += renderKpiCard('book-open', counts.terms, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
-    html += renderKpiCard('box', counts.vocabulary, 'Geschäftsobjekte', 'Lösungsneutrale Objekte', '#/vocabulary/table');
-    html += renderKpiCard('list-ordered', counts.codelists, 'Codelisten', 'Standardisierte Wertelisten', '#/codelists');
-    html += renderKpiCard('package', counts.datasets, 'Datensätze', 'Publizierte Daten', '#/datasets/table');
-    html += renderKpiCard('database', counts.systems, 'Systeme', 'Quellsysteme', '#/systems/table');
+    html += renderKpiCard('book-open',    counts.terms,      tSection('terms'),      tr('home_subtitle_terms'),             '#/terms');
+    html += renderKpiCard('box',          counts.vocabulary, tSection('vocabulary'), tr('search_kpi_concepts_subtitle'),    '#/vocabulary/table');
+    html += renderKpiCard('list-ordered', counts.codelists,  tSection('codelists'),  tr('search_kpi_codelists_subtitle'),   '#/codelists');
+    html += renderKpiCard('package',      counts.datasets,   tSection('datasets'),   tr('search_kpi_datasets_subtitle'),    '#/datasets/table');
+    html += renderKpiCard('database',     counts.systems,    tSection('systems'),    tr('search_kpi_systems_subtitle'),     '#/systems/table');
     html += '</div></div>';
 
     html += '</div>';
@@ -77,14 +77,15 @@ function renderSearchResults() {
 
   const totalResults = terms.length + concepts.length + codeLists.length + products.length + systems.length + datasets.length;
 
+  const resultsNoun = totalResults === 1 ? tr('search_result_singular') : tr('search_result_plural');
   html += `<div class="section-header"><div>
-    <h2 class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suchergebnisse</h2>
-    <div class="section-subtitle">${totalResults} ${totalResults === 1 ? 'Ergebnis' : 'Ergebnisse'} für „${escapeHtml(q)}"</div>
+    <h2 class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${escapeHtml(tr('search_results_title'))}</h2>
+    <div class="section-subtitle">${escapeHtml(tr('search_results_count', { count: totalResults, noun: resultsNoun, query: q }))}</div>
   </div></div>`;
 
   if (totalResults === 0) {
     html += '<div class="list-panel">';
-    html += renderEmptyState('search', 'Keine Ergebnisse', 'Keine Einträge gefunden für „' + escapeHtml(q) + '". Versuchen Sie einen anderen Begriff oder fragen Sie den KI-Assistenten.');
+    html += renderEmptyState('search', tr('no_results'), tr('search_empty_body', { query: q }));
     html += '</div>';
     html += '</div>';
     main.innerHTML = html;
@@ -110,35 +111,35 @@ function renderSearchResults() {
     return h;
   }
 
-  html += group('Begriffe', 'book-open', terms, t => ({
+  html += group(tSection('terms'), 'book-open', terms, t => ({
     href: '#/terms/' + t.id,
     name: n(t, 'name'),
-    meta: escapeHtml(t.standard_ref || 'Fachbegriff')
+    meta: escapeHtml(t.standard_ref || tr('entity_term_singular'))
   }));
-  html += group('Geschäftsobjekte', 'box', concepts, c => ({
+  html += group(tSection('vocabulary'), 'box', concepts, c => ({
     href: '#/vocabulary/' + c.id,
     name: n(c, 'name'),
-    meta: 'Geschäftsobjekt ' + statusBadge(c.status)
+    meta: tr('entity_concept_singular') + ' ' + statusBadge(c.status)
   }));
-  html += group('Codelisten', 'list-ordered', codeLists, cl => ({
+  html += group(tSection('codelists'), 'list-ordered', codeLists, cl => ({
     href: '#/codelists/' + cl.id,
     name: n(cl, 'name'),
-    meta: 'Codeliste'
+    meta: tr('entity_codelist_singular')
   }));
-  html += group('Datensätze', 'package', products, dp => ({
+  html += group(tSection('datasets'), 'package', products, dp => ({
     href: '#/datasets/' + dp.id,
     name: n(dp, 'name'),
-    meta: 'Datensatz' + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
+    meta: tr('entity_dataset_singular') + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
   }));
-  html += group('Systeme', 'database', systems, s => ({
+  html += group(tSection('systems'), 'database', systems, s => ({
     href: '#/systems/' + s.id,
     name: n(s, 'name'),
-    meta: 'System' + (s.technology_stack ? ' · ' + escapeHtml(s.technology_stack) : '')
+    meta: tr('entity_system_singular') + (s.technology_stack ? ' · ' + escapeHtml(s.technology_stack) : '')
   }));
-  html += group('Tabellen', 'table-2', datasets, d => ({
+  html += group(tr('col_tables'), 'table-2', datasets, d => ({
     href: '#/systems/' + d.sys_id + '/datasets/' + d.id,
     name: d.display_name || d.name,
-    meta: escapeHtml(d.dataset_type || 'Tabelle') + ' · ' + escapeHtml(d.sys_name)
+    meta: escapeHtml(d.dataset_type || tr('entity_table_singular')) + ' · ' + escapeHtml(d.sys_name)
   }));
 
   html += '</div>'; // close list-panel
@@ -197,14 +198,14 @@ function renderSearchDropdown(q) {
 
   const trimmed = (q || '').trim();
   const ctaSubtitle = trimmed
-    ? `„${escapeHtml(trimmed)}" an den Assistenten senden`
-    : 'Stellen Sie eine Frage zum Datenmodell';
+    ? tr('search_ask_ai_send', { query: trimmed })
+    : tr('search_ask_ai_prompt');
 
   let html = `<div class="search-dropdown-cta" data-href="#/chat" role="option">
     <div class="search-dropdown-cta-icon"><i data-lucide="sparkles" style="width:16px;height:16px;"></i></div>
     <div>
-      <div class="search-dropdown-cta-title">KI-Assistent fragen</div>
-      <div class="search-dropdown-cta-subtitle">${ctaSubtitle}</div>
+      <div class="search-dropdown-cta-title">${escapeHtml(tr('search_ask_ai'))}</div>
+      <div class="search-dropdown-cta-subtitle">${escapeHtml(ctaSubtitle)}</div>
     </div>
   </div>`;
 
@@ -213,35 +214,35 @@ function renderSearchDropdown(q) {
     const total = terms.length + concepts.length + codeLists.length + products.length + systems.length;
 
     if (total === 0) {
-      html += `<div class="search-dropdown-empty">Keine Ergebnisse für „${escapeHtml(trimmed)}"</div>`;
+      html += `<div class="search-dropdown-empty">${escapeHtml(tr('search_dropdown_empty', { query: trimmed }))}</div>`;
     } else {
-      if (terms.length) html += renderDropdownGroup('Begriffe', 'book-open', terms, t => ({
+      if (terms.length) html += renderDropdownGroup(tSection('terms'), 'book-open', terms, t => ({
         href: '#/terms/' + t.id,
         name: n(t, 'name'),
-        meta: t.standard_ref || 'Fachbegriff'
+        meta: t.standard_ref || tr('entity_term_singular')
       }));
-      if (concepts.length) html += renderDropdownGroup('Geschäftsobjekte', 'box', concepts, c => ({
+      if (concepts.length) html += renderDropdownGroup(tSection('vocabulary'), 'box', concepts, c => ({
         href: '#/vocabulary/' + c.id,
         name: n(c, 'name'),
-        meta: 'Geschäftsobjekt'
+        meta: tr('entity_concept_singular')
       }));
-      if (codeLists.length) html += renderDropdownGroup('Codelisten', 'list-ordered', codeLists, cl => ({
+      if (codeLists.length) html += renderDropdownGroup(tSection('codelists'), 'list-ordered', codeLists, cl => ({
         href: '#/codelists/' + cl.id,
         name: n(cl, 'name'),
-        meta: 'Codeliste'
+        meta: tr('entity_codelist_singular')
       }));
-      if (products.length) html += renderDropdownGroup('Datensätze', 'package', products, dp => ({
+      if (products.length) html += renderDropdownGroup(tSection('datasets'), 'package', products, dp => ({
         href: '#/datasets/' + dp.id,
         name: n(dp, 'name'),
-        meta: dp.publisher || 'Datensatz'
+        meta: dp.publisher || tr('entity_dataset_singular')
       }));
-      if (systems.length) html += renderDropdownGroup('Systeme', 'database', systems, s => ({
+      if (systems.length) html += renderDropdownGroup(tSection('systems'), 'database', systems, s => ({
         href: '#/systems/' + s.id,
         name: n(s, 'name'),
-        meta: s.technology_stack || 'System'
+        meta: s.technology_stack || tr('entity_system_singular')
       }));
     }
-    html += `<div class="search-dropdown-footer"><kbd>Enter</kbd> für alle Ergebnisse</div>`;
+    html += `<div class="search-dropdown-footer"><kbd>Enter</kbd> ${escapeHtml(tr('search_dropdown_footer'))}</div>`;
   }
 
   dropdown.innerHTML = html;

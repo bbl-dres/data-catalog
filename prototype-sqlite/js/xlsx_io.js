@@ -135,17 +135,17 @@ function buildReadmeSheet(tableNames, rowCounts) {
   const rows = [
     ['BBL Datenkatalog — Vollständiger Export'],
     ['Exportiert am', exportedAt],
-    ['Anzahl Tabellen', tableNames.length],
-    ['Anzahl Zeilen gesamt', totalRows],
+    [tr('export_tables_count'), tableNames.length],
+    [tr('export_rows_total'), totalRows],
     [],
     ['Hinweise zum Inhalt:'],
-    ['• Jede Registerkarte entspricht einer Tabelle in der Datenbank.'],
+    [tr('export_note_sheet')],
     ['• Spaltennamen sind die technischen Datenbank-Spalten (snake_case).'],
     ['• _id Spalten sind UUID-Fremdschlüssel; _name Spalten sind schreibgeschützte Auflösungen.'],
     ['• Sprachspezifische JSON-Felder (description, definition, scope_note, …) sind in _de / _fr / _it / _en aufgetrennt.'],
-    ['• Die Tabellen "user" (Benutzer) und "relationship_edge" (abgeleitet) sind nicht enthalten.'],
+    [tr('export_note_omitted')],
     [],
-    ['Registerkarte', 'Zeilenanzahl']
+    ['Registerkarte', tr('export_row_count')]
   ];
   tableNames.forEach(t => rows.push([t, rowCounts[t] ?? 0]));
   return XLSX.utils.aoa_to_sheet(rows);
