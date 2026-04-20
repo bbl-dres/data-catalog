@@ -37,7 +37,20 @@
       "Bash(git checkout:*)",
       "Read(//d//**)",
       "Bash(cp \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/data/catalog.db\" \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/data/catalog.db.bak2\")",
-      "Bash(PYTHONIOENCODING=utf-8 python migrate_re_fx.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python migrate_re_fx.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python migrate_gis_immo.py)",
+      "WebFetch(domain:www.dcat-ap.ch)",
+      "Bash(cp \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/data/catalog.db\" \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-sqlite/data/catalog.db.bak3\")",
+      "Bash(PYTHONIOENCODING=utf-8 python migrate_data_products.py)",
+      "Bash(git -C \"c:/Users/DavidRasner/Documents/GitHub/data-catalog\" ls-files)",
+      "Bash(PYTHONIOENCODING=utf-8 python 001_gis_immo.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python 002_re_fx.py)",
+      "Bash(PYTHONIOENCODING=utf-8 python 003_data_products.py)",
+      "Bash(node -c js/app.js)",
+      "Bash(node -c js/i18n.js)",
+      "Bash(node -c js/views/home.js)",
+      "Bash(node -c js/views/search.js)",
+      "Bash(node -c js/components.js)"
     ]
   }
 }

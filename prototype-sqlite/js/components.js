@@ -116,7 +116,7 @@ function sortTableByColumn(th) {
 //     through. Callers wrap plain text with escapeHtml() themselves.
 function renderMetadataTable(rows) {
   const cells = rows.filter(r => r && r.value != null && r.value !== '')
-    .map(r => `<tr><td>${escapeHtml(r.label)}</td><td>${r.value}</td></tr>`)
+    .map(r => `<tr><td>${escapeHtml(r.label)}</td><td data-editable="metavalue">${r.value}</td></tr>`)
     .join('');
   return `<table class="props-table"><tbody>${cells}</tbody></table>`;
 }

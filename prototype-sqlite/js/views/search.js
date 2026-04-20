@@ -42,18 +42,18 @@ function renderSearchResults() {
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">Suche</span></nav>';
 
   if (!q) {
-    const counts = sidebarCounts || { terms: 0, vocabulary: 0, codelists: 0, products: 0, systems: 0 };
+    const counts = sidebarCounts || { terms: 0, vocabulary: 0, codelists: 0, datasets: 0, systems: 0 };
     html += `<div class="section-header"><div>
       <h2 class="section-title"><i data-lucide="search" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>Suche</h2>
       <div class="section-subtitle">Geben Sie oben einen Suchbegriff ein. Tipp: mit Ctrl+K öffnen Sie die Suche jederzeit.</div>
     </div></div>`;
 
-    html += '<div class="content-section"><div class="section-label">NACH TYP DURCHSUCHEN</div>';
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_search_by_type') + '</div>';
     html += '<div class="home-kpi-grid">';
     html += renderKpiCard('book-open', counts.terms, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
     html += renderKpiCard('box', counts.vocabulary, 'Geschäftsobjekte', 'Lösungsneutrale Objekte', '#/vocabulary/table');
     html += renderKpiCard('list-ordered', counts.codelists, 'Codelisten', 'Standardisierte Wertelisten', '#/codelists');
-    html += renderKpiCard('package', counts.products, 'Datensammlungen', 'Publizierte Daten', '#/products/table');
+    html += renderKpiCard('package', counts.datasets, 'Datensätze', 'Publizierte Daten', '#/datasets/table');
     html += renderKpiCard('database', counts.systems, 'Systeme', 'Quellsysteme', '#/systems/table');
     html += '</div></div>';
 
@@ -125,10 +125,10 @@ function renderSearchResults() {
     name: n(cl, 'name'),
     meta: 'Codeliste'
   }));
-  html += group('Datensammlungen', 'package', products, dp => ({
-    href: '#/products/' + dp.id,
+  html += group('Datensätze', 'package', products, dp => ({
+    href: '#/datasets/' + dp.id,
     name: n(dp, 'name'),
-    meta: 'Datensammlung' + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
+    meta: 'Datensatz' + (dp.publisher ? ' · ' + escapeHtml(dp.publisher) : '')
   }));
   html += group('Systeme', 'database', systems, s => ({
     href: '#/systems/' + s.id,
@@ -230,10 +230,10 @@ function renderSearchDropdown(q) {
         name: n(cl, 'name'),
         meta: 'Codeliste'
       }));
-      if (products.length) html += renderDropdownGroup('Datensammlungen', 'package', products, dp => ({
-        href: '#/products/' + dp.id,
+      if (products.length) html += renderDropdownGroup('Datensätze', 'package', products, dp => ({
+        href: '#/datasets/' + dp.id,
         name: n(dp, 'name'),
-        meta: dp.publisher || 'Datensammlung'
+        meta: dp.publisher || 'Datensatz'
       }));
       if (systems.length) html += renderDropdownGroup('Systeme', 'database', systems, s => ({
         href: '#/systems/' + s.id,

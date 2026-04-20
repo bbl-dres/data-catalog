@@ -54,11 +54,11 @@ function renderHome() {
   html += renderKpiCard('book-open', termCount, 'Begriffe', 'Fachbegriffe & Definitionen', '#/terms');
   html += renderKpiCard('list-ordered', codelistCount, 'Codelisten', `${valueCount} Werte`, '#/codelists');
   html += renderKpiCard('database', systemCount, 'Systeme', `${fieldCount} Felder`, '#/systems/table');
-  html += renderKpiCard('package', productCount, 'Datensammlungen', `${distCount} Distributionen`, '#/products/table');
+  html += renderKpiCard('package', productCount, 'Datensätze', `${distCount} Distributionen`, '#/datasets/table');
   html += '</div>';
 
   // Recent activity
-  html += '<div class="content-section"><div class="section-label">LETZTE AKTIVIT\u00c4T</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_recent_activity') + '</div>';
   if (recentConcepts.length > 0) {
     html += '<table class="data-table"><colgroup><col style="width:35%"><col style="width:25%"><col style="width:20%"><col style="width:20%"></colgroup><thead><tr>';
     html += '<th scope="col">Name</th><th scope="col">Domäne</th><th scope="col">Freigabe</th><th scope="col">Geändert</th>';
@@ -81,7 +81,7 @@ function renderHome() {
   html += '<div class="home-bottom-grid">';
 
   // Domains card
-  html += '<div class="content-section"><div class="section-label">DOM\u00c4NEN</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_domains') + '</div>';
   domains.forEach(d => {
     html += `<div class="home-domain-row clickable-row" data-href="#/vocabulary/table">
       <span>${escapeHtml(d.cname)}</span>
@@ -91,7 +91,7 @@ function renderHome() {
   html += '</div>';
 
   // Quality card — 6 dimensions
-  html += '<div class="content-section"><div class="section-label">DATENQUALIT\u00c4T</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_data_quality') + '</div>';
   const dims = [
     { icon: 'check-circle', label: 'Vollständigkeit', score: quality?.avg_completeness },
     { icon: 'clock', label: 'Aktualität', score: quality?.avg_timeliness },

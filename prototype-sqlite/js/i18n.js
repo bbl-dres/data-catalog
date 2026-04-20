@@ -16,7 +16,7 @@ const SECTION_LABELS = {
   terms:      { de: 'Begriffe',         fr: 'Termes',              it: 'Termini',             en: 'Terms' },
   codelists:  { de: 'Codelisten',       fr: 'Listes de codes',     it: 'Liste di codici',     en: 'Code Lists' },
   systems:    { de: 'Systeme',          fr: 'Systèmes',            it: 'Sistemi',             en: 'Systems' },
-  products:   { de: 'Datensammlungen',  fr: 'Collections de données', it: 'Raccolte di dati', en: 'Data Collections' }
+  datasets:   { de: 'Datensätze',       fr: 'Jeux de données',     it: 'Insiemi di dati',     en: 'Datasets' }
 };
 
 const SECTION_ICONS = {
@@ -24,7 +24,7 @@ const SECTION_ICONS = {
   terms: 'book-open',
   codelists: 'list-ordered',
   systems: 'database',
-  products: 'package'
+  datasets: 'package'
 };
 
 const STATUS_LABELS = {
@@ -86,7 +86,73 @@ const I18N = {
 
   // API docs stub page
   api_docs_title:         { de: 'API-Dokumentation',   fr: 'Documentation API', it: 'Documentazione API', en: 'API documentation' },
-  api_docs_coming_soon:   { de: 'Die Swagger-UI mit der OpenAPI-Spezifikation folgt in einer späteren Version.', fr: 'L\'interface Swagger avec la spécification OpenAPI suivra dans une version ultérieure.', it: 'L\'interfaccia Swagger con la specifica OpenAPI arriverà in una versione futura.', en: 'The Swagger UI with the OpenAPI specification will follow in a later version.' }
+  api_docs_coming_soon:   { de: 'Die Swagger-UI mit der OpenAPI-Spezifikation folgt in einer späteren Version.', fr: 'L\'interface Swagger avec la spécification OpenAPI suivra dans une version ultérieure.', it: 'L\'interfaccia Swagger con la specifica OpenAPI arriverà in una versione futura.', en: 'The Swagger UI with the OpenAPI specification will follow in a later version.' },
+
+  // Section labels (rendered uppercase via CSS text-transform on .section-label)
+  sec_definition:         { de: 'Definition',               fr: 'Définition',                 it: 'Definizione',                en: 'Definition' },
+  sec_metadata:           { de: 'Metadaten',                fr: 'Métadonnées',                it: 'Metadati',                   en: 'Metadata' },
+  sec_stakeholders:       { de: 'Verantwortliche',          fr: 'Responsables',               it: 'Responsabili',               en: 'Stakeholders' },
+  sec_attributes:         { de: 'Attribute',                fr: 'Attributs',                  it: 'Attributi',                  en: 'Attributes' },
+  sec_fields:             { de: 'Felder',                   fr: 'Champs',                     it: 'Campi',                      en: 'Fields' },
+  sec_mappings:           { de: 'Zuordnungen — {count} Felder', fr: 'Correspondances — {count} champs', it: 'Associazioni — {count} campi', en: 'Mappings — {count} fields' },
+  sec_linked_concepts:    { de: 'Verknüpfte Geschäftsobjekte', fr: 'Objets métier liés',      it: 'Oggetti di business collegati', en: 'Linked Business Objects' },
+  sec_used_by_concepts:   { de: 'Verwendet von Geschäftsobjekten', fr: 'Utilisé par les objets métier', it: 'Utilizzato da oggetti di business', en: 'Used by Business Objects' },
+  sec_terms:              { de: 'Begriffe',                 fr: 'Termes',                     it: 'Termini',                    en: 'Terms' },
+  sec_source_datasets:    { de: 'Quelldatensätze',          fr: 'Jeux de données sources',    it: 'Insiemi di dati di origine', en: 'Source Datasets' },
+  sec_distributions:      { de: 'Distributionen',           fr: 'Distributions',              it: 'Distribuzioni',              en: 'Distributions' },
+  sec_data_quality:       { de: 'Datenqualität',            fr: 'Qualité des données',        it: 'Qualità dei dati',           en: 'Data Quality' },
+  sec_lineage:            { de: 'Lineage',                  fr: 'Lineage',                    it: 'Lineage',                    en: 'Lineage' },
+  sec_recent_activity:    { de: 'Letzte Aktivität',         fr: 'Activité récente',           it: 'Attività recente',           en: 'Recent Activity' },
+  sec_domains:            { de: 'Domänen',                  fr: 'Domaines',                   it: 'Domini',                     en: 'Domains' },
+  sec_search_by_type:     { de: 'Nach Typ durchsuchen',     fr: 'Parcourir par type',         it: 'Sfoglia per tipo',           en: 'Browse by Type' },
+
+  // Stakeholder role titles
+  role_data_owner:        { de: 'Dateneigentümer',          fr: 'Propriétaire des données',   it: 'Proprietario dei dati',      en: 'Data Owner' },
+  role_data_steward:      { de: 'Datenverantwortliche',     fr: 'Intendant des données',      it: 'Responsabile dei dati',      en: 'Data Steward' },
+  role_data_custodian:    { de: 'Datenbetreuer',            fr: 'Gardien des données',        it: 'Custode dei dati',           en: 'Data Custodian' },
+  role_subject_matter_expert: { de: 'Fachexperte',          fr: 'Expert métier',              it: 'Esperto di dominio',         en: 'Subject Matter Expert' },
+  role_publisher:         { de: 'Herausgeber',              fr: 'Éditeur',                    it: 'Editore',                    en: 'Publisher' },
+
+  // Stakeholder role descriptions
+  role_data_owner_desc:   { de: 'Verantwortlich für Existenz, Qualitätsstandards und Nutzung dieser Daten.',
+                            fr: 'Responsable de l\'existence, des standards de qualité et de l\'utilisation de ces données.',
+                            it: 'Responsabile dell\'esistenza, degli standard di qualità e dell\'uso di questi dati.',
+                            en: 'Accountable for existence, quality standards, and use of this data.' },
+  role_data_steward_desc: { de: 'Pflegt den Katalogeintrag, setzt Standards durch, genehmigt Zuordnungen.',
+                            fr: 'Maintient l\'entrée du catalogue, applique les standards, approuve les correspondances.',
+                            it: 'Cura la voce del catalogo, applica gli standard, approva le associazioni.',
+                            en: 'Maintains the catalog entry, enforces standards, approves mappings.' },
+  role_data_custodian_desc: { de: 'Betreibt das System technisch: Zugangsverwaltung, Backup, Verfügbarkeit.',
+                              fr: 'Exploite techniquement le système : gestion des accès, sauvegarde, disponibilité.',
+                              it: 'Gestisce tecnicamente il sistema: controllo accessi, backup, disponibilità.',
+                              en: 'Technically operates the system: access management, backup, availability.' },
+  role_subject_matter_expert_desc: { de: 'Liefert Fachwissen zur Bedeutung der Daten und zu Spezialfällen.',
+                                     fr: 'Fournit l\'expertise métier sur le sens des données et les cas particuliers.',
+                                     it: 'Fornisce conoscenza di dominio sul significato dei dati e sui casi limite.',
+                                     en: 'Provides domain knowledge about the data\'s meaning and edge cases.' },
+  role_publisher_desc:    { de: 'Veröffentlicht und verteilt den Datensatz.',
+                            fr: 'Publie et distribue le jeu de données.',
+                            it: 'Pubblica e distribuisce l\'insieme di dati.',
+                            en: 'Publishes and distributes the dataset.' },
+
+  // Stakeholder empty state — displayed as a visible warning, not muted placeholder
+  stakeholders_empty_warning: { de: 'Kein(e) {role} zugewiesen — bitte Verantwortliche zuweisen.',
+                                fr: 'Aucun(e) {role} assigné(e) — veuillez désigner un responsable.',
+                                it: 'Nessun(a) {role} assegnato(a) — assegnare un responsabile.',
+                                en: 'No {role} assigned — please assign someone.' },
+
+  // Inline edit mode (visual mockup only — no persistence)
+  edit_button:        { de: 'Bearbeiten',      fr: 'Modifier',       it: 'Modifica',       en: 'Edit' },
+  edit_save:          { de: 'Speichern',       fr: 'Enregistrer',    it: 'Salva',          en: 'Save' },
+  edit_cancel:        { de: 'Abbrechen',       fr: 'Annuler',        it: 'Annulla',        en: 'Cancel' },
+  edit_banner:        { de: 'Bearbeiten-Modus aktiv — Änderungen sind nicht persistent (Mockup).',
+                        fr: 'Mode édition actif — les modifications ne sont pas persistantes (maquette).',
+                        it: 'Modalità modifica attiva — le modifiche non sono persistenti (mockup).',
+                        en: 'Edit mode active — changes are not persisted (mockup).' },
+  edit_toast_saved:   { de: 'Änderungen gespeichert (Mockup)',
+                        fr: 'Modifications enregistrées (maquette)',
+                        it: 'Modifiche salvate (mockup)',
+                        en: 'Changes saved (mockup)' }
 };
 
 function tr(key, vars) {

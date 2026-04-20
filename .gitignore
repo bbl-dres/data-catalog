@@ -1,0 +1,10 @@
+# SQLite backup snapshots (created by migration scripts)
+**/*.db.bak*
+
+# Python build artifacts
+__pycache__/
+*.pyc
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

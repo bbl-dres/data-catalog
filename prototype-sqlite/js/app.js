@@ -17,7 +17,7 @@ let currentEntityId = null;
 let currentCollectionId = null;
 let currentTab = 'overview';
 let lastListTab = 'table';
-const grouping = { vocabulary: 'domain', terms: 'domain', codelists: 'domain', systems: 'none', products: 'none' };
+const grouping = { vocabulary: 'domain', terms: 'domain', codelists: 'domain', systems: 'none', datasets: 'none' };
 let searchQuery = '';
 const expandedSections = new Set(['vocabulary']);
 let recents = [];
@@ -161,6 +161,95 @@ function renderStakeholderCard(name, org, email) {
   </div>`;
 }
 
+// Render one role group: title + description + N stakeholder cards (or a
+// visible warning when the group has no assignees). `contacts` is an array
+// of { name, organisation, email }. Role must match a role_<name> i18n key.
+function renderStakeholderGroup(role, contacts) {
+  const title = tr('role_' + role);
+  const desc  = tr('role_' + role + '_desc');
+  let html = `<div class="stakeholder-section">
+    <div class="stakeholder-role-title">${escapeHtml(title)}</div>
+    <div class="stakeholder-role-desc">${escapeHtml(desc)}</div>`;
+  if (contacts && contacts.length) {
+    contacts.forEach(c => {
+      html += renderStakeholderCard(c.name, c.organisation, c.email);
+    });
+  } else {
+    html += `<div class="stakeholder-empty-warning" role="alert">
+      <i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i>
+      <span>${escapeHtml(tr('stakeholders_empty_warning', { role: title }))}</span>
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Wrap one or more role groups in the shared VERANTWORTLICHE section.
+// `groups` = [{ role, contacts: [] }, ...]
+function renderStakeholdersSection(groups) {
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_stakeholders') + '</div>';
+  groups.forEach(g => { html += renderStakeholderGroup(g.role, g.contacts || []); });
+  html += '</div>';
+  return html;
+}
+
+// ── Inline edit mode (visual mockup) ──────────────────────────
+// Renders both the view-mode button set (pencil, message) and the
+// edit-mode button set (save, cancel); CSS picks one via .edit-mode.
+function renderTitleActions() {
+  const editLabel   = tr('edit_button');
+  const saveLabel   = tr('edit_save');
+  const cancelLabel = tr('edit_cancel');
+  return `
+    <button class="header-icon-btn action-view btn-edit" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>
+    <button class="header-icon-btn action-view" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>
+    <button class="header-icon-btn action-edit btn-save" aria-label="${escapeHtml(saveLabel)}" title="${escapeHtml(saveLabel)}"><i data-lucide="check" style="width:18px;height:18px;"></i></button>
+    <button class="header-icon-btn action-edit btn-cancel" aria-label="${escapeHtml(cancelLabel)}" title="${escapeHtml(cancelLabel)}"><i data-lucide="x" style="width:18px;height:18px;"></i></button>`;
+}
+
+function enterEditMode(article) {
+  if (!article || article.classList.contains('edit-mode')) return;
+  article.classList.add('edit-mode');
+  // Inject amber banner directly under the article's first child.
+  const banner = document.createElement('div');
+  banner.className = 'edit-mode-banner';
+  banner.setAttribute('role', 'status');
+  banner.innerHTML = `<i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i><span>${escapeHtml(tr('edit_banner'))}</span>`;
+  article.insertBefore(banner, article.firstChild);
+  // Flip contenteditable on flagged elements.
+  article.querySelectorAll('[data-editable]').forEach(el => {
+    el.setAttribute('contenteditable', 'true');
+  });
+  if (window.lucide) lucide.createIcons({ nodes: [banner] });
+}
+
+function exitEditMode(article) {
+  if (!article || !article.classList.contains('edit-mode')) return;
+  article.classList.remove('edit-mode');
+  article.querySelector('.edit-mode-banner')?.remove();
+  article.querySelectorAll('[data-editable]').forEach(el => {
+    el.removeAttribute('contenteditable');
+  });
+}
+
+let toastTimer = null;
+function showToast(message) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px;"></i><span>${escapeHtml(message)}</span>`;
+  if (window.lucide) lucide.createIcons({ nodes: [toast] });
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove('visible'); }, 2400);
+}
+
 // ── Views: Lists ───────────────────────────────────────────
 function renderSidebar() {
   if (!sidebarCounts) {
@@ -169,7 +258,7 @@ function renderSidebar() {
       terms: query("SELECT COUNT(*) as c FROM term")[0]?.c || 0,
       codelists: query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0,
       systems: query("SELECT COUNT(*) as c FROM system")[0]?.c || 0,
-      products: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
+      datasets: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
     };
   }
   const counts = sidebarCounts;
@@ -202,7 +291,7 @@ function renderSidebar() {
   </div>`;
   html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
 
-  ['terms', 'vocabulary', 'codelists', 'systems', 'products'].forEach(sec => {
+  ['terms', 'vocabulary', 'codelists', 'systems', 'datasets'].forEach(sec => {
     const isActive = currentSection === sec;
     const isExpanded = expandedSections.has(sec);
     const label = SECTION_LABELS[sec][lang] || SECTION_LABELS[sec]['en'];
@@ -244,7 +333,7 @@ function renderListView(section, listTab, collectionId) {
     case 'terms': main.innerHTML = renderTermsList(listTab); break;
     case 'codelists': main.innerHTML = renderCodeListsList(listTab); break;
     case 'systems': main.innerHTML = renderSystemsList(listTab); break;
-    case 'products': main.innerHTML = renderProductsList(listTab); break;
+    case 'datasets': main.innerHTML = renderProductsList(listTab); break;
     default: main.innerHTML = renderVocabularyList(listTab);
   }
 }
@@ -1211,15 +1300,15 @@ function renderProductsList(listTab) {
       match: (dp, vals) => vals.includes(dp.certified ? 'approved' : 'draft')
     }
   ];
-  const currentFilters = activeFilters.products || {};
+  const currentFilters = activeFilters.datasets || {};
   const filterCtx = createFilterContext(productFilterDefs, currentFilters);
   const products = applyFilterDefs(allProducts, productFilterDefs, currentFilters);
 
   let html = '<div class="content-wrapper">';
-  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.products[lang] + '</span></nav>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.datasets[lang] + '</span></nav>';
   html += `<div class="section-header"><div>
-    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.products}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.products[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</h2>
-    <div class="section-subtitle">Aufbereitete und publizierte Datensammlungen mit Distributionen.</div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.datasets}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.datasets[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</h2>
+    <div class="section-subtitle">Aufbereitete und publizierte Datensätze mit Distributionen.</div>
   </div></div>`;
 
   const groupingOpts = [
@@ -1227,37 +1316,37 @@ function renderProductsList(listTab) {
     { id: 'status', label: 'Freigabe' },
     { id: 'none', label: 'Keine' }
   ];
-  html += renderListTabBar('products', listTab, groupingOpts, grouping.products, '', filterCtx);
+  html += renderListTabBar('datasets', listTab, groupingOpts, grouping.datasets, '', filterCtx);
   html += filterCtx.panelHtml;
   html += filterCtx.pillsHtml;
-  announceFilterResult(SECTION_LABELS.products[lang], products.length, totalCount, filterCtx.count);
+  announceFilterResult(SECTION_LABELS.datasets[lang], products.length, totalCount, filterCtx.count);
 
   if (products.length === 0) {
     if (filterCtx.count > 0) {
-      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Datensammlungen entsprechen den aktiven Filtern.');
+      html += renderEmptyState('filter-x', 'Keine Treffer', 'Keine Datensätze entsprechen den aktiven Filtern.');
     } else {
-      html += renderEmptyState('package', 'Keine Datenprodukte', 'Es wurden noch keine Datenprodukte angelegt.');
+      html += renderEmptyState('package', 'Keine Datensätze', 'Es wurden noch keine Datensätze angelegt.');
     }
     html += '</div>';
     return html;
   }
 
   function getProductGroupKey(dp) {
-    if (grouping.products === 'publisher') return dp.publisher || 'Unbekannt';
-    if (grouping.products === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
+    if (grouping.datasets === 'publisher') return dp.publisher || 'Unbekannt';
+    if (grouping.datasets === 'status') return dp.certified ? 'Zertifiziert' : 'Nicht zertifiziert';
     return null;
   }
 
   if (listTab === 'diagram') {
     const groups = [];
-    if (grouping.products === 'none') {
-      groups.push({ id: 'all', title: 'Alle Datensammlungen', items: products });
+    if (grouping.datasets === 'none') {
+      groups.push({ id: 'all', title: 'Alle Datensätze', items: products });
     } else {
       const byKey = {};
       products.forEach(dp => { const k = getProductGroupKey(dp); (byKey[k] = byKey[k] || []).push(dp); });
       Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
     }
-    const renderCard = dp => renderSimpleCard('#/products/' + dp.id, n(dp, 'name'), getDefinitionText(dp.description, lang));
+    const renderCard = dp => renderSimpleCard('#/datasets/' + dp.id, n(dp, 'name'), getDefinitionText(dp.description, lang));
     html += renderUmlDiagram(groups, renderCard, 'diag-prod');
     html += '</div>';
     return html;
@@ -1274,10 +1363,10 @@ function renderProductsList(listTab) {
     { label: 'Freigabe',      width: '10%', render: dp => certifiedBadge(dp.certified, 'status') },
     { label: 'Verantwortlich', width: '20%', render: dp => dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;' }
   ];
-  const productTableOpts = { rowHref: dp => '#/products/' + dp.id };
+  const productTableOpts = { rowHref: dp => '#/datasets/' + dp.id };
 
   html += '<div class="list-panel">';
-  if (grouping.products === 'none') {
+  if (grouping.datasets === 'none') {
     html += renderDataTable(productColumns, products, productTableOpts);
   } else {
     const groups = {};
@@ -1310,7 +1399,7 @@ function renderDetailView(section, entityId, tab) {
     case 'terms': renderTermDetail(entityId, tab, main); break;
     case 'codelists': renderCodeListDetail(entityId, tab, main); break;
     case 'systems': renderSystemDetail(entityId, tab, main); break;
-    case 'products': renderProductDetail(entityId, tab, main); break;
+    case 'datasets': renderProductDetail(entityId, tab, main); break;
     default: main.innerHTML = '<p>Not found</p>';
   }
 }
@@ -1355,11 +1444,10 @@ function renderConceptDetail(conceptId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="box" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name">${escapeHtml(n(concept, 'name'))}</h1>`;
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(concept, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div>';
   html += '</div>';
 
@@ -1425,7 +1513,7 @@ function renderSystemRelationships(systemId, sys) {
     satellites.push({ title: 'Geschäftsobjekte', items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
   if (products.length) {
-    satellites.push({ title: 'Datenprodukte', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses System hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
@@ -1459,7 +1547,7 @@ function renderDatasetRelationships(datasetId, ds) {
     satellites.push({ title: 'Geschäftsobjekte', items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
   }
   if (products.length) {
-    satellites.push({ title: 'Datenprodukte', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
   if (upstream.length) {
     satellites.push({ title: 'Upstream', items: upstream.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + ds.system_id + '/datasets/' + d.id, icon: 'arrow-left', meta: '' })), color: '#2E6EB5' });
@@ -1492,7 +1580,7 @@ function renderProductRelationships(productId, dp) {
     satellites.push({ title: 'Distributionen', items: dists.map(d => ({ label: d.name || d.format, icon: 'file-output', meta: d.format || '' })), color: '#0891B2' });
   }
 
-  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Datenprodukt hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Datensatz hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
   return renderRelGraph(n(dp, 'name'), satellites);
 }
 
@@ -1501,13 +1589,13 @@ function renderConceptOverview(concept, collection, vocab, steward) {
 
   // Definition
   const def = getDefinitionText(concept.definition, lang);
-  html += `<div class="content-section"><div class="section-label">DEFINITION</div>`;
-  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+  html += `<div class="content-section"><div class="section-label">${tr('sec_definition')}</div>`;
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
   // Begriffe (linked terms)
   const linkedTerms = query(`SELECT t.id, t.${nameCol('name')} as tname, t.standard_ref FROM term t JOIN concept_term ct ON ct.term_id = t.id WHERE ct.concept_id = ?`, [concept.id]);
   if (linkedTerms.length > 0) {
-    html += '<div class="content-section"><div class="section-label">BEGRIFFE</div>';
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_terms') + '</div>';
     html += '<div class="domain-group-concepts">';
     linkedTerms.forEach(t => {
       html += `<a class="concept-box" href="#/terms/${t.id}">`;
@@ -1518,7 +1606,7 @@ function renderConceptOverview(concept, collection, vocab, steward) {
   }
 
   // Metadata
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',      value: collection ? escapeHtml(n(collection, 'name')) : null },
     { label: 'Freigabe',    value: statusBadge(concept.status) },
@@ -1529,14 +1617,11 @@ function renderConceptOverview(concept, collection, vocab, steward) {
   ]);
   html += '</div>';
 
-  // Verantwortliche
-  html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
-  if (steward) {
-    html += renderStakeholderCard(steward.name, 'Data Steward · ' + (steward.department || ''), steward.email);
-  } else {
-    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
-  }
-  html += '</div>';
+  // Verantwortliche — Data Steward comes from concept.steward_id → user
+  const stewardContacts = steward
+    ? [{ name: steward.name, organisation: steward.department || '', email: steward.email }]
+    : [];
+  html += renderStakeholdersSection([{ role: 'data_steward', contacts: stewardContacts }]);
 
   return html;
 }
@@ -1550,9 +1635,9 @@ function renderConceptContents(conceptId) {
 
   if (attrs.length === 0) return '<div class="content-section">' + renderEmptyState('list', 'Keine Attribute', 'Diesem Konzept sind noch keine Attribute zugeordnet.') + '</div>';
 
-  let html = '<div class="content-section"><div class="section-label">FIELDS</div>';
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_attributes') + '</div>';
   html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Key</th><th scope="col">Required</th><th scope="col">Code List</th><th scope="col">Description</th>';
+  html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Key</th><th scope="col">Pflicht</th><th scope="col">Codeliste</th><th scope="col">Beschreibung</th>';
   html += '</tr></thead><tbody>';
   attrs.forEach(a => {
     const def = getDefinitionText(a.definition, lang);
@@ -1585,7 +1670,7 @@ function renderConceptMappings(conceptId) {
 
   if (mappings.length === 0) return '<div class="content-section">' + renderEmptyState('link', 'Keine Mappings', 'Es gibt noch keine physischen Felder, die dieses Konzept realisieren.') + '</div>';
 
-  let html = `<div class="content-section"><div class="section-label">MAPPINGS &mdash; ${mappings.length} fields</div>`;
+  let html = `<div class="content-section"><div class="section-label">${tr('sec_mappings', { count: mappings.length })}</div>`;
   html += '<table class="data-table"><thead><tr>';
   html += '<th scope="col">Field</th><th scope="col">Dataset / System</th><th scope="col">Match</th><th scope="col">Verified</th>';
   html += '</tr></thead><tbody>';
@@ -1663,9 +1748,9 @@ function renderConceptRelationships(conceptId) {
     satellites.push({ title: 'Benutzer', items: [{ label: steward.name, icon: 'user', meta: 'Role: Data Steward' }], color: '#1A9E55' });
   }
 
-  // Datensammlungen
+  // Datensätze
   if (products.length) {
-    satellites.push({ title: 'Datensammlungen', items: products.map(dp => ({ label: dp.dp_name, href: '#/products/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+    satellites.push({ title: 'Datensätze', items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
   }
 
   if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Beziehungen', 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
@@ -1707,11 +1792,10 @@ function renderCodeListDetail(codeListId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="list-ordered" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name">${escapeHtml(n(cl, 'name'))}</h1>`;
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(cl, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div></div>';
 
   html += renderTabBar(tabs, tab, '#/codelists/' + codeListId);
@@ -1733,8 +1817,8 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
 
   // Definition
   const def = getDefinitionText(cl.description, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
   // Derive domain from linked concepts (display-only join; not stored on code_list)
   const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
@@ -1747,7 +1831,7 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   const clLinkedConcept = cl.concept_id
     ? queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id])
     : null;
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',         value: clDomain ? escapeHtml(clDomain.dname) : null },
     { label: 'Freigabe',       value: statusBadge(cl.status) },
@@ -1758,14 +1842,9 @@ function renderCodeListOverview(cl, valueCount, deprecatedCount) {
   ]);
   html += '</div>';
 
-  // Verantwortliche — real owner from code_list.owner_id → contact
-  html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
-  if (owner) {
-    html += renderStakeholderCard(owner.name, owner.organisation, owner.email);
-  } else {
-    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
-  }
-  html += '</div>';
+  // Verantwortliche — code_list.owner_id → contact (semantic: Data Owner)
+  const ownerContacts = owner ? [owner] : [];
+  html += renderStakeholdersSection([{ role: 'data_owner', contacts: ownerContacts }]);
 
   return html;
 }
@@ -1807,7 +1886,7 @@ function renderCodeListMappings(codeListId) {
 
   let html = '<div class="content-section">';
   if (attrs.length > 0) {
-    html += '<div class="section-label">USED BY CONCEPTS</div>';
+    html += '<div class="section-label">' + tr('sec_used_by_concepts') + '</div>';
     html += '<table class="data-table"><thead><tr><th scope="col">Concept</th><th scope="col">Attribute</th></tr></thead><tbody>';
     attrs.forEach(a => {
       html += `<tr>
@@ -1856,11 +1935,10 @@ function renderSystemDetail(systemId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="database" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name">${escapeHtml(n(sys, 'name'))}</h1>`;
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(sys, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div>';
   html += '</div>';
 
@@ -1882,11 +1960,11 @@ function renderSystemOverview(sys, schemas, datasetCount) {
 
   // Definition
   const desc = getDefinitionText(sys.description, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
 
   // Metadata
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Status',       value: statusBadge(sys.active ? 'active' : 'deprecated') },
     { label: 'Technologie',  value: sys.technology_stack ? escapeHtml(sys.technology_stack) : null },
@@ -1896,14 +1974,11 @@ function renderSystemOverview(sys, schemas, datasetCount) {
   ]);
   html += '</div>';
 
-  // Verantwortliche (owner)
-  html += '<div class="content-section"><div class="section-label">VERANTWORTLICHE</div>';
-  if (sys.owner_name) {
-    html += renderStakeholderCard(sys.owner_name, sys.owner_org || '', sys.owner_email);
-  } else {
-    html += '<p style="color:var(--color-text-secondary);font-size:var(--text-small);">Keine Verantwortlichen zugewiesen.</p>';
-  }
-  html += '</div>';
+  // Verantwortliche — system.owner_id → contact (semantic: Data Owner)
+  const sysOwnerContacts = sys.owner_name
+    ? [{ name: sys.owner_name, organisation: sys.owner_org || '', email: sys.owner_email }]
+    : [];
+  html += renderStakeholdersSection([{ role: 'data_owner', contacts: sysOwnerContacts }]);
 
   return html;
 }
@@ -1969,11 +2044,10 @@ function renderDatasetDetail(datasetId, systemId) {
   const tab = currentTab || 'overview';
   const tabs = [
     { id: 'overview',      label: 'Übersicht' },
-    { id: 'contents',      label: 'Inhalt' },
+    { id: 'contents',      label: 'Felder' },
     { id: 'lineage',       label: 'Lineage' },
     { id: 'quality',       label: 'Datenqualität' },
     { id: 'relationships', label: 'Relationen' },
-    { id: 'stakeholders',  label: 'Verantwortliche' },
     { id: 'history',       label: 'History' }
   ];
   if (!tabs.some(t => t.id === currentTab)) currentTab = 'overview';
@@ -1994,11 +2068,10 @@ function renderDatasetDetail(datasetId, systemId) {
   html += '<div class="title-block">';
   html += `<div class="title-block-icon"><i data-lucide="${restricted ? 'lock' : 'table-2'}" style="width:24px;height:24px;"></i></div>`;
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
+  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}" data-editable="title">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div>';
   html += '</div>';
 
@@ -2019,7 +2092,6 @@ function renderDatasetDetail(datasetId, systemId) {
     case 'lineage': html += renderDatasetLineage(datasetId, ds); break;
     case 'quality': html += renderDatasetQuality(datasetId); break;
     case 'relationships': html += renderDatasetRelationships(datasetId, ds); break;
-    case 'stakeholders': html += renderDatasetStakeholders(datasetId); break;
     case 'history': html += renderHistoryTab(); break;
   }
   html += '</div></article></div>';
@@ -2031,11 +2103,11 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
 
   // Definition
   const desc = getDefinitionText(ds.description, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
 
   // Metadata
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Freigabe',          value: certifiedBadge(ds.certified) },
     { label: 'System',            value: escapeHtml(ds.system_name) },
@@ -2050,7 +2122,7 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
 
   // Linked concepts
   if (mappingCount > 0) {
-    html += '<div class="content-section"><div class="section-label">VERKNÜPFTE GESCHÄFTSOBJEKTE</div>';
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_linked_concepts') + '</div>';
     const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname
       FROM concept c
       JOIN concept_mapping cm ON cm.concept_id = c.id
@@ -2062,30 +2134,33 @@ function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
     });
     html += '</div></div>';
   }
+
+  // Stakeholders (moved from standalone tab)
+  html += renderDatasetStakeholders(ds.id);
+
   return html;
 }
 
 function renderDatasetContents(datasetId) {
-  const fields = query(`SELECT f.*,
-    (SELECT GROUP_CONCAT(c.${nameCol('name')}, ', ') FROM concept_mapping cm JOIN concept c ON cm.concept_id = c.id WHERE cm.field_id = f.id) as mapped_concepts
-    FROM field f WHERE f.dataset_id = ? ORDER BY f.sort_order, f.name`, [datasetId]);
+  const fields = query(`SELECT f.* FROM field f WHERE f.dataset_id = ? ORDER BY f.sort_order, f.name`, [datasetId]);
 
   if (fields.length === 0) return '<div class="content-section">' + renderEmptyState('table-2', 'Keine Felder', 'Diesem Dataset sind noch keine Felder zugeordnet.') + '</div>';
 
-  let html = '<div class="content-section"><div class="section-label">FIELDS</div>';
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_fields') + '</div>';
   html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Nullable</th><th scope="col">Key</th><th scope="col">Geschäftsobjekte</th>';
+  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Key</th><th scope="col">Nullable</th>';
   html += '</tr></thead><tbody>';
   fields.forEach(f => {
     let keyLabel = '&ndash;';
     if (f.is_primary_key) keyLabel = 'PK';
     else if (f.is_foreign_key) keyLabel = 'FK';
+    const desc = getDefinitionText(f.description, lang);
     html += `<tr>
       <td class="cell-mono">${escapeHtml(f.name)}</td>
+      <td>${desc ? escapeHtml(desc) : '&ndash;'}</td>
       <td class="cell-mono">${escapeHtml(f.data_type)}</td>
-      <td>${f.nullable ? 'Yes' : 'No'}</td>
       <td>${keyLabel}</td>
-      <td>${f.mapped_concepts ? escapeHtml(f.mapped_concepts) : '&ndash;'}</td>
+      <td>${f.nullable ? 'Yes' : 'No'}</td>
     </tr>`;
   });
   html += '</tbody></table></div>';
@@ -2109,7 +2184,7 @@ function renderDatasetLineage(datasetId, ds) {
     JOIN system s ON sc.system_id = s.id
     WHERE ll.source_dataset_id = ?`, [datasetId]);
 
-  let html = '<div class="content-section"><div class="section-label">LINEAGE</div>';
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_lineage') + '</div>';
   html += '<div class="lineage-tree-visual">';
 
   // Upstream section
@@ -2164,7 +2239,7 @@ function renderDatasetQuality(datasetId) {
     { key: 'uniqueness', icon: 'fingerprint', label: 'Eindeutigkeit', desc: 'Anteil der Datensätze ohne unbeabsichtigte Duplikate.', score: profile?.uniqueness_score }
   ];
 
-  let html = '<div class="content-section"><div class="section-label">DATENQUALITÄT</div>';
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_data_quality') + '</div>';
 
   if (profile) {
     html += `<div style="font-size:var(--text-small);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
@@ -2203,41 +2278,10 @@ function renderDatasetQuality(datasetId) {
 
 function renderDatasetStakeholders(datasetId) {
   const contacts = query(`SELECT c.*, dc.role FROM dataset_contact dc JOIN contact c ON dc.contact_id = c.id WHERE dc.dataset_id = ?`, [datasetId]);
-
-  // Dataset role groups per wireframe: Data Owner, Data Steward, Data Custodian, Subject Matter Expert
-  const roleDescs = {
-    data_owner: { label: 'Dateneigent\u00fcmer', desc: 'Accountable for existence, quality standards, and use of this data.' },
-    data_steward: { label: 'Datenverantwortliche', desc: 'Maintains the catalog entry, enforces standards, approves mappings.' },
-    data_custodian: { label: 'Datenbetreuer', desc: 'Technically operates the system: access management, backup, availability.' },
-    subject_matter_expert: { label: 'Fachexperte', desc: 'Provides domain knowledge about the data\'s meaning and edge cases.' },
-  };
-
-  let html = '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
-
-  // Group by role
+  const roles = ['data_owner', 'data_steward', 'data_custodian', 'subject_matter_expert'];
   const byRole = {};
-  contacts.forEach(c => {
-    if (!byRole[c.role]) byRole[c.role] = [];
-    byRole[c.role].push(c);
-  });
-
-  Object.keys(roleDescs).forEach(role => {
-    const rd = roleDescs[role];
-    // Skip roles that have no contacts assigned
-    html += `<div class="stakeholder-section">
-      <div class="stakeholder-role-title">${rd.label}</div>
-      <div class="stakeholder-role-desc">${rd.desc}</div>`;
-    if (byRole[role]) {
-      byRole[role].forEach(c => {
-        html += renderStakeholderCard(c.name, c.organisation, c.email);
-      });
-    } else {
-      html += `<div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${rd.label} zugewiesen</div>`;
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
+  contacts.forEach(c => { (byRole[c.role] = byRole[c.role] || []).push(c); });
+  return renderStakeholdersSection(roles.map(role => ({ role, contacts: byRole[role] || [] })));
 }
 
 // ============================================================
@@ -2250,14 +2294,12 @@ function renderProductDetail(productId, tab, main) {
   const distCount = query("SELECT COUNT(*) as c FROM distribution WHERE data_product_id = ?", [productId])[0]?.c || 0;
   const hasContacts = query("SELECT COUNT(*) as c FROM data_product_contact WHERE data_product_id = ?", [productId])[0]?.c > 0;
 
-  addRecent(n(dp, 'name') || dp.name_en, `#/products/${productId}`);
+  addRecent(n(dp, 'name') || dp.name_en, `#/datasets/${productId}`);
 
   const tabs = [
     { id: 'overview',      label: 'Übersicht' },
-    { id: 'contents',      label: 'Inhalt' },
     { id: 'lineage',       label: 'Lineage' },
     { id: 'relationships', label: 'Relationen' },
-    { id: 'stakeholders',  label: 'Verantwortliche' },
     { id: 'history',       label: 'History' }
   ];
   if (!tabs.some(t => t.id === tab)) tab = 'overview';
@@ -2265,7 +2307,7 @@ function renderProductDetail(productId, tab, main) {
 
   let html = '<div class="content-wrapper"><article>';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
-  html += `<a class="breadcrumb-link" href="#/products">${SECTION_LABELS.products[lang]}</a>`;
+  html += `<a class="breadcrumb-link" href="#/datasets">${SECTION_LABELS.datasets[lang]}</a>`;
   html += '<span class="breadcrumb-separator"> / </span>';
   html += `<span class="breadcrumb-current">${escapeHtml(n(dp, 'name'))}</span>`;
   html += '</nav>';
@@ -2273,23 +2315,20 @@ function renderProductDetail(productId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="package" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name">${escapeHtml(n(dp, 'name'))}</h1>`;
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(dp, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div>';
   html += '</div>';
 
-  html += renderTabBar(tabs, tab, '#/products/' + productId);
+  html += renderTabBar(tabs, tab, '#/datasets/' + productId);
 
   html += '<div class="tab-content">';
   switch(tab) {
     case 'overview': html += renderProductOverview(dp); break;
-    case 'contents': html += renderProductContents(productId); break;
     case 'lineage': html += renderProductLineage(productId); break;
     case 'relationships': html += renderProductRelationships(productId, dp); break;
-    case 'stakeholders': html += renderProductStakeholders(productId); break;
     case 'history': html += renderHistoryTab(); break;
   }
   html += '</div></article></div>';
@@ -2301,11 +2340,11 @@ function renderProductOverview(dp) {
 
   // Definition
   const desc = getDefinitionText(dp.description, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${desc ? '<p>' + escapeHtml(desc) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
 
   // Metadata
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Freigabe',      value: certifiedBadge(dp.certified) },
     { label: 'Herausgeber',   value: dp.publisher ? escapeHtml(dp.publisher) : null },
@@ -2319,7 +2358,7 @@ function renderProductOverview(dp) {
   // Distributions summary
   const dists = query("SELECT * FROM distribution WHERE data_product_id = ? ORDER BY name_en", [dp.id]);
   if (dists.length > 0) {
-    html += '<div class="content-section"><div class="section-label">DISTRIBUTIONEN</div>';
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_distributions') + '</div>';
     dists.forEach(d => {
       const icon = d.access_type === 'rest_api' || d.access_type === 'odata' ? 'link-2' :
                    d.access_type === 'file_export' ? 'file' : 'share-2';
@@ -2334,27 +2373,10 @@ function renderProductOverview(dp) {
     });
     html += '</div>';
   }
-  return html;
-}
 
-function renderProductContents(productId) {
-  const dists = query("SELECT * FROM distribution WHERE data_product_id = ? ORDER BY name_en", [productId]);
-  if (dists.length === 0) return '<div class="content-section">' + renderEmptyState('share-2', 'Keine Distributionen', 'Diesem Datenprodukt sind noch keine Distributionen zugeordnet.') + '</div>';
+  // Stakeholders (moved from standalone tab)
+  html += renderProductStakeholders(dp.id);
 
-  let html = '<div class="content-section"><div class="section-label">DISTRIBUTIONS</div>';
-  html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Name</th><th scope="col">Type</th><th scope="col">Format</th><th scope="col">URL</th><th scope="col">Availability</th>';
-  html += '</tr></thead><tbody>';
-  dists.forEach(d => {
-    html += `<tr>
-      <td>${escapeHtml(n(d, 'name'))}</td>
-      <td>${escapeHtml(d.access_type || '')}</td>
-      <td>${escapeHtml(d.format || '')}</td>
-      <td><a href="${escapeHtml(d.access_url || '#')}" target="_blank">${escapeHtml(d.access_url || '')}</a></td>
-      <td>${escapeHtml(d.availability || '')}</td>
-    </tr>`;
-  });
-  html += '</tbody></table></div>';
   return html;
 }
 
@@ -2366,11 +2388,11 @@ function renderProductLineage(productId) {
     JOIN system s ON sc.system_id = s.id
     WHERE dpd.data_product_id = ?`, [productId]);
 
-  if (sources.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Quelldatasets', 'Diesem Datenprodukt sind noch keine Quelldatasets zugeordnet.') + '</div>';
+  if (sources.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', 'Keine Quelldatasets', 'Diesem Datensatz sind noch keine Quelldatasets zugeordnet.') + '</div>';
 
-  let html = '<div class="content-section"><div class="section-label">SOURCE DATASETS</div>';
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_source_datasets') + '</div>';
   html += '<table class="data-table"><thead><tr>';
-  html += '<th scope="col">Dataset</th><th scope="col">System</th><th scope="col">Type</th>';
+  html += '<th scope="col">Datensatz</th><th scope="col">System</th><th scope="col">Typ</th>';
   html += '</tr></thead><tbody>';
   sources.forEach(s => {
     html += `<tr class="clickable-row" data-href="#/systems/${s.sys_id}/datasets/${s.id}">
@@ -2385,38 +2407,10 @@ function renderProductLineage(productId) {
 
 function renderProductStakeholders(productId) {
   const contacts = query(`SELECT c.*, dpc.role FROM data_product_contact dpc JOIN contact c ON dpc.contact_id = c.id WHERE dpc.data_product_id = ?`, [productId]);
-
-  // Data Product role groups per wireframe: Data Owner, Data Steward, Publisher
-  const roleDescs = {
-    data_owner: { label: 'Dateneigent\u00fcmer', desc: 'Accountable for existence, quality standards, and use of this data.' },
-    data_steward: { label: 'Datenverantwortliche', desc: 'Maintains the catalog entry, enforces standards, approves mappings.' },
-    publisher: { label: 'Herausgeber', desc: 'Publishes and distributes the data product.' },
-  };
-
-  let html = '<div class="content-section"><div class="section-label">STAKEHOLDERS</div>';
-
+  const roles = ['data_owner', 'data_steward', 'publisher'];
   const byRole = {};
-  contacts.forEach(c => {
-    if (!byRole[c.role]) byRole[c.role] = [];
-    byRole[c.role].push(c);
-  });
-
-  Object.keys(roleDescs).forEach(role => {
-    const rd = roleDescs[role];
-    html += `<div class="stakeholder-section">
-      <div class="stakeholder-role-title">${rd.label}</div>
-      <div class="stakeholder-role-desc">${rd.desc}</div>`;
-    if (byRole[role]) {
-      byRole[role].forEach(c => {
-        html += renderStakeholderCard(c.name, c.organisation, c.email);
-      });
-    } else {
-      html += `<div style="font-size:var(--text-small);color:var(--color-text-placeholder);padding:var(--space-3) 0;">Kein(e) ${rd.label} zugewiesen</div>`;
-    }
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
+  contacts.forEach(c => { (byRole[c.role] = byRole[c.role] || []).push(c); });
+  return renderStakeholdersSection(roles.map(role => ({ role, contacts: byRole[role] || [] })));
 }
 
 // ============================================================
@@ -2446,11 +2440,10 @@ function renderTermDetail(termId, tab, main) {
   html += '<div class="title-block">';
   html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name">${escapeHtml(n(term, 'name'))}</h1>`;
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(term, 'name'))}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += ' <button class="header-icon-btn" aria-label="Bearbeiten" title="Bearbeiten"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>';
-  html += ' <button class="header-icon-btn" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>';
+  html += renderTitleActions();
   html += '</div></div>';
 
   html += renderTabBar(tabs, tab, '#/terms/' + termId);
@@ -2468,8 +2461,8 @@ function renderTermDetail(termId, tab, main) {
 function renderTermOverview(term) {
   let html = '';
   const def = getDefinitionText(term.definition, lang);
-  html += '<div class="content-section"><div class="section-label">DEFINITION</div>';
-  html += `<div class="prose">${def ? '<p>' + escapeHtml(def) + '</p>' : '<p style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
   // Derive domain from linked concepts
   const termDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_term ct
@@ -2478,7 +2471,7 @@ function renderTermOverview(term) {
     WHERE ct.term_id = ? LIMIT 1`, [term.id]);
 
   const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
-  html += '<div class="content-section"><div class="section-label">METADATA</div>';
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([
     { label: 'Domäne',       value: termDomain ? escapeHtml(termDomain.dname) : null },
     { label: 'Freigabe',     value: statusBadge(term.status) },
@@ -2493,7 +2486,7 @@ function renderTermOverview(term) {
   // Linked concepts
   const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [term.id]);
   if (linkedConcepts.length > 0) {
-    html += '<div class="content-section"><div class="section-label">VERKNÜPFTE GESCHÄFTSOBJEKTE</div>';
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_linked_concepts') + '</div>';
     html += '<div class="domain-group-concepts">';
     linkedConcepts.forEach(c => {
       html += `<a class="concept-box" href="#/vocabulary/${c.id}">`;
@@ -2558,6 +2551,30 @@ document.addEventListener('change', function(e) {
 
 document.addEventListener('click', function(e) {
   const target = e.target;
+
+  // Inline edit mode (visual mockup — no persistence)
+  const editBtn = target.closest('.btn-edit');
+  if (editBtn) {
+    e.preventDefault();
+    enterEditMode(editBtn.closest('article'));
+    return;
+  }
+  const saveBtn = target.closest('.btn-save');
+  if (saveBtn) {
+    e.preventDefault();
+    exitEditMode(saveBtn.closest('article'));
+    showToast(tr('edit_toast_saved'));
+    return;
+  }
+  const cancelBtn = target.closest('.btn-cancel');
+  if (cancelBtn) {
+    e.preventDefault();
+    // Ignore in-place edits (mockup) — re-run the current route to re-render
+    // the detail view from DB state.
+    exitEditMode(cancelBtn.closest('article'));
+    handleRoute();
+    return;
+  }
 
   // Language dropdown
   if (target.closest('#lang-btn')) {

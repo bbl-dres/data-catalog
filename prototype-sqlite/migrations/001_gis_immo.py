@@ -18,7 +18,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-DB = Path(__file__).with_name("catalog.db")
+DB = Path(__file__).resolve().parent.parent / "data" / "catalog.db"
 MODEL = Path(r"C:/Users/DavidRasner/Documents/GitHub/property-inventory/docs/DATAMODEL.json")
 
 SYSTEM_ID = "uuid-sys-002"
@@ -70,21 +70,66 @@ def field_id(dataset_id, attr):
     return f"uuid-fld-{ds_suffix}-{attr['sort']:03d}"
 
 
+def _de(text):
+    """Normalize upstream German strings (DATAMODEL.json sometimes uses
+    ae/oe/ue/ss substitutions). Longer substrings are replaced first so
+    compound words like 'Gebaeudehuelle' map correctly."""
+    if not text:
+        return text
+    subs = [
+        ("Gebaeudehuelle", "Gebäudehülle"),
+        ("Gebaeudeh",      "Gebäudeh"),
+        ("Gebaeude",       "Gebäude"),
+        ("gebaeude",       "gebäude"),
+        ("Gebaude",        "Gebäude"),      # typo in source
+        ("gebaude",        "gebäude"),
+        ("Grundstueck",    "Grundstück"),
+        ("grundstueck",    "grundstück"),
+        ("Flaechen",       "Flächen"),
+        ("flaechen",       "flächen"),
+        ("Flaeche",        "Fläche"),
+        ("flaeche",        "fläche"),
+        ("Laenge",         "Länge"),
+        ("laenge",         "länge"),
+        ("Waehrung",       "Währung"),
+        ("waehrung",       "währung"),
+        ("Schluessel",     "Schlüssel"),
+        ("schluessel",     "schlüssel"),
+        ("Foerderung",     "Förderung"),
+        ("Oeffentlich",    "Öffentlich"),
+        ("oeffentlich",    "öffentlich"),
+        ("Gueltig",        "Gültig"),
+        ("gueltig",        "gültig"),
+        ("Groesse",        "Größe"),
+        ("groesse",        "größe"),
+        ("Verfuegbare",    "Verfügbare"),
+        ("Kapazitaet",     "Kapazität"),
+        ("Plaetzen",       "Plätzen"),
+        ("ueber",          "über"),
+        ("Ueber",          "Über"),
+        ("fuer",           "für"),
+        ("Fuer",           "Für"),
+    ]
+    for bad, good in subs:
+        text = text.replace(bad, good)
+    return text
+
+
 def build_field_row(dataset_id, attr):
     key = (attr.get("key") or "").strip().upper()
     is_pk = 1 if key == "PK" else 0
     is_fk = 1 if key == "FK" else 0
     # Nullable: PKs are NOT NULL, everything else nullable
     nullable = 0 if is_pk else 1
+    meta = {k: attr.get(k) or "" for k in ("group", "source", "status", "value_list")}
     description = {
-        "de": attr.get("description_de") or "",
-        "en": attr.get("description_en") or "",
-        "group": attr.get("group") or "",
-        "source": attr.get("source") or "",
-        "status": attr.get("status") or "",
-        "value_list": attr.get("value_list") or "",
+        "de":   _de(attr.get("description_de") or ""),
+        "fr":   "",
+        "it":   "",
+        "en":   _de(attr.get("description_en") or ""),
+        "meta": meta,
     }
-    display_name = attr.get("alias_de") or attr.get("field")
+    display_name = _de(attr.get("alias_de") or attr.get("field"))
     return {
         "id": field_id(dataset_id, attr),
         "dataset_id": dataset_id,
@@ -149,9 +194,9 @@ def main():
 
     # --- 3. Update system description
     system_desc = {
-        "de": ("Geoinformationssystem fuer die Bundesimmobilien (BBL GIS IMMO). "
-               "Enthaelt die flaechen- und punktbezogenen Feature-Layer Gebaeude, "
-               "Grundstueck, Bodenabdeckung sowie in Entwicklung Gebaeudehuelle und Bauprojekt."),
+        "de": ("Geoinformationssystem für die Bundesimmobilien (BBL GIS IMMO). "
+               "Enthält die flächen- und punktbezogenen Feature-Layer Gebäude, "
+               "Grundstück, Bodenabdeckung sowie in Entwicklung Gebäudehülle und Bauprojekt."),
         "en": ("Geographic information system for federal real estate (BBL GIS IMMO). "
                "Provides the feature layers Building, Parcel, and Land Cover; "
                "Building Envelope and Construction Project are in development."),
@@ -167,8 +212,8 @@ def main():
         (
             "BBL_GIS_IMMO",
             "BBL GIS IMMO",
-            "Einheitlicher GIS-Workspace fuer Bundesimmobilien "
-            "(Gebaeude, Grundstueck, Bodenabdeckung, Gebaeudehuelle, Bauprojekt).",
+            "Einheitlicher GIS-Workspace für Bundesimmobilien "
+            "(Gebäude, Grundstück, Bodenabdeckung, Gebäudehülle, Bauprojekt).",
             SCHEMA_ID,
         ),
     )
@@ -276,7 +321,7 @@ def main():
          job_name, description, frequency, recorded_at, recorded_by)
         VALUES ('uuid-lin-004', 'uuid-ds-007', 'uuid-ds-008', 'spatial_overlay',
                 'ArcGIS Enterprise', 'av_landcover_overlay',
-                'Land-Cover-Polygone werden ueber av_egrid/av_egid mit Parzellen und Gebaeuden verknuepft.',
+                'Land-Cover-Polygone werden über av_egrid/av_egid mit Parzellen und Gebäuden verknuepft.',
                 'daily', strftime('%Y-%m-%dT%H:%M:%fZ','now'), 'uuid-user-002')
         """
     )

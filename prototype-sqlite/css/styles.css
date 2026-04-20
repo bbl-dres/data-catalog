@@ -1672,6 +1672,89 @@ a.rel-item:hover .rel-item-label { color: var(--color-text-primary); }
   transition: var(--transition-card);
 }
 .stakeholder-card:hover { border-color: var(--color-border-strong); }
+.stakeholder-empty-warning {
+  display: flex; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: 500;
+}
+
+/* ============================================================
+   Inline edit mode (visual mockup — no persistence)
+   ============================================================ */
+/* Visibility toggle for title-block action buttons */
+.title-block-actions .action-edit { display: none; }
+article.edit-mode .title-block-actions .action-view { display: none; }
+article.edit-mode .title-block-actions .action-edit { display: inline-flex; }
+
+/* Amber banner shown between breadcrumb and title when editing */
+.edit-mode-banner {
+  display: flex; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: 500;
+}
+
+/* Editable-field affordance: soft dashed outline + pointer cursor */
+article.edit-mode [contenteditable="true"] {
+  outline: 1px dashed var(--color-bg-accent-strong);
+  outline-offset: 2px;
+  background: var(--color-bg-page);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  cursor: text;
+}
+article.edit-mode [contenteditable="true"]:focus {
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 1px;
+}
+/* Metadata table rows are tightly stacked — pull the outline inside the
+   cell so adjacent rows don't overlap. */
+article.edit-mode .props-table td[contenteditable="true"] {
+  outline-offset: -1px;
+  padding: var(--space-2) var(--space-3);   /* keep row height steady */
+  background: transparent;
+}
+article.edit-mode .props-table td[contenteditable="true"]:focus {
+  outline-offset: -2px;
+}
+
+/* Toast — bottom-centered, auto-dismiss */
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  display: flex; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: #15803d;              /* green-700 */
+  color: #ffffff;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease, transform 150ms ease;
+  z-index: 2000;
+}
+.toast.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .stakeholder-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
