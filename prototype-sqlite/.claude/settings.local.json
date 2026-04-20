@@ -50,7 +50,14 @@
       "Bash(node -c js/i18n.js)",
       "Bash(node -c js/views/home.js)",
       "Bash(node -c js/views/search.js)",
-      "Bash(node -c js/components.js)"
+      "Bash(node -c js/components.js)",
+      "Bash(node -e ' *)",
+      "Bash(curl -s http://localhost:8765/)",
+      "Bash(curl -s http://localhost:8765/js/app.js)",
+      "WebFetch(domain:dam-api.bfs.admin.ch)",
+      "Bash(command -v pdftotext)",
+      "Bash(pip install *)",
+      "Bash(pdftotext -layout \"C:/Users/DavidRasner/.claude/projects/c--Users-DavidRasner-Documents-GitHub-data-catalog-prototype-sqlite/d6a01fd5-a968-4243-a420-934691f4d155/tool-results/webfetch-1776715631965-j8czio.pdf\" \"/tmp/bfs-roles.txt\")"
     ]
   }
 }

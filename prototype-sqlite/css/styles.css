@@ -530,9 +530,23 @@ body.sidebar-collapsed .sidebar-toggle i {
   margin-bottom: var(--space-5);
   padding: 0 var(--space-2);
   position: relative;
-  /* On narrow viewports (dataset has 7 tabs), scroll horizontally
-     instead of wrapping or overflowing past the bottom border. */
+  /* Keep visible so absolutely-positioned dropdowns (Gruppierung) can
+     extend below the bar. Horizontal scrolling of overflowing tabs is
+     delegated to the inner .tab-bar-scroll container. */
+  overflow: visible;
+}
+.tab-bar-scroll {
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  /* Explicit overflow-y:hidden — when overflow-x is auto, browsers
+     implicitly promote overflow-y from visible to auto (CSS2 rule),
+     which can cause a phantom vertical scrollbar even when nothing
+     overflows vertically. Tab underlines/margins stay visible because
+     .tab-bar itself is overflow:visible. */
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
 }
 .tab {
@@ -1683,6 +1697,18 @@ a.rel-item:hover .rel-item-label { color: var(--color-text-primary); }
   font-size: var(--text-small);
   font-weight: 500;
 }
+.stakeholder-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--color-text-secondary);
+  color: var(--color-text-on-accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-label); font-weight: 600;
+  flex-shrink: 0;
+}
+.stakeholder-name { font-size: var(--text-body); font-weight: 500; color: var(--color-text-primary); }
+.stakeholder-org { font-size: var(--text-small); color: var(--color-text-secondary); }
+.stakeholder-email { font-size: var(--text-small); color: var(--color-text-link); }
 
 /* ============================================================
    Inline edit mode (visual mockup — no persistence)
@@ -1720,15 +1746,12 @@ article.edit-mode [contenteditable="true"]:focus {
   outline-width: 2px;
   outline-offset: 1px;
 }
-/* Metadata table rows are tightly stacked — pull the outline inside the
-   cell so adjacent rows don't overlap. */
-article.edit-mode .props-table td[contenteditable="true"] {
-  outline-offset: -1px;
-  padding: var(--space-2) var(--space-3);   /* keep row height steady */
+/* Metadata values wrap in a span so rich children (badges, links) stay
+   intact. Inline-block lets the dashed outline hug the content, not the
+   full cell width, and keeps adjacent rows from colliding. */
+article.edit-mode .props-table .metavalue[contenteditable="true"] {
+  display: inline-block;
   background: transparent;
-}
-article.edit-mode .props-table td[contenteditable="true"]:focus {
-  outline-offset: -2px;
 }
 
 /* Toast — bottom-centered, auto-dismiss */
@@ -1740,8 +1763,8 @@ article.edit-mode .props-table td[contenteditable="true"]:focus {
   display: flex; align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
-  background: #15803d;              /* green-700 */
-  color: #ffffff;
+  background: var(--color-success);
+  color: var(--color-text-on-success);
   border-radius: var(--radius-md);
   font-size: var(--text-small);
   font-weight: 500;
@@ -1755,18 +1778,6 @@ article.edit-mode .props-table td[contenteditable="true"]:focus {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
-.stakeholder-avatar {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--color-text-secondary);
-  color: var(--color-text-on-accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: var(--text-label); font-weight: 600;
-  flex-shrink: 0;
-}
-.stakeholder-name { font-size: var(--text-body); font-weight: 500; color: var(--color-text-primary); }
-.stakeholder-org { font-size: var(--text-small); color: var(--color-text-secondary); }
-.stakeholder-email { font-size: var(--text-small); color: var(--color-text-link); }
 
 /* Empty state */
 .empty-state {

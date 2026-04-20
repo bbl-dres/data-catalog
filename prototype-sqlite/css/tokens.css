@@ -46,6 +46,9 @@
   --color-warning-bg: #FEF7E8;
   --color-error: #B02A1F;
   --color-error-bg: #FEF0EE;
+  --color-success: #15803D;
+  --color-success-bg: #DCFCE7;
+  --color-text-on-success: #FFFFFF;
 
   /* Colors — Scrollbar / interactive */
   --color-scrollbar-thumb: #E8E8E6;

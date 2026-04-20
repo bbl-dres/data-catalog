@@ -115,8 +115,12 @@ function sortTableByColumn(th) {
 //     label is escaped; value is treated as HTML so badges/links pass
 //     through. Callers wrap plain text with escapeHtml() themselves.
 function renderMetadataTable(rows) {
+  // Wrap each value in an inner span tagged data-editable so rich HTML
+  // children (badges, links) stay intact when edit mode toggles
+  // contenteditable. Flagging the <td> directly would let the user click
+  // inside a badge and corrupt its markup.
   const cells = rows.filter(r => r && r.value != null && r.value !== '')
-    .map(r => `<tr><td>${escapeHtml(r.label)}</td><td data-editable="metavalue">${r.value}</td></tr>`)
+    .map(r => `<tr><td>${escapeHtml(r.label)}</td><td><span class="metavalue" data-editable="metavalue">${r.value}</span></td></tr>`)
     .join('');
   return `<table class="props-table"><tbody>${cells}</tbody></table>`;
 }

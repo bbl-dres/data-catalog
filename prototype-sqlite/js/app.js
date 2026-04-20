@@ -196,15 +196,24 @@ function renderStakeholdersSection(groups) {
 // ── Inline edit mode (visual mockup) ──────────────────────────
 // Renders both the view-mode button set (pencil, message) and the
 // edit-mode button set (save, cancel); CSS picks one via .edit-mode.
-function renderTitleActions() {
+// `opts.readOnly`: when true, skip the edit pencil entirely (used for
+// access-restricted entities where "edit" makes no sense).
+function renderTitleActions(opts) {
+  const readOnly = !!(opts && opts.readOnly);
   const editLabel   = tr('edit_button');
   const saveLabel   = tr('edit_save');
   const cancelLabel = tr('edit_cancel');
+  const editBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-view btn-edit" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>`;
+  const saveBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-edit btn-save" aria-label="${escapeHtml(saveLabel)}" title="${escapeHtml(saveLabel)}"><i data-lucide="check" style="width:18px;height:18px;"></i></button>`;
+  const cancelBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-edit btn-cancel" aria-label="${escapeHtml(cancelLabel)}" title="${escapeHtml(cancelLabel)}"><i data-lucide="x" style="width:18px;height:18px;"></i></button>`;
   return `
-    <button class="header-icon-btn action-view btn-edit" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>
+    ${editBtn}
     <button class="header-icon-btn action-view" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>
-    <button class="header-icon-btn action-edit btn-save" aria-label="${escapeHtml(saveLabel)}" title="${escapeHtml(saveLabel)}"><i data-lucide="check" style="width:18px;height:18px;"></i></button>
-    <button class="header-icon-btn action-edit btn-cancel" aria-label="${escapeHtml(cancelLabel)}" title="${escapeHtml(cancelLabel)}"><i data-lucide="x" style="width:18px;height:18px;"></i></button>`;
+    ${saveBtn}
+    ${cancelBtn}`;
 }
 
 function enterEditMode(article) {
@@ -221,6 +230,17 @@ function enterEditMode(article) {
     el.setAttribute('contenteditable', 'true');
   });
   if (window.lucide) lucide.createIcons({ nodes: [banner] });
+  // Move focus to the title and select it so the first keystroke
+  // replaces the text — matches common wiki/docs editor ergonomics.
+  const firstField = article.querySelector('[data-editable="title"]');
+  if (firstField) {
+    firstField.focus();
+    const range = document.createRange();
+    range.selectNodeContents(firstField);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
 }
 
 function exitEditMode(article) {
@@ -340,7 +360,11 @@ function renderListView(section, listTab, collectionId) {
 
 function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping, extraControls, filterCtx) {
   const qs = filterCtx?.queryStr || '';
-  let html = '<div class="tab-bar" role="tablist">';
+  // Tabs live inside .tab-bar-scroll so horizontal overflow scrolls only
+  // the tabs. The outer .tab-bar stays overflow:visible so absolutely
+  // positioned dropdowns (Gruppierung) can extend below without being
+  // clipped by the scroll context.
+  let html = '<div class="tab-bar" role="tablist"><div class="tab-bar-scroll">';
   const tabs = [
     { id: 'table', label: 'Tabelle' },
     { id: 'diagram', label: 'Diagramm' }
@@ -349,9 +373,8 @@ function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping,
     const isActive = t.id === activeTab;
     html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}${qs}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
   });
-  if (groupingOptions || extraControls || filterCtx) {
-    html += '<div class="tab-bar-spacer"></div>';
-  }
+  html += '</div>';
+  // Trailing actions live outside the scroll container.
   // Order: [extraControls (Attribute toggle)] → [Filter] → [Gruppierung]
   if (extraControls) html += extraControls;
   if (filterCtx) {
@@ -1974,11 +1997,13 @@ function renderSystemOverview(sys, schemas, datasetCount) {
   ]);
   html += '</div>';
 
-  // Verantwortliche — system.owner_id → contact (semantic: Data Owner)
+  // Verantwortliche — system.owner_id → contact. A system's "owner" is
+  // semantically the Anwendungsverantwortliche (Application Owner / PO
+  // at system level), not a business data owner.
   const sysOwnerContacts = sys.owner_name
     ? [{ name: sys.owner_name, organisation: sys.owner_org || '', email: sys.owner_email }]
     : [];
-  html += renderStakeholdersSection([{ role: 'data_owner', contacts: sysOwnerContacts }]);
+  html += renderStakeholdersSection([{ role: 'application_owner', contacts: sysOwnerContacts }]);
 
   return html;
 }
@@ -2068,10 +2093,10 @@ function renderDatasetDetail(datasetId, systemId) {
   html += '<div class="title-block">';
   html += `<div class="title-block-icon"><i data-lucide="${restricted ? 'lock' : 'table-2'}" style="width:24px;height:24px;"></i></div>`;
   html += '<div class="title-block-content">';
-  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}" data-editable="title">${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
+  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}"${restricted ? '' : ' data-editable="title"'}>${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
   html += '</div>';
   html += '<div class="title-block-actions">';
-  html += renderTitleActions();
+  html += renderTitleActions({ readOnly: restricted });
   html += '</div>';
   html += '</div>';
 
@@ -2278,7 +2303,7 @@ function renderDatasetQuality(datasetId) {
 
 function renderDatasetStakeholders(datasetId) {
   const contacts = query(`SELECT c.*, dc.role FROM dataset_contact dc JOIN contact c ON dc.contact_id = c.id WHERE dc.dataset_id = ?`, [datasetId]);
-  const roles = ['data_owner', 'data_steward', 'data_custodian', 'subject_matter_expert'];
+  const roles = ['data_owner', 'data_steward', 'data_custodian', 'application_owner'];
   const byRole = {};
   contacts.forEach(c => { (byRole[c.role] = byRole[c.role] || []).push(c); });
   return renderStakeholdersSection(roles.map(role => ({ role, contacts: byRole[role] || [] })));
@@ -2828,6 +2853,17 @@ document.addEventListener('click', function(e) {
 // Keyboard shortcuts + dropdown navigation
 // ============================================================
 document.addEventListener('keydown', function(e) {
+  // Escape exits edit mode (treated as Cancel — discards changes).
+  if (e.key === 'Escape') {
+    const article = document.querySelector('article.edit-mode');
+    if (article) {
+      e.preventDefault();
+      exitEditMode(article);
+      handleRoute();
+      return;
+    }
+  }
+
   // Search focus: Ctrl+K and /
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
     e.preventDefault();
