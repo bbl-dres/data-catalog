@@ -1868,12 +1868,70 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ============================================================
-   Small-laptop responsive adjustments (≤1280px)
+   Responsive — token overrides cascade through every component
+   that reads --space-*, --text-*, --sidebar-width, --header-height.
+   No per-component rewrites needed; only chrome that the tokens
+   can't reach (search input height, fixed-footer height, the
+   icon-rail sidebar trick) gets a targeted rule.
    ============================================================ */
+
+/* Small laptops & 13" MacBook (≤1440px) — gentle density pass.
+   Body text stays at 14px so line-length math doesn't shift. */
+@media (max-width: 1440px) {
+  :root {
+    --content-padding: 24px;
+    --sidebar-width: 232px;
+    --space-6: 20px;
+    --space-8: 28px;
+    --text-display-lg: 26px;
+    --text-display: 22px;
+  }
+}
+
+/* Tighter laptops / Surface-class (≤1280px) — drop chrome height
+   and headline sizes a second notch. */
 @media (max-width: 1280px) {
+  :root {
+    --content-padding: 20px;
+    --sidebar-width: 216px;
+    --header-height: 52px;
+    --text-display-lg: 24px;
+    --text-display: 20px;
+    --text-heading-l: 17px;
+  }
   /* The duplicate prototype hint in the footer stays visible —
      dropping it from the header frees space for search + actions. */
   .prototype-hint { display: none; }
+  .search-bar-input { height: 34px; padding-left: 34px; }
+  .search-bar-icon { left: var(--space-2); }
+  .app-footer { height: 28px; }
+  /* Footer is fixed and overlays scroll content — clearance follows it. */
+  .main-content { padding-bottom: 48px; }
+}
+
+/* Tablet / iPad landscape (≤1024px) — sidebar auto-collapses to
+   the existing icon rail. The toggle is hidden since expanding
+   would steal too much horizontal space here. */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 64px;
+    --content-padding: 16px;
+  }
+  .sidebar .nav-item > span,
+  .sidebar .nav-count,
+  .sidebar .nav-section-label,
+  .sidebar .nav-recent-item,
+  .sidebar .sidebar-collapsed-hide,
+  .header-logo > span {
+    display: none;
+  }
+  .sidebar .nav-item {
+    justify-content: center;
+    padding-left: 0; padding-right: 0;
+  }
+  .sidebar-toggle { display: none; }
+  .header-search { max-width: 360px; }
+  .search-bar-shortcut { display: none; }
 }
 
 /* Reduced motion */
