@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBL Canvas — Datenarchitektur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <header class="app-header">
+    <a class="header-logo" href="#">
+      <span class="header-logo-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </span>
+      <span>BBL Canvas</span>
+    </a>
+    <div class="header-search">
+      <span class="search-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input type="text" id="search-input" placeholder="Knoten, Spalten, Systeme suchen…" autocomplete="off">
+    </div>
+    <div class="prototype-hint">Prototyp – fiktive Inhalte, nur zur Demonstration</div>
+    <div class="header-actions">
+      <button class="lang-btn" type="button" disabled title="Mehrsprachigkeit folgt">DE</button>
+      <div class="user-avatar" title="Benutzer">DR</div>
+    </div>
+  </header>
+
+  <div class="app-toolbar">
+    <div class="toolbar-left">
+      <div class="seg" id="view-seg" role="tablist" aria-label="Ansicht">
+        <button class="seg-btn is-active" data-view="diagram" role="tab" aria-selected="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><line x1="10" y1="6.5" x2="14" y2="14"/></svg>
+          Diagramm
+        </button>
+        <button class="seg-btn" data-view="table" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+          Tabelle
+        </button>
+        <button class="seg-btn" data-view="api" role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          API
+        </button>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="tb-btn" id="btn-import" title="Excel importieren">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import
+      </button>
+      <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
+      <button class="tb-btn" id="btn-export" title="Excel exportieren">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <span class="toolbar-sep"></span>
+      <button class="tb-btn view-only" id="btn-edit" title="Bearbeiten">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Bearbeiten
+      </button>
+      <button class="tb-btn edit-only" id="btn-cancel" title="Änderungen verwerfen (oder Esc)">
+        Abbrechen
+      </button>
+      <button class="tb-btn tb-btn-primary edit-only" id="btn-save" title="Änderungen speichern">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Speichern
+      </button>
+    </div>
+  </div>
+
+  <main class="app-main" id="app-main">
+    <!-- Diagram view -->
+    <section class="view view-diagram is-active" id="view-diagram" data-view="diagram">
+      <div class="canvas" id="canvas">
+        <div class="canvas-transform" id="canvas-transform">
+          <svg class="edge-layer" id="edge-layer" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 10 4, 0 8" fill="var(--color-edge)"/>
+              </marker>
+              <marker id="arrow-active" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 10 4, 0 8" fill="var(--color-edge-active)"/>
+              </marker>
+            </defs>
+          </svg>
+          <!-- System group bounding boxes — paint behind the node-layer -->
+          <div class="group-layer" id="group-layer"></div>
+          <div class="node-layer" id="node-layer"></div>
+          <!-- Selected edge chrome (handles + label editor) renders here so
+               it paints above the node-layer. Markers are duplicated so
+               cross-SVG references are not needed. -->
+          <svg class="edge-overlay" id="edge-overlay" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow-overlay" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+                <polygon points="0 0, 10 4, 0 8" fill="var(--color-edge-active)"/>
+              </marker>
+            </defs>
+          </svg>
+        </div>
+        <!-- Drag-edge preview (only in edit mode) -->
+        <svg class="edge-preview" id="edge-preview" xmlns="http://www.w3.org/2000/svg"></svg>
+
+        <!-- Floating toolbars -->
+        <div class="ft ft-bottom-right">
+          <button class="ft-btn" id="zoom-out" title="Verkleinern">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <button class="ft-btn" id="zoom-in" title="Vergrössern">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </button>
+          <span class="ft-sep"></span>
+          <button class="ft-btn" id="zoom-fit" title="An Ansicht anpassen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+          <button class="ft-btn" id="zoom-reset" title="Layout zurücksetzen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          </button>
+          <span class="ft-sep"></span>
+          <span class="ft-label" id="zoom-level">100%</span>
+        </div>
+
+        <!-- Entity palette (edit mode only) -->
+        <div class="ft ft-left-center edit-only" id="entity-palette" aria-label="Entitäten hinzufügen">
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="table" title="Tabelle hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>
+          </button>
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="view" title="View hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>
+          </button>
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="api" title="API hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>
+          </button>
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="file" title="Datei hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Table view -->
+    <section class="view view-table" id="view-table" data-view="table">
+      <div class="table-toolbar">
+        <div class="seg seg-tabs" id="table-tabs" role="tablist" aria-label="Entitätstyp">
+          <button class="seg-btn is-active" data-tab="nodes" role="tab" aria-selected="true">Knoten</button>
+          <button class="seg-btn" data-tab="edges" role="tab" aria-selected="false">Beziehungen</button>
+          <button class="seg-btn" data-tab="sets"  role="tab" aria-selected="false">Property Sets</button>
+          <button class="seg-btn" data-tab="cols"  role="tab" aria-selected="false">Attribute</button>
+        </div>
+        <span class="toolbar-sep"></span>
+        <div class="table-filters" id="table-filters" data-tab-only="nodes">
+          <label class="toolbar-label">System</label>
+          <select id="filter-system" class="toolbar-select"></select>
+          <label class="toolbar-label">Typ</label>
+          <select id="filter-type" class="toolbar-select"></select>
+        </div>
+        <input type="text" id="filter-text" class="toolbar-input" placeholder="Filtern…">
+        <span class="table-count" id="table-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="data-table">
+          <thead id="table-head"></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Info panel: slides in from right when a node is selected (diagram + table) -->
+    <aside class="info-panel" id="info-panel" aria-label="Detail-Informationen">
+      <div class="info-panel-content" id="info-panel-content"></div>
+    </aside>
+
+    <!-- API view -->
+    <section class="view view-api" id="view-api" data-view="api">
+      <div class="api-header">
+        <div>
+          <div class="api-title">Catalog Management API</div>
+          <div class="api-base"><span>Base URL:</span> <code>https://mock.bbl.local/v1</code></div>
+          <div class="api-tagline">Verwaltet Metadaten zu Knoten, Property Sets, Attributen und Beziehungen. Liefert <em>keine</em> Daten aus den katalogisierten Systemen.</div>
+        </div>
+        <div class="api-meta">
+          <span class="api-pill">OpenAPI 3.0</span>
+          <button class="tb-btn" id="copy-openapi" title="OpenAPI YAML in Zwischenablage">YAML kopieren</button>
+        </div>
+      </div>
+      <div class="api-list" id="api-list"></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span class="footer-version">BBL Canvas v0.1</span>
+    <span class="footer-hint">Prototyp · fiktive Inhalte</span>
+    <div class="footer-links">
+      <a href="https://github.com/bbl-dres/data-catalog" target="_blank" rel="noopener">Quellcode</a>
+      <a href="../">Andere Prototypen</a>
+    </div>
+  </footer>
+</div>
+
+<script src="js/state.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/table.js"></script>
+<script src="js/api.js"></script>
+<script src="js/panel.js"></script>
+<script src="js/xlsx_io.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

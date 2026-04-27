@@ -1,0 +1,5757 @@
+{
+  "nodes": [
+    {
+      "id": "buildings",
+      "label": "buildings",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "refx",
+      "tags": [
+        "master",
+        "geo"
+      ],
+      "x": 120,
+      "y": 120,
+      "columns": [
+        {
+          "name": "building_id",
+          "type": "uuid",
+          "key": "PK"
+        },
+        {
+          "name": "address",
+          "type": "text",
+          "key": ""
+        },
+        {
+          "name": "canton",
+          "type": "char(2)",
+          "key": ""
+        },
+        {
+          "name": "gross_m2",
+          "type": "numeric",
+          "key": ""
+        },
+        {
+          "name": "year_built",
+          "type": "int",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "rooms",
+      "label": "rooms",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "refx",
+      "tags": [
+        "master"
+      ],
+      "x": 540,
+      "y": 120,
+      "columns": [
+        {
+          "name": "room_id",
+          "type": "uuid",
+          "key": "PK"
+        },
+        {
+          "name": "building_id",
+          "type": "uuid",
+          "key": "FK"
+        },
+        {
+          "name": "floor",
+          "type": "int",
+          "key": ""
+        },
+        {
+          "name": "net_m2",
+          "type": "numeric",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "leases",
+      "label": "leases",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "refx",
+      "tags": [
+        "transactional"
+      ],
+      "x": 120,
+      "y": 380,
+      "columns": [
+        {
+          "name": "lease_id",
+          "type": "uuid",
+          "key": "PK"
+        },
+        {
+          "name": "building_id",
+          "type": "uuid",
+          "key": "FK"
+        },
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "key": "FK"
+        },
+        {
+          "name": "start_date",
+          "type": "date",
+          "key": ""
+        },
+        {
+          "name": "end_date",
+          "type": "date",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "tenants",
+      "label": "tenants",
+      "type": "table",
+      "system": "AFM",
+      "schema": "afm",
+      "tags": [
+        "master"
+      ],
+      "x": 540,
+      "y": 380,
+      "columns": [
+        {
+          "name": "tenant_id",
+          "type": "uuid",
+          "key": "PK"
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "key": ""
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "v_occupancy",
+      "label": "v_occupancy",
+      "type": "view",
+      "system": "AFM",
+      "schema": "afm",
+      "tags": [
+        "derived"
+      ],
+      "x": 960,
+      "y": 120,
+      "columns": [
+        {
+          "name": "building_id",
+          "type": "uuid",
+          "key": ""
+        },
+        {
+          "name": "room_id",
+          "type": "uuid",
+          "key": ""
+        },
+        {
+          "name": "occupied",
+          "type": "boolean",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "tenants_api",
+      "label": "/api/tenants",
+      "type": "api",
+      "system": "AFM",
+      "schema": "",
+      "tags": [
+        "rest",
+        "public"
+      ],
+      "x": 960,
+      "y": 380,
+      "columns": []
+    },
+    {
+      "id": "refx_gebaeude_api",
+      "label": "ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+      "type": "api",
+      "system": "SAP RE-FX",
+      "schema": "",
+      "tags": [
+        "soap",
+        "read-only",
+        "wsdl"
+      ],
+      "x": 1380,
+      "y": 80,
+      "propertySets": [
+        {
+          "name": "ARCH_REL",
+          "label": "Objekte der Architekturverknüpfung"
+        },
+        {
+          "name": "ARCH_RELMS",
+          "label": "Objektteile der Architekturverknüpfung"
+        },
+        {
+          "name": "CHARACT",
+          "label": "Ausstattungsmerkmal eines RE-Objekts"
+        },
+        {
+          "name": "COSETTLE_RULE",
+          "label": "CO Abrechnungsvorschrift: Verteilregeln"
+        },
+        {
+          "name": "CUS_DATA_0MM",
+          "label": "Struktur für Extension-Daten BAPI_RE_BE_GET_LIST"
+        },
+        {
+          "name": "CUS_DATA_7GE",
+          "label": "Struktur für Extension-Daten BAPI_RE_BE_GET_LIST"
+        },
+        {
+          "name": "CUS_DATA_BU1",
+          "label": "Struktur für Extension-Daten – Gebäudeflexibilität"
+        },
+        {
+          "name": "CUS_DATA_BU2",
+          "label": "Struktur für Extension-Daten – Grundstück/Gebäude-Anteile"
+        },
+        {
+          "name": "CUS_DATA_BU3",
+          "label": "Struktur für Extension-Daten – Faktor Gebäudeart Ausland"
+        },
+        {
+          "name": "INFRASTRUCTURE",
+          "label": "Infrastruktur eines RE-Objekts"
+        },
+        {
+          "name": "MEASUREMENT",
+          "label": "Bemessung eines RE-Objekts"
+        },
+        {
+          "name": "OBJ_ASSIGN",
+          "label": "Objektzuordnung"
+        },
+        {
+          "name": "OPTION_RATE",
+          "label": "Optionssätze eines RE-Objekts"
+        },
+        {
+          "name": "PARTNER",
+          "label": "Partner eines RE-Objekts"
+        },
+        {
+          "name": "PROP_TAX",
+          "label": "Grundsteuer Gebäude"
+        },
+        {
+          "name": "RESUBM_DATE",
+          "label": "Wiedervorlagetermin eines RE-Objekts"
+        },
+        {
+          "name": "RESUBM_RULE",
+          "label": "Wiedervorlageregel eines RE-Objekts"
+        },
+        {
+          "name": "RETURN",
+          "label": "Rückgabemeldungen"
+        },
+        {
+          "name": "STATUS",
+          "label": "Status für RE-Objekte"
+        },
+        {
+          "name": "TERM_ORG_ASSIGNMENT",
+          "label": "Org. Zuordnung eines RE-Objekts"
+        },
+        {
+          "name": "BUILDING",
+          "label": "Gebäude"
+        },
+        {
+          "name": "COSETTLE_PARAM",
+          "label": "CO Abrechnungsvorschrift: Parameter"
+        },
+        {
+          "name": "CUS_DATA_0BU",
+          "label": "Kundeneigene Felder zum Gebäude"
+        },
+        {
+          "name": "CUS_DATA_GENERAL",
+          "label": "Kundeneigene Felder VIBDBU"
+        },
+        {
+          "name": "OBJECT_ADDRESS",
+          "label": "Adresse eines RE-Objekts"
+        }
+      ],
+      "columns": [
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "ARCH_OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "ARCH_OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "PK",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "IS_PARTIAL",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "ARCH_REL"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "ARCH_OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "ARCH_OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "MEASUREMENT",
+          "type": "CHAR(4)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "PK",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "VALUE_PART",
+          "type": "QUAN(17)",
+          "key": "",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "VALUE_FULL",
+          "type": "QUAN(17)",
+          "key": "",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "UNIT",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "UNIT_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "ARCH_RELMS"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "FIX_FIT_CHARACT",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "CHARACT_WEIGHT",
+          "type": "DEC(7)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "ABSOLUTE_PRICE",
+          "type": "CURR(15)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "PRICE_PER_AREA",
+          "type": "DEC(19)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "PERCENTAGE_WEIGHT",
+          "type": "DEC(5)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "CURRENCY",
+          "type": "CUKY(5)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "CURRENCY_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "IS_APPLICABLE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "ABSOLUTE_PRICE_BCA",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "ADDITIONAL_VALUE",
+          "type": "DEC(7)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "CHARACT_COUNT",
+          "type": "INT1(3)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "SUPPLEMENTINFO",
+          "type": "CHAR(120)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "DO_NOT_USE_DEFAULTS",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CHARACT"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "DIST_RULE_GROUP",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "DIST_RULE_SEQ_NUMBER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_RECV_OBJ_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_RECV_OBJ_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_RECV_OBJ_TYPE2",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_RECV_OBJ_ID2",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_TYPE",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SOURCE",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "PERCENTAGE",
+          "type": "DEC(5)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "EQUIV_NUMBER",
+          "type": "DEC(10)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "AMOUNT",
+          "type": "CURR(15)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "CURRENCY",
+          "type": "CUKY(5)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "CURRENCY_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "VALID_FROM_YEAR",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "VALID_FROM_PER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "VALID_TO_YEAR",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "VALID_TO_PER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "FIRST_USED_YEAR",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "FIRST_USED_PER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "LAST_USED_YEAR",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "LAST_USED_PER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "METH_TRACING_FACTOR",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "SETTL_STRATEGY",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "AMOUNT_BCA",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "COSETTLE_RULE"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "INTRENO",
+          "type": "CHAR(13)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "VALIDTO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "VALIDFROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "MIMOD",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_0MM"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "INTRENO",
+          "type": "CHAR(13)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "VALIDFROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "BUKRS",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "SWENR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "SGENR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "NUTZU",
+          "type": "CHAR(50)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "BAUAR",
+          "type": "NUMC(2)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "BEMER_04",
+          "type": "CHAR(100)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "BEM04",
+          "type": "CHAR(100)",
+          "key": "",
+          "set": "CUS_DATA_7GE"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "INTRENO",
+          "type": "CHAR(13)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "CODE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "MDATBIS",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "MDATVON",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "TEXT",
+          "type": "CHAR(60)",
+          "key": "",
+          "set": "CUS_DATA_BU1"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "BUKRS",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "SWENR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "SGRNR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "SGENR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "DGULTAB",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "PGEBANT",
+          "type": "DEC(5)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "JEZUORD",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_BU2"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "INTRENO",
+          "type": "CHAR(13)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "MDATBIS",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "MDATVON",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "GFAKT",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "FAKGEAUS",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "CUS_DATA_BU3"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_CHAR",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_DIST",
+          "type": "QUAN(8)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_DIST_UNIT",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_DIST_UNIT_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_TIME",
+          "type": "QUAN(14)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_TIME_UNIT",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_TIME_UNIT_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "INFRA_TIME_BASE",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "INFRASTRUCTURE"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "MEASUREMENT",
+          "type": "CHAR(4)",
+          "key": "PK",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "PK",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALUE_AVAIL",
+          "type": "QUAN(17)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "UNIT",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "UNIT_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALUE_COMPL",
+          "type": "QUAN(17)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALUE_SET_MANUALLY",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "VALUE_IS_HIERARCHICAL",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "TOTAL_MEASUREMENT",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "MEASUREMENT"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "ASSIGNMNT_OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "ASSIGNMNT_OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "IS_MAIN_ASSET",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "FUNC_LOC_GENERATION_TYPE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "INFORMATIONAL_ASSIGNMENT",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "MEAS_VALUE",
+          "type": "QUAN(17)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "UNIT",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "UNIT_ISO",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "RELEVANT_FOR_OPTRATE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "PLANNING_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "EFFECTIVE_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "LOCATION",
+          "type": "CHAR(80)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "ASSIGNMNT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "OBJ_ASSIGN"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "OPTION_METHOD",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "OPTION_RATE",
+          "type": "DEC(9)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "OPTION_RATE_DELETE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "OPTION_RATE"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "PARTNER"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "PARTNER"
+        },
+        {
+          "name": "PARTNER",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "ROLE_TYPE",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "ROLE_SUBTYPE",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "ADDRESS_TYPE",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "PROP_FRACT_SHARE",
+          "type": "DEC(9)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "OWNERSHIP_SHARE",
+          "type": "DEC(6)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "CO_OWNERSHIP_SHARE",
+          "type": "DEC(9)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "CONV_FACTOR_FRACT_SHARE",
+          "type": "NUMC(6)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "OI_ACCOUNT",
+          "type": "CHAR(20)",
+          "key": "",
+          "set": "PARTNER"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DEC(9)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "MEMO_CHANGE_OF_DATA",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "BUILDING_TYPE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "IS_PART_OWNERSHIP",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "IS_RECEIVING_CLAUSE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "BUILDING_TYPE_MEMO",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "CONSTRUCTION_YEAR",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "CONSTRUCTION_YEAR_AFTER_MOD",
+          "type": "DEC(9)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "IS_DISMANTLING_OBLIGATION",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "ADJUSTED_REMAINING_LIFE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "MEMO_ADJUSTED_REMAINING_LIFE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "PROP_TAX"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_RULE_NO",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESPONSIBLE",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_RULE",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_REASON",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_DATE_IS_DONE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_DATE_IS_FIXED",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "RESUBM_DATE_INFO",
+          "type": "CHAR(60)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "CREATION_USER",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "CREATION_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "CREATION_TIME",
+          "type": "TIMS(6)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "LASTCHANGE_USER",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "LASTCHANGE_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "LASTCHANGE_TIME",
+          "type": "TIMS(6)",
+          "key": "",
+          "set": "RESUBM_DATE"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_RULE_NO",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_RULE_PARAM",
+          "type": "NUMC(2)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_RULE",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_REASON",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_RULE_PARAM_TYPE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_PARAM_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_PARAM_NUMC",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "RESUBM_PARAM_BOOL",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "RESUBM_RULE"
+        },
+        {
+          "name": "TYPE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "ID",
+          "type": "CHAR(20)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "NUMBER",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "MESSAGE",
+          "type": "CHAR(220)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "LOG_NO",
+          "type": "CHAR(20)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "LOG_MSG_NO",
+          "type": "NUMC(6)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "MESSAGE_V1",
+          "type": "CHAR(50)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "MESSAGE_V2",
+          "type": "CHAR(50)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "MESSAGE_V3",
+          "type": "CHAR(50)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "MESSAGE_V4",
+          "type": "CHAR(50)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "PARAMETER",
+          "type": "CHAR(32)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "ROW",
+          "type": "INT4(10)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "FIELD",
+          "type": "CHAR(30)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "SYSTEM",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "RETURN"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "STATUS"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "STATUS"
+        },
+        {
+          "name": "STAT_PROF",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "STATUS_TEXT",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "STATUS_DSCR",
+          "type": "CHAR(30)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "LANGU",
+          "type": "LANG(1)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "LANGU_ISO",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "INACTIVE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "IS_SYSTEM_STATUS",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "STATUS"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "TERM_NO",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "TERM_TEXT",
+          "type": "CHAR(60)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "BUS_AREA",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "PROFIT_CTR",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "TAXJURCODE",
+          "type": "CHAR(15)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "FUND",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "FUNDS_CTR",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "CMMT_ITEM",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "FUNC_AREA",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "GRANT_NBR",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "MEASURE",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "BUDGETPERIOD",
+          "type": "CHAR(24)",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "BUILDING_ID",
+          "type": "Ja",
+          "key": "",
+          "set": "TERM_ORG_ASSIGNMENT"
+        },
+        {
+          "name": "COMP_CODE",
+          "type": "CHAR(8)",
+          "key": "PK",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUSINESS_ENTITY",
+          "type": "CHAR(8)",
+          "key": "PK",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "BUILDING"
+        },
+        {
+          "name": "IDENT_OBJECT_TYPE",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "IDENT_KEY",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CREATION_USER",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CREATION_DATE",
+          "type": "TIMS(6)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CREATION_TIME",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "LASTCHANGE_USER",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "LASTCHANGE_DATE",
+          "type": "TIMS(6)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "LASTCHANGE_TIME",
+          "type": "CHAR(60)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_TEXT",
+          "type": "NUMC(2)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_TYPE",
+          "type": "NUMC(2)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_CONDITION",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CONSTRUCTION_YEAR",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MODERNIZATION_YEAR",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "RECONSTRUCTION_YEAR",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BEGIN_CONSTRUCTION_YEAR",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "READY_FOR_OCCUPANCY_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "COMPLETION_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "FINAL_INSPECTION_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "PLANNING_INQUIRY_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "PRIOR_NOTICE_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_PERMIT_APPLIC_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_PERMIT_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "TRANSF_USE_AND_ENCUMBR_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "SALE_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "PLANNED_SALE_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "USAGE_END_DATE",
+          "type": "CHAR(30)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_PERMIT_NOTE",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BUILDING_VALUE",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CURRENT_BUILDING_VALUE",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "AMOUNT_PER_VOLUME",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "HAS_HIST_SITE_PROTECTION",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "ASSESSMENT_VALUE",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "ASSESSMENT_VALUE_YEAR",
+          "type": "DEC(23)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "INSURANCE_VALUE",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "INSURANCE_VALUE_TYPE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "HERITABLE_BLDG_RIGHT_IND",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "REPR_LIST_OF_RENTS",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "LOCATION_CLASS",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MAIN_USAGE_TYPE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "PUBLIC_FUNDING_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "PUBLIC_FUNDING_TO",
+          "type": "DEC(4)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "FLOORS",
+          "type": "DEC(2)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "BASEMENTS",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "TOP_FLOOR",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "ELEVATOR_TO_FLOOR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MUNICIPALITY_KEY",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "HAS_CURR_OCC_PRINC",
+          "type": "UNIT(3)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "UNIT_VOLUME",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "UNIT_VOLUME_ISO",
+          "type": "CUKY(5)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CURRENCY",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "CURRENCY_ISO",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "AUTHORIZATION_GROUP",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "OBJECT_VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "OBJECT_VALID_TO",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "REAL_VALID_FROM",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "REAL_VALID_TO",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "RESPONSIBLE",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "STAT_PROF",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MANDATE_OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MANDATE_MNG_OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "MANDATE_CR_OBJECT_ID",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "USES_REPR_LIST_OF_RENTS",
+          "type": "CHAR(4)",
+          "key": "",
+          "set": "BUILDING"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "SETTLEMENT_PROFILE",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "STRATEGY_SEQUENCE",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "ALLOCATION_STRUCTURE",
+          "type": "CHAR(6)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "SETTLEMENT_COST_ELEMENT",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "SOURCE_STRUCTURE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "ASVAL_DATE",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "PA_TRANSFER_STRUCTURE",
+          "type": "CHAR(2)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "ENTERED_BY",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "CREATED_ON",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "LAST_CHANGED_BY",
+          "type": "CHAR(12)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "CHANGED_ON",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "INCORRECT_UPDATE",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "YEAR_LAST_USED",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "PERIOD_LAST_USED",
+          "type": "NUMC(3)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "TIME_CREATED",
+          "type": "DEC(16)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "SETTLEMENT_RULE_TEXT",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "COSETTLE_PARAM"
+        },
+        {
+          "name": "MANDT",
+          "type": "CLNT(3)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "INTRENO",
+          "type": "CHAR(13)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA00",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA01_1",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA01_2",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA01_3",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA01_4",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA01_5",
+          "type": "CHAR(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA02",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA03",
+          "type": "NUMC(4)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA04",
+          "type": "NUMC(6)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA05",
+          "type": "NUMC(6)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "PMA06",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB00",
+          "type": "NUMC(2)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB01",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB02",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB03",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB04",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB05",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB06",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB07",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB08",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "MOB09",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "SAF00",
+          "type": "NUMC(1)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "SAF01",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "SAF02",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "SAF03",
+          "type": "DATS(8)",
+          "key": "",
+          "set": "CUS_DATA_0BU"
+        },
+        {
+          "name": "ZZOSWENR",
+          "type": "CHAR(8)",
+          "key": "",
+          "set": "CUS_DATA_GENERAL"
+        },
+        {
+          "name": "OBJECT_TYPE",
+          "type": "CHAR(2)",
+          "key": "PK",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "OBJECT_ID",
+          "type": "CHAR(45)",
+          "key": "PK",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "STREET_LNG",
+          "type": "CHAR(60)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "HOUSE_NO",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "CITY",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "POSTL_COD1",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "COUNTRY",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "REGION",
+          "type": "CHAR(3)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "ADDRESS_TEXT",
+          "type": "CHAR(35)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "STR_SUPPL1",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "STR_SUPPL2",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "STR_SUPPL3",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "LOCATION",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "HOUSE_NO2",
+          "type": "CHAR(10)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "DISTRICT",
+          "type": "CHAR(40)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "BUILDING",
+          "type": "CHAR(20)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        },
+        {
+          "name": "TAX_JUR_CODE",
+          "type": "CHAR(15)",
+          "key": "",
+          "set": "OBJECT_ADDRESS"
+        }
+      ]
+    },
+    {
+      "id": "refx_wirtschaftseinheit",
+      "label": "Wirtschaftseinheit",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "fachmodell",
+      "tags": [
+        "fachmodell",
+        "master"
+      ],
+      "x": 100,
+      "y": 1100,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten und Status"
+        },
+        {
+          "name": "STANDORT_EINHEITEN",
+          "label": "Standort und Einheiten"
+        },
+        {
+          "name": "GESCHAEFTSPARTNER",
+          "label": "Geschäftspartnerrollen"
+        },
+        {
+          "name": "ANLAGENZUORDNUNG",
+          "label": "Anlagen / Aufträge / Technische Plätze"
+        },
+        {
+          "name": "ARCHITEKTUR",
+          "label": "Architektonisches Objekt"
+        },
+        {
+          "name": "WIEDERVORLAGE",
+          "label": "Wiedervorlage"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Buchungskreis (Zuordnung)",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Bezeichnung der WE",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig ab",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig bis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Systemstatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Anwenderstatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Standort",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Währung",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Flächeneinheit",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Raumeinheit",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Längeneinheit",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Mietrecht",
+          "type": "",
+          "key": "",
+          "set": "STANDORT_EINHEITEN"
+        },
+        {
+          "name": "Geschäftspartnerrolle",
+          "type": "",
+          "key": "",
+          "set": "GESCHAEFTSPARTNER"
+        },
+        {
+          "name": "Beginn Beziehung",
+          "type": "",
+          "key": "",
+          "set": "GESCHAEFTSPARTNER"
+        },
+        {
+          "name": "Ende Beziehung",
+          "type": "",
+          "key": "",
+          "set": "GESCHAEFTSPARTNER"
+        },
+        {
+          "name": "Adressart",
+          "type": "",
+          "key": "",
+          "set": "GESCHAEFTSPARTNER"
+        },
+        {
+          "name": "Rollenart",
+          "type": "",
+          "key": "",
+          "set": "GESCHAEFTSPARTNER"
+        },
+        {
+          "name": "Anlagen/Aufträge/Technische Plätze",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung ab",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung bis",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Bezeichnung architektonisches Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikation arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Nummer arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikationsnummer der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Beschreibung der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlagegrund",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz vorhanden?",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz zur Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Bezeichnung des Wiedervorlagegrundes",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Übersichtsliste erstellter Dokus",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        }
+      ]
+    },
+    {
+      "id": "refx_grundstueck",
+      "label": "Grundstück",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "fachmodell",
+      "tags": [
+        "fachmodell",
+        "master"
+      ],
+      "x": 500,
+      "y": 1100,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten und Gültigkeit"
+        },
+        {
+          "name": "NUTZUNG",
+          "label": "Nutzungsart"
+        },
+        {
+          "name": "LAGE",
+          "label": "Lage und Verwaltung"
+        },
+        {
+          "name": "BEMESSUNG",
+          "label": "Bemessungen"
+        },
+        {
+          "name": "ORGANISATION",
+          "label": "Organisatorische Zuordnung"
+        },
+        {
+          "name": "EIGENTUM",
+          "label": "Eigentumsverhältnisse"
+        },
+        {
+          "name": "ANLAGENZUORDNUNG",
+          "label": "Anlagen / Aufträge / Technische Plätze"
+        },
+        {
+          "name": "ARCHITEKTUR",
+          "label": "Architektonisches Objekt"
+        },
+        {
+          "name": "WIEDERVORLAGE",
+          "label": "Wiedervorlage"
+        },
+        {
+          "name": "SCHUTZ_KENNZEICHEN",
+          "label": "Schutz und Abgleich"
+        },
+        {
+          "name": "KLASSIFIKATION",
+          "label": "Klassifikation"
+        },
+        {
+          "name": "SPEEDIKON_LEGACY",
+          "label": "Speedikon (Legacy-Felder)"
+        },
+        {
+          "name": "GEBAEUDE_BEZUG",
+          "label": "Bezug zum Gebäude"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Buchungskreis (Zuordnung)",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit (Zuordnung)",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Grundstück",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Bezeichnung des GR",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig ab",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig bis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig ab übergeordnetes Objekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig bis übergeordnetes Objekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "System- und Anwenderstatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Überwiegende Nutzungsart",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Überwiegende Nutzungsart_1669",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Kennzeichen Erbbaurecht",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Gemeindeschlüssel",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Gemeinde",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Kreis",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Bundesland",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Flurstück",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Lagesysteme",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Bemessungsart",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessungsart Bezeichnung Mittel",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Verfügbare Bemessungsgrösse",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessungseinheit",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessung gültig ab",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessung gültig bis",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Summenbemessung",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Gültig",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Geschäftsbereich",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Profitcenter",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Geschäftspartnerrolle",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Beginn Beziehung",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Ende Beziehung",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Adressart",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Rollenart",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Bruchteilseigentum",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Umrechnungsfaktor für Bruchteilseigentum",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Miteigentumsanteil",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Eigentumsanteil",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Anlagen/Aufträge/Technische Plätze",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung ab",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung bis",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Bezeichnung architektonisches Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikation arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Nummer arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikationsnummer der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Beschreibung der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlagegrund",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz vorhanden?",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz zur Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Bezeichnung des Wiedervorlagegrundes",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Übersichtsliste erstellter Dokus",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Koordinaten",
+          "type": "",
+          "key": "",
+          "set": "LAGE"
+        },
+        {
+          "name": "Abgleich RE/FI-AA",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Baurecht",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Historische Gartenanlage",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Eigentumsart",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Teilportfolio",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Mietermodell",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Im Speedikon",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum von",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum bis",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Gebäude",
+          "type": "",
+          "key": "",
+          "set": "GEBAEUDE_BEZUG"
+        },
+        {
+          "name": "Bezeichnung Gebäude",
+          "type": "",
+          "key": "",
+          "set": "GEBAEUDE_BEZUG"
+        },
+        {
+          "name": "Gebäudeanteil %",
+          "type": "",
+          "key": "",
+          "set": "GEBAEUDE_BEZUG"
+        }
+      ]
+    },
+    {
+      "id": "refx_gebaeude",
+      "label": "Gebäude",
+      "type": "table",
+      "system": "SAP RE-FX",
+      "schema": "fachmodell",
+      "tags": [
+        "fachmodell",
+        "master"
+      ],
+      "x": 900,
+      "y": 1100,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten und Gültigkeit"
+        },
+        {
+          "name": "BAULICHES",
+          "label": "Bauliche Eckdaten"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse / Verwaltung"
+        },
+        {
+          "name": "MERKMALE",
+          "label": "Ausstattungsmerkmale"
+        },
+        {
+          "name": "BEMESSUNG",
+          "label": "Bemessungen"
+        },
+        {
+          "name": "ORGANISATION",
+          "label": "Organisatorische Zuordnung"
+        },
+        {
+          "name": "EIGENTUM",
+          "label": "Eigentumsverhältnisse"
+        },
+        {
+          "name": "ANLAGENZUORDNUNG",
+          "label": "Anlagen / Aufträge / Technische Plätze"
+        },
+        {
+          "name": "ARCHITEKTUR",
+          "label": "Architektonisches Objekt"
+        },
+        {
+          "name": "WIEDERVORLAGE",
+          "label": "Wiedervorlage"
+        },
+        {
+          "name": "SCHUTZ_KENNZEICHEN",
+          "label": "Schutz und Kennzeichen"
+        },
+        {
+          "name": "KLASSIFIKATION",
+          "label": "Klassifikation"
+        },
+        {
+          "name": "SPEEDIKON_LEGACY",
+          "label": "Speedikon (Legacy-Felder)"
+        },
+        {
+          "name": "BEWERTUNG",
+          "label": "Bewertung und Strategie"
+        },
+        {
+          "name": "GRUNDSTUECK_BEZUG",
+          "label": "Bezug zum Grundstück"
+        },
+        {
+          "name": "GEFAEHRDUNG_SICHERHEIT",
+          "label": "Gefährdung und Sicherheit"
+        },
+        {
+          "name": "AUSSTATTUNG_INFRASTRUKTUR",
+          "label": "Ausstattung und Infrastruktur"
+        },
+        {
+          "name": "MOEBLIERUNG",
+          "label": "Möblierung und Inventar"
+        },
+        {
+          "name": "SCHADSTOFFE",
+          "label": "Schadstoffe"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Buchungskreis (Zuordnung)",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit (Zuordnung)",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gebäude",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Bezeichnung des GE",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EDID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig ab",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig bis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig ab übergeordnetes Objekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gültig bis übergeordnetes Objekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "System- und Anwenderstatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Baujahr",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Umbaujahr",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Gemeindeschlüssel",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Gemeinde",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Kreis",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Bundesland",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Anzahl Geschosse",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Untergeschosse",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Textfeld zu Anzahl",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Erbbaurecht",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Denkmalschutz",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Raumschuldnerprinzip",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Detail",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Bezeichnung Merkmalsklasse",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Bezeichnung Merkmalsgruppe",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Merkmal",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Zusatzwert",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Zutreffend",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Geb. zugeordnet",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Bezeichnung Merkmal",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Gültig ab_1702",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Gültig bis_1703",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Anzahl Merkmal",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Zusatzinfo",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Merkmalsklasse",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Merkmalsgruppe",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Notiz",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Obsolet",
+          "type": "",
+          "key": "",
+          "set": "MERKMALE"
+        },
+        {
+          "name": "Bemessungsart",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessungsart Bezeichnung Mittel",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Verfügbare Bemessungsgrösse",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessungseinheit",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessung gültig ab",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Bemessung gültig bis",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Summenbemessung",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Gültig",
+          "type": "",
+          "key": "",
+          "set": "BEMESSUNG"
+        },
+        {
+          "name": "Geschäftsbereich",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Profitcenter",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Geschäftspartnerrolle",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Beginn Beziehung",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Ende Beziehung",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Adressart",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Rollenart",
+          "type": "",
+          "key": "",
+          "set": "ORGANISATION"
+        },
+        {
+          "name": "Bruchteilseigentum",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Umrechnungsfaktor für Bruchteilseigentum",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Miteigentumsanteil",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Eigentumsanteil",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Anlagen/Aufträge/Technische Plätze",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung ab",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Zuordnung bis",
+          "type": "",
+          "key": "",
+          "set": "ANLAGENZUORDNUNG"
+        },
+        {
+          "name": "Bezeichnung architektonisches Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikation arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Nummer arch. Objekt",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Gültig ab_1735",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Gültig bis_1736",
+          "type": "",
+          "key": "",
+          "set": "ARCHITEKTUR"
+        },
+        {
+          "name": "Identifikationsnummer der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Beschreibung der Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Wiedervorlagegrund",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz vorhanden?",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Notiz zur Wiedervorlageregel",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Bezeichnung des Wiedervorlagegrundes",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "Übersichtsliste erstellter Dokus",
+          "type": "",
+          "key": "",
+          "set": "WIEDERVORLAGE"
+        },
+        {
+          "name": "ESTAT",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Archivwürdiges Objekt",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Sensitives Objekt",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Historische Ausstattung",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Abgl. RE/FI-AA",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_KENNZEICHEN"
+        },
+        {
+          "name": "Region Geb.Fakt.",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Eigentumsart",
+          "type": "",
+          "key": "",
+          "set": "EIGENTUM"
+        },
+        {
+          "name": "Gebäudeart Stufe 1",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Gebäudeart Stufe 2",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Zusatztext 1",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Zusatztext 2",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Zusatztext 3",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Zusatztext 4",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Zusatztext 5",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Gebäudekategorie",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Perimeter",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Schätzdatum",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Teilportfolio",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Mietermodell",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Im Speedikon",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum von",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum bis",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Erweiterbarkeit",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Anzahl m2",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum von_1769",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Datum bis_1770",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Text",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Stand",
+          "type": "",
+          "key": "",
+          "set": "SPEEDIKON_LEGACY"
+        },
+        {
+          "name": "Marktfähigkeit",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "AP Makro HNF 2.9",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "AP Ist",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "MJ/m2 EBF",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Objektstrategie",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Zustand",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "UH-Kategorie",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Spezialfall",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Wirtschaftlichkeit",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Kunde",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Bewirtschaftung",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Geb.spezifikation",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Energie/Nachh.",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Lage",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Betrieb",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Total gewichtet 2010",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Total gewichtet 2024",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Bemerkung",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Bezeichnung Grundstück",
+          "type": "",
+          "key": "",
+          "set": "GRUNDSTUECK_BEZUG"
+        },
+        {
+          "name": "Gebäudeanteil %",
+          "type": "",
+          "key": "",
+          "set": "GRUNDSTUECK_BEZUG"
+        },
+        {
+          "name": "Gültig ab_1794",
+          "type": "",
+          "key": "",
+          "set": "GRUNDSTUECK_BEZUG"
+        },
+        {
+          "name": "Gefährdungszone",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Massn. erforderlich",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Massnahmen",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Massnahmen umgesetzt",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Umsetzungsart",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Repräsentationsfunktion",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Datum Sicherheitskonzept",
+          "type": "",
+          "key": "",
+          "set": "GEFAEHRDUNG_SICHERHEIT"
+        },
+        {
+          "name": "Lift vorhanden",
+          "type": "",
+          "key": "",
+          "set": "AUSSTATTUNG_INFRASTRUKTUR"
+        },
+        {
+          "name": "Anz. Parkplatz gedeckt",
+          "type": "",
+          "key": "",
+          "set": "AUSSTATTUNG_INFRASTRUKTUR"
+        },
+        {
+          "name": "Anz. Parkplatz ungedeckt",
+          "type": "",
+          "key": "",
+          "set": "AUSSTATTUNG_INFRASTRUKTUR"
+        },
+        {
+          "name": "Möblierung durch",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Residenz Möbl. repräsentativ",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Residenz/DW Möbl. priv. Teil",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Kanzlei Möblierung",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Letztes Möblierungskonzept",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Teilersatz-/Ergänzungsmöblierung vom",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "BAK-Leihgabe",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Residenz Standardliste Nr.",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Inventarliste Möblierung",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Datum Photodokumentation",
+          "type": "",
+          "key": "",
+          "set": "MOEBLIERUNG"
+        },
+        {
+          "name": "Schadstoffbericht",
+          "type": "",
+          "key": "",
+          "set": "SCHADSTOFFE"
+        },
+        {
+          "name": "Asbest letzte Meldung",
+          "type": "",
+          "key": "",
+          "set": "SCHADSTOFFE"
+        },
+        {
+          "name": "Asbest letzter Bericht",
+          "type": "",
+          "key": "",
+          "set": "SCHADSTOFFE"
+        },
+        {
+          "name": "Asbest letzte Massnahme",
+          "type": "",
+          "key": "",
+          "set": "SCHADSTOFFE"
+        }
+      ]
+    },
+    {
+      "id": "gis_grundstueck",
+      "label": "GIS Grundstück",
+      "type": "table",
+      "system": "BBL GIS",
+      "schema": "gis",
+      "tags": [
+        "geo",
+        "fachmodell"
+      ],
+      "x": 100,
+      "y": 1900,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "KLASSIFIKATION",
+          "label": "Klassifikation"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse"
+        },
+        {
+          "name": "GEO_KOORDINATEN",
+          "label": "Geo-Koordinaten"
+        },
+        {
+          "name": "BEWERTUNG",
+          "label": "Wert"
+        },
+        {
+          "name": "SCHUTZ_GEFAHREN",
+          "label": "Schutz und Gefahren"
+        },
+        {
+          "name": "FLAECHEN",
+          "label": "Flächen"
+        },
+        {
+          "name": "GEMEINDE_KATASTER",
+          "label": "Gemeinde / Kataster"
+        },
+        {
+          "name": "BAUZONE",
+          "label": "Bauzone"
+        },
+        {
+          "name": "TECHNISCH",
+          "label": "Technische Felder"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Status",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Buchungskreis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Teilobjekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Teilportfolio",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Mietmodell",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Eigentum Art",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Land",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Region",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Ort",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Strasse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Hausnummer",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Adresse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "WGS84 Latitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "WGS84 Longitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 E",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 N",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "EGM Höhe",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "Status_1210",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Anschaffungswert",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Buchwert",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Historischer Garten",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "Gebäudegrundfläche GGF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche GSF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Umgebungsfläche UF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Bearbeitete Umgebungsfläche BUF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Unbearbeitete Umgebungsfläche UUF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Versiegelte Fläche",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grünfläche",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Gemeindename",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_KATASTER"
+        },
+        {
+          "name": "Gemeindennummer",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_KATASTER"
+        },
+        {
+          "name": "Grundstücksnummer",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_KATASTER"
+        },
+        {
+          "name": "Bauzone Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "BAUZONE"
+        },
+        {
+          "name": "Bauzone Nutzung",
+          "type": "",
+          "key": "",
+          "set": "BAUZONE"
+        },
+        {
+          "name": "Naturgefahren",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "FID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "FID Quelle",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "OBJECTID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "ETL Zeitstempel",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        }
+      ]
+    },
+    {
+      "id": "gis_gebaeude",
+      "label": "GIS Gebäude",
+      "type": "table",
+      "system": "BBL GIS",
+      "schema": "gis",
+      "tags": [
+        "geo",
+        "fachmodell"
+      ],
+      "x": 500,
+      "y": 1900,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse"
+        },
+        {
+          "name": "GEO_KOORDINATEN",
+          "label": "Geo-Koordinaten"
+        },
+        {
+          "name": "KLASSIFIKATION",
+          "label": "Klassifikation"
+        },
+        {
+          "name": "ZEITPUNKTE",
+          "label": "Zeitpunkte"
+        },
+        {
+          "name": "BEWERTUNG",
+          "label": "Wert"
+        },
+        {
+          "name": "VERANTWORTLICHE",
+          "label": "Verantwortliche"
+        },
+        {
+          "name": "REINIGUNG",
+          "label": "Reinigung"
+        },
+        {
+          "name": "GEMEINDE_BAUZONE",
+          "label": "Gemeinde und Bauzone"
+        },
+        {
+          "name": "SCHUTZ_GEFAHREN",
+          "label": "Schutz und Gefahren"
+        },
+        {
+          "name": "TECHNISCH",
+          "label": "Technische Felder"
+        },
+        {
+          "name": "ARBEITSPLAETZE",
+          "label": "Arbeitsplätze"
+        },
+        {
+          "name": "FLAECHEN",
+          "label": "Flächen"
+        },
+        {
+          "name": "VOLUMEN",
+          "label": "Volumen"
+        },
+        {
+          "name": "GESCHOSSE",
+          "label": "Geschosse"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Status",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Buchungskreis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Teilobjekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Land",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Region",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Ort",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Strasse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Hausnummer",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Adresse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "WGS84 Latitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "WGS84 Longitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 E",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 N",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "EGM Höhe",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "Eigentum Art",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Objektstrategie",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Mietmodell",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Baujahr",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Verkaufsjahr",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Teilportfolio",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Teilportfoliogruppe",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Anschaffungswert",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Buchwert",
+          "type": "",
+          "key": "",
+          "set": "BEWERTUNG"
+        },
+        {
+          "name": "Gebäudeart 1",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Gebäudeart 2",
+          "type": "",
+          "key": "",
+          "set": "KLASSIFIKATION"
+        },
+        {
+          "name": "Objektverantwortlich",
+          "type": "",
+          "key": "",
+          "set": "VERANTWORTLICHE"
+        },
+        {
+          "name": "Portfoliomanager",
+          "type": "",
+          "key": "",
+          "set": "VERANTWORTLICHE"
+        },
+        {
+          "name": "Reinigung Gruppe",
+          "type": "",
+          "key": "",
+          "set": "REINIGUNG"
+        },
+        {
+          "name": "Reinigung Fensterfläche",
+          "type": "",
+          "key": "",
+          "set": "REINIGUNG"
+        },
+        {
+          "name": "Reinigung Glasfläche",
+          "type": "",
+          "key": "",
+          "set": "REINIGUNG"
+        },
+        {
+          "name": "EGID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gemeindename",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_BAUZONE"
+        },
+        {
+          "name": "Gemeindennummer",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_BAUZONE"
+        },
+        {
+          "name": "Bauzone Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_BAUZONE"
+        },
+        {
+          "name": "Bauzone Nutzung",
+          "type": "",
+          "key": "",
+          "set": "GEMEINDE_BAUZONE"
+        },
+        {
+          "name": "Naturgefahren",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "Historische Ausstattung",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "Archivwürdigkeit",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "BABS KGS Kategorie",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "BABS KGS Nummer",
+          "type": "",
+          "key": "",
+          "set": "SCHUTZ_GEFAHREN"
+        },
+        {
+          "name": "OBJECTID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "Anzahl AP IST",
+          "type": "",
+          "key": "",
+          "set": "ARBEITSPLAETZE"
+        },
+        {
+          "name": "Anzahl AP Reserve",
+          "type": "",
+          "key": "",
+          "set": "ARBEITSPLAETZE"
+        },
+        {
+          "name": "Anzahl AP Soll",
+          "type": "",
+          "key": "",
+          "set": "ARBEITSPLAETZE"
+        },
+        {
+          "name": "Geschossfläche GF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "GF Oberirdisch",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "GF Unterirdisch",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Geschossfläche Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Netto-Geschossfläche NGF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Nutzfläche NF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Hauptnutzfläche HNF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Nebennutzfläche NNF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Funktionsfläche FF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Verkehrsfläche VF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Vermietbare Fläche VMF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Energiebezugsfläche EBF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Gebäudevolumen GV",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "GV Oberirdisch",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "GV Unterirdisch",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "Gebäudevolumen Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "Anzahl Geschosse",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Geschosse Oberirdisch",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Geschosse Unterirdisch",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Geschosse Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Gebäudegrundfläche GGF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche GSF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Umgebungsfläche UF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "ETL Zeitstempel",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        }
+      ]
+    },
+    {
+      "id": "gis_gebaeudehuelle",
+      "label": "GIS Gebäudehülle",
+      "type": "table",
+      "system": "BBL GIS",
+      "schema": "gis",
+      "tags": [
+        "geo",
+        "fachmodell"
+      ],
+      "x": 900,
+      "y": 1900,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse"
+        },
+        {
+          "name": "GEO_KOORDINATEN",
+          "label": "Geo-Koordinaten"
+        },
+        {
+          "name": "FLAECHEN",
+          "label": "Flächen"
+        },
+        {
+          "name": "VOLUMEN",
+          "label": "Volumen"
+        },
+        {
+          "name": "GESCHOSSE",
+          "label": "Geschosse"
+        },
+        {
+          "name": "TECHNISCH",
+          "label": "Technische Felder"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Status",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Land",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Region",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Ort",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Strasse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Hausnummer",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Adresse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "WGS84 Latitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "WGS84 Longitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 E",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 N",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "EGM Höhe",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "Geschossfläche GF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Geschossfläche Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Energiebezugsfläche EBF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Gebäudevolumen GV",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "Gebäudevolumen Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "VOLUMEN"
+        },
+        {
+          "name": "Anzahl Geschosse",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Geschosse Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "GESCHOSSE"
+        },
+        {
+          "name": "Gebäudegrundfläche GGF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche GSF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Umgebungsfläche UF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Grundstücksfläche Genauigkeit",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Fläche Dach DAF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "Fläche Aussenwand AWF",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN"
+        },
+        {
+          "name": "FID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "FID Quelle",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "OBJECTID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "ETL Zeitstempel",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        }
+      ]
+    },
+    {
+      "id": "gis_bauprojekt",
+      "label": "GIS Bauprojekt",
+      "type": "table",
+      "system": "BBL GIS",
+      "schema": "gis",
+      "tags": [
+        "geo",
+        "fachmodell"
+      ],
+      "x": 1300,
+      "y": 1900,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse"
+        },
+        {
+          "name": "GEO_KOORDINATEN",
+          "label": "Geo-Koordinaten"
+        },
+        {
+          "name": "BAUWERK",
+          "label": "Bauwerk"
+        },
+        {
+          "name": "PROJEKT",
+          "label": "Projekt-Eckdaten"
+        },
+        {
+          "name": "FREITEXT",
+          "label": "Freitext"
+        },
+        {
+          "name": "TECHNISCH",
+          "label": "Technische Felder"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Status",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Bezeichnung",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Buchungskreis",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Wirtschaftseinheit",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Land",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Region",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Ort",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Strasse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Hausnummer",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Adresse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "WGS84 Latitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "WGS84 Longitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 E",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 N",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "EGM Höhe",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "Typ der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Art der Bauwerke",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Typ der Bauwerke",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Projektart",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Projektkosten total",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Datum Baueingabe",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Datum Baubewilligung",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Datum Baubeginn",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Datum Bauende",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Voraussichtliche Baudauer",
+          "type": "",
+          "key": "",
+          "set": "PROJEKT"
+        },
+        {
+          "name": "Freitextfeld Projekt 1",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Freitextfeld Projekt 2",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "ETL Zeitstempel",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        }
+      ]
+    },
+    {
+      "id": "gis_bodenabdeckung",
+      "label": "GIS Bodenabdeckung",
+      "type": "table",
+      "system": "BBL GIS",
+      "schema": "gis",
+      "tags": [
+        "geo",
+        "fachmodell"
+      ],
+      "x": 1700,
+      "y": 1900,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "GEO_KOORDINATEN",
+          "label": "Geo-Koordinaten"
+        },
+        {
+          "name": "TECHNISCH",
+          "label": "Technische Felder"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Status",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Typ",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "WGS84 Latitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "WGS84 Longitude",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 E",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "LV95 N",
+          "type": "",
+          "key": "",
+          "set": "GEO_KOORDINATEN"
+        },
+        {
+          "name": "FID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "FID Quelle",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "OBJECTID",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        },
+        {
+          "name": "ETL Zeitstempel",
+          "type": "",
+          "key": "",
+          "set": "TECHNISCH"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "buildings",
+      "to": "rooms",
+      "label": "has"
+    },
+    {
+      "id": "e2",
+      "from": "buildings",
+      "to": "leases",
+      "label": "owns"
+    },
+    {
+      "id": "e3",
+      "from": "leases",
+      "to": "tenants",
+      "label": "tenant_of"
+    },
+    {
+      "id": "e4",
+      "from": "rooms",
+      "to": "v_occupancy",
+      "label": "feeds"
+    },
+    {
+      "id": "e5",
+      "from": "tenants",
+      "to": "tenants_api",
+      "label": "exposed_as"
+    },
+    {
+      "id": "e_refx_geb_we",
+      "from": "refx_gebaeude",
+      "to": "refx_wirtschaftseinheit",
+      "label": "gehört zu"
+    },
+    {
+      "id": "e_refx_grd_we",
+      "from": "refx_grundstueck",
+      "to": "refx_wirtschaftseinheit",
+      "label": "gehört zu"
+    },
+    {
+      "id": "e_refx_geb_grd",
+      "from": "refx_gebaeude",
+      "to": "refx_grundstueck",
+      "label": "liegt auf"
+    },
+    {
+      "id": "e_refx_api_geb",
+      "from": "refx_gebaeude_api",
+      "to": "refx_gebaeude",
+      "label": "liest"
+    },
+    {
+      "id": "e_gis_geb_grd",
+      "from": "gis_gebaeude",
+      "to": "gis_grundstueck",
+      "label": "liegt auf"
+    },
+    {
+      "id": "e_gis_huelle_geb",
+      "from": "gis_gebaeudehuelle",
+      "to": "gis_gebaeude",
+      "label": "umhüllt"
+    },
+    {
+      "id": "e_gis_proj_grd",
+      "from": "gis_bauprojekt",
+      "to": "gis_grundstueck",
+      "label": "auf"
+    },
+    {
+      "id": "e_gis_boden_grd",
+      "from": "gis_bodenabdeckung",
+      "to": "gis_grundstueck",
+      "label": "auf"
+    },
+    {
+      "id": "e_gis_geb_refx_geb",
+      "from": "gis_gebaeude",
+      "to": "refx_gebaeude",
+      "label": "EGID"
+    },
+    {
+      "id": "e_gis_grd_refx_grd",
+      "from": "gis_grundstueck",
+      "to": "refx_grundstueck",
+      "label": "EGRID"
+    }
+  ]
+}
