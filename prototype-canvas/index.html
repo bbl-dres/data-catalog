@@ -52,15 +52,71 @@
       </div>
     </div>
     <div class="toolbar-right">
+      <div class="vis-menu">
+        <button class="tb-btn" id="btn-visibility" title="Sichtbarkeit" aria-haspopup="true" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Sichtbarkeit
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="vis-dropdown" id="vis-dropdown" hidden role="menu">
+          <div class="vis-section-label">Knotentypen</div>
+          <label class="vis-row"><input type="checkbox" data-vis="type-table"  checked> Tabellen</label>
+          <label class="vis-row"><input type="checkbox" data-vis="type-view"   checked> Views</label>
+          <label class="vis-row"><input type="checkbox" data-vis="type-api"    checked> APIs</label>
+          <label class="vis-row"><input type="checkbox" data-vis="type-file"   checked> Dateien</label>
+          <label class="vis-row"><input type="checkbox" data-vis="type-codelist" checked> Wertelisten</label>
+          <div class="vis-divider"></div>
+          <div class="vis-section-label">Inhalt</div>
+          <label class="vis-row"><input type="checkbox" data-vis="attributes"  checked> Attribute</label>
+          <label class="vis-row"><input type="checkbox" data-vis="sets"        checked> Property Sets</label>
+          <div class="vis-divider"></div>
+          <div class="vis-section-label">Layout</div>
+          <label class="vis-row"><input type="checkbox" data-vis="edges"       checked> Beziehungen</label>
+          <label class="vis-row"><input type="checkbox" data-vis="systems"     checked> Systemrahmen</label>
+        </div>
+      </div>
       <button class="tb-btn" id="btn-import" title="Excel importieren">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
         Import
       </button>
       <input type="file" id="file-input" accept=".xlsx,.xls" hidden>
-      <button class="tb-btn" id="btn-export" title="Excel exportieren">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Export
-      </button>
+      <div class="export-menu">
+        <button class="tb-btn" id="btn-export" title="Exportieren" aria-haspopup="true" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="export-dropdown" id="export-dropdown" hidden role="menu" aria-labelledby="btn-export">
+          <button class="export-row" data-export="xlsx" role="menuitem">
+            <span class="export-row-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+            </span>
+            <span class="export-row-text">
+              <span class="export-row-label">Excel</span>
+              <span class="export-row-sub">.xlsx · alle Entitäten als Sheets</span>
+            </span>
+          </button>
+          <button class="export-row" data-export="json" role="menuitem">
+            <span class="export-row-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/></svg>
+            </span>
+            <span class="export-row-text">
+              <span class="export-row-label">JSON</span>
+              <span class="export-row-sub">canvas.json · Quelldatei für git</span>
+            </span>
+          </button>
+          <div class="export-divider"></div>
+          <button class="export-row" data-export="pdf" role="menuitem" disabled>
+            <span class="export-row-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </span>
+            <span class="export-row-text">
+              <span class="export-row-label">PDF</span>
+              <span class="export-row-sub">Druck-Layouts · folgt</span>
+            </span>
+          </button>
+        </div>
+      </div>
       <span class="toolbar-sep"></span>
       <button class="tb-btn view-only" id="btn-edit" title="Bearbeiten">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
@@ -132,14 +188,14 @@
           <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="table" title="Tabelle hinzufügen">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>
           </button>
-          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="view" title="View hinzufügen">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>
-          </button>
           <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="api" title="API hinzufügen">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>
           </button>
           <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="file" title="Datei hinzufügen">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>
+          </button>
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="codelist" title="Werteliste hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>
           </button>
         </div>
 
@@ -150,17 +206,19 @@
     <section class="view view-table" id="view-table" data-view="table">
       <div class="table-toolbar">
         <div class="seg seg-tabs" id="table-tabs" role="tablist" aria-label="Entitätstyp">
-          <button class="seg-btn is-active" data-tab="nodes" role="tab" aria-selected="true">Knoten</button>
-          <button class="seg-btn" data-tab="edges" role="tab" aria-selected="false">Beziehungen</button>
-          <button class="seg-btn" data-tab="sets"  role="tab" aria-selected="false">Property Sets</button>
-          <button class="seg-btn" data-tab="cols"  role="tab" aria-selected="false">Attribute</button>
+          <button class="seg-btn is-active" data-tab="systems"   role="tab" aria-selected="true">Systeme</button>
+          <button class="seg-btn"           data-tab="tables"    role="tab" aria-selected="false">Tabellen</button>
+          <button class="seg-btn"           data-tab="apis"      role="tab" aria-selected="false">APIs</button>
+          <button class="seg-btn"           data-tab="files"     role="tab" aria-selected="false">Dateien</button>
+          <button class="seg-btn"           data-tab="codelists" role="tab" aria-selected="false">Wertelisten</button>
+          <button class="seg-btn"           data-tab="sets"      role="tab" aria-selected="false">Property Sets</button>
+          <button class="seg-btn"           data-tab="cols"      role="tab" aria-selected="false">Attribute</button>
+          <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false">Beziehungen</button>
         </div>
         <span class="toolbar-sep"></span>
-        <div class="table-filters" id="table-filters" data-tab-only="nodes">
+        <div class="table-filters" id="table-filters">
           <label class="toolbar-label">System</label>
           <select id="filter-system" class="toolbar-select"></select>
-          <label class="toolbar-label">Typ</label>
-          <select id="filter-type" class="toolbar-select"></select>
         </div>
         <input type="text" id="filter-text" class="toolbar-input" placeholder="Filtern…">
         <span class="table-count" id="table-count"></span>
@@ -211,6 +269,7 @@
 <script src="js/table.js"></script>
 <script src="js/api.js"></script>
 <script src="js/panel.js"></script>
+<script src="js/visibility.js"></script>
 <script src="js/xlsx_io.js"></script>
 <script src="js/app.js"></script>
 </body>

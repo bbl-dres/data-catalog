@@ -268,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.Table.init();
     window.CanvasApp.Api.init();
     window.CanvasApp.Panel.init();
+    window.CanvasApp.Visibility.init();
     window.CanvasApp.XlsxIO.init();
     window.CanvasApp.App.init();
 });

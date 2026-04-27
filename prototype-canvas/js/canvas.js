@@ -67,7 +67,8 @@ window.CanvasApp.Canvas = (function () {
         table: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>',
         view:  '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>',
         api:   '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>',
-        file:  '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>'
+        file:  '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>',
+        codelist: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
     };
 
     function init(opts) {
@@ -151,10 +152,16 @@ window.CanvasApp.Canvas = (function () {
         Object.keys(byS).forEach(function (sysName) {
             var members = byS[sysName];
             var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            var anyVisible = false;
             members.forEach(function (n) {
                 var el = nodeLayer.querySelector('[data-node-id="' + cssEscape(n.id) + '"]');
-                var w = el ? el.offsetWidth : 220;
-                var h = el ? el.offsetHeight : 80;
+                // offsetParent is null when the element (or any ancestor) is
+                // display:none — that's our cue to skip hidden members so
+                // the frame snaps to the visible nodes only.
+                if (!el || el.offsetParent === null) return;
+                anyVisible = true;
+                var w = el.offsetWidth;
+                var h = el.offsetHeight;
                 var x = n.x || 0;
                 var y = n.y || 0;
                 if (x < minX) minX = x;
@@ -162,7 +169,7 @@ window.CanvasApp.Canvas = (function () {
                 if (x + w > maxX) maxX = x + w;
                 if (y + h > maxY) maxY = y + h;
             });
-            if (minX === Infinity) return;
+            if (!anyVisible || minX === Infinity) return;
 
             var box = document.createElement('div');
             box.className = 'group-box';
@@ -199,11 +206,13 @@ window.CanvasApp.Canvas = (function () {
 
         var icon = TYPE_ICONS[node.type] || TYPE_ICONS.table;
         var headerLabel = node.label || node.id;
+        var totalAttrs = (node.columns || []).length;
 
         var html =
             '<div class="node-header">' +
                 '<span class="node-type-icon" data-edit="type" title="Typ wechseln">' + icon + '</span>' +
                 '<span class="node-title" data-edit="label" contenteditable="false" spellcheck="false">' + escapeHtml(headerLabel) + '</span>' +
+                '<span class="node-set-count" title="Anzahl Attribute">' + totalAttrs + '</span>' +
                 '<span class="node-system" data-edit="system" contenteditable="false" spellcheck="false" data-placeholder="System">' + escapeHtml(node.system || '') + '</span>' +
                 '<button class="node-delete edit-only" data-action="delete-node" title="Knoten löschen" tabindex="-1">' +
                     '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +

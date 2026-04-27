@@ -31,7 +31,10 @@ window.CanvasApp.Editor = (function () {
     var retargetEnd = null;       // 'from' | 'to'
     var retargetPreviewPath = null;
 
-    var TYPE_CYCLE = ['table', 'view', 'api', 'file'];
+    // Views are kept supported in the data model so existing nodes still
+    // render — but they're skipped in the cycle (and the entity palette)
+    // so users don't create new ones.
+    var TYPE_CYCLE = ['table', 'api', 'file', 'codelist'];
     var KEY_CYCLE = ['', 'PK', 'FK', 'UK'];
 
     function init() {
@@ -352,12 +355,21 @@ window.CanvasApp.Editor = (function () {
     // ---- Add entity from palette ---------------------------------------
 
     var TYPE_DEFAULTS = {
-        table: { label: 'neue_tabelle', columns: [{ name: 'id', type: 'uuid', key: 'PK' }] },
-        view:  { label: 'neue_view',    columns: [] },
-        api:   { label: '/api/neu',     columns: [] },
-        file:  { label: 'neue_datei',   columns: [] }
+        table:    { label: 'neue_tabelle',  columns: [{ name: 'id', type: 'uuid', key: 'PK' }] },
+        view:     { label: 'neue_view',     columns: [] },
+        api:      { label: '/api/neu',      columns: [] },
+        file:     { label: 'neue_datei',    columns: [] },
+        codelist: { label: 'neue_werteliste', columns: [
+            { name: 'code',        type: 'CHAR(10)', key: 'PK' },
+            { name: 'label',       type: 'TEXT',     key: ''   },
+            { name: 'description', type: 'TEXT',     key: ''   },
+            { name: 'sort_order',  type: 'INT',      key: ''   },
+            { name: 'deprecated',  type: 'BOOLEAN',  key: ''   }
+        ] }
     };
-    var TYPE_LABELS = { table: 'Tabelle', view: 'View', api: 'API', file: 'Datei' };
+    var TYPE_LABELS = {
+        table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste'
+    };
 
     var DRAG_MIME = 'application/x-canvas-type';
 

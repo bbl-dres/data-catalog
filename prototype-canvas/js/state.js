@@ -15,6 +15,9 @@ window.CanvasApp = window.CanvasApp || {};
 window.CanvasApp.State = (function () {
 
     var STORAGE_KEY = 'canvas.state.v1';
+    // Old separate layout key from a previous iteration — drop on load if
+    // present so it can't leak stale positions.
+    var LEGACY_LAYOUT_KEY = 'canvas.layout.v1';
     var SEED_PATH = 'data/canvas.json';
 
     var state = {
@@ -42,6 +45,11 @@ window.CanvasApp.State = (function () {
     // ---- Loading -------------------------------------------------------
 
     function load() {
+        // Migrate from the old two-key layout (if a previous version of the
+        // app stored positions separately). The current main state owns
+        // positions outright.
+        try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
+
         var stored = readStorage();
         if (stored && Array.isArray(stored.nodes)) {
             state.nodes = stored.nodes;
@@ -72,8 +80,8 @@ window.CanvasApp.State = (function () {
     }
 
     function persist() {
-        // Draft mode: don't touch localStorage. Live state is the working copy
-        // and `snapshot` is the rollback point until commitDraft() runs.
+        // Draft mode: don't touch the main state key. Live state is the
+        // working copy; snapshot is the rollback point until commitDraft().
         if (state.snapshot) return;
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -81,6 +89,38 @@ window.CanvasApp.State = (function () {
                 edges: state.edges
             }));
         } catch (e) { /* quota — ignore */ }
+    }
+
+    /**
+     * Persist position changes into the main state JSON without committing
+     * any draft data edits. Reads the existing main-state, copies live x/y
+     * into it, writes back.
+     *
+     * Skips nodes that don't exist in main state yet (e.g. a node added in
+     * the current draft and immediately dragged) — those will be persisted
+     * normally on commitDraft().
+     */
+    function persistPositions() {
+        if (!state.snapshot) {
+            // Not in draft — a normal persist() writes everything anyway.
+            persist();
+            return;
+        }
+        var existing = readStorage();
+        if (!existing || !Array.isArray(existing.nodes)) return;
+        var posByNode = {};
+        state.nodes.forEach(function (n) {
+            posByNode[n.id] = { x: n.x || 0, y: n.y || 0 };
+        });
+        existing.nodes.forEach(function (n) {
+            if (posByNode[n.id]) {
+                n.x = posByNode[n.id].x;
+                n.y = posByNode[n.id].y;
+            }
+        });
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        } catch (e) { /* quota */ }
     }
 
     function reset() {
@@ -141,8 +181,22 @@ window.CanvasApp.State = (function () {
 
     function hasUnsavedChanges() {
         if (!state.snapshot) return false;
-        return JSON.stringify({ n: state.nodes, e: state.edges }) !==
-               JSON.stringify({ n: state.snapshot.nodes, e: state.snapshot.edges });
+        // x/y are auto-persisted via the layout key — they aren't part of
+        // the draft. Strip them before comparing so a pure drag doesn't
+        // count as an unsaved change (and therefore doesn't trip the
+        // "discard?" prompt on Cancel).
+        var stripPos = function (n) {
+            var c = Object.assign({}, n);
+            delete c.x; delete c.y;
+            return c;
+        };
+        return JSON.stringify({
+            n: state.nodes.map(stripPos),
+            e: state.edges
+        }) !== JSON.stringify({
+            n: state.snapshot.nodes.map(stripPos),
+            e: state.snapshot.edges
+        });
     }
 
     function deepClone(obj) {
@@ -249,7 +303,19 @@ window.CanvasApp.State = (function () {
         if (!n) return;
         n.x = x;
         n.y = y;
-        persist();
+        // Mirror into the snapshot so cancel-from-edit doesn't revert layout.
+        if (state.snapshot) {
+            for (var i = 0; i < state.snapshot.nodes.length; i++) {
+                if (state.snapshot.nodes[i].id === id) {
+                    state.snapshot.nodes[i].x = x;
+                    state.snapshot.nodes[i].y = y;
+                    break;
+                }
+            }
+        }
+        // Layout is a UI preference: always-persist into the main state JSON,
+        // but only the position fields — draft edits stay drafts.
+        persistPositions();
         // Note: emit kept lightweight — caller (canvas drag) updates DOM directly.
     }
 

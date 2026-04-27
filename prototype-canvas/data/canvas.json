@@ -1,119 +1,6 @@
 {
   "nodes": [
     {
-      "id": "buildings",
-      "label": "buildings",
-      "type": "table",
-      "system": "SAP RE-FX",
-      "schema": "refx",
-      "tags": [
-        "master",
-        "geo"
-      ],
-      "x": 120,
-      "y": 120,
-      "columns": [
-        {
-          "name": "building_id",
-          "type": "uuid",
-          "key": "PK"
-        },
-        {
-          "name": "address",
-          "type": "text",
-          "key": ""
-        },
-        {
-          "name": "canton",
-          "type": "char(2)",
-          "key": ""
-        },
-        {
-          "name": "gross_m2",
-          "type": "numeric",
-          "key": ""
-        },
-        {
-          "name": "year_built",
-          "type": "int",
-          "key": ""
-        }
-      ]
-    },
-    {
-      "id": "rooms",
-      "label": "rooms",
-      "type": "table",
-      "system": "SAP RE-FX",
-      "schema": "refx",
-      "tags": [
-        "master"
-      ],
-      "x": 540,
-      "y": 120,
-      "columns": [
-        {
-          "name": "room_id",
-          "type": "uuid",
-          "key": "PK"
-        },
-        {
-          "name": "building_id",
-          "type": "uuid",
-          "key": "FK"
-        },
-        {
-          "name": "floor",
-          "type": "int",
-          "key": ""
-        },
-        {
-          "name": "net_m2",
-          "type": "numeric",
-          "key": ""
-        }
-      ]
-    },
-    {
-      "id": "leases",
-      "label": "leases",
-      "type": "table",
-      "system": "SAP RE-FX",
-      "schema": "refx",
-      "tags": [
-        "transactional"
-      ],
-      "x": 120,
-      "y": 380,
-      "columns": [
-        {
-          "name": "lease_id",
-          "type": "uuid",
-          "key": "PK"
-        },
-        {
-          "name": "building_id",
-          "type": "uuid",
-          "key": "FK"
-        },
-        {
-          "name": "tenant_id",
-          "type": "uuid",
-          "key": "FK"
-        },
-        {
-          "name": "start_date",
-          "type": "date",
-          "key": ""
-        },
-        {
-          "name": "end_date",
-          "type": "date",
-          "key": ""
-        }
-      ]
-    },
-    {
       "id": "tenants",
       "label": "tenants",
       "type": "table",
@@ -122,8 +9,8 @@
       "tags": [
         "master"
       ],
-      "x": 540,
-      "y": 380,
+      "x": 604.3710661708724,
+      "y": 742.6236727625809,
       "columns": [
         {
           "name": "tenant_id",
@@ -140,50 +27,8 @@
           "type": "text",
           "key": ""
         }
-      ]
-    },
-    {
-      "id": "v_occupancy",
-      "label": "v_occupancy",
-      "type": "view",
-      "system": "AFM",
-      "schema": "afm",
-      "tags": [
-        "derived"
       ],
-      "x": 960,
-      "y": 120,
-      "columns": [
-        {
-          "name": "building_id",
-          "type": "uuid",
-          "key": ""
-        },
-        {
-          "name": "room_id",
-          "type": "uuid",
-          "key": ""
-        },
-        {
-          "name": "occupied",
-          "type": "boolean",
-          "key": ""
-        }
-      ]
-    },
-    {
-      "id": "tenants_api",
-      "label": "/api/tenants",
-      "type": "api",
-      "system": "AFM",
-      "schema": "",
-      "tags": [
-        "rest",
-        "public"
-      ],
-      "x": 960,
-      "y": 380,
-      "columns": []
+      "propertySets": []
     },
     {
       "id": "refx_gebaeude_api",
@@ -196,8 +41,8 @@
         "read-only",
         "wsdl"
       ],
-      "x": 1380,
-      "y": 80,
+      "x": 1411.661353795761,
+      "y": 2339.9657520579144,
       "propertySets": [
         {
           "name": "ARCH_REL",
@@ -2563,16 +2408,16 @@
         "fachmodell",
         "master"
       ],
-      "x": 100,
-      "y": 1100,
+      "x": -302.70041854082433,
+      "y": 1094.9975103286854,
       "propertySets": [
         {
           "name": "STAMMDATEN",
           "label": "Stammdaten und Status"
         },
         {
-          "name": "STANDORT_EINHEITEN",
-          "label": "Standort und Einheiten"
+          "name": "STAMMEINHEITEN",
+          "label": "Standort, Währung und Mengeneinheiten"
         },
         {
           "name": "GESCHAEFTSPARTNER",
@@ -2595,7 +2440,7 @@
         {
           "name": "ID",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
@@ -2644,37 +2489,37 @@
           "name": "Standort",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Währung",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Flächeneinheit",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Raumeinheit",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Längeneinheit",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Mietrecht",
           "type": "",
           "key": "",
-          "set": "STANDORT_EINHEITEN"
+          "set": "STAMMEINHEITEN"
         },
         {
           "name": "Geschäftspartnerrolle",
@@ -2802,8 +2647,8 @@
         "fachmodell",
         "master"
       ],
-      "x": 500,
-      "y": 1100,
+      "x": 222.36182324204037,
+      "y": 1290.0946075099544,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -2814,8 +2659,8 @@
           "label": "Nutzungsart"
         },
         {
-          "name": "LAGE",
-          "label": "Lage und Verwaltung"
+          "name": "LAGE_ADRESSE",
+          "label": "Lage und Adresse"
         },
         {
           "name": "BEMESSUNG",
@@ -2854,7 +2699,7 @@
           "label": "Speedikon (Legacy-Felder)"
         },
         {
-          "name": "GEBAEUDE_BEZUG",
+          "name": "BEZUG_GEBAEUDE",
           "label": "Bezug zum Gebäude"
         }
       ],
@@ -2862,7 +2707,7 @@
         {
           "name": "ID",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
@@ -2874,7 +2719,7 @@
         {
           "name": "Wirtschaftseinheit (Zuordnung)",
           "type": "",
-          "key": "",
+          "key": "PK",
           "set": "STAMMDATEN"
         },
         {
@@ -2892,7 +2737,7 @@
         {
           "name": "EGRID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "STAMMDATEN"
         },
         {
@@ -2947,37 +2792,37 @@
           "name": "Gemeindeschlüssel",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Gemeinde",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Kreis",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Bundesland",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Flurstück",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Lagesysteme",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Bemessungsart",
@@ -3181,7 +3026,7 @@
           "name": "Koordinaten",
           "type": "",
           "key": "",
-          "set": "LAGE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Abgleich RE/FI-AA",
@@ -3199,7 +3044,7 @@
           "name": "Historische Gartenanlage",
           "type": "",
           "key": "",
-          "set": "EIGENTUM"
+          "set": "SCHUTZ_KENNZEICHEN"
         },
         {
           "name": "Eigentumsart",
@@ -3241,19 +3086,19 @@
           "name": "Gebäude",
           "type": "",
           "key": "",
-          "set": "GEBAEUDE_BEZUG"
+          "set": "BEZUG_GEBAEUDE"
         },
         {
           "name": "Bezeichnung Gebäude",
           "type": "",
           "key": "",
-          "set": "GEBAEUDE_BEZUG"
+          "set": "BEZUG_GEBAEUDE"
         },
         {
           "name": "Gebäudeanteil %",
           "type": "",
           "key": "",
-          "set": "GEBAEUDE_BEZUG"
+          "set": "BEZUG_GEBAEUDE"
         }
       ]
     },
@@ -3267,20 +3112,20 @@
         "fachmodell",
         "master"
       ],
-      "x": 900,
-      "y": 1100,
+      "x": 847.4738584511969,
+      "y": 1195.047303754977,
       "propertySets": [
         {
           "name": "STAMMDATEN",
           "label": "Stammdaten und Gültigkeit"
         },
         {
-          "name": "BAULICHES",
+          "name": "BAUDATEN",
           "label": "Bauliche Eckdaten"
         },
         {
-          "name": "ADRESSE",
-          "label": "Adresse / Verwaltung"
+          "name": "LAGE_ADRESSE",
+          "label": "Lage und Adresse"
         },
         {
           "name": "MERKMALE",
@@ -3327,7 +3172,7 @@
           "label": "Bewertung und Strategie"
         },
         {
-          "name": "GRUNDSTUECK_BEZUG",
+          "name": "BEZUG_GRUNDSTUECK",
           "label": "Bezug zum Grundstück"
         },
         {
@@ -3349,13 +3194,13 @@
       ],
       "columns": [
         {
-          "name": "Buchungskreis (Zuordnung)",
+          "name": "ID",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
-          "name": "ID",
+          "name": "Buchungskreis (Zuordnung)",
           "type": "",
           "key": "PK",
           "set": "STAMMDATEN"
@@ -3363,7 +3208,7 @@
         {
           "name": "Wirtschaftseinheit (Zuordnung)",
           "type": "",
-          "key": "",
+          "key": "PK",
           "set": "STAMMDATEN"
         },
         {
@@ -3381,7 +3226,7 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "STAMMDATEN"
         },
         {
@@ -3424,79 +3269,79 @@
           "name": "Baujahr",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Umbaujahr",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Gemeindeschlüssel",
           "type": "",
           "key": "",
-          "set": "ADRESSE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Gemeinde",
           "type": "",
           "key": "",
-          "set": "ADRESSE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Kreis",
           "type": "",
           "key": "",
-          "set": "ADRESSE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Bundesland",
           "type": "",
           "key": "",
-          "set": "ADRESSE"
+          "set": "LAGE_ADRESSE"
         },
         {
           "name": "Anzahl Geschosse",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Untergeschosse",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Textfeld zu Anzahl",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Erbbaurecht",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "BAUDATEN"
         },
         {
           "name": "Denkmalschutz",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "SCHUTZ_KENNZEICHEN"
         },
         {
           "name": "Raumschuldnerprinzip",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "ORGANISATION"
         },
         {
           "name": "Detail",
           "type": "",
           "key": "",
-          "set": "BAULICHES"
+          "set": "ORGANISATION"
         },
         {
           "name": "Bezeichnung Merkmalsklasse",
@@ -3802,7 +3647,7 @@
           "name": "ESTAT",
           "type": "",
           "key": "",
-          "set": "SCHUTZ_KENNZEICHEN"
+          "set": "STAMMDATEN"
         },
         {
           "name": "Archivwürdiges Objekt",
@@ -4084,19 +3929,19 @@
           "name": "Bezeichnung Grundstück",
           "type": "",
           "key": "",
-          "set": "GRUNDSTUECK_BEZUG"
+          "set": "BEZUG_GRUNDSTUECK"
         },
         {
           "name": "Gebäudeanteil %",
           "type": "",
           "key": "",
-          "set": "GRUNDSTUECK_BEZUG"
+          "set": "BEZUG_GRUNDSTUECK"
         },
         {
           "name": "Gültig ab_1794",
           "type": "",
           "key": "",
-          "set": "GRUNDSTUECK_BEZUG"
+          "set": "BEZUG_GRUNDSTUECK"
         },
         {
           "name": "Gefährdungszone",
@@ -4254,8 +4099,8 @@
         "geo",
         "fachmodell"
       ],
-      "x": 100,
-      "y": 1900,
+      "x": 3236.4224117980284,
+      "y": 2922.5335661128124,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -4275,7 +4120,7 @@
         },
         {
           "name": "BEWERTUNG",
-          "label": "Wert"
+          "label": "Bewertung"
         },
         {
           "name": "SCHUTZ_GEFAHREN",
@@ -4287,11 +4132,7 @@
         },
         {
           "name": "GEMEINDE_KATASTER",
-          "label": "Gemeinde / Kataster"
-        },
-        {
-          "name": "BAUZONE",
-          "label": "Bauzone"
+          "label": "Gemeinde, Kataster, Bauzone"
         },
         {
           "name": "TECHNISCH",
@@ -4320,19 +4161,19 @@
         {
           "name": "Buchungskreis",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Teilobjekt",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -4429,12 +4270,12 @@
           "name": "Status_1210",
           "type": "",
           "key": "",
-          "set": "STAMMDATEN"
+          "set": "TECHNISCH"
         },
         {
           "name": "EGRID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "STAMMDATEN"
         },
         {
@@ -4512,7 +4353,7 @@
         {
           "name": "Gemeindennummer",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "GEMEINDE_KATASTER"
         },
         {
@@ -4525,13 +4366,13 @@
           "name": "Bauzone Bezeichnung",
           "type": "",
           "key": "",
-          "set": "BAUZONE"
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Bauzone Nutzung",
           "type": "",
           "key": "",
-          "set": "BAUZONE"
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Naturgefahren",
@@ -4542,7 +4383,7 @@
         {
           "name": "FID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -4554,7 +4395,7 @@
         {
           "name": "OBJECTID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -4575,8 +4416,8 @@
         "geo",
         "fachmodell"
       ],
-      "x": 500,
-      "y": 1900,
+      "x": 3719.102103490937,
+      "y": 2642.8697161902164,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -4600,7 +4441,7 @@
         },
         {
           "name": "BEWERTUNG",
-          "label": "Wert"
+          "label": "Bewertung"
         },
         {
           "name": "VERANTWORTLICHE",
@@ -4611,8 +4452,8 @@
           "label": "Reinigung"
         },
         {
-          "name": "GEMEINDE_BAUZONE",
-          "label": "Gemeinde und Bauzone"
+          "name": "GEMEINDE_KATASTER",
+          "label": "Gemeinde, Kataster, Bauzone"
         },
         {
           "name": "SCHUTZ_GEFAHREN",
@@ -4655,19 +4496,19 @@
         {
           "name": "Buchungskreis",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Teilobjekt",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -4817,13 +4658,13 @@
         {
           "name": "Objektverantwortlich",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "VERANTWORTLICHE"
         },
         {
           "name": "Portfoliomanager",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "VERANTWORTLICHE"
         },
         {
@@ -4847,38 +4688,38 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "PK",
+          "key": "UK",
           "set": "STAMMDATEN"
         },
         {
           "name": "EGRID",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Gemeindename",
           "type": "",
           "key": "",
-          "set": "GEMEINDE_BAUZONE"
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Gemeindennummer",
           "type": "",
-          "key": "",
-          "set": "GEMEINDE_BAUZONE"
+          "key": "FK",
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Bauzone Bezeichnung",
           "type": "",
           "key": "",
-          "set": "GEMEINDE_BAUZONE"
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Bauzone Nutzung",
           "type": "",
           "key": "",
-          "set": "GEMEINDE_BAUZONE"
+          "set": "GEMEINDE_KATASTER"
         },
         {
           "name": "Naturgefahren",
@@ -4907,13 +4748,13 @@
         {
           "name": "BABS KGS Nummer",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "SCHUTZ_GEFAHREN"
         },
         {
           "name": "OBJECTID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -5096,8 +4937,8 @@
         "geo",
         "fachmodell"
       ],
-      "x": 900,
-      "y": 1900,
+      "x": 2483.7560127755237,
+      "y": 2969.7090945381883,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -5144,13 +4985,13 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "EGRID",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -5306,7 +5147,7 @@
         {
           "name": "FID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -5318,7 +5159,7 @@
         {
           "name": "OBJECTID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -5339,8 +5180,8 @@
         "geo",
         "fachmodell"
       ],
-      "x": 1300,
-      "y": 1900,
+      "x": 2843.0246228651163,
+      "y": 4005.718440130129,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -5393,13 +5234,13 @@
         {
           "name": "Buchungskreis",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -5564,8 +5405,8 @@
         "geo",
         "fachmodell"
       ],
-      "x": 1700,
-      "y": 1900,
+      "x": 2834.7675579931793,
+      "y": 3099.2006737636216,
       "propertySets": [
         {
           "name": "STAMMDATEN",
@@ -5596,13 +5437,13 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "EGRID",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -5638,7 +5479,7 @@
         {
           "name": "FID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -5650,7 +5491,7 @@
         {
           "name": "OBJECTID",
           "type": "",
-          "key": "",
+          "key": "UK",
           "set": "TECHNISCH"
         },
         {
@@ -5660,98 +5501,1268 @@
           "set": "TECHNISCH"
         }
       ]
+    },
+    {
+      "id": "gwr_gebaeude",
+      "label": "GWR_Gebäude",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -2070.3694144104848,
+      "y": 2953.7190982875827,
+      "propertySets": [
+        {
+          "name": "BAULICHES",
+          "label": "Bauliche Eckdaten"
+        },
+        {
+          "name": "HEIZUNG",
+          "label": "Heizung"
+        },
+        {
+          "name": "WARMWASSER",
+          "label": "Warmwasser"
+        },
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "KOORDINATEN",
+          "label": "Koordinaten und Lage"
+        },
+        {
+          "name": "FLAECHEN_VOLUMEN",
+          "label": "Flächen und Volumen"
+        },
+        {
+          "name": "FREITEXT",
+          "label": "Freitext"
+        },
+        {
+          "name": "LOKALCODES",
+          "label": "Lokalcodes"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Abbruchjahr des Gebäudes",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Aktualisierungsdatum Heizung 1",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Aktualisierungsdatum Heizung 2",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Aktualisierungsdatum Warmwasser 1",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Aktualisierungsdatum Warmwasser 2",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Amtliche Gebäudenummer",
+          "type": "",
+          "key": "UK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Anzahl Geschosse",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Anzahl separate Wohnräume",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Baujahr des Gebäudes",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Baumonat des Gebäudes",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Bauperiode",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "BFS Gemeindenummer",
+          "type": "",
+          "key": "FK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "E-Gebäudekoordinate",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "EGID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EGRID",
+          "type": "",
+          "key": "UK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Energie-Wärmequelle Heizung 1",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Energie-Wärmequelle Heizung 2",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Energie-Wärmequelle Warmwasser 1",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Energie-Wärmequelle Warmwasser 2",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Energiebezugsfläche",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN_VOLUMEN"
+        },
+        {
+          "name": "Freitextfeld Gebäude 1",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Freitextfeld Gebäude 2",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Gebäudefläche",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN_VOLUMEN"
+        },
+        {
+          "name": "Gebäudekategorie",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Gebäudeklasse",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Gebäudestatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Gebäudevolumen",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN_VOLUMEN"
+        },
+        {
+          "name": "Gebäudevolumen - Norm",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN_VOLUMEN"
+        },
+        {
+          "name": "Grundbuchkreisnummer",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Grundsütcksnummer",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Informationsquelle Heizung 1",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Informationsquelle Heizung 2",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Informationsquelle Warmwasser 1",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Informationsquelle Warmwasser 2",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Informationsquelle zum Gebäudevolumen",
+          "type": "",
+          "key": "",
+          "set": "FLAECHEN_VOLUMEN"
+        },
+        {
+          "name": "Koordinatenherkunft",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "Lokalcodes 1",
+          "type": "",
+          "key": "",
+          "set": "LOKALCODES"
+        },
+        {
+          "name": "Lokalcodes 2",
+          "type": "",
+          "key": "",
+          "set": "LOKALCODES"
+        },
+        {
+          "name": "Lokalcodes 3",
+          "type": "",
+          "key": "",
+          "set": "LOKALCODES"
+        },
+        {
+          "name": "Lokalcodes 4",
+          "type": "",
+          "key": "",
+          "set": "LOKALCODES"
+        },
+        {
+          "name": "N-Gebäudekoordinate",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "Name des Gebäudes",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Quartier",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "Wärmeerzeuger Heizung 1",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Wärmeerzeuger Heizung 2",
+          "type": "",
+          "key": "",
+          "set": "HEIZUNG"
+        },
+        {
+          "name": "Wärmeerzeuger Warmasser 1",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Wärmeerzeuger Warmwasser 2",
+          "type": "",
+          "key": "",
+          "set": "WARMWASSER"
+        },
+        {
+          "name": "Zivilschutzraum",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        }
+      ]
+    },
+    {
+      "id": "gwr_wohnung",
+      "label": "Wohnung",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -890.6535774302338,
+      "y": 3119.732158372608,
+      "propertySets": [
+        {
+          "name": "BAULICHES",
+          "label": "Bauliche Eckdaten"
+        },
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "NUTZUNG",
+          "label": "Nutzung"
+        },
+        {
+          "name": "AUSSTATTUNG",
+          "label": "Ausstattung"
+        },
+        {
+          "name": "BELEGUNG",
+          "label": "Belegung"
+        },
+        {
+          "name": "FREITEXT",
+          "label": "Freitext"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Abbruchjahr der Wohnung",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Administrative Wohnungsnummer",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Aktualisierungsdatum der Nutzungsart",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Anzahl Zimmer",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Baujahr der Wohnung",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Datum der ersten Belegung",
+          "type": "",
+          "key": "",
+          "set": "BELEGUNG"
+        },
+        {
+          "name": "Datum der letzten Belegung",
+          "type": "",
+          "key": "",
+          "set": "BELEGUNG"
+        },
+        {
+          "name": "EGID+EWID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Freitextfeld Wohnung 1",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Freitextfeld Wohnung 2",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Informationsquelle zur Nutzungsart",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Kocheinrichtung",
+          "type": "",
+          "key": "",
+          "set": "AUSSTATTUNG"
+        },
+        {
+          "name": "Kommentar zur Nutzungsart der Wohnung",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Lage auf dem Stockwerk",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Mehrgeschossige Wohnung",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Nutzungsart der Wohnung",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Nutzungsbeschränkung gemäss ZWG",
+          "type": "",
+          "key": "",
+          "set": "NUTZUNG"
+        },
+        {
+          "name": "Personen mit Hauptwohnsitz",
+          "type": "",
+          "key": "",
+          "set": "BELEGUNG"
+        },
+        {
+          "name": "Personen mit Nebenwohnsitz",
+          "type": "",
+          "key": "",
+          "set": "BELEGUNG"
+        },
+        {
+          "name": "Physische Wohnungsnummer",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Stockwerk",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Wohnungsfläche",
+          "type": "",
+          "key": "",
+          "set": "BAULICHES"
+        },
+        {
+          "name": "Wohnungsstatus",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        }
+      ]
+    },
+    {
+      "id": "gwr_eingang",
+      "label": "Gebäudeeingang",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -1668.1982250373626,
+      "y": 3977.362631147084,
+      "propertySets": [
+        {
+          "name": "KOORDINATEN",
+          "label": "Koordinaten"
+        },
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "ADRESSE",
+          "label": "Adresse"
+        }
+      ],
+      "columns": [
+        {
+          "name": "E-Eingangskoordinate",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "EGID+EDID EGAID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Eingangsnummer Gebäude",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "N-Eingangskoordinate",
+          "type": "",
+          "key": "",
+          "set": "KOORDINATEN"
+        },
+        {
+          "name": "Offizielle Adresse",
+          "type": "",
+          "key": "",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl",
+          "type": "",
+          "key": "FK",
+          "set": "ADRESSE"
+        },
+        {
+          "name": "Postleitzahl-Zusatzziffer",
+          "type": "",
+          "key": "FK",
+          "set": "ADRESSE"
+        }
+      ]
+    },
+    {
+      "id": "gwr_bauprojekt",
+      "label": "GWR_Bauprojekt",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -2680.5194530047133,
+      "y": 3852.7921648269985,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "BAUWERK",
+          "label": "Bauwerk"
+        },
+        {
+          "name": "AUFTRAGGEBER",
+          "label": "Auftraggeber"
+        },
+        {
+          "name": "BESCHREIBUNG",
+          "label": "Beschreibung"
+        },
+        {
+          "name": "ZEITPUNKTE",
+          "label": "Zeitpunkte"
+        },
+        {
+          "name": "FREITEXT",
+          "label": "Freitext"
+        },
+        {
+          "name": "KOSTEN",
+          "label": "Kosten"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Amtliche Baudossiernummer",
+          "type": "",
+          "key": "UK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Amtliche Baudossiernummer Zusatz",
+          "type": "",
+          "key": "UK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Art der Bauwerke",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Ausländische Ortschaft der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Bauort",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Beilage zum Bauprojekt",
+          "type": "",
+          "key": "",
+          "set": "BESCHREIBUNG"
+        },
+        {
+          "name": "Bewilligungsgrund",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Datum Ablehnung Baugesuch",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Baubeginn",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Baubewilligung",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Baueingabe",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Bauende",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Nichtrealisierung",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Rückzug Baugesuch",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Datum Sisitierung",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Eingangsnummer der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "EPROID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Erhebungsstellennummer",
+          "type": "",
+          "key": "FK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Freitextfeld Projekt 1",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Freitextfeld Projekt 2",
+          "type": "",
+          "key": "",
+          "set": "FREITEXT"
+        },
+        {
+          "name": "Name der Auftraggeber 1",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Name der Auftraggeber 2",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Name der Auftraggeber Zusatz Unternehmen",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Postleitzahl der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Projektkosten Total",
+          "type": "",
+          "key": "",
+          "set": "KOSTEN"
+        },
+        {
+          "name": "Status Bauprojekt",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Strasse der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Typ der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Typ der Bauwerke",
+          "type": "",
+          "key": "",
+          "set": "BAUWERK"
+        },
+        {
+          "name": "Umschreibung Bauprojekt",
+          "type": "",
+          "key": "",
+          "set": "BESCHREIBUNG"
+        },
+        {
+          "name": "Voraussichtliche Baudauer",
+          "type": "",
+          "key": "",
+          "set": "ZEITPUNKTE"
+        },
+        {
+          "name": "Wohnsitzland der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Zus. Adresse der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        },
+        {
+          "name": "Zusatzziffer PLZ der Auftraggeber",
+          "type": "",
+          "key": "",
+          "set": "AUFTRAGGEBER"
+        }
+      ]
+    },
+    {
+      "id": "gwr_arbeit",
+      "label": "GWR_Arbeit",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -3130.481841182823,
+      "y": 3239.7503016960736,
+      "propertySets": [
+        {
+          "name": "UMBAUTEN_ERWEITERUNGEN",
+          "label": "Umbauten und Erweiterungen"
+        },
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "ENERGIE",
+          "label": "Energie"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Andere Umbauten",
+          "type": "",
+          "key": "",
+          "set": "UMBAUTEN_ERWEITERUNGEN"
+        },
+        {
+          "name": "Art der Arbeiten",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Beheizte Erweiterung",
+          "type": "",
+          "key": "",
+          "set": "UMBAUTEN_ERWEITERUNGEN"
+        },
+        {
+          "name": "EGID_EPROID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Energetische Sanierung",
+          "type": "",
+          "key": "",
+          "set": "ENERGIE"
+        },
+        {
+          "name": "Nicht beheizte Erweiterung",
+          "type": "",
+          "key": "",
+          "set": "UMBAUTEN_ERWEITERUNGEN"
+        },
+        {
+          "name": "Photovoltaische Solaranlage",
+          "type": "",
+          "key": "",
+          "set": "ENERGIE"
+        },
+        {
+          "name": "Sanierung des Heizsystems",
+          "type": "",
+          "key": "",
+          "set": "ENERGIE"
+        },
+        {
+          "name": "Thermische Solaranlage",
+          "type": "",
+          "key": "",
+          "set": "ENERGIE"
+        },
+        {
+          "name": "Umbauten - Renovationen im Innenbereich",
+          "type": "",
+          "key": "",
+          "set": "UMBAUTEN_ERWEITERUNGEN"
+        },
+        {
+          "name": "Umnutzung",
+          "type": "",
+          "key": "",
+          "set": "UMBAUTEN_ERWEITERUNGEN"
+        }
+      ]
+    },
+    {
+      "id": "gwr_strasse",
+      "label": "Strasse",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -1180.040533742336,
+      "y": 4424.775117610107,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        },
+        {
+          "name": "BEZEICHNUNG",
+          "label": "Bezeichnungen"
+        },
+        {
+          "name": "GEOMETRIE",
+          "label": "Geometrie und Lage"
+        }
+      ],
+      "columns": [
+        {
+          "name": "Amtliche Strassennummer",
+          "type": "",
+          "key": "UK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Art der Strasse",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "ESID",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Realisierungsstand der Strasse",
+          "type": "",
+          "key": "",
+          "set": "STAMMDATEN"
+        },
+        {
+          "name": "Strassenbezeichnung",
+          "type": "",
+          "key": "",
+          "set": "BEZEICHNUNG"
+        },
+        {
+          "name": "Strassenbezeichnung Index",
+          "type": "",
+          "key": "",
+          "set": "BEZEICHNUNG"
+        },
+        {
+          "name": "Strassenbezeichnung kurz",
+          "type": "",
+          "key": "",
+          "set": "BEZEICHNUNG"
+        },
+        {
+          "name": "Strassenbezeichnung offiziell",
+          "type": "",
+          "key": "",
+          "set": "BEZEICHNUNG"
+        },
+        {
+          "name": "Strassenbezeichnung Sprache",
+          "type": "",
+          "key": "",
+          "set": "BEZEICHNUNG"
+        },
+        {
+          "name": "Strassengeometrie",
+          "type": "",
+          "key": "",
+          "set": "GEOMETRIE"
+        }
+      ]
+    },
+    {
+      "id": "gwr_strassenabschnitt",
+      "label": "Strassenabschnitt",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -814.8164930714801,
+      "y": 4233.947087972323,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ESID_DPLZ4+DPLZZ",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        }
+      ]
+    },
+    {
+      "id": "gwr_ortschaft",
+      "label": "Ortschaft",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -1199.2384947189057,
+      "y": 4055.862769188317,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        }
+      ],
+      "columns": [
+        {
+          "name": "DPLZ4+DPLZZ",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        }
+      ]
+    },
+    {
+      "id": "gwr_gemeinde",
+      "label": "Gemeinde",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -3106.3514767749625,
+      "y": 2857.400977654081,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        }
+      ],
+      "columns": [
+        {
+          "name": "GDENR",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        }
+      ]
+    },
+    {
+      "id": "gwr_erhebungsstelle",
+      "label": "Erhebungsstelle",
+      "type": "table",
+      "system": "BFS GWR",
+      "schema": "gwr",
+      "tags": [
+        "fachmodell",
+        "register"
+      ],
+      "x": -1666.2959391281718,
+      "y": 4782.036966582463,
+      "propertySets": [
+        {
+          "name": "STAMMDATEN",
+          "label": "Stammdaten"
+        }
+      ],
+      "columns": [
+        {
+          "name": "ESTNR",
+          "type": "",
+          "key": "PK",
+          "set": "STAMMDATEN"
+        }
+      ]
     }
   ],
   "edges": [
     {
-      "id": "e1",
-      "from": "buildings",
-      "to": "rooms",
-      "label": "has"
-    },
-    {
-      "id": "e2",
-      "from": "buildings",
-      "to": "leases",
-      "label": "owns"
-    },
-    {
-      "id": "e3",
-      "from": "leases",
-      "to": "tenants",
-      "label": "tenant_of"
-    },
-    {
-      "id": "e4",
-      "from": "rooms",
-      "to": "v_occupancy",
-      "label": "feeds"
-    },
-    {
-      "id": "e5",
-      "from": "tenants",
-      "to": "tenants_api",
-      "label": "exposed_as"
-    },
-    {
       "id": "e_refx_geb_we",
       "from": "refx_gebaeude",
       "to": "refx_wirtschaftseinheit",
-      "label": "gehört zu"
+      "label": "Gebäude → Wirtschaftseinheit (BUKRS+SWENR-Zuordnung)"
     },
     {
       "id": "e_refx_grd_we",
       "from": "refx_grundstueck",
       "to": "refx_wirtschaftseinheit",
-      "label": "gehört zu"
+      "label": "Grundstück → Wirtschaftseinheit (BUKRS+SWENR-Zuordnung)"
     },
     {
       "id": "e_refx_geb_grd",
       "from": "refx_gebaeude",
       "to": "refx_grundstueck",
-      "label": "liegt auf"
+      "label": "Gebäude liegt auf Grundstück (mit Gebäudeanteil %)"
     },
     {
       "id": "e_refx_api_geb",
       "from": "refx_gebaeude_api",
       "to": "refx_gebaeude",
-      "label": "liest"
+      "label": "BAPI ZAPI_X4AI_BAPI_RE_BU_GET_DET liest Gebäude-Stammdaten"
     },
     {
       "id": "e_gis_geb_grd",
       "from": "gis_gebaeude",
       "to": "gis_grundstueck",
-      "label": "liegt auf"
+      "label": "steht auf Grundstück (n:1, via EGRID)"
     },
     {
       "id": "e_gis_huelle_geb",
       "from": "gis_gebaeudehuelle",
       "to": "gis_gebaeude",
-      "label": "umhüllt"
+      "label": "Hülle von Gebäude (1:1, via EGID)"
     },
     {
       "id": "e_gis_proj_grd",
       "from": "gis_bauprojekt",
       "to": "gis_grundstueck",
-      "label": "auf"
+      "label": "betrifft Grundstück (n:m, via EGRID)"
     },
     {
       "id": "e_gis_boden_grd",
       "from": "gis_bodenabdeckung",
       "to": "gis_grundstueck",
-      "label": "auf"
+      "label": "liegt auf Grundstück (n:1, via EGRID)"
     },
     {
       "id": "e_gis_geb_refx_geb",
       "from": "gis_gebaeude",
       "to": "refx_gebaeude",
-      "label": "EGID"
+      "label": "GIS Gebäude ↔ RE-FX Gebäude (1:1, Match über EGID)"
     },
     {
       "id": "e_gis_grd_refx_grd",
       "from": "gis_grundstueck",
       "to": "refx_grundstueck",
-      "label": "EGRID"
+      "label": "GIS Grundstück ↔ RE-FX Grundstück (1:1, Match über EGRID)"
+    },
+    {
+      "id": "e_gwr_wohn_geb",
+      "from": "gwr_wohnung",
+      "to": "gwr_gebaeude",
+      "label": "Wohnung liegt in Gebäude (n:1, via EGID)"
+    },
+    {
+      "id": "e_gwr_eing_geb",
+      "from": "gwr_eingang",
+      "to": "gwr_gebaeude",
+      "label": "Eingang gehört zu Gebäude (n:1, via EGID)"
+    },
+    {
+      "id": "e_gwr_eing_str",
+      "from": "gwr_eingang",
+      "to": "gwr_strasse",
+      "label": "Eingang adressiert an Strasse (n:1, via ESID)"
+    },
+    {
+      "id": "e_gwr_eing_orts",
+      "from": "gwr_eingang",
+      "to": "gwr_ortschaft",
+      "label": "Eingang in Ortschaft (n:1, via DPLZ4+DPLZZ)"
+    },
+    {
+      "id": "e_gwr_geb_gemeinde",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gemeinde",
+      "label": "Gebäude liegt in Gemeinde (n:1, via GDENR)"
+    },
+    {
+      "id": "e_gwr_arb_geb",
+      "from": "gwr_arbeit",
+      "to": "gwr_gebaeude",
+      "label": "Arbeit am Gebäude ausgeführt (n:1, via EGID)"
+    },
+    {
+      "id": "e_gwr_arb_proj",
+      "from": "gwr_arbeit",
+      "to": "gwr_bauprojekt",
+      "label": "Arbeit gehört zu Bauprojekt (n:1, via EPROID)"
+    },
+    {
+      "id": "e_gwr_proj_eh",
+      "from": "gwr_bauprojekt",
+      "to": "gwr_erhebungsstelle",
+      "label": "Bauprojekt erhoben durch Erhebungsstelle (n:1, via ESTNR)"
+    },
+    {
+      "id": "e_gwr_strab_str",
+      "from": "gwr_strassenabschnitt",
+      "to": "gwr_strasse",
+      "label": "Strassenabschnitt gehört zu Strasse (n:1, via ESID)"
+    },
+    {
+      "id": "e_gwr_strab_orts",
+      "from": "gwr_strassenabschnitt",
+      "to": "gwr_ortschaft",
+      "label": "Strassenabschnitt in Ortschaft (n:1, via DPLZ4+DPLZZ)"
+    },
+    {
+      "id": "e_gwr_geb_gis_geb",
+      "from": "gwr_gebaeude",
+      "to": "gis_gebaeude",
+      "label": "GWR-Gebäude ↔ GIS-Gebäude (1:1, EGID-Match, Bundesregister)"
+    },
+    {
+      "id": "e_gwr_geb_refx_geb",
+      "from": "gwr_gebaeude",
+      "to": "refx_gebaeude",
+      "label": "GWR-Gebäude ↔ RE-FX Gebäude (1:1, EGID-Match, Bundesregister)"
     }
   ]
 }
