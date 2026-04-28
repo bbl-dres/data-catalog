@@ -135,7 +135,14 @@
       "Bash(cat)",
       "Bash(node /tmp/headless_check.js)",
       "Bash(node --check prototype-canvas/js/canvas.js)",
-      "Bash(node --check prototype-canvas/js/table.js)"
+      "Bash(node --check prototype-canvas/js/table.js)",
+      "Bash(node -e \"['js/state.js','js/canvas.js','js/editor.js','js/table.js','js/app.js','js/panel.js','js/visibility.js','js/xlsx_io.js','js/api.js'].forEach\\(p => { try { new Function\\(require\\('fs'\\).readFileSync\\(p,'utf8'\\)\\); console.log\\('OK', p\\); } catch \\(e\\) { console.log\\('FAIL', p, e.message\\); } }\\)\")",
+      "Bash(python -m http.server 8765 --bind 127.0.0.1)",
+      "Bash(echo \"started $!\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/js/state.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/js/canvas.js)",
+      "Bash(kill 6522)"
     ]
   }
 }

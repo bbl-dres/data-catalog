@@ -66,7 +66,21 @@ window.CanvasApp.Canvas = (function () {
                 });
             });
         }
-        renderNodes();
+        // Toggle the existing .node-set elements rather than blowing away the
+        // whole node-layer DOM and rebuilding (the previous behaviour rebuilt
+        // every node, including its column rows, just to flip a class).
+        if (nodeLayer) {
+            var sets = nodeLayer.querySelectorAll('.node-set');
+            for (var i = 0; i < sets.length; i++) {
+                var setEl = sets[i];
+                var nodeEl = setEl.closest('.node');
+                if (!nodeEl) continue;
+                var nodeId = nodeEl.getAttribute('data-node-id');
+                var name = setEl.getAttribute('data-set');
+                setEl.classList.toggle('is-expanded', isSetExpanded(nodeId, name));
+            }
+        }
+        // Heights changed → system frames need re-measuring.
         renderGroups();
     }
 
@@ -74,6 +88,52 @@ window.CanvasApp.Canvas = (function () {
     var dragNodeId = null;
     var dragStartClient = null;
     var dragNodeStart = null;
+
+    // rAF-coalesced pointer pipeline. Pan and drag handlers used to do their
+    // full work synchronously per pointermove; on a high-rate trackpad that
+    // dispatched several heavy updates per frame (transform + persist +
+    // edge re-route + group rebuild). Now: handlers stash the latest client
+    // x/y, one rAF per frame applies the most recent values.
+    var pointerRafQueued = false;
+    var pendingPointer = null; // { panX, panY } || { dragX, dragY } || both fields
+
+    function schedulePointerFrame(pan, drag) {
+        if (!pendingPointer) pendingPointer = {};
+        if (pan) { pendingPointer.panX = pan.x; pendingPointer.panY = pan.y; }
+        if (drag) { pendingPointer.dragX = drag.x; pendingPointer.dragY = drag.y; }
+        if (pointerRafQueued) return;
+        pointerRafQueued = true;
+        requestAnimationFrame(flushPointerFrame);
+    }
+
+    function flushPointerFrame() {
+        pointerRafQueued = false;
+        var p = pendingPointer;
+        pendingPointer = null;
+        if (!p) return;
+        if (isPanning && p.panX != null) {
+            translateX = panStart.tx + (p.panX - panStart.x);
+            translateY = panStart.ty + (p.panY - panStart.y);
+            applyTransform();
+        }
+        if (isDragging && p.dragX != null) {
+            applyDragMove(p.dragX, p.dragY);
+        }
+    }
+
+    // Cache: node-id → DOM element. Built fresh in renderNodes; the previous
+    // pattern was a `nodeLayer.querySelector('[data-node-id="..."]')` per
+    // edge endpoint per render and per drag tick. Multiplied across all
+    // edges that's hundreds of selectors per frame on a non-trivial graph.
+    var nodeElById = Object.create(null);
+    function getNodeEl(id) {
+        var cached = nodeElById[id];
+        if (cached && cached.isConnected) return cached;
+        // Fall back to DOM lookup when the cache is stale (e.g. between renders).
+        var fresh = nodeLayer && nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]');
+        if (fresh) nodeElById[id] = fresh;
+        return fresh || null;
+    }
 
     // Column-key labels — short text badges (PK / FK / UK / –)
     var KEY_LABELS = { PK: 'PK', FK: 'FK', UK: 'UK', '': '–' };
@@ -141,7 +201,10 @@ window.CanvasApp.Canvas = (function () {
                 renderAll();
             } else if (reason === 'selection') {
                 updateNodeSelection();
-                renderEdges();
+                // Selection changes used to drive a full edge re-render
+                // (querySelector × 2 per edge); now we only diff the two
+                // affected edges between layers.
+                updateEdgeSelection();
                 focusSelectedEdgeInput();
             }
         });
@@ -159,6 +222,55 @@ window.CanvasApp.Canvas = (function () {
         updateNodeSelection();
     }
 
+    var GROUP_PAD = 18;
+    var GROUP_LABEL_H = 14; // visible height of label badge
+
+    function buildGroupBoxFor(sysName, members) {
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        var anyVisible = false;
+        for (var i = 0; i < members.length; i++) {
+            var n = members[i];
+            var el = nodeElById[n.id] || (nodeLayer && nodeLayer.querySelector('[data-node-id="' + cssEscape(n.id) + '"]'));
+            // offsetParent is null when the element (or any ancestor) is
+            // display:none — that's our cue to skip hidden members so the
+            // frame snaps to the visible nodes only.
+            if (!el || el.offsetParent === null) continue;
+            anyVisible = true;
+            var w = el.offsetWidth;
+            var h = el.offsetHeight;
+            var x = n.x || 0;
+            var y = n.y || 0;
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x + w > maxX) maxX = x + w;
+            if (y + h > maxY) maxY = y + h;
+        }
+        if (!anyVisible || minX === Infinity) return null;
+
+        var box = document.createElement('div');
+        box.className = 'group-box';
+        box.setAttribute('data-system', sysName);
+        box.style.left = (minX - GROUP_PAD) + 'px';
+        box.style.top = (minY - GROUP_PAD - GROUP_LABEL_H / 2) + 'px';
+        box.style.width = (maxX - minX + GROUP_PAD * 2) + 'px';
+        box.style.height = (maxY - minY + GROUP_PAD * 2 + GROUP_LABEL_H / 2) + 'px';
+
+        var label = document.createElement('span');
+        label.className = 'group-box-label';
+        label.textContent = sysName;
+        box.appendChild(label);
+        return box;
+    }
+
+    function membersOfSystem(sysName) {
+        var out = [];
+        var nodes = State.getNodes();
+        for (var i = 0; i < nodes.length; i++) {
+            if ((nodes[i].system || '').trim() === sysName) out.push(nodes[i]);
+        }
+        return out;
+    }
+
     /**
      * Render one bounding-box frame per `system` value in use. Nodes without a
      * system are excluded. The bbox uses each node's stored x/y plus its
@@ -166,59 +278,42 @@ window.CanvasApp.Canvas = (function () {
      */
     function renderGroups() {
         groupLayer.innerHTML = '';
-        var byS = {};
-        State.getNodes().forEach(function (n) {
+        var byS = Object.create(null);
+        var nodes = State.getNodes();
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
             var s = (n.system || '').trim();
-            if (!s) return;
+            if (!s) continue;
             (byS[s] = byS[s] || []).push(n);
-        });
-
-        var PAD = 18;
-        var LABEL_H = 14; // visible height of label badge
-
+        }
         Object.keys(byS).forEach(function (sysName) {
-            var members = byS[sysName];
-            var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            var anyVisible = false;
-            members.forEach(function (n) {
-                var el = nodeLayer.querySelector('[data-node-id="' + cssEscape(n.id) + '"]');
-                // offsetParent is null when the element (or any ancestor) is
-                // display:none — that's our cue to skip hidden members so
-                // the frame snaps to the visible nodes only.
-                if (!el || el.offsetParent === null) return;
-                anyVisible = true;
-                var w = el.offsetWidth;
-                var h = el.offsetHeight;
-                var x = n.x || 0;
-                var y = n.y || 0;
-                if (x < minX) minX = x;
-                if (y < minY) minY = y;
-                if (x + w > maxX) maxX = x + w;
-                if (y + h > maxY) maxY = y + h;
-            });
-            if (!anyVisible || minX === Infinity) return;
-
-            var box = document.createElement('div');
-            box.className = 'group-box';
-            box.setAttribute('data-system', sysName);
-            box.style.left = (minX - PAD) + 'px';
-            box.style.top = (minY - PAD - LABEL_H / 2) + 'px';
-            box.style.width = (maxX - minX + PAD * 2) + 'px';
-            box.style.height = (maxY - minY + PAD * 2 + LABEL_H / 2) + 'px';
-
-            var label = document.createElement('span');
-            label.className = 'group-box-label';
-            label.textContent = sysName;
-            box.appendChild(label);
-
-            groupLayer.appendChild(box);
+            var box = buildGroupBoxFor(sysName, byS[sysName]);
+            if (box) groupLayer.appendChild(box);
         });
+    }
+
+    /**
+     * Rebuild a single system's group-box in place. Used during node drag —
+     * a full renderGroups() iterated every node and did a querySelector per
+     * member, which dominated drag CPU on a graph with many systems.
+     */
+    function renderGroupForSystem(sysName) {
+        if (!sysName) return;
+        var existing = groupLayer.querySelector('.group-box[data-system="' + cssEscape(sysName) + '"]');
+        var members = membersOfSystem(sysName);
+        var box = members.length ? buildGroupBoxFor(sysName, members) : null;
+        if (existing && box) existing.replaceWith(box);
+        else if (existing) existing.remove();
+        else if (box) groupLayer.appendChild(box);
     }
 
     function renderNodes() {
         nodeLayer.innerHTML = '';
+        nodeElById = Object.create(null);
         State.getNodes().forEach(function (node) {
-            nodeLayer.appendChild(createNodeEl(node));
+            var el = createNodeEl(node);
+            nodeElById[node.id] = el;
+            nodeLayer.appendChild(el);
         });
         setEditMode(State.getMode() === 'edit');
     }
@@ -264,14 +359,20 @@ window.CanvasApp.Canvas = (function () {
             html += '</ul>';
             html += '<div class="node-col-add edit-only" data-action="add-col" data-set="">+ Spalte</div>';
         } else {
-            // Group by property set. Ungrouped first (no header), then each set.
+            // Group by property set in a single pass — was three passes over
+            // cols (init bySet, build HTML, then per-set filter for count).
             var ungroupedHtml = '';
             var bySet = {};
-            sets.forEach(function (s) { bySet[s.name] = ''; });
+            var countBySet = {};
+            sets.forEach(function (s) { bySet[s.name] = ''; countBySet[s.name] = 0; });
             cols.forEach(function (c, idx) {
                 var rowHtml = colRowHtml(c, idx);
-                if (c.set && bySet.hasOwnProperty(c.set)) bySet[c.set] += rowHtml;
-                else ungroupedHtml += rowHtml;
+                if (c.set && bySet.hasOwnProperty(c.set)) {
+                    bySet[c.set] += rowHtml;
+                    countBySet[c.set] += 1;
+                } else {
+                    ungroupedHtml += rowHtml;
+                }
             });
 
             if (ungroupedHtml) {
@@ -280,8 +381,7 @@ window.CanvasApp.Canvas = (function () {
 
             sets.forEach(function (s) {
                 var expanded = isSetExpanded(node.id, s.name);
-                var count = (cols.filter(function (c) { return c.set === s.name; })).length;
-                html += setSectionHtml(s, count, bySet[s.name], expanded);
+                html += setSectionHtml(s, countBySet[s.name] || 0, bySet[s.name], expanded);
             });
         }
 
@@ -354,6 +454,52 @@ window.CanvasApp.Canvas = (function () {
             var target = (edge.id === selId) ? edgeOverlay : edgeLayer;
             target.appendChild(groupEl);
         });
+    }
+
+    /**
+     * Selection-only diff for edges. Demotes any edge currently in the
+     * overlay that isn't the new selection back to the unselected layer,
+     * and promotes the newly-selected one. Replaces a previous full
+     * renderEdges() that re-created every <g> on every selection change.
+     */
+    function updateEdgeSelection() {
+        var newSelId = State.getSelectedEdgeId();
+
+        // Demote previously-selected edges (overlay → layer, no chrome).
+        var overlayGroups = edgeOverlay.querySelectorAll('.edge-group');
+        for (var i = 0; i < overlayGroups.length; i++) {
+            var g = overlayGroups[i];
+            var id = g.getAttribute('data-edge-id');
+            if (id === newSelId) continue; // still selected
+            var edge = State.getEdge(id);
+            g.remove();
+            if (edge) {
+                var fresh = createEdgeEl(edge);
+                if (fresh) edgeLayer.appendChild(fresh);
+            }
+        }
+
+        // Promote new selection (layer → overlay, with handles + label editor).
+        if (newSelId) {
+            var existingInOverlay = edgeOverlay.querySelector('[data-edge-id="' + cssEscape(newSelId) + '"]');
+            if (existingInOverlay) {
+                // Re-create so handles / label editor reflect current edit-mode state.
+                var edgeSel = State.getEdge(newSelId);
+                existingInOverlay.remove();
+                if (edgeSel) {
+                    var refreshed = createEdgeEl(edgeSel);
+                    if (refreshed) edgeOverlay.appendChild(refreshed);
+                }
+            } else {
+                var existingInLayer = edgeLayer.querySelector('[data-edge-id="' + cssEscape(newSelId) + '"]');
+                if (existingInLayer) existingInLayer.remove();
+                var edgeNew = State.getEdge(newSelId);
+                if (edgeNew) {
+                    var freshSel = createEdgeEl(edgeNew);
+                    if (freshSel) edgeOverlay.appendChild(freshSel);
+                }
+            }
+        }
     }
 
     function createEdgeEl(edge) {
@@ -461,7 +607,11 @@ window.CanvasApp.Canvas = (function () {
     }
 
     function getNodeRect(node) {
-        var el = nodeLayer.querySelector('[data-node-id="' + cssEscape(node.id) + '"]');
+        var el = nodeElById[node.id];
+        if (!el || !el.isConnected) {
+            el = nodeLayer && nodeLayer.querySelector('[data-node-id="' + cssEscape(node.id) + '"]');
+            if (el) nodeElById[node.id] = el;
+        }
         var w = el ? el.offsetWidth : 220;
         var h = el ? el.offsetHeight : 80;
         return { x: node.x || 0, y: node.y || 0, w: w, h: h };
@@ -537,7 +687,7 @@ window.CanvasApp.Canvas = (function () {
             el.classList.remove('is-selected');
         });
         if (selAttr) {
-            var nodeEl = nodeLayer.querySelector('[data-node-id="' + cssEscape(selAttr.nodeId) + '"]');
+            var nodeEl = nodeElById[selAttr.nodeId];
             if (nodeEl) {
                 var node = State.getNode(selAttr.nodeId);
                 if (node) {
@@ -595,13 +745,14 @@ window.CanvasApp.Canvas = (function () {
     }
 
     function onPanMove(e) {
+        // High-rate pointer streams used to drive applyTransform / drag work
+        // synchronously per event. Coalesce to one rAF per frame so a fast
+        // trackpad doesn't dispatch multiple repaints between frames.
         if (isPanning) {
-            translateX = panStart.tx + (e.clientX - panStart.x);
-            translateY = panStart.ty + (e.clientY - panStart.y);
-            applyTransform();
+            schedulePointerFrame({ x: e.clientX, y: e.clientY }, null);
         }
         if (isDragging) {
-            onDragMove(e);
+            schedulePointerFrame(null, { x: e.clientX, y: e.clientY });
         }
     }
 
@@ -767,21 +918,26 @@ window.CanvasApp.Canvas = (function () {
         });
     }
 
-    function onDragMove(e) {
+    function applyDragMove(clientX, clientY) {
         if (!isDragging || !dragNodeId) return;
-        var dx = (e.clientX - dragStartClient.x) / scale;
-        var dy = (e.clientY - dragStartClient.y) / scale;
+        var dx = (clientX - dragStartClient.x) / scale;
+        var dy = (clientY - dragStartClient.y) / scale;
         var nx = dragNodeStart.x + dx;
         var ny = dragNodeStart.y + dy;
-        var el = nodeLayer.querySelector('[data-node-id="' + cssEscape(dragNodeId) + '"]');
+        var el = nodeElById[dragNodeId];
         if (el) {
             el.style.left = nx + 'px';
             el.style.top = ny + 'px';
         }
         State.moveNode(dragNodeId, nx, ny);
         updateEdgesForNode(dragNodeId);
-        // The dragged node's system frame needs to grow/shrink with it
-        renderGroups();
+        // Only rebuild the system frame the dragged node lives in — full
+        // renderGroups() iterated every node + queried the DOM per member.
+        var draggedNode = State.getNode(dragNodeId);
+        if (draggedNode) {
+            var sys = (draggedNode.system || '').trim();
+            if (sys) renderGroupForSystem(sys);
+        }
         // Action bar follows the node it sits above
         if (window.CanvasApp.Editor && window.CanvasApp.Editor.repositionActionBar) {
             window.CanvasApp.Editor.repositionActionBar();
@@ -790,7 +946,7 @@ window.CanvasApp.Canvas = (function () {
 
     function onDragEnd() {
         if (!isDragging) return;
-        var el = nodeLayer.querySelector('[data-node-id="' + cssEscape(dragNodeId) + '"]');
+        var el = nodeElById[dragNodeId];
         if (el) el.classList.remove('is-dragging');
         isDragging = false;
         dragNodeId = null;
@@ -808,10 +964,6 @@ window.CanvasApp.Canvas = (function () {
 
     function getTransform() {
         return { translateX: translateX, translateY: translateY, scale: scale };
-    }
-
-    function getNodeEl(id) {
-        return nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]');
     }
 
     // ---- Util ----------------------------------------------------------

@@ -222,8 +222,14 @@ window.CanvasApp.Panel = (function () {
         var sets = State.derivePropertySets(node);
         if (!sets.length) return '';
         var cols = node.columns || [];
+        // Single-pass groupBy — per-set filter was O(sets × cols).
+        var countsBySet = Object.create(null);
+        for (var i = 0; i < cols.length; i++) {
+            var s = cols[i].set;
+            if (s) countsBySet[s] = (countsBySet[s] || 0) + 1;
+        }
         var items = sets.map(function (s) {
-            var count = cols.filter(function (c) { return c.set === s.name; }).length;
+            var count = countsBySet[s.name] || 0;
             return '' +
                 '<li data-action="focus-set" data-set="' + escapeAttr(s.name) + '" title="Im Diagramm hervorheben">' +
                     '<span class="info-set-name">' + escapeHtml(s.name) + '</span>' +
@@ -246,10 +252,15 @@ window.CanvasApp.Panel = (function () {
                     '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">Keine Attribute</div>' +
                 '</div>';
         }
-        var pkCount = cols.filter(function (c) { return c.key === 'PK'; }).length;
-        var fkCount = cols.filter(function (c) { return c.key === 'FK'; }).length;
-        var ukCount = cols.filter(function (c) { return c.key === 'UK'; }).length;
-        var ungrouped = cols.filter(function (c) { return !c.set; }).length;
+        // Single pass — was four separate filter() calls over the same array.
+        var pkCount = 0, fkCount = 0, ukCount = 0, ungrouped = 0;
+        for (var i = 0; i < cols.length; i++) {
+            var c = cols[i];
+            if (c.key === 'PK') pkCount++;
+            else if (c.key === 'FK') fkCount++;
+            else if (c.key === 'UK') ukCount++;
+            if (!c.set) ungrouped++;
+        }
         return '' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Attribute <span class="info-section-count">' + cols.length + '</span></div>' +

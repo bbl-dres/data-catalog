@@ -46,6 +46,12 @@ window.CanvasApp.Table = (function () {
         edges:     'Beziehungen filtern…'
     };
 
+    var filterDebounceTimer = null;
+    function debouncedRender() {
+        clearTimeout(filterDebounceTimer);
+        filterDebounceTimer = setTimeout(render, 100);
+    }
+
     function init() {
         State = window.CanvasApp.State;
         headEl = document.getElementById('table-head');
@@ -54,7 +60,9 @@ window.CanvasApp.Table = (function () {
         textInput = document.getElementById('filter-text');
         tabsEl = document.getElementById('table-tabs');
 
-        textInput.addEventListener('input', render);
+        // Debounce the input handler — every keystroke used to rebuild the
+        // entire <tbody>.innerHTML and rebuild a haystack string per row.
+        textInput.addEventListener('input', debouncedRender);
 
         tabsEl.addEventListener('click', onTabClick);
         bodyEl.addEventListener('click', onRowClick);

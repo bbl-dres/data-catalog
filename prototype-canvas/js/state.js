@@ -35,13 +35,57 @@ window.CanvasApp.State = (function () {
         snapshot: null           // {nodes, edges} captured on entering edit; live data is the draft
     };
 
-    // Undo stack for destructive / hard-to-redo edits. Pushed by deleteNode,
-    // deleteEdge, and updateNode (whenever called via the public API). Capped at
-    // 50 frames — enough for "oops, undo that delete" without unbounded memory.
-    // Cleared on mode-change/load/replaceAll, since the snapshot semantics make
-    // an undo across those states meaningless.
+    // Id-keyed indexes — getNode / getEdge are called from many hot paths
+    // (edge rendering, drag, panel, isolation), so a linear scan was the wrong
+    // shape. Rebuilt wholesale on load / replaceAll / undo / revertDraft;
+    // patched on add / delete.
+    var nodesById = Object.create(null);
+    var edgesById = Object.create(null);
+
+    function rebuildIndex() {
+        nodesById = Object.create(null);
+        edgesById = Object.create(null);
+        for (var i = 0; i < state.nodes.length; i++) nodesById[state.nodes[i].id] = state.nodes[i];
+        for (var j = 0; j < state.edges.length; j++) edgesById[state.edges[j].id] = state.edges[j];
+    }
+
+    // Undo stack for destructive / hard-to-redo edits. Frames now hold a
+    // targeted inverse-op closure plus the captured selection — so a column
+    // edit clones one node, not the entire graph. Capped at 50 frames.
+    // Cleared on mode-change / load / replaceAll.
     var UNDO_LIMIT = 50;
     var undoStack = [];
+
+    // Dirty tracking — replaces a per-emit JSON.stringify compare of every
+    // node + edge against the snapshot. Map<key, 'added'|'modified'|'removed'>;
+    // size === user-visible "ungespeicherte Änderungen" count. Approximate at
+    // the edges (e.g. add-then-delete same id collapses to no-op; rename then
+    // rename back stays as 1) but the dirty/clean signal is exact and the
+    // perf is O(1) per mutation instead of O(N×M) per emit.
+    var dirtyMap = new Map();
+    function dkey(kind, id) { return kind + ':' + id; }
+    function markAdded(kind, id) {
+        // If we just added something we hadn't touched, mark as added.
+        // (If it was previously 'removed', that means we re-added — treat as modified.)
+        var k = dkey(kind, id);
+        var cur = dirtyMap.get(k);
+        if (cur === 'removed') dirtyMap.set(k, 'modified');
+        else if (!cur) dirtyMap.set(k, 'added');
+    }
+    function markModified(kind, id) {
+        var k = dkey(kind, id);
+        if (dirtyMap.get(k) === 'added') return; // stays 'added'
+        dirtyMap.set(k, 'modified');
+    }
+    function markRemoved(kind, id) {
+        var k = dkey(kind, id);
+        if (dirtyMap.get(k) === 'added') {
+            // Net no-op: added in this draft, then removed.
+            dirtyMap.delete(k);
+            return;
+        }
+        dirtyMap.set(k, 'removed');
+    }
 
     var listeners = [];
 
@@ -62,6 +106,7 @@ window.CanvasApp.State = (function () {
         if (stored && Array.isArray(stored.nodes)) {
             state.nodes = stored.nodes;
             state.edges = stored.edges || [];
+            rebuildIndex();
             return Promise.resolve();
         }
         return fetch(SEED_PATH)
@@ -71,12 +116,15 @@ window.CanvasApp.State = (function () {
                 state.edges = (data.edges || []).map(function (e, i) {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
                 });
-                persist();
+                rebuildIndex();
+                schedulePersist();
+                flushPendingPersist(); // first paint write is fine to do synchronously
             })
             .catch(function (err) {
                 console.error('Failed to load seed data', err);
                 state.nodes = [];
                 state.edges = [];
+                rebuildIndex();
             });
     }
 
@@ -87,53 +135,98 @@ window.CanvasApp.State = (function () {
         } catch (e) { return null; }
     }
 
-    function persist() {
-        // Draft mode: don't touch the main state key. Live state is the
-        // working copy; snapshot is the rollback point until commitDraft().
-        if (state.snapshot) return;
+    // Persistence is debounced — every mutation used to drive a synchronous
+    // ~150 KB JSON.stringify + localStorage.setItem; during inline editing
+    // and node drag this dominated the main thread. Now: schedule a write,
+    // coalesce within 200ms, flush on pagehide and commitDraft.
+    var PERSIST_DEBOUNCE_MS = 200;
+    var persistTimer = null;
+    var persistPositionsPending = false;
+
+    function schedulePersist() {
+        if (persistTimer) return;
+        persistTimer = setTimeout(function () {
+            persistTimer = null;
+            doPersist();
+        }, PERSIST_DEBOUNCE_MS);
+    }
+
+    function flushPendingPersist() {
+        if (persistTimer) {
+            clearTimeout(persistTimer);
+            persistTimer = null;
+            doPersist();
+        }
+    }
+
+    function doPersist() {
+        // Draft-mode dual-write semantics:
+        //   - Full state writes (everything except positions) are skipped while
+        //     a draft is open — commitDraft / revertDraft drives those.
+        //   - Position-only writes still flow through during edit so layout is
+        //     auto-saved (matches prior behaviour).
+        if (state.snapshot) {
+            if (persistPositionsPending) {
+                writePositionsOnly();
+                persistPositionsPending = false;
+            }
+            return;
+        }
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 nodes: state.nodes,
                 edges: state.edges
             }));
         } catch (e) { /* quota — ignore */ }
+        persistPositionsPending = false;
     }
+
+    function persist() { schedulePersist(); }
 
     /**
      * Persist position changes into the main state JSON without committing
      * any draft data edits. Reads the existing main-state, copies live x/y
-     * into it, writes back.
-     *
-     * Skips nodes that don't exist in main state yet (e.g. a node added in
-     * the current draft and immediately dragged) — those will be persisted
-     * normally on commitDraft().
+     * into it, writes back. Debounced so a 60 fps drag fires one write,
+     * not 60.
      */
     function persistPositions() {
         if (!state.snapshot) {
-            // Not in draft — a normal persist() writes everything anyway.
-            persist();
+            schedulePersist();
             return;
         }
+        persistPositionsPending = true;
+        schedulePersist();
+    }
+
+    function writePositionsOnly() {
         var existing = readStorage();
         if (!existing || !Array.isArray(existing.nodes)) return;
-        var posByNode = {};
-        state.nodes.forEach(function (n) {
+        var posByNode = Object.create(null);
+        for (var i = 0; i < state.nodes.length; i++) {
+            var n = state.nodes[i];
             posByNode[n.id] = { x: n.x || 0, y: n.y || 0 };
-        });
-        existing.nodes.forEach(function (n) {
-            if (posByNode[n.id]) {
-                n.x = posByNode[n.id].x;
-                n.y = posByNode[n.id].y;
-            }
-        });
+        }
+        for (var j = 0; j < existing.nodes.length; j++) {
+            var en = existing.nodes[j];
+            var p = posByNode[en.id];
+            if (p) { en.x = p.x; en.y = p.y; }
+        }
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
         } catch (e) { /* quota */ }
     }
 
+    // Don't lose work on tab close mid-debounce.
+    if (typeof window !== 'undefined' && window.addEventListener) {
+        window.addEventListener('pagehide', flushPendingPersist);
+        window.addEventListener('beforeunload', flushPendingPersist);
+    }
+
     function reset() {
+        if (persistTimer) { clearTimeout(persistTimer); persistTimer = null; }
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
         state.snapshot = null;
+        dirtyMap.clear();
         return load().then(function () { emit('reset'); });
     }
 
@@ -142,12 +235,7 @@ window.CanvasApp.State = (function () {
     function get() { return state; }
     function getNodes() { return state.nodes; }
     function getEdges() { return state.edges; }
-    function getNode(id) {
-        for (var i = 0; i < state.nodes.length; i++) {
-            if (state.nodes[i].id === id) return state.nodes[i];
-        }
-        return null;
-    }
+    function getNode(id) { return nodesById[id] || null; }
     function getMode() { return state.mode; }
     function getView() { return state.view; }
 
@@ -159,11 +247,13 @@ window.CanvasApp.State = (function () {
         if (mode === 'edit' && !state.snapshot) {
             // Capture rollback point. Live state becomes the draft.
             state.snapshot = deepClone({ nodes: state.nodes, edges: state.edges });
+            dirtyMap.clear();
         } else if (mode === 'view' && state.snapshot) {
             // Defensive: leaving edit mode without commit/revert silently discards
             // the snapshot (live data wins). Normal UI flow always calls one of the
             // two paths, so this is a safety net.
             state.snapshot = null;
+            dirtyMap.clear();
         }
         // Undo history is scoped to a single edit session.
         undoStack = [];
@@ -173,12 +263,15 @@ window.CanvasApp.State = (function () {
 
     // ---- Undo ----------------------------------------------------------
 
-    /** Snapshot live nodes/edges onto the undo stack. */
-    function pushUndo(label) {
+    /**
+     * Push a targeted inverse of the operation about to happen. Each frame
+     * holds a closure that, when invoked, reverts just the affected entities
+     * — so a column rename clones one node, not the entire graph.
+     */
+    function pushUndoOp(label, undoFn) {
         undoStack.push({
             label: label || '',
-            nodes: deepClone(state.nodes),
-            edges: deepClone(state.edges),
+            undoFn: undoFn,
             selection: state.selection ? deepClone(state.selection) : null
         });
         if (undoStack.length > UNDO_LIMIT) undoStack.shift();
@@ -188,11 +281,10 @@ window.CanvasApp.State = (function () {
     function undo() {
         var frame = undoStack.pop();
         if (!frame) return null;
-        state.nodes = frame.nodes;
-        state.edges = frame.edges;
+        try { frame.undoFn(); } catch (e) { console.error('undo failed', e); }
         state.selection = frame.selection;
-        // Rebroadcast as a wholesale replace so every surface re-renders.
-        persist();
+        rebuildIndex();
+        schedulePersist();
         emit('replace');
         return frame.label;
     }
@@ -203,7 +295,9 @@ window.CanvasApp.State = (function () {
     function commitDraft() {
         if (!state.snapshot) return;
         state.snapshot = null;
-        persist();
+        dirtyMap.clear();
+        schedulePersist();
+        flushPendingPersist();
         emit('committed');
     }
 
@@ -214,47 +308,23 @@ window.CanvasApp.State = (function () {
         state.snapshot = null;
         state.selection = null;
         undoStack = [];
+        dirtyMap.clear();
+        rebuildIndex();
         emit('replace');
     }
 
-    function hasUnsavedChanges() {
-        return getUnsavedChangeCount() > 0;
-    }
+    function hasUnsavedChanges() { return dirtyMap.size > 0; }
 
     /**
-     * Count distinct dirty entities (nodes + edges) vs. the snapshot.
-     * Layout-only edits (x/y) don't count — they auto-persist via persistPositions().
+     * Distinct dirty-entity count (nodes + edges) accumulated from mutation
+     * APIs since enter-edit. Approximate at the edges (rename then rename back
+     * still counts as 1) but the dirty/clean signal is exact, and replacing
+     * the per-emit JSON.stringify-compare made the Save indicator effectively
+     * free.
      */
     function getUnsavedChangeCount() {
         if (!state.snapshot) return 0;
-        var stripPos = function (n) {
-            var c = Object.assign({}, n); delete c.x; delete c.y; return c;
-        };
-        var byId = function (arr) {
-            var m = Object.create(null);
-            arr.forEach(function (x) { m[x.id] = x; });
-            return m;
-        };
-        var count = 0;
-        var liveNodes = byId(state.nodes.map(stripPos));
-        var snapNodes = byId(state.snapshot.nodes.map(stripPos));
-        Object.keys(liveNodes).forEach(function (id) {
-            if (!snapNodes[id]) count += 1;
-            else if (JSON.stringify(liveNodes[id]) !== JSON.stringify(snapNodes[id])) count += 1;
-        });
-        Object.keys(snapNodes).forEach(function (id) {
-            if (!liveNodes[id]) count += 1;
-        });
-        var liveEdges = byId(state.edges);
-        var snapEdges = byId(state.snapshot.edges);
-        Object.keys(liveEdges).forEach(function (id) {
-            if (!snapEdges[id]) count += 1;
-            else if (JSON.stringify(liveEdges[id]) !== JSON.stringify(snapEdges[id])) count += 1;
-        });
-        Object.keys(snapEdges).forEach(function (id) {
-            if (!liveEdges[id]) count += 1;
-        });
-        return count;
+        return dirtyMap.size;
     }
 
     function deepClone(obj) {
@@ -333,12 +403,7 @@ window.CanvasApp.State = (function () {
         }
     }
 
-    function getEdge(id) {
-        for (var i = 0; i < state.edges.length; i++) {
-            if (state.edges[i].id === id) return state.edges[i];
-        }
-        return null;
-    }
+    function getEdge(id) { return edgesById[id] || null; }
 
     function updateEdge(id, patch) {
         var e = getEdge(id);
@@ -352,7 +417,8 @@ window.CanvasApp.State = (function () {
         });
         if (dup && (patch.from || patch.to)) return; // silently reject retarget that creates a duplicate
         Object.assign(e, patch);
-        persist();
+        markModified('edge', id);
+        schedulePersist();
         emit('edges');
     }
 
@@ -372,7 +438,8 @@ window.CanvasApp.State = (function () {
             }
         }
         // Layout is a UI preference: always-persist into the main state JSON,
-        // but only the position fields — draft edits stay drafts.
+        // but only the position fields — draft edits stay drafts. Persist is
+        // debounced so a 60 fps drag fires one localStorage write, not 60.
         persistPositions();
         // Note: emit kept lightweight — caller (canvas drag) updates DOM directly.
     }
@@ -383,10 +450,19 @@ window.CanvasApp.State = (function () {
         // Snapshot before any structural column edit (add/remove/reorder/set
         // rename). Pure label/system/schema/tag/type edits don't push undo —
         // they're cheap to redo by hand and would flood the stack.
-        if (patch && Array.isArray(patch.columns)) pushUndo('Attribute geändert');
+        if (patch && Array.isArray(patch.columns)) {
+            var beforeCols = (n.columns || []).map(function (c) { return Object.assign({}, c); });
+            pushUndoOp('Attribute geändert', function () {
+                var target = nodesById[id];
+                if (target) target.columns = beforeCols;
+            });
+        }
+        // Layout-only patches (x/y) don't dirty — drag has its own path.
+        var isLayoutOnly = patch && Object.keys(patch).every(function (k) { return k === 'x' || k === 'y'; });
         Object.assign(n, patch);
+        if (!isLayoutOnly) markModified('node', id);
         pruneSelection();
-        persist();
+        schedulePersist();
         emit('nodes');
     }
 
@@ -404,18 +480,52 @@ window.CanvasApp.State = (function () {
             y: 100
         }, node, { id: id });
         state.nodes.push(fresh);
-        persist();
+        nodesById[id] = fresh;
+        markAdded('node', id);
+        schedulePersist();
         emit('nodes');
         return fresh;
     }
 
     function deleteNode(id) {
         var n = getNode(id);
-        pushUndo('Knoten "' + (n ? (n.label || n.id) : id) + '" gelöscht');
-        state.nodes = state.nodes.filter(function (n) { return n.id !== id; });
-        state.edges = state.edges.filter(function (e) { return e.from !== id && e.to !== id; });
+        if (!n) return;
+        // Capture just the affected node + its edges for undo — full-graph
+        // clone was the previous shape and dominated edit-mode memory.
+        var savedNode = JSON.parse(JSON.stringify(n));
+        var savedEdges = state.edges
+            .filter(function (e) { return e.from === id || e.to === id; })
+            .map(function (e) { return JSON.parse(JSON.stringify(e)); });
+        var savedDirtyForNode = dirtyMap.get(dkey('node', id));
+        var savedDirtyForEdges = savedEdges.map(function (e) { return [e.id, dirtyMap.get(dkey('edge', e.id))]; });
+
+        pushUndoOp('Knoten "' + (n.label || n.id) + '" gelöscht', function () {
+            state.nodes.push(savedNode);
+            for (var i = 0; i < savedEdges.length; i++) state.edges.push(savedEdges[i]);
+            // Restore dirty marks so Save count behaves intuitively after undo.
+            if (savedDirtyForNode) dirtyMap.set(dkey('node', id), savedDirtyForNode);
+            else dirtyMap.delete(dkey('node', id));
+            for (var j = 0; j < savedDirtyForEdges.length; j++) {
+                var k = dkey('edge', savedDirtyForEdges[j][0]);
+                if (savedDirtyForEdges[j][1]) dirtyMap.set(k, savedDirtyForEdges[j][1]);
+                else dirtyMap.delete(k);
+            }
+        });
+
+        state.nodes = state.nodes.filter(function (x) { return x.id !== id; });
+        delete nodesById[id];
+        var droppedEdgeIds = [];
+        state.edges = state.edges.filter(function (e) {
+            if (e.from === id || e.to === id) { droppedEdgeIds.push(e.id); return false; }
+            return true;
+        });
+        for (var k = 0; k < droppedEdgeIds.length; k++) {
+            delete edgesById[droppedEdgeIds[k]];
+            markRemoved('edge', droppedEdgeIds[k]);
+        }
+        markRemoved('node', id);
         pruneSelection();
-        persist();
+        schedulePersist();
         emit('nodes');
     }
 
@@ -431,16 +541,30 @@ window.CanvasApp.State = (function () {
             label: ''
         }, edge);
         state.edges.push(fresh);
-        persist();
+        edgesById[fresh.id] = fresh;
+        markAdded('edge', fresh.id);
+        schedulePersist();
         emit('edges');
         return fresh;
     }
 
     function deleteEdge(id) {
-        pushUndo('Beziehung gelöscht');
-        state.edges = state.edges.filter(function (e) { return e.id !== id; });
+        var e = getEdge(id);
+        if (!e) return;
+        var savedEdge = JSON.parse(JSON.stringify(e));
+        var savedDirty = dirtyMap.get(dkey('edge', id));
+
+        pushUndoOp('Beziehung gelöscht', function () {
+            state.edges.push(savedEdge);
+            if (savedDirty) dirtyMap.set(dkey('edge', id), savedDirty);
+            else dirtyMap.delete(dkey('edge', id));
+        });
+
+        state.edges = state.edges.filter(function (x) { return x.id !== id; });
+        delete edgesById[id];
+        markRemoved('edge', id);
         pruneSelection();
-        persist();
+        schedulePersist();
         emit('edges');
     }
 
@@ -450,7 +574,9 @@ window.CanvasApp.State = (function () {
         state.selection = null;
         state.snapshot = null; // import discards any in-flight draft
         undoStack = [];        // and any in-flight undo history
-        persist();
+        dirtyMap.clear();
+        rebuildIndex();
+        schedulePersist();
         emit('replace');
     }
 
@@ -509,7 +635,6 @@ window.CanvasApp.State = (function () {
         undo: undo,
         canUndo: canUndo,
         getUndoCount: getUndoCount,
-        pushUndo: pushUndo,
         setView: setView,
         setSelection: setSelection,
         clearSelection: clearSelection,

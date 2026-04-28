@@ -364,14 +364,26 @@ window.CanvasApp.App = (function () {
 
         var activeIdx = -1;
         var currentItems = [];
+        var searchDebounceTimer = null;
 
-        input.addEventListener('input', function () {
+        function runSearch() {
             var q = input.value.trim();
-            highlightMatches(q.toLowerCase());
-            currentItems = q ? buildRecommendations(q) : [];
+            // buildRecommendations already iterates every node + column. Have
+            // it return the matched-id Set in the same pass, so highlight no
+            // longer re-walks the graph.
+            var built = q ? buildRecommendations(q) : { items: [], matchIds: null };
+            currentItems = built.items;
+            highlightMatches(built.matchIds);
             activeIdx = -1;
             renderDropdown(currentItems, dropdown);
             setExpanded(input, !!q);
+        }
+
+        input.addEventListener('input', function () {
+            // Debounce: a fast typer would otherwise re-iterate the whole
+            // graph (and touch every .node element) on every keystroke.
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(runSearch, 80);
         });
 
         input.addEventListener('focus', function () {
@@ -435,19 +447,27 @@ window.CanvasApp.App = (function () {
         var nodes = State.getNodes();
         var nodeHits = [], systemHits = [], attrHits = [];
         var seenSystems = {};
+        var matchIds = new Set(); // shared with highlightMatches — single graph walk
 
         nodes.forEach(function (n) {
             var label = (n.label || n.id || '').toLowerCase();
             var id    = (n.id || '').toLowerCase();
-            if (label.indexOf(q) !== -1 || id.indexOf(q) !== -1) {
+            var nodeMatches = label.indexOf(q) !== -1 || id.indexOf(q) !== -1;
+            if (nodeMatches) {
                 nodeHits.push({
                     kind: 'node',
                     label: n.label || n.id,
                     sub: typeLabelLocal(n.type) + (n.system ? ' · ' + n.system : ''),
                     nodeId: n.id
                 });
+                matchIds.add(n.id);
             }
-            (n.columns || []).forEach(function (c) {
+            var sysMatches = n.system && n.system.toLowerCase().indexOf(q) !== -1;
+            if (sysMatches) matchIds.add(n.id);
+            var attrMatches = false;
+            var ncols = n.columns || [];
+            for (var i = 0; i < ncols.length; i++) {
+                var c = ncols[i];
                 if ((c.name || '').toLowerCase().indexOf(q) !== -1) {
                     attrHits.push({
                         kind: 'attribute',
@@ -456,9 +476,11 @@ window.CanvasApp.App = (function () {
                         nodeId: n.id,
                         attrName: c.name
                     });
+                    attrMatches = true;
                 }
-            });
-            if (n.system && !seenSystems[n.system] && n.system.toLowerCase().indexOf(q) !== -1) {
+            }
+            if (attrMatches) matchIds.add(n.id);
+            if (sysMatches && !seenSystems[n.system]) {
                 seenSystems[n.system] = true;
                 systemHits.push({
                     kind: 'system',
@@ -470,9 +492,10 @@ window.CanvasApp.App = (function () {
         });
 
         // Cap each kind so attribute-heavy queries don't push out node/system hits.
-        return nodeHits.slice(0, 5)
+        var items = nodeHits.slice(0, 5)
             .concat(systemHits.slice(0, 3))
             .concat(attrHits.slice(0, 8));
+        return { items: items, matchIds: matchIds };
     }
 
     function typeLabelLocal(t) {
@@ -511,28 +534,26 @@ window.CanvasApp.App = (function () {
         else if (rec.kind === 'attribute') State.setSelectedAttribute(rec.nodeId, rec.attrName);
         // Clear search after selection so the dropdown closes naturally
         input.value = '';
-        highlightMatches('');
+        highlightMatches(null);
         closeSearchDropdown(document.getElementById('search-dropdown'), input);
         input.blur();
         // Switch to diagram view if currently in API view (no selection panel there)
         if (State.getView() === 'api') State.setView('diagram');
     }
 
-    function highlightMatches(q) {
-        var matches = [];
-        var nodes = State.getNodes();
-        nodes.forEach(function (n) {
-            var hay = [
-                n.label, n.id, n.system, n.schema,
-                (n.columns || []).map(function (c) { return c.name; }).join(' ')
-            ].join(' ').toLowerCase();
-            if (q && hay.indexOf(q) !== -1) matches.push(n);
-        });
-        // Visual hint on the canvas: dim non-matching nodes when there's a query
+    /**
+     * Dim non-matching nodes on the canvas. `matchIds` is a Set built by
+     * buildRecommendations in the same pass — passing null clears the dim.
+     * Skips writes for nodes whose state didn't change so opacity isn't
+     * touched on every keystroke for the entire graph.
+     */
+    function highlightMatches(matchIds) {
         document.querySelectorAll('.node').forEach(function (el) {
             var id = el.getAttribute('data-node-id');
-            var match = q === '' || matches.some(function (n) { return n.id === id; });
-            el.style.opacity = match ? '' : '0.3';
+            var dim = matchIds && !matchIds.has(id);
+            var current = el.style.opacity;
+            var next = dim ? '0.3' : '';
+            if (current !== next) el.style.opacity = next;
         });
     }
 
