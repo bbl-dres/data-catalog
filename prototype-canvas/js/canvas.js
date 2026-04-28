@@ -81,18 +81,15 @@ window.CanvasApp.Canvas = (function () {
     var dragStartClient = null;
     var dragNodeStart = null;
 
-    // rAF-coalesced pointer pipeline. Pan and drag handlers used to do their
-    // full work synchronously per pointermove; on a high-rate trackpad that
-    // dispatched several heavy updates per frame (transform + persist +
-    // edge re-route + group rebuild). Now: handlers stash the latest client
-    // x/y, one rAF per frame applies the most recent values.
+    // rAF-coalesced pointer pipeline. Pan, drag, and pinch handlers stash
+    // their latest input; one rAF per frame applies whichever gesture is
+    // active.
     var pointerRafQueued = false;
-    var pendingPointer = null; // { panX, panY } || { dragX, dragY } || both fields
+    var pendingPointer = null;
 
-    function schedulePointerFrame(pan, drag) {
+    function schedulePointerFrame(kind) {
         if (!pendingPointer) pendingPointer = {};
-        if (pan) { pendingPointer.panX = pan.x; pendingPointer.panY = pan.y; }
-        if (drag) { pendingPointer.dragX = drag.x; pendingPointer.dragY = drag.y; }
+        pendingPointer[kind] = true;
         if (pointerRafQueued) return;
         pointerRafQueued = true;
         requestAnimationFrame(flushPointerFrame);
@@ -103,14 +100,81 @@ window.CanvasApp.Canvas = (function () {
         var p = pendingPointer;
         pendingPointer = null;
         if (!p) return;
-        if (isPanning && p.panX != null) {
-            translateX = panStart.tx + (p.panX - panStart.x);
-            translateY = panStart.ty + (p.panY - panStart.y);
+        // Pinch wins over pan when both could fire (two pointers down).
+        if (p.pinch && pinchInitial && activePointers.size >= 2) {
+            applyPinch();
+            return;
+        }
+        if (isPanning && p.pan) {
+            var pp = lastPanClient;
+            translateX = panStart.tx + (pp.x - panStart.x);
+            translateY = panStart.ty + (pp.y - panStart.y);
             applyTransform();
         }
-        if (isDragging && p.dragX != null) {
-            applyDragMove(p.dragX, p.dragY);
+        if (isDragging && p.drag) {
+            var dp = lastDragClient;
+            applyDragMove(dp.x, dp.y);
         }
+    }
+
+    // Latest pointer-client positions stashed by the move handler — read by
+    // flushPointerFrame on its next tick.
+    var lastPanClient = null;
+    var lastDragClient = null;
+
+    // Active pointers (touch fingers + mouse). Two simultaneous pointers
+    // = pinch zoom; one = pan. Tracked so we can detect transitions and
+    // ignore single-pointer pan logic during pinch.
+    var activePointers = new Map();
+    var pinchInitial = null; // { distance, scale, midClient: {x,y}, translate: {x,y} }
+
+    function beginPinch() {
+        var pts = [];
+        activePointers.forEach(function (p) { pts.push(p); });
+        if (pts.length < 2) return;
+        var dx = pts[1].x - pts[0].x;
+        var dy = pts[1].y - pts[0].y;
+        var d = Math.hypot(dx, dy);
+        if (d < 1) return;
+        pinchInitial = {
+            distance: d,
+            scale: scale,
+            midClient: { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 },
+            translate: { x: translateX, y: translateY }
+        };
+        canvasEl.classList.add('is-pinching');
+    }
+
+    function endPinch() {
+        pinchInitial = null;
+        canvasEl.classList.remove('is-pinching');
+    }
+
+    function applyPinch() {
+        if (!pinchInitial) return;
+        var pts = [];
+        activePointers.forEach(function (p) { pts.push(p); });
+        if (pts.length < 2) return;
+        var dx = pts[1].x - pts[0].x;
+        var dy = pts[1].y - pts[0].y;
+        var d = Math.hypot(dx, dy);
+        if (d < 1) return;
+        var newScale = clamp(
+            (d / pinchInitial.distance) * pinchInitial.scale,
+            MIN_SCALE, MAX_SCALE
+        );
+        // Anchor the zoom to the gesture's initial midpoint — same trick the
+        // wheel handler uses for cursor-anchored zoom. We hold the anchor
+        // fixed in client-space and recompute translate from the initial
+        // (translate, scale) so the zoom feels like it's centred on where
+        // the user's fingers came down.
+        var rect = canvasEl.getBoundingClientRect();
+        var ax = pinchInitial.midClient.x - rect.left;
+        var ay = pinchInitial.midClient.y - rect.top;
+        translateX = ax - (ax - pinchInitial.translate.x) * (newScale / pinchInitial.scale);
+        translateY = ay - (ay - pinchInitial.translate.y) * (newScale / pinchInitial.scale);
+        scale = newScale;
+        applyTransform();
     }
 
     // Cache: node-id → DOM element. Built fresh in renderNodes; the previous
@@ -720,17 +784,36 @@ window.CanvasApp.Canvas = (function () {
     // ---- Pan / Zoom ----------------------------------------------------
 
     function onPanStart(e) {
-        // Don't pan if interacting with a node, an edge (in either layer),
-        // any floating toolbar, or a system frame label.
-        if (e.target.closest('.node')) return;
-        if (e.target.closest('#edge-layer')) return;
-        if (e.target.closest('#edge-overlay')) return;
-        if (e.target.closest('.ft')) return;
-        if (e.target.closest('.node-action-bar')) return;
-        if (e.target.closest('.group-box-label')) return;
-        // Edge-drawing in edit mode is handled by Editor module — bail
-        if (canvasEl.classList.contains('is-edge-drawing')) return;
+        // The first pointer's target governs the bail-outs (nodes, edges,
+        // floating toolbars). Subsequent pointers are tracked unconditionally
+        // so a second finger can drop anywhere — including on a node — to
+        // start pinch zoom. Editor's port/handle pointerdown listeners stop
+        // propagation so we don't see those here.
+        if (activePointers.size === 0) {
+            if (e.target.closest('.node')) return;
+            if (e.target.closest('#edge-layer')) return;
+            if (e.target.closest('#edge-overlay')) return;
+            if (e.target.closest('.ft')) return;
+            if (e.target.closest('.node-action-bar')) return;
+            if (e.target.closest('.group-box-label')) return;
+            if (canvasEl.classList.contains('is-edge-drawing')) return;
+        }
 
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+        if (activePointers.size >= 2) {
+            // Two pointers down → pinch zoom takes over. Cancel any
+            // single-pointer pan that was in progress; it would otherwise
+            // double-up with the pinch translate computation.
+            if (isPanning) {
+                isPanning = false;
+                canvasEl.classList.remove('is-panning');
+            }
+            beginPinch();
+            return;
+        }
+
+        // Single pointer: standard pan.
         isPanning = true;
         panStart = {
             x: e.clientX,
@@ -749,21 +832,43 @@ window.CanvasApp.Canvas = (function () {
     }
 
     function onPanMove(e) {
-        // High-rate pointer streams used to drive applyTransform / drag work
-        // synchronously per event. Coalesce to one rAF per frame so a fast
-        // trackpad doesn't dispatch multiple repaints between frames.
+        // Update tracked pointer position regardless of which gesture is
+        // active — pinch reads both pointers from the map.
+        if (activePointers.has(e.pointerId)) {
+            activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        }
+        if (pinchInitial && activePointers.size >= 2) {
+            schedulePointerFrame('pinch');
+            return;
+        }
         if (isPanning) {
-            schedulePointerFrame({ x: e.clientX, y: e.clientY }, null);
+            lastPanClient = { x: e.clientX, y: e.clientY };
+            schedulePointerFrame('pan');
         }
         if (isDragging) {
-            schedulePointerFrame(null, { x: e.clientX, y: e.clientY });
+            lastDragClient = { x: e.clientX, y: e.clientY };
+            schedulePointerFrame('drag');
         }
     }
 
-    function onPanEnd() {
-        if (isPanning) {
-            isPanning = false;
-            canvasEl.classList.remove('is-panning');
+    function onPanEnd(e) {
+        if (e && e.pointerId != null) {
+            activePointers.delete(e.pointerId);
+        } else {
+            activePointers.clear();
+        }
+        // Lifting one finger of a pinch ends the gesture cleanly. We don't
+        // demote to single-pointer pan because the remaining finger's
+        // panStart is stale; the user must lift and re-touch to pan. This
+        // matches how Miro / Figma behave on touch.
+        if (pinchInitial && activePointers.size < 2) {
+            endPinch();
+        }
+        if (activePointers.size === 0) {
+            if (isPanning) {
+                isPanning = false;
+                canvasEl.classList.remove('is-panning');
+            }
         }
         if (isDragging) {
             onDragEnd();

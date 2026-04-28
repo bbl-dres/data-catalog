@@ -146,7 +146,10 @@
       "Bash(node -e \"['js/canvas.js'].forEach\\(p => { try { new Function\\(require\\('fs'\\).readFileSync\\(p,'utf8'\\)\\); console.log\\('OK',p\\); } catch\\(e\\){ console.log\\('FAIL',p,e.message\\); } }\\)\")",
       "Bash(kill 6536)",
       "Bash(node c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/scripts/migrate-sets.js)",
-      "Bash(kill 6572)"
+      "Bash(kill 6572)",
+      "Bash(echo \"PID $!\")",
+      "Bash(curl -s -o /dev/null -w \"page=%{http_code} canvas.js=\" http://127.0.0.1:8765/prototype-canvas/)",
+      "Bash(kill 6586)"
     ]
   }
 }
