@@ -494,6 +494,10 @@ window.CanvasApp.XlsxIO = (function () {
     function exportJson() {
         var data = {
             version: 2,
+            // Curator-saved entry-point view. Optional — null when the
+            // canvas hasn't been pinned to a starting frame. Excel exports
+            // skip this; JSON is the round-trip format that preserves it.
+            homeView: State.getHomeView ? State.getHomeView() : null,
             sets: State.getSets(),
             nodes: State.getNodes(),
             edges: State.getEdges()

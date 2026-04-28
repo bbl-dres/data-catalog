@@ -334,16 +334,12 @@ window.CanvasApp.Panel = (function () {
 
         var arrowSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
-        var endpointRow = function (label, nodeId, node, role) {
-            var ic = node ? (TYPE_ICONS[node.type] || TYPE_ICONS.table) : '';
+        var endpointRow = function (label, nodeId, node) {
             var typeBadge = node
                 ? '<span class="info-set-label">' + escapeHtml(node.system || typeLabel(node.type)) + '</span>'
                 : '<span class="info-set-label" style="color:var(--color-text-placeholder)">unbekannt</span>';
             return '<li data-action="select-node" data-node-id="' + escapeAttr(nodeId) + '" title="Knoten anzeigen">' +
-                    '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px">' +
-                        (node ? '<span class="cell-icon" data-type="' + escapeAttr(node.type) + '">' + ic + '</span>' : '') +
-                        escapeHtml(label) +
-                    '</span>' +
+                    '<span class="info-set-name">' + escapeHtml(label) + '</span>' +
                     typeBadge +
                 '</li>';
         };
@@ -370,11 +366,11 @@ window.CanvasApp.Panel = (function () {
             '</div>' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Quelle</div>' +
-                '<ul class="info-set-list">' + endpointRow(fromLabel, edge.from, fromNode, 'from') + '</ul>' +
+                '<ul class="info-set-list">' + endpointRow(fromLabel, edge.from, fromNode) + '</ul>' +
             '</div>' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Ziel</div>' +
-                '<ul class="info-set-list">' + endpointRow(toLabel, edge.to, toNode, 'to') + '</ul>' +
+                '<ul class="info-set-list">' + endpointRow(toLabel, edge.to, toNode) + '</ul>' +
             '</div>';
     }
 
@@ -469,13 +465,9 @@ window.CanvasApp.Panel = (function () {
             usageHtml =
                 '<ul class="info-rel-list">' +
                     byNode.map(function (r) {
-                        var ic = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
                         var sub = r.node.system ? escapeHtml(r.node.system) : '';
                         return '<li data-action="select-node" data-node-id="' + escapeAttr(r.node.id) + '" title="Knoten anzeigen">' +
-                            '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px">' +
-                                '<span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + ic + '</span>' +
-                                escapeHtml(r.node.label || r.node.id) +
-                            '</span>' +
+                            '<span class="info-set-name">' + escapeHtml(r.node.label || r.node.id) + '</span>' +
                             (sub ? '<span class="info-set-label">' + sub + '</span>' : '') +
                             '<span class="info-set-count">' + r.count + '</span>' +
                         '</li>';
@@ -569,6 +561,53 @@ window.CanvasApp.Panel = (function () {
 
     // ---- Attribute content ---------------------------------------------
 
+    /**
+     * Resolve the codelist node referenced by this attribute, if any.
+     * Convention (mirrors canvas.js buildCodelistRefsIndex): an FK edge
+     * from the attribute's node to a codelist node, with edge.label
+     * matching the column name. Last write wins when multiple match.
+     */
+    function findCodelistForAttribute(node, col) {
+        if (!node || !col || !col.name) return null;
+        var edges = State.getEdges();
+        var hit = null;
+        for (var i = 0; i < edges.length; i++) {
+            var e = edges[i];
+            if (e.from !== node.id) continue;
+            if (e.label !== col.name) continue;
+            var target = State.getNode(e.to);
+            if (target && target.type === 'codelist') hit = target;
+        }
+        return hit;
+    }
+
+    function codelistValuesSectionHtml(codelist) {
+        var rows = (codelist.columns || []).map(function (entry) {
+            var code  = entry.name || '';
+            var label = entry.type || '';
+            return '<li>' +
+                '<span class="info-set-name">' + escapeHtml(code) + '</span>' +
+                '<span class="info-set-label">' + escapeHtml(label) + '</span>' +
+            '</li>';
+        }).join('');
+
+        var titleLink =
+            '<a class="info-link" data-action="select-node" data-node-id="' +
+                escapeAttr(codelist.id) + '" href="#">' +
+                escapeHtml(codelist.label || codelist.id) +
+            '</a>';
+
+        return '<div class="info-section">' +
+            '<div class="info-section-label">' +
+                'Werteliste · ' + titleLink +
+                '<span class="info-section-count">' + (codelist.columns || []).length + '</span>' +
+            '</div>' +
+            (rows
+                ? '<ul class="info-set-list info-codelist-list">' + rows + '</ul>'
+                : '<div class="info-empty">Keine Werte</div>') +
+        '</div>';
+    }
+
     function attributeContentHtml(node, col) {
         var keyClass = col.key === 'PK' ? 'pk' : col.key === 'FK' ? 'fk' : col.key === 'UK' ? 'uk' : '';
         var keyBadge = col.key
@@ -599,11 +638,10 @@ window.CanvasApp.Panel = (function () {
 
         var crossHtml = cross.length
             ? '<ul class="info-set-list">' + cross.map(function (r) {
-                var ic = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
                 var rSetLabel = r.col.setId ? State.getSetLabel(r.col.setId)
                               : r.col.sourceStructure || '';
                 return '<li data-action="select-attr" data-node-id="' + escapeAttr(r.node.id) + '" data-attr-name="' + escapeAttr(r.col.name) + '">' +
-                    '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + ic + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span>' +
+                    '<span class="info-set-name">' + escapeHtml(r.node.label || r.node.id) + '</span>' +
                     '<span class="info-set-label">' + escapeHtml(r.col.type || '') + (rSetLabel ? ' · ' + escapeHtml(rSetLabel) : '') + '</span>' +
                     (r.col.key ? '<span class="info-key-badge ' + (r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : 'uk') + '">' + escapeHtml(r.col.key) + '</span>' : '') +
                 '</li>';
@@ -649,7 +687,14 @@ window.CanvasApp.Panel = (function () {
             (cross.length
                 ? '<div class="info-section"><div class="info-section-label">Gleicher Name in anderen Knoten <span class="info-section-count">' + cross.length + '</span></div>' + crossHtml + '</div>'
                 : ''
-            );
+            ) +
+            // Werteliste — render the FK-target codelist's code/label pairs
+            // inline so the user doesn't have to hop to the codelist node
+            // to know what values the attribute can take.
+            (function () {
+                var cl = findCodelistForAttribute(node, col);
+                return cl ? codelistValuesSectionHtml(cl) : '';
+            })();
     }
 
     function typeLabel(t) {

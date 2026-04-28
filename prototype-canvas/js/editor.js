@@ -92,6 +92,9 @@ window.CanvasApp.Editor = (function () {
             el.addEventListener('pointerdown', onEdgeLayerPointerDown, true);
             el.addEventListener('blur', onEdgeLabelBlur, true);
             el.addEventListener('keydown', onEdgeLabelKeydown);
+            // Cardinality <select>s in the edge popover — change fires
+            // on commit (blur or option-pick), unlike input.
+            el.addEventListener('change', onEdgeCardinalityChange);
         });
 
         // Keyboard Delete / Backspace — only when nothing is being edited
@@ -592,6 +595,28 @@ window.CanvasApp.Editor = (function () {
             input.value = (edge && edge.label) || '';
             input.blur();
         }
+    }
+
+    /**
+     * Cardinality <select> on the edge popover changed — patch the
+     * edge's fromCardinality / toCardinality. Empty value clears the
+     * marker (stored as null so the round-trip is symmetric).
+     */
+    function onEdgeCardinalityChange(e) {
+        var sel = e.target;
+        if (!sel || !sel.matches || !sel.matches('select.edge-card-select')) return;
+        var group = sel.closest('.edge-group');
+        if (!group) return;
+        var id = group.getAttribute('data-edge-id');
+        var edge = State.getEdge(id);
+        if (!edge) return;
+        var end = sel.getAttribute('data-edge-card-end');
+        var key = end === 'from' ? 'fromCardinality' : 'toCardinality';
+        var value = sel.value || null;
+        if ((edge[key] || null) === value) return;
+        var patch = {};
+        patch[key] = value;
+        State.updateEdge(id, patch);
     }
 
     // ---- Keyboard delete ----------------------------------------------

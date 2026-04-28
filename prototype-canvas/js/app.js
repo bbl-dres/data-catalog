@@ -55,14 +55,17 @@ window.CanvasApp.App = (function () {
             window.CanvasApp.Panel.render();
             updateSaveAffordance();
             updateCanvasEmpty();
-            // Fit on first paint
+            // Initial framing on first paint. goHome applies the curator's
+            // saved Home view if present, otherwise falls back to
+            // initialView (fit-with-floor, never below 25%). The user can
+            // always reach full overview via the Zoom Extent button.
             // Double rAF — first frame paints the freshly-rendered DOM,
             // second frame fires after layout has been computed. Single
             // rAF was racing layout on heavy initial trees and producing
-            // a stale 0×0 rect inside fitToScreen.
+            // a stale 0×0 rect.
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () {
-                    window.CanvasApp.Canvas.fitToScreen();
+                    window.CanvasApp.Canvas.goHome();
                 });
             });
         });

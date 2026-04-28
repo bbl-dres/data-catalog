@@ -28,6 +28,12 @@ window.CanvasApp.State = (function () {
         nodes: [],
         edges: [],
         sets: [],            // global property-set registry — see canvas.json
+        // Curated entry-point view (scale + bbox-centre in world coords).
+        // null = no curated view; Canvas.goHome falls back to initialView.
+        // Treated as layout (always-saved, mirrored into snapshot) so that
+        // pressing Cancel after setting a home view doesn't undo it — same
+        // pattern as node positions.
+        homeView: null,
         view: 'diagram',
         mode: 'view',
         // Tagged-union selection. Exactly one of node / edge / system /
@@ -125,6 +131,7 @@ window.CanvasApp.State = (function () {
             state.nodes = stored.nodes;
             state.edges = stored.edges || [];
             state.sets  = stored.sets;
+            state.homeView = isValidHomeView(stored.homeView) ? stored.homeView : null;
             rebuildIndex();
             return Promise.resolve();
         }
@@ -136,6 +143,7 @@ window.CanvasApp.State = (function () {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
                 });
                 state.sets = data.sets || [];
+                state.homeView = isValidHomeView(data.homeView) ? data.homeView : null;
                 rebuildIndex();
                 schedulePersist();
                 flushPendingPersist(); // first paint write is fine to do synchronously
@@ -197,7 +205,8 @@ window.CanvasApp.State = (function () {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 nodes: state.nodes,
                 edges: state.edges,
-                sets:  state.sets
+                sets:  state.sets,
+                homeView: state.homeView
             }));
         } catch (e) { /* quota — ignore */ }
         persistPositionsPending = false;
@@ -233,6 +242,9 @@ window.CanvasApp.State = (function () {
             var p = posByNode[en.id];
             if (p) { en.x = p.x; en.y = p.y; }
         }
+        // homeView is layout, not data — same always-saved policy as
+        // node positions, so it survives a Cancel from edit mode.
+        existing.homeView = state.homeView;
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
         } catch (e) { /* quota */ }
@@ -704,6 +716,13 @@ window.CanvasApp.State = (function () {
         // payload explicitly carries one. The set names referenced by
         // imported columns must match registry ids (validated at import).
         if (Array.isArray(payload.sets)) state.sets = payload.sets;
+        // homeView: only overwrite if the payload carries a valid one.
+        // Excel imports don't include homeView, so the existing curated
+        // entry-point survives a re-import of the data sheets. JSON
+        // imports can carry homeView and it wins when present.
+        if (payload.hasOwnProperty('homeView')) {
+            state.homeView = isValidHomeView(payload.homeView) ? payload.homeView : null;
+        }
         state.selection = null;
         state.snapshot = null; // import discards any in-flight draft
         undoStack = [];        // and any in-flight undo history
@@ -711,6 +730,33 @@ window.CanvasApp.State = (function () {
         rebuildIndex();
         schedulePersist();
         emit('replace');
+    }
+
+    // ---- Home view -----------------------------------------------------
+
+    function isValidHomeView(v) {
+        return !!v
+            && typeof v.scale   === 'number' && isFinite(v.scale)   && v.scale > 0
+            && typeof v.centerX === 'number' && isFinite(v.centerX)
+            && typeof v.centerY === 'number' && isFinite(v.centerY);
+    }
+
+    function getHomeView() { return state.homeView; }
+
+    /**
+     * Capture / clear the curated entry-point view. Persists immediately
+     * (always-saved, like node positions) so a Cancel from edit mode
+     * doesn't undo it. Pass null to clear.
+     */
+    function setHomeView(v) {
+        if (v === null) {
+            state.homeView = null;
+        } else if (isValidHomeView(v)) {
+            state.homeView = { scale: v.scale, centerX: v.centerX, centerY: v.centerY };
+        } else {
+            return; // silently reject malformed input
+        }
+        persistPositions(); // reuses the layout-merge path so draft state is OK
     }
 
     // ---- Helpers -------------------------------------------------------
@@ -830,6 +876,8 @@ window.CanvasApp.State = (function () {
         generateId: generateId,
         persist: persist,
         pruneSelection: pruneSelection,
+        getHomeView: getHomeView,
+        setHomeView: setHomeView,
         derivePropertySets: derivePropertySets
     };
 })();

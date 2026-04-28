@@ -163,7 +163,16 @@
       "Bash(node --check prototype-canvas/js/app.js)",
       "Bash(node --check prototype-canvas/js/state.js)",
       "Bash(node --check prototype-canvas/js/xlsx_io.js)",
-      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const byType = {}; d.nodes.forEach\\(n => { byType[n.type] = \\(byType[n.type]||0\\)+1; }\\); console.log\\('by type:', byType\\); const v = d.nodes.filter\\(n=>n.type!=='codelist'\\); console.log\\('canvas-visible \\(non-codelist\\):', v.length\\); console.log\\('first 3 visible:', v.slice\\(0,3\\).map\\(n=>\\({id:n.id,type:n.type,x:n.x,y:n.y}\\)\\)\\);\")"
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const byType = {}; d.nodes.forEach\\(n => { byType[n.type] = \\(byType[n.type]||0\\)+1; }\\); console.log\\('by type:', byType\\); const v = d.nodes.filter\\(n=>n.type!=='codelist'\\); console.log\\('canvas-visible \\(non-codelist\\):', v.length\\); console.log\\('first 3 visible:', v.slice\\(0,3\\).map\\(n=>\\({id:n.id,type:n.type,x:n.x,y:n.y}\\)\\)\\);\")",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const cl = d.nodes.find\\(n=>n.type==='codelist'\\); console.log\\('codelist label:', cl.label\\); console.log\\('first 3 columns:', JSON.stringify\\(cl.columns.slice\\(0,3\\),null,2\\)\\); console.log\\('column count:', cl.columns.length\\);\")",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const cls = d.nodes.filter\\(n=>n.type==='codelist'\\); console.log\\('codelists:', cls.map\\(c=>\\({id:c.id, label:c.label, count:c.columns.length}\\)\\)\\); const fkEdges = d.edges.filter\\(e => { const t = d.nodes.find\\(n=>n.id===e.to\\); return t && t.type==='codelist'; }\\); console.log\\('FK→codelist edges sample:', fkEdges.slice\\(0,3\\).map\\(e=>\\({from:e.from, to:e.to, label:e.label}\\)\\)\\);\")",
+      "Bash(node --check prototype-canvas/js/panel.js)",
+      "Bash(node prototype-canvas/scripts/add-av-grundbuch.js)",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); console.log\\('systems:', [...new Set\\(d.nodes.map\\(n=>n.system\\).filter\\(Boolean\\)\\)]\\); console.log\\('totals by system:'\\); const c={}; d.nodes.forEach\\(n=>{ c[n.system||'\\(none\\)'] = \\(c[n.system||'\\(none\\)']||0\\)+1; }\\); console.log\\(c\\);\")",
+      "Bash(node prototype-canvas/scripts/add-av-grundbuch-edges.js)",
+      "Bash(node prototype-canvas/scripts/infer-column-types.js)",
+      "Bash(node prototype-canvas/scripts/infer-cardinality.js)",
+      "Bash(node --check prototype-canvas/js/editor.js)"
     ]
   }
 }

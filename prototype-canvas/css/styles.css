@@ -356,6 +356,17 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   gap: 4px;
   padding: 0 8px 4px;
 }
+/* Row variant — used by Property Sets where the two buttons are short
+   and read more naturally side-by-side than stacked. Each button
+   stretches to share the available width equally. */
+.vis-footer-actions-row {
+  flex-direction: row;
+}
+.vis-footer-actions-row > .vis-action-btn {
+  flex: 1 1 0;
+  justify-content: center;
+  text-align: center;
+}
 .vis-action-btn {
   display: flex;
   align-items: center;
@@ -376,9 +387,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 /* ---- Filter dropdown ---- */
 /* Houses the merged Filter + Sichtbarkeit dropdown — facets, layout
-   toggles, isolation actions, and bulk property-set expand/collapse.
-   Reuses .vis-row / .vis-divider / .vis-action-btn for the row chrome
-   so dropdowns across the toolbar share visual language. */
+   toggles, and bulk property-set expand/collapse. Reuses .vis-row /
+   .vis-divider / .vis-action-btn for the row chrome so dropdowns
+   across the toolbar share visual language. */
 .filter-menu { position: relative; }
 .filter-dropdown {
   position: absolute;
@@ -468,7 +479,11 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   padding: 0 5px;
   font-size: 11px;
   font-weight: 600;
-  line-height: 1;
+  /* Match line-height to the badge height so the digit's text box
+     aligns with the pill geometry — Inter at line-height:1 left a
+     visible top bias because its ascender allowance > descender. */
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
   background: var(--color-bg-accent-strong);
   color: var(--color-text-on-accent);
   border-radius: 10px;
@@ -548,7 +563,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   opacity: 1;
 }
 .filter-pill-bar-clear {
-  margin-left: auto;
+  /* Sit directly after the last pill rather than being pushed to the
+     right edge of the bar — keeps the "remove everything" affordance
+     near the things it removes. */
+  margin-left: var(--space-2);
   flex-shrink: 0;
   font-size: var(--text-small);
   color: var(--color-text-link);
@@ -559,27 +577,27 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 .filter-pill-bar-clear:hover { text-decoration: underline; }
 
-/* ---- Filter dim on canvas ---- */
-/* Filter narrows what's relevant; visibility hides what's noise. They
-   compose: hide-by-type wins (display:none) over filter-dim (opacity).
-   Pointer-events: none on dimmed nodes so clicks fall through to the
-   canvas (panning) instead of selecting a de-emphasized node. */
+/* ---- Filter hide on canvas ---- */
+/* Filter narrows what's relevant — non-matching nodes are hidden
+   entirely (display: none) rather than dimmed. The earlier "ghost"
+   treatment (opacity 0.18) was hard to read at low fit-zoom; users
+   couldn't tell whether the canvas was empty or just dimmed. Edges
+   inherit: an edge whose endpoint vanishes hides too. System frames
+   re-render on every filter change (canvas.js filter handler) so
+   empty groups don't leave dangling rectangles. */
 .node[data-filtered="true"] {
-  opacity: 0.18;
-  filter: grayscale(0.5);
-  pointer-events: none;
+  display: none;
 }
+/* Selection trumps filter: if the user already had something selected
+   when they applied the filter, keep the node visible so the info
+   panel doesn't go stale and they can still drag it back out of the
+   filter scope. Same for an in-progress drag. */
 .node[data-filtered="true"].is-selected,
 .node[data-filtered="true"].is-dragging {
-  /* If the user already had something selected before applying a filter,
-     keep that node fully visible — selection trumps filter dim. */
-  opacity: 1;
-  filter: none;
-  pointer-events: auto;
+  display: block;
 }
 .edge-group[data-filtered="true"] {
-  opacity: 0.18;
-  pointer-events: none;
+  display: none;
 }
 
 /* ---- Export dropdown ---- */
@@ -652,10 +670,6 @@ body.hide-edges #edge-overlay .edge-group { display: none; }
 
 body.hide-systems .group-layer { display: none; }
 
-/* Isolation — set by Filter when "Nur Auswahl anzeigen" is active.
-   Hidden via display so they don't clutter measurement / layout. */
-.node[data-isolated="true"]            { display: none; }
-.edge-group[data-isolated="true"]      { display: none; }
 .seg-btn {
   display: inline-flex;
   align-items: center;
@@ -776,6 +790,32 @@ body.hide-systems .group-layer { display: none; }
   stroke: var(--color-edge-active);
   stroke-width: 2.5;
 }
+
+/* ---- Crow's Foot cardinality markers ----
+   Strokes match the edge colour. Circles fill with the page background
+   so the line beneath them is masked, giving a clean "donut" look at the
+   junction. Stroke width matches the edge so visual weight is uniform. */
+.edge-cardinality line,
+.edge-cardinality circle {
+  stroke: var(--color-edge);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+.edge-cardinality line {
+  fill: none;
+}
+.edge-cardinality circle {
+  fill: var(--color-bg-page);
+}
+.edge-group:hover .edge-cardinality line,
+.edge-group:hover .edge-cardinality circle,
+.edge-group.is-active .edge-cardinality line,
+.edge-group.is-active .edge-cardinality circle,
+.edge-group.is-selected .edge-cardinality line,
+.edge-group.is-selected .edge-cardinality circle {
+  stroke: var(--color-edge-active);
+}
 /* Static (non-selected) edge label — rendered as HTML inside a
    foreignObject so long relation names wrap rather than running off the
    diagram. The foreignObject itself is centred on the edge midpoint;
@@ -868,6 +908,30 @@ body.hide-systems .group-layer { display: none; }
    own × is the only inline clear affordance. */
 .edge-label-input input::-ms-clear { display: none; width: 0; height: 0; }
 .edge-label-input input::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
+
+/* Cardinality dropdowns flanking the label input. Compact — they show
+   just the symbolic value (1 / 0..1 / 1..* / 0..*) so the popover stays
+   readable; longer descriptions live in the option labels. */
+.edge-card-select {
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 4px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+.edge-card-select:hover {
+  border-color: var(--color-border-strong, var(--color-border-default));
+}
+.edge-card-select:focus {
+  outline: 2px solid var(--color-bg-accent);
+  outline-offset: -1px;
+  border-color: var(--color-edge-active);
+}
 
 .edge-label-edit button {
   background: none;
@@ -1113,9 +1177,10 @@ body.mode-edit .node-col-key {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Placeholder dash when type is empty — only in edit mode where the slot is
-   editable. View mode keeps it quiet. */
-body.mode-edit .node-col-type:empty::before {
+/* Placeholder dash when type is empty. Shown in both modes so the
+   column row reads as "name | –" rather than collapsing — keeps the
+   row alignment stable across nodes that have or don't have types. */
+.node-col-type:empty::before {
   content: '–';
   color: var(--color-text-placeholder);
 }
@@ -1512,16 +1577,6 @@ body.mode-edit .node-col:hover .node-col-handle { visibility: visible; }
   display: inline-flex; align-items: center; gap: 8px;
   font-weight: 500;
 }
-.data-table .cell-icon {
-  width: 16px; height: 16px;
-  display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 3px;
-}
-.data-table .cell-icon[data-type="table"] { background: var(--color-type-table-bg); color: var(--color-type-table); }
-.data-table .cell-icon[data-type="view"]  { background: var(--color-type-view-bg);  color: var(--color-type-view); }
-.data-table .cell-icon[data-type="api"]   { background: var(--color-type-api-bg);   color: var(--color-type-api); }
-.data-table .cell-icon[data-type="file"]  { background: var(--color-type-file-bg);  color: var(--color-type-file); }
-.data-table .cell-icon[data-type="codelist"] { background: var(--color-type-codelist-bg); color: var(--color-type-codelist); }
 .tag {
   display: inline-block;
   padding: 1px 6px;
@@ -1943,6 +1998,11 @@ body.is-resizing-panel .ft-bottom-right { transition: none; }
   cursor: pointer;
 }
 .info-set-list li:hover, .info-rel-list li:hover { background: var(--color-bg-surface-hover); }
+/* Codelist values share the .info-set-list shape but aren't clickable —
+   strip cursor + hover so the row doesn't suggest a navigation target.
+   Title link in the section label is the navigation affordance. */
+.info-codelist-list li         { cursor: default; }
+.info-codelist-list li:hover   { background: transparent; }
 .info-set-list .info-set-name {
   font-family: var(--font-mono);
   font-size: var(--text-mono-sm);

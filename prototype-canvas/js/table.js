@@ -28,14 +28,6 @@ window.CanvasApp.Table = (function () {
 
     var activeTab = 'systems';
 
-    var TYPE_ICONS = {
-        table: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>',
-        view:  '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>',
-        api:   '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>',
-        file:  '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>',
-        codelist: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
-    };
-
     var TAB_PLACEHOLDERS = {
         systems:   'Systeme filtern…',
         tables:    'Tabellen filtern…',
@@ -190,36 +182,32 @@ window.CanvasApp.Table = (function () {
         var isCodelist = types.length === 1 && types[0] === 'codelist';
         var attrCol = isCodelist ? 'Codes' : 'Attribute';
 
+        // Typ column dropped — the active sub-tab (Tabellen / APIs /
+        // Dateien / Wertelisten) already disambiguates the row's type.
+        // Editing the type in the Liste view is rare; users who need
+        // it switch in the canvas detail panel.
         headEl.innerHTML = '<tr>' +
-            '<th>Name</th><th>Typ</th><th>System</th><th>Schema</th>' +
+            '<th>Name</th><th>System</th><th>Schema</th>' +
             (isCodelist ? '' : '<th>Property Sets</th>') +
             '<th>' + attrCol + '</th><th>Tags</th><th></th></tr>';
 
         countEl.textContent = countLabel(rows.length, allOfKind.length, noun);
 
         bodyEl.innerHTML = rows.map(function (n) {
-            return typedNodeRowHtml(n, isEdit, isCodelist, types);
-        }).join('') || emptyRowHtml(isCodelist ? 7 : 8, q ? 'Keine Treffer' : 'Keine ' + noun);
+            return typedNodeRowHtml(n, isEdit, isCodelist);
+        }).join('') || emptyRowHtml(isCodelist ? 6 : 7, q ? 'Keine Treffer' : 'Keine ' + noun);
     }
 
-    function typedNodeRowHtml(n, isEdit, isCodelist, allowedTypes) {
-        var icon = TYPE_ICONS[n.type] || TYPE_ICONS.table;
+    function typedNodeRowHtml(n, isEdit, isCodelist) {
         var ce = isEdit ? 'true' : 'false';
-        // The type select only offers the allowed types for this tab plus
-        // the node's current type (so legacy view nodes can still be seen).
-        var typeChoices = allowedTypes.slice();
-        if (typeChoices.indexOf(n.type) === -1) typeChoices.push(n.type);
-        var typeOptsHtml = typeChoices.map(function (t) {
-            return '<option value="' + t + '"' + (t === n.type ? ' selected' : '') + '>' + typeLabel(t) + '</option>';
-        }).join('');
         var setCount = State.derivePropertySets(n).length;
         var colCount = (n.columns || []).length;
         var tags = (n.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 
         return '<tr data-node-id="' + escapeAttr(n.id) + '" data-kind="node">' +
-                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(n.type) + '">' + icon + '</span>' +
-                    '<span data-edit="label" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.label || n.id) + '</span></span></td>' +
-                '<td><select class="cell-select" data-edit="type">' + typeOptsHtml + '</select></td>' +
+                '<td><span class="cell-name">' +
+                    '<span data-edit="label" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.label || n.id) + '</span>' +
+                '</span></td>' +
                 '<td><span data-edit="system" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.system || '') + '</span></td>' +
                 '<td><span data-edit="schema" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.schema || '') + '</span></td>' +
                 (isCodelist ? '' : '<td>' + (setCount || '–') + '</td>') +
@@ -353,7 +341,6 @@ window.CanvasApp.Table = (function () {
     }
 
     function colRowHtml(r) {
-        var icon = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
         var keyClass = r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : r.col.key === 'UK' ? 'uk' : '';
         var keyLabel = r.col.key || '–';
         // Set column shows registry label (preferred) or SAP key (API node
@@ -371,7 +358,7 @@ window.CanvasApp.Table = (function () {
                 '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.col.type || '') + '</span></td>' +
                 '<td>' + (r.col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(keyLabel) + '</span>' : dash()) + '</td>' +
                 '<td>' + setCell + '</td>' +
-                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
+                '<td><span class="cell-name">' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
                 '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
                 '<td>' + delBtn('Attribut') + '</td>' +
             '</tr>';
@@ -564,7 +551,7 @@ window.CanvasApp.Table = (function () {
 
     /**
      * Public hook for the Datenpaket detail panel — switches to the
-     * Tabelle view (if not already there), the Attribute tab, and
+     * Liste view (if not already there), the Attribute tab, and
      * pre-fills the filter input with the set's label. Pre-fill works
      * because the Attribute filter haystack includes the resolved set
      * label (so "Adresse" matches every column whose setId is "address").

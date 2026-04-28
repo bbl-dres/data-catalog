@@ -286,7 +286,18 @@ window.CanvasApp.Canvas = (function () {
         document.getElementById('zoom-in').addEventListener('click', zoomIn);
         document.getElementById('zoom-out').addEventListener('click', zoomOut);
         document.getElementById('zoom-fit').addEventListener('click', fitToScreen);
-        document.getElementById('zoom-reset').addEventListener('click', resetLayout);
+        // zoom-reset is now Home (curated entry view, fallback to fit-with-floor).
+        // Map convention: Home + Zoom Extent sit next to each other.
+        document.getElementById('zoom-reset').addEventListener('click', goHome);
+        var setHomeBtn = document.getElementById('zoom-home-set');
+        if (setHomeBtn) {
+            setHomeBtn.addEventListener('click', function () {
+                if (setHomeFromCurrent()) {
+                    var App = window.CanvasApp.App;
+                    if (App && App.toast) App.toast('Startansicht gespeichert', 'success');
+                }
+            });
+        }
 
         // State events
         State.on(function (reason) {
@@ -305,6 +316,11 @@ window.CanvasApp.Canvas = (function () {
                 focusSelectedEdgeInput();
             } else if (reason === 'filter') {
                 applyFilterDim();
+                // Filtered nodes are now display:none, not dimmed — system
+                // frames must re-measure so an all-filtered system drops
+                // its rectangle instead of leaving an empty box. rAF lets
+                // the CSS hide settle before we read offsetParent.
+                requestAnimationFrame(renderGroups);
             }
         });
 
@@ -720,9 +736,18 @@ window.CanvasApp.Canvas = (function () {
         visible.setAttribute('marker-end', isSelected ? 'url(#arrow-overlay)' : 'url(#arrow)');
         g.appendChild(visible);
 
+        // Crow's Foot cardinality markers at each end. Rendered as plain
+        // SVG groups (not <marker> elements) so we can position them
+        // independently of the line stroke and let circles "punch out"
+        // the line beneath via fill = page background.
+        appendCardinalityMarker(g, ns, edge.fromCardinality, path, /*end=*/'from');
+        appendCardinalityMarker(g, ns, edge.toCardinality,   path, /*end=*/'to');
+
         if (isSelected && isEdit) {
-            // Inline label editor: input with × clear (inside) and trash (outside)
-            var FO_W = 220, FO_H = 30;
+            // Inline label editor + cardinality dropdowns ("Von" before
+            // the label, "Zu" after) — same row as the label so the
+            // popover stays compact.
+            var FO_W = 360, FO_H = 32;
             var fo = document.createElementNS(ns, 'foreignObject');
             fo.setAttribute('x', path.midX - FO_W / 2);
             fo.setAttribute('y', path.midY - FO_H / 2);
@@ -731,12 +756,14 @@ window.CanvasApp.Canvas = (function () {
             fo.setAttribute('class', 'edge-label-fo');
             fo.innerHTML =
                 '<div xmlns="http://www.w3.org/1999/xhtml" class="edge-label-edit">' +
+                    cardinalitySelectHtml('from', edge.fromCardinality) +
                     '<div class="edge-label-input">' +
                         '<input type="text" data-edge-label-input value="' + escapeAttr(edge.label || '') + '" placeholder="Beziehung benennen…" spellcheck="false" />' +
                         '<button type="button" class="edge-clear" data-action="clear-label" title="Text leeren" tabindex="-1">' +
                             '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
                         '</button>' +
                     '</div>' +
+                    cardinalitySelectHtml('to', edge.toCardinality) +
                     '<button type="button" class="edge-delete" data-action="delete-edge" title="Beziehung löschen" tabindex="-1">' +
                         '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
                     '</button>' +
@@ -819,13 +846,10 @@ window.CanvasApp.Canvas = (function () {
             by = b.y;
         }
 
-        var dx = bx - ax;
-        var c1x = ax + dx * 0.5;
-        var c1y = ay;
-        var c2x = bx - dx * 0.5;
-        var c2y = by;
-
-        var d = 'M ' + ax + ' ' + ay + ' C ' + c1x + ' ' + c1y + ', ' + c2x + ' ' + c2y + ', ' + bx + ' ' + by;
+        // Straight line — Crow's Foot ER notation reads more clearly with
+        // direct lines than Bézier curves. Cardinality markers at the
+        // endpoints get a stable angle to rotate against, too.
+        var d = 'M ' + ax + ' ' + ay + ' L ' + bx + ' ' + by;
         return {
             d: d,
             midX: (ax + bx) / 2,
@@ -833,6 +857,119 @@ window.CanvasApp.Canvas = (function () {
             startX: ax, startY: ay,
             endX: bx, endY: by
         };
+    }
+
+    // ---- Crow's Foot cardinality markers --------------------------------
+    // Glyph local frame: x along the line direction, +x toward the entity
+    // the marker describes. y perpendicular. Anchor (origin) sits on the
+    // line; glyph extends in +x. Width = max +x extent; placement code
+    // uses width to back the marker off from the endpoint by enough to
+    // leave room for the arrow head (to-end) or a small gap (from-end).
+    var MARKER_WIDTHS = {
+        'one':       14,
+        'zero-one':  18,
+        'many':      14,
+        'zero-many': 22
+    };
+    var ARROW_BUFFER = 14; // px between marker far-edge and arrow tip
+    var FROM_GAP     = 4;  // px from start point to marker far-edge
+
+    function appendCardinalityMarker(g, ns, kind, path, end) {
+        if (!kind || !MARKER_WIDTHS.hasOwnProperty(kind)) return;
+        var dx = path.endX - path.startX;
+        var dy = path.endY - path.startY;
+        var len = Math.sqrt(dx * dx + dy * dy);
+        // Skip markers on very short edges — they'd collide with each
+        // other or the arrow.
+        if (len < 40) return;
+        var ux = dx / len, uy = dy / len;
+        var angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+        var w = MARKER_WIDTHS[kind];
+
+        var anchorX, anchorY, rotation;
+        if (end === 'to') {
+            // Glyph far-edge sits ARROW_BUFFER back from the arrow tip.
+            // Anchor (glyph x=0) is another `w` further back along line.
+            anchorX = path.endX - ux * (ARROW_BUFFER + w);
+            anchorY = path.endY - uy * (ARROW_BUFFER + w);
+            rotation = angleDeg;
+        } else {
+            // From-end: rotate 180° so the glyph faces the source entity.
+            // Glyph far-edge in world = anchor + (-ux*w, -uy*w) after
+            // mirroring; place far-edge at start + ux*FROM_GAP.
+            anchorX = path.startX + ux * (FROM_GAP + w);
+            anchorY = path.startY + uy * (FROM_GAP + w);
+            rotation = angleDeg + 180;
+        }
+
+        var marker = document.createElementNS(ns, 'g');
+        marker.setAttribute('class', 'edge-cardinality');
+        marker.setAttribute('transform',
+            'translate(' + anchorX + ' ' + anchorY + ') rotate(' + rotation + ')');
+        drawCardinalityShapes(marker, ns, kind);
+        g.appendChild(marker);
+    }
+
+    function drawCardinalityShapes(parent, ns, kind) {
+        var line = function (x1, y1, x2, y2) {
+            var l = document.createElementNS(ns, 'line');
+            l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+            l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+            return l;
+        };
+        var circle = function (cx, cy, r) {
+            var c = document.createElementNS(ns, 'circle');
+            c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r);
+            return c;
+        };
+
+        if (kind === 'one') {
+            // Single perpendicular bar near the entity end of the marker.
+            parent.appendChild(line(8, -6, 8, 6));
+        } else if (kind === 'zero-one') {
+            // Circle near anchor (line side), bar near entity side.
+            parent.appendChild(circle(4, 0, 3.5));
+            parent.appendChild(line(14, -6, 14, 6));
+        } else if (kind === 'many') {
+            // Crow's foot — three lines from a single point at the anchor,
+            // fanning out toward the entity.
+            parent.appendChild(line(0, 0, 14, -7));
+            parent.appendChild(line(0, 0, 14,  0));
+            parent.appendChild(line(0, 0, 14,  7));
+        } else if (kind === 'zero-many') {
+            // Circle near anchor, then crow's foot fanning toward entity.
+            parent.appendChild(circle(4, 0, 3.5));
+            parent.appendChild(line(10, 0, 22, -7));
+            parent.appendChild(line(10, 0, 22,  0));
+            parent.appendChild(line(10, 0, 22,  7));
+        }
+    }
+
+    /**
+     * <select> for cardinality on either end of an edge. Compact —
+     * just the symbolic value ("1", "0..1", "1..*", "0..*") shows in
+     * the closed select; option labels carry the longer description
+     * for clarity. data-edge-card-end is read by editor.js to know
+     * which end to update on change.
+     */
+    function cardinalitySelectHtml(end, current) {
+        var options = [
+            { value: '',          short: '–',     label: '– (keine)' },
+            { value: 'one',       short: '1',     label: '1 (genau eins)' },
+            { value: 'zero-one',  short: '0..1',  label: '0..1 (optional)' },
+            { value: 'many',      short: '1..*',  label: '1..* (eins oder mehr)' },
+            { value: 'zero-many', short: '0..*',  label: '0..* (null oder mehr)' }
+        ];
+        var html = '<select class="edge-card-select" data-edge-card-end="' + end +
+            '" title="Kardinalität ' + (end === 'from' ? 'Quelle' : 'Ziel') + '">';
+        for (var i = 0; i < options.length; i++) {
+            var o = options[i];
+            var isSel = (current || '') === o.value;
+            html += '<option value="' + escapeAttr(o.value) + '"' +
+                (isSel ? ' selected' : '') + '>' + escapeHtml(o.short) + '</option>';
+        }
+        html += '</select>';
+        return html;
     }
 
     function updateEdgesForNode(nodeId) {
@@ -1063,11 +1200,92 @@ window.CanvasApp.Canvas = (function () {
         applyTransform();
     }
 
+    /**
+     * "Fit-with-floor" initial framing — used on first paint instead of
+     * fitToScreen. Computes the same fit math, then floors the scale at
+     * INITIAL_MIN_SCALE so a sprawling graph doesn't shrink everything
+     * to unreadable; lets the bbox extend past the viewport edges in
+     * that case rather than zooming out further. Caps at 1.0 so a tiny
+     * graph isn't magnified above 1:1. Centres on the bbox centre, so
+     * the framing stays predictable as nodes are added/moved.
+     *
+     * The Fit button (zoom-fit) still calls fitToScreen so users can
+     * always reach a full overview on demand.
+     */
+    var INITIAL_MIN_SCALE = 0.25;
+    var INITIAL_MAX_SCALE = 1.0;
+    function initialView() {
+        var nodes = State.getNodes();
+        if (!nodes.length) return;
+        var rect = canvasEl.getBoundingClientRect();
+        if (rect.width < 50 || rect.height < 50) {
+            requestAnimationFrame(initialView);
+            return;
+        }
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        nodes.forEach(function (n) {
+            if (!isOnCanvas(n)) return;
+            var r = getNodeRect(n);
+            minX = Math.min(minX, r.x);
+            minY = Math.min(minY, r.y);
+            maxX = Math.max(maxX, r.x + r.w);
+            maxY = Math.max(maxY, r.y + r.h);
+        });
+        var graphW = maxX - minX;
+        var graphH = maxY - minY;
+        if (!isFinite(graphW) || !isFinite(graphH) || graphW <= 0 || graphH <= 0) return;
+        var pad = 80;
+        var sx = (rect.width  - pad * 2) / graphW;
+        var sy = (rect.height - pad * 2) / graphH;
+        var fitScale = Math.min(sx, sy);
+        var biased = Math.min(Math.max(fitScale, INITIAL_MIN_SCALE), INITIAL_MAX_SCALE);
+        scale = clamp(biased, MIN_SCALE, MAX_SCALE);
+        var bboxCenterX = (minX + maxX) / 2;
+        var bboxCenterY = (minY + maxY) / 2;
+        translateX = rect.width  / 2 - bboxCenterX * scale;
+        translateY = rect.height / 2 - bboxCenterY * scale;
+        applyTransform();
+    }
+
     function resetLayout() {
         scale = 1;
         translateX = 0;
         translateY = 0;
         applyTransform();
+    }
+
+    /**
+     * "Home" — apply the curator-saved entry-point view if one exists,
+     * otherwise fall back to initialView (fit-with-floor). Wired to the
+     * zoom-reset button (which used to be identity-reset, rarely useful).
+     * Map convention: Home + Zoom Extent are sibling buttons.
+     */
+    function goHome() {
+        var hv = State.getHomeView && State.getHomeView();
+        if (!hv) { initialView(); return; }
+        var rect = canvasEl.getBoundingClientRect();
+        if (rect.width < 50 || rect.height < 50) {
+            requestAnimationFrame(goHome);
+            return;
+        }
+        scale = clamp(hv.scale, MIN_SCALE, MAX_SCALE);
+        translateX = rect.width  / 2 - hv.centerX * scale;
+        translateY = rect.height / 2 - hv.centerY * scale;
+        applyTransform();
+    }
+
+    /**
+     * Capture the current scale + viewport-centre (in canvas-world coords)
+     * as the new Home. State.setHomeView persists immediately.
+     */
+    function setHomeFromCurrent() {
+        var rect = canvasEl.getBoundingClientRect();
+        if (rect.width < 50 || rect.height < 50) return false;
+        var centerClientX = rect.left + rect.width  / 2;
+        var centerClientY = rect.top  + rect.height / 2;
+        var world = clientToCanvas(centerClientX, centerClientY);
+        State.setHomeView({ scale: scale, centerX: world.x, centerY: world.y });
+        return true;
     }
 
     function applyTransform() {
@@ -1248,6 +1466,9 @@ window.CanvasApp.Canvas = (function () {
         setAllSetsExpanded: setAllSetsExpanded,
         renderGroups: renderGroups,
         fitToScreen: fitToScreen,
+        initialView: initialView,
+        goHome: goHome,
+        setHomeFromCurrent: setHomeFromCurrent,
         getNodeEl: getNodeEl,
         getNodeRect: getNodeRect,
         getTransform: getTransform,

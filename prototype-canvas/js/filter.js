@@ -48,11 +48,6 @@ window.CanvasApp.Filter = (function () {
     var LAYOUT_KEYS = ['edges', 'systems'];
     var layoutState = { edges: true, systems: true };
 
-    // Isolation: when on, every node not in the current selection's
-    // neighbourhood gets data-isolated="true" (CSS hides). Session-only —
-    // a refresh starts unfiltered.
-    var isolated = false;
-
     var TYPE_LABELS = {
         table: 'Tabelle', view: 'View', api: 'API',
         file: 'Datei', codelist: 'Werteliste'
@@ -107,15 +102,6 @@ window.CanvasApp.Filter = (function () {
                 renderPills();
                 renderBadge();
                 if (!dropdownEl.hasAttribute('hidden')) renderDropdown();
-                // Re-isolate against the new node set if isolation is on.
-                if (isolated) applyIsolation();
-            } else if (reason === 'nodes') {
-                if (isolated) applyIsolation();
-            } else if (reason === 'selection') {
-                // Match the previous Sichtbarkeit behaviour: clearing the
-                // selection while isolation is on lifts isolation too —
-                // "isolated view of nothing" doesn't read as intentional.
-                if (isolated && !State.getSelection()) clearIsolation();
             }
         });
 
@@ -186,17 +172,18 @@ window.CanvasApp.Filter = (function () {
         var f = State.getFilters();
         var html = '';
 
+        // Property Sets first — bulk expand/collapse is the most common
+        // shortcut after opening the dropdown, so it sits up top.
+        html += setsSectionHtml();
+
         // Filter facets — order matches the pill bar / URL param order.
         ['system', 'type', 'set', 'tag'].forEach(function (dim) {
             html += sectionHtml(dim, opts[dim], f[dim] || []);
         });
 
-        // Layout / Auswahl / Property Sets — folded in from Sichtbarkeit.
-        // These don't change `State.filters`, so they have their own
-        // section markup and click/change handlers.
+        // Layout toggles — folded in from Sichtbarkeit. Don't touch
+        // State.filters; have their own click/change delegation.
         html += anzeigenSectionHtml();
-        html += auswahlSectionHtml();
-        html += setsSectionHtml();
 
         // Footer: clear-all when any filter facet is active.
         var hasAny = State.hasActiveFilters();
@@ -225,33 +212,13 @@ window.CanvasApp.Filter = (function () {
         '</div>';
     }
 
-    function auswahlSectionHtml() {
-        return '<div class="filter-section" data-filter-section="auswahl">' +
-            '<div class="filter-section-header" data-section-static="auswahl">' +
-                '<span class="filter-section-label">Auswahl</span>' +
-            '</div>' +
-            '<div class="filter-section-body">' +
-                '<div class="vis-footer-actions">' +
-                    '<button type="button" class="vis-action-btn" data-isolate-action="on" title="Nur ausgewähltes System / Knoten anzeigen">' +
-                        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3"/></svg>' +
-                        ' Nur Auswahl anzeigen' +
-                    '</button>' +
-                    '<button type="button" class="vis-action-btn" data-isolate-action="off" title="Isolierung aufheben">' +
-                        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20"/></svg>' +
-                        ' Alle wieder zeigen' +
-                    '</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>';
-    }
-
     function setsSectionHtml() {
         return '<div class="filter-section" data-filter-section="sets">' +
             '<div class="filter-section-header" data-section-static="sets">' +
                 '<span class="filter-section-label">Property Sets</span>' +
             '</div>' +
             '<div class="filter-section-body">' +
-                '<div class="vis-footer-actions">' +
+                '<div class="vis-footer-actions vis-footer-actions-row">' +
                     '<button type="button" class="vis-action-btn" data-sets-action="expand" title="Alle Property Sets aufklappen">' +
                         '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>' +
                         ' Alle aufklappen' +
@@ -329,14 +296,6 @@ window.CanvasApp.Filter = (function () {
             var dim = toggle.getAttribute('data-filter-toggle');
             collapsed[dim] = !collapsed[dim];
             renderDropdown();
-            return;
-        }
-        // Isolation buttons (Auswahl section)
-        var isoBtn = e.target.closest('[data-isolate-action]');
-        if (isoBtn) {
-            e.stopPropagation();
-            if (isoBtn.getAttribute('data-isolate-action') === 'on') applyIsolation();
-            else                                                     clearIsolation();
             return;
         }
         // Property Sets bulk expand/collapse
@@ -532,75 +491,6 @@ window.CanvasApp.Filter = (function () {
         applyLayoutToBody();
         // System frames re-measure when nodes change; toggling them on/off
         // doesn't move nodes, so no extra render call is needed.
-    }
-
-    // ---- Isolation (Auswahl section) -----------------------------------
-
-    /**
-     * Hide every node that's not part of the current selection's
-     * "neighbourhood":
-     *   - selected node itself
-     *   - all nodes belonging to the selected system (if a system is selected)
-     *   - direct edge neighbours (one hop) of the selected node
-     *   - both endpoints of the selected edge
-     *   - every node referencing the selected Datenpaket via a column.setId
-     *
-     * Uses data-isolated="true" rather than display:none so the existing
-     * type/edge visibility classes still compose. Edges where either
-     * endpoint is hidden get hidden via a CSS rule.
-     */
-    function applyIsolation() {
-        var sel = State.getSelection();
-        if (!sel) {
-            var App = window.CanvasApp.App;
-            if (App && App.toast) App.toast('Erst etwas auswählen, dann isolieren.');
-            return;
-        }
-        var keepIds = Object.create(null);
-        if (sel.kind === 'node') {
-            keepIds[sel.id] = true;
-            State.getEdges().forEach(function (e) {
-                if (e.from === sel.id) keepIds[e.to]   = true;
-                if (e.to   === sel.id) keepIds[e.from] = true;
-            });
-        } else if (sel.kind === 'system') {
-            State.getNodes().forEach(function (n) {
-                if (n.system === sel.name) keepIds[n.id] = true;
-            });
-        } else if (sel.kind === 'attribute') {
-            keepIds[sel.nodeId] = true;
-        } else if (sel.kind === 'edge') {
-            var ed = State.getEdge(sel.id);
-            if (ed) { keepIds[ed.from] = true; keepIds[ed.to] = true; }
-        } else if (sel.kind === 'set') {
-            // "Lineage atlas" — every node touched by the selected Datenpaket.
-            State.getNodes().forEach(function (n) {
-                var has = (n.columns || []).some(function (c) { return c.setId === sel.id; });
-                if (has) keepIds[n.id] = true;
-            });
-        }
-
-        document.querySelectorAll('.node-layer .node').forEach(function (el) {
-            var id = el.getAttribute('data-node-id');
-            if (keepIds[id]) el.removeAttribute('data-isolated');
-            else             el.setAttribute('data-isolated', 'true');
-        });
-        document.querySelectorAll('.edge-group').forEach(function (g) {
-            var f = g.getAttribute('data-from');
-            var t = g.getAttribute('data-to');
-            if (keepIds[f] && keepIds[t]) g.removeAttribute('data-isolated');
-            else                          g.setAttribute('data-isolated', 'true');
-        });
-        isolated = true;
-        document.body.classList.add('is-isolated');
-    }
-
-    function clearIsolation() {
-        document.querySelectorAll('[data-isolated]').forEach(function (el) {
-            el.removeAttribute('data-isolated');
-        });
-        isolated = false;
-        document.body.classList.remove('is-isolated');
     }
 
     // ---- Util ----------------------------------------------------------
