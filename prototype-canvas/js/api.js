@@ -47,7 +47,9 @@ window.CanvasApp.Api = (function () {
         var sampleNode = nodes[0] || null;
         var sampleNodeId = sampleNode ? sampleNode.id : 'example_node';
         var sampleSets = sampleNode ? State.derivePropertySets(sampleNode) : [];
-        var sampleSetName = sampleSets[0] ? sampleSets[0].name : 'EXAMPLE_SET';
+        // Post sets-registry the shape is { id, label, kind }; pre-registry
+        // it was { name }. Use id as the API-facing identifier.
+        var sampleSetName = sampleSets[0] ? (sampleSets[0].id || sampleSets[0].name) : 'EXAMPLE_SET';
         var sampleCol = sampleNode && (sampleNode.columns || [])[0];
         var sampleColName = sampleCol ? sampleCol.name : 'example_column';
         var sampleEdge = edges[0] || null;

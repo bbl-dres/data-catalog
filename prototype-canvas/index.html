@@ -55,53 +55,14 @@
       </div>
     </div>
     <div class="toolbar-right">
-      <div class="vis-menu">
-        <button class="tb-btn" id="btn-visibility" title="Sichtbarkeit" aria-haspopup="true" aria-expanded="false">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          Sichtbarkeit
+      <div class="filter-menu">
+        <button class="tb-btn" id="btn-filter" title="Filter" aria-haspopup="true" aria-expanded="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          Filter
+          <span class="filter-badge" id="filter-badge" hidden></span>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-        <div class="vis-dropdown" id="vis-dropdown" hidden role="menu">
-          <label class="vis-row vis-row-master">
-            <span><input type="checkbox" id="vis-master" checked> Alles anzeigen</span>
-            <span class="vis-master-count" id="vis-master-count" aria-live="polite"></span>
-          </label>
-          <div class="vis-divider"></div>
-          <div class="vis-section-label">Knotentypen</div>
-          <label class="vis-row"><input type="checkbox" data-vis="type-table"  checked> Tabellen</label>
-          <label class="vis-row"><input type="checkbox" data-vis="type-view"   checked> Views</label>
-          <label class="vis-row"><input type="checkbox" data-vis="type-api"    checked> APIs</label>
-          <label class="vis-row"><input type="checkbox" data-vis="type-file"   checked> Dateien</label>
-          <label class="vis-row"><input type="checkbox" data-vis="type-codelist" checked> Wertelisten</label>
-          <div class="vis-divider"></div>
-          <div class="vis-section-label">Layout</div>
-          <label class="vis-row"><input type="checkbox" data-vis="edges"       checked> Beziehungen</label>
-          <label class="vis-row"><input type="checkbox" data-vis="systems"     checked> Systemrahmen</label>
-          <div class="vis-divider"></div>
-          <div class="vis-section-label">Auswahl</div>
-          <div class="vis-footer-actions">
-            <button type="button" class="vis-action-btn" data-isolate-action="on" title="Nur ausgewähltes System / Knoten anzeigen">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3"/></svg>
-              Nur Auswahl anzeigen
-            </button>
-            <button type="button" class="vis-action-btn" data-isolate-action="off" title="Isolierung aufheben">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20"/></svg>
-              Alle wieder zeigen
-            </button>
-          </div>
-          <div class="vis-divider"></div>
-          <div class="vis-section-label">Property Sets</div>
-          <div class="vis-footer-actions">
-            <button type="button" class="vis-action-btn" data-sets-action="expand" title="Alle Property Sets aufklappen">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-              Alle aufklappen
-            </button>
-            <button type="button" class="vis-action-btn" data-sets-action="collapse" title="Alle Property Sets einklappen">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-              Alle einklappen
-            </button>
-          </div>
-        </div>
+        <div class="filter-dropdown" id="filter-dropdown" hidden role="menu" aria-labelledby="btn-filter"></div>
       </div>
       <button class="tb-btn" id="btn-import" title="Excel importieren">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
@@ -160,6 +121,9 @@
       </button>
     </div>
   </div>
+
+  <!-- Active-filter pill bar — visible only when filters are applied. -->
+  <div class="filter-pill-bar" id="filter-pill-bar" hidden></div>
 
   <main class="app-main" id="app-main">
     <!-- Diagram view -->
@@ -265,6 +229,7 @@
           <button class="seg-btn"           data-tab="apis"      role="tab" aria-selected="false">APIs</button>
           <button class="seg-btn"           data-tab="files"     role="tab" aria-selected="false">Dateien</button>
           <button class="seg-btn"           data-tab="codelists" role="tab" aria-selected="false">Wertelisten</button>
+          <button class="seg-btn"           data-tab="sets"      role="tab" aria-selected="false">Datenpakete</button>
           <button class="seg-btn"           data-tab="cols"      role="tab" aria-selected="false">Attribute</button>
           <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false">Beziehungen</button>
         </div>
@@ -320,7 +285,7 @@
 <script src="js/table.js"></script>
 <script src="js/api.js"></script>
 <script src="js/panel.js"></script>
-<script src="js/visibility.js"></script>
+<script src="js/filter.js"></script>
 <script src="js/xlsx_io.js"></script>
 <script src="js/app.js"></script>
 </body>

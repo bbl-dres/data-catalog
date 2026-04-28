@@ -25,7 +25,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 #app {
   display: grid;
-  grid-template-rows: var(--header-height) var(--toolbar-height) 1fr var(--footer-height);
+  /* Pill-bar row is `auto`: collapses to 0 when the bar has [hidden],
+     takes its natural height when filters are active. Keeps the canvas
+     row from shifting until filters appear. */
+  grid-template-rows: var(--header-height) var(--toolbar-height) auto 1fr var(--footer-height);
   height: 100vh;
 }
 
@@ -323,29 +326,12 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   padding: 2px;
 }
 
-/* ---- Visibility dropdown ---- */
-.vis-menu { position: relative; }
-.vis-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  min-width: 200px;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-popover);
-  padding: 6px;
-  z-index: 100;
-}
-.vis-dropdown[hidden] { display: none; }
-.vis-section-label {
-  font-size: var(--text-label);
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
-  padding: 6px 8px 4px;
-}
+/* ---- Shared dropdown row primitives ---- */
+/* These were originally introduced for the standalone Sichtbarkeit
+   dropdown; the Filter dropdown (and the user-dropdown's vis-divider)
+   now reuse them, so the names stayed for stability of selectors used
+   elsewhere. The wrapper styles (.vis-menu / .vis-dropdown / master
+   tri-state) were dropped with that merge. */
 .vis-row {
   display: flex;
   align-items: center;
@@ -363,25 +349,6 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   height: 1px;
   background: var(--color-border-subtle);
   margin: 4px 0;
-}
-.vis-row-master {
-  font-weight: 500;
-  color: var(--color-text-primary);
-  justify-content: space-between;
-}
-.vis-master-count {
-  font-family: var(--font-mono);
-  font-size: var(--text-mono-xs);
-  color: var(--color-text-secondary);
-  background: var(--color-bg-page);
-  padding: 1px 6px;
-  border-radius: 8px;
-}
-/* Visual cue for the indeterminate (mixed) master state — browsers draw
-   a dash in the box but the row label benefits from an explicit hint. */
-.vis-row-master input:indeterminate {
-  outline: 1px solid var(--color-bg-accent-strong);
-  outline-offset: 0;
 }
 .vis-footer-actions {
   display: flex;
@@ -405,6 +372,214 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .vis-action-btn:hover {
   background: var(--color-bg-surface-hover);
   border-color: var(--color-border-strong, var(--color-border-default));
+}
+
+/* ---- Filter dropdown ---- */
+/* Houses the merged Filter + Sichtbarkeit dropdown — facets, layout
+   toggles, isolation actions, and bulk property-set expand/collapse.
+   Reuses .vis-row / .vis-divider / .vis-action-btn for the row chrome
+   so dropdowns across the toolbar share visual language. */
+.filter-menu { position: relative; }
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 320px;
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 6px;
+  z-index: 100;
+}
+.filter-dropdown[hidden] { display: none; }
+/* Section header — chevron + label + count, click to collapse. */
+.filter-section { margin-bottom: 4px; }
+.filter-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm);
+}
+.filter-section-header:hover { background: var(--color-bg-surface-hover); }
+.filter-section-chev {
+  display: inline-flex;
+  transition: transform 120ms ease;
+  color: var(--color-text-secondary);
+}
+.filter-section.is-collapsed .filter-section-chev { transform: rotate(-90deg); }
+.filter-section-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+.filter-section-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.filter-section-body { padding: 0 0 4px; }
+.filter-section.is-collapsed .filter-section-body { display: none; }
+/* Inline registry-search input inside the Datenpaket section. */
+.filter-section-search {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 4px 8px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: var(--text-small);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+.filter-section-search:focus { border-color: var(--color-border-accent); }
+.filter-empty {
+  padding: 6px 8px;
+  font-size: var(--text-small);
+  color: var(--color-text-placeholder);
+}
+.filter-footer {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px 2px;
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: 4px;
+}
+.filter-footer .vis-action-btn { flex: 1; justify-content: center; }
+/* Active-filter count badge on the toolbar Filter button. */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border-radius: 10px;
+  margin-left: 2px;
+}
+.filter-badge[hidden] { display: none; }
+
+/* ---- Active-filter pill bar ---- */
+.filter-pill-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 6px var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  /* Don't introduce a vertical scrollbar — the row stays one line. */
+  -webkit-overflow-scrolling: touch;
+}
+/* Stay in the #app grid even when empty — `display: none` would remove
+   the pill bar from grid layout entirely, and CSS Grid auto-placement
+   would shift app-main and the footer up by one row. The result was a
+   total collapse: app-main would inherit the (0-height) `auto` row that
+   was meant for the pill bar, and the footer would expand into the
+   `1fr` row (rendered ~728px tall) — a "canvas appears empty" bug that
+   only resolved when filters became active and the bar took its
+   natural height. Keep the element as a grid item at height 0 instead. */
+.filter-pill-bar[hidden] {
+  display: flex;
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.filter-pill-bar-label {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  font-size: var(--text-small);
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.filter-pill-dim {
+  opacity: 0.7;
+  font-size: 11px;
+  margin-right: 2px;
+}
+.filter-pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.65;
+}
+.filter-pill-remove:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
+  opacity: 1;
+}
+.filter-pill-bar-clear {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: var(--text-small);
+  color: var(--color-text-link);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.filter-pill-bar-clear:hover { text-decoration: underline; }
+
+/* ---- Filter dim on canvas ---- */
+/* Filter narrows what's relevant; visibility hides what's noise. They
+   compose: hide-by-type wins (display:none) over filter-dim (opacity).
+   Pointer-events: none on dimmed nodes so clicks fall through to the
+   canvas (panning) instead of selecting a de-emphasized node. */
+.node[data-filtered="true"] {
+  opacity: 0.18;
+  filter: grayscale(0.5);
+  pointer-events: none;
+}
+.node[data-filtered="true"].is-selected,
+.node[data-filtered="true"].is-dragging {
+  /* If the user already had something selected before applying a filter,
+     keep that node fully visible — selection trumps filter dim. */
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+}
+.edge-group[data-filtered="true"] {
+  opacity: 0.18;
+  pointer-events: none;
 }
 
 /* ---- Export dropdown ---- */
@@ -465,29 +640,19 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   margin: 4px 6px;
 }
 
-/* ---- body.hide-* visibility rules ---- */
-body.hide-type-table .node[data-type="table"] { display: none; }
-body.hide-type-view  .node[data-type="view"]  { display: none; }
-body.hide-type-api   .node[data-type="api"]   { display: none; }
-body.hide-type-file  .node[data-type="file"]  { display: none; }
-body.hide-type-codelist .node[data-type="codelist"] { display: none; }
-
-/* Hide all column rows + their +Spalte buttons */
-body.hide-attributes .node-cols { display: none; }
-body.hide-attributes .node-col-add { display: none; }
-
-/* Flatten property sets: drop headers, always reveal contents, drop borders */
-body.hide-sets .node-set-header { display: none; }
-body.hide-sets .node-set-content { display: block !important; }
-body.hide-sets .node-set { border-top: none; }
-body.hide-sets .node-add-set { display: none; }
+/* ---- body.hide-* layout toggles ---- */
+/* Type-as-visibility (display:none on .node[data-type=*]) was removed when
+   the Filter and Sichtbarkeit dropdowns merged. Type is now a filter
+   facet — non-matching nodes dim via [data-filtered="true"] (opacity)
+   instead of vanishing entirely, which made the canvas appear empty
+   when a user happened to toggle every type off. */
 
 body.hide-edges #edge-layer .edge-group,
 body.hide-edges #edge-overlay .edge-group { display: none; }
 
 body.hide-systems .group-layer { display: none; }
 
-/* Isolation — set by visibility.js when "Nur Auswahl anzeigen" is active.
+/* Isolation — set by Filter when "Nur Auswahl anzeigen" is active.
    Hidden via display so they don't clutter measurement / layout. */
 .node[data-isolated="true"]            { display: none; }
 .edge-group[data-isolated="true"]      { display: none; }
@@ -1143,6 +1308,35 @@ body.mode-edit .node-col-key:hover {
 body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
 .node-col-del:hover { color: var(--color-error); }
 
+/* Codelist (Werteliste) reference badge — small list icon at the right
+   of an attribute row, indicating the column's values are constrained by
+   a codelist. Click selects the codelist; info-panel renders its codes.
+   Reuses the codelist-type accent palette so the same icon meaning the
+   same thing in the same colour is visually consistent across the app. */
+.node-col-codelist {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0;
+  background: var(--color-type-codelist-bg);
+  color: var(--color-type-codelist);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.node-col-codelist:hover {
+  background: var(--color-type-codelist);
+  color: var(--color-type-codelist-bg);
+}
+.node-col-codelist:focus-visible {
+  outline: 2px solid var(--color-border-accent);
+  outline-offset: 1px;
+}
+
 /* Drag handle — visible on row hover in edit mode */
 .node-col-handle {
   display: inline-flex;
@@ -1687,6 +1881,25 @@ body.is-resizing-panel .ft-bottom-right { transition: none; }
 }
 .info-meta a.info-link:hover { text-decoration: underline; }
 
+/* Link-styled button used inside the info panel — e.g. "Alle 84 Attribute
+   anzeigen →" on the Datenpaket detail. Looks like a link, behaves like a
+   button (so screen readers announce the action correctly). */
+.info-link-btn {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: var(--color-text-link);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+.info-link-btn:hover { text-decoration: underline; }
+.info-link-btn:focus { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
+
 /* Edit-mode set picker on the attribute detail panel. Compact, panel-tinted,
    doesn't fight the surrounding <dl> rhythm. */
 .info-meta-select {
@@ -2003,7 +2216,6 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
   .node-action-bar,
   .toast,
   .confirm-overlay,
-  .vis-dropdown,
   .export-dropdown,
   .search-dropdown,
   .header-search-hint,

@@ -26,7 +26,11 @@ window.CanvasApp.App = (function () {
             if (reason === 'view') {
                 applyViewVisibility();
             }
-            if (reason === 'view' || reason === 'selection') {
+            if (reason === 'view' || reason === 'selection' || reason === 'filter' ||
+                reason === 'replace' || reason === 'reset') {
+                // 'replace'/'reset' included so an import (which clears
+                // selection in state) also strips a stale `selected=` from
+                // the URL — otherwise a refresh would re-apply a ghost.
                 syncStateToUrl();
             }
             // Save-button affordance reflects draft dirtiness across every
@@ -42,14 +46,24 @@ window.CanvasApp.App = (function () {
             applyUrlToState();
             applyViewVisibility();
             window.CanvasApp.Canvas.renderAll();
+            // After renderAll, apply filter dim if URL carried filters.
+            if (State.hasActiveFilters() && window.CanvasApp.Canvas.applyFilterDim) {
+                window.CanvasApp.Canvas.applyFilterDim();
+            }
             window.CanvasApp.Table.render();
             window.CanvasApp.Api.render();
             window.CanvasApp.Panel.render();
             updateSaveAffordance();
             updateCanvasEmpty();
             // Fit on first paint
+            // Double rAF — first frame paints the freshly-rendered DOM,
+            // second frame fires after layout has been computed. Single
+            // rAF was racing layout on heavy initial trees and producing
+            // a stale 0×0 rect inside fitToScreen.
             requestAnimationFrame(function () {
-                window.CanvasApp.Canvas.fitToScreen();
+                requestAnimationFrame(function () {
+                    window.CanvasApp.Canvas.fitToScreen();
+                });
             });
         });
     }
@@ -83,15 +97,23 @@ window.CanvasApp.App = (function () {
         var query = qIdx === -1 ? '' : raw.slice(qIdx + 1);
         var view = VALID_VIEWS[path] ? path : null;
         var selectedRaw = null;
+        // Filter values keyed by dimension. Comma-separated values; URL-decode
+        // each part. Empty string → empty filter (explicit clear).
+        var filters = {}; // key (without 'f.' prefix) → string[] | undefined
         query.split('&').forEach(function (kv) {
             if (!kv) return;
             var eq = kv.indexOf('=');
             var k = eq === -1 ? kv : kv.slice(0, eq);
             var v = eq === -1 ? '' : decodeURIComponent(kv.slice(eq + 1));
-            if (k === 'selected') selectedRaw = v || null;
+            if (k === 'selected') {
+                selectedRaw = v || null;
+            } else if (k.indexOf('f.') === 0) {
+                var dim = k.slice(2);
+                filters[dim] = v ? v.split(',').map(function (s) { return s.trim(); }).filter(Boolean) : [];
+            }
         });
         var selection = decodeSelection(selectedRaw);
-        return { view: view, selection: selection };
+        return { view: view, selection: selection, filters: filters };
     }
 
     function decodeSelection(raw) {
@@ -100,48 +122,77 @@ window.CanvasApp.App = (function () {
         var colon = raw.indexOf(':');
         var kind = colon === -1 ? 'node' : raw.slice(0, colon);
         var value = colon === -1 ? raw : raw.slice(colon + 1);
-        if (kind === 'node' || kind === 'edge') return { kind: kind, id: value };
+        if (kind === 'node' || kind === 'edge' || kind === 'set') return { kind: kind, id: value };
         if (kind === 'system') return { kind: 'system', name: value };
         if (kind === 'attr' || kind === 'attribute') {
             var pipe = value.indexOf('|');
-            if (pipe === -1) return null;
+            // Malformed attribute selector — leave state alone rather than
+            // silently clearing whatever was selected.
+            if (pipe === -1) return undefined;
             return { kind: 'attribute', nodeId: value.slice(0, pipe), name: value.slice(pipe + 1) };
         }
-        return null;
+        // Unknown kind — treat as missing key, not as explicit clear.
+        console.warn('Ignoring unknown selection kind in URL:', kind);
+        return undefined;
     }
 
     function encodeSelection(sel) {
         if (!sel) return null;
         if (sel.kind === 'node')      return 'node:' + sel.id;
         if (sel.kind === 'edge')      return 'edge:' + sel.id;
+        if (sel.kind === 'set')       return 'set:' + sel.id;
         if (sel.kind === 'system')    return 'system:' + sel.name;
         if (sel.kind === 'attribute') return 'attr:' + sel.nodeId + '|' + sel.name;
         return null;
     }
 
-    function buildUrl(view, selection) {
+    function buildUrl(view, selection, filters) {
         var hash = '#/' + (view || 'diagram');
+        var params = [];
         var encoded = encodeSelection(selection);
-        if (encoded) hash += '?selected=' + encodeURIComponent(encoded);
+        if (encoded) params.push('selected=' + encodeURIComponent(encoded));
+        if (filters) {
+            // Stable order so the URL is deterministic across renders.
+            State.getFilterDimensions().forEach(function (dim) {
+                var vals = filters[dim] || [];
+                if (!vals.length) return;
+                var encodedVals = vals.map(encodeURIComponent).join(',');
+                params.push('f.' + dim + '=' + encodedVals);
+            });
+        }
+        if (params.length) hash += '?' + params.join('&');
         return hash;
     }
 
     function applyUrlToState() {
         var url = parseUrl();
-        if (!url.view && url.selection === undefined && !window.location.hash) return;
+        if (!url.view && url.selection === undefined &&
+            Object.keys(url.filters).length === 0 && !window.location.hash) return;
         applyingUrl = true;
         try {
             if (url.view) State.setView(url.view);
             // url.selection: undefined = no key, null = explicit clear, object = set
             if (url.selection !== undefined) State.setSelection(url.selection);
+            // Filters: only the dimensions present in the URL get reset.
+            // Missing keys leave the existing in-memory filter alone (so
+            // back-button + a partial URL doesn't clobber unrelated filters).
+            // Empty string ("f.system=") explicitly clears that dimension.
+            State.getFilterDimensions().forEach(function (dim) {
+                if (url.filters.hasOwnProperty(dim)) State.setFilter(dim, url.filters[dim]);
+            });
         } finally {
             applyingUrl = false;
         }
+        // Drop a selection that points at something this catalog doesn't
+        // contain (stale shared link, or post-import refresh). pruneSelection
+        // emits 'selection' on change, which is now also a sync trigger, so
+        // the URL self-corrects and panels re-render.
+        State.pruneSelection();
     }
 
     function syncStateToUrl() {
         if (applyingUrl) return;
-        var newHash = buildUrl(State.getView(), State.getSelection());
+        var newHash = buildUrl(State.getView(), State.getSelection(), State.getFilters());
         if (window.location.hash === newHash) return;
         history.replaceState(null, '', newHash);
     }
@@ -652,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.Table.init();
     window.CanvasApp.Api.init();
     window.CanvasApp.Panel.init();
-    window.CanvasApp.Visibility.init();
+    window.CanvasApp.Filter.init();
     window.CanvasApp.XlsxIO.init();
     window.CanvasApp.App.init();
 });

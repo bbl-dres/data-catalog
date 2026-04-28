@@ -42,6 +42,7 @@ window.CanvasApp.Table = (function () {
         apis:      'APIs filtern…',
         files:     'Dateien filtern…',
         codelists: 'Wertelisten filtern…',
+        sets:      'Datenpakete filtern…',
         cols:      'Attribute filtern…',
         edges:     'Beziehungen filtern…'
     };
@@ -73,7 +74,7 @@ window.CanvasApp.Table = (function () {
         State.on(function (reason) {
             if (reason === 'nodes' || reason === 'edges' || reason === 'replace' || reason === 'reset') {
                 render();
-            } else if (reason === 'mode') {
+            } else if (reason === 'mode' || reason === 'filter') {
                 render();
             }
         });
@@ -108,6 +109,7 @@ window.CanvasApp.Table = (function () {
             case 'apis':      return renderTypedNodes(['api'],           'APIs');
             case 'files':     return renderTypedNodes(['file'],          'Dateien');
             case 'codelists': return renderTypedNodes(['codelist'],      'Wertelisten');
+            case 'sets':      return renderSets();
             case 'cols':      return renderCols();
             case 'edges':     return renderEdges();
         }
@@ -117,8 +119,12 @@ window.CanvasApp.Table = (function () {
 
     function renderSystems() {
         var q = textInput.value.trim().toLowerCase();
+        // Filter pills narrow the universe BEFORE aggregation: a system
+        // disappears from this list once every node it owned is filtered
+        // out. Stats reflect the filtered scope, not the catalog total.
+        var nodes = State.getNodes().filter(State.matchesFilters);
         var byName = {};
-        State.getNodes().forEach(function (n) {
+        nodes.forEach(function (n) {
             var s = (n.system || '').trim();
             if (!s) return;
             if (!byName[s]) byName[s] = { name: s, byType: {}, attrs: 0, tags: {} };
@@ -165,7 +171,11 @@ window.CanvasApp.Table = (function () {
         var typeSet = {};
         types.forEach(function (t) { typeSet[t] = true; });
 
-        var allOfKind = State.getNodes().filter(function (n) { return typeSet[n.type]; });
+        // Apply filter pills first; "total" reflects the filtered scope
+        // so the count reads "5 von 12" within the active filter set.
+        var allOfKind = State.getNodes()
+            .filter(function (n) { return typeSet[n.type]; })
+            .filter(State.matchesFilters);
         var rows = allOfKind.filter(function (n) {
             if (!q) return true;
             var hay = [
@@ -224,13 +234,103 @@ window.CanvasApp.Table = (function () {
             '</tr>';
     }
 
+    // ---- Tab: Datenpakete (global property-set registry) ---------------
+
+    /**
+     * Lists every entry in the global sets registry with usage stats —
+     * how many distinct nodes reference it and how many columns total.
+     * This is the "show me the lineage atlas" view the engineer asked
+     * for in the Datenpakete framing. Per-node-only sets disappear from
+     * here once they're promoted to the registry.
+     *
+     * Row click jumps to the Attribute tab pre-filtered by the set's
+     * label — gives the user a one-tap "show me every column in this
+     * package across the whole catalog."
+     */
+    function renderSets() {
+        var q = textInput.value.trim().toLowerCase();
+        // Filter pills shape this view in two ways:
+        //   - Stats are computed from filter-matching nodes only, so e.g.
+        //     filtering by System=BBL re-counts Adresse usage with only
+        //     BBL nodes contributing.
+        //   - When f.set is non-empty the registry list is restricted to
+        //     just those packages; otherwise the full registry shows.
+        var nodes = State.getNodes().filter(State.matchesFilters);
+        var allSets = State.getSets();
+        var setFilter = State.getFilter('set');
+        var sets = setFilter.length
+            ? allSets.filter(function (s) { return setFilter.indexOf(s.id) !== -1; })
+            : allSets;
+
+        // Single pass over all columns: tally distinct nodes + column count
+        // per set. Cheaper than iterating registry × nodes × columns.
+        var statsBySet = Object.create(null);
+        sets.forEach(function (s) { statsBySet[s.id] = { nodes: Object.create(null), cols: 0 }; });
+        nodes.forEach(function (n) {
+            (n.columns || []).forEach(function (c) {
+                var st = c.setId && statsBySet[c.setId];
+                if (!st) return;
+                st.nodes[n.id] = true;
+                st.cols += 1;
+            });
+        });
+
+        var rows = sets.map(function (s) {
+            var st = statsBySet[s.id];
+            return {
+                id: s.id,
+                label: s.label || s.id,
+                description: s.description || '',
+                lineage: s.lineage || '',
+                nodeCount: Object.keys(st.nodes).length,
+                colCount: st.cols
+            };
+        });
+        var total = rows.length;
+        if (q) {
+            rows = rows.filter(function (r) {
+                return [r.label, r.description, r.lineage, r.id]
+                    .join(' ').toLowerCase().indexOf(q) !== -1;
+            });
+        }
+        // Unused sets still show, sorted alphabetically — this is a
+        // catalog of available packages, not just used ones.
+        rows.sort(function (a, b) { return a.label.localeCompare(b.label); });
+
+        headEl.innerHTML = '<tr><th>Datenpaket</th><th>Beschreibung</th><th>Quelle</th><th>Knoten</th><th>Attribute</th></tr>';
+        countEl.textContent = countLabel(rows.length, total, 'Datenpakete');
+        bodyEl.innerHTML = rows.map(setRowHtml).join('') ||
+            emptyRowHtml(5, q ? 'Keine Treffer' : 'Keine Datenpakete');
+    }
+
+    function setRowHtml(r) {
+        var dim = (r.nodeCount === 0) ? ' style="opacity:0.55"' : '';
+        return '<tr data-set-id="' + escapeAttr(r.id) + '" data-kind="set"' + dim + ' title="Klicken: alle Attribute dieses Datenpakets anzeigen">' +
+                '<td><span class="cell-name">' + escapeHtml(r.label) + '</span></td>' +
+                '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.description) + '</span></td>' +
+                '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.lineage) + '</span></td>' +
+                '<td>' + r.nodeCount + '</td>' +
+                '<td>' + r.colCount + '</td>' +
+            '</tr>';
+    }
+
     // ---- Tab: Columns / Attributes -------------------------------------
 
     function renderCols() {
         var q = textInput.value.trim().toLowerCase();
+        // Two-tier filter:
+        //   - Parent node must satisfy filter pills (system / type / tag).
+        //   - When f.set is non-empty, restrict to columns whose own setId
+        //     is in f.set — stricter than the node-level "any column with
+        //     a matching set" semantic, because on the Attribute tab the
+        //     user wants the columns IN the package, not every column on
+        //     a node that happens to use the package.
+        var setFilter = State.getFilter('set');
         var rows = [];
         State.getNodes().forEach(function (n) {
+            if (!State.matchesFilters(n)) return;
             (n.columns || []).forEach(function (c, idx) {
+                if (setFilter.length && setFilter.indexOf(c.setId || '') === -1) return;
                 rows.push({ node: n, col: c, idx: idx });
             });
         });
@@ -284,7 +384,18 @@ window.CanvasApp.Table = (function () {
         var nodes = State.getNodes();
         var byId = {};
         nodes.forEach(function (n) { byId[n.id] = n; });
-        var edges = State.getEdges().filter(function (e) {
+        // Filter pills hide an edge when EITHER endpoint is filtered out
+        // — same rule the canvas uses, keeps the two views consistent.
+        var matched = Object.create(null);
+        var hasFilters = State.hasActiveFilters();
+        if (hasFilters) {
+            nodes.forEach(function (n) { if (State.matchesFilters(n)) matched[n.id] = true; });
+        }
+        var allEdges = State.getEdges().filter(function (e) {
+            if (!hasFilters) return true;
+            return matched[e.from] && matched[e.to];
+        });
+        var edges = allEdges.filter(function (e) {
             if (!q) return true;
             var fromLabel = (byId[e.from] && byId[e.from].label) || e.from;
             var toLabel = (byId[e.to] && byId[e.to].label) || e.to;
@@ -292,7 +403,7 @@ window.CanvasApp.Table = (function () {
         });
 
         headEl.innerHTML = '<tr><th>Beziehung</th><th>Quelle</th><th>Ziel</th><th></th></tr>';
-        countEl.textContent = countLabel(edges.length, State.getEdges().length, 'Beziehungen');
+        countEl.textContent = countLabel(edges.length, allEdges.length, 'Beziehungen');
         bodyEl.innerHTML = edges.map(function (e) { return edgeRowHtml(e, byId); }).join('') ||
             emptyRowHtml(4, q ? 'Keine Treffer' : 'Keine Beziehungen');
     }
@@ -335,6 +446,15 @@ window.CanvasApp.Table = (function () {
         if (kind === 'edge') {
             var fromId = row.getAttribute('data-from');
             if (fromId) State.setSelected(fromId);
+            return;
+        }
+        if (kind === 'set') {
+            // Open the Datenpaket detail in the side panel. Drilling further
+            // ("show me every attribute in this package") is a one-click
+            // affordance inside the panel itself — see Table.showAttributesFor
+            // wired from panel.js.
+            var setId = row.getAttribute('data-set-id');
+            if (setId) State.setSelectedSet(setId);
             return;
         }
         var nodeId = row.getAttribute('data-node-id');
@@ -442,5 +562,23 @@ window.CanvasApp.Table = (function () {
     }
     function escapeAttr(s) { return escapeHtml(s); }
 
-    return { init: init, render: render };
+    /**
+     * Public hook for the Datenpaket detail panel — switches to the
+     * Tabelle view (if not already there), the Attribute tab, and
+     * pre-fills the filter input with the set's label. Pre-fill works
+     * because the Attribute filter haystack includes the resolved set
+     * label (so "Adresse" matches every column whose setId is "address").
+     */
+    function showAttributesFor(setLabel) {
+        if (!setLabel) return;
+        if (State.getView() !== 'table') State.setView('table');
+        activeTab = 'cols';
+        textInput.value = setLabel;
+        applyTabUI();
+        render();
+        // Bring the filter input into view & focused for further refinement.
+        if (textInput.focus) textInput.focus();
+    }
+
+    return { init: init, render: render, showAttributesFor: showAttributesFor };
 })();

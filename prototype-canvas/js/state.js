@@ -30,15 +30,23 @@ window.CanvasApp.State = (function () {
         sets: [],            // global property-set registry — see canvas.json
         view: 'diagram',
         mode: 'view',
-        // Tagged-union selection. Exactly one of node / edge / system / attribute,
-        // or null. Mutually exclusive across kinds.
+        // Tagged-union selection. Exactly one of node / edge / system /
+        // attribute / set, or null. Mutually exclusive across kinds.
         //   { kind: 'node',      id: '<nodeId>' }
         //   { kind: 'edge',      id: '<edgeId>' }
         //   { kind: 'system',    name: '<systemName>' }
         //   { kind: 'attribute', nodeId: '<nodeId>', name: '<columnName>' }
+        //   { kind: 'set',       id: '<setId>' }       // Datenpaket from the registry
         selection: null,
+        // Faceted filter state — OR within a dimension, AND between dimensions.
+        // Persisted via URL params (f.system, f.type, f.set, f.tag) so links
+        // are shareable and the filter survives refresh. Independent of
+        // selection and from the edit-mode draft snapshot.
+        filters: { system: [], type: [], set: [], tag: [] },
         snapshot: null           // {nodes, edges} captured on entering edit; live data is the draft
     };
+
+    var FILTER_DIMENSIONS = ['system', 'type', 'set', 'tag'];
 
     // Id-keyed indexes — getNode / getEdge / getSet are called from many hot
     // paths (edge rendering, drag, panel, isolation), so a linear scan was
@@ -388,6 +396,9 @@ window.CanvasApp.State = (function () {
     function getSelectedAttribute() {
         return state.selection && state.selection.kind === 'attribute' ? state.selection : null;
     }
+    function getSelectedSet() {
+        return state.selection && state.selection.kind === 'set' ? state.selection.id : null;
+    }
 
     function setSelected(id) {
         state.selection = id ? { kind: 'node', id: id } : null;
@@ -407,21 +418,117 @@ window.CanvasApp.State = (function () {
             : null;
         emit('selection');
     }
+    function setSelectedSet(id) {
+        state.selection = id ? { kind: 'set', id: id } : null;
+        emit('selection');
+    }
 
-    /** Drop the current selection if it points at something that no longer exists. */
+    // ---- Filters -------------------------------------------------------
+
+    function getFilters() { return state.filters; }
+    function getFilter(dim) {
+        return (state.filters && state.filters[dim]) ? state.filters[dim].slice() : [];
+    }
+    function hasActiveFilters() {
+        for (var i = 0; i < FILTER_DIMENSIONS.length; i++) {
+            if ((state.filters[FILTER_DIMENSIONS[i]] || []).length > 0) return true;
+        }
+        return false;
+    }
+    function getFilterDimensions() { return FILTER_DIMENSIONS.slice(); }
+
+    function setFilter(dim, values) {
+        if (FILTER_DIMENSIONS.indexOf(dim) === -1) return;
+        state.filters[dim] = Array.isArray(values) ? values.slice() : [];
+        emit('filter');
+    }
+
+    /** Toggle a single value on/off in the given dimension. */
+    function toggleFilter(dim, value) {
+        if (FILTER_DIMENSIONS.indexOf(dim) === -1) return;
+        var list = state.filters[dim] || [];
+        var idx = list.indexOf(value);
+        if (idx === -1) list.push(value);
+        else list.splice(idx, 1);
+        state.filters[dim] = list;
+        emit('filter');
+    }
+
+    function removeFilterValue(dim, value) {
+        if (FILTER_DIMENSIONS.indexOf(dim) === -1) return;
+        var list = state.filters[dim] || [];
+        var idx = list.indexOf(value);
+        if (idx === -1) return;
+        list.splice(idx, 1);
+        state.filters[dim] = list;
+        emit('filter');
+    }
+
+    function clearFilters() {
+        var changed = hasActiveFilters();
+        FILTER_DIMENSIONS.forEach(function (k) { state.filters[k] = []; });
+        if (changed) emit('filter');
+    }
+
+    /**
+     * Whether `node` satisfies the current filter set. AND across
+     * dimensions, OR within. Empty dimension = no constraint. The set
+     * dimension is special-cased: a node matches if any of its columns
+     * has setId in the active filter — that's the lineage-atlas
+     * semantic ("show every node touched by Adresse").
+     */
+    function matchesFilters(node) {
+        if (!node) return false;
+        var f = state.filters;
+        if (f.system.length && f.system.indexOf(node.system || '') === -1) return false;
+        if (f.type.length   && f.type.indexOf(node.type || '')     === -1) return false;
+        if (f.tag.length) {
+            var tags = node.tags || [];
+            var hit = false;
+            for (var i = 0; i < f.tag.length; i++) {
+                if (tags.indexOf(f.tag[i]) !== -1) { hit = true; break; }
+            }
+            if (!hit) return false;
+        }
+        if (f.set.length) {
+            var cols = node.columns || [];
+            var sHit = false;
+            for (var j = 0; j < cols.length; j++) {
+                var sid = cols[j].setId;
+                if (sid && f.set.indexOf(sid) !== -1) { sHit = true; break; }
+            }
+            if (!sHit) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Drop the current selection if it points at something that no longer
+     * exists (or never did — e.g. a stale `selected=` from a shared URL).
+     * Emits a `selection` event when it actually changes anything so the
+     * URL sync + panel re-render in the same tick.
+     */
     function pruneSelection() {
         var sel = state.selection;
         if (!sel) return;
-        if (sel.kind === 'node' && !getNode(sel.id)) state.selection = null;
-        else if (sel.kind === 'edge' && !getEdge(sel.id)) state.selection = null;
+        var prune = false;
+        if (sel.kind === 'node' && !getNode(sel.id)) prune = true;
+        else if (sel.kind === 'edge' && !getEdge(sel.id)) prune = true;
         else if (sel.kind === 'system') {
             var has = state.nodes.some(function (n) { return n.system === sel.name; });
-            if (!has) state.selection = null;
+            if (!has) prune = true;
         }
         else if (sel.kind === 'attribute') {
             var n = getNode(sel.nodeId);
             var col = n && (n.columns || []).some(function (c) { return c.name === sel.name; });
-            if (!col) state.selection = null;
+            if (!col) prune = true;
+        }
+        else if (sel.kind === 'set') {
+            if (!getSet(sel.id)) prune = true;
+        }
+        if (prune) {
+            state.selection = null;
+            emit('selection');
         }
     }
 
@@ -686,6 +793,7 @@ window.CanvasApp.State = (function () {
         getSelectedEdgeId: getSelectedEdgeId,
         getSelectedSystem: getSelectedSystem,
         getSelectedAttribute: getSelectedAttribute,
+        getSelectedSet: getSelectedSet,
         setMode: setMode,
         commitDraft: commitDraft,
         revertDraft: revertDraft,
@@ -701,6 +809,16 @@ window.CanvasApp.State = (function () {
         setSelectedEdge: setSelectedEdge,
         setSelectedSystem: setSelectedSystem,
         setSelectedAttribute: setSelectedAttribute,
+        setSelectedSet: setSelectedSet,
+        getFilters: getFilters,
+        getFilter: getFilter,
+        getFilterDimensions: getFilterDimensions,
+        hasActiveFilters: hasActiveFilters,
+        setFilter: setFilter,
+        toggleFilter: toggleFilter,
+        removeFilterValue: removeFilterValue,
+        clearFilters: clearFilters,
+        matchesFilters: matchesFilters,
         moveNode: moveNode,
         updateNode: updateNode,
         addNode: addNode,
@@ -711,6 +829,7 @@ window.CanvasApp.State = (function () {
         replaceAll: replaceAll,
         generateId: generateId,
         persist: persist,
+        pruneSelection: pruneSelection,
         derivePropertySets: derivePropertySets
     };
 })();

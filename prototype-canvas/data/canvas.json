@@ -6776,6 +6776,499 @@
           "key": "PK"
         }
       ]
+    },
+    {
+      "id": "gwr_gkat",
+      "label": "GKAT — Gebäudekategorie",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "gebäude"
+      ],
+      "x": -4100,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "1010",
+          "type": "Gebäude mit ausschliesslicher Wohnnutzung",
+          "key": ""
+        },
+        {
+          "name": "1020",
+          "type": "Andere Wohngebäude (Wohngebäude mit Nebennutzung)",
+          "key": ""
+        },
+        {
+          "name": "1030",
+          "type": "Gebäude mit teilweiser Wohnnutzung",
+          "key": ""
+        },
+        {
+          "name": "1040",
+          "type": "Gebäude ohne Wohnnutzung",
+          "key": ""
+        },
+        {
+          "name": "1060",
+          "type": "Sonderbauten",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_gklas",
+      "label": "GKLAS — Gebäudeklasse",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "gebäude"
+      ],
+      "x": -3600,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "1110",
+          "type": "Gebäude mit einer Wohnung",
+          "key": ""
+        },
+        {
+          "name": "1121",
+          "type": "Gebäude mit zwei Wohnungen",
+          "key": ""
+        },
+        {
+          "name": "1122",
+          "type": "Gebäude mit drei oder mehr Wohnungen",
+          "key": ""
+        },
+        {
+          "name": "1130",
+          "type": "Wohngebäude für Gemeinschaften",
+          "key": ""
+        },
+        {
+          "name": "1211",
+          "type": "Hotelgebäude",
+          "key": ""
+        },
+        {
+          "name": "1212",
+          "type": "Andere Gebäude für die kurzfristige Beherbergung",
+          "key": ""
+        },
+        {
+          "name": "1220",
+          "type": "Bürogebäude",
+          "key": ""
+        },
+        {
+          "name": "1230",
+          "type": "Gross- und Einzelhandelsgebäude",
+          "key": ""
+        },
+        {
+          "name": "1241",
+          "type": "Gebäude des Verkehrs- und Nachrichtenwesens",
+          "key": ""
+        },
+        {
+          "name": "1242",
+          "type": "Garagengebäude",
+          "key": ""
+        },
+        {
+          "name": "1251",
+          "type": "Industriegebäude",
+          "key": ""
+        },
+        {
+          "name": "1252",
+          "type": "Behälter, Silos und Lagergebäude",
+          "key": ""
+        },
+        {
+          "name": "1261",
+          "type": "Gebäude für Kultur- und Freizeitzwecke",
+          "key": ""
+        },
+        {
+          "name": "1262",
+          "type": "Museen und Bibliotheken",
+          "key": ""
+        },
+        {
+          "name": "1263",
+          "type": "Schul- und Hochschulgebäude, Forschungseinrichtungen",
+          "key": ""
+        },
+        {
+          "name": "1264",
+          "type": "Krankenhäuser und Facheinrichtungen des Gesundheitswesens",
+          "key": ""
+        },
+        {
+          "name": "1265",
+          "type": "Sporthallen",
+          "key": ""
+        },
+        {
+          "name": "1271",
+          "type": "Landwirtschaftliche Betriebsgebäude",
+          "key": ""
+        },
+        {
+          "name": "1272",
+          "type": "Kirchen und sonstige Kult-/Andachtsstätten",
+          "key": ""
+        },
+        {
+          "name": "1273",
+          "type": "Denkmäler oder unter Schutz gestellte Bauwerke",
+          "key": ""
+        },
+        {
+          "name": "1274",
+          "type": "Sonstige Hochbauten, anderweitig nicht genannt",
+          "key": ""
+        },
+        {
+          "name": "1275",
+          "type": "Sonstige Hochbauten für Wohnzwecke",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_gstat",
+      "label": "GSTAT — Gebäudestatus",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "lifecycle"
+      ],
+      "x": -3100,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "1001",
+          "type": "Projektiert",
+          "key": ""
+        },
+        {
+          "name": "1002",
+          "type": "Bewilligt",
+          "key": ""
+        },
+        {
+          "name": "1003",
+          "type": "Im Bau",
+          "key": ""
+        },
+        {
+          "name": "1004",
+          "type": "Bestehend",
+          "key": ""
+        },
+        {
+          "name": "1005",
+          "type": "Nicht nutzbar",
+          "key": ""
+        },
+        {
+          "name": "1007",
+          "type": "Abgebrochen",
+          "key": ""
+        },
+        {
+          "name": "1008",
+          "type": "Nicht realisiert",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_gbaup",
+      "label": "GBAUP — Bauperiode",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "gebäude"
+      ],
+      "x": -2600,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "8011",
+          "type": "Vor 1919",
+          "key": ""
+        },
+        {
+          "name": "8012",
+          "type": "1919–1945",
+          "key": ""
+        },
+        {
+          "name": "8013",
+          "type": "1946–1960",
+          "key": ""
+        },
+        {
+          "name": "8014",
+          "type": "1961–1970",
+          "key": ""
+        },
+        {
+          "name": "8015",
+          "type": "1971–1980",
+          "key": ""
+        },
+        {
+          "name": "8016",
+          "type": "1981–1985",
+          "key": ""
+        },
+        {
+          "name": "8017",
+          "type": "1986–1990",
+          "key": ""
+        },
+        {
+          "name": "8018",
+          "type": "1991–1995",
+          "key": ""
+        },
+        {
+          "name": "8019",
+          "type": "1996–2000",
+          "key": ""
+        },
+        {
+          "name": "8020",
+          "type": "2001–2005",
+          "key": ""
+        },
+        {
+          "name": "8021",
+          "type": "2006–2010",
+          "key": ""
+        },
+        {
+          "name": "8022",
+          "type": "2011–2015",
+          "key": ""
+        },
+        {
+          "name": "8023",
+          "type": "Nach 2015",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_gheiz",
+      "label": "GHEIZ — Heizungsart",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "energie"
+      ],
+      "x": -2100,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "7400",
+          "type": "Keine",
+          "key": ""
+        },
+        {
+          "name": "7410",
+          "type": "Einzelraumheizung",
+          "key": ""
+        },
+        {
+          "name": "7420",
+          "type": "Etagenheizung",
+          "key": ""
+        },
+        {
+          "name": "7430",
+          "type": "Zentralheizung für ein Gebäude",
+          "key": ""
+        },
+        {
+          "name": "7431",
+          "type": "Zentralheizung für mehrere Gebäude",
+          "key": ""
+        },
+        {
+          "name": "7440",
+          "type": "Wärmepumpe für ein Gebäude",
+          "key": ""
+        },
+        {
+          "name": "7441",
+          "type": "Wärmepumpe für mehrere Gebäude",
+          "key": ""
+        },
+        {
+          "name": "7450",
+          "type": "Andere",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_genh",
+      "label": "GENH1 — Energieträger Heizung",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "energie"
+      ],
+      "x": -1600,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "7500",
+          "type": "Heizöl",
+          "key": ""
+        },
+        {
+          "name": "7501",
+          "type": "Kohle",
+          "key": ""
+        },
+        {
+          "name": "7510",
+          "type": "Gas",
+          "key": ""
+        },
+        {
+          "name": "7511",
+          "type": "Holz",
+          "key": ""
+        },
+        {
+          "name": "7512",
+          "type": "Wärmepumpe",
+          "key": ""
+        },
+        {
+          "name": "7513",
+          "type": "Sonnenkollektor",
+          "key": ""
+        },
+        {
+          "name": "7520",
+          "type": "Elektrizität",
+          "key": ""
+        },
+        {
+          "name": "7530",
+          "type": "Fernwärme",
+          "key": ""
+        },
+        {
+          "name": "7540",
+          "type": "Andere",
+          "key": ""
+        },
+        {
+          "name": "7560",
+          "type": "Keiner",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_wstat",
+      "label": "WSTAT — Wohnungsstatus",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "lifecycle"
+      ],
+      "x": -1100,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "3001",
+          "type": "Projektiert",
+          "key": ""
+        },
+        {
+          "name": "3002",
+          "type": "Bewilligt",
+          "key": ""
+        },
+        {
+          "name": "3003",
+          "type": "Im Bau",
+          "key": ""
+        },
+        {
+          "name": "3004",
+          "type": "Bestehend",
+          "key": ""
+        },
+        {
+          "name": "3007",
+          "type": "Abgebrochen",
+          "key": ""
+        },
+        {
+          "name": "3008",
+          "type": "Nicht realisiert",
+          "key": ""
+        }
+      ]
+    },
+    {
+      "id": "gwr_wkche",
+      "label": "WKCHE — Kocheinrichtung",
+      "type": "codelist",
+      "system": "BFS GWR",
+      "schema": "",
+      "tags": [
+        "codelist",
+        "gwr",
+        "wohnung"
+      ],
+      "x": -600,
+      "y": 4900,
+      "columns": [
+        {
+          "name": "3030",
+          "type": "Kocheinrichtung",
+          "key": ""
+        },
+        {
+          "name": "3031",
+          "type": "Keine Kocheinrichtung",
+          "key": ""
+        }
+      ]
     }
   ],
   "edges": [
@@ -6910,6 +7403,54 @@
       "label": "GIS Gebäude ↔ RE-FX Gebäude (1:1, Match über ID)",
       "from": "refx_gebaeude_api",
       "to": "gis_gebaeude"
+    },
+    {
+      "id": "e_gwr_cl_0",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gkat",
+      "label": "Gebäudekategorie"
+    },
+    {
+      "id": "e_gwr_cl_1",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gklas",
+      "label": "Gebäudeklasse"
+    },
+    {
+      "id": "e_gwr_cl_2",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gstat",
+      "label": "Gebäudestatus"
+    },
+    {
+      "id": "e_gwr_cl_3",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gbaup",
+      "label": "Bauperiode"
+    },
+    {
+      "id": "e_gwr_cl_4",
+      "from": "gwr_gebaeude",
+      "to": "gwr_gheiz",
+      "label": "Heizungsart"
+    },
+    {
+      "id": "e_gwr_cl_5",
+      "from": "gwr_gebaeude",
+      "to": "gwr_genh",
+      "label": "Energieträger Heizung"
+    },
+    {
+      "id": "e_gwr_cl_6",
+      "from": "gwr_wohnung",
+      "to": "gwr_wstat",
+      "label": "Wohnungsstatus"
+    },
+    {
+      "id": "e_gwr_cl_7",
+      "from": "gwr_wohnung",
+      "to": "gwr_wkche",
+      "label": "Kocheinrichtung"
     }
   ]
 }

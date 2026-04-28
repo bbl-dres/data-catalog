@@ -137,7 +137,8 @@ window.CanvasApp.Panel = (function () {
 
     function updateOpenState() {
         var sel = State.getSelection();
-        var supports = sel && (sel.kind === 'node' || sel.kind === 'system' || sel.kind === 'attribute' || sel.kind === 'edge');
+        var supports = sel && (sel.kind === 'node' || sel.kind === 'system'
+            || sel.kind === 'attribute' || sel.kind === 'edge' || sel.kind === 'set');
         var view = State.getView();
         var open = supports && view !== 'api';
         panelEl.classList.toggle('is-open', open);
@@ -166,6 +167,10 @@ window.CanvasApp.Panel = (function () {
             var edge = State.getEdge(sel.id);
             if (!edge) { contentEl.innerHTML = ''; updateOpenState(); return; }
             contentEl.innerHTML = edgeContentHtml(edge);
+        } else if (sel.kind === 'set') {
+            var setObj = State.getSet(sel.id);
+            if (!setObj) { contentEl.innerHTML = ''; updateOpenState(); return; }
+            contentEl.innerHTML = setContentHtml(setObj);
         } else {
             contentEl.innerHTML = '';
         }
@@ -374,6 +379,117 @@ window.CanvasApp.Panel = (function () {
     }
 
     // ---- System content ------------------------------------------------
+
+    // ---- Datenpaket (Property Set) content -----------------------------
+
+    /**
+     * Detail panel for a global Datenpaket — label, description, lineage,
+     * plus a usage breakdown showing every node that references the set
+     * with its column count. The "Alle Attribute anzeigen" link bridges
+     * to the Attribute tab pre-filtered by the package's label, so the
+     * user can drill from "this is the Adresse package" → "show me every
+     * field across the catalog tagged as Adresse" in one tap.
+     *
+     * Single pass over nodes/columns: we count both unique nodes and
+     * total columns referencing this setId, plus collect a sorted list
+     * of (node, count) for the usage section.
+     */
+    function setContentHtml(setObj) {
+        var nodes = State.getNodes();
+        var byNode = []; // [{ node, count }]
+        var totalCols = 0;
+        nodes.forEach(function (n) {
+            var c = 0;
+            (n.columns || []).forEach(function (col) { if (col.setId === setObj.id) c += 1; });
+            if (c > 0) {
+                byNode.push({ node: n, count: c });
+                totalCols += c;
+            }
+        });
+        byNode.sort(function (a, b) {
+            // System grouping first, then column-count desc, then label.
+            var ca = (a.node.system || '').localeCompare(b.node.system || '');
+            if (ca !== 0) return ca;
+            if (b.count !== a.count) return b.count - a.count;
+            return (a.node.label || a.node.id).localeCompare(b.node.label || b.node.id);
+        });
+
+        var packageIcon =
+            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>' +
+                '<polyline points="3.27 6.96 12 12.01 20.73 6.96"/>' +
+                '<line x1="12" y1="22.08" x2="12" y2="12"/>' +
+            '</svg>';
+
+        var headerHtml = '' +
+            '<div class="info-header">' +
+                '<span class="info-header-icon" style="background:var(--color-bg-accent);color:var(--color-bg-accent-strong)">' +
+                    packageIcon +
+                '</span>' +
+                '<div class="info-header-text">' +
+                    '<div class="info-header-title">' + escapeHtml(setObj.label || setObj.id) + '</div>' +
+                    '<div class="info-header-sub">Datenpaket · ' + byNode.length + ' Knoten · ' + totalCols + ' Attribute</div>' +
+                '</div>' +
+                '<button class="info-header-close" data-action="close" title="Schliessen" aria-label="Panel schliessen">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>' +
+            '</div>';
+
+        // Metadata section — only render rows that have a value, like the
+        // node panel does.
+        var metaRows = [];
+        metaRows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(setObj.id) + '</code></dd>');
+        if (setObj.description) {
+            metaRows.push('<dt>Beschreibung</dt><dd>' + escapeHtml(setObj.description) + '</dd>');
+        }
+        if (setObj.lineage) {
+            metaRows.push('<dt>Quelle</dt><dd>' + escapeHtml(setObj.lineage) + '</dd>');
+        }
+        var metadataSection = '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Metadaten</div>' +
+                '<dl class="info-meta">' + metaRows.join('') + '</dl>' +
+            '</div>';
+
+        // Usage section — list of nodes referencing this set.
+        var usageHtml;
+        if (!byNode.length) {
+            usageHtml =
+                '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">' +
+                    'Dieses Datenpaket ist aktuell keinem Attribut zugeordnet.' +
+                '</div>';
+        } else {
+            var attrLink = '' +
+                '<button type="button" class="info-link-btn" data-action="show-set-attributes"' +
+                    ' data-set-id="' + escapeAttr(setObj.id) + '"' +
+                    ' data-set-label="' + escapeAttr(setObj.label || setObj.id) + '"' +
+                    ' title="Alle Attribute dieses Datenpakets in der Tabellenansicht anzeigen">' +
+                    'Alle ' + totalCols + ' Attribute anzeigen →' +
+                '</button>';
+            usageHtml =
+                '<ul class="info-rel-list">' +
+                    byNode.map(function (r) {
+                        var ic = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
+                        var sub = r.node.system ? escapeHtml(r.node.system) : '';
+                        return '<li data-action="select-node" data-node-id="' + escapeAttr(r.node.id) + '" title="Knoten anzeigen">' +
+                            '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px">' +
+                                '<span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + ic + '</span>' +
+                                escapeHtml(r.node.label || r.node.id) +
+                            '</span>' +
+                            (sub ? '<span class="info-set-label">' + sub + '</span>' : '') +
+                            '<span class="info-set-count">' + r.count + '</span>' +
+                        '</li>';
+                    }).join('') +
+                '</ul>' + attrLink;
+        }
+
+        return headerHtml +
+            metadataSection +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Verwendung <span class="info-section-count">' + byNode.length + '</span></div>' +
+                usageHtml +
+            '</div>';
+    }
 
     function systemContentHtml(sysName) {
         var members = State.getNodes().filter(function (n) { return n.system === sysName; });
@@ -604,7 +720,19 @@ window.CanvasApp.Panel = (function () {
         }
         var setRow = e.target.closest('[data-action="focus-set"]');
         if (setRow) {
-            // Future: scroll diagram to the set's section in the node.
+            // Selecting a property-set row from the node panel opens the
+            // Datenpaket detail in this same panel.
+            var sId = setRow.getAttribute('data-set');
+            if (sId) State.setSelectedSet(sId);
+            return;
+        }
+        var showAttrs = e.target.closest('[data-action="show-set-attributes"]');
+        if (showAttrs) {
+            e.preventDefault();
+            var label = showAttrs.getAttribute('data-set-label');
+            if (window.CanvasApp.Table && window.CanvasApp.Table.showAttributesFor) {
+                window.CanvasApp.Table.showAttributesFor(label);
+            }
             return;
         }
     }

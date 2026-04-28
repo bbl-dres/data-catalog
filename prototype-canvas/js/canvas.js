@@ -78,8 +78,11 @@ window.CanvasApp.Canvas = (function () {
 
     var isDragging = false;
     var dragNodeId = null;
-    var dragStartClient = null;
-    var dragNodeStart = null;
+    // Cursor-to-node offset in canvas (world) coordinates, captured at drag
+    // start. applyDragMove re-reads the live transform via clientToCanvas so
+    // a wheel-zoom or pinch mid-drag keeps the node under the cursor instead
+    // of jumping (which the previous delta math + live `scale` divisor did).
+    var dragCursorOffset = null;
 
     // rAF-coalesced pointer pipeline. Pan, drag, and pinch handlers stash
     // their latest input; one rAF per frame applies whichever gesture is
@@ -177,11 +180,37 @@ window.CanvasApp.Canvas = (function () {
         applyTransform();
     }
 
+    // Codelists (Wertelisten) are first-class catalog entities but are
+    // intentionally excluded from the diagram — every BBL table would
+    // otherwise need a tail of FK edges into a tall code-value node and
+    // the result is unreadable. They still live in the data, the
+    // Tabelle/Wertelisten tab lists them, and we surface a badge on
+    // attributes that reference one (see codelistRefsByNode below).
+    function isOnCanvas(node) { return !!node && node.type !== 'codelist'; }
+
     // Cache: node-id → DOM element. Built fresh in renderNodes; the previous
     // pattern was a `nodeLayer.querySelector('[data-node-id="..."]')` per
     // edge endpoint per render and per drag tick. Multiplied across all
     // edges that's hundreds of selectors per frame on a non-trivial graph.
     var nodeElById = Object.create(null);
+
+    // Index: nodeId → { columnName → codelistNode }. Built once per
+    // renderNodes from the FK edges (edge.from = node, edge.to = codelist,
+    // edge.label = column name). Lookup is O(1) per attribute row.
+    var codelistRefsByNode = Object.create(null);
+    function buildCodelistRefsIndex() {
+        var idx = Object.create(null);
+        var edges = State.getEdges();
+        for (var i = 0; i < edges.length; i++) {
+            var e = edges[i];
+            var target = State.getNode(e.to);
+            if (!target || target.type !== 'codelist') continue;
+            if (!e.label) continue;
+            if (!idx[e.from]) idx[e.from] = Object.create(null);
+            idx[e.from][e.label] = target;
+        }
+        return idx;
+    }
     function getNodeEl(id) {
         var cached = nodeElById[id];
         if (cached && cached.isConnected) return cached;
@@ -203,7 +232,13 @@ window.CanvasApp.Canvas = (function () {
         codelist: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
     };
 
+    var inited = false;
     function init(opts) {
+        // Idempotent: a second init() (HMR, accidental double bootstrap)
+        // would otherwise duplicate every window-level pointer listener and
+        // double drag/pan deltas. Bail rather than wiring twice.
+        if (inited) return;
+        inited = true;
         State = window.CanvasApp.State;
         canvasEl = document.getElementById('canvas');
         transformEl = document.getElementById('canvas-transform');
@@ -260,6 +295,7 @@ window.CanvasApp.Canvas = (function () {
             }
             if (reason === 'nodes' || reason === 'edges' || reason === 'replace' || reason === 'reset') {
                 renderAll();
+                applyFilterDim();
             } else if (reason === 'selection') {
                 updateNodeSelection();
                 // Selection changes used to drive a full edge re-render
@@ -267,6 +303,8 @@ window.CanvasApp.Canvas = (function () {
                 // affected edges between layers.
                 updateEdgeSelection();
                 focusSelectedEdgeInput();
+            } else if (reason === 'filter') {
+                applyFilterDim();
             }
         });
 
@@ -327,6 +365,10 @@ window.CanvasApp.Canvas = (function () {
         var out = [];
         var nodes = State.getNodes();
         for (var i = 0; i < nodes.length; i++) {
+            // Codelists share `system: 'BFS GWR'` with the GWR tables but
+            // aren't drawn — exclude them so the system frame sizes to
+            // visible members only.
+            if (!isOnCanvas(nodes[i])) continue;
             if ((nodes[i].system || '').trim() === sysName) out.push(nodes[i]);
         }
         return out;
@@ -343,6 +385,7 @@ window.CanvasApp.Canvas = (function () {
         var nodes = State.getNodes();
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
+            if (!isOnCanvas(n)) continue;
             var s = (n.system || '').trim();
             if (!s) continue;
             (byS[s] = byS[s] || []).push(n);
@@ -371,7 +414,11 @@ window.CanvasApp.Canvas = (function () {
     function renderNodes() {
         nodeLayer.innerHTML = '';
         nodeElById = Object.create(null);
+        // Rebuild the codelist-ref index once per render so the per-attribute
+        // badge lookup is a plain object access.
+        codelistRefsByNode = buildCodelistRefsIndex();
         State.getNodes().forEach(function (node) {
+            if (!isOnCanvas(node)) return;
             var el = createNodeEl(node);
             nodeElById[node.id] = el;
             nodeLayer.appendChild(el);
@@ -415,11 +462,15 @@ window.CanvasApp.Canvas = (function () {
         // Most nodes group by setId (BBL packages from the global registry).
         // The SAP API node groups by sourceStructure (its BAPI substructures).
         var groupKey = State.getGroupKey(node);
+        // Per-attribute codelist references (FK edge → codelist node), keyed
+        // by column name. Empty for the API node and any node without
+        // codelist-FK edges.
+        var clRefs = codelistRefsByNode[node.id] || {};
 
         if (sets.length === 0) {
             // Flat list — no sets in use
             html += '<ul class="node-cols">';
-            cols.forEach(function (c, idx) { html += colRowHtml(c, idx); });
+            cols.forEach(function (c, idx) { html += colRowHtml(c, idx, clRefs[c.name]); });
             html += '</ul>';
             html += '<div class="node-col-add edit-only" data-action="add-col" data-set="">+ Spalte</div>';
         } else {
@@ -429,7 +480,7 @@ window.CanvasApp.Canvas = (function () {
             var countBySet = {};
             sets.forEach(function (s) { bySet[s.id] = ''; countBySet[s.id] = 0; });
             cols.forEach(function (c, idx) {
-                var rowHtml = colRowHtml(c, idx);
+                var rowHtml = colRowHtml(c, idx, clRefs[c.name]);
                 var k = c[groupKey];
                 if (k && bySet.hasOwnProperty(k)) {
                     bySet[k] += rowHtml;
@@ -486,13 +537,29 @@ window.CanvasApp.Canvas = (function () {
             '</div>';
     }
 
-    function colRowHtml(c, idx) {
+    function colRowHtml(c, idx, codelistNode) {
         var key = c.key || '';
         var keyClass = key === 'PK' ? 'pk' : key === 'FK' ? 'fk' : key === 'UK' ? 'uk' : '';
         var keyLabel = KEY_LABELS[key] || KEY_LABELS[''];
         var keyTitle = 'Klicken: PK → FK → UK → –';
+        // Codelist badge — only if this attribute is FK'd to a codelist node.
+        // Same icon as TYPE_ICONS.codelist for visual consistency. Click selects
+        // the codelist (info-panel renders its codes).
+        var clBadge = '';
+        if (codelistNode) {
+            clBadge = '<button type="button" class="node-col-codelist"' +
+                ' data-action="show-codelist"' +
+                ' data-codelist-id="' + escapeAttr(codelistNode.id) + '"' +
+                ' title="Werteliste: ' + escapeAttr(codelistNode.label || codelistNode.id) + '"' +
+                ' tabindex="-1">' +
+                    '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                        '<line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/>' +
+                        '<circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/>' +
+                    '</svg>' +
+                '</button>';
+        }
         return '' +
-            '<li class="node-col" data-col-idx="' + idx + '">' +
+            '<li class="node-col' + (codelistNode ? ' has-codelist' : '') + '" data-col-idx="' + idx + '">' +
                 '<span class="node-col-handle edit-only" data-col-idx="' + idx + '" title="Verschieben">' +
                     '<svg width="8" height="14" viewBox="0 0 8 14" fill="currentColor" aria-hidden="true">' +
                         '<circle cx="2.5" cy="3" r="1"/><circle cx="2.5" cy="7" r="1"/><circle cx="2.5" cy="11" r="1"/>' +
@@ -502,6 +569,7 @@ window.CanvasApp.Canvas = (function () {
                 '<span class="node-col-key ' + keyClass + '" data-edit="key" data-col-idx="' + idx + '" title="' + keyTitle + '">' + keyLabel + '</span>' +
                 '<span class="node-col-name" data-edit="col-name" data-col-idx="' + idx + '" contenteditable="false" spellcheck="false">' + escapeHtml(c.name || '') + '</span>' +
                 '<span class="node-col-type" data-edit="col-type" data-col-idx="' + idx + '" contenteditable="false" spellcheck="false">' + escapeHtml(c.type || '') + '</span>' +
+                clBadge +
                 '<button class="node-col-del edit-only" data-action="delete-col" data-col-idx="' + idx + '" title="Spalte löschen" tabindex="-1">' +
                     '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
                 '</button>' +
@@ -515,6 +583,13 @@ window.CanvasApp.Canvas = (function () {
 
         var selId = State.getSelectedEdgeId();
         State.getEdges().forEach(function (edge) {
+            // Skip edges that touch a codelist — codelists aren't drawn on
+            // the canvas, so a half-dangling edge would be confusing. The
+            // FK relationship is surfaced as an inline badge on the source
+            // attribute instead.
+            var fromNode = State.getNode(edge.from);
+            var toNode = State.getNode(edge.to);
+            if (!isOnCanvas(fromNode) || !isOnCanvas(toNode)) return;
             var groupEl = createEdgeEl(edge);
             if (!groupEl) return;
             // Selected edge renders in the overlay so its handles + foreignObject
@@ -522,6 +597,47 @@ window.CanvasApp.Canvas = (function () {
             var target = (edge.id === selId) ? edgeOverlay : edgeLayer;
             target.appendChild(groupEl);
         });
+    }
+
+    /**
+     * Apply or clear the [data-filtered="true"] attribute on every node
+     * based on the current filter state. Edges inherit: an edge is
+     * filtered if either of its endpoints is. CSS handles the visual
+     * dim — this function just sets attributes.
+     */
+    function applyFilterDim() {
+        if (!State.hasActiveFilters()) {
+            nodeLayer.querySelectorAll('.node[data-filtered]').forEach(function (el) {
+                el.removeAttribute('data-filtered');
+            });
+            edgeLayer.querySelectorAll('.edge-group[data-filtered]').forEach(function (g) {
+                g.removeAttribute('data-filtered');
+            });
+            edgeOverlay.querySelectorAll('.edge-group[data-filtered]').forEach(function (g) {
+                g.removeAttribute('data-filtered');
+            });
+            return;
+        }
+        var matched = Object.create(null);
+        State.getNodes().forEach(function (n) {
+            if (!isOnCanvas(n)) return;
+            if (State.matchesFilters(n)) matched[n.id] = true;
+        });
+        nodeLayer.querySelectorAll('.node').forEach(function (el) {
+            var id = el.getAttribute('data-node-id');
+            if (matched[id]) el.removeAttribute('data-filtered');
+            else             el.setAttribute('data-filtered', 'true');
+        });
+        // Edges: dim when EITHER endpoint is filtered out — keeps the
+        // graph readable; a half-grey edge would imply a dangling link.
+        var dimEdge = function (g) {
+            var f = g.getAttribute('data-from');
+            var t = g.getAttribute('data-to');
+            if (matched[f] && matched[t]) g.removeAttribute('data-filtered');
+            else                          g.setAttribute('data-filtered', 'true');
+        };
+        edgeLayer.querySelectorAll('.edge-group').forEach(dimEdge);
+        edgeOverlay.querySelectorAll('.edge-group').forEach(dimEdge);
     }
 
     /**
@@ -724,6 +840,10 @@ window.CanvasApp.Canvas = (function () {
         var selId = State.getSelectedEdgeId();
         State.getEdges().forEach(function (edge) {
             if (edge.from !== nodeId && edge.to !== nodeId) return;
+            // Skip codelist FK edges — those aren't on the canvas at all.
+            var fromN = State.getNode(edge.from);
+            var toN = State.getNode(edge.to);
+            if (!isOnCanvas(fromN) || !isOnCanvas(toN)) return;
             var existing = edgeLayer.querySelector('[data-edge-id="' + cssEscape(edge.id) + '"]') ||
                            edgeOverlay.querySelector('[data-edge-id="' + cssEscape(edge.id) + '"]');
             var fresh = createEdgeEl(edge);
@@ -908,9 +1028,23 @@ window.CanvasApp.Canvas = (function () {
     function fitToScreen() {
         var nodes = State.getNodes();
         if (!nodes.length) return;
-        // Use DOM rects for accurate height
+        // Layout-not-settled guard: on first paint the rAF can fire before
+        // the canvas has been measured, especially with a heavy node tree
+        // (the 22-row codelist forces a long layout pass). A 0×0 rect made
+        // the math collapse to MIN_SCALE and pushed content offscreen —
+        // user reported "canvas appears empty until I apply a filter".
+        // Retry next frame instead of computing from a stale rect.
+        var rect = canvasEl.getBoundingClientRect();
+        if (rect.width < 50 || rect.height < 50) {
+            requestAnimationFrame(fitToScreen);
+            return;
+        }
+        // Use DOM rects for accurate height. Codelists are off-canvas, so
+        // they shouldn't pull the fit framing toward y≈4900 and shrink
+        // every BBL node into illegibility.
         var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         nodes.forEach(function (n) {
+            if (!isOnCanvas(n)) return;
             var r = getNodeRect(n);
             minX = Math.min(minX, r.x);
             minY = Math.min(minY, r.y);
@@ -919,7 +1053,7 @@ window.CanvasApp.Canvas = (function () {
         });
         var graphW = maxX - minX;
         var graphH = maxY - minY;
-        var rect = canvasEl.getBoundingClientRect();
+        if (!isFinite(graphW) || !isFinite(graphH) || graphW <= 0 || graphH <= 0) return;
         var pad = 80;
         var sx = (rect.width - pad * 2) / graphW;
         var sy = (rect.height - pad * 2) / graphH;
@@ -969,6 +1103,9 @@ window.CanvasApp.Canvas = (function () {
     function onNodePointerDown(e) {
         // Ports handled by Editor module
         if (e.target.classList.contains('node-port')) return;
+        // Codelist badge owns the click — let editor.js handle it without
+        // pointerdown selecting the parent attribute first (would flash).
+        if (e.target.closest('[data-action="show-codelist"]')) return;
 
         var nodeEl = e.target.closest('.node');
         if (!nodeEl) return;
@@ -1005,8 +1142,11 @@ window.CanvasApp.Canvas = (function () {
 
         isDragging = true;
         dragNodeId = nodeId;
-        dragStartClient = { x: e.clientX, y: e.clientY };
-        dragNodeStart  = { x: node.x || 0, y: node.y || 0 };
+        var startWorld = clientToCanvas(e.clientX, e.clientY);
+        dragCursorOffset = {
+            x: (node.x || 0) - startWorld.x,
+            y: (node.y || 0) - startWorld.y
+        };
         nodeEl.classList.add('is-dragging');
         e.stopPropagation();
         e.preventDefault();
@@ -1029,10 +1169,11 @@ window.CanvasApp.Canvas = (function () {
 
     function applyDragMove(clientX, clientY) {
         if (!isDragging || !dragNodeId) return;
-        var dx = (clientX - dragStartClient.x) / scale;
-        var dy = (clientY - dragStartClient.y) / scale;
-        var nx = dragNodeStart.x + dx;
-        var ny = dragNodeStart.y + dy;
+        // Re-read the current transform on every move via clientToCanvas —
+        // see comment on dragCursorOffset above.
+        var nowWorld = clientToCanvas(clientX, clientY);
+        var nx = nowWorld.x + dragCursorOffset.x;
+        var ny = nowWorld.y + dragCursorOffset.y;
         var el = nodeElById[dragNodeId];
         if (el) {
             el.style.left = nx + 'px';
@@ -1101,6 +1242,7 @@ window.CanvasApp.Canvas = (function () {
         renderEdges: renderEdges,
         updateEdgesForNode: updateEdgesForNode,
         updateNodeSelection: updateNodeSelection,
+        applyFilterDim: applyFilterDim,
         toggleSet: toggleSet,
         isSetExpanded: isSetExpanded,
         setAllSetsExpanded: setAllSetsExpanded,

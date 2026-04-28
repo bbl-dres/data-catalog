@@ -149,7 +149,21 @@
       "Bash(kill 6572)",
       "Bash(echo \"PID $!\")",
       "Bash(curl -s -o /dev/null -w \"page=%{http_code} canvas.js=\" http://127.0.0.1:8765/prototype-canvas/)",
-      "Bash(kill 6586)"
+      "Bash(kill 6586)",
+      "Read(//tmp/gwr_unzip/xl/**)",
+      "Bash(grep -iE 'WL_|werteliste|katalog|GKAT|GKLAS|GSTAT|GBAUP|GENH|GHEIZ|WSTAT|WKCHE|GWAERZ|liste|enum|\\(Statu|kategorie|klasse|art\\)$')",
+      "Bash(node c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/scripts/add-gwr-codelists.js)",
+      "Bash(curl -s http://127.0.0.1:8765/prototype-canvas/)",
+      "Bash(curl -s http://127.0.0.1:8765/prototype-canvas/data/canvas.json)",
+      "Bash(node -e 'new Function\\(require\\('\\\\''fs'\\\\''\\).readFileSync\\('\\\\''__TRACKED_VAR__'\\\\'','\\\\''utf8'\\\\''\\)\\);')",
+      "Bash(git stash *)",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); console.log\\('nodes:', d.nodes.length, 'edges:', d.edges.length, 'sets:', \\(d.sets||[]\\).length\\); console.log\\('node types:', [...new Set\\(d.nodes.map\\(n=>n.type\\)\\)]\\); console.log\\('y range:', Math.min\\(...d.nodes.map\\(n=>n.y||0\\)\\), '..', Math.max\\(...d.nodes.map\\(n=>n.y||0\\)\\)\\);\")",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const v = d.nodes.filter\\(n=>n.type!=='codelist'\\); console.log\\('canvas nodes:', v.length\\); console.log\\('x range:', Math.min\\(...v.map\\(n=>n.x||0\\)\\).toFixed\\(0\\), '..', Math.max\\(...v.map\\(n=>n.x||0\\)\\).toFixed\\(0\\)\\); console.log\\('y range:', Math.min\\(...v.map\\(n=>n.y||0\\)\\).toFixed\\(0\\), '..', Math.max\\(...v.map\\(n=>n.y||0\\)\\).toFixed\\(0\\)\\);\")",
+      "Bash(node --check prototype-canvas/js/filter.js)",
+      "Bash(node --check prototype-canvas/js/app.js)",
+      "Bash(node --check prototype-canvas/js/state.js)",
+      "Bash(node --check prototype-canvas/js/xlsx_io.js)",
+      "Bash(node -e \"const d = require\\('./prototype-canvas/data/canvas.json'\\); const byType = {}; d.nodes.forEach\\(n => { byType[n.type] = \\(byType[n.type]||0\\)+1; }\\); console.log\\('by type:', byType\\); const v = d.nodes.filter\\(n=>n.type!=='codelist'\\); console.log\\('canvas-visible \\(non-codelist\\):', v.length\\); console.log\\('first 3 visible:', v.slice\\(0,3\\).map\\(n=>\\({id:n.id,type:n.type,x:n.x,y:n.y}\\)\\)\\);\")"
     ]
   }
 }

@@ -34,7 +34,11 @@ window.CanvasApp.Editor = (function () {
     var TYPE_CYCLE = ['table', 'view', 'api', 'file', 'codelist'];
     var KEY_CYCLE = ['', 'PK', 'FK', 'UK'];
 
+    var inited = false;
     function init() {
+        // Idempotent — see canvas.js init() for rationale.
+        if (inited) return;
+        inited = true;
         State = window.CanvasApp.State;
         Canvas = window.CanvasApp.Canvas;
 
@@ -117,6 +121,19 @@ window.CanvasApp.Editor = (function () {
         var nodeEl = e.target.closest('.node');
         if (!nodeEl) return;
         var nodeId = nodeEl.getAttribute('data-node-id');
+
+        // Codelist badge — works in BOTH view and edit modes (it's a
+        // navigation affordance, not an edit). Selecting the codelist
+        // opens the info-panel with its codes; the codelist itself isn't
+        // drawn on the diagram.
+        var clBtn = e.target.closest('[data-action="show-codelist"]');
+        if (clBtn) {
+            e.stopPropagation();
+            e.preventDefault();
+            var clId = clBtn.getAttribute('data-codelist-id');
+            if (clId) State.setSelected(clId);
+            return;
+        }
 
         // Toggle property set — works in BOTH view and edit modes (UI state)
         var toggleEl = e.target.closest('[data-action="toggle-set"]');

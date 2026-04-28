@@ -283,6 +283,12 @@ window.CanvasApp.XlsxIO = (function () {
     function onFile(e) {
         var file = e.target.files && e.target.files[0];
         if (!file) return;
+        if (typeof XLSX === 'undefined') {
+            // Mirrors the guard in exportXlsx — CDN failure shouldn't surface
+            // as an uncaught ReferenceError inside the FileReader callback.
+            toast('Excel-Bibliothek nicht geladen.', 'error');
+            return;
+        }
         var reader = new FileReader();
         reader.onload = function (ev) {
             try {
@@ -394,15 +400,23 @@ window.CanvasApp.XlsxIO = (function () {
             });
         }
 
-        // Attributes — set_id is the new field; legacy `set` is read as a
-        // fallback so files exported from the v1 schema still import.
+        // Attributes — canonical headers are snake_case (`set_id`,
+        // `source_structure`) to match the rest of the Excel schema. We
+        // still accept camelCase (`setId`, `sourceStructure`) for files
+        // exported from older builds or hand-edited by users coming from
+        // the JSON shape, but warn so the user knows the workbook will
+        // normalise on the next export.
         var colsSheet = findSheet(wb, [SHEET_ATTRS, 'Columns', 'columns']);
         var colsByNode = {};
         var unknownSetIds = Object.create(null);
+        var sawCamelHeaders = false;
         if (colsSheet) {
             XLSX.utils.sheet_to_json(colsSheet, { defval: '' }).forEach(function (r) {
                 if (!r.node_id) return;
-                var setId = String(r.set_id || r.setId || '').trim();
+                var setIdSnake = String(r.set_id || '').trim();
+                var setIdCamel = String(r.setId  || '').trim();
+                if (setIdCamel && !setIdSnake) sawCamelHeaders = true;
+                var setId = setIdSnake || setIdCamel;
                 if (setId && !knownSetIds[setId]) {
                     unknownSetIds[setId] = (unknownSetIds[setId] || 0) + 1;
                     setId = ''; // drop the bad reference rather than poisoning state
@@ -413,13 +427,22 @@ window.CanvasApp.XlsxIO = (function () {
                     key: String(r.key || '')
                 };
                 if (setId) col.setId = setId;
-                var ss = String(r.source_structure || r.sourceStructure || '').trim();
+                var ssSnake = String(r.source_structure || '').trim();
+                var ssCamel = String(r.sourceStructure  || '').trim();
+                if (ssCamel && !ssSnake) sawCamelHeaders = true;
+                var ss = ssSnake || ssCamel;
                 if (ss) col.sourceStructure = ss;
                 (colsByNode[r.node_id] = colsByNode[r.node_id] || []).push(col);
             });
         }
         if (Object.keys(unknownSetIds).length) {
             console.warn('Import: unknown setIds (dropped on the affected columns):', unknownSetIds);
+        }
+        if (sawCamelHeaders) {
+            console.warn('Import: camelCase column headers (setId / sourceStructure) detected — these will be exported as set_id / source_structure on the next round-trip.');
+            // Surface to the user too — silent header drift is the bug we
+            // got bitten by, so make sure they see it before re-exporting.
+            toast('Hinweis: Spaltennamen "setId"/"sourceStructure" werden beim Export zu "set_id"/"source_structure" umbenannt.', 'success');
         }
 
         // Wire columns + per-node sourceStructures onto each node.
