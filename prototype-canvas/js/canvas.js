@@ -23,9 +23,10 @@ window.CanvasApp.Canvas = (function () {
     var translateY = 0;
     var scale = 1;
 
-    var MIN_SCALE = 0.2;
-    var MAX_SCALE = 2.5;
-    var ZOOM_STEP = 0.1;
+    var MIN_SCALE = 0.05;
+    var MAX_SCALE = 3.0;
+    var ZOOM_STEP = 0.1;     // additive step for fine adjustments at scale ≥ 1
+    var ZOOM_FACTOR = 1.25;  // multiplicative factor for button zoom
 
     var isPanning = false;
     var panStart = null;
@@ -589,8 +590,11 @@ window.CanvasApp.Canvas = (function () {
         applyTransform();
     }
 
-    function zoomIn()  { zoomAt(scale + ZOOM_STEP); }
-    function zoomOut() { zoomAt(scale - ZOOM_STEP); }
+    // Multiplicative zoom: each click feels proportional. Going 1.0 → 0.05
+    // takes ~13 clicks instead of ~10 with additive 0.1, but each step at
+    // low zoom levels stays meaningful (vs clamping to floor immediately).
+    function zoomIn()  { zoomAt(scale * ZOOM_FACTOR); }
+    function zoomOut() { zoomAt(scale / ZOOM_FACTOR); }
 
     function zoomAt(target) {
         var rect = canvasEl.getBoundingClientRect();
