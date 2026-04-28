@@ -35,7 +35,6 @@ window.CanvasApp.App = (function () {
             applyUrlToState();
             applyViewVisibility();
             window.CanvasApp.Canvas.renderAll();
-            window.CanvasApp.Table.refreshFilters();
             window.CanvasApp.Table.render();
             window.CanvasApp.Api.render();
             window.CanvasApp.Panel.render();

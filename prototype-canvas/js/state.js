@@ -142,7 +142,6 @@ window.CanvasApp.State = (function () {
     }
     function getMode() { return state.mode; }
     function getView() { return state.view; }
-    function getSelectedId() { return state.selectedId; }
 
     // ---- Mutations -----------------------------------------------------
 
@@ -174,8 +173,7 @@ window.CanvasApp.State = (function () {
         state.nodes = state.snapshot.nodes;
         state.edges = state.snapshot.edges;
         state.snapshot = null;
-        state.selectedId = null;
-        state.selectedEdgeId = null;
+        state.selection = null;
         emit('replace');
     }
 
@@ -400,6 +398,25 @@ window.CanvasApp.State = (function () {
         return id;
     }
 
+    /**
+     * Property sets are derived from the distinct `column.set` free-text values
+     * in node.columns, in first-appearance order. There is no separate
+     * propertySets array on the node — the set name on each column IS the source
+     * of truth.
+     */
+    function derivePropertySets(node) {
+        if (!node || !node.columns) return [];
+        var seen = Object.create(null);
+        var out = [];
+        node.columns.forEach(function (c) {
+            var s = c && c.set;
+            if (!s || seen[s]) return;
+            seen[s] = true;
+            out.push({ name: s });
+        });
+        return out;
+    }
+
     return {
         load: load,
         reset: reset,
@@ -436,6 +453,7 @@ window.CanvasApp.State = (function () {
         deleteEdge: deleteEdge,
         replaceAll: replaceAll,
         generateId: generateId,
-        persist: persist
+        persist: persist,
+        derivePropertySets: derivePropertySets
     };
 })();

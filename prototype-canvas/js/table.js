@@ -24,10 +24,8 @@ window.CanvasApp.Table = (function () {
     var headEl = null;
     var bodyEl = null;
     var countEl = null;
-    var systemSel = null;
     var textInput = null;
     var tabsEl = null;
-    var filtersEl = null;
 
     var activeTab = 'systems';
 
@@ -37,11 +35,6 @@ window.CanvasApp.Table = (function () {
         api:   '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>',
         file:  '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>',
         codelist: '<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
-    };
-
-    // Tabs that show the system-filter dropdown (the rest hide it)
-    var TABS_WITH_SYSTEM_FILTER = {
-        tables: 1, apis: 1, files: 1, codelists: 1, sets: 1, cols: 1
     };
 
     var TAB_PLACEHOLDERS = {
@@ -60,12 +53,9 @@ window.CanvasApp.Table = (function () {
         headEl = document.getElementById('table-head');
         bodyEl = document.getElementById('table-body');
         countEl = document.getElementById('table-count');
-        systemSel = document.getElementById('filter-system');
         textInput = document.getElementById('filter-text');
         tabsEl = document.getElementById('table-tabs');
-        filtersEl = document.getElementById('table-filters');
 
-        systemSel.addEventListener('change', render);
         textInput.addEventListener('input', render);
 
         tabsEl.addEventListener('click', onTabClick);
@@ -76,7 +66,6 @@ window.CanvasApp.Table = (function () {
 
         State.on(function (reason) {
             if (reason === 'nodes' || reason === 'edges' || reason === 'replace' || reason === 'reset') {
-                refreshFilters();
                 render();
             } else if (reason === 'mode') {
                 render();
@@ -84,13 +73,6 @@ window.CanvasApp.Table = (function () {
         });
 
         applyTabUI();
-    }
-
-    function refreshFilters() {
-        var nodes = State.getNodes();
-        var systems = unique(nodes.map(function (n) { return n.system; }).filter(Boolean));
-        systemSel.innerHTML = '<option value="">Alle Systeme</option>' +
-            systems.map(function (s) { return '<option value="' + escapeAttr(s) + '">' + escapeHtml(s) + '</option>'; }).join('');
     }
 
     function onTabClick(e) {
@@ -110,7 +92,6 @@ window.CanvasApp.Table = (function () {
             b.classList.toggle('is-active', active);
             b.setAttribute('aria-selected', active ? 'true' : 'false');
         });
-        filtersEl.style.display = TABS_WITH_SYSTEM_FILTER[activeTab] ? '' : 'none';
         textInput.setAttribute('placeholder', TAB_PLACEHOLDERS[activeTab] || 'Filtern…');
     }
 
@@ -135,11 +116,9 @@ window.CanvasApp.Table = (function () {
         State.getNodes().forEach(function (n) {
             var s = (n.system || '').trim();
             if (!s) return;
-            if (!byName[s]) byName[s] = { name: s, nodes: 0, byType: {}, attrs: 0, sets: 0, tags: {} };
-            byName[s].nodes += 1;
+            if (!byName[s]) byName[s] = { name: s, byType: {}, attrs: 0, tags: {} };
             byName[s].byType[n.type] = (byName[s].byType[n.type] || 0) + 1;
             byName[s].attrs += (n.columns || []).length;
-            byName[s].sets += (n.propertySets || []).length;
             (n.tags || []).forEach(function (t) { byName[s].tags[t] = true; });
         });
         var rows = Object.keys(byName).map(function (k) { return byName[k]; });
@@ -149,11 +128,11 @@ window.CanvasApp.Table = (function () {
         }
         rows.sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-        headEl.innerHTML = '<tr><th>System</th><th>Knoten</th><th>Typen</th><th>Sets</th><th>Attribute</th><th>Tags</th></tr>';
+        headEl.innerHTML = '<tr><th>Name</th><th>Typen</th><th>Attribute</th><th>Tags</th></tr>';
         countEl.textContent = countLabel(rows.length, total, 'Systeme');
 
         bodyEl.innerHTML = rows.map(systemRowHtml).join('') ||
-            emptyRowHtml(6, q ? 'Keine Treffer' : 'Keine Systeme');
+            emptyRowHtml(4, q ? 'Keine Treffer' : 'Keine Systeme');
     }
 
     function systemRowHtml(r) {
@@ -166,9 +145,7 @@ window.CanvasApp.Table = (function () {
         }).join('');
         return '<tr data-system="' + escapeAttr(r.name) + '" data-kind="system">' +
                 '<td><span class="cell-name">' + escapeHtml(r.name) + '</span></td>' +
-                '<td>' + r.nodes + '</td>' +
                 '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(typeBreakdown) + '</span></td>' +
-                '<td>' + r.sets + '</td>' +
                 '<td>' + r.attrs + '</td>' +
                 '<td>' + (tags || dash()) + '</td>' +
             '</tr>';
@@ -177,7 +154,6 @@ window.CanvasApp.Table = (function () {
     // ---- Tab: typed nodes (tables / apis / files / codelists) ---------
 
     function renderTypedNodes(types, noun) {
-        var sysFilter = systemSel.value;
         var q = textInput.value.trim().toLowerCase();
         var isEdit = State.getMode() === 'edit';
 
@@ -186,7 +162,6 @@ window.CanvasApp.Table = (function () {
 
         var allOfKind = State.getNodes().filter(function (n) { return typeSet[n.type]; });
         var rows = allOfKind.filter(function (n) {
-            if (sysFilter && n.system !== sysFilter) return false;
             if (!q) return true;
             var hay = [
                 n.label, n.id, n.system, n.schema,
@@ -196,20 +171,20 @@ window.CanvasApp.Table = (function () {
             return hay.indexOf(q) !== -1;
         });
 
-        // Codelists: rename the "Attribute"/"Sets" columns to "Codes"/"–"
+        // Codelists: rename the "Attribute" count column to "Codes"; drop "Property Sets"
         var isCodelist = types.length === 1 && types[0] === 'codelist';
         var attrCol = isCodelist ? 'Codes' : 'Attribute';
 
         headEl.innerHTML = '<tr>' +
             '<th>Name</th><th>Typ</th><th>System</th><th>Schema</th>' +
-            (isCodelist ? '' : '<th>Sets</th>') +
+            (isCodelist ? '' : '<th>Property Sets</th>') +
             '<th>' + attrCol + '</th><th>Tags</th><th></th></tr>';
 
         countEl.textContent = countLabel(rows.length, allOfKind.length, noun);
 
         bodyEl.innerHTML = rows.map(function (n) {
             return typedNodeRowHtml(n, isEdit, isCodelist, types);
-        }).join('') || emptyRowHtml(isCodelist ? 7 : 8, q || sysFilter ? 'Keine Treffer' : 'Keine ' + noun);
+        }).join('') || emptyRowHtml(isCodelist ? 7 : 8, q ? 'Keine Treffer' : 'Keine ' + noun);
     }
 
     function typedNodeRowHtml(n, isEdit, isCodelist, allowedTypes) {
@@ -222,7 +197,7 @@ window.CanvasApp.Table = (function () {
         var typeOptsHtml = typeChoices.map(function (t) {
             return '<option value="' + t + '"' + (t === n.type ? ' selected' : '') + '>' + typeLabel(t) + '</option>';
         }).join('');
-        var setCount = (n.propertySets || []).length;
+        var setCount = State.derivePropertySets(n).length;
         var colCount = (n.columns || []).length;
         var tags = (n.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
 
@@ -247,12 +222,10 @@ window.CanvasApp.Table = (function () {
     // ---- Tab: Property Sets --------------------------------------------
 
     function renderSets() {
-        var sysFilter = systemSel.value;
         var q = textInput.value.trim().toLowerCase();
         var rows = [];
         State.getNodes().forEach(function (n) {
-            if (sysFilter && n.system !== sysFilter) return;
-            (n.propertySets || []).forEach(function (s) {
+            State.derivePropertySets(n).forEach(function (s) {
                 var attrCount = (n.columns || []).filter(function (c) { return c.set === s.name; }).length;
                 rows.push({ node: n, set: s, count: attrCount });
             });
@@ -260,35 +233,33 @@ window.CanvasApp.Table = (function () {
         var total = rows.length;
         if (q) {
             rows = rows.filter(function (r) {
-                return [r.set.name, r.set.label, r.node.label, r.node.id].join(' ').toLowerCase().indexOf(q) !== -1;
+                return [r.set.name, r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
             });
         }
 
-        headEl.innerHTML = '<tr><th>Knoten</th><th>Set</th><th>Label</th><th>Attribute</th><th></th></tr>';
+        headEl.innerHTML = '<tr><th>Name</th><th>Knoten</th><th>Typ</th><th>System</th><th>Attribute</th></tr>';
         countEl.textContent = countLabel(rows.length, total, 'Property Sets');
         bodyEl.innerHTML = rows.map(setRowHtml).join('') ||
-            emptyRowHtml(5, q || sysFilter ? 'Keine Treffer' : 'Keine Property Sets');
+            emptyRowHtml(5, q ? 'Keine Treffer' : 'Keine Property Sets');
     }
 
     function setRowHtml(r) {
         var icon = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
         return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-set="' + escapeAttr(r.set.name) + '" data-kind="set">' +
-                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
                 '<td><code class="cell-mono">' + escapeHtml(r.set.name) + '</code></td>' +
-                '<td>' + (r.set.label ? escapeHtml(r.set.label) : dash()) + '</td>' +
+                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
+                '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(typeLabel(r.node.type)) + '</span></td>' +
+                '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
                 '<td>' + r.count + '</td>' +
-                '<td>' + delBtn('Property Set') + '</td>' +
             '</tr>';
     }
 
     // ---- Tab: Columns / Attributes -------------------------------------
 
     function renderCols() {
-        var sysFilter = systemSel.value;
         var q = textInput.value.trim().toLowerCase();
         var rows = [];
         State.getNodes().forEach(function (n) {
-            if (sysFilter && n.system !== sysFilter) return;
             (n.columns || []).forEach(function (c, idx) {
                 rows.push({ node: n, col: c, idx: idx });
             });
@@ -296,14 +267,14 @@ window.CanvasApp.Table = (function () {
         var total = rows.length;
         if (q) {
             rows = rows.filter(function (r) {
-                return [r.col.name, r.col.type, r.col.set, r.node.label, r.node.id].join(' ').toLowerCase().indexOf(q) !== -1;
+                return [r.col.name, r.col.type, r.col.set, r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
             });
         }
 
-        headEl.innerHTML = '<tr><th>Knoten</th><th>Set</th><th>Name</th><th>Typ</th><th>Schlüssel</th><th></th></tr>';
+        headEl.innerHTML = '<tr><th>Name</th><th>Datentyp</th><th>Schlüssel</th><th>Set</th><th>Knoten</th><th>System</th><th></th></tr>';
         countEl.textContent = countLabel(rows.length, total, 'Attribute');
         bodyEl.innerHTML = rows.map(colRowHtml).join('') ||
-            emptyRowHtml(6, q || sysFilter ? 'Keine Treffer' : 'Keine Attribute');
+            emptyRowHtml(7, q ? 'Keine Treffer' : 'Keine Attribute');
     }
 
     function colRowHtml(r) {
@@ -311,11 +282,12 @@ window.CanvasApp.Table = (function () {
         var keyClass = r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : r.col.key === 'UK' ? 'uk' : '';
         var keyLabel = r.col.key || '–';
         return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-col-idx="' + r.idx + '" data-kind="col">' +
-                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
-                '<td>' + (r.col.set ? '<code class="cell-mono">' + escapeHtml(r.col.set) + '</code>' : dash()) + '</td>' +
                 '<td><code class="cell-mono">' + escapeHtml(r.col.name) + '</code></td>' +
                 '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.col.type || '') + '</span></td>' +
                 '<td>' + (r.col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(keyLabel) + '</span>' : dash()) + '</td>' +
+                '<td>' + (r.col.set ? '<code class="cell-mono">' + escapeHtml(r.col.set) + '</code>' : dash()) + '</td>' +
+                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
+                '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
                 '<td>' + delBtn('Attribut') + '</td>' +
             '</tr>';
     }
@@ -334,7 +306,7 @@ window.CanvasApp.Table = (function () {
             return [e.label, fromLabel, toLabel, e.from, e.to].join(' ').toLowerCase().indexOf(q) !== -1;
         });
 
-        headEl.innerHTML = '<tr><th>Quelle</th><th>Ziel</th><th>Beziehung</th><th></th></tr>';
+        headEl.innerHTML = '<tr><th>Beziehung</th><th>Quelle</th><th>Ziel</th><th></th></tr>';
         countEl.textContent = countLabel(edges.length, State.getEdges().length, 'Beziehungen');
         bodyEl.innerHTML = edges.map(function (e) { return edgeRowHtml(e, byId); }).join('') ||
             emptyRowHtml(4, q ? 'Keine Treffer' : 'Keine Beziehungen');
@@ -346,9 +318,9 @@ window.CanvasApp.Table = (function () {
         var fromLabel = fromNode ? (fromNode.label || fromNode.id) : e.from;
         var toLabel = toNode ? (toNode.label || toNode.id) : e.to;
         return '<tr data-edge-id="' + escapeAttr(e.id) + '" data-kind="edge" data-from="' + escapeAttr(e.from) + '">' +
+                '<td>' + (e.label ? escapeHtml(e.label) : dash()) + '</td>' +
                 '<td><span class="cell-name">' + escapeHtml(fromLabel) + '</span></td>' +
                 '<td><span class="cell-name">→ ' + escapeHtml(toLabel) + '</span></td>' +
-                '<td>' + (e.label ? escapeHtml(e.label) : dash()) + '</td>' +
                 '<td>' + delBtn('Beziehung') + '</td>' +
             '</tr>';
     }
@@ -396,18 +368,6 @@ window.CanvasApp.Table = (function () {
         if (kind === 'edge') {
             var edgeId = row.getAttribute('data-edge-id');
             if (edgeId) State.deleteEdge(edgeId);
-            return;
-        }
-        if (kind === 'set') {
-            var setName = row.getAttribute('data-set');
-            var nset = State.getNode(nodeId);
-            if (!nset) return;
-            if (!confirm('Property Set "' + setName + '" entfernen? Spalten werden entgruppiert.')) return;
-            var newSets = (nset.propertySets || []).filter(function (s) { return s.name !== setName; });
-            var newCols = (nset.columns || []).map(function (c) {
-                return c.set === setName ? Object.assign({}, c, { set: '' }) : c;
-            });
-            State.updateNode(nodeId, { propertySets: newSets, columns: newCols });
             return;
         }
         if (kind === 'col') {
@@ -500,5 +460,5 @@ window.CanvasApp.Table = (function () {
     }
     function escapeAttr(s) { return escapeHtml(s); }
 
-    return { init: init, render: render, refreshFilters: refreshFilters };
+    return { init: init, render: render };
 })();

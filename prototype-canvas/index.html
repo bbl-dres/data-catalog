@@ -59,6 +59,8 @@
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="vis-dropdown" id="vis-dropdown" hidden role="menu">
+          <label class="vis-row vis-row-master"><input type="checkbox" id="vis-master" checked> Alles anzeigen</label>
+          <div class="vis-divider"></div>
           <div class="vis-section-label">Knotentypen</div>
           <label class="vis-row"><input type="checkbox" data-vis="type-table"  checked> Tabellen</label>
           <label class="vis-row"><input type="checkbox" data-vis="type-view"   checked> Views</label>
@@ -73,6 +75,18 @@
           <div class="vis-section-label">Layout</div>
           <label class="vis-row"><input type="checkbox" data-vis="edges"       checked> Beziehungen</label>
           <label class="vis-row"><input type="checkbox" data-vis="systems"     checked> Systemrahmen</label>
+          <div class="vis-divider"></div>
+          <div class="vis-section-label">Property Sets</div>
+          <div class="vis-footer-actions">
+            <button type="button" class="vis-action-btn" data-sets-action="expand" title="Alle Property Sets aufklappen">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              Auf
+            </button>
+            <button type="button" class="vis-action-btn" data-sets-action="collapse" title="Alle Property Sets einklappen">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+              Zu
+            </button>
+          </div>
         </div>
       </div>
       <button class="tb-btn" id="btn-import" title="Excel importieren">
@@ -216,10 +230,6 @@
           <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false">Beziehungen</button>
         </div>
         <span class="toolbar-sep"></span>
-        <div class="table-filters" id="table-filters">
-          <label class="toolbar-label">System</label>
-          <select id="filter-system" class="toolbar-select"></select>
-        </div>
         <input type="text" id="filter-text" class="toolbar-input" placeholder="Filtern…">
         <span class="table-count" id="table-count"></span>
       </div>

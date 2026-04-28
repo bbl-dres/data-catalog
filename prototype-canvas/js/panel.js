@@ -18,6 +18,9 @@ window.CanvasApp.Panel = (function () {
     var TYPE_LABELS = {
         table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste'
     };
+    var TYPE_LABELS_PLURAL = {
+        table: 'Tabellen', view: 'Views', api: 'APIs', file: 'Dateien', codelist: 'Wertelisten'
+    };
     var TYPE_ICONS = {
         table: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>',
         view:  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>',
@@ -128,7 +131,7 @@ window.CanvasApp.Panel = (function () {
     }
 
     function propertySetsSectionHtml(node) {
-        var sets = node.propertySets || [];
+        var sets = State.derivePropertySets(node);
         if (!sets.length) return '';
         var cols = node.columns || [];
         var items = sets.map(function (s) {
@@ -136,7 +139,6 @@ window.CanvasApp.Panel = (function () {
             return '' +
                 '<li data-action="focus-set" data-set="' + escapeAttr(s.name) + '" title="Im Diagramm hervorheben">' +
                     '<span class="info-set-name">' + escapeHtml(s.name) + '</span>' +
-                    '<span class="info-set-label">' + escapeHtml(s.label || '') + '</span>' +
                     '<span class="info-set-count">' + count + '</span>' +
                 '</li>';
         }).join('');
@@ -227,7 +229,7 @@ window.CanvasApp.Panel = (function () {
         var typeCounts = {};
         var tagSet = {};
         members.forEach(function (n) {
-            setCount += (n.propertySets || []).length;
+            setCount += State.derivePropertySets(n).length;
             colCount += (n.columns || []).length;
             (n.columns || []).forEach(function (c) { if (c.key === 'PK') pkCount += 1; });
             typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
@@ -235,21 +237,13 @@ window.CanvasApp.Panel = (function () {
         });
 
         var typeBreakdown = Object.keys(typeCounts).map(function (t) {
-            return typeCounts[t] + ' ' + typeLabel(t) + (typeCounts[t] === 1 ? '' : 's');
+            var n = typeCounts[t];
+            return n + ' ' + (n === 1 ? typeLabel(t) : (TYPE_LABELS_PLURAL[t] || typeLabel(t)));
         }).join(', ');
 
         var tagsHtml = Object.keys(tagSet).sort().map(function (t) {
             return '<span class="info-tag">' + escapeHtml(t) + '</span>';
         }).join('') || '<span style="color:var(--color-text-placeholder)">–</span>';
-
-        var nodesItems = members.map(function (n) {
-            var ic = TYPE_ICONS[n.type] || TYPE_ICONS.table;
-            return '<li data-action="select-node" data-node-id="' + escapeAttr(n.id) + '">' +
-                '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px"><span class="cell-icon" data-type="' + escapeAttr(n.type) + '">' + ic + '</span>' + escapeHtml(n.label || n.id) + '</span>' +
-                '<span class="info-set-label">' + escapeHtml(typeLabel(n.type)) + '</span>' +
-                '<span class="info-set-count">' + ((n.columns || []).length) + '</span>' +
-            '</li>';
-        }).join('');
 
         var external = edges.filter(function (e) {
             var fromIn = memberIds[e.from], toIn = memberIds[e.to];
@@ -292,10 +286,6 @@ window.CanvasApp.Panel = (function () {
                     '<dt>Attribute</dt><dd>' + colCount + (pkCount ? ' <span style="color:var(--color-text-secondary)">· PK: ' + pkCount + '</span>' : '') + '</dd>' +
                     '<dt>Tags</dt><dd>' + tagsHtml + '</dd>' +
                 '</dl>' +
-            '</div>' +
-            '<div class="info-section">' +
-                '<div class="info-section-label">Knoten <span class="info-section-count">' + members.length + '</span></div>' +
-                (members.length ? '<ul class="info-set-list">' + nodesItems + '</ul>' : '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">Keine Knoten</div>') +
             '</div>' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Externe Beziehungen <span class="info-section-count">' + external.length + '</span></div>' +
@@ -378,7 +368,7 @@ window.CanvasApp.Panel = (function () {
     }
 
     function typeLabel(t) {
-        return ({ table: 'Tabelle', view: 'View', api: 'API', file: 'Datei' }[t] || t || '–');
+        return TYPE_LABELS[t] || t || '–';
     }
 
     // ---- Click delegation ----------------------------------------------

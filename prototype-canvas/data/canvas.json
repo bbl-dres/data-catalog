@@ -191,7 +191,7 @@
         {
           "name": "OBJECT_TYPE",
           "type": "CHAR(2)",
-          "key": "PK",
+          "key": "",
           "set": "ARCH_RELMS"
         },
         {
@@ -203,13 +203,13 @@
         {
           "name": "ARCH_OBJECT_TYPE",
           "type": "CHAR(2)",
-          "key": "PK",
+          "key": "",
           "set": "ARCH_RELMS"
         },
         {
           "name": "ARCH_OBJECT_ID",
           "type": "CHAR(45)",
-          "key": "PK",
+          "key": "UK",
           "set": "ARCH_RELMS"
         },
         {
@@ -2440,19 +2440,19 @@
         {
           "name": "ID",
           "type": "",
-          "key": "",
+          "key": "PK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Buchungskreis (Zuordnung)",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
@@ -2707,25 +2707,25 @@
         {
           "name": "ID",
           "type": "",
-          "key": "",
+          "key": "PK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Buchungskreis (Zuordnung)",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit (Zuordnung)",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Grundstück",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
@@ -2737,7 +2737,7 @@
         {
           "name": "EGRID",
           "type": "",
-          "key": "UK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -3196,25 +3196,25 @@
         {
           "name": "ID",
           "type": "",
-          "key": "",
+          "key": "PK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Buchungskreis (Zuordnung)",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Wirtschaftseinheit (Zuordnung)",
           "type": "",
-          "key": "PK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "Gebäude",
           "type": "",
-          "key": "PK",
+          "key": "",
           "set": "STAMMDATEN"
         },
         {
@@ -3226,13 +3226,13 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "UK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
           "name": "EDID",
           "type": "",
-          "key": "",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -4275,7 +4275,7 @@
         {
           "name": "EGRID",
           "type": "",
-          "key": "UK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -4688,7 +4688,7 @@
         {
           "name": "EGID",
           "type": "",
-          "key": "UK",
+          "key": "FK",
           "set": "STAMMDATEN"
         },
         {
@@ -6660,13 +6660,13 @@
       "id": "e_gis_geb_grd",
       "from": "gis_gebaeude",
       "to": "gis_grundstueck",
-      "label": "steht auf Grundstück (n:1, via EGRID)"
+      "label": "steht auf Grundstück (n:1, via ID)"
     },
     {
       "id": "e_gis_huelle_geb",
       "from": "gis_gebaeudehuelle",
       "to": "gis_gebaeude",
-      "label": "Hülle von Gebäude (1:1, via EGID)"
+      "label": "Hülle von Gebäude (1:1, via ID)"
     },
     {
       "id": "e_gis_proj_grd",
@@ -6684,13 +6684,13 @@
       "id": "e_gis_geb_refx_geb",
       "from": "gis_gebaeude",
       "to": "refx_gebaeude",
-      "label": "GIS Gebäude ↔ RE-FX Gebäude (1:1, Match über EGID)"
+      "label": "GIS Gebäude ↔ RE-FX Gebäude (1:1, Match über ID)"
     },
     {
       "id": "e_gis_grd_refx_grd",
       "from": "gis_grundstueck",
       "to": "refx_grundstueck",
-      "label": "GIS Grundstück ↔ RE-FX Grundstück (1:1, Match über EGRID)"
+      "label": "GIS Grundstück ↔ RE-FX Grundstück (1:1, Match über ID)"
     },
     {
       "id": "e_gwr_wohn_geb",

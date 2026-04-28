@@ -53,6 +53,21 @@ window.CanvasApp.Canvas = (function () {
             delete collapsedSets[newKey];
         }
     }
+    /** Bulk: expand or collapse every property set across every node. */
+    function setAllSetsExpanded(expanded) {
+        if (expanded) {
+            collapsedSets = Object.create(null);
+        } else {
+            collapsedSets = Object.create(null);
+            State.getNodes().forEach(function (n) {
+                State.derivePropertySets(n).forEach(function (s) {
+                    collapsedSets[expandKey(n.id, s.name)] = true;
+                });
+            });
+        }
+        renderNodes();
+        renderGroups();
+    }
 
     var isDragging = false;
     var dragNodeId = null;
@@ -219,21 +234,20 @@ window.CanvasApp.Canvas = (function () {
                 '</button>' +
             '</div>';
 
-        var sets = node.propertySets || [];
+        var sets = State.derivePropertySets(node);
         var cols = node.columns || [];
 
         if (sets.length === 0) {
-            // Flat list — original layout
+            // Flat list — no sets in use
             html += '<ul class="node-cols">';
             cols.forEach(function (c, idx) { html += colRowHtml(c, idx); });
             html += '</ul>';
             html += '<div class="node-col-add edit-only" data-action="add-col" data-set="">+ Spalte</div>';
         } else {
             // Group by property set. Ungrouped first (no header), then each set.
-            var setNames = sets.map(function (s) { return s.name; });
             var ungroupedHtml = '';
             var bySet = {};
-            setNames.forEach(function (n) { bySet[n] = ''; });
+            sets.forEach(function (s) { bySet[s.name] = ''; });
             cols.forEach(function (c, idx) {
                 var rowHtml = colRowHtml(c, idx);
                 if (c.set && bySet.hasOwnProperty(c.set)) bySet[c.set] += rowHtml;
@@ -251,9 +265,6 @@ window.CanvasApp.Canvas = (function () {
             });
         }
 
-        // + Property Set (always available in edit mode)
-        html += '<div class="node-add-set edit-only" data-action="add-set">+ Property Set</div>';
-
         // Edge handles (visible only in edit mode via CSS)
         html += '<span class="node-port left" data-port="in" data-node-id="' + node.id + '"></span>';
         html += '<span class="node-port right" data-port="out" data-node-id="' + node.id + '"></span>';
@@ -264,7 +275,6 @@ window.CanvasApp.Canvas = (function () {
 
     function setSectionHtml(s, count, colsHtml, expanded) {
         var name = s.name || '';
-        var label = s.label || '';
         var safeName = escapeAttr(name);
         return '' +
             '<div class="node-set' + (expanded ? ' is-expanded' : '') + '" data-set="' + safeName + '">' +
@@ -273,12 +283,7 @@ window.CanvasApp.Canvas = (function () {
                         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>' +
                     '</span>' +
                     '<span class="node-set-name" data-edit="set-name" data-set="' + safeName + '" contenteditable="false" spellcheck="false">' + escapeHtml(name) + '</span>' +
-                    '<span class="node-set-sep">·</span>' +
-                    '<span class="node-set-label" data-edit="set-label" data-set="' + safeName + '" contenteditable="false" spellcheck="false" data-placeholder="Beschreibung">' + escapeHtml(label) + '</span>' +
                     '<span class="node-set-count">' + count + '</span>' +
-                    '<button class="node-set-delete edit-only" data-action="delete-set" data-set="' + safeName + '" title="Property Set entfernen (Spalten werden entgruppiert)" tabindex="-1">' +
-                        '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-                    '</button>' +
                 '</div>' +
                 '<div class="node-set-content">' +
                     '<ul class="node-cols">' + colsHtml + '</ul>' +
@@ -674,7 +679,7 @@ window.CanvasApp.Canvas = (function () {
         // In edit mode, don't start drag for clicks on interactive children.
         // .node-col is in the bail list — clicking a column should select the
         // attribute, never start a node drag.
-        if (e.target.closest('[contenteditable="true"], button, .node-port, .node-col, .node-col-key, .node-col-handle, .node-col-add, .node-add-set, .node-set-header, .node-type-icon')) {
+        if (e.target.closest('[contenteditable="true"], button, .node-port, .node-col, .node-col-key, .node-col-handle, .node-col-add, .node-set-header, .node-type-icon')) {
             return;
         }
 
@@ -697,8 +702,8 @@ window.CanvasApp.Canvas = (function () {
     function setEditMode(isEdit) {
         nodeLayer.querySelectorAll('[data-edit]').forEach(function (el) {
             // Type / key are click-to-cycle, not contenteditable.
-            // Everything else (label, system, col-name, col-type, set-name,
-            // set-label) becomes editable text in edit mode.
+            // Everything else (label, system, col-name, col-type, set-name)
+            // becomes editable text in edit mode.
             var kind = el.getAttribute('data-edit');
             if (kind === 'type' || kind === 'key') return;
             el.setAttribute('contenteditable', isEdit ? 'true' : 'false');
@@ -781,6 +786,7 @@ window.CanvasApp.Canvas = (function () {
         toggleSet: toggleSet,
         isSetExpanded: isSetExpanded,
         migrateSetState: migrateSetState,
+        setAllSetsExpanded: setAllSetsExpanded,
         renderGroups: renderGroups,
         fitToScreen: fitToScreen,
         getNodeEl: getNodeEl,

@@ -32,9 +32,9 @@ window.CanvasApp.Editor = (function () {
     var retargetPreviewPath = null;
 
     // Views are kept supported in the data model so existing nodes still
-    // render — but they're skipped in the cycle (and the entity palette)
-    // so users don't create new ones.
-    var TYPE_CYCLE = ['table', 'api', 'file', 'codelist'];
+    // render and can be cycled through — they're only excluded from the
+    // entity palette so users don't create new ones from scratch.
+    var TYPE_CYCLE = ['table', 'view', 'api', 'file', 'codelist'];
     var KEY_CYCLE = ['', 'PK', 'FK', 'UK'];
 
     function init() {
@@ -89,7 +89,6 @@ window.CanvasApp.Editor = (function () {
             if (!el) return;
             el.addEventListener('click', onEdgeLayerClick);
             el.addEventListener('pointerdown', onEdgeLayerPointerDown, true);
-            el.addEventListener('input', onEdgeLabelInput);
             el.addEventListener('blur', onEdgeLabelBlur, true);
             el.addEventListener('keydown', onEdgeLabelKeydown);
         });
@@ -125,23 +124,20 @@ window.CanvasApp.Editor = (function () {
         // Toggle property set — works in BOTH view and edit modes (UI state)
         var toggleEl = e.target.closest('[data-action="toggle-set"]');
         if (toggleEl) {
-            // Don't toggle when clicking on the editable text spans inside the header
+            // Don't toggle when clicking on the editable set-name span inside the header
             if (e.target.closest('[contenteditable="true"]')) return;
-            // Don't toggle when clicking the × delete button
-            if (e.target.closest('[data-action="delete-set"]')) {} else {
-                e.stopPropagation();
-                var setName = toggleEl.getAttribute('data-set');
-                var setEl = toggleEl.closest('.node-set');
-                if (setEl) {
-                    Canvas.toggleSet(nodeId, setName);
-                    setEl.classList.toggle('is-expanded', Canvas.isSetExpanded(nodeId, setName));
-                    // Node height changed — refresh the system frame and the
-                    // floating action bar (if it sits above this node)
-                    Canvas.renderGroups();
-                    repositionActionBar();
-                }
-                return;
+            e.stopPropagation();
+            var setName = toggleEl.getAttribute('data-set');
+            var setEl = toggleEl.closest('.node-set');
+            if (setEl) {
+                Canvas.toggleSet(nodeId, setName);
+                setEl.classList.toggle('is-expanded', Canvas.isSetExpanded(nodeId, setName));
+                // Node height changed — refresh the system frame and the
+                // floating action bar (if it sits above this node)
+                Canvas.renderGroups();
+                repositionActionBar();
             }
+            return;
         }
 
         if (State.getMode() !== 'edit') return;
@@ -152,56 +148,6 @@ window.CanvasApp.Editor = (function () {
             var node = State.getNode(nodeId);
             var nm = node ? (node.label || node.id) : '';
             if (confirm('Knoten "' + nm + '" löschen?')) State.deleteNode(nodeId);
-            return;
-        }
-
-        // Delete property set (ungroups its columns, doesn't remove them)
-        var delSetBtn = e.target.closest('[data-action="delete-set"]');
-        if (delSetBtn) {
-            e.stopPropagation();
-            var setNameDel = delSetBtn.getAttribute('data-set');
-            var nDel = State.getNode(nodeId);
-            if (!nDel) return;
-            var hasCols = (nDel.columns || []).some(function (c) { return c.set === setNameDel; });
-            var prompt = hasCols
-                ? 'Property Set "' + setNameDel + '" entfernen? Spalten werden entgruppiert.'
-                : 'Property Set "' + setNameDel + '" entfernen?';
-            if (!confirm(prompt)) return;
-            var newSets = (nDel.propertySets || []).filter(function (s) { return s.name !== setNameDel; });
-            var newCols = (nDel.columns || []).map(function (c) {
-                return c.set === setNameDel ? Object.assign({}, c, { set: '' }) : c;
-            });
-            State.updateNode(nodeId, { propertySets: newSets, columns: newCols });
-            return;
-        }
-
-        // Add property set
-        if (e.target.closest('[data-action="add-set"]')) {
-            e.stopPropagation();
-            var nAdd = State.getNode(nodeId);
-            if (!nAdd) return;
-            var sets = (nAdd.propertySets || []).slice();
-            // Generate a unique tech name like "NEW_SET", "NEW_SET_2", ...
-            var base = 'NEW_SET';
-            var name = base;
-            var counter = 2;
-            while (sets.some(function (s) { return s.name === name; })) {
-                name = base + '_' + counter;
-                counter += 1;
-            }
-            sets.push({ name: name, label: '' });
-            State.updateNode(nodeId, { propertySets: sets });
-            // Sets are expanded by default — focus the new set's name field
-            requestAnimationFrame(function () {
-                var fresh = nodeLayer.querySelector('[data-node-id="' + cssEscape(nodeId) + '"]');
-                if (!fresh) return;
-                var section = fresh.querySelector('.node-set[data-set="' + cssEscape(name) + '"]');
-                var nameEl = section && section.querySelector('[data-edit="set-name"]');
-                if (nameEl) {
-                    nameEl.focus();
-                    selectAll(nameEl);
-                }
-            });
             return;
         }
 
@@ -301,38 +247,24 @@ window.CanvasApp.Editor = (function () {
                 cols[idx] = Object.assign({}, cols[idx], (function () { var o = {}; o[field] = value; return o; })());
                 State.updateNode(nodeId, { columns: cols });
             }
-        } else if (kind === 'set-name' || kind === 'set-label') {
+        } else if (kind === 'set-name') {
+            // Renaming a set: cascade to every column whose `set` matches the
+            // old name. Sets are derived from columns — no separate array.
             var oldSetName = el.getAttribute('data-set');
-            var sets = (node.propertySets || []).slice();
-            var sIdx = -1;
-            for (var i = 0; i < sets.length; i++) {
-                if (sets[i].name === oldSetName) { sIdx = i; break; }
+            var newName = value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
+            if (!newName || newName === oldSetName) return;
+            // Reject duplicate set names within this node
+            var existing = State.derivePropertySets(node).map(function (s) { return s.name; });
+            if (existing.indexOf(newName) !== -1) {
+                Canvas.renderNodes(); // restore original text
+                return;
             }
-            if (sIdx === -1) return;
-
-            if (kind === 'set-name') {
-                // Tech name normalised to upper-case + safe chars
-                var newName = value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
-                if (!newName) return;                      // empty → revert (no change)
-                if (newName === oldSetName) return;
-                // Reject duplicate set names
-                if (sets.some(function (s) { return s.name === newName; })) {
-                    Canvas.renderNodes(); // restore original text
-                    return;
-                }
-                sets[sIdx] = Object.assign({}, sets[sIdx], { name: newName });
-                // Carry collapsed/expanded state across the rename
-                Canvas.migrateSetState(nodeId, oldSetName, newName);
-                // Update any columns that referenced the old name
-                var newCols = (node.columns || []).map(function (c) {
-                    return c.set === oldSetName ? Object.assign({}, c, { set: newName }) : c;
-                });
-                State.updateNode(nodeId, { propertySets: sets, columns: newCols });
-            } else {
-                if (value === (sets[sIdx].label || '')) return;
-                sets[sIdx] = Object.assign({}, sets[sIdx], { label: value });
-                State.updateNode(nodeId, { propertySets: sets });
-            }
+            var newCols = (node.columns || []).map(function (c) {
+                return c.set === oldSetName ? Object.assign({}, c, { set: newName }) : c;
+            });
+            // Carry collapsed/expanded state across the rename
+            Canvas.migrateSetState(nodeId, oldSetName, newName);
+            State.updateNode(nodeId, { columns: newCols });
         }
     }
 
@@ -629,11 +561,6 @@ window.CanvasApp.Editor = (function () {
     }
 
     // ---- Edge label inline edit ----------------------------------------
-
-    function onEdgeLabelInput(e) {
-        // Live updates can be debounced if needed; for now we commit on blur
-        // so paths don't reflow on every keystroke.
-    }
 
     function onEdgeLabelBlur(e) {
         var input = e.target;

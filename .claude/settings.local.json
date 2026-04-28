@@ -120,7 +120,17 @@
       "Bash(python3 -c ' *)",
       "Bash(node -e \"['state','canvas','editor','table','api','panel','xlsx_io','app'].forEach\\(f=>{try{new Function\\(require\\('fs'\\).readFileSync\\('c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/'+f+'.js','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\\)\")",
       "Bash(curl -s -o /dev/null -w \"panel.js: %{http_code}\\\\n\" http://localhost:9123/prototype-canvas/js/panel.js)",
-      "Bash(node -e \"['state','canvas','editor','table','api','panel','visibility','xlsx_io','app'].forEach\\(f=>{try{new Function\\(require\\('fs'\\).readFileSync\\('c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/'+f+'.js','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\\)\")"
+      "Bash(node -e \"['state','canvas','editor','table','api','panel','visibility','xlsx_io','app'].forEach\\(f=>{try{new Function\\(require\\('fs'\\).readFileSync\\('c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/'+f+'.js','utf8'\\)\\);console.log\\(f+': OK'\\)}catch\\(e\\){console.log\\(f+': '+e.message\\)}}\\)\")",
+      "Bash(node --check js/state.js)",
+      "Bash(node --check js/panel.js)",
+      "Bash(node --check js/editor.js)",
+      "Bash(node -e \"const d=require\\('./data/canvas.json'\\); const refx=d.nodes.filter\\(n=>n.system==='SAP RE-FX'\\); console.log\\(refx.map\\(n=>n.id+' / '+n.label+' \\('+n.type+'\\)'\\).join\\('\\\\n'\\)\\);\")",
+      "Bash(node migrate_address.js)",
+      "Bash(rm migrate_address.js)",
+      "Bash(node --check js/visibility.js)",
+      "Bash(node --check js/canvas.js)",
+      "Bash(node --check js/table.js)",
+      "Bash(node --check js/api.js)"
     ]
   }
 }

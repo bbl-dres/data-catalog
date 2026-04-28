@@ -28,10 +28,12 @@ window.CanvasApp.Visibility = (function () {
     var visState = {};       // key → boolean (true = visible)
     var triggerEl = null;
     var dropdownEl = null;
+    var masterEl = null;
 
     function init() {
         triggerEl = document.getElementById('btn-visibility');
         dropdownEl = document.getElementById('vis-dropdown');
+        masterEl = document.getElementById('vis-master');
 
         // Hydrate state — default visible
         var stored = readStorage();
@@ -41,6 +43,7 @@ window.CanvasApp.Visibility = (function () {
 
         triggerEl.addEventListener('click', onTriggerClick);
         dropdownEl.addEventListener('change', onChange);
+        dropdownEl.addEventListener('click', onDropdownClick);
         document.addEventListener('click', onDocClick);
         document.addEventListener('keydown', onKeydown);
 
@@ -85,10 +88,24 @@ window.CanvasApp.Visibility = (function () {
 
     function onChange(e) {
         var cb = e.target;
-        if (!cb || !cb.matches || !cb.matches('input[type="checkbox"][data-vis]')) return;
+        if (!cb) return;
+        // Master tri-state toggle: bulk set every visState key.
+        if (cb === masterEl) {
+            var on = cb.checked;
+            KEYS.forEach(function (k) { visState[k] = on; });
+            persist();
+            renderCheckboxes();
+            applyToBody();
+            if (window.CanvasApp.Canvas && window.CanvasApp.Canvas.renderGroups) {
+                requestAnimationFrame(window.CanvasApp.Canvas.renderGroups);
+            }
+            return;
+        }
+        if (!cb.matches || !cb.matches('input[type="checkbox"][data-vis]')) return;
         var key = cb.getAttribute('data-vis');
         visState[key] = cb.checked;
         persist();
+        updateMaster();
         applyToBody();
         // If this toggle changes node sizes / removes nodes, the system
         // frames need re-measuring after the layout settles.
@@ -97,12 +114,39 @@ window.CanvasApp.Visibility = (function () {
         }
     }
 
+    function onDropdownClick(e) {
+        var btn = e.target.closest('[data-sets-action]');
+        if (!btn) return;
+        e.stopPropagation();
+        var Canvas = window.CanvasApp.Canvas;
+        if (!Canvas || !Canvas.setAllSetsExpanded) return;
+        Canvas.setAllSetsExpanded(btn.getAttribute('data-sets-action') === 'expand');
+    }
+
     function renderCheckboxes() {
         var inputs = dropdownEl.querySelectorAll('input[data-vis]');
         Array.prototype.forEach.call(inputs, function (cb) {
             var key = cb.getAttribute('data-vis');
             cb.checked = visState[key] !== false;
         });
+        updateMaster();
+    }
+
+    /** Tri-state master: all on → checked; all off → unchecked; mixed → indeterminate. */
+    function updateMaster() {
+        if (!masterEl) return;
+        var onCount = 0;
+        KEYS.forEach(function (k) { if (visState[k]) onCount += 1; });
+        if (onCount === KEYS.length) {
+            masterEl.checked = true;
+            masterEl.indeterminate = false;
+        } else if (onCount === 0) {
+            masterEl.checked = false;
+            masterEl.indeterminate = false;
+        } else {
+            masterEl.checked = false;
+            masterEl.indeterminate = true;
+        }
     }
 
     function applyToBody() {

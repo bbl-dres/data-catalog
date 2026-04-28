@@ -46,8 +46,8 @@ window.CanvasApp.Api = (function () {
         // Pick concrete examples from current canvas state so samples are real
         var sampleNode = nodes[0] || null;
         var sampleNodeId = sampleNode ? sampleNode.id : 'example_node';
-        var sampleSet = (sampleNode && sampleNode.propertySets && sampleNode.propertySets[0]) || null;
-        var sampleSetName = sampleSet ? sampleSet.name : 'EXAMPLE_SET';
+        var sampleSets = sampleNode ? State.derivePropertySets(sampleNode) : [];
+        var sampleSetName = sampleSets[0] ? sampleSets[0].name : 'EXAMPLE_SET';
         var sampleCol = sampleNode && (sampleNode.columns || [])[0];
         var sampleColName = sampleCol ? sampleCol.name : 'example_column';
         var sampleEdge = edges[0] || null;
@@ -105,38 +105,12 @@ window.CanvasApp.Api = (function () {
                 response: null
             },
 
-            section('Property Sets', 'Logische Gruppierung von Attributen innerhalb eines Knotens (z.B. ARCH_REL, BUILDING in der RE-FX API).'),
+            section('Property Sets', 'Logische Gruppierung von Attributen innerhalb eines Knotens (z.B. ARCH_REL, BUILDING in der RE-FX API). Sets sind aus dem Freitext-Feld `set` der Attribute abgeleitet — kein eigener Endpunkt zum Anlegen oder Löschen, das geschieht über Attribut-Updates.'),
             {
                 method: 'GET', path: '/nodes/{nodeId}/property-sets',
-                summary: 'Property Sets eines Knotens',
+                summary: 'Abgeleitete Property Sets eines Knotens',
                 pathParams: [{ name: 'nodeId', example: sampleNodeId }],
-                response: { items: (sampleNode && sampleNode.propertySets) || [] }
-            },
-            {
-                method: 'POST', path: '/nodes/{nodeId}/property-sets',
-                summary: 'Property Set hinzufügen',
-                pathParams: [{ name: 'nodeId', example: sampleNodeId }],
-                requestBody: { name: 'NEW_SET', label: 'Beschreibender Titel' },
-                response: { name: 'NEW_SET', label: 'Beschreibender Titel' }
-            },
-            {
-                method: 'PUT', path: '/nodes/{nodeId}/property-sets/{setName}',
-                summary: 'Property Set umbenennen / Label setzen',
-                pathParams: [
-                    { name: 'nodeId',  example: sampleNodeId },
-                    { name: 'setName', example: sampleSetName }
-                ],
-                requestBody: { name: sampleSetName, label: 'Neue Beschreibung' },
-                response: { name: sampleSetName, label: 'Neue Beschreibung' }
-            },
-            {
-                method: 'DELETE', path: '/nodes/{nodeId}/property-sets/{setName}',
-                summary: 'Property Set entfernen — Spalten werden entgruppiert',
-                pathParams: [
-                    { name: 'nodeId',  example: sampleNodeId },
-                    { name: 'setName', example: sampleSetName }
-                ],
-                response: null
+                response: { items: sampleSets }
             },
 
             section('Columns / Attributes', 'Einzelne Attribute eines Knotens. Schlüsseltyp ist PK / FK / UK oder leer.'),
@@ -250,7 +224,7 @@ window.CanvasApp.Api = (function () {
             type: n.type,
             system: n.system || null,
             tags: n.tags || [],
-            propertySetCount: (n.propertySets || []).length,
+            propertySetCount: State.derivePropertySets(n).length,
             columnCount: (n.columns || []).length
         };
     }
@@ -265,7 +239,6 @@ window.CanvasApp.Api = (function () {
             tags: n.tags || [],
             x: Math.round(n.x || 0),
             y: Math.round(n.y || 0),
-            propertySets: n.propertySets || [],
             columns: n.columns || []
         };
     }
@@ -279,7 +252,6 @@ window.CanvasApp.Api = (function () {
             schema: '',
             tags: [],
             x: 0, y: 0,
-            propertySets: [],
             columns: []
         };
     }

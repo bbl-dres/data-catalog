@@ -137,20 +137,22 @@ window.CanvasApp.XlsxIO = (function () {
         XLSX.utils.book_append_sheet(wb, sheetFromRows(fileRows,      NODE_HEADERS), SHEET_FILES);
         XLSX.utils.book_append_sheet(wb, sheetFromRows(valueListRows, NODE_HEADERS), SHEET_VALUELISTS);
 
-        // PropertySets — flat list across nodes
+        // PropertySets — derived from distinct column.set values per node.
+        // Exported for human readability of the Excel file; on import this
+        // sheet is ignored (sets come from Attributes.set on import).
         var setRows = [];
         nodes.forEach(function (n) {
-            (n.propertySets || []).forEach(function (s) {
+            State.derivePropertySets(n).forEach(function (s) {
+                var count = (n.columns || []).filter(function (c) { return c.set === s.name; }).length;
                 setRows.push({
                     node_id: n.id,
-                    name: s.name || '',
-                    label: s.label || '',
-                    description: s.description || ''
+                    name: s.name,
+                    attribute_count: count
                 });
             });
         });
         XLSX.utils.book_append_sheet(wb,
-            sheetFromRows(setRows, ['node_id', 'name', 'label', 'description']),
+            sheetFromRows(setRows, ['node_id', 'name', 'attribute_count']),
             SHEET_PROPSETS);
 
         // Attributes — every column across nodes
@@ -215,7 +217,7 @@ window.CanvasApp.XlsxIO = (function () {
             else if (n.type === 'api')                   rec.apis       += 1;
             else if (n.type === 'file')                  rec.files      += 1;
             else if (n.type === 'codelist')              rec.valuelists += 1;
-            rec.sets       += (n.propertySets || []).length;
+            rec.sets       += State.derivePropertySets(n).length;
             rec.attributes += (n.columns      || []).length;
             (n.tags || []).forEach(function (t) { rec.tags[t] = true; });
         });
@@ -308,19 +310,8 @@ window.CanvasApp.XlsxIO = (function () {
             }
         }
 
-        // Property sets (still keyed by node_id, same as before)
-        var setsSheet = findSheet(wb, [SHEET_PROPSETS, 'property_sets', 'property sets']);
-        var setsByNode = {};
-        if (setsSheet) {
-            XLSX.utils.sheet_to_json(setsSheet, { defval: '' }).forEach(function (r) {
-                if (!r.node_id || !r.name) return;
-                (setsByNode[r.node_id] = setsByNode[r.node_id] || []).push({
-                    name: String(r.name),
-                    label: String(r.label || ''),
-                    description: String(r.description || '')
-                });
-            });
-        }
+        // PropertySets sheet is informational only — sets are derived from
+        // the Attributes sheet's `set` column on import.
 
         // Attributes
         var colsSheet = findSheet(wb, [SHEET_ATTRS, 'Columns', 'columns']);
@@ -337,21 +328,9 @@ window.CanvasApp.XlsxIO = (function () {
             });
         }
 
-        // Wire sets + columns onto each node, auto-creating any sets that
-        // exist only on the Attributes sheet.
+        // Wire columns onto each node.
         nodes.forEach(function (n) {
-            var sets = setsByNode[n.id] || [];
-            var cols = colsByNode[n.id] || [];
-            var seenSetNames = {};
-            sets.forEach(function (s) { seenSetNames[s.name] = true; });
-            cols.forEach(function (c) {
-                if (c.set && !seenSetNames[c.set]) {
-                    sets.push({ name: c.set, label: '', description: '' });
-                    seenSetNames[c.set] = true;
-                }
-            });
-            n.propertySets = sets;
-            n.columns = cols;
+            n.columns = colsByNode[n.id] || [];
         });
 
         // Edges (Relations sheet, with Edges fallback)
