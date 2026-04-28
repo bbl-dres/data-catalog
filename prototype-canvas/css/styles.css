@@ -555,7 +555,7 @@ body.hide-systems .group-layer { display: none; }
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  width: 260px;
+  width: 320px;
   user-select: none;
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
@@ -642,8 +642,29 @@ body.mode-view .node { cursor: pointer; }
 .node-col-key.pk { color: #fff; background: var(--color-pk); }
 .node-col-key.fk { color: #fff; background: var(--color-fk); }
 .node-col-key.uk { color: #fff; background: var(--color-uk); }
-.node-col-name { color: var(--color-text-primary); }
-.node-col-type { color: var(--color-text-secondary); margin-left: auto; font-size: 11px; }
+.node-col-name {
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.node-col-type {
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  font-size: 11px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Placeholder when type is empty — keeps the column slot visible across nodes. */
+.node-col-type:empty::before {
+  content: '–';
+  color: var(--color-text-placeholder);
+}
 
 /* Edge handles (edit mode) */
 .node-port {
@@ -692,6 +713,7 @@ body.mode-edit .node.is-selected .node-port { display: block; }
   justify-content: center;
   color: var(--color-text-secondary);
 }
+
 .ft-btn-icon:hover {
   color: var(--color-bg-accent-strong);
   background: var(--color-bg-accent);
