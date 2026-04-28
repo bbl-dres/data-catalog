@@ -598,18 +598,46 @@ body.hide-systems .group-layer { display: none; }
   stroke: var(--color-edge-active);
   stroke-width: 2.5;
 }
-.edge-label {
+/* Static (non-selected) edge label — rendered as HTML inside a
+   foreignObject so long relation names wrap rather than running off the
+   diagram. The foreignObject itself is centred on the edge midpoint;
+   the inner wrap centres the label horizontally and vertically. */
+.edge-label-fo-static { overflow: visible; pointer-events: none; }
+.edge-label-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font-family: var(--font-sans);
+  pointer-events: none;
+}
+.edge-label {
+  /* -webkit-box is what enables line-clamp; behaves like inline-block
+     for centring inside .edge-label-wrap. */
+  display: -webkit-box;
+  max-width: 100%;
+  padding: 1px 5px;
   font-size: 11px;
-  fill: var(--color-text-secondary);
-  paint-order: stroke;
-  stroke: var(--color-bg-page);
-  stroke-width: 4px;
-  stroke-linejoin: round;
+  line-height: 1.25;
+  color: var(--color-text-secondary);
+  /* Background pill "stencils" the label through edge crossings, the way
+     the previous SVG paint-order halo did. */
+  background: var(--color-bg-page);
+  border-radius: 3px;
+  /* Wrap long labels and clamp to three lines so the label doesn't grow
+     unboundedly; overflow ellipsises at the third line. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 .edge-group:hover .edge-label,
 .edge-group.is-active .edge-label {
-  fill: var(--color-edge-active);
+  color: var(--color-edge-active);
 }
 
 /* Endpoint handles (visible only on a selected edge in edit mode) */

@@ -417,13 +417,22 @@ window.CanvasApp.Canvas = (function () {
             g.appendChild(makeHandle(ns, path.startX, path.startY, edge.id, 'from'));
             g.appendChild(makeHandle(ns, path.endX,   path.endY,   edge.id, 'to'));
         } else if (edge.label) {
-            var label = document.createElementNS(ns, 'text');
-            label.setAttribute('class', 'edge-label');
-            label.setAttribute('x', path.midX);
-            label.setAttribute('y', path.midY - 6);
-            label.setAttribute('text-anchor', 'middle');
-            label.textContent = edge.label;
-            g.appendChild(label);
+            // HTML-in-SVG so CSS can wrap long labels. The foreignObject is
+            // centered on the path midpoint; height is generous to fit up to
+            // three lines, with overflow:visible so the rare longer label
+            // still renders rather than getting clipped.
+            var LBL_W = 180, LBL_H = 60;
+            var labelFo = document.createElementNS(ns, 'foreignObject');
+            labelFo.setAttribute('class', 'edge-label-fo edge-label-fo-static');
+            labelFo.setAttribute('x', path.midX - LBL_W / 2);
+            labelFo.setAttribute('y', path.midY - LBL_H / 2);
+            labelFo.setAttribute('width', LBL_W);
+            labelFo.setAttribute('height', LBL_H);
+            labelFo.innerHTML =
+                '<div xmlns="http://www.w3.org/1999/xhtml" class="edge-label-wrap">' +
+                    '<span class="edge-label">' + escapeHtml(edge.label) + '</span>' +
+                '</div>';
+            g.appendChild(labelFo);
         }
         return g;
     }
