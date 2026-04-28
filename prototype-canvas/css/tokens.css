@@ -1,4 +1,10 @@
 :root {
+  /* Lock the page to a light theme. Without this declaration Chrome
+     Android's auto dark mode and iOS Safari's form-control darkening
+     invert parts of the UI on mobile devices set to system dark mode —
+     producing a half-light, half-dark canvas. */
+  color-scheme: light;
+
   --color-bg-page: #F5F5F4;
   --color-bg-surface: #FFFFFF;
   --color-bg-surface-hover: #F7F7F6;

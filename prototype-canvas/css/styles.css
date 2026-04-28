@@ -1952,11 +1952,14 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
   /* Table-tab filter input — same iOS auto-zoom prevention. */
   .toolbar-input { min-width: 0; flex: 1; font-size: 16px; }
 
-  /* Info panel goes full-width as a sheet. The 6px-wide resize handle has
-     no use under touch, drop it. Close via the × in the panel header. */
+  /* Info panel slides in as a near-full-width sheet, leaving a 48 px strip
+     of canvas peeking on the left. The strip is both a visual reminder
+     ("the canvas is still behind this") and a tap target the eye can find
+     when reaching for the × close. The 6px-wide resize handle has no use
+     under touch, drop it. */
   .info-panel {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: calc(100vw - 48px) !important;
+    max-width: calc(100vw - 48px) !important;
   }
   .info-panel-resize { display: none; }
 
