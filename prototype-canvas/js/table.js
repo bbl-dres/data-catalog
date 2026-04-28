@@ -237,7 +237,12 @@ window.CanvasApp.Table = (function () {
         var total = rows.length;
         if (q) {
             rows = rows.filter(function (r) {
-                return [r.col.name, r.col.type, r.col.set, r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
+                // Filter haystack now hits both the registry label (so users
+                // can search "Adresse" and find columns whose setId is
+                // "address") and the SAP substructure key.
+                var setLabel = r.col.setId ? State.getSetLabel(r.col.setId) : '';
+                return [r.col.name, r.col.type, setLabel, r.col.sourceStructure || '',
+                        r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
             });
         }
 
@@ -251,11 +256,21 @@ window.CanvasApp.Table = (function () {
         var icon = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
         var keyClass = r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : r.col.key === 'UK' ? 'uk' : '';
         var keyLabel = r.col.key || '–';
+        // Set column shows registry label (preferred) or SAP key (API node
+        // fallback). Either way the cell is human-readable, not the raw id.
+        var setCell;
+        if (r.col.setId) {
+            setCell = '<span class="cell-name">' + escapeHtml(State.getSetLabel(r.col.setId)) + '</span>';
+        } else if (r.col.sourceStructure) {
+            setCell = '<code class="cell-mono">' + escapeHtml(r.col.sourceStructure) + '</code>';
+        } else {
+            setCell = dash();
+        }
         return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-col-idx="' + r.idx + '" data-kind="col">' +
                 '<td><code class="cell-mono">' + escapeHtml(r.col.name) + '</code></td>' +
                 '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.col.type || '') + '</span></td>' +
                 '<td>' + (r.col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(keyLabel) + '</span>' : dash()) + '</td>' +
-                '<td>' + (r.col.set ? '<code class="cell-mono">' + escapeHtml(r.col.set) + '</code>' : dash()) + '</td>' +
+                '<td>' + setCell + '</td>' +
                 '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
                 '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
                 '<td>' + delBtn('Attribut') + '</td>' +

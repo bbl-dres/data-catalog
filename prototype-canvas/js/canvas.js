@@ -35,24 +35,16 @@ window.CanvasApp.Canvas = (function () {
     // presence in `collapsedSets` means the user collapsed it. Module memory
     // only — refresh = back to default (expanded).
     var collapsedSets = Object.create(null);
-    function expandKey(nodeId, setName) { return nodeId + '|' + (setName || ''); }
-    function isSetExpanded(nodeId, setName) {
-        return collapsedSets[expandKey(nodeId, setName)] !== true;
+    // Key includes the node id so the same setId collapsed on one node
+    // doesn't drag every node's display along with it.
+    function expandKey(nodeId, setId) { return nodeId + '|' + (setId || ''); }
+    function isSetExpanded(nodeId, setId) {
+        return collapsedSets[expandKey(nodeId, setId)] !== true;
     }
-    function toggleSet(nodeId, setName) {
-        var k = expandKey(nodeId, setName);
+    function toggleSet(nodeId, setId) {
+        var k = expandKey(nodeId, setId);
         if (collapsedSets[k]) delete collapsedSets[k]; // expand
         else collapsedSets[k] = true;                  // collapse
-    }
-    function migrateSetState(nodeId, oldName, newName) {
-        var oldKey = expandKey(nodeId, oldName);
-        var newKey = expandKey(nodeId, newName);
-        if (collapsedSets[oldKey]) {
-            collapsedSets[newKey] = true;
-            delete collapsedSets[oldKey];
-        } else {
-            delete collapsedSets[newKey];
-        }
     }
     /** Bulk: expand or collapse every property set across every node. */
     function setAllSetsExpanded(expanded) {
@@ -62,7 +54,7 @@ window.CanvasApp.Canvas = (function () {
             collapsedSets = Object.create(null);
             State.getNodes().forEach(function (n) {
                 State.derivePropertySets(n).forEach(function (s) {
-                    collapsedSets[expandKey(n.id, s.name)] = true;
+                    collapsedSets[expandKey(n.id, s.id)] = true;
                 });
             });
         }
@@ -356,6 +348,9 @@ window.CanvasApp.Canvas = (function () {
 
         var sets = State.derivePropertySets(node);
         var cols = node.columns || [];
+        // Most nodes group by setId (BBL packages from the global registry).
+        // The SAP API node groups by sourceStructure (its BAPI substructures).
+        var groupKey = State.getGroupKey(node);
 
         if (sets.length === 0) {
             // Flat list — no sets in use
@@ -364,17 +359,17 @@ window.CanvasApp.Canvas = (function () {
             html += '</ul>';
             html += '<div class="node-col-add edit-only" data-action="add-col" data-set="">+ Spalte</div>';
         } else {
-            // Group by property set in a single pass — was three passes over
-            // cols (init bySet, build HTML, then per-set filter for count).
+            // Group by the chosen key (setId | sourceStructure) in one pass.
             var ungroupedHtml = '';
             var bySet = {};
             var countBySet = {};
-            sets.forEach(function (s) { bySet[s.name] = ''; countBySet[s.name] = 0; });
+            sets.forEach(function (s) { bySet[s.id] = ''; countBySet[s.id] = 0; });
             cols.forEach(function (c, idx) {
                 var rowHtml = colRowHtml(c, idx);
-                if (c.set && bySet.hasOwnProperty(c.set)) {
-                    bySet[c.set] += rowHtml;
-                    countBySet[c.set] += 1;
+                var k = c[groupKey];
+                if (k && bySet.hasOwnProperty(k)) {
+                    bySet[k] += rowHtml;
+                    countBySet[k] += 1;
                 } else {
                     ungroupedHtml += rowHtml;
                 }
@@ -385,8 +380,8 @@ window.CanvasApp.Canvas = (function () {
             }
 
             sets.forEach(function (s) {
-                var expanded = isSetExpanded(node.id, s.name);
-                html += setSectionHtml(s, countBySet[s.name] || 0, bySet[s.name], expanded);
+                var expanded = isSetExpanded(node.id, s.id);
+                html += setSectionHtml(s, countBySet[s.id] || 0, bySet[s.id], expanded);
             });
         }
 
@@ -405,20 +400,24 @@ window.CanvasApp.Canvas = (function () {
     }
 
     function setSectionHtml(s, count, colsHtml, expanded) {
-        var name = s.name || '';
-        var safeName = escapeAttr(name);
+        // `s` shape: { id, label, kind } — id is the registry id (or SAP
+        // substructure key for the API node); label is what we display.
+        // Set name is *not* contenteditable any more — set names live in
+        // the global registry; rename happens there, not on the node.
+        var safeId = escapeAttr(s.id || '');
+        var label = s.label || s.id || '';
         return '' +
-            '<div class="node-set' + (expanded ? ' is-expanded' : '') + '" data-set="' + safeName + '">' +
-                '<div class="node-set-header" data-action="toggle-set" data-set="' + safeName + '">' +
+            '<div class="node-set' + (expanded ? ' is-expanded' : '') + '" data-set="' + safeId + '">' +
+                '<div class="node-set-header" data-action="toggle-set" data-set="' + safeId + '">' +
                     '<span class="node-set-toggle" aria-hidden="true">' +
                         '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 6 15 12 9 18"/></svg>' +
                     '</span>' +
-                    '<span class="node-set-name" data-edit="set-name" data-set="' + safeName + '" contenteditable="false" spellcheck="false">' + escapeHtml(name) + '</span>' +
+                    '<span class="node-set-name">' + escapeHtml(label) + '</span>' +
                     '<span class="node-set-count">' + count + '</span>' +
                 '</div>' +
                 '<div class="node-set-content">' +
                     '<ul class="node-cols">' + colsHtml + '</ul>' +
-                    '<div class="node-col-add edit-only" data-action="add-col" data-set="' + safeName + '">+ Spalte</div>' +
+                    '<div class="node-col-add edit-only" data-action="add-col" data-set="' + safeId + '">+ Spalte</div>' +
                 '</div>' +
             '</div>';
     }
@@ -999,7 +998,6 @@ window.CanvasApp.Canvas = (function () {
         updateNodeSelection: updateNodeSelection,
         toggleSet: toggleSet,
         isSetExpanded: isSetExpanded,
-        migrateSetState: migrateSetState,
         setAllSetsExpanded: setAllSetsExpanded,
         renderGroups: renderGroups,
         fitToScreen: fitToScreen,

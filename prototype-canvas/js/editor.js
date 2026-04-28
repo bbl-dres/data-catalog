@@ -160,15 +160,20 @@ window.CanvasApp.Editor = (function () {
         }
 
         // Add column — honours data-set on the button so the new column lands
-        // in the right property set (or ungrouped if data-set="")
+        // in the right property set. Empty data-set ("") means ungrouped.
+        // The data-set value is the SET ID (or SAP substructure key on the
+        // API node — the editor writes whichever field matches node.groupBy).
         var addColBtn = e.target.closest('[data-action="add-col"]');
         if (addColBtn) {
             e.stopPropagation();
             var n2 = State.getNode(nodeId);
             if (!n2) return;
             var targetSet = addColBtn.getAttribute('data-set') || '';
+            var groupKey = State.getGroupKey(n2);
+            var newCol = { name: '', type: '', key: '' };
+            if (targetSet) newCol[groupKey] = targetSet;
             var cols2 = (n2.columns || []).slice();
-            cols2.push({ name: '', type: '', key: '', set: targetSet });
+            cols2.push(newCol);
             State.updateNode(nodeId, { columns: cols2 });
             // Focus the new name span after re-render. New cols append to the
             // node.columns array, so the LAST .node-col is the new one.
@@ -242,25 +247,9 @@ window.CanvasApp.Editor = (function () {
                 cols[idx] = Object.assign({}, cols[idx], (function () { var o = {}; o[field] = value; return o; })());
                 State.updateNode(nodeId, { columns: cols });
             }
-        } else if (kind === 'set-name') {
-            // Renaming a set: cascade to every column whose `set` matches the
-            // old name. Sets are derived from columns — no separate array.
-            var oldSetName = el.getAttribute('data-set');
-            var newName = value.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
-            if (!newName || newName === oldSetName) return;
-            // Reject duplicate set names within this node
-            var existing = State.derivePropertySets(node).map(function (s) { return s.name; });
-            if (existing.indexOf(newName) !== -1) {
-                Canvas.renderNodes(); // restore original text
-                return;
-            }
-            var newCols = (node.columns || []).map(function (c) {
-                return c.set === oldSetName ? Object.assign({}, c, { set: newName }) : c;
-            });
-            // Carry collapsed/expanded state across the rename
-            Canvas.migrateSetState(nodeId, oldSetName, newName);
-            State.updateNode(nodeId, { columns: newCols });
         }
+        // 'set-name' inline edit was removed when sets moved to the global
+        // registry — set labels are renamed in the registry, not per-node.
     }
 
     function onEditableKeydown(e) {
@@ -782,39 +771,48 @@ window.CanvasApp.Editor = (function () {
         var targetRow = e.target.closest('.node-col');
         var targetSetEl = e.target.closest('.node-set');
         var targetUl = e.target.closest('.node-cols');
+        // The grouping field — `setId` for BBL nodes, `sourceStructure`
+        // for the SAP API node.
+        var groupKey = State.getGroupKey(node);
+
+        function rewriteGroup(col, value) {
+            var copy = Object.assign({}, col);
+            if (value) copy[groupKey] = value;
+            else delete copy[groupKey];
+            return copy;
+        }
 
         if (targetRow && targetRow !== dragSourceRow) {
             var targetIdx = Number(targetRow.getAttribute('data-col-idx'));
             var rect = targetRow.getBoundingClientRect();
             var after = (e.clientY - rect.top) > rect.height / 2;
             var targetCol = newCols[targetIdx];
-            var targetSetName = (targetCol && targetCol.set) || '';
+            var targetSetVal = (targetCol && targetCol[groupKey]) || '';
             // Pull source out
             newCols.splice(sourceIdx, 1);
             // Adjust target index if source was before target
             if (sourceIdx < targetIdx) targetIdx -= 1;
             var insertAt = after ? targetIdx + 1 : targetIdx;
-            newCols.splice(insertAt, 0, Object.assign({}, sourceCol, { set: targetSetName }));
+            newCols.splice(insertAt, 0, rewriteGroup(sourceCol, targetSetVal));
         } else if (targetSetEl) {
-            var setName = targetSetEl.getAttribute('data-set') || '';
+            var setVal = targetSetEl.getAttribute('data-set') || '';
             newCols.splice(sourceIdx, 1);
             // Append at the END of the target set's columns (or end of array)
             var lastIdxInSet = -1;
             for (var i = 0; i < newCols.length; i++) {
-                if ((newCols[i].set || '') === setName) lastIdxInSet = i;
+                if ((newCols[i][groupKey] || '') === setVal) lastIdxInSet = i;
             }
             var insertAt2 = lastIdxInSet === -1 ? newCols.length : lastIdxInSet + 1;
-            newCols.splice(insertAt2, 0, Object.assign({}, sourceCol, { set: setName }));
+            newCols.splice(insertAt2, 0, rewriteGroup(sourceCol, setVal));
         } else if (targetUl && !targetSetEl) {
-            // Drop on ungrouped ul → set.set = ''
+            // Drop on ungrouped ul → clear the group field
             newCols.splice(sourceIdx, 1);
-            // Append at end of ungrouped section (last col with set === '')
             var lastUngrouped = -1;
             for (var j = 0; j < newCols.length; j++) {
-                if (!newCols[j].set) lastUngrouped = j;
+                if (!newCols[j][groupKey]) lastUngrouped = j;
             }
             var insertAt3 = lastUngrouped === -1 ? 0 : lastUngrouped + 1;
-            newCols.splice(insertAt3, 0, Object.assign({}, sourceCol, { set: '' }));
+            newCols.splice(insertAt3, 0, rewriteGroup(sourceCol, ''));
         } else {
             return;
         }

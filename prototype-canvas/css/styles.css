@@ -1686,6 +1686,24 @@ body.is-resizing-panel .ft-bottom-right { transition: none; }
   text-decoration: none;
 }
 .info-meta a.info-link:hover { text-decoration: underline; }
+
+/* Edit-mode set picker on the attribute detail panel. Compact, panel-tinted,
+   doesn't fight the surrounding <dl> rhythm. */
+.info-meta-select {
+  font: inherit;
+  font-size: var(--text-small);
+  max-width: 100%;
+  padding: 4px 6px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+}
+.info-meta-select:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+
 .info-meta dd .info-tag {
   display: inline-block;
   padding: 1px 6px;

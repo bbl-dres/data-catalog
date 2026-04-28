@@ -36,6 +36,7 @@ window.CanvasApp.XlsxIO = (function () {
     var SHEET_VALUELISTS  = 'ValueLists';
     var SHEET_SYSTEMS     = 'Systems';
     var SHEET_PROPSETS    = 'PropertySets';
+    var SHEET_SOURCE_STRUCTS = 'SourceStructures';
     var SHEET_ATTRS       = 'Attributes';
     var SHEET_RELATIONS   = 'Relations';
 
@@ -162,25 +163,35 @@ window.CanvasApp.XlsxIO = (function () {
         XLSX.utils.book_append_sheet(wb, sheetFromRows(fileRows,      NODE_HEADERS), SHEET_FILES);
         XLSX.utils.book_append_sheet(wb, sheetFromRows(valueListRows, NODE_HEADERS), SHEET_VALUELISTS);
 
-        // PropertySets — derived from distinct column.set values per node.
-        // Exported for human readability of the Excel file; on import this
-        // sheet is ignored (sets come from Attributes.set on import).
-        var setRows = [];
+        // PropertySets — the global registry. Authoritative on import; round-
+        // trips so an Excel-edited registry can be re-imported.
+        var setRows = State.getSets().map(function (s) {
+            return {
+                id: s.id,
+                label: s.label || '',
+                description: s.description || '',
+                lineage: s.lineage || ''
+            };
+        });
+        XLSX.utils.book_append_sheet(wb,
+            sheetFromRows(setRows, ['id', 'label', 'description', 'lineage']),
+            SHEET_PROPSETS);
+
+        // SourceStructures — per-node SAP BAPI substructure registry. Currently
+        // only used by refx_gebaeude_api but the sheet is generic so any node
+        // with `groupBy: "sourceStructure"` can carry one.
+        var ssRows = [];
         nodes.forEach(function (n) {
-            State.derivePropertySets(n).forEach(function (s) {
-                var count = (n.columns || []).filter(function (c) { return c.set === s.name; }).length;
-                setRows.push({
-                    node_id: n.id,
-                    name: s.name,
-                    attribute_count: count
-                });
+            (n.sourceStructures || []).forEach(function (s) {
+                ssRows.push({ node_id: n.id, key: s.id, label: s.label || '' });
             });
         });
         XLSX.utils.book_append_sheet(wb,
-            sheetFromRows(setRows, ['node_id', 'name', 'attribute_count']),
-            SHEET_PROPSETS);
+            sheetFromRows(ssRows, ['node_id', 'key', 'label']),
+            SHEET_SOURCE_STRUCTS);
 
-        // Attributes — every column across nodes
+        // Attributes — every column across nodes. set_id references the
+        // PropertySets registry; source_structure references SourceStructures.
         var colRows = [];
         nodes.forEach(function (n) {
             (n.columns || []).forEach(function (c) {
@@ -189,12 +200,13 @@ window.CanvasApp.XlsxIO = (function () {
                     name: c.name || '',
                     type: c.type || '',
                     key: c.key || '',
-                    set: c.set || ''
+                    set_id: c.setId || '',
+                    source_structure: c.sourceStructure || ''
                 });
             });
         });
         XLSX.utils.book_append_sheet(wb,
-            sheetFromRows(colRows, ['node_id', 'name', 'type', 'key', 'set']),
+            sheetFromRows(colRows, ['node_id', 'name', 'type', 'key', 'set_id', 'source_structure']),
             SHEET_ATTRS);
 
         // Relations
@@ -347,27 +359,76 @@ window.CanvasApp.XlsxIO = (function () {
             }
         }
 
-        // PropertySets sheet is informational only — sets are derived from
-        // the Attributes sheet's `set` column on import.
+        // PropertySets — global registry. Authoritative on import; columns
+        // reference these by id. If the sheet is missing or empty, fall
+        // back to the in-memory registry so the import doesn't strand
+        // existing setIds.
+        var sets = [];
+        var setsSheet = findSheet(wb, [SHEET_PROPSETS]);
+        if (setsSheet) {
+            sets = XLSX.utils.sheet_to_json(setsSheet, { defval: '' })
+                .filter(function (r) { return r.id; })
+                .map(function (r) {
+                    return {
+                        id: String(r.id).trim(),
+                        label: String(r.label || r.id).trim(),
+                        description: String(r.description || ''),
+                        lineage: String(r.lineage || '')
+                    };
+                });
+        }
+        if (!sets.length) sets = State.getSets().slice();
+        var knownSetIds = Object.create(null);
+        sets.forEach(function (s) { knownSetIds[s.id] = true; });
 
-        // Attributes
-        var colsSheet = findSheet(wb, [SHEET_ATTRS, 'Columns', 'columns']);
-        var colsByNode = {};
-        if (colsSheet) {
-            XLSX.utils.sheet_to_json(colsSheet, { defval: '' }).forEach(function (r) {
-                if (!r.node_id) return;
-                (colsByNode[r.node_id] = colsByNode[r.node_id] || []).push({
-                    name: String(r.name || ''),
-                    type: String(r.type || ''),
-                    key: String(r.key || ''),
-                    set: String(r.set || '')
+        // SourceStructures — per-node SAP-substructure registry.
+        var ssByNode = {};
+        var ssSheet = findSheet(wb, [SHEET_SOURCE_STRUCTS]);
+        if (ssSheet) {
+            XLSX.utils.sheet_to_json(ssSheet, { defval: '' }).forEach(function (r) {
+                if (!r.node_id || !r.key) return;
+                (ssByNode[r.node_id] = ssByNode[r.node_id] || []).push({
+                    id: String(r.key).trim(),
+                    label: String(r.label || '').trim()
                 });
             });
         }
 
-        // Wire columns onto each node.
+        // Attributes — set_id is the new field; legacy `set` is read as a
+        // fallback so files exported from the v1 schema still import.
+        var colsSheet = findSheet(wb, [SHEET_ATTRS, 'Columns', 'columns']);
+        var colsByNode = {};
+        var unknownSetIds = Object.create(null);
+        if (colsSheet) {
+            XLSX.utils.sheet_to_json(colsSheet, { defval: '' }).forEach(function (r) {
+                if (!r.node_id) return;
+                var setId = String(r.set_id || r.setId || '').trim();
+                if (setId && !knownSetIds[setId]) {
+                    unknownSetIds[setId] = (unknownSetIds[setId] || 0) + 1;
+                    setId = ''; // drop the bad reference rather than poisoning state
+                }
+                var col = {
+                    name: String(r.name || ''),
+                    type: String(r.type || ''),
+                    key: String(r.key || '')
+                };
+                if (setId) col.setId = setId;
+                var ss = String(r.source_structure || r.sourceStructure || '').trim();
+                if (ss) col.sourceStructure = ss;
+                (colsByNode[r.node_id] = colsByNode[r.node_id] || []).push(col);
+            });
+        }
+        if (Object.keys(unknownSetIds).length) {
+            console.warn('Import: unknown setIds (dropped on the affected columns):', unknownSetIds);
+        }
+
+        // Wire columns + per-node sourceStructures onto each node.
         nodes.forEach(function (n) {
             n.columns = colsByNode[n.id] || [];
+            if (ssByNode[n.id]) {
+                n.sourceStructures = ssByNode[n.id];
+                if (!n.groupBy) n.groupBy = 'sourceStructure';
+            }
         });
 
         // Edges (Relations sheet, with Edges fallback)
@@ -386,7 +447,7 @@ window.CanvasApp.XlsxIO = (function () {
                 });
         }
 
-        return { nodes: nodes, edges: edges };
+        return { nodes: nodes, edges: edges, sets: sets };
     }
 
     function rowToNode(r, defaultType) {
@@ -409,6 +470,8 @@ window.CanvasApp.XlsxIO = (function () {
 
     function exportJson() {
         var data = {
+            version: 2,
+            sets: State.getSets(),
             nodes: State.getNodes(),
             edges: State.getEdges()
         };

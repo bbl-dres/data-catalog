@@ -14,15 +14,20 @@ window.CanvasApp = window.CanvasApp || {};
 
 window.CanvasApp.State = (function () {
 
-    var STORAGE_KEY = 'canvas.state.v1';
-    // Old separate layout key from a previous iteration — drop on load if
-    // present so it can't leak stale positions.
+    // Bumped from v1 → v2 when the global `sets` registry was introduced
+    // and column.set strings were replaced by column.setId references.
+    // v1-shaped state in localStorage triggers a fresh seed load.
+    var STORAGE_KEY = 'canvas.state.v2';
+    // Drop the v1 key on load if present so the old shape can't leak.
+    var LEGACY_STORAGE_KEY = 'canvas.state.v1';
+    // Old separate layout key from an earlier iteration — drop too.
     var LEGACY_LAYOUT_KEY = 'canvas.layout.v1';
     var SEED_PATH = 'data/canvas.json';
 
     var state = {
         nodes: [],
         edges: [],
+        sets: [],            // global property-set registry — see canvas.json
         view: 'diagram',
         mode: 'view',
         // Tagged-union selection. Exactly one of node / edge / system / attribute,
@@ -35,18 +40,21 @@ window.CanvasApp.State = (function () {
         snapshot: null           // {nodes, edges} captured on entering edit; live data is the draft
     };
 
-    // Id-keyed indexes — getNode / getEdge are called from many hot paths
-    // (edge rendering, drag, panel, isolation), so a linear scan was the wrong
-    // shape. Rebuilt wholesale on load / replaceAll / undo / revertDraft;
-    // patched on add / delete.
+    // Id-keyed indexes — getNode / getEdge / getSet are called from many hot
+    // paths (edge rendering, drag, panel, isolation), so a linear scan was
+    // the wrong shape. Rebuilt wholesale on load / replaceAll / undo /
+    // revertDraft; patched on add / delete.
     var nodesById = Object.create(null);
     var edgesById = Object.create(null);
+    var setsById  = Object.create(null);
 
     function rebuildIndex() {
         nodesById = Object.create(null);
         edgesById = Object.create(null);
+        setsById  = Object.create(null);
         for (var i = 0; i < state.nodes.length; i++) nodesById[state.nodes[i].id] = state.nodes[i];
         for (var j = 0; j < state.edges.length; j++) edgesById[state.edges[j].id] = state.edges[j];
+        for (var k = 0; k < state.sets.length;  k++) setsById[state.sets[k].id]   = state.sets[k];
     }
 
     // Undo stack for destructive / hard-to-redo edits. Frames now hold a
@@ -97,15 +105,18 @@ window.CanvasApp.State = (function () {
     // ---- Loading -------------------------------------------------------
 
     function load() {
-        // Migrate from the old two-key layout (if a previous version of the
-        // app stored positions separately). The current main state owns
-        // positions outright.
+        // Migrate from earlier storage shapes (separate layout key, v1
+        // schema without sets registry). Drop both so they can't leak.
         try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
+        try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (e) {}
 
         var stored = readStorage();
-        if (stored && Array.isArray(stored.nodes)) {
+        // Require sets to be present — v1 state without it forces a re-seed
+        // so the registry doesn't end up empty after an upgrade.
+        if (stored && Array.isArray(stored.nodes) && Array.isArray(stored.sets)) {
             state.nodes = stored.nodes;
             state.edges = stored.edges || [];
+            state.sets  = stored.sets;
             rebuildIndex();
             return Promise.resolve();
         }
@@ -116,6 +127,7 @@ window.CanvasApp.State = (function () {
                 state.edges = (data.edges || []).map(function (e, i) {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
                 });
+                state.sets = data.sets || [];
                 rebuildIndex();
                 schedulePersist();
                 flushPendingPersist(); // first paint write is fine to do synchronously
@@ -124,6 +136,7 @@ window.CanvasApp.State = (function () {
                 console.error('Failed to load seed data', err);
                 state.nodes = [];
                 state.edges = [];
+                state.sets = [];
                 rebuildIndex();
             });
     }
@@ -175,7 +188,8 @@ window.CanvasApp.State = (function () {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify({
                 nodes: state.nodes,
-                edges: state.edges
+                edges: state.edges,
+                sets:  state.sets
             }));
         } catch (e) { /* quota — ignore */ }
         persistPositionsPending = false;
@@ -236,6 +250,14 @@ window.CanvasApp.State = (function () {
     function getNodes() { return state.nodes; }
     function getEdges() { return state.edges; }
     function getNode(id) { return nodesById[id] || null; }
+    function getSets()   { return state.sets; }
+    function getSet(id)  { return id ? (setsById[id] || null) : null; }
+    /** Convenience: setId → display label, falls back to the raw id. */
+    function getSetLabel(id) {
+        if (!id) return '';
+        var s = setsById[id];
+        return s ? (s.label || id) : id;
+    }
     function getMode() { return state.mode; }
     function getView() { return state.view; }
 
@@ -571,6 +593,10 @@ window.CanvasApp.State = (function () {
     function replaceAll(payload) {
         state.nodes = payload.nodes || [];
         state.edges = payload.edges || [];
+        // sets registry is preserved across import unless the imported
+        // payload explicitly carries one. The set names referenced by
+        // imported columns must match registry ids (validated at import).
+        if (Array.isArray(payload.sets)) state.sets = payload.sets;
         state.selection = null;
         state.snapshot = null; // import discards any in-flight draft
         undoStack = [];        // and any in-flight undo history
@@ -593,22 +619,51 @@ window.CanvasApp.State = (function () {
     }
 
     /**
-     * Property sets are derived from the distinct `column.set` free-text values
-     * in node.columns, in first-appearance order. There is no separate
-     * propertySets array on the node — the set name on each column IS the source
-     * of truth.
+     * Property sets shown for a node. Each entry is `{ id, label, kind }`,
+     * where `kind` is 'set' for entries from the global registry and
+     * 'sap' for SAP BAPI substructures on the API node.
+     *
+     * Default grouping (`node.groupBy === 'setId'`, the implicit case) reads
+     * `column.setId` and looks the label up in the global registry. The SAP
+     * API node uses `node.groupBy === 'sourceStructure'` — its columns group
+     * by `column.sourceStructure` instead, with labels from the per-node
+     * `node.sourceStructures` map. Sets are emitted in first-appearance
+     * order so the panel/canvas UI is stable across renders.
      */
     function derivePropertySets(node) {
         if (!node || !node.columns) return [];
+        var groupBy = node.groupBy === 'sourceStructure' ? 'sourceStructure' : 'setId';
         var seen = Object.create(null);
         var out = [];
-        node.columns.forEach(function (c) {
-            var s = c && c.set;
-            if (!s || seen[s]) return;
-            seen[s] = true;
-            out.push({ name: s });
-        });
+
+        if (groupBy === 'sourceStructure') {
+            // Build a per-node label lookup from node.sourceStructures (array
+            // of { id, label }) so the canvas can show "ARCH_REL" with the
+            // German "Architekturverknüpfung" subtitle when needed.
+            var sapLabels = Object.create(null);
+            (node.sourceStructures || []).forEach(function (s) { sapLabels[s.id] = s.label; });
+            for (var i = 0; i < node.columns.length; i++) {
+                var key = node.columns[i].sourceStructure;
+                if (!key || seen[key]) continue;
+                seen[key] = true;
+                out.push({ id: key, label: sapLabels[key] || key, kind: 'sap' });
+            }
+            return out;
+        }
+
+        // Default: setId-based grouping via the global registry.
+        for (var j = 0; j < node.columns.length; j++) {
+            var setId = node.columns[j].setId;
+            if (!setId || seen[setId]) continue;
+            seen[setId] = true;
+            out.push({ id: setId, label: getSetLabel(setId), kind: 'set' });
+        }
         return out;
+    }
+
+    /** Which column field this node groups by. UI uses this to read the right field. */
+    function getGroupKey(node) {
+        return node && node.groupBy === 'sourceStructure' ? 'sourceStructure' : 'setId';
     }
 
     return {
@@ -620,6 +675,10 @@ window.CanvasApp.State = (function () {
         getEdges: getEdges,
         getNode: getNode,
         getEdge: getEdge,
+        getSets: getSets,
+        getSet: getSet,
+        getSetLabel: getSetLabel,
+        getGroupKey: getGroupKey,
         getMode: getMode,
         getView: getView,
         getSelection: getSelection,

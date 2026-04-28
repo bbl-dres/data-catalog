@@ -41,6 +41,8 @@ window.CanvasApp.Panel = (function () {
 
         // Click delegation: × close, set / relation row clicks
         contentEl.addEventListener('click', onContentClick);
+        // Change delegation: edit-mode set picker on the attribute detail panel.
+        contentEl.addEventListener('change', onContentChange);
 
         State.on(function (reason) {
             if (reason === 'view') {
@@ -222,17 +224,18 @@ window.CanvasApp.Panel = (function () {
         var sets = State.derivePropertySets(node);
         if (!sets.length) return '';
         var cols = node.columns || [];
+        var groupKey = State.getGroupKey(node);
         // Single-pass groupBy — per-set filter was O(sets × cols).
         var countsBySet = Object.create(null);
         for (var i = 0; i < cols.length; i++) {
-            var s = cols[i].set;
-            if (s) countsBySet[s] = (countsBySet[s] || 0) + 1;
+            var k = cols[i][groupKey];
+            if (k) countsBySet[k] = (countsBySet[k] || 0) + 1;
         }
         var items = sets.map(function (s) {
-            var count = countsBySet[s.name] || 0;
+            var count = countsBySet[s.id] || 0;
             return '' +
-                '<li data-action="focus-set" data-set="' + escapeAttr(s.name) + '" title="Im Diagramm hervorheben">' +
-                    '<span class="info-set-name">' + escapeHtml(s.name) + '</span>' +
+                '<li data-action="focus-set" data-set="' + escapeAttr(s.id) + '" title="Im Diagramm hervorheben">' +
+                    '<span class="info-set-name">' + escapeHtml(s.label) + '</span>' +
                     '<span class="info-set-count">' + count + '</span>' +
                 '</li>';
         }).join('');
@@ -254,12 +257,13 @@ window.CanvasApp.Panel = (function () {
         }
         // Single pass — was four separate filter() calls over the same array.
         var pkCount = 0, fkCount = 0, ukCount = 0, ungrouped = 0;
+        var groupKey = State.getGroupKey(node);
         for (var i = 0; i < cols.length; i++) {
             var c = cols[i];
             if (c.key === 'PK') pkCount++;
             else if (c.key === 'FK') fkCount++;
             else if (c.key === 'UK') ukCount++;
-            if (!c.set) ungrouped++;
+            if (!c[groupKey]) ungrouped++;
         }
         return '' +
             '<div class="info-section">' +
@@ -455,9 +459,15 @@ window.CanvasApp.Panel = (function () {
             ? '<span class="info-key-badge ' + keyClass + '" style="margin-right:8px">' + escapeHtml(col.key) + '</span>'
             : '<span class="info-key-badge" style="margin-right:8px;background:var(--color-bg-page);color:var(--color-text-placeholder)">–</span>';
 
+        // Set label resolution: setId via the registry; fall back to
+        // sourceStructure (raw SAP key) for API-node columns. This is what
+        // the "Property Set" sub-line shows under the column name.
+        var setLabel = col.setId ? State.getSetLabel(col.setId)
+                     : col.sourceStructure || '';
+
         var subParts = [];
         if (col.type) subParts.push(escapeHtml(col.type));
-        if (col.set) subParts.push(escapeHtml(col.set));
+        if (setLabel) subParts.push(escapeHtml(setLabel));
         subParts.push(escapeHtml(node.label || node.id));
 
         // Cross-references: same column name in other nodes
@@ -474,9 +484,11 @@ window.CanvasApp.Panel = (function () {
         var crossHtml = cross.length
             ? '<ul class="info-set-list">' + cross.map(function (r) {
                 var ic = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
+                var rSetLabel = r.col.setId ? State.getSetLabel(r.col.setId)
+                              : r.col.sourceStructure || '';
                 return '<li data-action="select-attr" data-node-id="' + escapeAttr(r.node.id) + '" data-attr-name="' + escapeAttr(r.col.name) + '">' +
                     '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + ic + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span>' +
-                    '<span class="info-set-label">' + escapeHtml(r.col.type || '') + (r.col.set ? ' · ' + escapeHtml(r.col.set) : '') + '</span>' +
+                    '<span class="info-set-label">' + escapeHtml(r.col.type || '') + (rSetLabel ? ' · ' + escapeHtml(rSetLabel) : '') + '</span>' +
                     (r.col.key ? '<span class="info-key-badge ' + (r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : 'uk') + '">' + escapeHtml(r.col.key) + '</span>' : '') +
                 '</li>';
             }).join('') + '</ul>'
@@ -505,7 +517,10 @@ window.CanvasApp.Panel = (function () {
                     '<dt>Name</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.name) + '</code></dd>' +
                     '<dt>Typ</dt><dd>' + (col.type ? '<code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.type) + '</code>' : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
                     '<dt>Schlüssel</dt><dd>' + (col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(col.key) + '</span>' : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
-                    '<dt>Property Set</dt><dd>' + (col.set ? '<code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.set) + '</code>' : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
+                    '<dt>Property Set</dt><dd>' + setPickerOrLabelHtml(node, col) + '</dd>' +
+                    (col.sourceStructure
+                        ? '<dt>SAP-Struktur</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.sourceStructure) + '</code></dd>'
+                        : '') +
                 '</dl>' +
             '</div>' +
             '<div class="info-section">' +
@@ -523,6 +538,31 @@ window.CanvasApp.Panel = (function () {
 
     function typeLabel(t) {
         return TYPE_LABELS[t] || t || '–';
+    }
+
+    /**
+     * Edit-mode set picker for a column attribute. View-mode falls back to
+     * the static label. The SAP API node's columns are grouped by
+     * sourceStructure (a per-node concept) so the global-registry picker
+     * doesn't apply there — show the static label instead.
+     */
+    function setPickerOrLabelHtml(node, col) {
+        var inEdit = State.getMode() === 'edit';
+        var groupKey = State.getGroupKey(node);
+        if (!inEdit || groupKey !== 'setId') {
+            return col.setId
+                ? escapeHtml(State.getSetLabel(col.setId))
+                : '<span style="color:var(--color-text-placeholder)">–</span>';
+        }
+        var sets = State.getSets();
+        var optsHtml = '<option value="">(kein Set)</option>' +
+            sets.map(function (s) {
+                var sel = (s.id === col.setId) ? ' selected' : '';
+                return '<option value="' + escapeAttr(s.id) + '"' + sel + '>' + escapeHtml(s.label) + '</option>';
+            }).join('');
+        return '<select class="info-meta-select" data-edit="setId"' +
+            ' data-node-id="' + escapeAttr(node.id) + '"' +
+            ' data-col-name="' + escapeAttr(col.name) + '">' + optsHtml + '</select>';
     }
 
     // ---- Click delegation ----------------------------------------------
@@ -567,6 +607,23 @@ window.CanvasApp.Panel = (function () {
             // Future: scroll diagram to the set's section in the node.
             return;
         }
+    }
+
+    function onContentChange(e) {
+        var el = e.target;
+        if (!el || !el.matches || !el.matches('select[data-edit="setId"]')) return;
+        var nodeId = el.getAttribute('data-node-id');
+        var colName = el.getAttribute('data-col-name');
+        var node = State.getNode(nodeId);
+        if (!node) return;
+        var idx = (node.columns || []).findIndex(function (c) { return c.name === colName; });
+        if (idx === -1) return;
+        var newCols = node.columns.slice();
+        var newCol = Object.assign({}, newCols[idx]);
+        if (el.value) newCol.setId = el.value;
+        else delete newCol.setId;
+        newCols[idx] = newCol;
+        State.updateNode(nodeId, { columns: newCols });
     }
 
     // ---- Util ----------------------------------------------------------
