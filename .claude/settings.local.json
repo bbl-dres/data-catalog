@@ -142,7 +142,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/js/state.js)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://127.0.0.1:8765/prototype-canvas/js/canvas.js)",
-      "Bash(kill 6522)"
+      "Bash(kill 6522)",
+      "Bash(node -e \"['js/canvas.js'].forEach\\(p => { try { new Function\\(require\\('fs'\\).readFileSync\\(p,'utf8'\\)\\); console.log\\('OK',p\\); } catch\\(e\\){ console.log\\('FAIL',p,e.message\\); } }\\)\")",
+      "Bash(kill 6536)"
     ]
   }
 }

@@ -4,6 +4,11 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Suppress iOS Safari's grey tap-highlight rectangle on every interactive
+   element — looked correct on the first prototype iteration but reads as
+   visual noise once buttons have proper :active states. */
+* { -webkit-tap-highlight-color: transparent; }
+
 html, body {
   margin: 0;
   padding: 0;
@@ -531,6 +536,14 @@ body.hide-systems .group-layer { display: none; }
   position: absolute;
   inset: 0;
   overflow: hidden;
+  /* Mobile: claim every touch gesture as our own. With the default
+     touch-action: auto the browser interprets one-finger drags as a scroll
+     attempt, swallows the pointer stream, and dispatches pointercancel —
+     so the JS pan handler never starts. */
+  touch-action: none;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
   background-color: var(--color-bg-page);
   background-image: radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px);
   background-size: 24px 24px;
@@ -974,9 +987,12 @@ body.mode-edit .node.is-selected .node-port { display: block; }
   box-shadow: var(--shadow-toolbar);
   z-index: 10;
 }
-.ft-bottom-left  { bottom: 16px; left: 16px; }
+/* iOS home-indicator clearance: env(safe-area-inset-bottom) is ~34px on
+   iPhones with the gesture bar, 0 elsewhere. Keeps the zoom controls out
+   of the OS gesture-handle zone where taps would otherwise be ambiguous. */
+.ft-bottom-left  { bottom: max(16px, env(safe-area-inset-bottom)); left: 16px; }
 .ft-bottom-right {
-  bottom: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
   right: 16px;
   /* Smooth nudge when the info panel slides in */
   transition: right 200ms ease;
@@ -1867,6 +1883,80 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
 .confirm-card .tb-btn-danger:hover {
   background: #8E1F16;
   border-color: #8E1F16;
+}
+
+/* ============================================================
+   Mobile breakpoint (≤ 640px) — view-mode polish.
+   Edit-mode UX on touch is intentionally modest in this prototype.
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Tighter chrome heights; the footer is decorative on mobile, drop it. */
+  :root {
+    --header-height: 48px;
+    --toolbar-height: 44px;
+    --footer-height: 0px;
+  }
+  #app {
+    grid-template-rows: var(--header-height) var(--toolbar-height) 1fr;
+  }
+  .app-footer { display: none; }
+
+  /* Header: drop the lang marker + "/" hint, let the search fill remaining
+     space. The avatar dropdown is placeholder-only, hide it too. */
+  .app-header { padding: 0 var(--space-3); gap: var(--space-2); }
+  .header-logo { font-size: 14px; }
+  .lang-marker,
+  .header-search-hint,
+  .user-menu { display: none; }
+  .header-search { flex: 1; min-width: 0; }
+  .header-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 12px 8px 30px;
+    /* iOS Safari auto-zooms when an input has computed font-size < 16px on
+       focus. Bumping the inputs is the standard escape hatch. */
+    font-size: 16px;
+  }
+
+  /* Toolbar: tighten and collapse to icon-only. font-size:0 on the button
+     shrinks trailing text nodes ("Import", "Sichtbarkeit", etc) while the
+     SVG width attributes (set in HTML) keep the icons at full size. */
+  .app-toolbar { padding: 0 var(--space-2); gap: var(--space-1); }
+  .toolbar-right { gap: 4px; }
+  .toolbar-right .tb-btn {
+    font-size: 0;
+    padding: 8px 10px;
+    gap: 0;
+  }
+  .toolbar-sep { margin: 0 4px; }
+  .seg-btn { padding: 6px 10px; font-size: 13px; }
+
+  /* Table-tab filter input — same iOS auto-zoom prevention. */
+  .toolbar-input { min-width: 0; flex: 1; font-size: 16px; }
+
+  /* Info panel goes full-width as a sheet. The 6px-wide resize handle has
+     no use under touch, drop it. Close via the × in the panel header. */
+  .info-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+  .info-panel-resize { display: none; }
+
+  /* When the full-width sheet is open it covers the canvas, so the bottom-
+     right zoom toolbar would be hidden behind it. The desktop "shift left
+     by panel width" rule produces a negative offset on a 100vw panel; just
+     hide the toolbar while the sheet is up. */
+  body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
+    display: none;
+  }
+
+  /* Edge-label input is one of the few view-time touch targets we care
+     about. (The user can read existing edge labels without ever opening
+     edit mode, but tapping a relation still selects it for inspection.) */
+  .edge-label-input input { font-size: 16px; }
+
+  /* Search dropdown: stretch to fit the now-fluid header search. */
+  .search-dropdown { min-width: 0; max-width: none; }
 }
 
 /* ============================================================

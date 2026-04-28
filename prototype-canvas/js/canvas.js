@@ -161,6 +161,11 @@ window.CanvasApp.Canvas = (function () {
         canvasEl.addEventListener('pointerdown', onPanStart);
         window.addEventListener('pointermove', onPanMove);
         window.addEventListener('pointerup', onPanEnd);
+        // pointercancel fires when the OS or browser yanks the gesture away
+        // (incoming call, native gesture conflict, etc). Without this handler
+        // isPanning / isDragging stay true until the next pointerup, leaving
+        // the canvas in a ghost-drag state.
+        window.addEventListener('pointercancel', onPanEnd);
         canvasEl.addEventListener('wheel', onWheel, { passive: false });
 
         // Node drag (delegated)
