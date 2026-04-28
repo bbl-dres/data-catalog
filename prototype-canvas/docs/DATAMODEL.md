@@ -354,14 +354,16 @@ Corresponds to `bv:Field` and ArchiMate `Artifact` property. 1:1 with `prototype
 
 **Why `set` is free text and not a separate `property_set` table.** Property-set groupings on the canvas exist only to organise long attribute lists into collapsible sections — they do not carry independent metadata, ownership, or lifecycle. Promoting them to a table would force a join for every attribute list rendering and add insert/delete/rename plumbing for no information gain. Treating `set` as a denormalised text column on `attribute` keeps the model symmetrical with the JSON shape and matches how source-system Excel exports already arrive (each row carries its set name inline).
 
-**Standard set names** the canvas establishes by convention (not enforced):
+**Standard set names** the canvas establishes by convention (not enforced) — proper-case German with umlauts, since `set` is free text:
 
 | set | Notes |
 |-----|-------|
-| `STAMMDATEN` | Identity + status fields |
-| `ADRESSE_VERORTUNG` | Unified address + LV95 coords |
-| `BEMESSUNG` | Areas / volumes / measurements |
-| `KLASSIFIKATION` | Categorisation tags |
+| `Stammdaten` | Identity + status fields |
+| `Adresse und Verortung` | Unified address + LV95 coords |
+| `Bemessung` / `Flächen und Volumen` | Areas / volumes / measurements |
+| `Klassifikation` | Categorisation tags |
+
+**Exception — SAP BAPI substructures.** For nodes that mirror an SAP BAPI response (e.g. `ZAPI_X4AI_BAPI_RE_BU_GET_DET`), the source-system substructure ID is preserved with the German label appended in parentheses, e.g. `MEASUREMENT (Bemessung)`, `OBJECT_ADDRESS (Objektadresse)`. The technical prefix is non-negotiable — SAP InfoCube IDs are external contracts.
 
 **Renaming a set** is a multi-row update across attributes:
 

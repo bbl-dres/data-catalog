@@ -55,7 +55,7 @@ window.CanvasApp.Panel = (function () {
 
     function updateOpenState() {
         var sel = State.getSelection();
-        var supports = sel && (sel.kind === 'node' || sel.kind === 'system' || sel.kind === 'attribute');
+        var supports = sel && (sel.kind === 'node' || sel.kind === 'system' || sel.kind === 'attribute' || sel.kind === 'edge');
         var view = State.getView();
         var open = supports && view !== 'api';
         panelEl.classList.toggle('is-open', open);
@@ -80,6 +80,10 @@ window.CanvasApp.Panel = (function () {
             var col = an && (an.columns || []).find(function (c) { return c.name === sel.name; });
             if (!an || !col) { contentEl.innerHTML = ''; updateOpenState(); return; }
             contentEl.innerHTML = attributeContentHtml(an, col);
+        } else if (sel.kind === 'edge') {
+            var edge = State.getEdge(sel.id);
+            if (!edge) { contentEl.innerHTML = ''; updateOpenState(); return; }
+            contentEl.innerHTML = edgeContentHtml(edge);
         } else {
             contentEl.innerHTML = '';
         }
@@ -213,6 +217,61 @@ window.CanvasApp.Panel = (function () {
                 '<span class="info-rel-target">' + escapeHtml(label) + '</span>' +
                 rel +
             '</li>';
+    }
+
+    // ---- Edge content --------------------------------------------------
+
+    function edgeContentHtml(edge) {
+        var fromNode = State.getNode(edge.from);
+        var toNode = State.getNode(edge.to);
+        var fromLabel = fromNode ? (fromNode.label || fromNode.id) : edge.from;
+        var toLabel   = toNode   ? (toNode.label   || toNode.id)   : edge.to;
+        var headerLabel = edge.label || '(unbenannte Beziehung)';
+
+        var arrowSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+        var endpointRow = function (label, nodeId, node, role) {
+            var ic = node ? (TYPE_ICONS[node.type] || TYPE_ICONS.table) : '';
+            var typeBadge = node
+                ? '<span class="info-set-label">' + escapeHtml(node.system || typeLabel(node.type)) + '</span>'
+                : '<span class="info-set-label" style="color:var(--color-text-placeholder)">unbekannt</span>';
+            return '<li data-action="select-node" data-node-id="' + escapeAttr(nodeId) + '" title="Knoten anzeigen">' +
+                    '<span class="info-set-name" style="display:inline-flex;align-items:center;gap:6px">' +
+                        (node ? '<span class="cell-icon" data-type="' + escapeAttr(node.type) + '">' + ic + '</span>' : '') +
+                        escapeHtml(label) +
+                    '</span>' +
+                    typeBadge +
+                '</li>';
+        };
+
+        return '' +
+            '<div class="info-header">' +
+                '<span class="info-header-icon" style="background:var(--color-bg-accent);color:var(--color-bg-accent-strong)">' +
+                    arrowSvg +
+                '</span>' +
+                '<div class="info-header-text">' +
+                    '<div class="info-header-title">' + escapeHtml(headerLabel) + '</div>' +
+                    '<div class="info-header-sub">Beziehung</div>' +
+                '</div>' +
+                '<button class="info-header-close" data-action="close" title="Schliessen" aria-label="Panel schliessen">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>' +
+            '</div>' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Metadaten</div>' +
+                '<dl class="info-meta">' +
+                    '<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(edge.id) + '</code></dd>' +
+                    '<dt>Label</dt><dd>' + (edge.label ? escapeHtml(edge.label) : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
+                '</dl>' +
+            '</div>' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Quelle</div>' +
+                '<ul class="info-set-list">' + endpointRow(fromLabel, edge.from, fromNode, 'from') + '</ul>' +
+            '</div>' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Ziel</div>' +
+                '<ul class="info-set-list">' + endpointRow(toLabel, edge.to, toNode, 'to') + '</ul>' +
+            '</div>';
     }
 
     // ---- System content ------------------------------------------------

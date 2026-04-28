@@ -43,7 +43,6 @@ window.CanvasApp.Table = (function () {
         apis:      'APIs filtern…',
         files:     'Dateien filtern…',
         codelists: 'Wertelisten filtern…',
-        sets:      'Property Sets filtern…',
         cols:      'Attribute filtern…',
         edges:     'Beziehungen filtern…'
     };
@@ -102,7 +101,6 @@ window.CanvasApp.Table = (function () {
             case 'apis':      return renderTypedNodes(['api'],           'APIs');
             case 'files':     return renderTypedNodes(['file'],          'Dateien');
             case 'codelists': return renderTypedNodes(['codelist'],      'Wertelisten');
-            case 'sets':      return renderSets();
             case 'cols':      return renderCols();
             case 'edges':     return renderEdges();
         }
@@ -216,41 +214,6 @@ window.CanvasApp.Table = (function () {
                     ) +
                 '</td>' +
                 '<td>' + delBtn('Eintrag') + '</td>' +
-            '</tr>';
-    }
-
-    // ---- Tab: Property Sets --------------------------------------------
-
-    function renderSets() {
-        var q = textInput.value.trim().toLowerCase();
-        var rows = [];
-        State.getNodes().forEach(function (n) {
-            State.derivePropertySets(n).forEach(function (s) {
-                var attrCount = (n.columns || []).filter(function (c) { return c.set === s.name; }).length;
-                rows.push({ node: n, set: s, count: attrCount });
-            });
-        });
-        var total = rows.length;
-        if (q) {
-            rows = rows.filter(function (r) {
-                return [r.set.name, r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
-            });
-        }
-
-        headEl.innerHTML = '<tr><th>Name</th><th>Knoten</th><th>Typ</th><th>System</th><th>Attribute</th></tr>';
-        countEl.textContent = countLabel(rows.length, total, 'Property Sets');
-        bodyEl.innerHTML = rows.map(setRowHtml).join('') ||
-            emptyRowHtml(5, q ? 'Keine Treffer' : 'Keine Property Sets');
-    }
-
-    function setRowHtml(r) {
-        var icon = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
-        return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-set="' + escapeAttr(r.set.name) + '" data-kind="set">' +
-                '<td><code class="cell-mono">' + escapeHtml(r.set.name) + '</code></td>' +
-                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
-                '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(typeLabel(r.node.type)) + '</span></td>' +
-                '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
-                '<td>' + r.count + '</td>' +
             '</tr>';
     }
 

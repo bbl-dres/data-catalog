@@ -15,14 +15,13 @@ window.CanvasApp.Visibility = (function () {
 
     var KEYS = [
         'type-table', 'type-view', 'type-api', 'type-file', 'type-codelist',
-        'attributes', 'sets', 'edges', 'systems'
+        'edges', 'systems'
     ];
     // Keys whose toggling changes a node's height or removes whole nodes —
     // group frames need re-measuring after these flip.
     var NODE_AFFECTING = {
         'type-table': true, 'type-view': true, 'type-api': true,
-        'type-file': true, 'type-codelist': true,
-        'attributes': true, 'sets': true
+        'type-file': true, 'type-codelist': true
     };
 
     var visState = {};       // key → boolean (true = visible)
