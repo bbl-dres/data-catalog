@@ -7,11 +7,11 @@
  *   APIs           · nodes where type === 'api'
  *   Dateien        · nodes where type === 'file'
  *   Wertelisten    · nodes where type === 'codelist'
- *   Property Sets  · all sets across nodes
+ *   Property Sets  · derived from distinct column.set values across all nodes
  *   Attribute      · all columns across nodes
  *   Beziehungen    · all edges
  *
- * Click a row to select the related node (or system / edge); the side
+ * Click a row to select the related node (or system / edge / set); the side
  * panel reflects context. Edit-mode adds inline editing on the entity
  * tabs and a delete (×) action appropriate to the row.
  */
@@ -43,6 +43,7 @@ window.CanvasApp.Table = (function () {
         apis:      'APIs filtern…',
         files:     'Dateien filtern…',
         codelists: 'Wertelisten filtern…',
+        sets:      'Property Sets filtern…',
         cols:      'Attribute filtern…',
         edges:     'Beziehungen filtern…'
     };
@@ -101,6 +102,7 @@ window.CanvasApp.Table = (function () {
             case 'apis':      return renderTypedNodes(['api'],           'APIs');
             case 'files':     return renderTypedNodes(['file'],          'Dateien');
             case 'codelists': return renderTypedNodes(['codelist'],      'Wertelisten');
+            case 'sets':      return renderSets();
             case 'cols':      return renderCols();
             case 'edges':     return renderEdges();
         }
@@ -217,6 +219,47 @@ window.CanvasApp.Table = (function () {
             '</tr>';
     }
 
+    // ---- Tab: Property Sets --------------------------------------------
+
+    function renderSets() {
+        var q = textInput.value.trim().toLowerCase();
+        var rows = [];
+        State.getNodes().forEach(function (n) {
+            State.derivePropertySets(n).forEach(function (s) {
+                var cols = (n.columns || []).filter(function (c) { return c.set === s.name; });
+                rows.push({ node: n, name: s.name, count: cols.length });
+            });
+        });
+        var total = rows.length;
+        if (q) {
+            rows = rows.filter(function (r) {
+                return [r.name, r.node.label, r.node.id, r.node.system].join(' ').toLowerCase().indexOf(q) !== -1;
+            });
+        }
+        rows.sort(function (a, b) {
+            var c = (a.node.system || '').localeCompare(b.node.system || '');
+            if (c !== 0) return c;
+            c = (a.node.label || a.node.id).localeCompare(b.node.label || b.node.id);
+            if (c !== 0) return c;
+            return a.name.localeCompare(b.name);
+        });
+
+        headEl.innerHTML = '<tr><th>Set</th><th>Knoten</th><th>System</th><th>Attribute</th></tr>';
+        countEl.textContent = countLabel(rows.length, total, 'Property Sets');
+        bodyEl.innerHTML = rows.map(setRowHtml).join('') ||
+            emptyRowHtml(4, q ? 'Keine Treffer' : 'Keine Property Sets');
+    }
+
+    function setRowHtml(r) {
+        var icon = TYPE_ICONS[r.node.type] || TYPE_ICONS.table;
+        return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-set-name="' + escapeAttr(r.name) + '" data-kind="set">' +
+                '<td><code class="cell-mono">' + escapeHtml(r.name) + '</code></td>' +
+                '<td><span class="cell-name"><span class="cell-icon" data-type="' + escapeAttr(r.node.type) + '">' + icon + '</span>' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
+                '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
+                '<td>' + r.count + '</td>' +
+            '</tr>';
+    }
+
     // ---- Tab: Columns / Attributes -------------------------------------
 
     function renderCols() {
@@ -315,6 +358,12 @@ window.CanvasApp.Table = (function () {
             if (fromId) State.setSelected(fromId);
             return;
         }
+        if (kind === 'set') {
+            // Selecting a set row reveals the owning node — most useful next step.
+            var setNodeId = row.getAttribute('data-node-id');
+            if (setNodeId) State.setSelected(setNodeId);
+            return;
+        }
         var nodeId = row.getAttribute('data-node-id');
         if (nodeId) State.setSelected(nodeId);
     }
@@ -322,10 +371,7 @@ window.CanvasApp.Table = (function () {
     function onRowDelete(row, kind) {
         var nodeId = row.getAttribute('data-node-id');
         if (kind === 'node') {
-            var n = nodeId ? State.getNode(nodeId) : null;
-            if (confirm('Knoten "' + (n ? (n.label || n.id) : nodeId) + '" löschen?')) {
-                State.deleteNode(nodeId);
-            }
+            State.deleteNode(nodeId);
             return;
         }
         if (kind === 'edge') {

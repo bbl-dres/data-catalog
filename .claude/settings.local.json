@@ -131,7 +131,9 @@
       "Bash(node --check js/canvas.js)",
       "Bash(node --check js/table.js)",
       "Bash(node --check js/api.js)",
-      "Bash(node --check js/layout.js)"
+      "Bash(node --check js/layout.js)",
+      "Bash(cat)",
+      "Bash(node /tmp/headless_check.js)"
     ]
   }
 }

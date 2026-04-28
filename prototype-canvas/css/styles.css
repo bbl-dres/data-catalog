@@ -46,8 +46,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .header-logo-icon {
   width: 28px; height: 28px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: var(--color-bg-accent);
-  color: var(--color-bg-accent-strong);
+  /* Swiss-Federal red — family-binds prototype-canvas to the rest of the
+     data-catalog prototypes (which all carry the red brand mark). */
+  background: var(--color-brand-red);
+  color: #fff;
   border-radius: var(--radius-md);
 }
 .header-search {
@@ -61,8 +63,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   pointer-events: none;
 }
 .header-search input {
-  width: 200px;
-  padding: 6px 10px 6px 30px;
+  /* Fixed width — no on-focus reflow that pushes the lang button + avatar
+     left every time the user types. */
+  width: 280px;
+  padding: 6px 56px 6px 30px;
   font: inherit;
   font-size: var(--text-small);
   background: var(--color-bg-page);
@@ -70,14 +74,32 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
   outline: none;
-  transition: width 180ms ease, border-color 150ms ease, background 150ms ease;
+  transition: border-color 150ms ease, background 150ms ease;
 }
 .header-search input:focus,
 .header-search input:not(:placeholder-shown) {
-  width: 320px;
   border-color: var(--color-border-accent);
   background: var(--color-bg-surface);
 }
+/* "/" hint — points at the global keyboard shortcut. Hidden once the input
+   is focused or has text so it doesn't fight the placeholder. */
+.header-search-hint {
+  position: absolute;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-placeholder);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  padding: 0 5px;
+  pointer-events: none;
+}
+.header-search input:focus ~ .header-search-hint,
+.header-search input:not(:placeholder-shown) ~ .header-search-hint {
+  display: none;
+}
+.header-search input:focus + .search-dropdown { /* keep dropdown visible */ }
 
 /* ---- Search recommendations dropdown ---- */
 .search-dropdown {
@@ -153,14 +175,14 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   white-space: nowrap;
 }
 .header-actions { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
-.lang-btn {
-  padding: 6px 10px;
-  font-size: var(--text-small);
-  background: transparent;
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
+.lang-marker {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
   color: var(--color-text-secondary);
+  padding: 0 var(--space-2);
 }
+.user-menu { position: relative; }
 .user-avatar {
   width: 32px; height: 32px;
   border-radius: 50%;
@@ -168,6 +190,48 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   color: #fff;
   display: inline-flex; align-items: center; justify-content: center;
   font-size: var(--text-small); font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.user-avatar:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 6px;
+  z-index: 100;
+}
+.user-dropdown[hidden] { display: none; }
+.user-dropdown-header {
+  padding: 8px 10px 6px;
+}
+.user-dropdown-name { font-weight: 500; font-size: var(--text-small); }
+.user-dropdown-sub  { font-size: var(--text-label); color: var(--color-text-secondary); }
+.user-dropdown-row {
+  display: flex;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-small);
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.user-dropdown-row:hover:not(:disabled) { background: var(--color-bg-surface-hover); }
+.user-dropdown-row:disabled {
+  color: var(--color-text-placeholder);
+  cursor: not-allowed;
 }
 
 /* ---- Toolbar ---- */
@@ -211,6 +275,40 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   border-color: var(--color-bg-accent-strong);
 }
 .tb-btn-primary:hover { background: #183C6B; border-color: #183C6B; }
+/* Disabled state for primary toolbar buttons — keep brand colour but
+   communicate "no action available" with reduced contrast and no hover. */
+.tb-btn-primary:disabled,
+.tb-btn-primary[disabled] {
+  background: var(--color-border-default);
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+.tb-btn-primary:disabled:hover,
+.tb-btn-primary[disabled]:hover {
+  background: var(--color-border-default);
+  border-color: var(--color-border-default);
+}
+
+/* Unsaved-changes counter — appears in the toolbar in edit mode when
+   there's at least one dirty change. */
+.unsaved-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-warning);
+}
+.unsaved-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  display: inline-block;
+}
+.unsaved-indicator[hidden] { display: none; }
 
 .seg {
   display: inline-flex;
@@ -264,6 +362,21 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .vis-row-master {
   font-weight: 500;
   color: var(--color-text-primary);
+  justify-content: space-between;
+}
+.vis-master-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+/* Visual cue for the indeterminate (mixed) master state — browsers draw
+   a dash in the box but the row label benefits from an explicit hint. */
+.vis-row-master input:indeterminate {
+  outline: 1px solid var(--color-bg-accent-strong);
+  outline-offset: 0;
 }
 .vis-footer-actions {
   display: flex;
@@ -368,6 +481,11 @@ body.hide-edges #edge-layer .edge-group,
 body.hide-edges #edge-overlay .edge-group { display: none; }
 
 body.hide-systems .group-layer { display: none; }
+
+/* Isolation — set by visibility.js when "Nur Auswahl anzeigen" is active.
+   Hidden via display so they don't clutter measurement / layout. */
+.node[data-isolated="true"]            { display: none; }
+.edge-group[data-isolated="true"]      { display: none; }
 .seg-btn {
   display: inline-flex;
   align-items: center;
@@ -380,10 +498,15 @@ body.hide-systems .group-layer { display: none; }
   color: var(--color-text-secondary);
 }
 .seg-btn:hover { color: var(--color-text-primary); }
+.seg-btn:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 1px;
+}
 .seg-btn.is-active {
   background: var(--color-bg-surface);
   color: var(--color-text-primary);
-  box-shadow: var(--shadow-toolbar);
+  font-weight: 500;
+  box-shadow: var(--shadow-toolbar), inset 0 -2px 0 0 var(--color-bg-accent-strong);
 }
 .seg-btn[data-mode="edit"].is-active {
   background: var(--color-bg-accent-strong);
@@ -453,6 +576,10 @@ body.hide-systems .group-layer { display: none; }
   stroke: var(--color-edge);
   stroke-width: 1.5;
   pointer-events: stroke;
+  /* Keep stroke weight visually consistent across zoom levels — without
+     this, deeply-zoomed canvases get hairline edges and zoomed-out gets
+     fat ones. */
+  vector-effect: non-scaling-stroke;
 }
 .edge-hit {
   fill: none;
@@ -460,6 +587,7 @@ body.hide-systems .group-layer { display: none; }
   stroke-width: 12;
   pointer-events: stroke;
   cursor: pointer;
+  vector-effect: non-scaling-stroke;
 }
 .edge-group:hover .edge-path,
 .edge-group.is-active .edge-path {
@@ -555,6 +683,40 @@ body.hide-systems .group-layer { display: none; }
   overflow: visible;
   outline: none;
 }
+
+/* ---- Canvas empty state ---- */
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+  pointer-events: auto;
+  z-index: 5;
+}
+.canvas-empty[hidden] { display: none; }
+.canvas-empty svg { color: var(--color-text-placeholder); }
+.canvas-empty-title {
+  margin: 0;
+  font-size: var(--text-heading-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.canvas-empty-sub {
+  margin: 0;
+  max-width: 360px;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.canvas-empty-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
 .edge-preview path {
   fill: none;
   stroke: var(--color-edge-active);
@@ -627,6 +789,11 @@ body.hide-systems .group-layer { display: none; }
   border-color: var(--color-border-accent);
   box-shadow: 0 0 0 3px rgba(var(--color-bg-accent-strong-rgb), 0.15), var(--shadow-card);
 }
+.node:focus { outline: none; }
+.node:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
 body.mode-edit .node { cursor: move; }
 body.mode-view .node { cursor: pointer; }
 
@@ -636,9 +803,19 @@ body.mode-view .node { cursor: pointer; }
   gap: 8px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--color-border-subtle);
+  /* Type-tinted by default — overridden per type below.
+     Falls back to the neutral surface-hover for any node missing its
+     data-type attribute. */
   background: var(--color-bg-surface-hover);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
+/* Per-type tint — uses the same -bg pair the icon uses, so the header,
+   icon chip, and column key all live in the same colour family. */
+.node[data-type="table"]    .node-header { background: var(--color-type-table-bg); }
+.node[data-type="view"]     .node-header { background: var(--color-type-view-bg); }
+.node[data-type="api"]      .node-header { background: var(--color-type-api-bg); }
+.node[data-type="file"]     .node-header { background: var(--color-type-file-bg); }
+.node[data-type="codelist"] .node-header { background: var(--color-type-codelist-bg); }
 .node-type-icon {
   width: 20px; height: 20px;
   display: inline-flex; align-items: center; justify-content: center;
@@ -690,21 +867,28 @@ body.mode-view .node { cursor: pointer; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 22px;
-  padding: 1px 4px;
+  min-width: 26px;
+  padding: 1px 5px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   border-radius: 3px;
-  color: var(--color-text-placeholder);
+  color: transparent;
   background: transparent;
   flex-shrink: 0;
   user-select: none;
+  /* Reserve the slot so the column-name column-aligns across keyed/unkeyed
+     rows — but drop the visible "–" so non-keyed rows look quieter. */
 }
 .node-col-key.pk { color: #fff; background: var(--color-pk); }
 .node-col-key.fk { color: #fff; background: var(--color-fk); }
 .node-col-key.uk { color: #fff; background: var(--color-uk); }
+/* In edit mode the empty key slot becomes interactive (cycle PK/FK/UK/–);
+   show the dash there so the user sees the affordance. */
+body.mode-edit .node-col-key {
+  color: var(--color-text-placeholder);
+}
 .node-col-name {
   color: var(--color-text-primary);
   flex: 1;
@@ -723,13 +907,15 @@ body.mode-view .node { cursor: pointer; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Placeholder when type is empty — keeps the column slot visible across nodes. */
-.node-col-type:empty::before {
+/* Placeholder dash when type is empty — only in edit mode where the slot is
+   editable. View mode keeps it quiet. */
+body.mode-edit .node-col-type:empty::before {
   content: '–';
   color: var(--color-text-placeholder);
 }
 
-/* Edge handles (edit mode) */
+/* Edge handles (edit mode) — four ports per node so users can pull
+   connections from any side. Centered on the node's edge, not a fixed Y. */
 .node-port {
   position: absolute;
   width: 12px; height: 12px;
@@ -740,8 +926,10 @@ body.mode-view .node { cursor: pointer; }
   cursor: crosshair;
   z-index: 2;
 }
-.node-port.left   { left: -6px;  top: 18px; }
-.node-port.right  { right: -6px; top: 18px; }
+.node-port.left   { left: -6px;   top: 50%; transform: translateY(-50%); }
+.node-port.right  { right: -6px;  top: 50%; transform: translateY(-50%); }
+.node-port.top    { top: -6px;    left: 50%; transform: translateX(-50%); }
+.node-port.bottom { bottom: -6px; left: 50%; transform: translateX(-50%); }
 body.mode-edit .node:hover .node-port,
 body.mode-edit .node.is-selected .node-port { display: block; }
 
@@ -759,7 +947,18 @@ body.mode-edit .node.is-selected .node-port { display: block; }
   z-index: 10;
 }
 .ft-bottom-left  { bottom: 16px; left: 16px; }
-.ft-bottom-right { bottom: 16px; right: 16px; }
+.ft-bottom-right {
+  bottom: 16px;
+  right: 16px;
+  /* Smooth nudge when the info panel slides in */
+  transition: right 200ms ease;
+}
+/* When the right info panel is open, push the bottom-right floating toolbar
+   left so it stays visible inside the canvas viewport. The panel width
+   matches the --info-panel-width custom property (set inline by panel.js). */
+body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
+  right: calc(var(--info-panel-width, 360px) + 16px);
+}
 .ft-left-center  {
   top: 50%;
   left: 16px;
@@ -1244,11 +1443,11 @@ body.mode-edit .cell-select:focus {
   min-width: 50px;
   text-align: center;
 }
-.api-method.get    { background: #E8EEF6; color: #1F4E8A; }
-.api-method.post   { background: #EDFAF3; color: #157A42; }
-.api-method.put    { background: #FEF7E8; color: #A16800; }
-.api-method.patch  { background: #F3EDFA; color: #6B46C1; }
-.api-method.delete { background: #FEF0EE; color: #B02A1F; }
+.api-method.get    { background: var(--color-type-table-bg); color: var(--color-type-table); }
+.api-method.post   { background: var(--color-type-view-bg);  color: var(--color-type-view); }
+.api-method.put    { background: var(--color-warning-bg);    color: var(--color-warning); }
+.api-method.patch  { background: #F3EDFA;                    color: var(--color-uk); }
+.api-method.delete { background: var(--color-error-bg);      color: var(--color-error); }
 .api-path { color: var(--color-text-primary); }
 .api-summary { color: var(--color-text-secondary); margin-left: auto; font-family: var(--font-sans); }
 .api-endpoint-body {
@@ -1308,7 +1507,9 @@ body.mode-edit .cell-select:focus {
   top: 0;
   right: 0;
   bottom: 0;
-  width: 360px;
+  width: var(--info-panel-width, 360px);
+  min-width: 280px;
+  max-width: 640px;
   background: var(--color-bg-surface);
   border-left: 1px solid var(--color-border-default);
   box-shadow: -4px 0 12px rgba(0, 0, 0, 0.04);
@@ -1319,6 +1520,35 @@ body.mode-edit .cell-select:focus {
   display: flex;
   flex-direction: column;
 }
+.info-panel-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 31;
+  user-select: none;
+}
+.info-panel-resize::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.info-panel-resize:hover::before,
+.info-panel.is-resizing .info-panel-resize::before {
+  background: var(--color-border-strong);
+}
+.info-panel.is-resizing { transition: none; }
+.info-panel.is-resizing ~ * .ft-bottom-right,
+body.is-resizing-panel .ft-bottom-right { transition: none; }
 .info-panel.is-open { transform: translateX(0); }
 .info-panel-content { padding: 0; }
 
@@ -1526,14 +1756,16 @@ body[data-view="table"] .view-table.is-active .table-wrap {
 }
 body[data-panel="open"][data-view="table"] .view-table.is-active .table-toolbar,
 body[data-panel="open"][data-view="table"] .view-table.is-active .table-wrap {
-  margin-right: 360px;
+  margin-right: var(--info-panel-width, 360px);
 }
 
 /* ---- Toast (import feedback) ---- */
 .toast {
   position: fixed;
   bottom: 60px;
-  left: 50%;
+  /* Centre on the visible canvas area — when the info panel is open, the
+     panel-width custom property shifts the toast left of the panel. */
+  left: calc(50% - (var(--info-panel-offset, 0px) / 2));
   transform: translateX(-50%);
   background: var(--color-text-primary);
   color: #fff;
@@ -1544,8 +1776,178 @@ body[data-panel="open"][data-view="table"] .view-table.is-active .table-wrap {
   z-index: 1000;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms ease;
+  transition: opacity 200ms ease, left 200ms ease;
+}
+body[data-panel="open"]:not([data-view="api"]) .toast {
+  --info-panel-offset: var(--info-panel-width, 360px);
 }
 .toast.is-visible { opacity: 1; }
 .toast.is-error { background: var(--color-error); }
 .toast.is-success { background: var(--color-success); }
+
+/* ---- Modal confirm dialog (Excel import, destructive replace) ---- */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+.confirm-overlay.is-visible { opacity: 1; pointer-events: auto; }
+.confirm-card {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  width: 420px;
+  max-width: 90vw;
+  padding: var(--space-5);
+  transform: translateY(-8px);
+  transition: transform 150ms ease;
+}
+.confirm-overlay.is-visible .confirm-card { transform: translateY(0); }
+.confirm-title {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2);
+}
+.confirm-body {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+  line-height: 1.5;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.confirm-card .tb-btn {
+  padding: 7px 14px;
+  font-size: var(--text-body);
+}
+.confirm-card .tb-btn-danger {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: #fff;
+}
+.confirm-card .tb-btn-danger:hover {
+  background: #8E1F16;
+  border-color: #8E1F16;
+}
+
+/* ============================================================
+   Print stylesheet — used by the PDF export (window.print()).
+   Strips chrome and lets the active view occupy the page.
+   ============================================================ */
+@media print {
+  @page { margin: 12mm; }
+
+  html, body {
+    background: #fff !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Hide global chrome — header, toolbar, footer, floating toolbars,
+     palette, info panel resize handle, action bar, and toasts. */
+  .app-header,
+  .app-toolbar,
+  .app-footer,
+  .ft,
+  .info-panel-resize,
+  .node-action-bar,
+  .toast,
+  .confirm-overlay,
+  .vis-dropdown,
+  .export-dropdown,
+  .search-dropdown,
+  .header-search-hint,
+  .node-port,
+  .node-col-handle,
+  .node-col-del,
+  .node-col-add,
+  .node-add-set,
+  .node-set-delete,
+  .row-del-btn {
+    display: none !important;
+  }
+
+  #app {
+    display: block !important;
+    height: auto !important;
+  }
+  .app-main {
+    overflow: visible !important;
+    background: #fff !important;
+    position: static !important;
+  }
+  .view {
+    position: static !important;
+    inset: auto !important;
+  }
+  .view:not(.is-active) { display: none !important; }
+  .view.is-active { display: block !important; }
+
+  /* Diagram view: the canvas-transform sits at fixed coordinates. Force
+     it visible at scale 1 with no overflow clipping so all nodes/edges
+     end up on the printed page (browser will paginate). */
+  .canvas {
+    position: static !important;
+    background: #fff !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+  }
+  .canvas-transform {
+    position: relative !important;
+    transform: none !important;
+  }
+  .group-layer { display: block !important; }
+  .group-box { box-shadow: none !important; }
+  .node {
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+    page-break-inside: avoid;
+  }
+  .node:hover, .node.is-selected {
+    box-shadow: none !important;
+    border-color: #999 !important;
+  }
+  .edge-layer, .edge-overlay {
+    overflow: visible !important;
+  }
+
+  /* Info panel — only show its content if it's currently visible (selected
+     entity). Anchor inline rather than as an absolute overlay. */
+  .info-panel {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    page-break-before: always;
+  }
+  .info-panel:not(.is-open) { display: none !important; }
+
+  /* Table view: drop sticky headers (multi-page sticky doesn't work in print) */
+  .data-table th { position: static !important; }
+  .table-wrap { overflow: visible !important; height: auto !important; }
+
+  /* API view: expand all collapsed endpoints for print */
+  .api-endpoint .api-endpoint-body { display: block !important; }
+  .api-endpoint .chev { display: none !important; }
+
+  /* Force colour-printing of background tints (browsers strip by default).
+     Without this, the type-tinted node headers print white. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

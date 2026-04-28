@@ -28,11 +28,20 @@ window.CanvasApp.Visibility = (function () {
     var triggerEl = null;
     var dropdownEl = null;
     var masterEl = null;
+    var masterCountEl = null;
+
+    // Isolation: when a node or system is selected and the user picks
+    // "Nur Auswahl anzeigen", we mark every other node as isolated via
+    // a body-class flag plus per-node `data-isolated="true"`. CSS hides
+    // .node[data-isolated="true"]; deselecting / clicking "Alle wieder
+    // zeigen" clears the flag.
+    var isolated = false;
 
     function init() {
         triggerEl = document.getElementById('btn-visibility');
         dropdownEl = document.getElementById('vis-dropdown');
         masterEl = document.getElementById('vis-master');
+        masterCountEl = document.getElementById('vis-master-count');
 
         // Hydrate state — default visible
         var stored = readStorage();
@@ -45,6 +54,23 @@ window.CanvasApp.Visibility = (function () {
         dropdownEl.addEventListener('click', onDropdownClick);
         document.addEventListener('click', onDocClick);
         document.addEventListener('keydown', onKeydown);
+
+        // Re-render isolation when nodes/edges or selection change.
+        var State = window.CanvasApp && window.CanvasApp.State;
+        if (State) {
+            State.on(function (reason) {
+                if (reason === 'replace' || reason === 'reset' || reason === 'nodes') {
+                    if (isolated) applyIsolation();
+                }
+                if (reason === 'selection') {
+                    // If the user clears their selection, dropping isolation
+                    // matches the "isolated view of nothing" intuition.
+                    if (isolated && !State.getSelection()) {
+                        clearIsolation();
+                    }
+                }
+            });
+        }
 
         renderCheckboxes();
         applyToBody();
@@ -114,12 +140,82 @@ window.CanvasApp.Visibility = (function () {
     }
 
     function onDropdownClick(e) {
-        var btn = e.target.closest('[data-sets-action]');
-        if (!btn) return;
-        e.stopPropagation();
-        var Canvas = window.CanvasApp.Canvas;
-        if (!Canvas || !Canvas.setAllSetsExpanded) return;
-        Canvas.setAllSetsExpanded(btn.getAttribute('data-sets-action') === 'expand');
+        var setsBtn = e.target.closest('[data-sets-action]');
+        if (setsBtn) {
+            e.stopPropagation();
+            var Canvas = window.CanvasApp.Canvas;
+            if (!Canvas || !Canvas.setAllSetsExpanded) return;
+            Canvas.setAllSetsExpanded(setsBtn.getAttribute('data-sets-action') === 'expand');
+            return;
+        }
+        var isoBtn = e.target.closest('[data-isolate-action]');
+        if (isoBtn) {
+            e.stopPropagation();
+            if (isoBtn.getAttribute('data-isolate-action') === 'on') applyIsolation();
+            else clearIsolation();
+        }
+    }
+
+    /**
+     * Hide every node that's not part of the current selection's "neighbourhood":
+     *   - selected node itself
+     *   - all nodes belonging to the selected system (if a system is selected)
+     *   - direct edge neighbours (one hop away) of the selected node
+     *
+     * We use data-isolated="true" rather than display:none so the existing
+     * type/edge visibility classes still compose. Edges where either endpoint
+     * is hidden get hidden via a CSS rule.
+     */
+    function applyIsolation() {
+        var State = window.CanvasApp && window.CanvasApp.State;
+        if (!State) return;
+        var sel = State.getSelection();
+        if (!sel) {
+            window.CanvasApp.App && window.CanvasApp.App.toast &&
+                window.CanvasApp.App.toast('Erst etwas auswählen, dann isolieren.');
+            return;
+        }
+        var keepIds = Object.create(null);
+        if (sel.kind === 'node') {
+            keepIds[sel.id] = true;
+            // One-hop neighbourhood — direct connections.
+            State.getEdges().forEach(function (e) {
+                if (e.from === sel.id) keepIds[e.to]   = true;
+                if (e.to   === sel.id) keepIds[e.from] = true;
+            });
+        } else if (sel.kind === 'system') {
+            State.getNodes().forEach(function (n) {
+                if (n.system === sel.name) keepIds[n.id] = true;
+            });
+        } else if (sel.kind === 'attribute') {
+            keepIds[sel.nodeId] = true;
+        } else if (sel.kind === 'edge') {
+            var ed = State.getEdge(sel.id);
+            if (ed) { keepIds[ed.from] = true; keepIds[ed.to] = true; }
+        }
+
+        document.querySelectorAll('.node-layer .node').forEach(function (el) {
+            var id = el.getAttribute('data-node-id');
+            if (keepIds[id]) el.removeAttribute('data-isolated');
+            else             el.setAttribute('data-isolated', 'true');
+        });
+        // Edges: hide if either endpoint is isolated.
+        document.querySelectorAll('.edge-group').forEach(function (g) {
+            var f = g.getAttribute('data-from');
+            var t = g.getAttribute('data-to');
+            if (keepIds[f] && keepIds[t]) g.removeAttribute('data-isolated');
+            else                          g.setAttribute('data-isolated', 'true');
+        });
+        isolated = true;
+        document.body.classList.add('is-isolated');
+    }
+
+    function clearIsolation() {
+        document.querySelectorAll('[data-isolated]').forEach(function (el) {
+            el.removeAttribute('data-isolated');
+        });
+        isolated = false;
+        document.body.classList.remove('is-isolated');
     }
 
     function renderCheckboxes() {
@@ -145,6 +241,9 @@ window.CanvasApp.Visibility = (function () {
         } else {
             masterEl.checked = false;
             masterEl.indeterminate = true;
+        }
+        if (masterCountEl) {
+            masterCountEl.textContent = onCount + '/' + KEYS.length;
         }
     }
 

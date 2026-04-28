@@ -92,7 +92,7 @@ window.CanvasApp.XlsxIO = (function () {
             closeDropdown();
             if (kind === 'xlsx') exportXlsx();
             else if (kind === 'json') exportJson();
-            else if (kind === 'pdf') toast('PDF-Export folgt', 'success');
+            else if (kind === 'pdf') exportPdf();
         });
 
         document.addEventListener('click', function (e) {
@@ -112,6 +112,31 @@ window.CanvasApp.XlsxIO = (function () {
     }
 
     // ---- Export --------------------------------------------------------
+
+    /**
+     * PDF export — defers to the browser's print pipeline (Strg+P → Als PDF speichern).
+     * @media print rules in styles.css strip chrome and lay out canvas / table /
+     * API content on a printable page.
+     *
+     * On the diagram view we briefly fit-to-screen so the print snapshot
+     * captures the whole graph, then restore the previous transform.
+     */
+    function exportPdf() {
+        var Canvas = window.CanvasApp && window.CanvasApp.Canvas;
+        var view = State.getView();
+        // Fit-to-screen for diagram view so the printed snapshot captures
+        // every node. Caller didn't ask for it, but a partial print of an
+        // already-zoomed canvas is rarely what they want.
+        if (view === 'diagram' && Canvas && Canvas.fitToScreen) {
+            Canvas.fitToScreen();
+        }
+        // Let the layout settle before opening the print dialog.
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                window.print();
+            });
+        });
+    }
 
     function exportXlsx() {
         if (typeof XLSX === 'undefined') {
@@ -255,11 +280,23 @@ window.CanvasApp.XlsxIO = (function () {
                     toast('Keine Knoten in den Tabellen-Blättern gefunden.', 'error');
                     return;
                 }
-                if (!confirm('Aktuelle Canvas-Inhalte ersetzen? (' + parsed.nodes.length + ' Knoten, ' + parsed.edges.length + ' Beziehungen)')) {
-                    return;
-                }
-                State.replaceAll(parsed);
-                toast('Import erfolgreich · ' + parsed.nodes.length + ' Knoten', 'success');
+                var App = window.CanvasApp.App;
+                var ask = (App && App.confirmDialog)
+                    ? App.confirmDialog({
+                        title: 'Canvas ersetzen?',
+                        body:  'Der aktuelle Canvas wird durch den Excel-Inhalt ersetzt: ' +
+                                parsed.nodes.length + ' Knoten, ' + parsed.edges.length + ' Beziehungen. ' +
+                                'Diese Aktion kann nicht rückgängig gemacht werden.',
+                        confirmText: 'Ersetzen',
+                        cancelText:  'Abbrechen',
+                        danger: true
+                      })
+                    : Promise.resolve(confirm('Aktuelle Canvas-Inhalte ersetzen?'));
+                ask.then(function (ok) {
+                    if (!ok) return;
+                    State.replaceAll(parsed);
+                    toast('Import erfolgreich · ' + parsed.nodes.length + ' Knoten', 'success');
+                });
             } catch (err) {
                 console.error(err);
                 toast('Import fehlgeschlagen: ' + err.message, 'error');

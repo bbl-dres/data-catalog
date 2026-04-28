@@ -18,6 +18,9 @@ window.CanvasApp.App = (function () {
         wireEditButtons();
         wireSearch();
         wireUrlSync();
+        wireGlobalKeys();
+        wireUserMenu();
+        wireCanvasEmpty();
 
         State.on(function (reason) {
             if (reason === 'view') {
@@ -26,6 +29,10 @@ window.CanvasApp.App = (function () {
             if (reason === 'view' || reason === 'selection') {
                 syncStateToUrl();
             }
+            // Save-button affordance reflects draft dirtiness across every
+            // mutation — nodes/edges/replace plus mode toggles.
+            updateSaveAffordance();
+            updateCanvasEmpty();
         });
 
         return State.load().then(function () {
@@ -38,6 +45,8 @@ window.CanvasApp.App = (function () {
             window.CanvasApp.Table.render();
             window.CanvasApp.Api.render();
             window.CanvasApp.Panel.render();
+            updateSaveAffordance();
+            updateCanvasEmpty();
             // Fit on first paint
             requestAnimationFrame(function () {
                 window.CanvasApp.Canvas.fitToScreen();
@@ -184,10 +193,11 @@ window.CanvasApp.App = (function () {
                 State.setMode('view');
                 return;
             }
-            if (!confirm('Änderungen speichern?')) return;
+            // No confirm — saving is non-destructive. Toast acknowledges.
+            var n = State.getUnsavedChangeCount();
             State.commitDraft();
             State.setMode('view');
-            toast('Änderungen gespeichert', 'success');
+            toast(n === 1 ? '1 Änderung gespeichert' : n + ' Änderungen gespeichert', 'success');
         });
 
         // Esc anywhere outside an input reverts the draft and exits edit mode.
@@ -203,6 +213,139 @@ window.CanvasApp.App = (function () {
             State.revertDraft();
             State.setMode('view');
         });
+    }
+
+    /**
+     * Global keyboard shortcuts that aren't tied to a specific surface.
+     * Per-surface shortcuts (Esc to exit edit, Delete to remove selection)
+     * stay where they are.
+     *
+     *   /        focus the header search (skipped while typing in a field)
+     *   ?        toast the shortcut cheat-sheet
+     *   Ctrl+S   save the draft (edit mode only)
+     *   Ctrl+Z   undo last destructive edit (handled in Editor)
+     */
+    function wireGlobalKeys() {
+        document.addEventListener('keydown', function (e) {
+            var typing = isTypingInField(e.target);
+
+            if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                e.preventDefault();
+                var input = document.getElementById('search-input');
+                if (input) input.focus();
+                return;
+            }
+
+            if (e.key === '?' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                e.preventDefault();
+                toast(
+                    'Tastenkürzel: / Suche · Strg+S Speichern · Strg+Z Rückgängig · Esc Abbrechen · Entf Auswahl löschen',
+                    'success'
+                );
+                return;
+            }
+
+            if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+                if (State.getMode() !== 'edit') return;
+                e.preventDefault();
+                var saveBtn = document.getElementById('btn-save');
+                if (saveBtn && !saveBtn.disabled) saveBtn.click();
+                return;
+            }
+
+            if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+                if (State.getMode() !== 'edit') return;
+                if (typing) return; // browser handles inline text undo
+                e.preventDefault();
+                if (!State.canUndo()) {
+                    toast('Nichts zum Rückgängigmachen', 'success');
+                    return;
+                }
+                var label = State.undo();
+                toast('Rückgängig: ' + (label || 'letzte Aktion'), 'success');
+            }
+        });
+    }
+
+    function isTypingInField(t) {
+        if (!t || !t.matches) return false;
+        return t.matches('input, textarea, select, [contenteditable="true"]');
+    }
+
+    function wireUserMenu() {
+        var btn = document.getElementById('user-avatar-btn');
+        var dd  = document.getElementById('user-dropdown');
+        if (!btn || !dd) return;
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = dd.hasAttribute('hidden');
+            if (open) {
+                dd.removeAttribute('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+            } else {
+                dd.setAttribute('hidden', '');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
+        document.addEventListener('click', function (e) {
+            if (dd.hasAttribute('hidden')) return;
+            if (e.target.closest('.user-menu')) return;
+            dd.setAttribute('hidden', '');
+            btn.setAttribute('aria-expanded', 'false');
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && !dd.hasAttribute('hidden')) {
+                dd.setAttribute('hidden', '');
+                btn.setAttribute('aria-expanded', 'false');
+            }
+        });
+    }
+
+    function wireCanvasEmpty() {
+        var empty = document.getElementById('canvas-empty');
+        if (!empty) return;
+        empty.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-empty-action]');
+            if (!btn) return;
+            var action = btn.getAttribute('data-empty-action');
+            if (action === 'import') {
+                document.getElementById('btn-import').click();
+            } else if (action === 'add') {
+                State.setMode('edit');
+                // Fire a synthetic palette click for "Tabelle" — best entry point.
+                var paletteBtn = document.querySelector('#entity-palette [data-add-type="table"]');
+                if (paletteBtn) paletteBtn.click();
+            }
+        });
+    }
+
+    function updateCanvasEmpty() {
+        var empty = document.getElementById('canvas-empty');
+        if (!empty) return;
+        var hasNodes = State.getNodes().length > 0;
+        if (hasNodes) empty.setAttribute('hidden', '');
+        else          empty.removeAttribute('hidden');
+    }
+
+    /**
+     * Reflect draft dirtiness on the Save button + the unsaved-changes
+     * counter. Called on every state event so it stays in sync with edits,
+     * undo, and mode toggles.
+     */
+    function updateSaveAffordance() {
+        var saveBtn = document.getElementById('btn-save');
+        var indicator = document.getElementById('unsaved-indicator');
+        if (!saveBtn || !indicator) return;
+        var inEdit = State.getMode() === 'edit';
+        var n = inEdit ? State.getUnsavedChangeCount() : 0;
+        saveBtn.disabled = n === 0;
+        if (n === 0) {
+            indicator.setAttribute('hidden', '');
+            indicator.textContent = '';
+        } else {
+            indicator.removeAttribute('hidden');
+            indicator.textContent = n === 1 ? '1 ungespeicherte Änderung' : n + ' ungespeicherte Änderungen';
+        }
     }
 
     var KIND_ICONS = {
@@ -421,9 +564,63 @@ window.CanvasApp.App = (function () {
         }, 2400);
     }
 
+    // ---- Custom confirm dialog -----------------------------------------
+    // Promise-based replacement for native confirm() — used for genuinely
+    // destructive non-undoable actions (e.g. Excel import replaces all).
+    // Returns a Promise<boolean>.
+    function confirmDialog(opts) {
+        opts = opts || {};
+        var title       = opts.title       || 'Bestätigen';
+        var body        = opts.body        || '';
+        var confirmText = opts.confirmText || 'Bestätigen';
+        var cancelText  = opts.cancelText  || 'Abbrechen';
+        var danger      = opts.danger !== false; // default to danger styling
+
+        return new Promise(function (resolve) {
+            var overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.innerHTML =
+                '<div class="confirm-card">' +
+                    '<h3 class="confirm-title">' + escapeHtml(title) + '</h3>' +
+                    '<p class="confirm-body">' + escapeHtml(body) + '</p>' +
+                    '<div class="confirm-actions">' +
+                        '<button type="button" class="tb-btn" data-confirm-action="cancel">' + escapeHtml(cancelText) + '</button>' +
+                        '<button type="button" class="tb-btn ' + (danger ? 'tb-btn-danger' : 'tb-btn-primary') + '" data-confirm-action="confirm">' + escapeHtml(confirmText) + '</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(overlay);
+            // Focus the confirm button so Enter resolves true and Esc resolves false.
+            requestAnimationFrame(function () {
+                overlay.classList.add('is-visible');
+                var btn = overlay.querySelector('[data-confirm-action="confirm"]');
+                if (btn) btn.focus();
+            });
+
+            function close(result) {
+                overlay.classList.remove('is-visible');
+                setTimeout(function () { overlay.remove(); }, 150);
+                document.removeEventListener('keydown', onKey, true);
+                resolve(result);
+            }
+            overlay.addEventListener('click', function (e) {
+                var btn = e.target.closest('[data-confirm-action]');
+                if (btn) return close(btn.getAttribute('data-confirm-action') === 'confirm');
+                if (e.target === overlay) close(false);
+            });
+            function onKey(e) {
+                if (e.key === 'Escape') { e.preventDefault(); close(false); }
+                else if (e.key === 'Enter') { e.preventDefault(); close(true); }
+            }
+            document.addEventListener('keydown', onKey, true);
+        });
+    }
+
     return {
         init: init,
-        toast: toast
+        toast: toast,
+        confirmDialog: confirmDialog
     };
 })();
 

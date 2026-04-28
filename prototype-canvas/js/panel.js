@@ -29,6 +29,11 @@ window.CanvasApp.Panel = (function () {
         codelist: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
     };
 
+    var WIDTH_STORAGE_KEY = 'canvas.panel.width.v1';
+    var WIDTH_MIN = 280;
+    var WIDTH_MAX = 640;
+    var WIDTH_DEFAULT = 360;
+
     function init() {
         State = window.CanvasApp.State;
         panelEl = document.getElementById('info-panel');
@@ -51,6 +56,81 @@ window.CanvasApp.Panel = (function () {
 
         // Initial state
         document.body.setAttribute('data-view', State.getView());
+
+        // Resize: drag the left edge to widen / narrow the panel.
+        applyPanelWidth(readStoredWidth());
+        wireResize();
+    }
+
+    function readStoredWidth() {
+        try {
+            var raw = localStorage.getItem(WIDTH_STORAGE_KEY);
+            var n = raw ? parseInt(raw, 10) : NaN;
+            if (Number.isFinite(n)) return clampWidth(n);
+        } catch (e) {}
+        return WIDTH_DEFAULT;
+    }
+
+    function clampWidth(n) {
+        if (n < WIDTH_MIN) return WIDTH_MIN;
+        if (n > WIDTH_MAX) return WIDTH_MAX;
+        return n;
+    }
+
+    function applyPanelWidth(px) {
+        document.documentElement.style.setProperty('--info-panel-width', px + 'px');
+    }
+
+    function wireResize() {
+        var handle = document.getElementById('info-panel-resize');
+        if (!handle) return;
+
+        var dragging = false;
+        var startX = 0;
+        var startWidth = WIDTH_DEFAULT;
+
+        handle.addEventListener('pointerdown', function (e) {
+            // Only respond to primary button drags
+            if (e.button !== 0) return;
+            dragging = true;
+            startX = e.clientX;
+            startWidth = panelEl.getBoundingClientRect().width;
+            panelEl.classList.add('is-resizing');
+            document.body.classList.add('is-resizing-panel');
+            handle.setPointerCapture(e.pointerId);
+            e.preventDefault();
+        });
+
+        handle.addEventListener('pointermove', function (e) {
+            if (!dragging) return;
+            // Drag-left widens (panel grows from its right anchor)
+            var delta = startX - e.clientX;
+            var next = clampWidth(startWidth + delta);
+            applyPanelWidth(next);
+        });
+
+        function endDrag(e) {
+            if (!dragging) return;
+            dragging = false;
+            panelEl.classList.remove('is-resizing');
+            document.body.classList.remove('is-resizing-panel');
+            try { handle.releasePointerCapture(e.pointerId); } catch (_) {}
+            var current = parseInt(getComputedStyle(panelEl).width, 10) || WIDTH_DEFAULT;
+            try { localStorage.setItem(WIDTH_STORAGE_KEY, String(current)); } catch (_) {}
+        }
+        handle.addEventListener('pointerup', endDrag);
+        handle.addEventListener('pointercancel', endDrag);
+
+        // Keyboard: ←/→ steps the width by 16 px when handle is focused.
+        handle.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            var current = parseInt(getComputedStyle(panelEl).width, 10) || WIDTH_DEFAULT;
+            var step = e.key === 'ArrowLeft' ? 16 : -16;
+            var next = clampWidth(current + step);
+            applyPanelWidth(next);
+            try { localStorage.setItem(WIDTH_STORAGE_KEY, String(next)); } catch (_) {}
+        });
     }
 
     function updateOpenState() {
@@ -118,19 +198,23 @@ window.CanvasApp.Panel = (function () {
     }
 
     function metadataSectionHtml(node) {
-        var tags = (node.tags || []).map(function (t) {
-            return '<span class="info-tag">' + escapeHtml(t) + '</span>';
-        }).join('') || '<span style="color:var(--color-text-placeholder)">–</span>';
+        // Only render rows that have a value — empty/system/schema/tags get
+        // dropped to reduce the "wall of dashes" look in the panel.
+        var rows = [];
+        rows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(node.id) + '</code></dd>');
+        rows.push('<dt>Typ</dt><dd>' + escapeHtml(TYPE_LABELS[node.type] || node.type || 'Tabelle') + '</dd>');
+        if (node.system) rows.push('<dt>System</dt><dd>' + escapeHtml(node.system) + '</dd>');
+        if (node.schema) rows.push('<dt>Schema</dt><dd>' + escapeHtml(node.schema) + '</dd>');
+        if ((node.tags || []).length) {
+            var tags = node.tags.map(function (t) {
+                return '<span class="info-tag">' + escapeHtml(t) + '</span>';
+            }).join('');
+            rows.push('<dt>Tags</dt><dd>' + tags + '</dd>');
+        }
         return '' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Metadaten</div>' +
-                '<dl class="info-meta">' +
-                    '<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(node.id) + '</code></dd>' +
-                    '<dt>Typ</dt><dd>' + escapeHtml(TYPE_LABELS[node.type] || node.type || 'Tabelle') + '</dd>' +
-                    '<dt>System</dt><dd>' + (node.system ? escapeHtml(node.system) : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
-                    '<dt>Schema</dt><dd>' + (node.schema ? escapeHtml(node.schema) : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
-                    '<dt>Tags</dt><dd>' + tags + '</dd>' +
-                '</dl>' +
+                '<dl class="info-meta">' + rows.join('') + '</dl>' +
             '</div>';
     }
 

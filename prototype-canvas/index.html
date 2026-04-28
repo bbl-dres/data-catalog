@@ -21,17 +21,28 @@
       </span>
       <span>BBL Canvas</span>
     </a>
-    <div class="prototype-hint">Prototyp – fiktive Inhalte, nur zur Demonstration</div>
     <div class="header-actions">
       <div class="header-search">
         <span class="search-icon" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
         <input type="text" id="search-input" placeholder="Suchen…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
+        <kbd class="header-search-hint" aria-hidden="true">/</kbd>
         <div class="search-dropdown" id="search-dropdown" hidden role="listbox" aria-label="Suchergebnisse"></div>
       </div>
-      <button class="lang-btn" type="button" disabled title="Mehrsprachigkeit folgt">DE</button>
-      <div class="user-avatar" title="Benutzer">DR</div>
+      <span class="lang-marker" aria-label="Sprache: Deutsch">DE</span>
+      <div class="user-menu">
+        <button type="button" class="user-avatar" id="user-avatar-btn" aria-haspopup="menu" aria-expanded="false" title="Benutzer">DR</button>
+        <div class="user-dropdown" id="user-dropdown" hidden role="menu" aria-labelledby="user-avatar-btn">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-name">David Rasner</div>
+            <div class="user-dropdown-sub">davidrasner5@gmail.com</div>
+          </div>
+          <div class="vis-divider"></div>
+          <button type="button" class="user-dropdown-row" data-user-action="profile" disabled>Profil (folgt)</button>
+          <button type="button" class="user-dropdown-row" data-user-action="signout" disabled>Abmelden (folgt)</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -51,7 +62,10 @@
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.6;margin-left:-2px"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="vis-dropdown" id="vis-dropdown" hidden role="menu">
-          <label class="vis-row vis-row-master"><input type="checkbox" id="vis-master" checked> Alles anzeigen</label>
+          <label class="vis-row vis-row-master">
+            <span><input type="checkbox" id="vis-master" checked> Alles anzeigen</span>
+            <span class="vis-master-count" id="vis-master-count" aria-live="polite"></span>
+          </label>
           <div class="vis-divider"></div>
           <div class="vis-section-label">Knotentypen</div>
           <label class="vis-row"><input type="checkbox" data-vis="type-table"  checked> Tabellen</label>
@@ -63,6 +77,18 @@
           <div class="vis-section-label">Layout</div>
           <label class="vis-row"><input type="checkbox" data-vis="edges"       checked> Beziehungen</label>
           <label class="vis-row"><input type="checkbox" data-vis="systems"     checked> Systemrahmen</label>
+          <div class="vis-divider"></div>
+          <div class="vis-section-label">Auswahl</div>
+          <div class="vis-footer-actions">
+            <button type="button" class="vis-action-btn" data-isolate-action="on" title="Nur ausgewähltes System / Knoten anzeigen">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3"/></svg>
+              Nur Auswahl anzeigen
+            </button>
+            <button type="button" class="vis-action-btn" data-isolate-action="off" title="Isolierung aufheben">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h20M12 2v20"/></svg>
+              Alle wieder zeigen
+            </button>
+          </div>
           <div class="vis-divider"></div>
           <div class="vis-section-label">Property Sets</div>
           <div class="vis-footer-actions">
@@ -108,13 +134,13 @@
             </span>
           </button>
           <div class="export-divider"></div>
-          <button class="export-row" data-export="pdf" role="menuitem" disabled>
+          <button class="export-row" data-export="pdf" role="menuitem">
             <span class="export-row-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
             </span>
             <span class="export-row-text">
               <span class="export-row-label">PDF</span>
-              <span class="export-row-sub">Druck-Layouts · folgt</span>
+              <span class="export-row-sub">Druckdialog · "Als PDF speichern"</span>
             </span>
           </button>
         </div>
@@ -124,10 +150,11 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
         Bearbeiten
       </button>
+      <span class="edit-only unsaved-indicator" id="unsaved-indicator" hidden aria-live="polite"></span>
       <button class="tb-btn edit-only" id="btn-cancel" title="Änderungen verwerfen (oder Esc)">
         Abbrechen
       </button>
-      <button class="tb-btn tb-btn-primary edit-only" id="btn-save" title="Änderungen speichern">
+      <button class="tb-btn tb-btn-primary edit-only" id="btn-save" title="Änderungen speichern (Strg+S)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Speichern
       </button>
@@ -137,7 +164,7 @@
   <main class="app-main" id="app-main">
     <!-- Diagram view -->
     <section class="view view-diagram is-active" id="view-diagram" data-view="diagram">
-      <div class="canvas" id="canvas">
+      <div class="canvas" id="canvas" role="application" aria-label="Architekturdiagramm – mit Maus oder Touch verschieben und zoomen; Tabelle-Ansicht für tastaturzugängliche Alternative" tabindex="0">
         <div class="canvas-transform" id="canvas-transform">
           <svg class="edge-layer" id="edge-layer" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -166,6 +193,28 @@
         <!-- Drag-edge preview (only in edit mode) -->
         <svg class="edge-preview" id="edge-preview" xmlns="http://www.w3.org/2000/svg"></svg>
 
+        <!-- Empty-state placeholder (visible only when there are zero nodes) -->
+        <div class="canvas-empty" id="canvas-empty" hidden>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          </svg>
+          <h2 class="canvas-empty-title">Canvas ist leer</h2>
+          <p class="canvas-empty-sub">Importieren Sie eine Excel-Datei oder fügen Sie Knoten direkt im Bearbeiten-Modus hinzu.</p>
+          <div class="canvas-empty-actions">
+            <button type="button" class="tb-btn tb-btn-primary" data-empty-action="import">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Excel importieren
+            </button>
+            <button type="button" class="tb-btn" data-empty-action="add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Ersten Knoten hinzufügen
+            </button>
+          </div>
+        </div>
+
         <!-- Floating toolbars -->
         <div class="ft ft-bottom-right">
           <button class="ft-btn" id="zoom-out" title="Verkleinern">
@@ -186,9 +235,12 @@
         </div>
 
         <!-- Entity palette (edit mode only) -->
-        <div class="ft ft-left-center edit-only" id="entity-palette" aria-label="Entitäten hinzufügen">
+        <div class="ft ft-bottom-left edit-only" id="entity-palette" aria-label="Entitäten hinzufügen">
           <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="table" title="Tabelle hinzufügen">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>
+          </button>
+          <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="view" title="View hinzufügen">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>
           </button>
           <button class="ft-btn ft-btn-icon" draggable="true" data-add-type="api" title="API hinzufügen">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>
@@ -213,6 +265,7 @@
           <button class="seg-btn"           data-tab="apis"      role="tab" aria-selected="false">APIs</button>
           <button class="seg-btn"           data-tab="files"     role="tab" aria-selected="false">Dateien</button>
           <button class="seg-btn"           data-tab="codelists" role="tab" aria-selected="false">Wertelisten</button>
+          <button class="seg-btn"           data-tab="sets"      role="tab" aria-selected="false">Property Sets</button>
           <button class="seg-btn"           data-tab="cols"      role="tab" aria-selected="false">Attribute</button>
           <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false">Beziehungen</button>
         </div>
@@ -230,6 +283,7 @@
 
     <!-- Info panel: slides in from right when a node is selected (diagram + table) -->
     <aside class="info-panel" id="info-panel" aria-label="Detail-Informationen">
+      <div class="info-panel-resize" id="info-panel-resize" role="separator" aria-orientation="vertical" aria-label="Panel-Breite anpassen" tabindex="0"></div>
       <div class="info-panel-content" id="info-panel-content"></div>
     </aside>
 

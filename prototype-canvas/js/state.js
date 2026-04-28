@@ -35,6 +35,14 @@ window.CanvasApp.State = (function () {
         snapshot: null           // {nodes, edges} captured on entering edit; live data is the draft
     };
 
+    // Undo stack for destructive / hard-to-redo edits. Pushed by deleteNode,
+    // deleteEdge, and updateNode (whenever called via the public API). Capped at
+    // 50 frames — enough for "oops, undo that delete" without unbounded memory.
+    // Cleared on mode-change/load/replaceAll, since the snapshot semantics make
+    // an undo across those states meaningless.
+    var UNDO_LIMIT = 50;
+    var undoStack = [];
+
     var listeners = [];
 
     function on(fn) { listeners.push(fn); }
@@ -157,9 +165,40 @@ window.CanvasApp.State = (function () {
             // two paths, so this is a safety net.
             state.snapshot = null;
         }
+        // Undo history is scoped to a single edit session.
+        undoStack = [];
         state.mode = mode;
         emit('mode');
     }
+
+    // ---- Undo ----------------------------------------------------------
+
+    /** Snapshot live nodes/edges onto the undo stack. */
+    function pushUndo(label) {
+        undoStack.push({
+            label: label || '',
+            nodes: deepClone(state.nodes),
+            edges: deepClone(state.edges),
+            selection: state.selection ? deepClone(state.selection) : null
+        });
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+    }
+
+    /** Pop the latest undo frame. Returns the label of the reversed action. */
+    function undo() {
+        var frame = undoStack.pop();
+        if (!frame) return null;
+        state.nodes = frame.nodes;
+        state.edges = frame.edges;
+        state.selection = frame.selection;
+        // Rebroadcast as a wholesale replace so every surface re-renders.
+        persist();
+        emit('replace');
+        return frame.label;
+    }
+
+    function canUndo() { return undoStack.length > 0; }
+    function getUndoCount() { return undoStack.length; }
 
     function commitDraft() {
         if (!state.snapshot) return;
@@ -174,27 +213,48 @@ window.CanvasApp.State = (function () {
         state.edges = state.snapshot.edges;
         state.snapshot = null;
         state.selection = null;
+        undoStack = [];
         emit('replace');
     }
 
     function hasUnsavedChanges() {
-        if (!state.snapshot) return false;
-        // x/y are auto-persisted via the layout key — they aren't part of
-        // the draft. Strip them before comparing so a pure drag doesn't
-        // count as an unsaved change (and therefore doesn't trip the
-        // "discard?" prompt on Cancel).
+        return getUnsavedChangeCount() > 0;
+    }
+
+    /**
+     * Count distinct dirty entities (nodes + edges) vs. the snapshot.
+     * Layout-only edits (x/y) don't count — they auto-persist via persistPositions().
+     */
+    function getUnsavedChangeCount() {
+        if (!state.snapshot) return 0;
         var stripPos = function (n) {
-            var c = Object.assign({}, n);
-            delete c.x; delete c.y;
-            return c;
+            var c = Object.assign({}, n); delete c.x; delete c.y; return c;
         };
-        return JSON.stringify({
-            n: state.nodes.map(stripPos),
-            e: state.edges
-        }) !== JSON.stringify({
-            n: state.snapshot.nodes.map(stripPos),
-            e: state.snapshot.edges
+        var byId = function (arr) {
+            var m = Object.create(null);
+            arr.forEach(function (x) { m[x.id] = x; });
+            return m;
+        };
+        var count = 0;
+        var liveNodes = byId(state.nodes.map(stripPos));
+        var snapNodes = byId(state.snapshot.nodes.map(stripPos));
+        Object.keys(liveNodes).forEach(function (id) {
+            if (!snapNodes[id]) count += 1;
+            else if (JSON.stringify(liveNodes[id]) !== JSON.stringify(snapNodes[id])) count += 1;
         });
+        Object.keys(snapNodes).forEach(function (id) {
+            if (!liveNodes[id]) count += 1;
+        });
+        var liveEdges = byId(state.edges);
+        var snapEdges = byId(state.snapshot.edges);
+        Object.keys(liveEdges).forEach(function (id) {
+            if (!snapEdges[id]) count += 1;
+            else if (JSON.stringify(liveEdges[id]) !== JSON.stringify(snapEdges[id])) count += 1;
+        });
+        Object.keys(snapEdges).forEach(function (id) {
+            if (!liveEdges[id]) count += 1;
+        });
+        return count;
     }
 
     function deepClone(obj) {
@@ -320,6 +380,10 @@ window.CanvasApp.State = (function () {
     function updateNode(id, patch) {
         var n = getNode(id);
         if (!n) return;
+        // Snapshot before any structural column edit (add/remove/reorder/set
+        // rename). Pure label/system/schema/tag/type edits don't push undo —
+        // they're cheap to redo by hand and would flood the stack.
+        if (patch && Array.isArray(patch.columns)) pushUndo('Attribute geändert');
         Object.assign(n, patch);
         pruneSelection();
         persist();
@@ -346,6 +410,8 @@ window.CanvasApp.State = (function () {
     }
 
     function deleteNode(id) {
+        var n = getNode(id);
+        pushUndo('Knoten "' + (n ? (n.label || n.id) : id) + '" gelöscht');
         state.nodes = state.nodes.filter(function (n) { return n.id !== id; });
         state.edges = state.edges.filter(function (e) { return e.from !== id && e.to !== id; });
         pruneSelection();
@@ -371,6 +437,7 @@ window.CanvasApp.State = (function () {
     }
 
     function deleteEdge(id) {
+        pushUndo('Beziehung gelöscht');
         state.edges = state.edges.filter(function (e) { return e.id !== id; });
         pruneSelection();
         persist();
@@ -382,6 +449,7 @@ window.CanvasApp.State = (function () {
         state.edges = payload.edges || [];
         state.selection = null;
         state.snapshot = null; // import discards any in-flight draft
+        undoStack = [];        // and any in-flight undo history
         persist();
         emit('replace');
     }
@@ -437,6 +505,11 @@ window.CanvasApp.State = (function () {
         commitDraft: commitDraft,
         revertDraft: revertDraft,
         hasUnsavedChanges: hasUnsavedChanges,
+        getUnsavedChangeCount: getUnsavedChangeCount,
+        undo: undo,
+        canUndo: canUndo,
+        getUndoCount: getUndoCount,
+        pushUndo: pushUndo,
         setView: setView,
         setSelection: setSelection,
         clearSelection: clearSelection,

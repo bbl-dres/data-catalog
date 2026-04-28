@@ -31,9 +31,6 @@ window.CanvasApp.Editor = (function () {
     var retargetEnd = null;       // 'from' | 'to'
     var retargetPreviewPath = null;
 
-    // Views are kept supported in the data model so existing nodes still
-    // render and can be cycled through — they're only excluded from the
-    // entity palette so users don't create new ones from scratch.
     var TYPE_CYCLE = ['table', 'view', 'api', 'file', 'codelist'];
     var KEY_CYCLE = ['', 'PK', 'FK', 'UK'];
 
@@ -142,12 +139,10 @@ window.CanvasApp.Editor = (function () {
 
         if (State.getMode() !== 'edit') return;
 
-        // Delete node
+        // Delete node — no confirm; users have Ctrl+Z and the cancel-revert net.
         if (e.target.closest('[data-action="delete-node"]')) {
             e.stopPropagation();
-            var node = State.getNode(nodeId);
-            var nm = node ? (node.label || node.id) : '';
-            if (confirm('Knoten "' + nm + '" löschen?')) State.deleteNode(nodeId);
+            State.deleteNode(nodeId);
             return;
         }
 
@@ -609,10 +604,7 @@ window.CanvasApp.Editor = (function () {
         var nodeId = State.getSelectedId();
         if (nodeId) {
             e.preventDefault();
-            var n = State.getNode(nodeId);
-            if (confirm('Knoten "' + (n ? (n.label || n.id) : nodeId) + '" löschen?')) {
-                State.deleteNode(nodeId);
-            }
+            State.deleteNode(nodeId);
         }
     }
 
@@ -656,12 +648,7 @@ window.CanvasApp.Editor = (function () {
             var action = btn.getAttribute('data-action');
             var selId = State.getSelectedId();
             if (!selId) return;
-            if (action === 'delete-node') {
-                var node = State.getNode(selId);
-                if (confirm('Knoten "' + (node ? (node.label || node.id) : selId) + '" löschen?')) {
-                    State.deleteNode(selId);
-                }
-            }
+            if (action === 'delete-node') State.deleteNode(selId);
         });
         return el;
     }

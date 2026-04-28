@@ -105,6 +105,17 @@ window.CanvasApp.Canvas = (function () {
 
         // Node drag (delegated)
         nodeLayer.addEventListener('pointerdown', onNodePointerDown);
+        // Keyboard selection: Enter / Space on a focused node selects it.
+        nodeLayer.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var nodeEl = e.target.closest('.node');
+            if (!nodeEl || nodeEl !== e.target) return;
+            // Don't preempt typing in inline-edit fields
+            if (e.target.matches && e.target.matches('input, textarea, [contenteditable="true"]')) return;
+            e.preventDefault();
+            var id = nodeEl.getAttribute('data-node-id');
+            if (id) State.setSelected(id);
+        });
 
         // System frame label click → select system
         groupLayer.addEventListener('click', function (e) {
@@ -217,6 +228,14 @@ window.CanvasApp.Canvas = (function () {
         el.className = 'node';
         el.setAttribute('data-node-id', node.id);
         el.setAttribute('data-type', node.type || 'table');
+        // Keyboard reachability: nodes are focusable so screen-reader and
+        // keyboard users can Tab through them. Selection happens on Enter
+        // or Space (handled in onNodePointerDown plus a key listener below).
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'group');
+        el.setAttribute('aria-label',
+            (node.label || node.id) + ' — ' + (node.type || 'Knoten') +
+            (node.system ? ', System ' + node.system : ''));
         el.style.left = (node.x || 0) + 'px';
         el.style.top  = (node.y || 0) + 'px';
 
@@ -267,8 +286,14 @@ window.CanvasApp.Canvas = (function () {
         }
 
         // Edge handles (visible only in edit mode via CSS)
-        html += '<span class="node-port left" data-port="in" data-node-id="' + node.id + '"></span>';
-        html += '<span class="node-port right" data-port="out" data-node-id="' + node.id + '"></span>';
+        // Edge-draw ports — four sides so users can pull connections from any
+        // edge of the node, not just left/right at a fixed Y. The drawer
+        // logic just needs the node-id; direction is derived from the side
+        // class for arrow placement.
+        html += '<span class="node-port top"    data-port="top"    data-node-id="' + node.id + '"></span>';
+        html += '<span class="node-port right"  data-port="right"  data-node-id="' + node.id + '"></span>';
+        html += '<span class="node-port bottom" data-port="bottom" data-node-id="' + node.id + '"></span>';
+        html += '<span class="node-port left"   data-port="left"   data-node-id="' + node.id + '"></span>';
 
         el.innerHTML = html;
         return el;
@@ -347,6 +372,10 @@ window.CanvasApp.Canvas = (function () {
         var g = document.createElementNS(ns, 'g');
         g.setAttribute('class', 'edge-group' + (isSelected ? ' is-selected' : ''));
         g.setAttribute('data-edge-id', edge.id);
+        // Endpoint hints — used by isolation logic to hide edges whose
+        // endpoints aren't visible.
+        g.setAttribute('data-from', edge.from);
+        g.setAttribute('data-to',   edge.to);
 
         var hit = document.createElementNS(ns, 'path');
         hit.setAttribute('class', 'edge-hit');
@@ -641,6 +670,21 @@ window.CanvasApp.Canvas = (function () {
     function applyTransform() {
         transformEl.style.transform =
             'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
+        // Match the dot grid to the current zoom — base 24px in canvas
+        // coordinates, scaled to viewport coordinates and offset by the
+        // current pan. Skips the work at extreme zoom-out where the grid
+        // becomes noise anyway.
+        if (canvasEl) {
+            var size = 24 * scale;
+            if (scale < 0.4) {
+                canvasEl.style.backgroundImage = 'none';
+            } else {
+                canvasEl.style.backgroundImage =
+                    'radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px)';
+                canvasEl.style.backgroundSize = size + 'px ' + size + 'px';
+                canvasEl.style.backgroundPosition = translateX + 'px ' + translateY + 'px';
+            }
+        }
         if (zoomLabel) {
             zoomLabel.textContent = Math.round(scale * 100) + '%';
         }
