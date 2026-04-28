@@ -57,7 +57,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   /* Swiss-Federal red — family-binds prototype-canvas to the rest of the
      data-catalog prototypes (which all carry the red brand mark). */
   background: var(--color-brand-red);
-  color: #fff;
+  color: var(--color-text-on-accent);
   border-radius: var(--radius-md);
 }
 .header-search {
@@ -195,7 +195,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   width: 32px; height: 32px;
   border-radius: 50%;
   background: var(--color-bg-accent-strong);
-  color: #fff;
+  color: var(--color-text-on-accent);
   display: inline-flex; align-items: center; justify-content: center;
   font-size: var(--text-small); font-weight: 600;
   border: none;
@@ -1151,12 +1151,15 @@ body.mode-view .node { cursor: pointer; }
   /* Reserve the slot so the column-name column-aligns across keyed/unkeyed
      rows — but drop the visible "–" so non-keyed rows look quieter. */
 }
-.node-col-key.pk { color: #fff; background: var(--color-pk); }
-.node-col-key.fk { color: #fff; background: var(--color-fk); }
-.node-col-key.uk { color: #fff; background: var(--color-uk); }
+.node-col-key.pk { color: var(--color-text-on-accent); background: var(--color-pk); }
+.node-col-key.fk { color: var(--color-text-on-accent); background: var(--color-fk); }
+.node-col-key.uk { color: var(--color-text-on-accent); background: var(--color-uk); }
 /* In edit mode the empty key slot becomes interactive (cycle PK/FK/UK/–);
-   show the dash there so the user sees the affordance. */
-body.mode-edit .node-col-key {
+   show the dash there so the user sees the affordance. The :not()
+   guard keeps the white-on-coloured text on already-keyed cells —
+   without it, edit mode was overriding the PK/FK/UK foreground due
+   to higher specificity, leaving the badge text gray-on-blue. */
+body.mode-edit .node-col-key:not(.pk):not(.fk):not(.uk) {
   color: var(--color-text-placeholder);
 }
 .node-col-name {
@@ -1364,11 +1367,19 @@ body.mode-edit .node-col-key:hover {
   border-radius: 2px;
 }
 
+/* Absolutely positioned in the row's right-padding zone so its presence
+   doesn't shift the rest of the row's layout between view and edit
+   modes. Same pattern as .node-col-handle. */
 .node-col-del {
-  background: none; border: none; padding: 0; line-height: 0;
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; padding: 2px;
+  line-height: 0;
   color: var(--color-text-placeholder);
-  margin-left: 4px;
   visibility: hidden;
+  z-index: 1;
 }
 body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
 .node-col-del:hover { color: var(--color-error); }
@@ -1402,17 +1413,24 @@ body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
   outline-offset: 1px;
 }
 
-/* Drag handle — visible on row hover in edit mode */
+/* Drag handle — visible on row hover in edit mode. Absolutely
+   positioned in the row's left-padding zone so it doesn't take up
+   flex-flow space; that way view and edit mode rows have identical
+   left-edge alignment for the key badge / column name. */
 .node-col-handle {
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 10px;
-  margin-right: -2px;
+  height: 14px;
   color: var(--color-text-placeholder);
   cursor: grab;
   visibility: hidden;
-  flex-shrink: 0;
+  z-index: 1;
 }
 body.mode-edit .node-col:hover .node-col-handle { visibility: visible; }
 .node-col-handle:hover { color: var(--color-text-secondary); }
@@ -2067,7 +2085,7 @@ body.is-resizing-panel .ft-bottom-right { transition: none; }
   font-weight: 600;
   letter-spacing: 0.04em;
   border-radius: 3px;
-  color: #fff;
+  color: var(--color-text-on-accent);
 }
 .info-key-stat .info-key-badge.pk { background: var(--color-pk); }
 .info-key-stat .info-key-badge.fk { background: var(--color-fk); }
@@ -2103,7 +2121,7 @@ body[data-panel="open"][data-view="table"] .view-table.is-active .table-wrap {
   left: calc(50% - (var(--info-panel-offset, 0px) / 2));
   transform: translateX(-50%);
   background: var(--color-text-primary);
-  color: #fff;
+  color: var(--color-text-on-accent);
   padding: 10px 16px;
   border-radius: var(--radius-md);
   font-size: var(--text-small);
@@ -2169,7 +2187,7 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
 .confirm-card .tb-btn-danger {
   background: var(--color-error);
   border-color: var(--color-error);
-  color: #fff;
+  color: var(--color-text-on-accent);
 }
 .confirm-card .tb-btn-danger:hover {
   background: #8E1F16;

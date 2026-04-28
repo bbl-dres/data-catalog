@@ -172,7 +172,8 @@
       "Bash(node prototype-canvas/scripts/add-av-grundbuch-edges.js)",
       "Bash(node prototype-canvas/scripts/infer-column-types.js)",
       "Bash(node prototype-canvas/scripts/infer-cardinality.js)",
-      "Bash(node --check prototype-canvas/js/editor.js)"
+      "Bash(node --check prototype-canvas/js/editor.js)",
+      "Bash(awk 'NR==60||NR==198||NR==2088||NR==2124||NR==2190 {printf \"%d: %s\\\\n\",NR,$0; for\\(i=NR-1;i<=NR+1&&getline line;i++\\){}}' prototype-canvas/css/styles.css)"
     ]
   }
 }
