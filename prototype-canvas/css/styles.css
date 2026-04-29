@@ -2205,8 +2205,15 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
     --toolbar-height: 44px;
     --footer-height: 0px;
   }
+  /* 4 rows for 4 active grid items (footer is display:none on mobile,
+     removed from grid). Auto row in slot 3 is for the filter-pill-bar
+     — it must stay an explicit grid item even when [hidden] uses
+     display:flex (see the .filter-pill-bar[hidden] rule), otherwise
+     auto-placement would shift app-main one row up and the canvas
+     would render at zero height. Same fix shape as the desktop grid;
+     see the comment on the desktop rule for the full story. */
   #app {
-    grid-template-rows: var(--header-height) var(--toolbar-height) 1fr;
+    grid-template-rows: var(--header-height) var(--toolbar-height) auto 1fr;
   }
   .app-footer { display: none; }
 
