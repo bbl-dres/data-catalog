@@ -88,8 +88,8 @@ Miro-style canvas for sketching data architecture. Drag-and-drop entity palette,
 - Link: https://bbl-dres.github.io/data-catalog/prototype-canvas/
 
 <p>
-  <img src="prototype-layers/data-catalog/assets/preview1.jpg" width="45%" />
-  <img src="prototype-layers/data-catalog/assets/preview2.jpg" width="45%" />
+  <img src="prototype-canvas/assets/Preview1.jpg" width="45%" />
+  <img src="prototype-canvas/assets/Preview2.jpg" width="45%" />
 </p>
 
 ## Run locally
