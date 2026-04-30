@@ -71,7 +71,7 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 |----|-------------|--------|
 | NR-01 | Implementable in Supabase / PostgreSQL 15+ with only the `pgcrypto` and `pg_trgm` extensions. | **Must** |
 | NR-02 | Primary keys are UUIDs (`gen_random_uuid()`), with one stable text `slug` UK on `node` for human-readable identification in Excel and URLs. Slug format is enforced by CHECK constraint. | **Must** |
-| NR-03 | All audit timestamps use `TIMESTAMPTZ`, stored UTC, displayed Europe/Zurich. | **Must** |
+| NR-03 | All timestamps use `TIMESTAMPTZ`, stored UTC, displayed Europe/Zurich. | **Must** |
 | NR-04 | The data model is described in English: table names, column names, indexes, enum keys, and technical identifiers are all English. Multilingual concerns live entirely in user-facing content — translatable labels and descriptions — stored in typed locale-suffixed columns (`label_de`/`fr`/`it`/`en`; `description_de`/`fr`/`it`/`en`). The schema contains no JSONB columns in v0.3; everything is typed. | **Must** |
 | NR-05 | Default frontend language is German. Frontend display resolves translatable content through fallback chain `requested → de → en → first non-null`. | **Must** |
 | NR-06 | RLS is enabled on every data table. Default policy: authenticated users may read; only `editor` and `admin` `app_role` may write. `app_role` lives on `contact`. | **Must** |
@@ -320,7 +320,7 @@ Append-only audit (`revision`) is intentionally not in v0.3 — see §10.
 | `contact` | `dcat:contactPoint` target + `auth.users` link | Person, team, or org unit; optional Supabase auth link | < 500 |
 | `role_assignment` | `dct:publisher` + `dcat:contactPoint` source | NaDB role attribution scoped to a node | < 5 000 |
 
-Ten tables. Audit (`revision`), multi-tenancy (`organisation`, `canvas`, `canvas_node_layout`), authenticated-user separation (`app_user`), and other deferrals are tracked in §10 Future Developments.
+Ten tables. Audit (`revision`), multi-tenancy (`organisation`, `canvas`, `canvas_node_layout`), and other deferrals are tracked in §10 Future Developments.
 
 ---
 
@@ -361,7 +361,7 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 **Constraints:**
 - `UNIQUE (id, kind)` — required for composite-FK enforcement from side tables.
 - `UNIQUE (slug)`
-- Slug format: `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[a-z0-9_.]+$')`
+- Slug format: `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[A-Za-z0-9_.-]+$')` — allows mixed case (e.g. `eCH`) and hyphens (e.g. `eCH-0010`)
 - Layout coherence: `CHECK ((x IS NULL) = (y IS NULL))` — both or neither.
 
 **Indexes:**
@@ -634,18 +634,17 @@ A single table covering Supabase-authenticated catalog users, external persons w
 - `INDEX (auth_user_id) WHERE auth_user_id IS NOT NULL`
 - `INDEX (organisation)` — common Excel filter
 
-**RLS pivot.** Catalog write policies look up `app_role` here:
+**RLS pivot.** Catalog write policies look up `app_role` here. The complete template (USING + WITH CHECK, required because `FOR ALL` covers INSERT) lives in §8; abbreviated here for orientation:
 
 ```sql
 CREATE POLICY node_write ON node
   FOR ALL TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM contact
-      WHERE contact.auth_user_id = auth.uid()
-        AND contact.app_role IN ('editor','admin')
-    )
-  );
+  USING      (EXISTS (SELECT 1 FROM contact
+                      WHERE contact.auth_user_id = auth.uid()
+                        AND contact.app_role IN ('editor','admin')))
+  WITH CHECK (EXISTS (SELECT 1 FROM contact
+                      WHERE contact.auth_user_id = auth.uid()
+                        AND contact.app_role IN ('editor','admin')));
 ```
 
 **Why merge user + contact.** The two-table split is a CRUD-app pattern that doesn't earn its weight when the catalog needs to reference *people* (some authenticated, some not, some teams). A single `contact` lets a Section appear as Data Owner without an awkward stub user; lets an external Custodian be referenced today and gain auth tomorrow without merging rows; and reduces every "who's responsible for X" query by one join.
@@ -670,11 +669,17 @@ A NaDB role attribution: contact + role + scope (any node).
 | `created_at` | `TIMESTAMPTZ` | NO | |
 
 **Constraints:**
-- `UNIQUE (contact_id, role, scope_node_id, COALESCE(valid_from, '1900-01-01'))` — same role for same contact at same scope can have multiple historical entries but only one active per start date
 - `CHECK (valid_to IS NULL OR valid_from IS NULL OR valid_to >= valid_from)`
 
 **Indexes:**
-- `INDEX (scope_node_id)`
+- Unique expression index — same role for same contact at same scope may have multiple historical entries but only one active per start date. Postgres requires an expression index here, not a table-level UNIQUE constraint, because of `COALESCE`:
+
+  ```sql
+  CREATE UNIQUE INDEX role_assignment_active_uk
+    ON role_assignment (contact_id, role, scope_node_id,
+                        COALESCE(valid_from, '1900-01-01'::date));
+  ```
+- `INDEX (scope_node_id)` — supports the FK to `node.id` (Postgres does not auto-index FK columns) and historical-assignment queries
 - `INDEX (contact_id, role)`
 - `INDEX (scope_node_id, role) WHERE valid_to IS NULL` — fast "who is currently the X of Y?"
 
@@ -925,7 +930,7 @@ The Excel UPSERT (§9) wraps the whole upload in a single transaction. For one-s
 
 Eleven sheets, each backed by one or two tables:
 
-| Sheet (DE) | Backing tables | Slug pattern | Notes |
+| Sheet (DE) | Backing tables | Row identifier | Notes |
 |---|---|---|---|
 | `Systeme` | `node` (kind=system) + `system_meta` | `sys:refx` | |
 | `Datenpakete` | `node` (kind=pset) | `pset:address` | Principal sheet |
@@ -962,7 +967,7 @@ Kind prefixes (also enforced by CHECK on `node.slug`):
 
 `code_list_entry` rows use the slug `cle:{code_list_slug_path}.{code}` in the Excel sheet only — these are not stored as `node.slug` because entries are not nodes.
 
-Slugs use `[a-z0-9_]` plus `:` and `.` as separators. The DB enforces format with `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[a-z0-9_.]+$')`. Renames are allowed but warn the steward that downstream references will need updating; the server does not auto-rewrite edges.
+Slugs use `[A-Za-z0-9_-]` plus `:` and `.` as separators (mixed case and hyphens are allowed so existing identifiers like `eCH-0010` survive verbatim). The DB enforces format with `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[A-Za-z0-9_.-]+$')`. Renames are allowed but warn the steward that downstream references will need updating; the server does not auto-rewrite edges.
 
 ### Column ordering
 
@@ -1042,41 +1047,27 @@ Download → no edits → upload → zero rows changed in the catalog. Achieved 
 
 Items deliberately deferred from v0.3 to keep the MVP narrow. Each can be added as an additive migration without disturbing the existing model.
 
-### Governance & multi-tenancy
-
-- **Organisations as first-class entity.** Users belong to one or more organisations; each organisation owns its catalog instance. Enables BBL → BFS → cantonal multi-org federation.
-- **Multiple projects / canvases per organisation.** A "project" or "canvas" becomes a named perspective over a subset of the catalog. Re-introduces the v0.2 `canvas` table.
-- **Multi-canvas reuse of the same node.** The same node placed at different positions in different canvases. Re-introduces a `canvas_node_layout (canvas_id, node_id, x, y)` join table; `node.x` / `node.y` then become the "default canvas" coordinates or are migrated into the layout table.
-- **Per-user preferences.** Personal home viewport, theme choice, language preference stored server-side. Currently `localStorage` only.
-
-### Audit & history
-
-- **Append-only audit log + row-level version history (`revision` table).** Every catalog mutation emits a row recording `entity_kind`, `entity_id`, `action`, `diff` (JSONB), `actor_user_id`, `recorded_at`. The log serves both purposes: as a *change log* ("who changed what when") and as a *version history* (any prior state of any row can be reconstructed by replaying or unwinding diffs). Powers "last edited" UI hints, undo/redo over the network, point-in-time queries ("show me this pset as it was on 2025-01-15"), diffing arbitrary timestamps, and compliance audit trails. A generic `emit_revision()` trigger function attached to every mutating table — with PK introspection to handle composite-key tables (`code_list_entry`) and side tables (`*_meta`).
-- **Optimistic locking.** `row_version INTEGER` on every editable table; Excel UPSERT detects concurrent edits between download and upload.
-- **Cell-level merge** for simultaneous uploads, replacing today's last-write-wins.
-- **Realtime collaborative editing.** Multi-user simultaneous editing on the canvas, backed by Supabase Realtime; cell-level merge on conflict.
-
-### Publication & interoperability
-
-- **DCAT-AP CH RDF export.** Generate a DCAT-AP CH 3.0.0 RDF/JSON-LD feed of `produktiv` psets and distributions for ingestion by opendata.swiss or the federal IOP.
-- **Push bridge to `prototype-sqlite`.** A migration script that lifts canvas content into the formal catalog without manual re-entry (already mentioned in §3).
-- **External user portal.** Read-only public discovery view over `produktiv` and `oeffentlich` content.
-
-### Catalog richness
-
-- **Themes as a first-class entity.** Currently free-text `theme_slug`. Promoting to a `theme` entity (or a `node` of `kind = theme`) enables theme-level metadata, translations, and navigation.
-- **Source structures as a first-class entity.** Currently free-text on `attribute_meta.source_structure`. Promoting allows per-substructure metadata (e.g. SAP BAPI version, deprecation flag).
-- **System-of-record marker per pset.** An explicit "this distribution is the master for this pset" pointer (boolean column on the `realises` edge metadata, or a dedicated `pset.master_distribution_node_id`).
-- **Quality dimensions.** Completeness, freshness, accuracy metrics per distribution and attribute. New `quality_metric` table or columns on `distribution_meta`.
-- **Pset / standard versioning.** When eCH-0010 evolves to v2, model the version transition explicitly (currently `derives_from` edges carry no version metadata).
-
-### Workflow
-
-- **Lifecycle as a state machine.** Replace the flat enum with a state machine including transitions, approvals, and reviewer assignments. `lifecycle_status` becomes a state in a workflow rather than a flat column.
-
-### Storage & assets
-
-- **Custom node icons.** Uploaded SVGs in a Supabase Storage bucket `node-icons`. Referenced via a future `node.icon_path` column.
+| Category | Feature | Description |
+|---|---|---|
+| Governance & multi-tenancy | Organisations as first-class entity | Users belong to one or more organisations; each org owns its catalog instance. Enables BBL → BFS → cantonal multi-org federation. |
+| Governance & multi-tenancy | Multiple projects / canvases per org | A "project" or "canvas" becomes a named perspective over a subset of the catalog. Re-introduces the v0.2 `canvas` table. |
+| Governance & multi-tenancy | Multi-canvas reuse of the same node | Same node placed at different positions in different canvases. Re-introduces `canvas_node_layout (canvas_id, node_id, x, y)`; current `node.x` / `node.y` migrate to the layout table or remain as default-canvas coords. |
+| Governance & multi-tenancy | Per-user preferences | Personal home viewport, theme choice, language preference stored server-side. Currently `localStorage` only. |
+| Audit & history | Audit log + row-level version history (`revision` table) | Every mutation recorded as `(entity_kind, entity_id, action, diff JSONB, actor, recorded_at)`. Serves as both *change log* ("who changed what when") and *version history* (any prior state replayable). Powers undo/redo, point-in-time queries, diff-between-timestamps, compliance trails. Generic `emit_revision()` trigger with PK introspection for composite-key and side tables. |
+| Audit & history | Optimistic locking | `row_version INTEGER` on every editable table; Excel UPSERT detects concurrent edits between download and upload. |
+| Audit & history | Cell-level merge | Replaces today's last-write-wins for simultaneous uploads. |
+| Audit & history | Realtime collaborative editing | Multi-user simultaneous editing on the canvas, backed by Supabase Realtime. |
+| Audit & history | Tagged catalog snapshots | Optional sibling to `revision`: `catalog_snapshot (id, label, frozen_at, …)` records named moments ("v1.0 release") the audit log can replay back to. |
+| Publication & interoperability | DCAT-AP CH RDF export | Generate DCAT-AP CH 3.0.0 RDF / JSON-LD feed of `produktiv` content for opendata.swiss or the federal IOP. |
+| Publication & interoperability | Bridge to `prototype-sqlite` | Migration script that lifts canvas content into the formal catalog without manual re-entry (cf. §3). |
+| Publication & interoperability | External user portal | Read-only public discovery view over `produktiv` and `oeffentlich` content. |
+| Catalog richness | Themes as a first-class entity | Currently free-text `theme_slug`. Promoting to a `theme` entity (or a `node` of `kind = theme`) enables theme-level metadata, translations, and navigation. |
+| Catalog richness | Source structures as a first-class entity | Currently free-text on `attribute_meta.source_structure`. Promoting allows per-substructure metadata (e.g. SAP BAPI version, deprecation flag). |
+| Catalog richness | System-of-record marker per pset | Explicit "this distribution is the master for this pset" pointer — boolean on `realises` edge metadata, or a dedicated `pset.master_distribution_node_id`. |
+| Catalog richness | Quality dimensions | Completeness, freshness, accuracy metrics per distribution and attribute. New `quality_metric` table or columns on `distribution_meta`. |
+| Catalog richness | Pset / standard versioning | When eCH-0010 evolves to v2, model the transition explicitly (currently `derives_from` edges carry no version metadata). |
+| Workflow | Lifecycle as a state machine | Replace the flat `lifecycle_status` enum with a workflow including transitions, approvals, and reviewer assignments. |
+| Storage & assets | Custom node icons | Uploaded SVGs in a Supabase Storage bucket `node-icons`. Referenced via a future `node.icon_path` column. |
 
 ---
 
