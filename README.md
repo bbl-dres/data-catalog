@@ -6,6 +6,10 @@
 [![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://bbl-dres.github.io/data-catalog/)
 [![Standard: DCAT-AP CH](https://img.shields.io/badge/standard-DCAT--AP%20CH%20v3.0-blue)](https://www.dcat-ap.ch/)
 
+> [!CAUTION]
+> **This is a collection of unofficial prototypes for demonstration purposes only.**
+> All data is fictional. Not all features are fully functional. This project serves as a visual and conceptual prototype — it is not intended for production use.
+
 ## What is this?
 
 A set of **experimental web prototypes** exploring different ways to browse, search, and document the data assets of a large organisation — here, the Swiss Federal Office for Buildings and Logistics (BBL).
@@ -13,6 +17,7 @@ A set of **experimental web prototypes** exploring different ways to browse, sea
 Each prototype tackles the same underlying question — *"how should people inside BBL find out what data exists, what it means, and where it lives?"* — but from a different angle: a polished DCAT-AP catalog, an architecture-layer browser, a SQL-backed explorer, a lineage graph, a diagram editor, and a Miro-style architecture canvas.
 
 All six are unofficial mockups. They are **not** production systems — they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
+
 
 ## Prototypes
 
