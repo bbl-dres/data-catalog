@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:dam-api.bfs.admin.ch)",
+      "WebFetch(domain:www.fedlex.admin.ch)",
+      "WebSearch",
+      "WebFetch(domain:www.dcat-ap.ch)"
+    ]
+  }
+}
