@@ -8,20 +8,20 @@
 
 > [!CAUTION]
 > **This is a collection of unofficial prototypes for demonstration purposes only.**
-> All data is fictional. Not all features are fully functional. This project serves as a visual and conceptual prototype — it is not intended for production use.
+> All data is fictional. Not all features are fully functional. This project serves as a visual and conceptual prototype - it is not intended for production use.
 
 ## What is this?
 
-A set of **experimental web prototypes** exploring different ways to browse, search, and document the data assets of a large organisation — here, the Swiss Federal Office for Buildings and Logistics (BBL).
+A set of **experimental web prototypes** exploring different ways to browse, search, and document the data assets of a large organisation - here, the Swiss Federal Office for Buildings and Logistics (BBL).
 
-Each prototype tackles the same underlying question — *"how should people inside BBL find out what data exists, what it means, and where it lives?"* — but from a different angle: a polished DCAT-AP catalog, an architecture-layer browser, a SQL-backed explorer, a lineage graph, a diagram editor, and a Miro-style architecture canvas.
+Each prototype tackles the same underlying question - *"how should people inside my organisation find out what data exists, what it means, and where it lives?"* - but from a different angle: a polished DCAT-AP catalog, an architecture-layer browser, a SQL-backed explorer, a lineage graph, a diagram editor, and a Miro-style architecture canvas.
 
-All six are unofficial mockups. They are **not** production systems — they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
+All six are unofficial mockups. They are **not** production systems - they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
 
 
 ## Prototypes
 
-You don't need to install anything — every prototype is deployed on GitHub Pages.
+You don't need to install anything - every prototype is deployed on GitHub Pages.
 
 ### Business Object & Dataset Catalog
 
@@ -61,7 +61,7 @@ Hierarchical metadata browser following a three-layer architecture model (Concep
 
 ### Data Lineage Viewer
 
-Interactive graph for exploring data lineage across systems. Live JSON editor on the left, viewer with pan / zoom / fit / expand on the right. Six layout presets, column-level mappings, system-based grouping — vanilla JS, no framework.
+Interactive graph for exploring data lineage across systems. Live JSON editor on the left, viewer with pan / zoom / fit / expand on the right. Six layout presets, column-level mappings, system-based grouping - vanilla JS, no framework.
 
 - Link: https://bbl-dres.github.io/data-catalog/prototype-lineage/
 
@@ -83,7 +83,7 @@ Single-page editor for ER diagrams and flowcharts that accepts free-text names (
 
 ### Architecture Canvas
 
-Miro-style canvas for sketching data architecture. Drag-and-drop entity palette, draggable nodes with collapsible **property sets** (groups of attributes), inline-editable column rows with PK/FK/UK key cycling, drag-handle reorder, system-grouping frames, and a draft-mode editor with explicit Save / Cancel. Click a node or table row to open a right-side info panel showing metadata, sets, attribute counts, and relations. Three views over the same state — Diagram, Tabelle (entity-typed tabs), and a mock Catalog Management API. Excel round-trip across four sheets. Hash-based URLs for shareable links.
+Miro-style canvas for sketching data architecture. Drag-and-drop entity palette, draggable nodes with collapsible **property sets** (groups of attributes), inline-editable column rows with PK/FK/UK key cycling, drag-handle reorder, system-grouping frames, and a draft-mode editor with explicit Save / Cancel. Click a node or table row to open a right-side info panel showing metadata, sets, attribute counts, and relations. Three views over the same state - Diagram, Tabelle (entity-typed tabs), and a mock Catalog Management API. Excel round-trip across four sheets. Hash-based URLs for shareable links.
 
 - Link: https://bbl-dres.github.io/data-catalog/prototype-canvas/
 
@@ -101,7 +101,7 @@ python3 -m http.server 8000
 npx http-server
 ```
 
-Open <http://localhost:8000> — the root page redirects to the main catalog. Append `/prototype-layers/`, `/prototype-sqlite/`, `/prototype-lineage/`, `/prototype-mermaid/`, or `/prototype-canvas/` for the others.
+Open <http://localhost:8000> - the root page redirects to the main catalog. Append `/prototype-layers/`, `/prototype-sqlite/`, `/prototype-lineage/`, `/prototype-mermaid/`, or `/prototype-canvas/` for the others.
 
 ## Repository layout
 
@@ -124,4 +124,4 @@ Licensed under the [MIT License](https://opensource.org/licenses/MIT).
 
 ---
 
-*Unofficial mockup — not affiliated with or endorsed by BBL.*
+*Unofficial mockup - not affiliated with or endorsed by BBL.*
