@@ -4,7 +4,9 @@
       "WebFetch(domain:dam-api.bfs.admin.ch)",
       "WebFetch(domain:www.fedlex.admin.ch)",
       "WebSearch",
-      "WebFetch(domain:www.dcat-ap.ch)"
+      "WebFetch(domain:www.dcat-ap.ch)",
+      "Bash(mermaid\\\\|^)",
+      "Bash(grep -n \"^```mermaid\\\\|^```$\" \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/docs/DATAMODEL.md\")"
     ]
   }
 }
