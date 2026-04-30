@@ -55,7 +55,7 @@ CREATE TABLE node (
   id                uuid           PRIMARY KEY DEFAULT gen_random_uuid(),
   slug              text           NOT NULL,
   kind              text           NOT NULL,
-  label_de          text           NOT NULL,
+  label_de          text,
   label_fr          text,
   label_it          text,
   label_en          text,
@@ -168,7 +168,7 @@ CREATE TABLE system_meta (
   technology_stack  text,
   base_url          text,
   security_zone     text,
-  active            boolean  NOT NULL DEFAULT true,
+  is_active         boolean  NOT NULL DEFAULT true,
 
   CONSTRAINT system_meta_kind_chk CHECK (kind = 'system'),
   FOREIGN KEY (node_id, kind) REFERENCES node (id, kind) ON DELETE CASCADE
@@ -185,7 +185,7 @@ COMMENT ON COLUMN system_meta.security_zone IS 'ISG security zone identifier.';
 CREATE TABLE distribution_meta (
   node_id              uuid         PRIMARY KEY,
   kind                 text         NOT NULL DEFAULT 'distribution',
-  name                 text         NOT NULL,
+  technical_name       text,
   type                 text         NOT NULL,
   schema_name          text,
   access_url           text,
@@ -207,13 +207,13 @@ CREATE TABLE distribution_meta (
 );
 
 COMMENT ON TABLE  distribution_meta  IS 'DCAT-AP CH distribution metadata. 1:0..1 with a node row of kind = distribution.';
-COMMENT ON COLUMN distribution_meta.name        IS 'Technical name in the source system, e.g. refx_gebaeude.';
+COMMENT ON COLUMN distribution_meta.technical_name IS 'Technical name in the source system, e.g. refx_gebaeude.';
 COMMENT ON COLUMN distribution_meta.access_url  IS 'DCAT-AP CH mandatory at publication time.';
 COMMENT ON COLUMN distribution_meta.license     IS 'Reference into VOCAB-CH-LICENSE.';
 COMMENT ON COLUMN distribution_meta.accrual_periodicity IS 'EU Frequency vocabulary, e.g. ANNUAL, MONTHLY.';
 
-CREATE INDEX distribution_meta_type_idx ON distribution_meta (type);
-CREATE INDEX distribution_meta_name_idx ON distribution_meta (name);
+CREATE INDEX distribution_meta_type_idx           ON distribution_meta (type);
+CREATE INDEX distribution_meta_technical_name_idx ON distribution_meta (technical_name);
 
 
 -- =============================================================================
@@ -223,10 +223,10 @@ CREATE INDEX distribution_meta_name_idx ON distribution_meta (name);
 CREATE TABLE attribute_meta (
   node_id                  uuid     PRIMARY KEY,
   kind                     text     NOT NULL DEFAULT 'attribute',
-  name                     text     NOT NULL,
+  technical_name           text,
   data_type                text,
   key_role                 text,
-  nullable                 boolean  NOT NULL DEFAULT true,
+  is_nullable              boolean  NOT NULL DEFAULT true,
   personal_data_category   text     NOT NULL DEFAULT 'keine',
   source_structure         text,
   sort_order               integer,
@@ -239,11 +239,11 @@ CREATE TABLE attribute_meta (
 );
 
 COMMENT ON TABLE  attribute_meta IS 'Per-attribute technical metadata and DSG personal-data tagging. 1:0..1 with a node row of kind = attribute. Pset tag, FK reference, and codelist binding are NOT columns — they are edges.';
-COMMENT ON COLUMN attribute_meta.name             IS 'Technical column name (e.g. OBJECT_ID, EGID). Single-locale.';
+COMMENT ON COLUMN attribute_meta.technical_name   IS 'Technical column name (e.g. OBJECT_ID, EGID). Single-locale.';
 COMMENT ON COLUMN attribute_meta.personal_data_category IS 'DSG Art. 5 lit. c. Default keine; edit per attribute.';
 COMMENT ON COLUMN attribute_meta.source_structure IS 'Free-text label for source-system substructure (e.g. SAP BAPI substructure name).';
 
-CREATE INDEX attribute_meta_name_idx     ON attribute_meta (name);
+CREATE INDEX attribute_meta_technical_name_idx ON attribute_meta (technical_name);
 CREATE INDEX attribute_meta_key_role_idx ON attribute_meta (key_role) WHERE key_role IS NOT NULL;
 CREATE INDEX attribute_meta_pdc_idx      ON attribute_meta (personal_data_category)
   WHERE personal_data_category <> 'keine';
@@ -256,18 +256,18 @@ CREATE INDEX attribute_meta_pdc_idx      ON attribute_meta (personal_data_catego
 CREATE TABLE standard_reference_meta (
   node_id      uuid    PRIMARY KEY,
   kind         text    NOT NULL DEFAULT 'standard_reference',
-  org          text    NOT NULL,
-  code         text    NOT NULL,
-  std_version  text,
+  organisation text,
+  code         text,
+  version      text,
   url          text,
 
   CONSTRAINT standard_reference_meta_kind_chk CHECK (kind = 'standard_reference'),
-  CONSTRAINT standard_reference_meta_uk       UNIQUE (org, code, std_version),
+  CONSTRAINT standard_reference_meta_uk       UNIQUE (organisation, code, version),
   FOREIGN KEY (node_id, kind) REFERENCES node (id, kind) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE  standard_reference_meta IS 'External normative anchors (eCH-0010, ISO 19115, SR 510.625, …). Standards reference one another via edge_type = derives_from.';
-COMMENT ON COLUMN standard_reference_meta.org IS 'Issuing organisation: eCH, ISO, Bund, EU, BFE, BFS, …';
+COMMENT ON COLUMN standard_reference_meta.organisation IS 'Issuing organisation: eCH, ISO, Bund, EU, BFE, BFS, …';
 
 
 -- =============================================================================
@@ -279,7 +279,7 @@ CREATE TABLE code_list_entry (
   code_list_node_id  uuid     NOT NULL,
   kind               text     NOT NULL DEFAULT 'code_list',
   code               text     NOT NULL,
-  label_de           text     NOT NULL,
+  label_de           text,
   label_fr           text,
   label_it           text,
   label_en           text,
@@ -288,7 +288,7 @@ CREATE TABLE code_list_entry (
   description_it     text,
   description_en     text,
   sort_order         integer,
-  deprecated         boolean  NOT NULL DEFAULT false,
+  is_deprecated      boolean  NOT NULL DEFAULT false,
 
   PRIMARY KEY (code_list_node_id, code),
   CONSTRAINT code_list_entry_kind_chk CHECK (kind = 'code_list'),
@@ -312,7 +312,7 @@ CREATE TABLE processing_activity (
   id                     uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
   pset_node_id           uuid         NOT NULL,
   kind                   text         NOT NULL DEFAULT 'pset',
-  purpose                text         NOT NULL,
+  purpose                text,
   legal_basis            text,
   data_subjects          text,
   recipients             text,
@@ -382,7 +382,7 @@ CREATE TABLE contact (
   -- with a plain `uuid` column (no FK).
   auth_user_id  uuid         REFERENCES auth.users (id) ON DELETE SET NULL,
   email         text         NOT NULL,
-  name          text         NOT NULL,
+  name          text,
   phone         text,
   organisation  text,
   is_team       boolean      NOT NULL DEFAULT false,

@@ -50,7 +50,7 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 | FR-03 | Property sets (Datenpakete) are first-class nodes with `kind = pset`. They carry their own labels, descriptions, lineage edges to standards, classification, lifecycle status, and an optional 1:1 processing-activity record. | **Must** |
 | FR-04 | Systems (SAP RE-FX, BBL GIS, BFS GWR, AV GIS, Grundbuch, …) are first-class nodes with `kind = system`. Their `system_meta` side table carries `technology_stack`, `base_url`, `security_zone`, `active`. | **Must** |
 | FR-05 | A distribution (`kind = distribution`) is a specific access shape of a pset within a system — table, view, API, or file. It carries DCAT-AP CH metadata: `access_url` (mandatory), `download_url`, `format`, `media_type`, `license`, `accrual_periodicity`, `availability`, `spatial_coverage`, `temporal_*`, `issued`, `modified`. | **Must** |
-| FR-06 | An attribute (`kind = attribute`) is one column or field. Its `attribute_meta` carries technical `name`, `data_type`, `key_role` (`PK`/`FK`/`UK`/null), `nullable`, `personal_data_category` (DSG), `source_structure` (free text label, e.g. SAP BAPI substructure), `sort_order`. | **Must** |
+| FR-06 | An attribute (`kind = attribute`) is one column or field. Its `attribute_meta` carries `technical_name`, `data_type`, `key_role` (`PK`/`FK`/`UK`/null), `is_nullable`, `personal_data_category` (DSG), `source_structure` (free text label, e.g. SAP BAPI substructure), `sort_order`. | **Must** |
 | FR-07 | Edges are directed (`from_node_id` → `to_node_id`) with a typed `edge_type`. Self-loops are rejected. Duplicate `(from, to, edge_type)` triples are rejected. Every "contains", "publishes", "realises", "in_pset", "values_from", "derives_from", "fk_references", "flows_into", "replaces" relationship is an edge — there are no parent-pointer FKs on side tables. | **Must** |
 | FR-08 | Hierarchy invariants are enforced by partial unique indexes on `edge`. For example: each attribute has at most one parent distribution (`UNIQUE (to_node_id) WHERE edge_type = 'contains'`). | **Should** |
 | FR-09 | Codelists (`kind = code_list`) are first-class nodes; their entries live in the `code_list_entry` side table keyed by `(code_list_node_id, code)`. Entries are not nodes — they are leaf data and never participate in the edge graph. | **Must** |
@@ -62,7 +62,7 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 | FR-15 | Every pset that contains attributes with `personal_data_category != 'keine'` has a `processing_activity` row recording purpose, legal basis, data subjects, recipients, retention policy, cross-border transfer details, and DPIA reference (DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*). | **Must** |
 | FR-16 | Every node carries a `lifecycle_status` (`entwurf | standardisiert | produktiv | abgeloest`) so EA and stewardship workflows can distinguish drafts from production-grade entries. | **Should** |
 | FR-17 | The model round-trips losslessly with the multi-sheet Excel workbook defined in §9 and with `data/canvas.json` v2. Excel UPSERT matches rows by stable `slug`; rows marked `_action = delete` are removed. | **Must** |
-| FR-18 | User-facing content — labels and long-form descriptions — is multilingual: each translatable text is stored as four typed columns covering DE / FR / IT / EN (`label_de`, `label_fr`, `label_it`, `label_en`; `description_de`, …). `label_de` is `NOT NULL` on `node` and `code_list_entry`; nullable on `edge`. Frontend display resolves the appropriate locale via fallback chain `requested → de → en → first non-null`. The model itself (schema, identifiers) is in English — see NR-04. | **Must** |
+| FR-18 | User-facing content — labels and long-form descriptions — is multilingual: each translatable text is stored as four typed columns covering DE / FR / IT / EN (`label_de`, `label_fr`, `label_it`, `label_en`; `description_de`, …). All locale columns are nullable so Excel UPSERT stays permissive; the catalog is most useful when at least `label_de` is populated, and the UPSERT validator emits a warning at publication time if a `produktiv` row lacks one. Frontend display resolves the appropriate locale via fallback chain `requested → de → en → first non-null → slug`. The model itself (schema, identifiers) is in English — see NR-04. | **Must** |
 | FR-19 | The catalog has a single `contact` table covering authenticated users, external persons without accounts, and team / org-unit references. `auth_user_id` is nullable; `is_team` distinguishes persons from teams. | **Must** |
 
 ### Non-functional
@@ -126,7 +126,7 @@ erDiagram
     uuid        id                   PK
     text        slug                 UK   "human-readable, e.g. pset:address"
     text        kind                      "CHECK in (system,pset,distribution,attribute,code_list,standard_reference)"
-    text        label_de                  "NOT NULL"
+    text        label_de
     text        label_fr
     text        label_it
     text        label_en
@@ -169,13 +169,13 @@ erDiagram
     text    technology_stack
     text    base_url
     text    security_zone                 "ISG zone"
-    boolean active
+    boolean is_active
   }
 
   DISTRIBUTION_META {
     uuid        node_id           PK,FK   "composite FK → node(id,kind)"
     text        kind                      "CHECK = 'distribution'"
-    text        name                      "technical name in source system"
+    text        technical_name            "technical name in source system"
     text        type                      "CHECK in (table,view,api,file)"
     text        schema_name
     text        access_url                "DCAT mandatory"
@@ -195,10 +195,10 @@ erDiagram
   ATTRIBUTE_META {
     uuid    node_id                  PK,FK   "composite FK → node(id,kind)"
     text    kind                             "CHECK = 'attribute'"
-    text    name                             "technical column name"
+    text    technical_name                   "technical column name"
     text    data_type
     text    key_role                         "CHECK in (PK,FK,UK,null)"
-    boolean nullable
+    boolean is_nullable
     text    personal_data_category           "CHECK in (keine,personenbezogen,besonders_schutzenswert)"
     text    source_structure                 "e.g. SAP BAPI substructure name"
     integer sort_order
@@ -207,9 +207,9 @@ erDiagram
   STANDARD_REFERENCE_META {
     uuid node_id              PK,FK   "composite FK → node(id,kind)"
     text kind                         "CHECK = 'standard_reference'"
-    text org                          "eCH, ISO, Bund, EU"
+    text organisation                 "eCH, ISO, Bund, EU"
     text code                         "e.g. eCH-0010"
-    text std_version
+    text version
     text url
   }
 
@@ -217,7 +217,7 @@ erDiagram
     uuid    code_list_node_id    PK,FK   "composite FK → node(id,kind)"
     text    kind                         "CHECK = 'code_list'"
     text    code                 PK      "technical, e.g. 1010"
-    text    label_de                     "NOT NULL"
+    text    label_de
     text    label_fr
     text    label_it
     text    label_en
@@ -226,7 +226,7 @@ erDiagram
     text    description_it
     text    description_en
     integer sort_order
-    boolean deprecated
+    boolean is_deprecated
   }
 
   %% =====================================================================
@@ -258,7 +258,7 @@ erDiagram
     uuid        id                   PK
     uuid        auth_user_id         FK,UK   "→ auth.users.id, nullable, ON DELETE SET NULL"
     text        email                UK      "NOT NULL"
-    text        name                          "NOT NULL — person or team name"
+    text        name                          "person or team name; nullable"
     text        phone
     text        organisation
     boolean     is_team                       "default false; true = org unit / shared mailbox"
@@ -341,7 +341,7 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 | `id` | `UUID` | NO | Primary key, default `gen_random_uuid()` |
 | `slug` | `TEXT` | NO | Stable human-readable key. Format: `{kind_prefix}:{technical_path}` (see §9). Unique. |
 | `kind` | `TEXT` | NO | `CHECK (kind IN ('system','pset','distribution','attribute','code_list','standard_reference'))` |
-| `label_de` | `TEXT` | NO | Display label DE |
+| `label_de` | `TEXT` | YES | Display label DE (recommended; warning at publication time if missing — see §9) |
 | `label_fr` | `TEXT` | YES | Display label FR |
 | `label_it` | `TEXT` | YES | Display label IT |
 | `label_en` | `TEXT` | YES | Display label EN |
@@ -439,7 +439,7 @@ Per-system fields. 1:0..1 with a `node` row of `kind = system`, enforced by comp
 | `technology_stack` | `TEXT` | YES | e.g. `SAP S/4HANA`, `ArcGIS Online`, `PostgreSQL (BFS)` |
 | `base_url` | `TEXT` | YES | Base URL for deep links into the system |
 | `security_zone` | `TEXT` | YES | ISG security zone identifier |
-| `active` | `BOOLEAN` | NO | Default `true`. Inactive systems remain in the catalog for historical lineage. |
+| `is_active` | `BOOLEAN` | NO | Default `true`. Inactive systems remain in the catalog for historical lineage. |
 
 ```sql
 FOREIGN KEY (node_id, kind) REFERENCES node (id, kind) ON DELETE CASCADE
@@ -467,7 +467,7 @@ DCAT-AP CH distribution metadata. 1:0..1 with a `node` row of `kind = distributi
 |--------|------|----------|-------------|
 | `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
 | `kind` | `TEXT` | NO | `CHECK (kind = 'distribution')`. |
-| `name` | `TEXT` | NO | Technical name in the source system, e.g. `refx_gebaeude`, `gwr_gebaeude_v` |
+| `technical_name` | `TEXT` | YES | Technical name in the source system, e.g. `refx_gebaeude`, `gwr_gebaeude_v` |
 | `type` | `TEXT` | NO | `CHECK (type IN ('table','view','api','file'))` |
 | `schema_name` | `TEXT` | YES | Source-system schema (e.g. `dbo`, `public`, `gwr`, `fachmodell`) |
 | `access_url` | `TEXT` | YES | DCAT-AP CH mandatory at publication time. Internal URL or path. |
@@ -485,7 +485,7 @@ DCAT-AP CH distribution metadata. 1:0..1 with a `node` row of `kind = distributi
 
 **Indexes:**
 - `INDEX (type)`
-- `INDEX (name)` — common Excel-side lookup
+- `INDEX (technical_name)` — common Excel-side lookup
 
 **Note on type.** The original v0.1 had four distinct top-level catalog types (`table`, `view`, `api`, `file`). v0.2 keeps the discriminator but as a single value on `distribution_meta.type`, since their storage shape is identical and DCAT-AP CH treats `dcat:DataService` (api) and `dcat:Distribution` (table/view/file) symmetrically for our purposes.
 
@@ -501,16 +501,16 @@ Per-attribute technical metadata and DSG personal-data tagging. 1:0..1 with a `n
 |--------|------|----------|-------------|
 | `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
 | `kind` | `TEXT` | NO | `CHECK (kind = 'attribute')`. |
-| `name` | `TEXT` | NO | Technical column name (e.g. `OBJECT_ID`, `EGID`, `Buchungskreis`). Single-locale. |
+| `technical_name` | `TEXT` | YES | Technical column name (e.g. `OBJECT_ID`, `EGID`, `Buchungskreis`). Single-locale. |
 | `data_type` | `TEXT` | YES | Source-system type as written (e.g. `CHAR(45)`, `DEC(10,2)`, `uuid`, `TEXT`) |
 | `key_role` | `TEXT` | YES | `CHECK (key_role IN ('PK','FK','UK') OR key_role IS NULL)` |
-| `nullable` | `BOOLEAN` | YES | Default `true` |
+| `is_nullable` | `BOOLEAN` | NO | Default `true` |
 | `personal_data_category` | `TEXT` | NO | `CHECK (personal_data_category IN ('keine','personenbezogen','besonders_schutzenswert'))`, default `'keine'` (DSG Art. 5 lit. c) |
 | `source_structure` | `TEXT` | YES | Free-text label for the source-system substructure (e.g. SAP BAPI substructure name `MEASUREMENT`, `OBJECT_ADDRESS`) |
 | `sort_order` | `INTEGER` | YES | Order within the parent distribution; sparse fractional indexing recommended |
 
 **Indexes:**
-- `INDEX (name)` — for cross-system attribute search
+- `INDEX (technical_name)` — for cross-system attribute search
 - `INDEX (key_role) WHERE key_role IS NOT NULL`
 - `INDEX (personal_data_category) WHERE personal_data_category <> 'keine'`
 
@@ -534,13 +534,13 @@ External normative anchors. 1:0..1 with a `node` row of `kind = standard_referen
 |--------|------|----------|-------------|
 | `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
 | `kind` | `TEXT` | NO | `CHECK (kind = 'standard_reference')`. |
-| `org` | `TEXT` | NO | Issuing organisation: `eCH`, `ISO`, `Bund`, `EU`, `BFE`, `BFS`, … |
-| `code` | `TEXT` | NO | Standard identifier (e.g. `eCH-0010`, `ISO-19115`, `SR-510.625`) |
-| `std_version` | `TEXT` | YES | Version string when applicable (e.g. `v2.0`) |
+| `organisation` | `TEXT` | YES | Issuing organisation: `eCH`, `ISO`, `Bund`, `EU`, `BFE`, `BFS`, … |
+| `code` | `TEXT` | YES | Standard identifier (e.g. `eCH-0010`, `ISO-19115`, `SR-510.625`) |
+| `version` | `TEXT` | YES | Version string when applicable (e.g. `v2.0`) |
 | `url` | `TEXT` | YES | Reference URL |
 
 **Indexes:**
-- `UNIQUE (org, code, std_version)`
+- `UNIQUE (organisation, code, version)`
 
 **Standard-to-standard lineage** is itself an edge graph: `eCH-0129 derives_from eCH-0010 derives_from Adressierungsverordnung`. Standards reference one another via `edge_type = 'derives_from'` just like psets reference standards.
 
@@ -557,7 +557,7 @@ Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list
 | `code_list_node_id` | `UUID` | NO | Composite PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
 | `kind` | `TEXT` | NO | `CHECK (kind = 'code_list')`. |
 | `code` | `TEXT` | NO | Composite PK. Technical key (e.g. `1010`, `BLD`, `RE`). |
-| `label_de` | `TEXT` | NO | Display label DE |
+| `label_de` | `TEXT` | YES | Display label DE (recommended) |
 | `label_fr` | `TEXT` | YES | |
 | `label_it` | `TEXT` | YES | |
 | `label_en` | `TEXT` | YES | |
@@ -566,7 +566,7 @@ Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list
 | `description_it` | `TEXT` | YES | |
 | `description_en` | `TEXT` | YES | |
 | `sort_order` | `INTEGER` | YES | Display order |
-| `deprecated` | `BOOLEAN` | NO | Default `false` |
+| `is_deprecated` | `BOOLEAN` | NO | Default `false` |
 
 **Indexes:**
 - `INDEX (code_list_node_id)` — implicit from composite PK
@@ -587,7 +587,7 @@ DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*. 1:0..1 with a `node` row
 | `id` | `UUID` | NO | PK |
 | `pset_node_id` | `UUID` | NO | UK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
 | `kind` | `TEXT` | NO | `CHECK (kind = 'pset')`. |
-| `purpose` | `TEXT` | NO | Bearbeitungszweck. Internal Verzeichnis is DE-only by federal practice. |
+| `purpose` | `TEXT` | YES | Bearbeitungszweck (DE). DSG Art. 12 expects this to be filled at publication; schema permits NULL during draft. |
 | `legal_basis` | `TEXT` | YES | Fedlex SR reference |
 | `data_subjects` | `TEXT` | YES | Description of data subjects (DE) |
 | `recipients` | `TEXT` | YES | Categories of recipients (DE) |
@@ -617,7 +617,7 @@ A single table covering Supabase-authenticated catalog users, external persons w
 | `id` | `UUID` | NO | PK |
 | `auth_user_id` | `UUID` | YES | UK. FK → `auth.users.id`, `ON DELETE SET NULL`. `NULL` for external contacts and teams without Supabase accounts. |
 | `email` | `TEXT` | NO | UK. Continuously monitored per DCAT-AP CH `dcat:contactPoint` requirement. Doubles as Excel join key. |
-| `name` | `TEXT` | NO | Person name or team name (single-locale) |
+| `name` | `TEXT` | YES | Person name or team name (single-locale). Recommended; falls back to `email` if empty. |
 | `phone` | `TEXT` | YES | |
 | `organisation` | `TEXT` | YES | E.g. `BBL — Sektion Datenmanagement`, `BFS — Interoperabilitätsstelle` |
 | `is_team` | `BOOLEAN` | NO | Default `false`. `true` distinguishes org units / shared mailboxes from individual persons. |
@@ -774,7 +774,7 @@ information_security_officer     — Informationssicherheitsbeauftragte (ISG)
 
 | Flavour | Storage | Required locales |
 |---|---|---|
-| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | `label_de NOT NULL` on `node` and `code_list_entry`. Nullable on `edge`. |
+| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | All optional in v0.3 to keep Excel UPSERT permissive. `label_de` is recommended; UPSERT warns when a `produktiv` row lacks one (see §9). |
 | **Long-form description** (multi-line text) | Four typed columns: `description_de`, `description_fr`, `description_it`, `description_en` | All optional |
 | **Single-locale technical** (column names, schema names, codes, standard codes, BAPI ids, system technology stack, role keys, contact names) | Plain `TEXT` | Not translated — they are identifiers in the source system or domain |
 
@@ -788,13 +788,9 @@ requested → de → en → first non-null
 
 A French-speaking user requesting `fr` for a row with only `label_de` populated sees `label_de`. There is no per-user fallback override; the catalog's default language is German.
 
-### NOT NULL rule
+### Required-label policy
 
-Every row that the user can search for or display must have a German label. Specifically:
-
-- `node.label_de NOT NULL`
-- `code_list_entry.label_de NOT NULL`
-- `edge.label_de` is **nullable** — most edges are unlabeled (just structural)
+To keep Excel UPSERT permissive, no `label_*` columns are `NOT NULL` in v0.3 — incomplete entries are tolerated at insert time. The catalog is most useful when at least `label_de` is populated; the Excel UPSERT validator emits a warning (not an error) when a row with `lifecycle_status = produktiv` lacks `label_de`. Frontend display falls back to `slug` if every locale is null.
 
 ### Locale codes
 
@@ -974,10 +970,10 @@ Slugs use `[A-Za-z0-9_-]` plus `:` and `.` as separators (mixed case and hyphens
 Every entity sheet starts with the same prefix:
 
 ```
-slug | name | label_de | label_fr | label_it | label_en | description_de | description_fr | description_it | description_en | (kind-specific cols) | tags | classification | lifecycle_status | x | y | _action
+slug | technical_name | label_de | label_fr | label_it | label_en | description_de | description_fr | description_it | description_en | (kind-specific cols) | tags | classification | lifecycle_status | x | y | _action
 ```
 
-`_action` is the last column. Default value `keep` (or empty). `delete` removes the row. `name` is blank for kinds whose human name *is* `label_de` (system, pset, code_list); populated for kinds with a separate technical name (distribution, attribute) or technical code (standard_reference uses `code` from its meta).
+`_action` is the last column. Default value `keep` (or empty). `delete` removes the row. `technical_name` is blank for kinds whose human name *is* `label_de` (system, pset, code_list); populated for kinds with a separate technical name (distribution, attribute) or technical code (standard_reference uses `code` from its meta).
 
 The decision to **group by field, languages adjacent** (rather than language-block layout) is intentional: stewards typically fill DE comprehensively, then a translator does a single FR pass across all rows, then IT, then EN. Adjacent-language columns make that translator's job easier.
 
@@ -999,7 +995,7 @@ for each row in sheet:
     set created_at, modified_at = now()
     return action = 'inserted'
 
-  if lifecycle_status = 'produktiv' AND no non-DE label populated:
+  if lifecycle_status = 'produktiv' AND label_de IS NULL:
     add warning to row report (does not block)
 
 per-row report:
@@ -1019,7 +1015,7 @@ Returned to the client as JSON:
   { "slug": "attr:foo.x",   "action": "rejected", "status": "error",
     "errors": ["data_type 'foobar' not allowed"] },
   { "slug": "pset:tenant",  "action": "updated", "status": "warning",
-    "errors": ["lifecycle_status = produktiv but no non-DE label provided"] }
+    "errors": ["lifecycle_status = produktiv but label_de is empty"] }
 ]
 ```
 
