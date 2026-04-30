@@ -1,9 +1,9 @@
 # BBL Architektur-Canvas — Data Model
 
-**Version:** 0.2 (draft)
+**Version:** 0.2.1 (draft)
 **Owner:** DRES — Kreis Digital Solutions
 **Target backend:** Supabase (PostgreSQL 15+)
-**Status:** In Review — supersedes v0.1
+**Status:** In Review — supersedes v0.2
 **Last updated:** 2026-04-30
 
 ---
@@ -24,13 +24,10 @@
    - 6.6 [Standard Reference Meta](#66-standard-reference-meta)
    - 6.7 [Code List Entry](#67-code-list-entry)
    - 6.8 [Processing Activity](#68-processing-activity)
-   - 6.9 [App User](#69-app-user)
-   - 6.10 [Contact](#610-contact)
-   - 6.11 [Role Assignment](#611-role-assignment)
-   - 6.12 [Canvas](#612-canvas)
-   - 6.13 [Canvas Layout](#613-canvas-layout)
-   - 6.14 [Revision](#614-revision)
-   - 6.15 [Enum Reference](#615-enum-reference)
+   - 6.9 [Contact](#69-contact)
+   - 6.10 [Role Assignment](#610-role-assignment)
+   - 6.11 [Revision](#611-revision)
+   - 6.12 [Enum Reference](#612-enum-reference)
 7. [i18n Strategy](#7-i18n-strategy)
 8. [Supabase Specifics](#8-supabase-specifics)
 9. [Excel I/O Contract](#9-excel-io-contract)
@@ -40,28 +37,29 @@
 
 ## 1. Goals
 
-The BBL Architektur-Canvas is a Miro-style sketching surface for data architects at the Bundesamt für Bauten und Logistik. The persisted model serves three audiences — the architect drafting at the canvas, the local data steward bulk-editing in Excel, and the federal data governance bodies that consume the catalog as DCAT-AP CH metadata. v0.2 of this model rebuilds around two findings that emerged after v0.1 shipped:
+The BBL Architektur-Canvas is a Miro-style sketching surface for data architects at the Bundesamt für Bauten und Logistik. The persisted model serves three audiences — the architect drafting at the canvas, the local data steward bulk-editing in Excel, and the federal data governance bodies that consume the catalog as DCAT-AP CH metadata. v0.2 of this model rebuilt around two findings that emerged after v0.1 shipped, and v0.2.1 simplifies further along the lines of *fewer tables, stronger constraints*.
 
-1. **Property sets (Datenpakete) are not a UI label** — they are the principal noun of the catalog. They carry lineage, classifications, processing-activity records, and governance assignments. The v0.1 stance ("psets are derived from `attribute.set` strings") was structurally wrong and is reversed.
+The structural premises:
+
+1. **Property sets (Datenpakete) are not a UI label** — they are the principal noun of the catalog. They carry lineage, classifications, processing-activity records, and governance assignments.
 2. **The canvas is a graph editor, and storage should mirror that.** Two principal tables (`node`, `edge`) absorb the substantive catalog. Type-specific fields live in slim side tables. Regulated semantics (classification, governance, processing activity) stay typed.
+3. **Single-canvas world** — multi-canvas decoupling is deferred. Layout coordinates live directly on the node; if multi-canvas becomes a real need, a `canvas` and `canvas_node_layout` pair re-enters as a small additive migration.
+4. **One contact concept**, not two — `contact` covers Supabase-authenticated users, external persons without accounts, and team / org-unit references. The `auth_user_id` link is optional and nullable.
 
 The eight goals below are each defensible from at least two of the five reviewing perspectives (domain expert, senior developer, senior data architect, enterprise architect, end user / local data steward).
 
-**G1 — Canvas-shaped storage.** The visual model (nodes, edges) and the storage model coincide. Saving a canvas is `INSERT INTO node` + `INSERT INTO edge`. New node kinds and edge types are absorbed by enum, not migration. *(Developer + Domain expert.)*
+| #  | Goal | Summary | Defenders | MoSCoW |
+|----|------|---------|-----------|--------|
+| G1 | Canvas-shaped storage | Visual and storage models share shape (`node` + `edge`); new kinds absorbed by enum, not migration. | Developer + Domain expert | **Must** |
+| G2 | Pset-first catalog | Datenpakete are the principal noun, carrying lineage, classification, and the 1:1 processing-activity record. | Domain expert + Data architect | **Must** |
+| G3 | Standards-native shape | DCAT-AP CH 3.0.0 conformance without translation; eCH / ISO / Fedlex anchors as `standard_reference` nodes. | Data architect + EA | **Should** |
+| G4 | Governance and compliance built-in | NaDB roles, DSG personal-data categories + processing-activity records, ISG classification — entities and enums, never prose. | EA + Domain expert | **Must** |
+| G5 | Multilingual by construction | Every label and description in DE / FR / IT / EN via typed columns; `label_de NOT NULL`; fallback `requested → de → en → first non-null`. | All five perspectives | **Should** |
+| G6 | Lineage as data | Every "comes from / derives from / flows into / references / replaces" is a typed edge; queryable with recursive CTE. | Data architect + Domain expert | **Should** |
+| G7 | Supabase-ready, vendor-light | PostgreSQL 15+, `pgcrypto` + `pg_trgm` only, UUID PKs, RLS on every catalog table; runs unmodified on vanilla Postgres. | Developer + EA | **Must** |
+| G8 | Excel-first editing | Download / UPSERT / upload is the primary write path; slug-keyed; per-row outcome report; explicit `_action = delete`. | End user + Developer + Domain expert | **Must** |
 
-**G2 — Pset-first catalog.** Datenpakete are first-class entities and the navigation primitive. They carry lineage to standards, classifications, and a 1:1 link to the DSG processing-activity record. Distributions hang off psets via `realises` edges; attributes are tagged into psets via `in_pset` edges. *(Domain expert + Data architect.)*
-
-**G3 — Standards-native shape.** DCAT-AP CH 3.0.0 conformance without translation: pset = `dcat:Dataset`, distribution = `dcat:Distribution` / `dcat:DataService`, system = `dcat:Catalog`. eCH / ISO / Fedlex anchors are first-class nodes (`kind = standard_reference`). Codelists are first-class controlled vocabularies. *(Data architect + EA.)*
-
-**G4 — Governance and compliance built-in.** NaDB roles, DSG personal-data categories + processing-activity records, and ISG classification tiers are entities and enums, not free-text. Every distribution is classifiable, every attribute carries its DSG category, every pset that contains personal data has a `processing_activity` row. *(EA + Domain expert.)*
-
-**G5 — Multilingual by construction.** Every label and description offered in DE / FR / IT / EN through typed columns. `label_de` is required everywhere; other locales are populated when known. JSONB is not used for translatable text. The default UI fallback chain is `requested → de → en → first non-null`. *(All five perspectives.)*
-
-**G6 — Lineage as data.** Every "comes from", "derives from", "flows into", "references", and "replaces" claim is a typed edge between nodes. Lineage is queryable with recursive CTEs, not described in prose. Standards anchors (eCH-0010, SR 510.625, ISO 19115, …) live in the same graph as the data, reachable from any pset by edge traversal. *(Data architect + Domain expert.)*
-
-**G7 — Supabase-ready, vendor-light.** PostgreSQL 15+ with `pgcrypto` and `pg_trgm` only. UUID primary keys, `TIMESTAMPTZ` audit timestamps, RLS on every catalog table. Runs unmodified against vanilla PostgreSQL for local dev; Realtime, PostgREST, and Studio amplify it on Supabase. *(Developer + EA.)*
-
-**G8 — Excel-first editing.** The download / UPSERT / upload cycle is the primary write path for non-developer stewards. Stable human-readable slugs as user-facing keys; per-row outcome reporting on upload (inserted / updated / unchanged / deleted / rejected); explicit `_action = delete` semantics. Concurrent-edit conflict detection is intentionally not modelled — the BBL editing process is serialised by governance. *(End user + Developer + Domain expert.)*
+**MoSCoW legend:** *Must* = ship-blocker for v0.2.1. *Should* = strongly recommended; absence is painful but workable for an internal v1. *Could* / *Won't* are not used at the goal level — deferrals are tracked at the FR level in §2.
 
 ---
 
@@ -69,40 +67,43 @@ The eight goals below are each defensible from at least two of the five reviewin
 
 ### Functional
 
-| ID | Requirement |
-|----|-------------|
-| FR-01 | The catalog is a graph: `node` rows connected by directed `edge` rows. Every concept on the canvas is a node; every relationship is an edge. |
-| FR-02 | A node has exactly one `kind` from `{system, pset, distribution, attribute, code_list, standard_reference}`. The kind drives the icon, default columns, and applicable side table. |
-| FR-03 | Property sets (Datenpakete) are first-class nodes with `kind = pset`. They carry their own labels, descriptions, lineage edges to standards, classification, lifecycle status, and an optional 1:1 processing-activity record. |
-| FR-04 | Systems (SAP RE-FX, BBL GIS, BFS GWR, AV GIS, Grundbuch, …) are first-class nodes with `kind = system`. Their `system_meta` side table carries `technology_stack`, `base_url`, `security_zone`, `active`. |
-| FR-05 | A distribution (`kind = distribution`) is a specific access shape of a pset within a system — table, view, API, or file. It carries DCAT-AP CH metadata: `access_url` (mandatory), `download_url`, `format`, `media_type`, `license`, `accrual_periodicity`, `availability`, `spatial_coverage`, `temporal_*`, `issued`, `modified`. |
-| FR-06 | An attribute (`kind = attribute`) is one column or field. Its `attribute_meta` carries technical `name`, `data_type`, `key_role` (`PK`/`FK`/`UK`/null), `nullable`, `personal_data_category` (DSG), `source_structure` (free text label, e.g. SAP BAPI substructure), `sort_order`. |
-| FR-07 | Edges are directed (`from_node_id` → `to_node_id`) with a typed `edge_type`. Self-loops are rejected. Duplicate `(from, to, edge_type)` triples are rejected. Every "contains", "publishes", "realises", "in_pset", "values_from", "derives_from", "fk_references", "flows_into", "replaces" relationship is an edge — there are no parent-pointer FKs on side tables. |
-| FR-08 | Hierarchy invariants are enforced by partial unique indexes on `edge`. For example: each attribute has at most one parent distribution (`UNIQUE (to_node_id) WHERE edge_type = 'contains' AND target.kind = 'attribute'`). |
-| FR-09 | Codelists (`kind = code_list`) are first-class nodes; their entries live in the `code_list_entry` side table keyed by `(code_list_node_id, code)`. Entries are not nodes — they are leaf data and never participate in the edge graph. |
-| FR-10 | Standard references (`kind = standard_reference`) anchor the lineage graph to external normative sources. Each carries `org`, `code`, `std_version`, `url` in its meta side table. Examples: eCH-0010, SR 510.625, ISO 19115, DCAT-AP CH 3.0.0. |
-| FR-11 | A node carries `(x, y)` layout coordinates per canvas in the `canvas_layout` join table, not on the node itself. Multiple canvases over the same nodes (different layouts) are supported. Any node kind may be laid out; psets, themes, and standards can appear on the canvas alongside distributions. |
-| FR-12 | Per-node `tags` (`text[]`) carry language-independent free-text keys (`master`, `legacy`, `dimension`). Translations live in the application's i18n catalog under the `tag.*` namespace. |
-| FR-13 | A node carries an optional ISG classification (`oeffentlich | intern | vertraulich | geheim`) on `node.classification`. The four values are CHECK-enforced. |
-| FR-14 | Every node may have one or more contacts attached via `role_assignment(contact_id, role, scope_node_id)`. Roles match the BFS NaDB enum exactly: `data_owner`, `local_data_steward`, `local_data_steward_statistics`, `local_data_custodian`, `data_producer`, `data_consumer`, `swiss_data_steward`, `data_steward_statistics`, `ida_representative`, `information_security_officer`. |
-| FR-15 | Every pset that contains attributes with `personal_data_category != 'keine'` has a `processing_activity` row recording purpose, legal basis, data subjects, recipients, retention policy, cross-border transfer details, and DPIA reference (DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*). |
-| FR-16 | Every node carries a `lifecycle_status` (`entwurf | standardisiert | produktiv | abgeloest`) so EA and stewardship workflows can distinguish drafts from production-grade entries. |
-| FR-17 | Edits to any catalog table generate a `revision` row recording `entity_kind`, `entity_id`, `action`, `diff` (JSONB), `actor_user_id`, `recorded_at`. The audit log is append-only. |
-| FR-18 | The model round-trips losslessly with the multi-sheet Excel workbook defined in §9 and with `data/canvas.json` v2. Excel UPSERT matches rows by stable `slug`; rows marked `_action = delete` are removed. |
-| FR-19 | Every translatable label (`label_*`) and long-form description (`description_*`) is offered in DE / FR / IT / EN through typed columns. `label_de` is `NOT NULL` on `node`, `code_list_entry`, and `canvas`; nullable on `edge`. |
+| ID | Requirement | MoSCoW |
+|----|-------------|--------|
+| FR-01 | The catalog is a graph: `node` rows connected by directed `edge` rows. Every concept on the canvas is a node; every relationship is an edge. | **Must** |
+| FR-02 | A node has exactly one `kind` from `{system, pset, distribution, attribute, code_list, standard_reference}`. The kind drives the icon, default columns, and applicable side table. | **Must** |
+| FR-03 | Property sets (Datenpakete) are first-class nodes with `kind = pset`. They carry their own labels, descriptions, lineage edges to standards, classification, lifecycle status, and an optional 1:1 processing-activity record. | **Must** |
+| FR-04 | Systems (SAP RE-FX, BBL GIS, BFS GWR, AV GIS, Grundbuch, …) are first-class nodes with `kind = system`. Their `system_meta` side table carries `technology_stack`, `base_url`, `security_zone`, `active`. | **Must** |
+| FR-05 | A distribution (`kind = distribution`) is a specific access shape of a pset within a system — table, view, API, or file. It carries DCAT-AP CH metadata: `access_url` (mandatory), `download_url`, `format`, `media_type`, `license`, `accrual_periodicity`, `availability`, `spatial_coverage`, `temporal_*`, `issued`, `modified`. | **Must** |
+| FR-06 | An attribute (`kind = attribute`) is one column or field. Its `attribute_meta` carries technical `name`, `data_type`, `key_role` (`PK`/`FK`/`UK`/null), `nullable`, `personal_data_category` (DSG), `source_structure` (free text label, e.g. SAP BAPI substructure), `sort_order`. | **Must** |
+| FR-07 | Edges are directed (`from_node_id` → `to_node_id`) with a typed `edge_type`. Self-loops are rejected. Duplicate `(from, to, edge_type)` triples are rejected. Every "contains", "publishes", "realises", "in_pset", "values_from", "derives_from", "fk_references", "flows_into", "replaces" relationship is an edge — there are no parent-pointer FKs on side tables. | **Must** |
+| FR-08 | Hierarchy invariants are enforced by partial unique indexes on `edge`. For example: each attribute has at most one parent distribution (`UNIQUE (to_node_id) WHERE edge_type = 'contains'`). | **Should** |
+| FR-09 | Codelists (`kind = code_list`) are first-class nodes; their entries live in the `code_list_entry` side table keyed by `(code_list_node_id, code)`. Entries are not nodes — they are leaf data and never participate in the edge graph. | **Must** |
+| FR-10 | Standard references (`kind = standard_reference`) anchor the lineage graph to external normative sources. Each carries `org`, `code`, `std_version`, `url` in its meta side table. Examples: eCH-0010, SR 510.625, ISO 19115, DCAT-AP CH 3.0.0. | **Should** |
+| FR-11 | A node carries optional `(x, y)` layout coordinates directly on the `node` row. `NULL` means the node is not placed on the canvas. v0.2.1 is single-canvas; multi-canvas reuse of the same node at different positions is a deferred concern that re-introduces a `canvas_node_layout` join table when needed. | **Must** |
+| FR-12 | Per-node `tags` (`text[]`) carry language-independent free-text keys (`master`, `legacy`, `dimension`). Translations live in the application's i18n catalog under the `tag.*` namespace. | **Must** |
+| FR-13 | A node carries an optional ISG classification (`oeffentlich | intern | vertraulich | geheim`) on `node.classification`. The four values are CHECK-enforced. | **Must** |
+| FR-14 | Every node may have one or more contacts attached via `role_assignment(contact_id, role, scope_node_id)`. Roles match the BFS NaDB enum exactly: `data_owner`, `local_data_steward`, `local_data_steward_statistics`, `local_data_custodian`, `data_producer`, `data_consumer`, `swiss_data_steward`, `data_steward_statistics`, `ida_representative`, `information_security_officer`. | **Must** |
+| FR-15 | Every pset that contains attributes with `personal_data_category != 'keine'` has a `processing_activity` row recording purpose, legal basis, data subjects, recipients, retention policy, cross-border transfer details, and DPIA reference (DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*). | **Must** |
+| FR-16 | Every node carries a `lifecycle_status` (`entwurf | standardisiert | produktiv | abgeloest`) so EA and stewardship workflows can distinguish drafts from production-grade entries. | **Should** |
+| FR-17 | Edits to any catalog table generate a `revision` row recording `entity_kind`, `entity_id`, `action`, `diff` (JSONB), `actor_user_id`, `recorded_at`. The audit log is append-only. | **Must** |
+| FR-18 | The model round-trips losslessly with the multi-sheet Excel workbook defined in §9 and with `data/canvas.json` v2. Excel UPSERT matches rows by stable `slug`; rows marked `_action = delete` are removed. | **Must** |
+| FR-19 | Every translatable label (`label_*`) and long-form description (`description_*`) is offered in DE / FR / IT / EN through typed columns. `label_de` is `NOT NULL` on `node` and `code_list_entry`; nullable on `edge`. | **Must** |
+| FR-20 | The catalog has a single `contact` table covering authenticated users, external persons without accounts, and team / org-unit references. `auth_user_id` is nullable; `is_team` distinguishes persons from teams. | **Must** |
 
 ### Non-functional
 
-| ID | Requirement |
-|----|-------------|
-| NR-01 | Implementable in Supabase / PostgreSQL 15+ with only the `pgcrypto` and `pg_trgm` extensions. |
-| NR-02 | Primary keys are UUIDs (`gen_random_uuid()`), with one stable text `slug` UK on `node` and `canvas` for human-readable identification in Excel and URLs. |
-| NR-03 | All audit timestamps use `TIMESTAMPTZ`, stored UTC, displayed Europe/Zurich. |
-| NR-04 | Translatable text uses four typed columns (`label_de`, `label_fr`, `label_it`, `label_en`; `description_de`, …). The schema contains a single JSONB column (`revision.diff`); everything else is typed. |
-| NR-05 | Default UI language is German. Fallback chain: `requested → de → en → first non-null`. |
-| NR-06 | RLS is enabled on every data table. Default policy: authenticated users may read; only `editor` and `admin` roles may write. |
-| NR-07 | The current single-canvas localStorage prototype migrates to Supabase via the importer specified in §10. |
-| NR-08 | The Excel UPSERT path returns a per-row report `{ slug, action, status, errors[] }`. Optimistic locking is intentionally absent — see §9. |
+| ID | Requirement | MoSCoW |
+|----|-------------|--------|
+| NR-01 | Implementable in Supabase / PostgreSQL 15+ with only the `pgcrypto` and `pg_trgm` extensions. | **Must** |
+| NR-02 | Primary keys are UUIDs (`gen_random_uuid()`), with one stable text `slug` UK on `node` for human-readable identification in Excel and URLs. Slug format is enforced by CHECK constraint. | **Must** |
+| NR-03 | All audit timestamps use `TIMESTAMPTZ`, stored UTC, displayed Europe/Zurich. | **Must** |
+| NR-04 | Translatable text uses four typed columns (`label_de`, `label_fr`, `label_it`, `label_en`; `description_de`, …). The schema contains a single JSONB column (`revision.diff`); everything else is typed. | **Must** |
+| NR-05 | Default UI language is German. Fallback chain: `requested → de → en → first non-null`. | **Must** |
+| NR-06 | RLS is enabled on every data table. Default policy: authenticated users may read; only `editor` and `admin` `app_role` may write. `app_role` lives on `contact`. | **Must** |
+| NR-07 | Side tables enforce their parent's kind at the database level via composite foreign key `(node_id, kind) REFERENCES node(id, kind)` plus a CHECK on `kind`. No triggers are needed for kind validation. | **Should** |
+| NR-08 | Cascade behaviour is explicit on every FK: `ON DELETE CASCADE` for compositional relationships (edges, side tables, processing activity, role assignments scope), `ON DELETE SET NULL` for soft references (auth links, audit actor), `ON DELETE RESTRICT` for accountability links (role_assignment.contact_id). | **Must** |
+| NR-09 | The current single-canvas localStorage prototype migrates to Supabase via the importer specified in §10. The `homeView` viewport state remains client-side (localStorage). | **Must** |
+| NR-10 | The Excel UPSERT path returns a per-row report `{ slug, action, status, errors[] }`. Optimistic locking is intentionally absent — see §9. | **Must** |
 
 ---
 
@@ -162,15 +163,17 @@ erDiagram
     text        classification            "CHECK in (oeffentlich,intern,vertraulich,geheim,null)"
     text        theme_slug                "optional grouping, free text"
     text        lifecycle_status          "CHECK in (entwurf,standardisiert,produktiv,abgeloest)"
+    numeric     x                         "nullable; null = not placed on canvas"
+    numeric     y                         "nullable; null = not placed on canvas"
     timestamptz created_at
     timestamptz modified_at
   }
 
   EDGE {
     uuid        id                   PK
-    uuid        from_node_id         FK   "→ node.id"
-    uuid        to_node_id           FK   "→ node.id"
-    text        edge_type                 "CHECK enum, see §6.15"
+    uuid        from_node_id         FK   "→ node.id, ON DELETE CASCADE"
+    uuid        to_node_id           FK   "→ node.id, ON DELETE CASCADE"
+    text        edge_type                 "CHECK enum, see §6.12"
     text        label_de
     text        label_fr
     text        label_it
@@ -182,19 +185,21 @@ erDiagram
   }
 
   %% =====================================================================
-  %% SIDE TABLES — kind-specific, 1:0..1 with node
+  %% SIDE TABLES — kind-locked, 1:0..1 with node via composite FK (node_id, kind)
   %% =====================================================================
 
   SYSTEM_META {
-    uuid    node_id              PK,FK   "→ node.id, kind=system"
+    uuid    node_id              PK,FK   "composite FK → node(id,kind)"
+    text    kind                          "CHECK = 'system'"
     text    technology_stack
     text    base_url
-    text    security_zone             "ISG zone"
+    text    security_zone                 "ISG zone"
     boolean active
   }
 
   DISTRIBUTION_META {
-    uuid        node_id           PK,FK   "→ node.id, kind=distribution"
+    uuid        node_id           PK,FK   "composite FK → node(id,kind)"
+    text        kind                      "CHECK = 'distribution'"
     text        name                      "technical name in source system"
     text        type                      "CHECK in (table,view,api,file)"
     text        schema_name
@@ -213,7 +218,8 @@ erDiagram
   }
 
   ATTRIBUTE_META {
-    uuid    node_id                  PK,FK   "→ node.id, kind=attribute"
+    uuid    node_id                  PK,FK   "composite FK → node(id,kind)"
+    text    kind                             "CHECK = 'attribute'"
     text    name                             "technical column name"
     text    data_type
     text    key_role                         "CHECK in (PK,FK,UK,null)"
@@ -224,7 +230,8 @@ erDiagram
   }
 
   STANDARD_REFERENCE_META {
-    uuid node_id              PK,FK   "→ node.id, kind=standard_reference"
+    uuid node_id              PK,FK   "composite FK → node(id,kind)"
+    text kind                         "CHECK = 'standard_reference'"
     text org                          "eCH|ISO|Bund|EU"
     text code                         "e.g. eCH-0010"
     text std_version
@@ -232,7 +239,8 @@ erDiagram
   }
 
   CODE_LIST_ENTRY {
-    uuid    code_list_node_id    PK,FK   "→ node.id, kind=code_list"
+    uuid    code_list_node_id    PK,FK   "composite FK → node(id,kind)"
+    text    kind                         "CHECK = 'code_list'"
     text    code                 PK      "technical, e.g. 1010"
     text    label_de                     "NOT NULL"
     text    label_fr
@@ -252,7 +260,8 @@ erDiagram
 
   PROCESSING_ACTIVITY {
     uuid        id                   PK
-    uuid        pset_node_id         FK,UK   "→ node.id, kind=pset"
+    uuid        pset_node_id         FK,UK   "composite FK → node(id,kind)"
+    text        kind                         "CHECK = 'pset'"
     text        purpose                      "Bearbeitungszweck (DE)"
     text        legal_basis                  "Fedlex SR ref"
     text        data_subjects                "DE"
@@ -267,30 +276,27 @@ erDiagram
   }
 
   %% =====================================================================
-  %% GOVERNANCE
+  %% GOVERNANCE — single contact table covers users, externals, teams
   %% =====================================================================
-
-  APP_USER {
-    uuid id                       PK   "= auth.users.id (Supabase)"
-    text app_role                      "CHECK in (viewer,editor,admin)"
-  }
 
   CONTACT {
     uuid        id                   PK
-    uuid        app_user_id          FK   "→ auth.users.id, nullable"
-    text        name
-    text        email                UK
+    uuid        auth_user_id         FK,UK   "→ auth.users.id, nullable, ON DELETE SET NULL"
+    text        email                UK      "NOT NULL"
+    text        name                          "NOT NULL — person or team name"
     text        phone
     text        organisation
+    boolean     is_team                       "default false; true = org unit / shared mailbox"
+    text        app_role                      "CHECK in (viewer,editor,admin), nullable"
     timestamptz created_at
     timestamptz modified_at
   }
 
   ROLE_ASSIGNMENT {
     uuid        id                   PK
-    uuid        contact_id           FK   "→ contact.id"
-    text        role                       "CHECK in NaDB role enum, see §6.15"
-    uuid        scope_node_id        FK   "→ node.id (any kind)"
+    uuid        contact_id           FK   "→ contact.id, ON DELETE RESTRICT"
+    text        role                       "CHECK in NaDB role enum, see §6.12"
+    uuid        scope_node_id        FK   "→ node.id, ON DELETE CASCADE"
     date        valid_from
     date        valid_to
     text        note
@@ -298,36 +304,8 @@ erDiagram
   }
 
   %% =====================================================================
-  %% LAYOUT & AUDIT
+  %% AUDIT
   %% =====================================================================
-
-  CANVAS {
-    uuid        id              PK
-    text        slug            UK
-    uuid        owner_user_id   FK   "→ auth.users.id, nullable"
-    text        label_de             "NOT NULL"
-    text        label_fr
-    text        label_it
-    text        label_en
-    text        description_de
-    text        description_fr
-    text        description_it
-    text        description_en
-    boolean     is_public
-    numeric     home_scale
-    numeric     home_center_x
-    numeric     home_center_y
-    timestamptz created_at
-    timestamptz modified_at
-  }
-
-  CANVAS_LAYOUT {
-    uuid        canvas_id    PK,FK   "→ canvas.id"
-    uuid        node_id      PK,FK   "→ node.id (any kind)"
-    numeric     x
-    numeric     y
-    timestamptz updated_at
-  }
 
   REVISION {
     uuid        id             PK
@@ -335,7 +313,7 @@ erDiagram
     uuid        entity_id
     text        action              "CHECK in (insert,update,delete)"
     jsonb       diff                "the only JSONB in the schema"
-    uuid        actor_user_id  FK   "→ auth.users.id, nullable"
+    uuid        actor_user_id  FK   "→ auth.users.id, nullable, ON DELETE SET NULL"
     timestamptz recorded_at
   }
 
@@ -353,23 +331,15 @@ erDiagram
   NODE                 ||--o{ CODE_LIST_ENTRY         : "if kind=code_list"
   NODE                 ||--o| PROCESSING_ACTIVITY     : "if kind=pset"
 
-  APP_USER             ||--o| CONTACT                 : "linked to"
   CONTACT              ||--o{ ROLE_ASSIGNMENT         : "holds"
   NODE                 ||--o{ ROLE_ASSIGNMENT         : "scoped to"
-
-  CANVAS               ||--o{ CANVAS_LAYOUT           : "contains"
-  NODE                 ||--o{ CANVAS_LAYOUT           : "positioned in"
-  APP_USER             ||--o{ CANVAS                  : "owns"
-
-  APP_USER             ||--o{ REVISION                : "actor of"
 ```
 
-The model has four concerns:
+The model has three concerns:
 
-- **Catalog** (`node` + `edge` + 4 meta side tables + `code_list_entry`): *what exists*, with all parent-child and lateral relationships expressed as typed edges. Promoted from v0.1's "psets are derived UI labels" to "psets are first-class nodes in the catalog graph".
+- **Catalog** (`node` + `edge` + four meta side tables + `code_list_entry`): *what exists*, with all parent-child and lateral relationships expressed as typed edges. Layout coordinates `(x, y)` live directly on the node — single-canvas world.
 - **Compliance** (`processing_activity`, plus `node.classification` and `attribute_meta.personal_data_category`): ISG classification and DSG processing-activity records, attached at the right scope.
-- **Governance** (`contact`, `role_assignment`, `app_user`): NaDB role attribution scoped to nodes — system, pset, distribution, or any other kind. `dct:publisher` and `dcat:contactPoint` are derived projections of role assignments, never stored separately.
-- **Layout & audit** (`canvas`, `canvas_layout`, `revision`): per-canvas layout decoupled from nodes; append-only revision log over every catalog mutation.
+- **Governance & audit** (`contact`, `role_assignment`, `revision`): NaDB role attribution scoped to nodes; append-only revision log over every catalog mutation. `dct:publisher` and `dcat:contactPoint` are derived projections of role assignments, never stored separately.
 
 ---
 
@@ -385,12 +355,11 @@ The model has four concerns:
 | `standard_reference_meta` | `dct:conformsTo` target | External standard anchor metadata | < 200 |
 | `code_list_entry` | `skos:Concept` | Rows of a controlled vocabulary | 100 – 20 000 |
 | `processing_activity` | local extension (DSG Art. 12) | Per-pset processing-activity record | < 500 (one per pset with personal data) |
-| `app_user` | — | Supabase auth integration with app-level role | < 100 |
-| `contact` | `dcat:contactPoint` target | Person or team referenced by role assignments | < 500 |
+| `contact` | `dcat:contactPoint` target + `auth.users` link | Person, team, or org unit; optional Supabase auth link | < 500 |
 | `role_assignment` | `dct:publisher` + `dcat:contactPoint` source | NaDB role attribution scoped to a node | < 5 000 |
-| `canvas` | local extension | Named perspective over the catalog | < 100 |
-| `canvas_layout` | local extension | Per-canvas (x, y) for each laid-out node | nodes × canvases |
 | `revision` | local extension | Append-only audit log | grows over time |
+
+Eleven tables. The `app_user`, `canvas`, and `canvas_layout` tables from v0.2 have been removed.
 
 ---
 
@@ -409,7 +378,7 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | Primary key, default `gen_random_uuid()` |
-| `slug` | `TEXT` | NO | Stable human-readable key. Format: `{kind_prefix}:{technical_name}` (see §9 for slug rules). Unique. |
+| `slug` | `TEXT` | NO | Stable human-readable key. Format: `{kind_prefix}:{technical_path}` (see §9). Unique. |
 | `kind` | `TEXT` | NO | `CHECK (kind IN ('system','pset','distribution','attribute','code_list','standard_reference'))` |
 | `label_de` | `TEXT` | NO | Display label DE |
 | `label_fr` | `TEXT` | YES | Display label FR |
@@ -423,18 +392,28 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 | `classification` | `TEXT` | YES | ISG tier: `CHECK (classification IN ('oeffentlich','intern','vertraulich','geheim') OR classification IS NULL)` |
 | `theme_slug` | `TEXT` | YES | Optional free-text grouping (Personendaten, Geokoordinaten, …) |
 | `lifecycle_status` | `TEXT` | NO | `CHECK (lifecycle_status IN ('entwurf','standardisiert','produktiv','abgeloest'))`, default `'entwurf'` |
+| `x` | `NUMERIC(10,2)` | YES | Canvas-space x coordinate. `NULL` = not placed. |
+| `y` | `NUMERIC(10,2)` | YES | Canvas-space y coordinate. `NULL` = not placed. |
 | `created_at` | `TIMESTAMPTZ` | NO | Default `now()` |
 | `modified_at` | `TIMESTAMPTZ` | NO | Maintained by trigger |
 
-**Indexes:**
+**Constraints:**
+- `UNIQUE (id, kind)` — required for composite-FK enforcement from side tables.
 - `UNIQUE (slug)`
+- Slug format: `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[a-z0-9_.]+$')`
+- Layout coherence: `CHECK ((x IS NULL) = (y IS NULL))` — both or neither.
+
+**Indexes:**
 - `INDEX (kind)`
 - `INDEX (lifecycle_status)`
 - `INDEX (classification) WHERE classification IS NOT NULL`
+- `INDEX (modified_at DESC)` — for "recently changed" UI patterns
 - GIN on `tags`
 - `pg_trgm` GIN per locale: `(label_de gin_trgm_ops)`, `(label_fr gin_trgm_ops)`, `(label_it gin_trgm_ops)`, `(label_en gin_trgm_ops)`
 
-**Why a single table for all kinds.** The canvas treats every kind identically (drag, drop, label, connect). Identical column model means uniform RLS, uniform Realtime publication, and trivial polymorphism in the edge table. Per-kind specifics live in side tables enforcing 1:0..1 with `node.id`.
+**Why a single table for all kinds.** The canvas treats every kind identically (drag, drop, label, connect). Identical column model means uniform RLS, uniform Realtime publication, and trivial polymorphism in the edge table. Per-kind specifics live in side tables enforcing 1:0..1 with `node.id` via composite FK on `(node_id, kind)`.
+
+**Why x/y on node and not in a separate layout table.** v0.2.1 is single-canvas. A node's `(x, y)` is its position on the one canvas. Multi-canvas reuse of the same node at different positions is deferred; if required later, introduce `canvas_node_layout (canvas_id, node_id, x, y)` and migrate the inline coordinates as a one-shot.
 
 ---
 
@@ -449,7 +428,7 @@ A directed typed connection between two nodes. Every parent-child, peer, and lin
 | `id` | `UUID` | NO | Primary key |
 | `from_node_id` | `UUID` | NO | FK → `node.id`, `ON DELETE CASCADE` |
 | `to_node_id` | `UUID` | NO | FK → `node.id`, `ON DELETE CASCADE` |
-| `edge_type` | `TEXT` | NO | See §6.15 for the enum |
+| `edge_type` | `TEXT` | NO | See §6.12 for the enum |
 | `label_de` | `TEXT` | YES | |
 | `label_fr` | `TEXT` | YES | |
 | `label_it` | `TEXT` | YES | |
@@ -462,7 +441,7 @@ A directed typed connection between two nodes. Every parent-child, peer, and lin
 **Constraints:**
 - `CHECK (from_node_id <> to_node_id)` — no self-loops
 - `UNIQUE (from_node_id, to_node_id, edge_type)` — no exact duplicates
-- `CHECK (edge_type IN (...))` — see §6.15
+- `CHECK (edge_type IN (...))` — see §6.12
 
 **Hierarchy invariants** are enforced as partial unique indexes:
 
@@ -474,34 +453,36 @@ CREATE UNIQUE INDEX edge_attribute_one_parent ON edge (to_node_id)
 -- A distribution has at most one publishing system.
 CREATE UNIQUE INDEX edge_distribution_one_publisher ON edge (to_node_id)
   WHERE edge_type = 'publishes';
-
--- A code_list_entry — n/a, since entries are not nodes.
 ```
 
 **Indexes:**
 - `INDEX (from_node_id)`
 - `INDEX (to_node_id)`
 - `INDEX (edge_type)`
+- `INDEX (modified_at DESC)`
 
-**Note on FK references between attributes.** Column-level foreign keys are recorded as edges with `edge_type = 'fk_references'` between two attribute nodes. This sits alongside the higher-level `realises` or `flows_into` lineage edges between distributions and psets — both are queryable through the same `edge` table with different `edge_type` filters.
+**Note on FK references between attributes.** Column-level foreign keys are recorded as edges with `edge_type = 'fk_references'` between two attribute nodes. This sits alongside higher-level `realises` or `flows_into` lineage edges between distributions and psets — both are queryable through the same `edge` table with different `edge_type` filters.
 
 ---
 
 ### 6.3 System Meta
 
-Per-system fields. 1:0..1 with a `node` row of `kind = system`.
+Per-system fields. 1:0..1 with a `node` row of `kind = system`, enforced by composite FK.
 
 **Table:** `system_meta`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
-| `node_id` | `UUID` | NO | PK, FK → `node.id`, `ON DELETE CASCADE`. The matching node must have `kind = 'system'`. |
+| `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'system')`. Required for the composite FK. |
 | `technology_stack` | `TEXT` | YES | e.g. `SAP S/4HANA`, `ArcGIS Online`, `PostgreSQL (BFS)` |
 | `base_url` | `TEXT` | YES | Base URL for deep links into the system |
 | `security_zone` | `TEXT` | YES | ISG security zone identifier |
 | `active` | `BOOLEAN` | NO | Default `true`. Inactive systems remain in the catalog for historical lineage. |
 
-A trigger validates `kind = 'system'` on the parent node at insert time.
+```sql
+FOREIGN KEY (node_id, kind) REFERENCES node (id, kind) ON DELETE CASCADE
+```
 
 **Seed systems** (BBL, as of 2026):
 
@@ -517,13 +498,14 @@ A trigger validates `kind = 'system'` on the parent node at insert time.
 
 ### 6.4 Distribution Meta
 
-DCAT-AP CH distribution metadata. 1:0..1 with a `node` row of `kind = distribution`.
+DCAT-AP CH distribution metadata. 1:0..1 with a `node` row of `kind = distribution`, enforced by composite FK.
 
 **Table:** `distribution_meta`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
-| `node_id` | `UUID` | NO | PK, FK → `node.id`, `ON DELETE CASCADE`. Parent node must have `kind = 'distribution'`. |
+| `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'distribution')`. |
 | `name` | `TEXT` | NO | Technical name in the source system, e.g. `refx_gebaeude`, `gwr_gebaeude_v` |
 | `type` | `TEXT` | NO | `CHECK (type IN ('table','view','api','file'))` |
 | `schema_name` | `TEXT` | YES | Source-system schema (e.g. `dbo`, `public`, `gwr`, `fachmodell`) |
@@ -550,13 +532,14 @@ DCAT-AP CH distribution metadata. 1:0..1 with a `node` row of `kind = distributi
 
 ### 6.5 Attribute Meta
 
-Per-attribute technical metadata and DSG personal-data tagging. 1:0..1 with a `node` row of `kind = attribute`.
+Per-attribute technical metadata and DSG personal-data tagging. 1:0..1 with a `node` row of `kind = attribute`, enforced by composite FK.
 
 **Table:** `attribute_meta`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
-| `node_id` | `UUID` | NO | PK, FK → `node.id`, `ON DELETE CASCADE`. Parent node must have `kind = 'attribute'`. |
+| `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'attribute')`. |
 | `name` | `TEXT` | NO | Technical column name (e.g. `OBJECT_ID`, `EGID`, `Buchungskreis`). Single-locale. |
 | `data_type` | `TEXT` | YES | Source-system type as written (e.g. `CHAR(45)`, `DEC(10,2)`, `uuid`, `TEXT`) |
 | `key_role` | `TEXT` | YES | `CHECK (key_role IN ('PK','FK','UK') OR key_role IS NULL)` |
@@ -582,13 +565,14 @@ Per-attribute technical metadata and DSG personal-data tagging. 1:0..1 with a `n
 
 ### 6.6 Standard Reference Meta
 
-External normative anchors. 1:0..1 with a `node` row of `kind = standard_reference`.
+External normative anchors. 1:0..1 with a `node` row of `kind = standard_reference`, enforced by composite FK.
 
 **Table:** `standard_reference_meta`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
-| `node_id` | `UUID` | NO | PK, FK → `node.id`, `ON DELETE CASCADE`. Parent node must have `kind = 'standard_reference'`. |
+| `node_id` | `UUID` | NO | PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'standard_reference')`. |
 | `org` | `TEXT` | NO | Issuing organisation: `eCH`, `ISO`, `Bund`, `EU`, `BFE`, `BFS`, … |
 | `code` | `TEXT` | NO | Standard identifier (e.g. `eCH-0010`, `ISO-19115`, `SR-510.625`) |
 | `std_version` | `TEXT` | YES | Version string when applicable (e.g. `v2.0`) |
@@ -603,14 +587,15 @@ External normative anchors. 1:0..1 with a `node` row of `kind = standard_referen
 
 ### 6.7 Code List Entry
 
-Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list`. Entries are **not nodes** — they are leaf data, never participate in the edge graph, and never appear on the canvas.
+Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list`, enforced by composite FK. Entries are **not nodes** — they are leaf data, never participate in the edge graph, and never appear on the canvas.
 
 **Table:** `code_list_entry`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
-| `code_list_node_id` | `UUID` | NO | Composite PK, FK → `node.id` (`kind = 'code_list'`), `ON DELETE CASCADE` |
-| `code` | `TEXT` | NO | Composite PK. Technical key (e.g. `1010`, `BLD`, `RE`) |
+| `code_list_node_id` | `UUID` | NO | Composite PK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'code_list')`. |
+| `code` | `TEXT` | NO | Composite PK. Technical key (e.g. `1010`, `BLD`, `RE`). |
 | `label_de` | `TEXT` | NO | Display label DE |
 | `label_fr` | `TEXT` | YES | |
 | `label_it` | `TEXT` | YES | |
@@ -623,7 +608,7 @@ Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list
 | `deprecated` | `BOOLEAN` | NO | Default `false` |
 
 **Indexes:**
-- `INDEX (code_list_node_id)` — implicit from PK
+- `INDEX (code_list_node_id)` — implicit from composite PK
 - `pg_trgm` per locale on `label_*` for cross-vocabulary search
 
 **Why entries are not nodes.** Entries cannot be referenced individually from anywhere else in the graph — an attribute's `values_from` edge points at the code_list, not at a single entry. No edge type takes an entry as endpoint. Promoting them to nodes would multiply row counts (some codelists have thousands of entries) without unlocking any new query.
@@ -632,14 +617,15 @@ Rows of a controlled vocabulary. Side table of a `node` row of `kind = code_list
 
 ### 6.8 Processing Activity
 
-DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*. 1:0..1 with a `node` row of `kind = pset`.
+DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*. 1:0..1 with a `node` row of `kind = pset`, enforced by composite FK.
 
 **Table:** `processing_activity`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | PK |
-| `pset_node_id` | `UUID` | NO | FK → `node.id` (`kind = 'pset'`), `UNIQUE`. 1:1 with the pset. |
+| `pset_node_id` | `UUID` | NO | UK. Composite FK → `node(id, kind)`, `ON DELETE CASCADE`. |
+| `kind` | `TEXT` | NO | `CHECK (kind = 'pset')`. |
 | `purpose` | `TEXT` | NO | Bearbeitungszweck. Internal Verzeichnis is DE-only by federal practice. |
 | `legal_basis` | `TEXT` | YES | Fedlex SR reference |
 | `data_subjects` | `TEXT` | YES | Description of data subjects (DE) |
@@ -659,45 +645,53 @@ DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten*. 1:0..1 with a `node` row
 
 ---
 
-### 6.9 App User
+### 6.9 Contact
 
-Reference to Supabase `auth.users` plus app-level role. The actual user record is managed by Supabase Auth.
-
-**Table:** `app_user`
-
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| `id` | `UUID` | NO | PK = `auth.users.id` |
-| `app_role` | `TEXT` | NO | `CHECK (app_role IN ('viewer','editor','admin'))`, default `'viewer'` |
-
-`app_role` controls write access via RLS policy. NaDB roles (`role_assignment.role`) are separate — they describe data-governance responsibility, not catalog-edit permission.
-
----
-
-### 6.10 Contact
-
-A person or team referenced by role assignments. May or may not have an `app_user` account.
+A single table covering Supabase-authenticated catalog users, external persons without accounts, and team / org-unit references. The `auth_user_id` link to Supabase auth is optional and nullable.
 
 **Table:** `contact`
 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | PK |
-| `app_user_id` | `UUID` | YES | FK → `auth.users.id`. `NULL` for external Custodians without accounts. |
-| `name` | `TEXT` | NO | Full name or team name (single-locale) |
-| `email` | `TEXT` | NO | `UNIQUE`. Continuously monitored per DCAT-AP CH `dcat:contactPoint` requirement. |
+| `auth_user_id` | `UUID` | YES | UK. FK → `auth.users.id`, `ON DELETE SET NULL`. `NULL` for external contacts and teams without Supabase accounts. |
+| `email` | `TEXT` | NO | UK. Continuously monitored per DCAT-AP CH `dcat:contactPoint` requirement. Doubles as Excel join key. |
+| `name` | `TEXT` | NO | Person name or team name (single-locale) |
 | `phone` | `TEXT` | YES | |
 | `organisation` | `TEXT` | YES | E.g. `BBL — Sektion Datenmanagement`, `BFS — Interoperabilitätsstelle` |
+| `is_team` | `BOOLEAN` | NO | Default `false`. `true` distinguishes org units / shared mailboxes from individual persons. |
+| `app_role` | `TEXT` | YES | `CHECK (app_role IN ('viewer','editor','admin') OR app_role IS NULL)`. `NULL` for non-users. |
 | `created_at` | `TIMESTAMPTZ` | NO | |
 | `modified_at` | `TIMESTAMPTZ` | NO | |
 
-**Indexes:**
+**Constraints:**
 - `UNIQUE (email)` — also serves as Excel join key
-- `INDEX (app_user_id) WHERE app_user_id IS NOT NULL`
+- `UNIQUE (auth_user_id)` — at most one contact per Supabase user
+- `CHECK (auth_user_id IS NULL OR is_team = false)` — org units / teams cannot be linked to a single auth user
+
+**Indexes:**
+- `INDEX (auth_user_id) WHERE auth_user_id IS NOT NULL`
+- `INDEX (organisation)` — common Excel filter
+
+**RLS pivot.** Catalog write policies look up `app_role` here:
+
+```sql
+CREATE POLICY node_write ON node
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM contact
+      WHERE contact.auth_user_id = auth.uid()
+        AND contact.app_role IN ('editor','admin')
+    )
+  );
+```
+
+**Why merge user + contact.** The two-table split is a CRUD-app pattern that doesn't earn its weight when the catalog needs to reference *people* (some authenticated, some not, some teams). A single `contact` lets a Section appear as Data Owner without an awkward stub user; lets an external Custodian be referenced today and gain auth tomorrow without merging rows; and reduces every "who's responsible for X" query by one join.
 
 ---
 
-### 6.11 Role Assignment
+### 6.10 Role Assignment
 
 A NaDB role attribution: contact + role + scope (any node).
 
@@ -706,76 +700,30 @@ A NaDB role attribution: contact + role + scope (any node).
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | PK |
-| `contact_id` | `UUID` | NO | FK → `contact.id` |
-| `role` | `TEXT` | NO | `CHECK` against the NaDB enum (see §6.15) |
-| `scope_node_id` | `UUID` | NO | FK → `node.id`. Any kind allowed. |
+| `contact_id` | `UUID` | NO | FK → `contact.id`, `ON DELETE RESTRICT` (force re-assignment before deleting a contact) |
+| `role` | `TEXT` | NO | `CHECK` against the NaDB enum (see §6.12) |
+| `scope_node_id` | `UUID` | NO | FK → `node.id`, `ON DELETE CASCADE`. Any kind allowed. |
 | `valid_from` | `DATE` | YES | |
 | `valid_to` | `DATE` | YES | When `NULL`, the assignment is current |
 | `note` | `TEXT` | YES | DE-only |
 | `created_at` | `TIMESTAMPTZ` | NO | |
 
 **Constraints:**
-- `UNIQUE (contact_id, role, scope_node_id, COALESCE(valid_from, '1900-01-01'))` — same role for same contact at same scope can have multiple historical entries but only one active.
+- `UNIQUE (contact_id, role, scope_node_id, COALESCE(valid_from, '1900-01-01'))` — same role for same contact at same scope can have multiple historical entries but only one active per start date
 - `CHECK (valid_to IS NULL OR valid_from IS NULL OR valid_to >= valid_from)`
 
 **Indexes:**
 - `INDEX (scope_node_id)`
 - `INDEX (contact_id, role)`
-- Partial index for active assignments: `INDEX (scope_node_id, role) WHERE valid_to IS NULL`
+- `INDEX (scope_node_id, role) WHERE valid_to IS NULL` — fast "who is currently the X of Y?"
 
 **Projection to DCAT.** `dct:publisher` for a pset = the active `role_assignment` row with `role = 'data_owner'` scoped to that pset's node. `dcat:contactPoint` = the active `role_assignment` with `role = 'local_data_steward'`. These are computed by view, not stored.
 
----
-
-### 6.12 Canvas
-
-A named layout perspective over the catalog. Multiple canvases may show the same catalog with different layouts.
-
-**Table:** `canvas`
-
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| `id` | `UUID` | NO | PK |
-| `slug` | `TEXT` | NO | UK. Format: `canvas:{name}` |
-| `owner_user_id` | `UUID` | YES | FK → `auth.users.id` |
-| `label_de` | `TEXT` | NO | |
-| `label_fr` | `TEXT` | YES | |
-| `label_it` | `TEXT` | YES | |
-| `label_en` | `TEXT` | YES | |
-| `description_de` | `TEXT` | YES | |
-| `description_fr` | `TEXT` | YES | |
-| `description_it` | `TEXT` | YES | |
-| `description_en` | `TEXT` | YES | |
-| `is_public` | `BOOLEAN` | NO | Default `false`. Drives RLS read access. |
-| `home_scale` | `NUMERIC(6,3)` | YES | Default zoom level |
-| `home_center_x` | `NUMERIC(10,2)` | YES | Default centre x (canvas coords) |
-| `home_center_y` | `NUMERIC(10,2)` | YES | Default centre y |
-| `created_at` | `TIMESTAMPTZ` | NO | |
-| `modified_at` | `TIMESTAMPTZ` | NO | |
-
-The `home_*` triplet replaces v0.1's JSONB `homeView`.
+**Why `contact_id ON DELETE RESTRICT` rather than CASCADE.** Deleting a Data Owner who is still attached to live psets must be a deliberate act — the system forces the operator to re-assign first. Audit accountability remains intact.
 
 ---
 
-### 6.13 Canvas Layout
-
-Per-canvas (x, y) for each laid-out node. Composite primary key.
-
-**Table:** `canvas_layout`
-
-| Column | Type | Nullable | Description |
-|--------|------|----------|-------------|
-| `canvas_id` | `UUID` | NO | Composite PK, FK → `canvas.id`, `ON DELETE CASCADE` |
-| `node_id` | `UUID` | NO | Composite PK, FK → `node.id`, `ON DELETE CASCADE`. Any kind. |
-| `x` | `NUMERIC(10,2)` | NO | |
-| `y` | `NUMERIC(10,2)` | NO | |
-| `updated_at` | `TIMESTAMPTZ` | NO | |
-
-A node not laid out on a given canvas simply has no row. The canvas renderer computes a default position for unrendered nodes (or hides them).
-
----
-
-### 6.14 Revision
+### 6.11 Revision
 
 Append-only audit log. The single legitimate JSONB column in the schema.
 
@@ -784,25 +732,25 @@ Append-only audit log. The single legitimate JSONB column in the schema.
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | PK |
-| `entity_kind` | `TEXT` | NO | `node`, `edge`, `contact`, `role_assignment`, `processing_activity`, `canvas`, `canvas_layout`, plus the meta side tables |
+| `entity_kind` | `TEXT` | NO | `node`, `edge`, `contact`, `role_assignment`, `processing_activity`, plus the meta side tables |
 | `entity_id` | `UUID` | NO | The affected row's id (composite IDs serialised) |
 | `action` | `TEXT` | NO | `CHECK (action IN ('insert','update','delete'))` |
 | `diff` | `JSONB` | YES | For `update`: per-column before/after. For `insert`/`delete`: full row snapshot. |
-| `actor_user_id` | `UUID` | YES | FK → `auth.users.id`. `NULL` for system-initiated mutations (importers, triggers). |
+| `actor_user_id` | `UUID` | YES | FK → `auth.users.id`, `ON DELETE SET NULL`. Preserves audit trail when a user account is deleted. `NULL` for system-initiated mutations (importers, triggers). |
 | `recorded_at` | `TIMESTAMPTZ` | NO | Default `now()` |
 
 **Indexes:**
-- `INDEX (entity_kind, entity_id)`
-- `INDEX (recorded_at DESC)`
-- `INDEX (actor_user_id, recorded_at DESC)` for "what did Alice change recently?"
+- `INDEX (entity_kind, entity_id, recorded_at DESC)` — entity history ("show me everything that happened to node X")
+- `INDEX (recorded_at DESC)` — global activity feed
+- `INDEX (actor_user_id, recorded_at DESC) WHERE actor_user_id IS NOT NULL` — "what did Alice change recently?"
 
-**Append-only enforcement:** `REVOKE UPDATE, DELETE ON revision FROM authenticated`. Implemented as triggers on every mutating table (one trigger function, generic).
+**Append-only enforcement:** `REVOKE UPDATE, DELETE ON revision FROM authenticated`. Implemented via triggers on every mutating table — see §8.
 
 ---
 
-### 6.15 Enum Reference
+### 6.12 Enum Reference
 
-All CHECK enums in one place for easy reference. Keys are technical identifiers; display labels live in the application's i18n catalog (`data/i18n.json`).
+All CHECK enums in one place. Keys are technical identifiers; display labels live in the application's i18n catalog (`data/i18n.json`).
 
 #### `node.kind`
 
@@ -852,14 +800,15 @@ fk_references    — attribute → attribute (column-level FK)
 derives_from     — pset → standard_reference / pset → pset / standard → standard
 flows_into       — distribution → distribution (operational lineage)
 replaces         — distribution → distribution (lifecycle: this distribution replaced that one)
-member_of_theme  — pset → (theme indicator) — currently unused; theme_slug field covers it
 ```
 
-#### `app_user.app_role`
+#### `contact.app_role`
 
 ```
-viewer | editor | admin
+viewer | editor | admin | NULL
 ```
+
+`NULL` indicates a non-user contact (external person or team without Supabase account).
 
 #### `role_assignment.role` (BFS NaDB Rollenmodell + ISG)
 
@@ -890,9 +839,9 @@ insert | update | delete
 
 | Flavour | Storage | Required locales |
 |---|---|---|
-| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | `label_de NOT NULL` on `node`, `code_list_entry`, `canvas`. Nullable on `edge`. |
+| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | `label_de NOT NULL` on `node` and `code_list_entry`. Nullable on `edge`. |
 | **Long-form description** (multi-line text) | Four typed columns: `description_de`, `description_fr`, `description_it`, `description_en` | All optional |
-| **Single-locale technical** (column names, schema names, codes, standard codes, BAPI ids, system technology stack, role keys) | Plain `TEXT` | Not translated — they are identifiers in the source system or domain |
+| **Single-locale technical** (column names, schema names, codes, standard codes, BAPI ids, system technology stack, role keys, contact names) | Plain `TEXT` | Not translated — they are identifiers in the source system or domain |
 
 ### Fallback chain
 
@@ -910,7 +859,6 @@ Every row that the user can search for or display must have a German label. Spec
 
 - `node.label_de NOT NULL`
 - `code_list_entry.label_de NOT NULL`
-- `canvas.label_de NOT NULL`
 - `edge.label_de` is **nullable** — most edges are unlabeled (just structural)
 
 ### Locale codes
@@ -973,7 +921,7 @@ No other extensions are required. Apache AGE and pgRouting were considered for g
 
 ### Row-Level Security (sketch)
 
-All catalog tables have RLS enabled. Default policies:
+All catalog tables have RLS enabled. Default policies query `contact.app_role` rather than a separate users table:
 
 ```sql
 ALTER TABLE node ENABLE ROW LEVEL SECURITY;
@@ -985,28 +933,26 @@ CREATE POLICY node_read ON node
 
 -- Write: only editor or admin app_role may write.
 CREATE POLICY node_write ON node
-  FOR INSERT TO authenticated
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM contact
+      WHERE contact.auth_user_id = auth.uid()
+        AND contact.app_role IN ('editor','admin')
+    )
+  )
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM app_user
-      WHERE app_user.id = auth.uid()
-        AND app_user.app_role IN ('editor','admin')
+      SELECT 1 FROM contact
+      WHERE contact.auth_user_id = auth.uid()
+        AND contact.app_role IN ('editor','admin')
     )
   );
--- Equivalent UPDATE and DELETE policies omitted for brevity.
 ```
 
-The same policy template applies to `edge`, every `*_meta` table, `code_list_entry`, `processing_activity`, `contact`, `role_assignment`, `canvas`, `canvas_layout`. The `revision` table has only `INSERT` permitted (and only from triggers).
+The same policy template applies to `edge`, every `*_meta` table, `code_list_entry`, `processing_activity`, `role_assignment`. The `revision` table has only `INSERT` permitted (and only from triggers).
 
-### Canvas-specific read policy
-
-```sql
-CREATE POLICY canvas_read ON canvas
-  FOR SELECT TO authenticated
-  USING (is_public OR owner_user_id = auth.uid());
-```
-
-`canvas_layout` inherits via FK — no additional policy needed beyond `EXISTS`-based join to `canvas`.
+`contact` itself has a slightly different policy: a user may always read and update **their own** row (matched on `auth_user_id`); an admin may read and update any row.
 
 ### Realtime
 
@@ -1016,8 +962,7 @@ Add catalog tables to the Realtime publication so collaborative editing pushes n
 ALTER PUBLICATION supabase_realtime
   ADD TABLE node, edge,
             system_meta, distribution_meta, attribute_meta, standard_reference_meta,
-            code_list_entry, processing_activity,
-            canvas, canvas_layout;
+            code_list_entry, processing_activity;
 ```
 
 `role_assignment`, `contact`, `revision` are intentionally not in the Realtime publication — they don't need live UI updates.
@@ -1060,6 +1005,10 @@ CREATE TRIGGER node_revision AFTER INSERT OR UPDATE OR DELETE ON node
 
 Where `sort_order` is reorderable by drag-and-drop (attribute order in a distribution, code-list-entry order), use **fractional indexing** at the application level: assign new sort_order values as midpoints between neighbours, e.g. `1000`, `2000`, `1500`. Avoids O(n) rewrites on every reorder.
 
+### Bulk-load path
+
+The Excel UPSERT (§9) wraps the whole upload in a single transaction. Triggers fire as normal — every UPSERTed row produces a revision. For one-shot imports of large baselines (initial migration, full re-imports), the operator may bypass triggers via the service-role connection to keep the audit log clean; the importer is responsible for emitting a single summary revision in that case.
+
 ---
 
 ## 9. Excel I/O Contract
@@ -1074,7 +1023,7 @@ Where `sort_order` is reorderable by drag-and-drop (attribute order in a distrib
 
 ### Sheet list
 
-Twelve sheets, each backed by one or two tables:
+Eleven sheets, each backed by one or two tables:
 
 | Sheet (DE) | Backing tables | Slug pattern | Notes |
 |---|---|---|---|
@@ -1083,23 +1032,24 @@ Twelve sheets, each backed by one or two tables:
 | `Distributionen` | `node` (kind=distribution) + `distribution_meta` | `dist:refx_gebaeude` | Replaces v0.1's separate `Tabellen`/`APIs`/`Dateien` sheets |
 | `Attribute` | `node` (kind=attribute) + `attribute_meta` | `attr:refx_gebaeude.MEASUREMENT.OBJECT_ID` | Largest sheet |
 | `Wertelisten` | `node` (kind=code_list) | `cl:gwr_gkat` | |
-| `Werteliste-Einträge` | `code_list_entry` | `cle:gwr_gkat.1010` | New sheet — was nested under codelists in v0.1 |
-| `Standards` | `node` (kind=standard_reference) + `standard_reference_meta` | `std:eCH-0010` | New sheet |
+| `Werteliste-Einträge` | `code_list_entry` | `cle:gwr_gkat.1010` | (sheet-only slug; not stored on a node) |
+| `Standards` | `node` (kind=standard_reference) + `standard_reference_meta` | `std:eCH-0010` | |
 | `Beziehungen` | `edge` | (`from_slug`, `to_slug`, `edge_type`) | Identified by endpoints, not by UUID |
-| `Kontakte` | `contact` | `contact_email` | Identified by email |
+| `Kontakte` | `contact` | `contact_email` | Single sheet for users, externals, and teams; `is_team` and `app_role` columns differentiate |
 | `Rollen-Zuweisungen` | `role_assignment` | (`contact_email`, `role`, `scope_slug`) | |
 | `Bearbeitungstätigkeiten` | `processing_activity` | `pset_slug` | One row per pset with personal data |
-| `Layouts` | `canvas`, `canvas_layout` | (`canvas_slug`, `node_slug`) | Optional — most stewards never edit layouts |
+
+The v0.2 `Layouts` sheet is gone — layout coordinates `(x, y)` live on the `Distributionen`, `Datenpakete`, and other entity sheets directly as two extra columns per row.
 
 ### Slug rules
 
-Slugs are stable, human-readable identifiers:
+Slugs are stable, human-readable identifiers stored on `node.slug`:
 
 ```
 {kind_prefix}:{technical_path}
 ```
 
-Kind prefixes:
+Kind prefixes (also enforced by CHECK on `node.slug`):
 
 | Kind | Prefix | Example |
 |---|---|---|
@@ -1108,18 +1058,18 @@ Kind prefixes:
 | distribution | `dist:` | `dist:refx_gebaeude` |
 | attribute | `attr:` | `attr:refx_gebaeude.MEASUREMENT.OBJECT_ID` |
 | code_list | `cl:` | `cl:gwr_gkat` |
-| code_list_entry (in sheet only) | `cle:` | `cle:gwr_gkat.1010` |
 | standard_reference | `std:` | `std:eCH-0010` |
-| canvas | `canvas:` | `canvas:default` |
 
-Slugs use `[a-z0-9_]` plus `:` and `.` as separators. The server validates with a regex on insert. Renames are allowed but warn the steward that downstream references will need updating; the server does not auto-rewrite edges.
+`code_list_entry` rows use the slug `cle:{code_list_slug_path}.{code}` in the Excel sheet only — these are not stored as `node.slug` because entries are not nodes.
+
+Slugs use `[a-z0-9_]` plus `:` and `.` as separators. The DB enforces format with `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[a-z0-9_.]+$')`. Renames are allowed but warn the steward that downstream references will need updating; the server does not auto-rewrite edges.
 
 ### Column ordering
 
 Every entity sheet starts with the same prefix:
 
 ```
-slug | name | label_de | label_fr | label_it | label_en | description_de | description_fr | description_it | description_en | (kind-specific cols) | tags | classification | lifecycle_status | _action
+slug | name | label_de | label_fr | label_it | label_en | description_de | description_fr | description_it | description_en | (kind-specific cols) | tags | classification | lifecycle_status | x | y | _action
 ```
 
 `_action` is the last column. Default value `keep` (or empty). `delete` removes the row.
@@ -1140,7 +1090,7 @@ for each row in sheet:
     return action = 'updated' if any column changed, else 'unchanged'
 
   else:
-    INSERT new node + meta side table row
+    INSERT new node + meta side table row (with kind populated to satisfy composite FK)
     set created_at, modified_at = now()
     return action = 'inserted'
 
@@ -1177,19 +1127,20 @@ Download → no edits → upload → zero changes recorded. The `revision` log s
 
 ### What is not modelled
 
-- Optimistic locking. Removed in v0.2 — concurrent-edit risk is governance-controlled, not technically detected.
+- Optimistic locking. Concurrent-edit risk is governance-controlled, not technically detected.
 - Cell-level merge across two stewards' edits. Last-write-wins on simultaneous uploads.
 - Branch / draft / publish workflow. `lifecycle_status` is a flat enum, not a workflow state machine.
+- Multi-canvas. Single canvas per catalog instance; layout coords live on the node.
 
 ---
 
 ## 10. Migration Plan from canvas.json v2
 
-The existing `data/canvas.json` (v2 shape: `{ version, homeView, sets[], nodes[], edges[] }`) migrates to the v0.2 model in twelve idempotent steps. Each step can be re-run safely.
+The existing `data/canvas.json` (v2 shape: `{ version, homeView, sets[], nodes[], edges[] }`) migrates to the v0.2.1 model in eleven idempotent steps. Each step can be re-run safely.
 
 ### Step 1 — Apply schema
 
-Run the DDL from §6 to create all 14 tables, indexes, constraints, triggers, and the audit revision function. CHECK constraints encode the enums from §6.15.
+Run the DDL from §6 to create all 11 tables, indexes, constraints, triggers, and the audit revision function. CHECK constraints encode the enums from §6.12. Composite `UNIQUE (id, kind)` is added to `node` so side tables can declare `(node_id, kind)` foreign keys.
 
 ### Step 2 — Seed reference data
 
@@ -1208,11 +1159,14 @@ From the distinct `node[].system` strings in `canvas.json`, insert `node` rows w
 
 ```python
 for sys_name in distinct_systems(canvas):
-    insert node(slug=f"sys:{slug_safe(sys_name)}", kind='system', label_de=sys_name, …)
-    insert system_meta(node_id=…, technology_stack=…, base_url='', security_zone='', active=true)
+    insert node(slug=f"sys:{slug_safe(sys_name)}", kind='system',
+                label_de=sys_name, lifecycle_status='produktiv',
+                x=NULL, y=NULL)
+    insert system_meta(node_id=…, kind='system',
+                       technology_stack=…, base_url='', security_zone='', active=true)
 ```
 
-Five systems expected in the current dataset: `sys:sap_re_fx`, `sys:bbl_gis`, `sys:bfs_gwr`, `sys:av_gis`, `sys:grundbuch`.
+Five systems expected: `sys:sap_re_fx`, `sys:bbl_gis`, `sys:bfs_gwr`, `sys:av_gis`, `sys:grundbuch`.
 
 ### Step 4 — Lift psets from `sets[]`
 
@@ -1221,11 +1175,11 @@ For each entry in `canvas.sets[]`:
 ```python
 insert node(slug=f"pset:{set.id}", kind='pset',
             label_de=set.label, description_de=set.description,
-            lifecycle_status='produktiv')
-# lineage_note becomes a description
+            lifecycle_status='produktiv',
+            x=NULL, y=NULL)
 ```
 
-Twenty-seven psets expected. The `lineage` text on each set is preserved as `description_de`; structured edges to `standard_reference` nodes are built in step 9.
+Twenty-seven psets expected. The `lineage` text on each set is preserved as `description_de`; structured edges to `standard_reference` nodes are built in step 8.
 
 ### Step 5 — Lift distributions
 
@@ -1234,9 +1188,10 @@ For each entry in `canvas.nodes[]` with `type IN ('table','view','api','file')`:
 ```python
 insert node(slug=f"dist:{node.id}", kind='distribution',
             label_de=node.label, lifecycle_status='produktiv',
-            tags=node.tags)
-insert distribution_meta(node_id=…, name=node.id, type=node.type,
-                          schema_name=node.schema, …)
+            tags=node.tags,
+            x=node.x, y=node.y)              # layout preserved inline
+insert distribution_meta(node_id=…, kind='distribution',
+                          name=node.id, type=node.type, schema_name=node.schema, …)
 # Also insert a `publishes` edge from sys:{node.system} → dist:{node.id}
 ```
 
@@ -1245,7 +1200,9 @@ insert distribution_meta(node_id=…, name=node.id, type=node.type,
 For each entry in `canvas.nodes[]` with `type = 'codelist'`:
 
 ```python
-insert node(slug=f"cl:{node.id}", kind='code_list', label_de=node.label, …)
+insert node(slug=f"cl:{node.id}", kind='code_list',
+            label_de=node.label, lifecycle_status='produktiv',
+            x=node.x, y=node.y)
 # Also insert a `publishes` edge from sys:{node.system} → cl:{node.id}
 ```
 
@@ -1254,18 +1211,20 @@ insert node(slug=f"cl:{node.id}", kind='code_list', label_de=node.label, …)
 For each `column` in a codelist node (the v2 hack where `name = code` and `type = label`):
 
 ```python
-insert code_list_entry(code_list_node_id=…, code=col.name,
-                       label_de=col.type)
+insert code_list_entry(code_list_node_id=…, kind='code_list',
+                       code=col.name, label_de=col.type)
 ```
 
-### Step 8 — Lift attributes
+### Step 8 — Lift attributes and edges
 
 For each `column` in a non-codelist `nodes[]` entry:
 
 ```python
 insert node(slug=f"attr:{node.id}.{col.sourceStructure or '_'}.{col.name}",
-            kind='attribute', label_de=col.name)
-insert attribute_meta(node_id=…, name=col.name, data_type=col.type,
+            kind='attribute', label_de=col.name,
+            x=NULL, y=NULL)                  # attributes are not laid out individually
+insert attribute_meta(node_id=…, kind='attribute',
+                      name=col.name, data_type=col.type,
                       key_role=col.key or NULL,
                       personal_data_category='keine',  # hand-edit later
                       source_structure=col.sourceStructure)
@@ -1291,47 +1250,31 @@ For each entry in `canvas.edges[]`:
 insert edge(from_node_id=…, to_node_id=…, edge_type=…, label_de=edge.label)
 ```
 
-### Step 10 — Lift homeView and create default canvas
+### Step 10 — Preserve `homeView` client-side
 
-```python
-insert canvas(slug='canvas:default', label_de='Standard',
-              owner_user_id=NULL, is_public=false,
-              home_scale=canvas.homeView.scale,
-              home_center_x=canvas.homeView.centerX,
-              home_center_y=canvas.homeView.centerY)
-```
+`canvas.homeView = { scale, centerX, centerY }` is **not** persisted to the database. v0.2.1 is single-canvas and the home viewport is a per-user UI preference. The importer writes `homeView` to the application's `localStorage` under a stable key (`bbl_canvas_home_view`) so the existing UX is preserved. If multi-user shared viewports become a need later, introduce a `user_preferences` table at that point.
 
-### Step 11 — Lift node coordinates
+### Step 11 — Verify round-trip
 
-For every distribution / code_list node migrated in steps 5 and 6:
-
-```python
-insert canvas_layout(canvas_id=<canvas:default.id>,
-                     node_id=…, x=node.x, y=node.y)
-```
-
-Psets, attributes, and standards are not laid out in v0.1 / v0.2 import — stewards arrange them manually post-migration.
-
-### Step 12 — Verify round-trip
-
-Re-export the database to `canvas.json` shape using the inverse of steps 3–11; `diff` against the original. Acceptable diffs:
+Re-export the database to `canvas.json` shape using the inverse of steps 3–9; `diff` against the original. Acceptable diffs:
 
 - `_action` columns added (Excel-only, not in JSON)
 - Slugs added on every node (new identifiers; old `node.id` strings preserved as slug suffixes)
 - `lifecycle_status: produktiv` added on every migrated entity
 - New `kind = pset` entries for sets — these did not exist in v1's `nodes[]`
 
-### Step 13 — Hand-edit pass
+### Step 12 — Hand-edit pass
 
-Migration produces a runnable catalog but with empty fields where v0.2 expects content:
+Migration produces a runnable catalog but with empty fields where v0.2.1 expects content:
 
 - `attribute_meta.personal_data_category`: defaults to `'keine'`. Stewards must classify any actual personal data.
 - `node.classification`: defaults to NULL. Stewards must apply ISG classification where applicable.
-- `processing_activity` rows: not auto-created. Stewards must create one per pset that contains personal data after step 13's first pass.
+- `processing_activity` rows: not auto-created. Stewards must create one per pset that contains personal data after the first hand-edit pass.
 - `role_assignment`: not auto-populated. Stewards must record at least the Data Owner per pset before publishing externally.
 - DCAT-AP CH distribution fields (`license`, `accrual_periodicity`, …): not present in v1; stewards add per-distribution.
+- `contact`: not auto-populated. Initial stewards are seeded manually with `auth_user_id` linked to their Supabase user, plus external contacts and team rows for known org units.
 
-The migration script lives in `prototype-canvas/migrations/001_v0_2_supabase.sql` (to be written when the Supabase project is provisioned).
+The migration script lives in `prototype-canvas/migrations/001_v0_2_1_supabase.sql` (to be written when the Supabase project is provisioned).
 
 ---
 
