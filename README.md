@@ -16,7 +16,7 @@ A set of **experimental web prototypes** exploring different ways to browse, sea
 
 Each prototype tackles the same underlying question - *"how should people inside my organisation find out what data exists, what it means, and where it lives?"* - but from a different angle: a polished DCAT-AP catalog, an architecture-layer browser, a SQL-backed explorer, a lineage graph, a diagram editor, and a Miro-style architecture canvas.
 
-All six are unofficial mockups. They are **not** production systems - they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary).
+All here presented applications are unofficial mockups. They are **not** production systems - they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary), or best practice frameworks like TOGAG, or DAMA-DMBOK.
 
 
 ## Prototypes
