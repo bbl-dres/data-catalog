@@ -10,29 +10,31 @@
 
 ## 1. Goals
 
-The BBL Architektur-Canvas is a Miro-style sketching surface for data architects at the Bundesamt für Bauten und Logistik. The persisted model serves three audiences — the architect drafting at the canvas, the local data steward bulk-editing in Excel, and the federal data governance bodies that consume the catalog as DCAT-AP CH metadata. v0.2 of this model rebuilt around two findings that emerged after v0.1 shipped, and v0.2.1 simplifies further along the lines of *fewer tables, stronger constraints*.
+The BBL Architektur-Canvas is a sketching surface for BBL's data architects, a working catalog for local data stewards, and a metadata source for federal interoperability bodies. The persisted model serves these audiences with one shape — a graph of nodes and edges that captures what data exists, what it means, who's responsible for it, and how it relates to federal standards and law.
 
-The structural premises:
-
-1. **Property sets (Datenpakete) are not a UI label** — they are the principal noun of the catalog. They carry lineage, classifications, processing-activity records, and governance assignments.
-2. **The canvas is a graph editor, and storage should mirror that.** Two principal tables (`node`, `edge`) absorb the substantive catalog. Type-specific fields live in slim side tables. Regulated semantics (classification, governance, processing activity) stay typed.
-3. **Single-canvas world** — multi-canvas decoupling is deferred. Layout coordinates live directly on the node; if multi-canvas becomes a real need, a `canvas` and `canvas_node_layout` pair re-enters as a small additive migration.
-4. **One contact concept**, not two — `contact` covers Supabase-authenticated users, external persons without accounts, and team / org-unit references. The `auth_user_id` link is optional and nullable.
-
-The eight goals below are each defensible from at least two of the five reviewing perspectives (domain expert, senior developer, senior data architect, enterprise architect, end user / local data steward).
-
-| #  | Goal | Summary | Defenders | MoSCoW |
-|----|------|---------|-----------|--------|
-| G1 | Canvas-shaped storage | Visual and storage models share shape (`node` + `edge`); new kinds absorbed by enum, not migration. | Developer + Domain expert | **Must** |
-| G2 | Pset-first catalog | Datenpakete are the principal noun, carrying lineage, classification, and the 1:1 processing-activity record. | Domain expert + Data architect | **Must** |
-| G3 | Standards-native shape | DCAT-AP CH 3.0.0 conformance without translation; eCH / ISO / Fedlex anchors as `standard_reference` nodes. | Data architect + EA | **Should** |
-| G4 | Governance and compliance built-in | NaDB roles, DSG personal-data categories + processing-activity records, ISG classification — entities and enums, never prose. | EA + Domain expert | **Must** |
-| G5 | Multilingual by construction | Every label and description in DE / FR / IT / EN via typed columns; `label_de NOT NULL`; fallback `requested → de → en → first non-null`. | All five perspectives | **Should** |
-| G6 | Lineage as data | Every "comes from / derives from / flows into / references / replaces" is a typed edge; queryable with recursive CTE. | Data architect + Domain expert | **Should** |
-| G7 | Supabase-ready, vendor-light | PostgreSQL 15+, `pgcrypto` + `pg_trgm` only, UUID PKs, RLS on every catalog table; runs unmodified on vanilla Postgres. | Developer + EA | **Must** |
-| G8 | Excel-first editing | Download / UPSERT / upload is the primary write path; slug-keyed; per-row outcome report; explicit `_action = delete`. | End user + Developer + Domain expert | **Must** |
+| # | Goal | Plain language | MoSCoW |
+|---|------|----------------|--------|
+| G1 | Multi-faceted data inventory | One catalog, many lenses: technical, business, governance, and compliance metadata for every entry. The answer to "what data do we have, what does it mean, who's responsible, is it compliant?" | **Must** |
+| G2 | Master-data view via Datenpakete | Organise the catalog around conceptual data packages (Adresse, Eigentum, Bewertung) that span systems. Understand a Datenpaket once; see it across SAP, GIS, GWR, Grundbuch. | **Must** |
+| G3 | Clear ownership and stewardship | Every Datenpaket and distribution has a named Data Owner, Steward, and Custodian per the NaDB model. No data without an accountable party. | **Must** |
+| G4 | Federal standards alignment | Speaks DCAT-AP CH, eCH, ISG, DSG, NaDB natively. Plugs into the federal Interoperabilitätsplattform without translation work. | **Should** |
+| G5 | Multilingual | DE / FR / IT / EN throughout. German required; other locales populated as content matures. | **Should** |
+| G6 | Domain-expert maintainable | Built for business and subject-matter experts to manage themselves. Excel round-trip, not API or web forms — the catalog adapts to the tool the steward already knows. | **Must** |
+| G7 | Flexible and extensible | Node + edge model means new kinds of things and new kinds of relationships are added by extending an enum, not by restructuring tables. The catalog evolves with BBL's understanding. | **Should** |
+| G8 | Operationally simple | Plain PostgreSQL with two common extensions. No graph databases, no proprietary infrastructure, no vendor lock-in. | **Must** |
 
 **MoSCoW legend:** *Must* = ship-blocker for v0.2.1. *Should* = strongly recommended; absence is painful but workable for an internal v1. *Could* / *Won't* are not used at the goal level — deferrals are tracked at the FR level in §2.
+
+### Non-goals
+
+Things the catalog is deliberately *not*, to keep scope honest:
+
+- **Not a runtime data integration platform.** The catalog describes data; it doesn't move or transform it.
+- **Not a multi-tenant SaaS.** One BBL instance, one source of truth, served to internal stewards.
+- **Not a real-time collaborative editor.** Editing is governance-serialised; multi-user merge conflicts aren't modelled.
+- **Not an external user portal.** DCAT-AP CH export *enables* downstream publication via opendata.swiss or the IOP, but this catalog isn't the public face.
+- **Not multi-canvas yet.** Layout coordinates live directly on the node. Multi-canvas reuse of the same node at different positions is a deferred concern that re-introduces a `canvas_node_layout` join table if and when needed.
+- **Not split into separate user and contact tables.** A single `contact` table covers Supabase-authenticated users, external persons without accounts, and team / org-unit references.
 
 ---
 
@@ -82,20 +84,20 @@ The eight goals below are each defensible from at least two of the five reviewin
 
 ## 3. Standards Alignment
 
-| Layer | ArchiMate 3.x | DCAT-AP CH 3.0.0 | NaDB / Federal | Our entity |
-|-------|--------------|--------------------|----------------|-----------|
-| Application | `Application Component` | `dcat:Catalog` | "System" / Datensammlungs-Quelle | `node` (kind = system) |
-| Application + Technology | `Data Object` + `Artifact` | `dcat:Distribution` (table/view/file) | "Datensammlung" | `node` (kind = distribution) |
-| Application | `Application Interface` | `dcat:DataService` | "API / Schnittstelle" | `node` (kind = distribution, type = api) |
-| Business | `Business Object` (enumerated) | `dcat:Dataset` (conceptual) | "Datenpaket" | `node` (kind = pset) |
-| Technology | `Artifact` property | — (sub-distribution structure) | "Feld / Attribut" | `node` (kind = attribute) |
-| Business | `Business Object` (enumerated) | `skos:ConceptScheme` (codelist) | "Werteliste / Nomenklatur" | `node` (kind = code_list) + side rows |
-| Cross-cutting | `Realization` | — | — | `edge` (edge_type = realises) |
-| Cross-cutting | `Association` | `dcat:qualifiedRelation` | — | `edge` (edge_type = derives_from / flows_into / fk_references / …) |
-| Cross-cutting | external reference | `dct:conformsTo` | eCH / Fedlex / ISO | `node` (kind = standard_reference) |
-| Cross-cutting | `Assignment` | `dcat:contactPoint` / `dct:publisher` | NaDB Data Owner / Local Data Steward / Custodian | `role_assignment` (contact + role + scope_node) |
-| Cross-cutting | — | `dct:accessRights` | ISG Klassifikation | `node.classification` |
-| Cross-cutting | — | — | DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten* | `processing_activity` |
+| Our entity | Layer | ArchiMate 3.x | DCAT-AP CH 3.0.0 | NaDB / Federal |
+|------------|-------|--------------|--------------------|----------------|
+| `node` (kind = system) | Application | `Application Component` | `dcat:Catalog` | "System" / Datensammlungs-Quelle |
+| `node` (kind = distribution) | Application + Technology | `Data Object` + `Artifact` | `dcat:Distribution` (table/view/file) | "Datensammlung" |
+| `node` (kind = distribution, type = api) | Application | `Application Interface` | `dcat:DataService` | "API / Schnittstelle" |
+| `node` (kind = pset) | Business | `Business Object` (enumerated) | `dcat:Dataset` (conceptual) | "Datenpaket" |
+| `node` (kind = attribute) | Technology | `Artifact` property | — (sub-distribution structure) | "Feld / Attribut" |
+| `node` (kind = code_list) + side rows | Business | `Business Object` (enumerated) | `skos:ConceptScheme` (codelist) | "Werteliste / Nomenklatur" |
+| `edge` (edge_type = realises) | Cross-cutting | `Realization` | — | — |
+| `edge` (edge_type = derives_from / flows_into / fk_references / …) | Cross-cutting | `Association` | `dcat:qualifiedRelation` | — |
+| `node` (kind = standard_reference) | Cross-cutting | external reference | `dct:conformsTo` | eCH / Fedlex / ISO |
+| `role_assignment` (contact + role + scope_node) | Cross-cutting | `Assignment` | `dcat:contactPoint` / `dct:publisher` | NaDB Data Owner / Local Data Steward / Custodian |
+| `node.classification` | Cross-cutting | — | `dct:accessRights` | ISG Klassifikation |
+| `processing_activity` | Cross-cutting | — | — | DSG Art. 12 *Verzeichnis der Bearbeitungstätigkeiten* |
 
 ### Compliance anchors
 
@@ -1104,150 +1106,6 @@ Download → no edits → upload → zero changes recorded. The `revision` log s
 - Cell-level merge across two stewards' edits. Last-write-wins on simultaneous uploads.
 - Branch / draft / publish workflow. `lifecycle_status` is a flat enum, not a workflow state machine.
 - Multi-canvas. Single canvas per catalog instance; layout coords live on the node.
-
----
-
-## 10. Migration Plan from canvas.json v2
-
-The existing `data/canvas.json` (v2 shape: `{ version, homeView, sets[], nodes[], edges[] }`) migrates to the v0.2.1 model in eleven idempotent steps. Each step can be re-run safely.
-
-### Step 1 — Apply schema
-
-Run the DDL from §6 to create all 11 tables, indexes, constraints, triggers, and the audit revision function. CHECK constraints encode the enums from §6.12. Composite `UNIQUE (id, kind)` is added to `node` so side tables can declare `(node_id, kind)` foreign keys.
-
-### Step 2 — Seed reference data
-
-No seed table population needed — all enums are CHECK constraints, with display labels in `data/i18n.json`. Seed `data/i18n.json` with:
-
-- `classification.oeffentlich`, `.intern`, `.vertraulich`, `.geheim`
-- `lifecycle_status.entwurf`, `.standardisiert`, `.produktiv`, `.abgeloest`
-- `personal_data_category.keine`, `.personenbezogen`, `.besonders_schutzenswert`
-- `role.data_owner`, `.local_data_steward`, … (all NaDB roles)
-- `kind.system`, `.pset`, `.distribution`, `.attribute`, `.code_list`, `.standard_reference`
-- `edge_type.publishes`, `.contains`, `.realises`, … (all edge types)
-
-### Step 3 — Lift systems
-
-From the distinct `node[].system` strings in `canvas.json`, insert `node` rows with `kind = system`:
-
-```python
-for sys_name in distinct_systems(canvas):
-    insert node(slug=f"sys:{slug_safe(sys_name)}", kind='system',
-                label_de=sys_name, lifecycle_status='produktiv',
-                x=NULL, y=NULL)
-    insert system_meta(node_id=…, kind='system',
-                       technology_stack=…, base_url='', security_zone='', active=true)
-```
-
-Five systems expected: `sys:sap_re_fx`, `sys:bbl_gis`, `sys:bfs_gwr`, `sys:av_gis`, `sys:grundbuch`.
-
-### Step 4 — Lift psets from `sets[]`
-
-For each entry in `canvas.sets[]`:
-
-```python
-insert node(slug=f"pset:{set.id}", kind='pset',
-            label_de=set.label, description_de=set.description,
-            lifecycle_status='produktiv',
-            x=NULL, y=NULL)
-```
-
-Twenty-seven psets expected. The `lineage` text on each set is preserved as `description_de`; structured edges to `standard_reference` nodes are built in step 8.
-
-### Step 5 — Lift distributions
-
-For each entry in `canvas.nodes[]` with `type IN ('table','view','api','file')`:
-
-```python
-insert node(slug=f"dist:{node.id}", kind='distribution',
-            label_de=node.label, lifecycle_status='produktiv',
-            tags=node.tags,
-            x=node.x, y=node.y)              # layout preserved inline
-insert distribution_meta(node_id=…, kind='distribution',
-                          name=node.id, type=node.type, schema_name=node.schema, …)
-# Also insert a `publishes` edge from sys:{node.system} → dist:{node.id}
-```
-
-### Step 6 — Lift code lists
-
-For each entry in `canvas.nodes[]` with `type = 'codelist'`:
-
-```python
-insert node(slug=f"cl:{node.id}", kind='code_list',
-            label_de=node.label, lifecycle_status='produktiv',
-            x=node.x, y=node.y)
-# Also insert a `publishes` edge from sys:{node.system} → cl:{node.id}
-```
-
-### Step 7 — Lift code list entries
-
-For each `column` in a codelist node (the v2 hack where `name = code` and `type = label`):
-
-```python
-insert code_list_entry(code_list_node_id=…, kind='code_list',
-                       code=col.name, label_de=col.type)
-```
-
-### Step 8 — Lift attributes and edges
-
-For each `column` in a non-codelist `nodes[]` entry:
-
-```python
-insert node(slug=f"attr:{node.id}.{col.sourceStructure or '_'}.{col.name}",
-            kind='attribute', label_de=col.name,
-            x=NULL, y=NULL)                  # attributes are not laid out individually
-insert attribute_meta(node_id=…, kind='attribute',
-                      name=col.name, data_type=col.type,
-                      key_role=col.key or NULL,
-                      personal_data_category='keine',  # hand-edit later
-                      source_structure=col.sourceStructure)
-
-# Edges:
-# - dist:{node.id} --contains--> attr:…
-# - if col.setId:  attr:… --in_pset--> pset:{col.setId}
-```
-
-The deduplication caveat from v0.1 (SAP BAPI substructures repeat `OBJECT_ID` across sets) is naturally handled by the slug encoding `node.id + sourceStructure + col.name`.
-
-### Step 9 — Lift edges from `edges[]`
-
-For each entry in `canvas.edges[]`:
-
-```python
-# Default edge_type for current data is 'flows_into' (semantically "relates to");
-# during migration, classify based on label heuristics:
-#   labels with "→" or "Zuordnung" → flows_into
-#   labels with "FK" or "Fremdschlüssel" → fk_references (only if both endpoints are attributes)
-#   else: flows_into (the safest default)
-
-insert edge(from_node_id=…, to_node_id=…, edge_type=…, label_de=edge.label)
-```
-
-### Step 10 — Preserve `homeView` client-side
-
-`canvas.homeView = { scale, centerX, centerY }` is **not** persisted to the database. v0.2.1 is single-canvas and the home viewport is a per-user UI preference. The importer writes `homeView` to the application's `localStorage` under a stable key (`bbl_canvas_home_view`) so the existing UX is preserved. If multi-user shared viewports become a need later, introduce a `user_preferences` table at that point.
-
-### Step 11 — Verify round-trip
-
-Re-export the database to `canvas.json` shape using the inverse of steps 3–9; `diff` against the original. Acceptable diffs:
-
-- `_action` columns added (Excel-only, not in JSON)
-- Slugs added on every node (new identifiers; old `node.id` strings preserved as slug suffixes)
-- `lifecycle_status: produktiv` added on every migrated entity
-- New `kind = pset` entries for sets — these did not exist in v1's `nodes[]`
-
-### Step 12 — Hand-edit pass
-
-Migration produces a runnable catalog but with empty fields where v0.2.1 expects content:
-
-- `attribute_meta.personal_data_category`: defaults to `'keine'`. Stewards must classify any actual personal data.
-- `node.classification`: defaults to NULL. Stewards must apply ISG classification where applicable.
-- `processing_activity` rows: not auto-created. Stewards must create one per pset that contains personal data after the first hand-edit pass.
-- `role_assignment`: not auto-populated. Stewards must record at least the Data Owner per pset before publishing externally.
-- DCAT-AP CH distribution fields (`license`, `accrual_periodicity`, …): not present in v1; stewards add per-distribution.
-- `contact`: not auto-populated. Initial stewards are seeded manually with `auth_user_id` linked to their Supabase user, plus external contacts and team rows for known org units.
-
-The migration script lives in `prototype-canvas/migrations/001_v0_2_1_supabase.sql` (to be written when the Supabase project is provisioned).
 
 ---
 
