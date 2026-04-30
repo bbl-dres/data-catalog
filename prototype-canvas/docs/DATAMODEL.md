@@ -8,33 +8,6 @@
 
 ---
 
-## Table of Contents
-
-1. [Goals](#1-goals)
-2. [Requirements](#2-requirements)
-3. [Standards Alignment](#3-standards-alignment)
-4. [Conceptual Model](#4-conceptual-model)
-5. [Entity Overview](#5-entity-overview)
-6. [Entity Details](#6-entity-details)
-   - 6.1 [Node](#61-node)
-   - 6.2 [Edge](#62-edge)
-   - 6.3 [System Meta](#63-system-meta)
-   - 6.4 [Distribution Meta](#64-distribution-meta)
-   - 6.5 [Attribute Meta](#65-attribute-meta)
-   - 6.6 [Standard Reference Meta](#66-standard-reference-meta)
-   - 6.7 [Code List Entry](#67-code-list-entry)
-   - 6.8 [Processing Activity](#68-processing-activity)
-   - 6.9 [Contact](#69-contact)
-   - 6.10 [Role Assignment](#610-role-assignment)
-   - 6.11 [Revision](#611-revision)
-   - 6.12 [Enum Reference](#612-enum-reference)
-7. [i18n Strategy](#7-i18n-strategy)
-8. [Supabase Specifics](#8-supabase-specifics)
-9. [Excel I/O Contract](#9-excel-io-contract)
-10. [Migration Plan](#10-migration-plan-from-canvasjson-v2)
-
----
-
 ## 1. Goals
 
 The BBL Architektur-Canvas is a Miro-style sketching surface for data architects at the Bundesamt für Bauten und Logistik. The persisted model serves three audiences — the architect drafting at the canvas, the local data steward bulk-editing in Excel, and the federal data governance bodies that consume the catalog as DCAT-AP CH metadata. v0.2 of this model rebuilt around two findings that emerged after v0.1 shipped, and v0.2.1 simplifies further along the lines of *fewer tables, stronger constraints*.
