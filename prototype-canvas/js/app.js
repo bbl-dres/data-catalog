@@ -39,7 +39,10 @@ window.CanvasApp.App = (function () {
             updateCanvasEmpty();
         });
 
+        wireLoadErrorRetry();
+
         return State.load().then(function () {
+            applyLoadError();
             // Apply the URL's view/selection on top of what was loaded from
             // localStorage. URL wins so shared links land you exactly where
             // the sender was.
@@ -69,6 +72,49 @@ window.CanvasApp.App = (function () {
                 });
             });
         });
+    }
+
+    // ---- Load-error overlay --------------------------------------------
+    // Shown when State.load() failed (Supabase unreachable, RPC error, …).
+    // The overlay sits above all three views; retry just runs load() again
+    // and re-renders.
+
+    function wireLoadErrorRetry() {
+        var btn = document.getElementById('load-error-retry');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            btn.disabled = true;
+            var bodyEl = document.getElementById('load-error-body');
+            if (bodyEl) bodyEl.textContent = 'Lade Daten…';
+            State.load().then(function () {
+                btn.disabled = false;
+                applyLoadError();
+                if (!State.getLoadError()) {
+                    window.CanvasApp.Canvas.renderAll();
+                    window.CanvasApp.Table.render();
+                    window.CanvasApp.Api.render();
+                    window.CanvasApp.Panel.render();
+                    requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                            window.CanvasApp.Canvas.goHome();
+                        });
+                    });
+                }
+            });
+        });
+    }
+
+    function applyLoadError() {
+        var overlay = document.getElementById('load-error-overlay');
+        var body    = document.getElementById('load-error-body');
+        if (!overlay) return;
+        var err = State.getLoadError();
+        if (err) {
+            if (body) body.textContent = err;
+            overlay.removeAttribute('hidden');
+        } else {
+            overlay.setAttribute('hidden', '');
+        }
     }
 
     // ---- URL sync ------------------------------------------------------

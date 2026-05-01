@@ -22,7 +22,6 @@ window.CanvasApp.State = (function () {
     var LEGACY_STORAGE_KEY = 'canvas.state.v1';
     // Old separate layout key from an earlier iteration — drop too.
     var LEGACY_LAYOUT_KEY = 'canvas.layout.v1';
-    var SEED_PATH = 'data/canvas.json';
 
     var state = {
         nodes: [],
@@ -44,6 +43,9 @@ window.CanvasApp.State = (function () {
         //   { kind: 'attribute', nodeId: '<nodeId>', name: '<columnName>' }
         //   { kind: 'set',       id: '<setId>' }       // Datenpaket from the registry
         selection: null,
+        // String describing a Supabase load failure, or null on success.
+        // Set by load() so views can render an in-place error overlay.
+        loadError: null,
         // Faceted filter state — OR within a dimension, AND between dimensions.
         // Persisted via URL params (f.system, f.type, f.set, f.tag) so links
         // are shareable and the filter survives refresh. Independent of
@@ -118,26 +120,26 @@ window.CanvasApp.State = (function () {
 
     // ---- Loading -------------------------------------------------------
 
+    // Supabase is the only source of truth. No localStorage seed cache, no
+    // canvas.json fallback — those would risk showing stale or wrong data
+    // after the DB updates. On failure (offline, RPC error, ...) we surface
+    // an error message via state.loadError; the views render an overlay.
     function load() {
-        // Migrate from earlier storage shapes (separate layout key, v1
-        // schema without sets registry). Drop both so they can't leak.
+        // Drop pre-Supabase cache shapes so they can't leak into UI.
         try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
         try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (e) {}
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 
-        var stored = readStorage();
-        // Require sets to be present — v1 state without it forces a re-seed
-        // so the registry doesn't end up empty after an upgrade.
-        if (stored && Array.isArray(stored.nodes) && Array.isArray(stored.sets)) {
-            state.nodes = stored.nodes;
-            state.edges = stored.edges || [];
-            state.sets  = stored.sets;
-            state.homeView = isValidHomeView(stored.homeView) ? stored.homeView : null;
+        if (!window.CanvasApp.SupabaseClient) {
+            state.loadError = 'SupabaseClient nicht geladen.';
+            state.nodes = []; state.edges = []; state.sets = [];
             rebuildIndex();
             return Promise.resolve();
         }
-        return fetch(SEED_PATH)
-            .then(function (r) { return r.json(); })
+
+        return window.CanvasApp.SupabaseClient.loadCanvas()
             .then(function (data) {
+                state.loadError = null;
                 state.nodes = data.nodes || [];
                 state.edges = (data.edges || []).map(function (e, i) {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
@@ -145,14 +147,13 @@ window.CanvasApp.State = (function () {
                 state.sets = data.sets || [];
                 state.homeView = isValidHomeView(data.homeView) ? data.homeView : null;
                 rebuildIndex();
-                schedulePersist();
-                flushPendingPersist(); // first paint write is fine to do synchronously
             })
             .catch(function (err) {
-                console.error('Failed to load seed data', err);
-                state.nodes = [];
-                state.edges = [];
-                state.sets = [];
+                console.error('Failed to load canvas from Supabase', err);
+                state.loadError = err && err.message
+                    ? String(err.message)
+                    : 'Unbekannter Fehler beim Laden der Daten.';
+                state.nodes = []; state.edges = []; state.sets = [];
                 rebuildIndex();
             });
     }
@@ -819,11 +820,14 @@ window.CanvasApp.State = (function () {
         return node && node.groupBy === 'sourceStructure' ? 'sourceStructure' : 'setId';
     }
 
+    function getLoadError() { return state.loadError; }
+
     return {
         load: load,
         reset: reset,
         on: on,
         get: get,
+        getLoadError: getLoadError,
         getNodes: getNodes,
         getEdges: getEdges,
         getNode: getNode,

@@ -126,6 +126,16 @@
   <div class="filter-pill-bar" id="filter-pill-bar" hidden></div>
 
   <main class="app-main" id="app-main">
+    <!-- Load-error overlay: shown when state.loadError is set (Supabase unreachable, RPC failed, …). Sits above all three views. -->
+    <div class="load-error-overlay" id="load-error-overlay" hidden role="alert" aria-live="assertive">
+      <div class="load-error-card">
+        <div class="load-error-icon" aria-hidden="true">⚠</div>
+        <h2 class="load-error-title">Daten konnten nicht geladen werden</h2>
+        <p class="load-error-body" id="load-error-body">Verbindung zur Datenbank fehlgeschlagen.</p>
+        <button type="button" class="load-error-retry" id="load-error-retry">Erneut versuchen</button>
+      </div>
+    </div>
+
     <!-- Diagram view -->
     <section class="view view-diagram is-active" id="view-diagram" data-view="diagram">
       <div class="canvas" id="canvas" role="application" aria-label="Architekturdiagramm – mit Maus oder Touch verschieben und zoomen; Liste-Ansicht für tastaturzugängliche Alternative" tabindex="0">
@@ -283,6 +293,7 @@
   </footer>
 </div>
 
+<script src="js/supabase.js"></script>
 <script src="js/state.js"></script>
 <script src="js/canvas.js"></script>
 <script src="js/editor.js"></script>

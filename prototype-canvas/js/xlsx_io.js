@@ -1,24 +1,23 @@
 /**
  * xlsx_io — Excel import/export and JSON download.
  *
- * Workbook shape (8 sheets — one per entity tab):
- *   Systems       node_id-less, derived per unique node.system
- *   Tables        nodes where type ∈ {table, view}
- *   APIs          nodes where type === 'api'
- *   Files         nodes where type === 'file'
- *   ValueLists    nodes where type === 'codelist'
- *   PropertySets  rows of (node_id, name, label, description)
- *   Attributes    columns with node_id + set
- *   Relations     edges
+ * Sheet names mirror the DB node kinds (docs/DATAMODEL.sql):
+ *   system           per-system aggregates (derived from node.system)
+ *   distribution     nodes of type table / view / api / file (kind=distribution)
+ *   code_list        nodes of type codelist (kind=code_list)
+ *   pset             the property-set / Datenpaket registry (kind=pset)
+ *   attribute        every column across nodes (kind=attribute)
+ *   source_structure per-node SAP substructure registry (auxiliary)
+ *   edge             relations between nodes
  *
  * Import is forgiving:
- *   - Reads every node-typed sheet and merges them into nodes[]; the type
- *     for each row defaults to the sheet's implicit type but a `type`
- *     column on the row wins if present.
- *   - Falls back to the legacy `Nodes` sheet if the typed sheets aren't
- *     there.
+ *   - Reads the `distribution` and `code_list` sheets; falls back to the
+ *     pre-rename names (Tables / APIs / Files / ValueLists) so existing
+ *     exports still load.
+ *   - Per-row `type` column always wins over any sheet-level default.
+ *   - Falls back to the legacy single `Nodes` sheet if nothing else matches.
  *   - Auto-creates property sets referenced by a column but missing from
- *     the PropertySets sheet.
+ *     the pset sheet.
  *
  * Also exposes a JSON download (canvas.json) for round-tripping into the
  * git seed.
@@ -30,27 +29,39 @@ window.CanvasApp.XlsxIO = (function () {
     var State = null;
     var fileInput = null;
 
-    var SHEET_TABLES      = 'Tables';
-    var SHEET_APIS        = 'APIs';
-    var SHEET_FILES       = 'Files';
-    var SHEET_VALUELISTS  = 'ValueLists';
-    var SHEET_SYSTEMS     = 'Systems';
-    var SHEET_PROPSETS    = 'PropertySets';
-    var SHEET_SOURCE_STRUCTS = 'SourceStructures';
-    var SHEET_ATTRS       = 'Attributes';
-    var SHEET_RELATIONS   = 'Relations';
+    // Current sheet names — match DB node kinds (docs/DATAMODEL.sql).
+    var SHEET_SYSTEM           = 'system';
+    var SHEET_DISTRIBUTION     = 'distribution';
+    var SHEET_CODE_LIST        = 'code_list';
+    var SHEET_PSET             = 'pset';
+    var SHEET_ATTRIBUTE        = 'attribute';
+    var SHEET_SOURCE_STRUCTURE = 'source_structure';
+    var SHEET_EDGE             = 'edge';
 
-    // Sheet name → implicit type (when a row lacks a `type` column).
-    // Tables sheet: implicit table; if the row's `type` column says 'view',
-    // that wins.
+    // Sheet name → implicit row type. The merged `distribution` sheet has no
+    // single implicit type — rows must carry `type` (the export always writes
+    // it). The pre-rename split sheets remain readable for backwards compat.
     var SHEET_TO_DEFAULT_TYPE = {
-        'Tables':     'table',
-        'APIs':       'api',
-        'Files':      'file',
-        'ValueLists': 'codelist',
+        'distribution': null,
+        'code_list':    'codelist',
+        // Pre-rename names — kept so older exports still import cleanly.
+        'Tables':       'table',
+        'APIs':         'api',
+        'Files':        'file',
+        'ValueLists':   'codelist',
         // Legacy single-sheet support
-        'Nodes':      null
+        'Nodes':        null
     };
+
+    // First name in each list is the canonical (current) sheet name; the
+    // remainder are accepted aliases for backwards compat on import.
+    var DISTRIBUTION_SHEET_ALIASES = ['distribution', 'Tables', 'APIs', 'Files'];
+    var CODE_LIST_SHEET_ALIASES    = ['code_list', 'ValueLists'];
+    var PSET_SHEET_ALIASES         = ['pset', 'PropertySets'];
+    var ATTRIBUTE_SHEET_ALIASES    = ['attribute', 'Attributes', 'Columns', 'columns'];
+    var SOURCE_STRUCTURE_ALIASES   = ['source_structure', 'SourceStructures'];
+    var EDGE_SHEET_ALIASES         = ['edge', 'Relations', 'Edges', 'edges'];
+    var SYSTEM_SHEET_ALIASES       = ['system', 'Systems'];
 
     var NODE_HEADERS = ['id', 'label', 'type', 'system', 'schema', 'x', 'y', 'tags'];
 
@@ -147,24 +158,25 @@ window.CanvasApp.XlsxIO = (function () {
         var wb = XLSX.utils.book_new();
         var nodes = State.getNodes();
 
-        // Systems — derived overview
+        // system — derived overview, one row per node.system value.
         var systemRows = buildSystemRows(nodes);
         XLSX.utils.book_append_sheet(wb, sheetFromRows(systemRows,
             ['name', 'nodes', 'tables', 'apis', 'files', 'valuelists', 'sets', 'attributes', 'tags']),
-            SHEET_SYSTEMS);
+            SHEET_SYSTEM);
 
-        // Per-type node sheets
-        var tableRows      = nodes.filter(typeIn(['table', 'view'])).map(nodeToRow);
-        var apiRows        = nodes.filter(typeIn(['api'])).map(nodeToRow);
-        var fileRows       = nodes.filter(typeIn(['file'])).map(nodeToRow);
-        var valueListRows  = nodes.filter(typeIn(['codelist'])).map(nodeToRow);
-        XLSX.utils.book_append_sheet(wb, sheetFromRows(tableRows,     NODE_HEADERS), SHEET_TABLES);
-        XLSX.utils.book_append_sheet(wb, sheetFromRows(apiRows,       NODE_HEADERS), SHEET_APIS);
-        XLSX.utils.book_append_sheet(wb, sheetFromRows(fileRows,      NODE_HEADERS), SHEET_FILES);
-        XLSX.utils.book_append_sheet(wb, sheetFromRows(valueListRows, NODE_HEADERS), SHEET_VALUELISTS);
+        // distribution — nodes of type table / view / api / file (DB kind=distribution).
+        // Codelists go to the code_list sheet (a separate kind in the DB).
+        var distRows = nodes
+            .filter(typeIn(['table', 'view', 'api', 'file']))
+            .map(nodeToRow);
+        XLSX.utils.book_append_sheet(wb, sheetFromRows(distRows, NODE_HEADERS), SHEET_DISTRIBUTION);
 
-        // PropertySets — the global registry. Authoritative on import; round-
-        // trips so an Excel-edited registry can be re-imported.
+        // code_list — codelist nodes (DB kind=code_list).
+        var codeListRows = nodes.filter(typeIn(['codelist'])).map(nodeToRow);
+        XLSX.utils.book_append_sheet(wb, sheetFromRows(codeListRows, NODE_HEADERS), SHEET_CODE_LIST);
+
+        // pset — the global property-set / Datenpaket registry. Authoritative
+        // on import; round-trips so an Excel-edited registry can be reloaded.
         var setRows = State.getSets().map(function (s) {
             return {
                 id: s.id,
@@ -175,9 +187,9 @@ window.CanvasApp.XlsxIO = (function () {
         });
         XLSX.utils.book_append_sheet(wb,
             sheetFromRows(setRows, ['id', 'label', 'description', 'lineage']),
-            SHEET_PROPSETS);
+            SHEET_PSET);
 
-        // SourceStructures — per-node SAP BAPI substructure registry. Currently
+        // source_structure — per-node SAP BAPI substructure registry. Currently
         // only used by refx_gebaeude_api but the sheet is generic so any node
         // with `groupBy: "sourceStructure"` can carry one.
         var ssRows = [];
@@ -188,10 +200,10 @@ window.CanvasApp.XlsxIO = (function () {
         });
         XLSX.utils.book_append_sheet(wb,
             sheetFromRows(ssRows, ['node_id', 'key', 'label']),
-            SHEET_SOURCE_STRUCTS);
+            SHEET_SOURCE_STRUCTURE);
 
-        // Attributes — every column across nodes. set_id references the
-        // PropertySets registry; source_structure references SourceStructures.
+        // attribute — every column across nodes. set_id references the
+        // pset sheet; source_structure references source_structure.
         var colRows = [];
         nodes.forEach(function (n) {
             (n.columns || []).forEach(function (c) {
@@ -207,15 +219,15 @@ window.CanvasApp.XlsxIO = (function () {
         });
         XLSX.utils.book_append_sheet(wb,
             sheetFromRows(colRows, ['node_id', 'name', 'type', 'key', 'set_id', 'source_structure']),
-            SHEET_ATTRS);
+            SHEET_ATTRIBUTE);
 
-        // Relations
+        // edge — relations between nodes.
         var edgeRows = State.getEdges().map(function (e) {
             return { id: e.id, from: e.from, to: e.to, label: e.label || '' };
         });
         XLSX.utils.book_append_sheet(wb,
             sheetFromRows(edgeRows, ['id', 'from', 'to', 'label']),
-            SHEET_RELATIONS);
+            SHEET_EDGE);
 
         var date = new Date().toISOString().slice(0, 10);
         XLSX.writeFile(wb, 'bbl-canvas-' + date + '.xlsx');
@@ -336,13 +348,28 @@ window.CanvasApp.XlsxIO = (function () {
     }
 
     function parseWorkbook(wb) {
-        var TYPED_SHEETS = ['Tables', 'APIs', 'Files', 'ValueLists'];
+        // Sheet name + the implicit type rows on it should default to. The
+        // current export writes one merged `distribution` sheet (rows carry
+        // their own `type`) and a separate `code_list` sheet. Pre-rename
+        // exports kept four typed sheets — read those as a fallback so older
+        // exports still load. First match per id wins, so the new sheets are
+        // listed before the legacy ones.
+        var TYPED_SHEETS = [
+            'distribution',
+            'code_list',
+            // pre-rename fallbacks
+            'Tables', 'APIs', 'Files', 'ValueLists'
+        ];
         var nodes = [];
         var seenIds = {};
+        var sawLegacySheet = false;
 
         TYPED_SHEETS.forEach(function (sheetName) {
             var ws = findSheet(wb, [sheetName]);
             if (!ws) return;
+            if (sheetName !== 'distribution' && sheetName !== 'code_list') {
+                sawLegacySheet = true;
+            }
             var defaultType = SHEET_TO_DEFAULT_TYPE[sheetName];
             XLSX.utils.sheet_to_json(ws, { defval: '' }).forEach(function (r) {
                 if (!r.id) return;
@@ -351,6 +378,10 @@ window.CanvasApp.XlsxIO = (function () {
                 nodes.push(rowToNode(r, defaultType));
             });
         });
+
+        if (sawLegacySheet) {
+            console.warn('Import: pre-rename sheet names detected (Tables / APIs / Files / ValueLists). Workbook will be re-emitted with the current names (distribution / code_list) on the next export.');
+        }
 
         // Legacy fallback — if no typed sheets matched but a Nodes sheet exists
         if (!nodes.length) {
@@ -370,7 +401,7 @@ window.CanvasApp.XlsxIO = (function () {
         // back to the in-memory registry so the import doesn't strand
         // existing setIds.
         var sets = [];
-        var setsSheet = findSheet(wb, [SHEET_PROPSETS]);
+        var setsSheet = findSheet(wb, PSET_SHEET_ALIASES);
         if (setsSheet) {
             sets = XLSX.utils.sheet_to_json(setsSheet, { defval: '' })
                 .filter(function (r) { return r.id; })
@@ -389,7 +420,7 @@ window.CanvasApp.XlsxIO = (function () {
 
         // SourceStructures — per-node SAP-substructure registry.
         var ssByNode = {};
-        var ssSheet = findSheet(wb, [SHEET_SOURCE_STRUCTS]);
+        var ssSheet = findSheet(wb, SOURCE_STRUCTURE_ALIASES);
         if (ssSheet) {
             XLSX.utils.sheet_to_json(ssSheet, { defval: '' }).forEach(function (r) {
                 if (!r.node_id || !r.key) return;
@@ -406,7 +437,7 @@ window.CanvasApp.XlsxIO = (function () {
         // exported from older builds or hand-edited by users coming from
         // the JSON shape, but warn so the user knows the workbook will
         // normalise on the next export.
-        var colsSheet = findSheet(wb, [SHEET_ATTRS, 'Columns', 'columns']);
+        var colsSheet = findSheet(wb, ATTRIBUTE_SHEET_ALIASES);
         var colsByNode = {};
         var unknownSetIds = Object.create(null);
         var sawCamelHeaders = false;
@@ -454,8 +485,8 @@ window.CanvasApp.XlsxIO = (function () {
             }
         });
 
-        // Edges (Relations sheet, with Edges fallback)
-        var edgesSheet = findSheet(wb, [SHEET_RELATIONS, 'Edges', 'edges']);
+        // edge sheet (with pre-rename fallbacks).
+        var edgesSheet = findSheet(wb, EDGE_SHEET_ALIASES);
         var edges = [];
         if (edgesSheet) {
             edges = XLSX.utils.sheet_to_json(edgesSheet, { defval: '' })
