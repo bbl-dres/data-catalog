@@ -23,6 +23,11 @@ window.CanvasApp.Canvas = (function () {
     var translateY = 0;
     var scale = 1;
 
+    // External subscribers (currently the minimap) that need to react to every
+    // pan/zoom change. Fired from applyTransform — the single choke point all
+    // gestures funnel through.
+    var transformListeners = [];
+
     var MIN_SCALE = 0.05;
     var MAX_SCALE = 3.0;
     var ZOOM_STEP = 0.1;     // additive step for fine adjustments at scale ≥ 1
@@ -1314,6 +1319,9 @@ window.CanvasApp.Canvas = (function () {
         if (window.CanvasApp.Editor && window.CanvasApp.Editor.repositionActionBar) {
             window.CanvasApp.Editor.repositionActionBar();
         }
+        for (var i = 0; i < transformListeners.length; i++) {
+            try { transformListeners[i](); } catch (e) { console.error(e); }
+        }
     }
 
     // ---- Node Drag (edit mode only) ------------------------------------
@@ -1434,6 +1442,50 @@ window.CanvasApp.Canvas = (function () {
         return { translateX: translateX, translateY: translateY, scale: scale };
     }
 
+    /**
+     * Mutate the live transform from outside (currently used by the minimap
+     * to pan on click/drag). Any field omitted is left as-is. scale is
+     * clamped to MIN/MAX. Calls applyTransform so listeners fire.
+     */
+    function setTransform(t) {
+        if (!t) return;
+        if (typeof t.translateX === 'number') translateX = t.translateX;
+        if (typeof t.translateY === 'number') translateY = t.translateY;
+        if (typeof t.scale === 'number') scale = clamp(t.scale, MIN_SCALE, MAX_SCALE);
+        applyTransform();
+    }
+
+    /**
+     * Subscribe to transform changes (pan, zoom, fit, home, programmatic).
+     * Returns nothing — listeners persist for the life of the page.
+     */
+    function onTransform(fn) {
+        if (typeof fn === 'function') transformListeners.push(fn);
+    }
+
+    /**
+     * World-coordinate bounding box of every on-canvas node, or null when
+     * the canvas is empty. Codelists are excluded (they aren't drawn). No
+     * padding — callers add their own framing margin.
+     */
+    function getWorldBounds() {
+        var nodes = State.getNodes();
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        var any = false;
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (!isOnCanvas(n)) continue;
+            var r = getNodeRect(n);
+            any = true;
+            if (r.x < minX) minX = r.x;
+            if (r.y < minY) minY = r.y;
+            if (r.x + r.w > maxX) maxX = r.x + r.w;
+            if (r.y + r.h > maxY) maxY = r.y + r.h;
+        }
+        if (!any) return null;
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+
     // ---- Util ----------------------------------------------------------
 
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -1472,6 +1524,9 @@ window.CanvasApp.Canvas = (function () {
         getNodeEl: getNodeEl,
         getNodeRect: getNodeRect,
         getTransform: getTransform,
+        setTransform: setTransform,
+        onTransform: onTransform,
+        getWorldBounds: getWorldBounds,
         clientToCanvas: clientToCanvas,
         setEditMode: setEditMode
     };

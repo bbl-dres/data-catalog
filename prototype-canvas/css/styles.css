@@ -1273,18 +1273,9 @@ body.mode-edit .node.is-selected .node-port { display: block; }
 /* iOS home-indicator clearance: env(safe-area-inset-bottom) is ~34px on
    iPhones with the gesture bar, 0 elsewhere. Keeps the zoom controls out
    of the OS gesture-handle zone where taps would otherwise be ambiguous. */
-.ft-bottom-left  { bottom: max(16px, env(safe-area-inset-bottom)); left: 16px; }
-.ft-bottom-right {
+.ft-bottom-left  {
   bottom: max(16px, env(safe-area-inset-bottom));
-  right: 16px;
-  /* Smooth nudge when the info panel slides in */
-  transition: right 200ms ease;
-}
-/* When the right info panel is open, push the bottom-right floating toolbar
-   left so it stays visible inside the canvas viewport. The panel width
-   matches the --info-panel-width custom property (set inline by panel.js). */
-body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
-  right: calc(var(--info-panel-width, 360px) + 16px);
+  left: 16px;
 }
 .ft-left-center  {
   top: 50%;
@@ -1292,6 +1283,7 @@ body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
   transform: translateY(-50%);
   flex-direction: column;
   padding: 4px;
+  gap: 4px;
 }
 .ft-btn-icon {
   width: 32px;
@@ -1345,6 +1337,66 @@ body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
 .ft-btn-primary:hover { background: #183C6B; }
 .ft-sep { width: 1px; height: 16px; background: var(--color-border-subtle); }
 .ft-label { font-size: var(--text-small); color: var(--color-text-secondary); padding: 0 6px; min-width: 38px; text-align: center; }
+
+/* ---- Minimap (bottom-right overview panel) ----
+   180×120 SVG window mounted in the canvas viewport. Coloured rects per
+   node (one fill per type), a faint outline per system frame, and a draggable
+   viewport rectangle that pans the main canvas. Hidden outside diagram view. */
+.minimap {
+  position: absolute;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  right: 16px;
+  width: 240px;
+  height: 160px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-toolbar);
+  overflow: hidden;
+  z-index: 10;
+  /* Smooth nudge when the info panel slides in */
+  transition: right 200ms ease;
+  /* Visible only in diagram view; toggled by body[data-view] (panel.js). */
+  display: none;
+}
+body[data-view="diagram"] .minimap { display: block; }
+/* Push the minimap left when the info panel is open — same logic the
+   bottom-right zoom toolbar used to use. */
+body[data-panel="open"][data-view="diagram"] .minimap {
+  right: calc(var(--info-panel-width, 360px) + 16px);
+}
+.minimap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+  /* Page background hint so the empty letterbox area reads as "off-canvas". */
+  background: var(--color-bg-page);
+}
+.minimap-system-rect {
+  fill: var(--color-bg-accent);
+  fill-opacity: 0.55;
+  stroke: var(--color-border-default);
+  stroke-width: 0.5;
+}
+.minimap-node-rect {
+  fill: var(--color-type-table);
+  /* Crisp 1-pixel-ish stroke regardless of viewBox scaling. */
+  vector-effect: non-scaling-stroke;
+}
+.minimap-node-rect--table    { fill: var(--color-type-table); }
+.minimap-node-rect--view     { fill: var(--color-type-view); }
+.minimap-node-rect--api      { fill: var(--color-type-api); }
+.minimap-node-rect--file     { fill: var(--color-type-file); }
+.minimap-node-rect--codelist { fill: var(--color-type-codelist); }
+#minimap-viewport {
+  fill: var(--color-bg-accent-strong);
+  fill-opacity: 0.10;
+  stroke: var(--color-bg-accent-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
 
 body.mode-view .edit-only { display: none; }
 body.mode-edit .view-only { display: none; }
@@ -1908,8 +1960,8 @@ body.mode-edit .cell-select:focus {
   background: var(--color-border-strong);
 }
 .info-panel.is-resizing { transition: none; }
-.info-panel.is-resizing ~ * .ft-bottom-right,
-body.is-resizing-panel .ft-bottom-right { transition: none; }
+.info-panel.is-resizing ~ * .minimap,
+body.is-resizing-panel .minimap { transition: none; }
 .info-panel.is-open { transform: translateX(0); }
 .info-panel-content { padding: 0; }
 
@@ -2312,10 +2364,10 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
   .info-panel-resize { display: none; }
 
   /* When the full-width sheet is open it covers the canvas, so the bottom-
-     right zoom toolbar would be hidden behind it. The desktop "shift left
-     by panel width" rule produces a negative offset on a 100vw panel; just
-     hide the toolbar while the sheet is up. */
-  body[data-panel="open"][data-view="diagram"] .ft-bottom-right {
+     right minimap would be hidden behind it. The desktop "shift left by
+     panel width" rule produces a negative offset on a 100vw panel; just
+     hide the minimap while the sheet is up. */
+  body[data-panel="open"][data-view="diagram"] .minimap {
     display: none;
   }
 

@@ -9,7 +9,14 @@
       "Bash(grep -n \"^```mermaid\\\\|^```$\" \"c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/docs/DATAMODEL.md\")",
       "Bash(PYTHONIOENCODING=utf-8 python3 scripts/seed-supabase.py)",
       "Bash(curl -s -X POST https://elgsfqsouwtpjxtjcuow.supabase.co/rest/v1/rpc/canvas_export -H 'apikey: sb_publishable_9C0rU6s4VSmYX71Vyu5hTw_9TqT-OAc' -H 'Authorization: Bearer sb_publishable_9C0rU6s4VSmYX71Vyu5hTw_9TqT-OAc' -H 'Content-Type: application/json' -d '{}')",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/prototype-canvas/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/prototype-canvas/js/minimap.js)",
+      "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/minimap.js)",
+      "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/canvas.js)",
+      "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/app.js)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"http.server 8765\")"
     ]
   }
 }

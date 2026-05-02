@@ -56,6 +56,7 @@ window.CanvasApp.App = (function () {
             window.CanvasApp.Table.render();
             window.CanvasApp.Api.render();
             window.CanvasApp.Panel.render();
+            window.CanvasApp.Minimap.render();
             updateSaveAffordance();
             updateCanvasEmpty();
             // Initial framing on first paint. goHome applies the curator's
@@ -754,5 +755,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.Panel.init();
     window.CanvasApp.Filter.init();
     window.CanvasApp.XlsxIO.init();
+    window.CanvasApp.Minimap.init();
     window.CanvasApp.App.init();
 });
