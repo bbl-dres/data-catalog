@@ -1,10 +1,10 @@
 # BBL Architektur-Canvas — Data Model
 
-**Version:** 0.3 (draft)
+**Version:** 0.4 (draft)
 **Owner:** DRES — Kreis Digital Solutions
 **Target backend:** Supabase (PostgreSQL 15+)
-**Status:** In Review — supersedes v0.2.1
-**Last updated:** 2026-04-30
+**Status:** In Review — supersedes v0.3
+**Last updated:** 2026-05-04
 
 ---
 
@@ -23,18 +23,18 @@ The BBL Architektur-Canvas is a sketching surface for BBL's data architects, a w
 | G7 | Flexible and extensible | Node + edge model means new kinds of things and new kinds of relationships are added by extending an enum, not by restructuring tables. The catalog evolves with BBL's understanding. | **Should** |
 | G8 | Operationally simple | Plain PostgreSQL with two common extensions. No graph databases, no proprietary infrastructure, no vendor lock-in. | **Must** |
 
-**MoSCoW legend:** *Must* = ship-blocker for v0.3. *Should* = strongly recommended; absence is painful but workable for an internal v1. *Could* / *Won't* are not used at the goal level — explicit deferrals (features known but out of scope for v0.3) live in §10 Future Developments.
+**MoSCoW legend:** *Must* = ship-blocker for v0.4. *Should* = strongly recommended; absence is painful but workable for an internal v1. *Could* / *Won't* are not used at the goal level — explicit deferrals (features known but out of scope for v0.4) live in §10 Future Developments.
 
 ### Non-goals
 
-Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
+Things the catalog is deliberately *not* in v0.4, to keep MVP scope honest:
 
 - **Not a runtime data integration platform.** The catalog describes data; it doesn't move or transform it.
-- **Not a multi-tenant SaaS.** Single-organisation, single-project, single-canvas — the multi-tenancy roadmap is in §10.
+- **Not a multi-tenant SaaS.** Single-organisation, single-project — the multi-tenancy roadmap is in §10.
 - **Not a real-time collaborative editor.** Editing is governance-serialised; multi-user merge conflicts aren't modelled.
 - **Not row-level auditable.** Append-only revision tracking is deferred to §10.
 - **Not an external user portal.** DCAT-AP CH export — when added per §10 — *enables* downstream publication via opendata.swiss or the IOP, but this catalog isn't the public face.
-- **Not multi-canvas yet.** Layout coordinates live directly on the node. Multi-canvas reuse of the same node at different positions is in §10.
+- **Not cross-canvas node reuse.** Each canvas owns its own disjoint set of nodes (`node.canvas_id NOT NULL`). The same conceptual entity in two canvases is two node rows. Cross-canvas reuse — same node placed at different positions on different canvases — is the deferred Path A in §10.
 - **Not split into separate user and contact tables.** A single `contact` table covers Supabase-authenticated users, external persons without accounts, and team / org-unit references.
 
 ---
@@ -55,7 +55,7 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 | FR-08 | Hierarchy invariants are enforced by partial unique indexes on `edge`. For example: each attribute has at most one parent distribution (`UNIQUE (to_node_id) WHERE edge_type = 'contains'`). | **Should** |
 | FR-09 | Codelists (`kind = code_list`) are first-class nodes; their entries live in the `code_list_entry` side table keyed by `(code_list_node_id, code)`. Entries are not nodes — they are leaf data and never participate in the edge graph. | **Must** |
 | FR-10 | Standard references (`kind = standard_reference`) anchor the lineage graph to external normative sources. Each carries `org`, `code`, `std_version`, `url` in its meta side table. Examples: eCH-0010, SR 510.625, ISO 19115, DCAT-AP CH 3.0.0. | **Should** |
-| FR-11 | A node carries optional `(x, y)` layout coordinates directly on the `node` row. `NULL` means the node is not placed on the canvas. v0.3 is single-canvas; multi-canvas reuse of the same node at different positions is deferred to §10. | **Must** |
+| FR-11 | A node carries optional `(x, y)` layout coordinates directly on the `node` row. `NULL` means the node is not placed on the canvas. `(x, y)` is implicitly scoped by `node.canvas_id` — the same conceptual entity in two canvases has two node rows. Cross-canvas reuse of the same node at different positions is deferred to §10 (Path A). | **Must** |
 | FR-12 | Per-node `tags` (`text[]`) carry language-independent free-text keys (`master`, `legacy`, `dimension`). Translations live in the application's i18n catalog under the `tag.*` namespace. | **Must** |
 | FR-13 | A node carries an optional ISG classification (`oeffentlich | intern | vertraulich | geheim`) on `node.classification`. The four values are CHECK-enforced. | **Must** |
 | FR-14 | Every node may have one or more contacts attached via `role_assignment(contact_id, role, scope_node_id)`. Roles match the BFS NaDB enum exactly: `data_owner`, `local_data_steward`, `local_data_steward_statistics`, `local_data_custodian`, `data_producer`, `data_consumer`, `swiss_data_steward`, `data_steward_statistics`, `ida_representative`, `information_security_officer`. | **Must** |
@@ -64,6 +64,7 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 | FR-17 | The model round-trips losslessly with the multi-sheet Excel workbook defined in §9 and with `data/canvas.json` v2. Excel UPSERT matches rows by stable `slug`; rows marked `_action = delete` are removed. | **Must** |
 | FR-18 | User-facing content — labels and long-form descriptions — is multilingual: each translatable text is stored as four typed columns covering DE / FR / IT / EN (`label_de`, `label_fr`, `label_it`, `label_en`; `description_de`, …). All locale columns are nullable so Excel UPSERT stays permissive; the catalog is most useful when at least `label_de` is populated, and the UPSERT validator emits a warning at publication time if a `produktiv` row lacks one. Frontend display resolves the appropriate locale via fallback chain `requested → de → en → first non-null → slug`. The model itself (schema, identifiers) is in English — see NR-04. | **Must** |
 | FR-19 | The catalog has a single `contact` table covering authenticated users, external persons without accounts, and team / org-unit references. `auth_user_id` is nullable; `is_team` distinguishes persons from teams. | **Must** |
+| FR-20 | Each node belongs to exactly one canvas via `node.canvas_id NOT NULL`. A `canvas` (id, slug, label_*, description_*, home_scale, home_center_x, home_center_y, visibility, owner_contact_id) is the named perspective wrapping its node set. Slug is unique within a canvas (`UNIQUE (canvas_id, slug)`). The home view is curator-set on the canvas and shared across all viewers; per-user-per-canvas viewport preferences remain a §10 deferral. `visibility ∈ {public, restricted}` gates anonymous read; `restricted` requires sign-in. Editor permissions remain governed by `contact.app_role` independently of visibility. | **Must** |
 
 ### Non-functional
 
@@ -72,12 +73,12 @@ Things the catalog is deliberately *not* in v0.3, to keep MVP scope honest:
 | NR-01 | Implementable in Supabase / PostgreSQL 15+ with only the `pgcrypto` and `pg_trgm` extensions. | **Must** |
 | NR-02 | Primary keys are UUIDs (`gen_random_uuid()`), with one stable text `slug` UK on `node` for human-readable identification in Excel and URLs. Slug format is enforced by CHECK constraint. | **Must** |
 | NR-03 | All timestamps use `TIMESTAMPTZ`, stored UTC, displayed Europe/Zurich. | **Must** |
-| NR-04 | The data model is described in English: table names, column names, indexes, enum keys, and technical identifiers are all English. Multilingual concerns live entirely in user-facing content — translatable labels and descriptions — stored in typed locale-suffixed columns (`label_de`/`fr`/`it`/`en`; `description_de`/`fr`/`it`/`en`). The schema contains no JSONB columns in v0.3; everything is typed. | **Must** |
+| NR-04 | The data model is described in English: table names, column names, indexes, enum keys, and technical identifiers are all English. Multilingual concerns live entirely in user-facing content — translatable labels and descriptions — stored in typed locale-suffixed columns (`label_de`/`fr`/`it`/`en`; `description_de`/`fr`/`it`/`en`). The schema contains no JSONB columns in v0.4; everything is typed. | **Must** |
 | NR-05 | Default frontend language is German. Frontend display resolves translatable content through fallback chain `requested → de → en → first non-null`. | **Must** |
 | NR-06 | RLS is enabled on every data table. Default policy: authenticated users may read; only `editor` and `admin` `app_role` may write. `app_role` lives on `contact`. | **Must** |
 | NR-07 | Side tables enforce their parent's kind at the database level via composite foreign key `(node_id, kind) REFERENCES node(id, kind)` plus a CHECK on `kind`. No triggers are needed for kind validation. | **Should** |
 | NR-08 | Cascade behaviour is explicit on every FK: `ON DELETE CASCADE` for compositional relationships (edges, side tables, processing activity, role assignments scope), `ON DELETE SET NULL` for soft references (auth links), `ON DELETE RESTRICT` for accountability links (role_assignment.contact_id). | **Must** |
-| NR-09 | The current single-canvas localStorage prototype migrates to Supabase via a one-shot importer (scripted under `migrations/`; not specified in this strategic doc). The `homeView` viewport state remains client-side (localStorage). | **Must** |
+| NR-09 | Migration from the v0.3 single-canvas localStorage prototype to Supabase is scripted under `migrations/` (not specified in this strategic doc). The `homeView` viewport state moves from localStorage to `canvas.home_*` columns and ships with the canvas. Per-user-per-canvas viewport preferences remain a §10 deferral. | **Must** |
 | NR-10 | The Excel UPSERT path returns a per-row report `{ slug, action, status, errors[] }`. Optimistic locking is intentionally absent — see §9. | **Must** |
 
 ---
@@ -119,12 +120,33 @@ The catalog `node` (`kind = system | pset | distribution | attribute | code_list
 erDiagram
 
   %% =====================================================================
-  %% CATALOG CORE — node + edge
+  %% CATALOG CORE — canvas + node + edge
   %% =====================================================================
+
+  CANVAS {
+    uuid        id                   PK
+    text        slug                 UK   "URL-friendly key, e.g. bbl-immo"
+    text        label_de                  "NOT NULL"
+    text        label_fr
+    text        label_it
+    text        label_en
+    text        description_de
+    text        description_fr
+    text        description_it
+    text        description_en
+    numeric     home_scale                "curator-set zoom; null = fit-all"
+    numeric     home_center_x             "world-X centre of home view"
+    numeric     home_center_y             "world-Y centre of home view"
+    text        visibility                "CHECK in (public,restricted), default public"
+    uuid        owner_contact_id     FK   "→ contact.id, ON DELETE SET NULL"
+    timestamptz created_at
+    timestamptz modified_at
+  }
 
   NODE {
     uuid        id                   PK
-    text        slug                 UK   "human-readable, e.g. pset:address"
+    uuid        canvas_id            FK   "→ canvas.id, NOT NULL, ON DELETE CASCADE"
+    text        slug                      "(canvas_id, slug) UK; e.g. pset:address"
     text        kind                      "CHECK in (system,pset,distribution,attribute,code_list,standard_reference)"
     text        label_de
     text        label_fr
@@ -282,6 +304,9 @@ erDiagram
   %% RELATIONSHIPS
   %% =====================================================================
 
+  CANVAS               ||--o{ NODE                    : "owns"
+  CONTACT              ||--o{ CANVAS                  : "owner (optional)"
+
   NODE                 ||--o{ EDGE                    : "from"
   NODE                 ||--o{ EDGE                    : "to"
 
@@ -298,10 +323,10 @@ erDiagram
 
 The model has two concerns:
 
-- **Catalog** (`node` + `edge` + four meta side tables + `code_list_entry`): *what exists*, with all parent-child and lateral relationships expressed as typed edges. Layout coordinates `(x, y)` live directly on the node — single-canvas world.
+- **Catalog** (`canvas` + `node` + `edge` + four meta side tables + `code_list_entry`): *what exists*, with all parent-child and lateral relationships expressed as typed edges. Each node belongs to exactly one canvas (`node.canvas_id NOT NULL`); layout coordinates `(x, y)` live directly on the node and are implicitly canvas-scoped.
 - **Compliance & governance** (`processing_activity`, `node.classification`, `attribute_meta.personal_data_category`, `contact`, `role_assignment`): ISG classification and DSG processing-activity records, attached at the right scope; NaDB role attribution scoped to nodes. `dct:publisher` and `dcat:contactPoint` are derived projections of role assignments, never stored separately.
 
-Append-only audit (`revision`) is intentionally not in v0.3 — see §10.
+Append-only audit (`revision`) is intentionally not in v0.4 — see §10.
 
 ---
 
@@ -309,6 +334,7 @@ Append-only audit (`revision`) is intentionally not in v0.3 — see §10.
 
 | Entity | DCAT-AP CH | Description | Approx. volume |
 |--------|-----------|-------------|----------------|
+| `canvas` | — (organisational) | Named perspective wrapping a self-contained node set; carries the curator-set home view | < 50 |
 | `node` | varies by kind | Universal catalog entity — system, pset, distribution, attribute, code_list, standard_reference | 2 000 – 60 000 (dominated by attributes) |
 | `edge` | `dcat:qualifiedRelation` and friends | Directed typed connection between two nodes | 5 000 – 100 000 |
 | `system_meta` | `dcat:Catalog` extension | Per-system fields (technology stack, base URL, ISG zone) | < 50 |
@@ -320,7 +346,7 @@ Append-only audit (`revision`) is intentionally not in v0.3 — see §10.
 | `contact` | `dcat:contactPoint` target + `auth.users` link | Person, team, or org unit; optional Supabase auth link | < 500 |
 | `role_assignment` | `dct:publisher` + `dcat:contactPoint` source | NaDB role attribution scoped to a node | < 5 000 |
 
-Ten tables. Audit (`revision`), multi-tenancy (`organisation`, `canvas`, `canvas_node_layout`), and other deferrals are tracked in §10 Future Developments.
+Eleven tables. Audit (`revision`), multi-tenancy (`organisation`, `canvas_node_layout`), and other deferrals are tracked in §10 Future Developments.
 
 ---
 
@@ -339,7 +365,8 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 | Column | Type | Nullable | Description |
 |--------|------|----------|-------------|
 | `id` | `UUID` | NO | Primary key, default `gen_random_uuid()` |
-| `slug` | `TEXT` | NO | Stable human-readable key. Format: `{kind_prefix}:{technical_path}` (see §9). Unique. |
+| `canvas_id` | `UUID` | NO | FK → `canvas.id`, `ON DELETE CASCADE`. Owning canvas; deleting it removes all its nodes (and via existing cascades all meta side rows, edges, and role assignments). |
+| `slug` | `TEXT` | NO | Stable human-readable key. Format: `{kind_prefix}:{technical_path}` (see §9). Unique within a canvas. |
 | `kind` | `TEXT` | NO | `CHECK (kind IN ('system','pset','distribution','attribute','code_list','standard_reference'))` |
 | `label_de` | `TEXT` | YES | Display label DE (recommended; warning at publication time if missing — see §9) |
 | `label_fr` | `TEXT` | YES | Display label FR |
@@ -359,12 +386,13 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 | `modified_at` | `TIMESTAMPTZ` | NO | Maintained by trigger |
 
 **Constraints:**
-- `UNIQUE (id, kind)` — required for composite-FK enforcement from side tables.
-- `UNIQUE (slug)`
+- `UNIQUE (id, kind)` — required for composite-FK enforcement from side tables. Side tables stay canvas-agnostic since `id` is globally unique.
+- `UNIQUE (canvas_id, slug)` — slug is unique per canvas; two canvases can each have a `dist:av_gv_dat`.
 - Slug format: `CHECK (slug ~ '^(sys|pset|dist|attr|cl|std):[A-Za-z0-9_.-]+$')` — allows mixed case (e.g. `eCH`) and hyphens (e.g. `eCH-0010`)
 - Layout coherence: `CHECK ((x IS NULL) = (y IS NULL))` — both or neither.
 
 **Indexes:**
+- `INDEX (canvas_id, kind)` — primary read pattern: "all nodes of kind X in canvas C"
 - `INDEX (kind)`
 - `INDEX (lifecycle_status)`
 - `INDEX (classification) WHERE classification IS NOT NULL`
@@ -374,7 +402,7 @@ The universal catalog entity. Every concept on the canvas is a node; the `kind` 
 
 **Why a single table for all kinds.** The canvas treats every kind identically (drag, drop, label, connect). Identical column model means uniform RLS, uniform Realtime publication, and trivial polymorphism in the edge table. Per-kind specifics live in side tables enforcing 1:0..1 with `node.id` via composite FK on `(node_id, kind)`.
 
-**Why x/y on node and not in a separate layout table.** v0.3 is single-canvas. A node's `(x, y)` is its position on the one canvas. Multi-canvas reuse of the same node at different positions is deferred to §10; if required later, introduce `canvas_node_layout (canvas_id, node_id, x, y)` and migrate the inline coordinates as a one-shot.
+**Why x/y on node and not in a separate layout table.** Each node belongs to exactly one canvas (Path B); its `(x, y)` is its position on that canvas. Cross-canvas reuse of the same node at different positions is the deferred Path A in §10 — if required later, introduce `canvas_node_layout (canvas_id, node_id, x, y)` and migrate the inline coordinates as a one-shot.
 
 ---
 
@@ -751,6 +779,14 @@ viewer | editor | admin | NULL
 
 `NULL` indicates a non-user contact (external person or team without Supabase account).
 
+#### `canvas.visibility`
+
+```
+public | restricted
+```
+
+`public` canvases are anon-readable (used by the static landing page that doesn't require sign-in); `restricted` canvases require an authenticated session. Editor permissions on either kind are gated independently by `contact.app_role`.
+
 #### `role_assignment.role` (BFS NaDB Rollenmodell + ISG)
 
 ```
@@ -768,13 +804,58 @@ information_security_officer     — Informationssicherheitsbeauftragte (ISG)
 
 ---
 
+### 6.12 Canvas
+
+A named perspective wrapping a self-contained set of nodes. Each canvas owns its nodes (`node.canvas_id NOT NULL`); two canvases needing the same conceptual entity ("AV GIS") each carry their own node row. Cross-canvas node reuse — same node placed at different positions on different canvases — is the deferred Path A in §10.
+
+**Table:** `canvas`
+
+| Column | Type | Nullable | Description |
+|--------|------|----------|-------------|
+| `id` | `UUID` | NO | Primary key, default `gen_random_uuid()` |
+| `slug` | `TEXT` | NO | URL-friendly key for hash routing (e.g. `bbl-immo`). Globally unique. |
+| `label_de` | `TEXT` | NO | Display label DE — the only required label |
+| `label_fr` | `TEXT` | YES | |
+| `label_it` | `TEXT` | YES | |
+| `label_en` | `TEXT` | YES | |
+| `description_de` | `TEXT` | YES | Long-form description DE |
+| `description_fr` | `TEXT` | YES | |
+| `description_it` | `TEXT` | YES | |
+| `description_en` | `TEXT` | YES | |
+| `home_scale` | `NUMERIC(10,6)` | YES | Curator-set zoom level. NULL together with the other home_* columns; in that case the frontend falls back to fit-all. |
+| `home_center_x` | `NUMERIC(10,2)` | YES | World-X centre of the home view |
+| `home_center_y` | `NUMERIC(10,2)` | YES | World-Y centre of the home view |
+| `visibility` | `TEXT` | NO | `CHECK (visibility IN ('public','restricted'))`, default `'public'`. See §6.11. |
+| `owner_contact_id` | `UUID` | YES | FK → `contact.id`, `ON DELETE SET NULL`. Optional curator. |
+| `created_at` | `TIMESTAMPTZ` | NO | |
+| `modified_at` | `TIMESTAMPTZ` | NO | Maintained by trigger |
+
+**Constraints:**
+- `UNIQUE (slug)`
+- Slug format: `CHECK (slug ~ '^[a-z0-9][a-z0-9_.-]*$')` — lowercase, no kind prefix (canvas slugs are not kind-typed the way node slugs are)
+- Home-view coherence: `CHECK ((home_scale IS NULL AND home_center_x IS NULL AND home_center_y IS NULL) OR (home_scale IS NOT NULL AND home_center_x IS NOT NULL AND home_center_y IS NOT NULL))` — all three or none
+- `CHECK (home_scale IS NULL OR home_scale > 0)`
+
+**Indexes:**
+- `INDEX (visibility)` — supports anon-read filtering
+- `INDEX (modified_at DESC)`
+- `INDEX (owner_contact_id) WHERE owner_contact_id IS NOT NULL`
+
+**Why home view on the canvas, not per-user.** A canvas is a curated artefact; its home view ("open here") is part of that curation, like a slide deck's title slide. Per-user-per-canvas viewport memory is a different concern and remains a §10 deferral — when added, it lives in a `user_preference (contact_id, canvas_id, home_scale, home_center_x, home_center_y)` table, not on `canvas` directly.
+
+**Why slug uniqueness is global, not scoped.** Canvases identify themselves in URLs (`#/c/<slug>/diagram`). Globally unique slugs keep links stable and unambiguous; the operator pool is small enough that name collisions are governance, not schema.
+
+**Cascade behaviour.** `ON DELETE CASCADE` on `node.canvas_id` means deleting a canvas wholesale-removes its nodes; existing cascades on `edge`, the meta side tables, `code_list_entry`, `processing_activity`, and the `scope_node_id` half of `role_assignment` propagate the rest. `owner_contact_id` is `ON DELETE SET NULL` — deleting a contact does not orphan their canvases.
+
+---
+
 ## 7. i18n Strategy
 
 ### Three flavours of text
 
 | Flavour | Storage | Required locales |
 |---|---|---|
-| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | All optional in v0.3 to keep Excel UPSERT permissive. `label_de` is recommended; UPSERT warns when a `produktiv` row lacks one (see §9). |
+| **Short label** (≤ 200 chars: titles, names, display labels) | Four typed columns: `label_de`, `label_fr`, `label_it`, `label_en` | All optional in v0.4 *except* `canvas.label_de` (NOT NULL — every canvas needs a name in the picker UI). For other entities `label_de` is recommended; the Excel UPSERT warns when a `produktiv` row lacks one (see §9). |
 | **Long-form description** (multi-line text) | Four typed columns: `description_de`, `description_fr`, `description_it`, `description_en` | All optional |
 | **Single-locale technical** (column names, schema names, codes, standard codes, BAPI ids, system technology stack, role keys, contact names) | Plain `TEXT` | Not translated — they are identifiers in the source system or domain |
 
@@ -790,7 +871,7 @@ A French-speaking user requesting `fr` for a row with only `label_de` populated 
 
 ### Required-label policy
 
-To keep Excel UPSERT permissive, no `label_*` columns are `NOT NULL` in v0.3 — incomplete entries are tolerated at insert time. The catalog is most useful when at least `label_de` is populated; the Excel UPSERT validator emits a warning (not an error) when a row with `lifecycle_status = produktiv` lacks `label_de`. Frontend display falls back to `slug` if every locale is null.
+To keep Excel UPSERT permissive, `label_*` columns are nullable in v0.4 *except* on `canvas` (where `label_de` is `NOT NULL` — every canvas needs a name in the picker UI). For other entities, incomplete entries are tolerated at insert time; the catalog is most useful when at least `label_de` is populated. The Excel UPSERT validator emits a warning (not an error) when a row with `lifecycle_status = produktiv` lacks `label_de`. Frontend display falls back to `slug` if every locale is null.
 
 ### Locale codes
 
@@ -881,9 +962,11 @@ CREATE POLICY node_write ON node
   );
 ```
 
-The same policy template applies to `edge`, every `*_meta` table, `code_list_entry`, `processing_activity`, `role_assignment`.
+The same policy template applies to `canvas`, `edge`, every `*_meta` table, `code_list_entry`, `processing_activity`, `role_assignment`.
 
 `contact` itself has a slightly different policy: a user may always read and update **their own** row (matched on `auth_user_id`); an admin may read and update any row.
+
+**Visibility-aware anon read** for `canvas` (and transitively for `node` and side tables) is **not** in `DATAMODEL.sql` itself — anon-read policies live in `migrations/` so the base schema stays auth-only. The migration filters `canvas` rows on `visibility = 'public'`, and gates `node` reads via `EXISTS (SELECT 1 FROM canvas c WHERE c.id = node.canvas_id AND c.visibility = 'public')`.
 
 ### Realtime
 
@@ -891,7 +974,7 @@ Add catalog tables to the Realtime publication so collaborative editing pushes n
 
 ```sql
 ALTER PUBLICATION supabase_realtime
-  ADD TABLE node, edge,
+  ADD TABLE canvas, node, edge,
             system_meta, distribution_meta, attribute_meta, standard_reference_meta,
             code_list_entry, processing_activity;
 ```
@@ -924,11 +1007,12 @@ The Excel UPSERT (§9) wraps the whole upload in a single transaction. For one-s
 
 ### Sheet list
 
-Eleven sheets, each backed by one or two tables:
+Twelve sheets, each backed by one or two tables:
 
 | Sheet (DE) | Backing tables | Row identifier | Notes |
 |---|---|---|---|
-| `Systeme` | `node` (kind=system) + `system_meta` | `sys:refx` | |
+| `Canvases` | `canvas` | `bbl-immo` | One row per canvas; carries home-view, visibility, owner email |
+| `Systeme` | `node` (kind=system) + `system_meta` | `sys:refx` | Per-canvas; rows carry a `canvas_slug` column |
 | `Datenpakete` | `node` (kind=pset) | `pset:address` | Principal sheet |
 | `Distributionen` | `node` (kind=distribution) + `distribution_meta` | `dist:refx_gebaeude` | Replaces v0.1's separate `Tabellen`/`APIs`/`Dateien` sheets |
 | `Attribute` | `node` (kind=attribute) + `attribute_meta` | `attr:refx_gebaeude.MEASUREMENT.OBJECT_ID` | Largest sheet |
@@ -1030,24 +1114,23 @@ Download → no edits → upload → zero rows changed in the catalog. Achieved 
 - Stable slug-based row matching.
 - Server-generated columns (`created_at`, `modified_at`) are exported as read-only informational columns; the UPSERT ignores them on upload.
 
-### What is not modelled in v0.3
+### What is not modelled in v0.4
 
 - Optimistic locking. Concurrent-edit risk is governance-controlled, not technically detected. (Deferred — see §10.)
 - Cell-level merge across two stewards' edits. Last-write-wins on simultaneous uploads. (See §10.)
 - Branch / draft / publish workflow. `lifecycle_status` is a flat enum, not a workflow state machine. (See §10.)
-- Multi-canvas. Single canvas per catalog instance; layout coords live on the node. (See §10.)
+- Cross-canvas node reuse. Each canvas owns its own disjoint set of nodes (Path B). Same node placed at different positions on different canvases is the deferred Path A. (See §10.)
 
 ---
 
 ## 10. Future Developments
 
-Items deliberately deferred from v0.3 to keep the MVP narrow. Each can be added as an additive migration without disturbing the existing model.
+Items deliberately deferred from v0.4 to keep the MVP narrow. Each can be added as an additive migration without disturbing the existing model.
 
 | Category | Feature | Description |
 |---|---|---|
 | Governance & multi-tenancy | Organisations as first-class entity | Users belong to one or more organisations; each org owns its catalog instance. Enables BBL → BFS → cantonal multi-org federation. |
-| Governance & multi-tenancy | Multiple projects / canvases per org | A "project" or "canvas" becomes a named perspective over a subset of the catalog. Re-introduces the v0.2 `canvas` table. |
-| Governance & multi-tenancy | Multi-canvas reuse of the same node | Same node placed at different positions in different canvases. Re-introduces `canvas_node_layout (canvas_id, node_id, x, y)`; current `node.x` / `node.y` migrate to the layout table or remain as default-canvas coords. |
+| Governance & multi-tenancy | Cross-canvas node reuse (Path A) | Same node placed at different positions on different canvases. Today (Path B) each canvas owns its own disjoint node set; identical conceptual entities in two canvases are duplicated rows. Path A introduces `canvas_node_layout (canvas_id, node_id, x, y)` and migrates the inline `node.x` / `node.y` into it (or keeps them as the default-canvas coords). |
 | Governance & multi-tenancy | Per-user preferences | Personal home viewport, theme choice, language preference stored server-side. Currently `localStorage` only. |
 | Audit & history | Audit log + row-level version history (`revision` table) | Every mutation recorded as `(entity_kind, entity_id, action, diff JSONB, actor, recorded_at)`. Serves as both *change log* ("who changed what when") and *version history* (any prior state replayable). Powers undo/redo, point-in-time queries, diff-between-timestamps, compliance trails. Generic `emit_revision()` trigger with PK introspection for composite-key and side tables. |
 | Audit & history | Optimistic locking | `row_version INTEGER` on every editable table; Excel UPSERT detects concurrent edits between download and upload. |

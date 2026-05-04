@@ -4,6 +4,13 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* Baseline focus ring — uses :where() so any per-element rule overrides it
+   without specificity gymnastics. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* Suppress iOS Safari's grey tap-highlight rectangle on every interactive
    element — looked correct on the first prototype iteration but reads as
    visual noise once buttons have proper :active states. */
@@ -251,6 +258,17 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   flex-direction: column;
   gap: 6px;
   padding: 4px 6px 6px;
+}
+/* Visually-hidden label for the email input — keeps the form a11y-correct
+   without changing the visual layout. */
+.user-signin-label {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .user-signin-input {
   width: 100%;
@@ -1134,6 +1152,41 @@ body.hide-systems .group-layer { display: none; }
   background: var(--color-bg-accent);
 }
 
+/* ---- System-name overlays ----
+   Big readable labels that fade in as the canvas zooms out, so the user can
+   orient themselves when individual node text becomes too small. The layer
+   sits above the node-layer in DOM order so node bodies can never obscure
+   the labels. JS counter-scales each label so its on-screen size stays
+   constant regardless of canvas zoom. */
+.system-overlay-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.system-overlay {
+  position: absolute;
+  /* JS overwrites transform every frame to apply the counter-scale; the
+     translate(-50%) offset keeps the label horizontally centred on the
+     anchor point. transform-origin pins the top edge so scale grows
+     downward, keeping the label inside the group box top region. */
+  transform: translate(-50%, 0);
+  transform-origin: 50% 0;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
 /* ---- Node ---- */
 .node {
   position: absolute;
@@ -1442,6 +1495,218 @@ body[data-panel="open"][data-view="diagram"] .minimap {
 body.mode-view .edit-only { display: none; }
 body.mode-edit .view-only { display: none; }
 body:not(.is-signed-in) .auth-only { display: none; }
+body.is-signed-in .noauth-only { display: none; }
+
+/* Header sign-in entry point — replaces the avatar visually when signed-out
+   so the affordance is explicit text, not a generic person icon. */
+.header-signin-btn {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.header-signin-btn:hover { background: #183C6B; }
+
+/* Canvas-visibility pill in the breadcrumb. Sits next to the canvas label
+   so users always see whether the current canvas is anon-readable. */
+.header-canvas-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.header-canvas-visibility[hidden] { display: none; }
+.header-canvas-visibility.is-public {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+}
+.header-canvas-visibility.is-restricted {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+}
+body[data-view="overview"] .header-canvas-visibility { display: none; }
+
+/* ---- Overview (landing) chrome ----
+   The overview view has no canvas, so the per-canvas chrome (toolbar, view
+   tabs, info panel, minimap) hides while it's active. */
+body[data-view="overview"] .app-toolbar,
+body[data-view="overview"] .filter-pill-bar,
+body[data-view="overview"] .info-panel,
+body[data-view="overview"] .minimap { display: none; }
+
+/* The #app grid normally has 5 rows (header / toolbar / pill-bar / main /
+   footer). On overview the toolbar and pill-bar are display:none which
+   *removes* them from the grid — the remaining 3 items would otherwise snap
+   into the first 3 rows. Match the row count to the visible items so each
+   lands in the right cell. */
+body[data-view="overview"] #app {
+  grid-template-rows: var(--header-height) 1fr var(--footer-height);
+}
+
+/* ---- Header breadcrumb ----
+   Logo always shows. Separator + canvas label appear only when a canvas is
+   loaded (any view that isn't the overview). */
+.header-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.header-breadcrumb-sep {
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  line-height: 1;
+}
+.header-breadcrumb-current {
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body[data-view="overview"] .header-breadcrumb-sep,
+body[data-view="overview"] .header-breadcrumb-current { display: none; }
+
+/* ---- Overview view ---- */
+.view-overview {
+  display: none;
+  overflow-y: auto;
+  background: var(--color-bg-page);
+}
+.view-overview.is-active { display: block; }
+.overview-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-8);
+}
+.overview-header { margin-bottom: var(--space-6); }
+.overview-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-display);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.overview-sub {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+}
+.overview-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+/* Single-canvas case: a 280-min grid containing one card reads as
+   "rest didn't load". Switch to a single column constrained to a
+   reasonable max so the card has presence without filling the screen. */
+.overview-list.is-single-card {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.overview-card {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.06s;
+}
+.overview-card:hover {
+  border-color: var(--color-border-accent);
+  box-shadow: var(--shadow-card);
+}
+.overview-card:active { transform: translateY(1px); }
+.overview-card:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
+.overview-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.overview-card-title {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.overview-card-badge {
+  font-size: var(--text-label);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  white-space: nowrap;
+  font-weight: 500;
+}
+.overview-card-desc {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.overview-card-desc-empty { color: var(--color-text-placeholder); font-style: italic; }
+.overview-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--space-2);
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+}
+.overview-card-slug {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-placeholder);
+}
+.overview-empty {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-secondary);
+}
+.overview-empty-title {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--text-heading-m);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.overview-empty-sub { margin: 0; font-size: var(--text-small); }
 
 /* Floating action bar (appears above the selected node in edit mode) */
 .node-action-bar {

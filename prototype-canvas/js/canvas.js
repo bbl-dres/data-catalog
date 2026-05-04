@@ -14,6 +14,7 @@ window.CanvasApp.Canvas = (function () {
     var canvasEl = null;
     var transformEl = null;
     var nodeLayer = null;
+    var systemOverlayLayer = null;
     var edgeLayer = null;
     var edgeOverlay = null;
     var groupLayer = null;
@@ -251,6 +252,7 @@ window.CanvasApp.Canvas = (function () {
         edgeLayer = document.getElementById('edge-layer');
         edgeOverlay = document.getElementById('edge-overlay');
         groupLayer = document.getElementById('group-layer');
+        systemOverlayLayer = document.getElementById('system-overlay-layer');
         zoomLabel = document.getElementById('zoom-level');
 
         // Pan
@@ -415,6 +417,7 @@ window.CanvasApp.Canvas = (function () {
             var box = buildGroupBoxFor(sysName, byS[sysName]);
             if (box) groupLayer.appendChild(box);
         });
+        renderSystemOverlays();
     }
 
     /**
@@ -430,6 +433,87 @@ window.CanvasApp.Canvas = (function () {
         if (existing && box) existing.replaceWith(box);
         else if (existing) existing.remove();
         else if (box) groupLayer.appendChild(box);
+        renderSystemOverlays();
+    }
+
+    // ---- System-name overlays ------------------------------------------
+    // Big readable system labels that fade in only when zoomed out, so the
+    // user can orient themselves when individual node text is too small to
+    // read. They live in their own DOM layer (above nodes) so node bodies
+    // can't obscure them.
+
+    var SYSTEM_OVERLAY_FADE_HI = 0.65; // fully invisible at this scale and above
+    var SYSTEM_OVERLAY_FADE_LO = 0.35; // fully opaque at this scale and below
+
+    /**
+     * Read the geometry of every `.group-box` and emit a matching
+     * `.system-overlay` element positioned at the box's top-centre. Cheap to
+     * call: one DOM iteration plus a tiny element per system. Called
+     * whenever group boxes change (renderGroups / renderGroupForSystem).
+     */
+    function renderSystemOverlays() {
+        if (!systemOverlayLayer || !groupLayer) return;
+        systemOverlayLayer.innerHTML = '';
+        var boxes = groupLayer.querySelectorAll('.group-box');
+        for (var i = 0; i < boxes.length; i++) {
+            var b = boxes[i];
+            var sysName = b.getAttribute('data-system') || '';
+            var bx = parseFloat(b.style.left) || 0;
+            var by = parseFloat(b.style.top)  || 0;
+            var bw = parseFloat(b.style.width) || 0;
+            var label = document.createElement('div');
+            label.className = 'system-overlay';
+            label.setAttribute('data-system', sysName);
+            label.textContent = sysName;
+            // Top-centre of the box, with a small inset so the label sits
+            // visually inside the frame rather than on its top edge.
+            label.style.left = (bx + bw / 2) + 'px';
+            label.style.top  = (by + 8) + 'px';
+            systemOverlayLayer.appendChild(label);
+        }
+        updateSystemOverlays();
+    }
+
+    /**
+     * Recompute opacity + counter-scale on every system overlay. Counter-scale
+     * keeps the label's on-screen size constant regardless of zoom; opacity
+     * fades linearly between the FADE_HI and FADE_LO thresholds. Called from
+     * applyTransform on every pan/zoom and after each render.
+     */
+    function updateSystemOverlays() {
+        if (!systemOverlayLayer) return;
+        var s = scale;
+        var bigOpacity;
+        if (s >= SYSTEM_OVERLAY_FADE_HI) bigOpacity = 0;
+        else if (s <= SYSTEM_OVERLAY_FADE_LO) bigOpacity = 1;
+        else bigOpacity = (SYSTEM_OVERLAY_FADE_HI - s) / (SYSTEM_OVERLAY_FADE_HI - SYSTEM_OVERLAY_FADE_LO);
+
+        // Big overlay: fades in as zoom decreases.
+        var overlays = systemOverlayLayer.querySelectorAll('.system-overlay');
+        if (bigOpacity === 0) {
+            for (var i = 0; i < overlays.length; i++) overlays[i].style.opacity = '0';
+        } else {
+            var transform = 'translate(-50%, 0) scale(' + (1 / s).toFixed(3) + ')';
+            var bigStr = bigOpacity === 1 ? '1' : bigOpacity.toFixed(2);
+            for (var j = 0; j < overlays.length; j++) {
+                overlays[j].style.opacity = bigStr;
+                overlays[j].style.transform = transform;
+            }
+        }
+
+        // Small corner badge: inverse fade so the two labels never compete
+        // at mid-zoom. Pointer-events go to none when invisible so the badge
+        // doesn't intercept clicks aimed at the canvas behind.
+        if (groupLayer) {
+            var labels = groupLayer.querySelectorAll('.group-box-label');
+            var smallOpacity = 1 - bigOpacity;
+            var smallStr = smallOpacity === 1 ? '' : smallOpacity === 0 ? '0' : smallOpacity.toFixed(2);
+            var pe = smallOpacity < 0.05 ? 'none' : '';
+            for (var k = 0; k < labels.length; k++) {
+                labels[k].style.opacity = smallStr;
+                labels[k].style.pointerEvents = pe;
+            }
+        }
     }
 
     function renderNodes() {
@@ -1319,6 +1403,7 @@ window.CanvasApp.Canvas = (function () {
         if (window.CanvasApp.Editor && window.CanvasApp.Editor.repositionActionBar) {
             window.CanvasApp.Editor.repositionActionBar();
         }
+        updateSystemOverlays();
         for (var i = 0; i < transformListeners.length; i++) {
             try { transformListeners[i](); } catch (e) { console.error(e); }
         }

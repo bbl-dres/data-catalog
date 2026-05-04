@@ -1,10 +1,10 @@
 -- =============================================================================
 -- BBL Architektur-Canvas — Schema DDL
--- Generated from docs/DATAMODEL.md v0.3
+-- Generated from docs/DATAMODEL.md v0.4
 -- Target: Supabase / PostgreSQL 15+
 --
 -- Run order: this file is meant to be executed top-to-bottom against a fresh
--- database. It creates 10 catalog tables, RLS policies, indexes, and a
+-- database. It creates 11 catalog tables, RLS policies, indexes, and a
 -- minimal helper-function set. Audit / version history is intentionally
 -- absent (deferred to §10 Future Developments).
 --
@@ -48,11 +48,75 @@ $$;
 
 
 -- =============================================================================
--- 1. node — universal catalog entity
+-- 1. canvas — named perspective wrapping a self-contained set of nodes
+--
+-- Each canvas owns its own nodes (FK enforced on node.canvas_id NOT NULL); two
+-- canvases needing the same conceptual entity ("AV GIS") each carry their own
+-- node row. This is the simpler of two multi-canvas patterns; cross-canvas
+-- node reuse — same node placed at different positions on different canvases
+-- — is the deferred Path A in §10 of DATAMODEL.md.
+--
+-- Home view (home_scale, home_center_x, home_center_y) is curator-set and
+-- shared by all viewers of the canvas; per-user-per-canvas viewport
+-- preferences remain a §10 deferral.
+--
+-- The owner_contact_id FK is added below, after `contact` is created.
+-- =============================================================================
+
+CREATE TABLE canvas (
+  id                uuid           PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug              text           NOT NULL,
+  label_de          text           NOT NULL,
+  label_fr          text,
+  label_it          text,
+  label_en          text,
+  description_de    text,
+  description_fr    text,
+  description_it    text,
+  description_en    text,
+  home_scale        numeric(10,6),
+  home_center_x     numeric(10,2),
+  home_center_y     numeric(10,2),
+  visibility        text           NOT NULL DEFAULT 'public',
+  owner_contact_id  uuid,
+  created_at        timestamptz    NOT NULL DEFAULT now(),
+  modified_at       timestamptz    NOT NULL DEFAULT now(),
+
+  CONSTRAINT canvas_slug_uk          UNIQUE (slug),
+  CONSTRAINT canvas_slug_format_chk  CHECK (slug ~ '^[a-z0-9][a-z0-9_.-]*$'),
+  CONSTRAINT canvas_visibility_chk   CHECK (visibility IN ('public','restricted')),
+  -- All three home-view coords or none. Mirrors node.x/y coherence.
+  CONSTRAINT canvas_home_view_coherence_chk CHECK (
+    (home_scale IS NULL AND home_center_x IS NULL AND home_center_y IS NULL)
+    OR
+    (home_scale IS NOT NULL AND home_center_x IS NOT NULL AND home_center_y IS NOT NULL)
+  ),
+  CONSTRAINT canvas_home_scale_positive_chk
+    CHECK (home_scale IS NULL OR home_scale > 0)
+);
+
+COMMENT ON TABLE  canvas IS 'Named perspective wrapping a self-contained node set. label_de is the only required label; other locales follow the global de → en → first-non-null fallback. Each canvas owns its own nodes (Path B); cross-canvas node reuse is deferred to §10.';
+COMMENT ON COLUMN canvas.slug          IS 'URL-friendly key for hash routing (e.g. #/c/bbl-immo/diagram). Globally unique.';
+COMMENT ON COLUMN canvas.visibility    IS 'public = anon-readable; restricted = signed-in only. Editor permissions are gated by contact.app_role independently of visibility.';
+COMMENT ON COLUMN canvas.home_scale    IS 'Curator-set home-view zoom level. NULL = no curated view, frontend falls back to fit-all.';
+COMMENT ON COLUMN canvas.home_center_x IS 'Home-view world-X centre. NULL together with the other home_* columns.';
+COMMENT ON COLUMN canvas.home_center_y IS 'Home-view world-Y centre. NULL together with the other home_* columns.';
+
+CREATE INDEX canvas_visibility_idx  ON canvas (visibility);
+CREATE INDEX canvas_modified_at_idx ON canvas (modified_at DESC);
+
+CREATE TRIGGER canvas_touch_modified_at
+  BEFORE UPDATE ON canvas
+  FOR EACH ROW EXECUTE FUNCTION touch_modified_at();
+
+
+-- =============================================================================
+-- 2. node — universal catalog entity
 -- =============================================================================
 
 CREATE TABLE node (
   id                uuid           PRIMARY KEY DEFAULT gen_random_uuid(),
+  canvas_id         uuid           NOT NULL REFERENCES canvas(id) ON DELETE CASCADE,
   slug              text           NOT NULL,
   kind              text           NOT NULL,
   label_de          text,
@@ -72,9 +136,10 @@ CREATE TABLE node (
   created_at        timestamptz    NOT NULL DEFAULT now(),
   modified_at       timestamptz    NOT NULL DEFAULT now(),
 
-  -- Slug must be globally unique; (id, kind) UK is required so side tables
-  -- can declare composite FKs to (node_id, kind).
-  CONSTRAINT node_slug_uk        UNIQUE (slug),
+  -- Slug is unique per canvas (two canvases can each have a `dist:av_gv_dat`).
+  -- (id, kind) UK is required so side tables can declare composite FKs to
+  -- (node_id, kind); side tables stay canvas-agnostic since id is global.
+  CONSTRAINT node_canvas_slug_uk UNIQUE (canvas_id, slug),
   CONSTRAINT node_id_kind_uk     UNIQUE (id, kind),
 
   CONSTRAINT node_kind_chk
@@ -90,12 +155,14 @@ CREATE TABLE node (
 );
 
 COMMENT ON TABLE  node IS 'Universal catalog entity. The kind discriminator selects which side table (system_meta, distribution_meta, attribute_meta, standard_reference_meta) carries kind-specific fields. code_list nodes have child rows in code_list_entry; pset nodes optionally have a 1:1 processing_activity.';
-COMMENT ON COLUMN node.slug             IS 'Stable human-readable key in the form {kind_prefix}:{technical_path}, e.g. pset:address.';
+COMMENT ON COLUMN node.canvas_id        IS 'Owning canvas. NOT NULL; node and its meta/edges/role-assignments cascade on canvas deletion.';
+COMMENT ON COLUMN node.slug             IS 'Stable human-readable key in the form {kind_prefix}:{technical_path}, e.g. pset:address. Unique within a canvas.';
 COMMENT ON COLUMN node.tags             IS 'Language-independent free-text keys; translations live in the application i18n catalog.';
 COMMENT ON COLUMN node.theme_slug       IS 'Optional free-text grouping (Personendaten, Geokoordinaten, …).';
-COMMENT ON COLUMN node.x                IS 'Single-canvas x coordinate. NULL = not placed on canvas.';
-COMMENT ON COLUMN node.y                IS 'Single-canvas y coordinate. NULL = not placed on canvas.';
+COMMENT ON COLUMN node.x                IS 'Canvas-space x coordinate. NULL = not placed.';
+COMMENT ON COLUMN node.y                IS 'Canvas-space y coordinate. NULL = not placed.';
 
+CREATE INDEX node_canvas_kind_idx    ON node (canvas_id, kind);
 CREATE INDEX node_kind_idx           ON node (kind);
 CREATE INDEX node_lifecycle_idx      ON node (lifecycle_status);
 CREATE INDEX node_classification_idx ON node (classification) WHERE classification IS NOT NULL;
@@ -113,7 +180,7 @@ CREATE TRIGGER node_touch_modified_at
 
 
 -- =============================================================================
--- 2. edge — directed typed connection between two nodes
+-- 3. edge — directed typed connection between two nodes
 -- =============================================================================
 
 CREATE TABLE edge (
@@ -159,7 +226,7 @@ CREATE TRIGGER edge_touch_modified_at
 
 
 -- =============================================================================
--- 3. system_meta — kind-locked side table for kind = system
+-- 4. system_meta — kind-locked side table for kind = system
 -- =============================================================================
 
 CREATE TABLE system_meta (
@@ -179,7 +246,7 @@ COMMENT ON COLUMN system_meta.security_zone IS 'ISG security zone identifier.';
 
 
 -- =============================================================================
--- 4. distribution_meta — kind-locked side table for kind = distribution
+-- 5. distribution_meta — kind-locked side table for kind = distribution
 -- =============================================================================
 
 CREATE TABLE distribution_meta (
@@ -217,7 +284,7 @@ CREATE INDEX distribution_meta_technical_name_idx ON distribution_meta (technica
 
 
 -- =============================================================================
--- 5. attribute_meta — kind-locked side table for kind = attribute
+-- 6. attribute_meta — kind-locked side table for kind = attribute
 -- =============================================================================
 
 CREATE TABLE attribute_meta (
@@ -250,7 +317,7 @@ CREATE INDEX attribute_meta_pdc_idx      ON attribute_meta (personal_data_catego
 
 
 -- =============================================================================
--- 6. standard_reference_meta — kind-locked side table for kind = standard_reference
+-- 7. standard_reference_meta — kind-locked side table for kind = standard_reference
 -- =============================================================================
 
 CREATE TABLE standard_reference_meta (
@@ -271,7 +338,7 @@ COMMENT ON COLUMN standard_reference_meta.organisation IS 'Issuing organisation:
 
 
 -- =============================================================================
--- 7. code_list_entry — rows of a controlled vocabulary
+-- 8. code_list_entry — rows of a controlled vocabulary
 --    Side table of a node row of kind = code_list. Entries are NOT nodes.
 -- =============================================================================
 
@@ -304,7 +371,7 @@ CREATE INDEX code_list_entry_label_en_trgm ON code_list_entry USING gin (label_e
 
 
 -- =============================================================================
--- 8. processing_activity — DSG Art. 12 Verzeichnis
+-- 9. processing_activity — DSG Art. 12 Verzeichnis
 --    1:0..1 with a node row of kind = pset.
 -- =============================================================================
 
@@ -372,7 +439,7 @@ CREATE TRIGGER processing_activity_validate
 
 
 -- =============================================================================
--- 9. contact — single table for users, externals, teams
+-- 10. contact — single table for users, externals, teams
 -- =============================================================================
 
 CREATE TABLE contact (
@@ -413,7 +480,7 @@ CREATE TRIGGER contact_touch_modified_at
 
 
 -- =============================================================================
--- 10. role_assignment — NaDB role attribution: contact + role + scope
+-- 11. role_assignment — NaDB role attribution: contact + role + scope
 -- =============================================================================
 
 CREATE TABLE role_assignment (
@@ -459,6 +526,19 @@ CREATE INDEX role_assignment_active_idx
 
 
 -- =============================================================================
+-- Deferred FK: canvas.owner_contact_id → contact(id)
+-- canvas is created before contact for ordering reasons (node FKs into canvas).
+-- =============================================================================
+
+ALTER TABLE canvas
+  ADD CONSTRAINT canvas_owner_contact_fk
+  FOREIGN KEY (owner_contact_id) REFERENCES contact (id) ON DELETE SET NULL;
+
+CREATE INDEX canvas_owner_contact_idx
+  ON canvas (owner_contact_id) WHERE owner_contact_id IS NOT NULL;
+
+
+-- =============================================================================
 -- RLS helpers
 -- =============================================================================
 
@@ -498,6 +578,7 @@ $$;
 -- Row-Level Security
 -- =============================================================================
 
+ALTER TABLE canvas                  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE node                    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE edge                    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_meta             ENABLE ROW LEVEL SECURITY;
@@ -508,6 +589,13 @@ ALTER TABLE code_list_entry         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE processing_activity     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact                 ENABLE ROW LEVEL SECURITY;
 ALTER TABLE role_assignment         ENABLE ROW LEVEL SECURITY;
+
+-- canvas: any authenticated user reads everything; editors/admins write.
+-- The visibility-aware anon-read policy lives in migrations/, not here.
+CREATE POLICY canvas_read  ON canvas FOR SELECT TO authenticated USING (true);
+CREATE POLICY canvas_write ON canvas FOR ALL    TO authenticated
+  USING      (current_user_can_edit())
+  WITH CHECK (current_user_can_edit());
 
 -- Catalog tables: read by any authenticated user; write by editor/admin.
 CREATE POLICY node_read  ON node  FOR SELECT TO authenticated USING (true);
@@ -581,7 +669,7 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
     EXECUTE 'ALTER PUBLICATION supabase_realtime ADD TABLE
-             node, edge, system_meta, distribution_meta, attribute_meta,
+             canvas, node, edge, system_meta, distribution_meta, attribute_meta,
              standard_reference_meta, code_list_entry, processing_activity';
   END IF;
 END $$;
@@ -600,21 +688,32 @@ END $$;
 --
 -- INSERT INTO contact (auth_user_id, email, name, app_role) VALUES
 --   ('00000000-0000-0000-0000-000000000000', 'admin@bbl.admin.ch', 'Bootstrap Admin', 'admin');
+--
+-- A canvas must exist before any node can be inserted (node.canvas_id is
+-- NOT NULL). Create at least one default canvas:
+--
+-- INSERT INTO canvas (slug, label_de) VALUES ('default', 'BBL Datenarchitektur');
 
 
 -- =============================================================================
 -- Optional seed: BBL systems (uncomment to populate)
 -- Source-of-truth list per docs/DATAMODEL.md §6.3.
+-- Assumes the 'default' canvas was created in the bootstrap section above.
 -- =============================================================================
 
--- INSERT INTO node (slug, kind, label_de, lifecycle_status) VALUES
---   ('sys:refx',      'system', 'SAP RE-FX',  'produktiv'),
---   ('sys:bbl_gis',   'system', 'BBL GIS',    'produktiv'),
---   ('sys:gwr',       'system', 'BFS GWR',    'produktiv'),
---   ('sys:av_gis',    'system', 'AV GIS',     'produktiv'),
---   ('sys:grundbuch', 'system', 'Grundbuch',  'produktiv');
+-- INSERT INTO node (canvas_id, slug, kind, label_de, lifecycle_status)
+-- SELECT c.id, v.slug, 'system', v.label_de, 'produktiv'
+--   FROM canvas c
+--   CROSS JOIN (VALUES
+--     ('sys:refx',      'SAP RE-FX'),
+--     ('sys:bbl_gis',   'BBL GIS'),
+--     ('sys:gwr',       'BFS GWR'),
+--     ('sys:av_gis',    'AV GIS'),
+--     ('sys:grundbuch', 'Grundbuch')
+--   ) AS v(slug, label_de)
+--  WHERE c.slug = 'default';
 --
--- INSERT INTO system_meta (node_id, technology_stack, base_url, security_zone, active)
+-- INSERT INTO system_meta (node_id, technology_stack, base_url, security_zone, is_active)
 -- SELECT id,
 --   CASE slug
 --     WHEN 'sys:refx'      THEN 'SAP S/4HANA'

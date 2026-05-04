@@ -27,13 +27,20 @@ window.CanvasApp.State = (function () {
         nodes: [],
         edges: [],
         sets: [],            // global property-set registry — see canvas.json
+        // Multi-canvas (v0.4):
+        //   canvases — overview list (id, slug, label_de, …) for the landing view
+        //   currentCanvasSlug — null when on the overview, otherwise the loaded canvas
+        //   currentCanvas — { id, slug, label, description, visibility } from the RPC
+        canvases: [],
+        currentCanvasSlug: null,
+        currentCanvas: null,
         // Curated entry-point view (scale + bbox-centre in world coords).
         // null = no curated view; Canvas.goHome falls back to initialView.
         // Treated as layout (always-saved, mirrored into snapshot) so that
         // pressing Cancel after setting a home view doesn't undo it — same
         // pattern as node positions.
         homeView: null,
-        view: 'diagram',
+        view: 'overview',
         mode: 'view',
         // Tagged-union selection. Exactly one of node / edge / system /
         // attribute / set, or null. Mutually exclusive across kinds.
@@ -124,22 +131,56 @@ window.CanvasApp.State = (function () {
     // canvas.json fallback — those would risk showing stale or wrong data
     // after the DB updates. On failure (offline, RPC error, ...) we surface
     // an error message via state.loadError; the views render an overlay.
+    //
+    // load() dispatches based on the current view:
+    //   * view = 'overview'  → fetch the canvas list via listCanvases()
+    //   * view ∈ {diagram, table, api} with a slug → fetch canvas_export(slug)
+    //   * any other shape → empty
     function load() {
-        // Drop pre-Supabase cache shapes so they can't leak into UI.
         try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
         try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (e) {}
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
 
         if (!window.CanvasApp.SupabaseClient) {
             state.loadError = 'SupabaseClient nicht geladen.';
-            state.nodes = []; state.edges = []; state.sets = [];
-            rebuildIndex();
+            clearCanvasData();
+            state.canvases = [];
             return Promise.resolve();
         }
 
-        return window.CanvasApp.SupabaseClient.loadCanvas()
-            .then(function (data) {
+        if (state.view === 'overview' || !state.currentCanvasSlug) {
+            return loadCanvasList();
+        }
+        return loadCanvasContent(state.currentCanvasSlug);
+    }
+
+    function loadCanvasList() {
+        return window.CanvasApp.SupabaseClient.listCanvases()
+            .then(function (canvases) {
                 state.loadError = null;
+                state.canvases = canvases || [];
+                clearCanvasData();
+            })
+            .catch(function (err) {
+                console.error('Failed to list canvases', err);
+                state.loadError = err && err.message
+                    ? String(err.message)
+                    : 'Unbekannter Fehler beim Laden der Canvas-Übersicht.';
+                state.canvases = [];
+                clearCanvasData();
+            });
+    }
+
+    function loadCanvasContent(slug) {
+        return window.CanvasApp.SupabaseClient.loadCanvas(slug)
+            .then(function (data) {
+                if (!data) {
+                    state.loadError = 'Canvas "' + slug + '" wurde nicht gefunden.';
+                    clearCanvasData();
+                    return;
+                }
+                state.loadError = null;
+                state.currentCanvas = data.canvas || { slug: slug, label: slug };
                 state.nodes = data.nodes || [];
                 state.edges = (data.edges || []).map(function (e, i) {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
@@ -153,9 +194,15 @@ window.CanvasApp.State = (function () {
                 state.loadError = err && err.message
                     ? String(err.message)
                     : 'Unbekannter Fehler beim Laden der Daten.';
-                state.nodes = []; state.edges = []; state.sets = [];
-                rebuildIndex();
+                clearCanvasData();
             });
+    }
+
+    function clearCanvasData() {
+        state.nodes = []; state.edges = []; state.sets = [];
+        state.currentCanvas = null;
+        state.homeView = null;
+        rebuildIndex();
     }
 
     function readStorage() {
@@ -335,13 +382,222 @@ window.CanvasApp.State = (function () {
     function canUndo() { return undoStack.length > 0; }
     function getUndoCount() { return undoStack.length; }
 
+    /**
+     * Server-side commit. Serialises the current (draft) state into the
+     * DB-shape payload accepted by the canvas_apply() RPC, posts it, and
+     * only on success closes the snapshot + clears dirty marks.
+     *
+     * Returns a Promise so the Speichern UI can await + handle errors —
+     * on rejection the snapshot is *kept* so the user doesn't lose work.
+     */
     function commitDraft() {
-        if (!state.snapshot) return;
-        state.snapshot = null;
-        dirtyMap.clear();
-        schedulePersist();
-        flushPendingPersist();
-        emit('committed');
+        if (!state.snapshot) return Promise.resolve();
+        var slug = state.currentCanvasSlug;
+        if (!slug) return Promise.reject(new Error('Kein Canvas geladen.'));
+        var Sb = window.CanvasApp.SupabaseClient;
+        if (!Sb || !Sb.applyCanvas) {
+            return Promise.reject(new Error('Supabase nicht verfügbar.'));
+        }
+        var payload = serializeDraftToPayload();
+        return Sb.applyCanvas(slug, payload).then(function () {
+            state.snapshot = null;
+            dirtyMap.clear();
+            // No localStorage persist — server is the source of truth now.
+            // schedulePersist's existing draft-mode-no-write semantics still
+            // hold; on the next mutation outside edit mode (none expected
+            // immediately after commit), the localStorage cache will refresh.
+            emit('committed');
+        });
+    }
+
+    /**
+     * Translate the in-memory draft into the DB-shape payload accepted by
+     * canvas_apply(). The frontend stores a denormalised view (column lists
+     * inline on each node, system as a label rather than a node, etc.); the
+     * payload re-derives the explicit catalog rows.
+     *
+     * Caveats — known data losses on round-trip (frontend doesn't represent
+     * these, so a save will delete them from the DB):
+     *   - standard_reference nodes and their derives_from edges
+     *   - replaces, fk_references, values_from edges
+     *   - multiple psets per attribute (frontend stores a single setId)
+     *   - per-system technology_stack / base_url / security_zone metadata
+     */
+    function serializeDraftToPayload() {
+        var nodes = [];
+        var system_meta = [];
+        var distribution_meta = [];
+        var attribute_meta = [];
+        var code_list_entry = [];
+        var edges = [];
+
+        // 1. Derive system slugs from the unique system labels in use.
+        var sysSlugByLabel = Object.create(null);
+        state.nodes.forEach(function (n) {
+            var sys = (n.system || '').trim();
+            if (!sys || sysSlugByLabel[sys]) return;
+            sysSlugByLabel[sys] = 'sys:' + slugify(sys);
+        });
+        Object.keys(sysSlugByLabel).forEach(function (label) {
+            var slug = sysSlugByLabel[label];
+            nodes.push({
+                slug: slug, kind: 'system',
+                label_de: label,
+                lifecycle_status: 'produktiv'
+            });
+            // Frontend doesn't track per-system technology_stack etc., so
+            // emit a minimal row — preserves the side-table-exists invariant
+            // without making up data.
+            system_meta.push({ node_slug: slug });
+        });
+
+        // 2. Pset nodes from state.sets. The seed format concatenates
+        //    description + lineage with "\n\nLineage: " — keep that so
+        //    canvas_export's splitter on the next load round-trips cleanly.
+        var psetSlugById = Object.create(null);
+        (state.sets || []).forEach(function (s) {
+            var slug = 'pset:' + s.id;
+            psetSlugById[s.id] = slug;
+            var description = s.description || '';
+            if (s.lineage) {
+                description = description
+                    ? description + '\n\nLineage: ' + s.lineage
+                    : 'Lineage: ' + s.lineage;
+            }
+            nodes.push({
+                slug: slug, kind: 'pset',
+                label_de: s.label || s.id,
+                description_de: description || null,
+                lifecycle_status: 'produktiv'
+            });
+        });
+
+        // 3. Distribution / codelist nodes + their attributes / entries.
+        state.nodes.forEach(function (n) {
+            var isCodelist = n.type === 'codelist';
+            var prefix = isCodelist ? 'cl:' : 'dist:';
+            var kind   = isCodelist ? 'code_list' : 'distribution';
+            var nodeSlug = prefix + n.id;
+
+            nodes.push({
+                slug: nodeSlug, kind: kind,
+                label_de: n.label || n.id,
+                tags: Array.isArray(n.tags) ? n.tags : [],
+                x: n.x != null ? n.x : null,
+                y: n.y != null ? n.y : null,
+                lifecycle_status: 'produktiv'
+            });
+
+            if (!isCodelist) {
+                distribution_meta.push({
+                    node_slug: nodeSlug,
+                    type: n.type || 'table',
+                    schema_name: n.schema || null
+                });
+            }
+
+            // System publishes edge.
+            var sysLabel = (n.system || '').trim();
+            if (sysLabel && sysSlugByLabel[sysLabel]) {
+                edges.push({
+                    from_slug: sysSlugByLabel[sysLabel],
+                    to_slug:   nodeSlug,
+                    edge_type: 'publishes'
+                });
+            }
+
+            // Columns: attributes for distributions, entries for codelists.
+            (n.columns || []).forEach(function (c, idx) {
+                if (isCodelist) {
+                    code_list_entry.push({
+                        code_list_node_slug: nodeSlug,
+                        code:     c.name,
+                        label_de: c.type,            // codelist columns: name=code, type=label
+                        sort_order: idx
+                    });
+                    return;
+                }
+                var attrName = c.name || ('col_' + idx);
+                var safeName = slugifyAttrPart(attrName);
+                var safeStruct = c.sourceStructure ? slugifyAttrPart(c.sourceStructure) : '';
+                var attrSlug = 'attr:' + n.id + (safeStruct ? '.' + safeStruct : '') + '.' + safeName;
+                nodes.push({
+                    slug: attrSlug, kind: 'attribute',
+                    label_de: attrName,
+                    lifecycle_status: 'produktiv'
+                });
+                attribute_meta.push({
+                    node_slug: attrSlug,
+                    technical_name: attrName,
+                    data_type: c.type || null,
+                    key_role:  (c.key && c.key !== '-') ? c.key : null,
+                    source_structure: c.sourceStructure || null,
+                    sort_order: idx
+                });
+                edges.push({
+                    from_slug: nodeSlug,
+                    to_slug:   attrSlug,
+                    edge_type: 'contains'
+                });
+                if (c.setId && psetSlugById[c.setId]) {
+                    edges.push({
+                        from_slug: attrSlug,
+                        to_slug:   psetSlugById[c.setId],
+                        edge_type: 'in_pset'
+                    });
+                }
+            });
+        });
+
+        // 4. Inter-node flows_into edges from state.edges.
+        state.edges.forEach(function (e) {
+            var fromN = nodesById[e.from];
+            var toN   = nodesById[e.to];
+            if (!fromN || !toN) return;
+            var fp = fromN.type === 'codelist' ? 'cl:' : 'dist:';
+            var tp = toN.type   === 'codelist' ? 'cl:' : 'dist:';
+            edges.push({
+                from_slug: fp + e.from,
+                to_slug:   tp + e.to,
+                edge_type: 'flows_into',
+                label_de:  e.label || null
+            });
+        });
+
+        // 5. Optional canvas-level updates (home view).
+        var canvasMeta = null;
+        if (state.homeView) {
+            canvasMeta = {
+                home_scale:    String(state.homeView.scale),
+                home_center_x: String(state.homeView.centerX),
+                home_center_y: String(state.homeView.centerY)
+            };
+        }
+
+        return {
+            canvas:            canvasMeta,
+            nodes:             nodes,
+            system_meta:       system_meta,
+            distribution_meta: distribution_meta,
+            attribute_meta:    attribute_meta,
+            code_list_entry:   code_list_entry,
+            edges:             edges
+        };
+    }
+
+    function slugify(s) {
+        return String(s || '').toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/^_+|_+$/g, '');
+    }
+    /**
+     * Slug fragment normaliser for attribute slugs — preserves more characters
+     * than slugify() because the seed uses uppercase + underscores in
+     * technical names (OBJECT_ID, MEASUREMENT) and we want round-trip
+     * stability with the existing data.
+     */
+    function slugifyAttrPart(s) {
+        return String(s || '').replace(/[^A-Za-z0-9_.-]+/g, '_');
     }
 
     function revertDraft() {
@@ -375,9 +631,43 @@ window.CanvasApp.State = (function () {
     }
 
     function setView(view) {
-        if (['diagram', 'table', 'api'].indexOf(view) === -1) return;
+        if (['overview', 'diagram', 'table', 'api'].indexOf(view) === -1) return;
         state.view = view;
         emit('view');
+    }
+
+    function getCurrentCanvasSlug() { return state.currentCanvasSlug; }
+    function getCurrentCanvas()     { return state.currentCanvas; }
+    function getCanvases()          { return state.canvases; }
+
+    function setCurrentCanvasSlug(slug) {
+        var next = slug || null;
+        if (state.currentCanvasSlug === next) return;
+
+        // The draft snapshot belongs to the canvas we're leaving — once the
+        // current slug changes, the snapshot would point at nodes that no
+        // longer exist (or that mean something different in the new canvas).
+        // Reset edit-mode state to keep the in-memory model consistent.
+        // The user-facing "Ungespeicherte Änderungen verwerfen?" prompt
+        // happens at the navigation entry points (App.wireHomeLink, etc.) —
+        // by the time we reach this setter the user has already opted in.
+        if (state.snapshot) {
+            state.snapshot = null;
+            dirtyMap.clear();
+            undoStack = [];
+            if (state.mode !== 'view') {
+                state.mode = 'view';
+                emit('mode');
+            }
+        }
+
+        state.currentCanvasSlug = next;
+        // Drop any per-canvas in-memory state so a stale node from a previous
+        // canvas can't bleed into the new one before load() runs.
+        if (next === null) {
+            clearCanvasData();
+        }
+        emit('canvas');
     }
 
     // ---- Selection (tagged union) -------------------------------------
@@ -828,6 +1118,10 @@ window.CanvasApp.State = (function () {
         on: on,
         get: get,
         getLoadError: getLoadError,
+        getCanvases: getCanvases,
+        getCurrentCanvas: getCurrentCanvas,
+        getCurrentCanvasSlug: getCurrentCanvasSlug,
+        setCurrentCanvasSlug: setCurrentCanvasSlug,
         getNodes: getNodes,
         getEdges: getEdges,
         getNode: getNode,

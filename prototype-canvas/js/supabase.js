@@ -26,6 +26,12 @@ window.CanvasApp.SupabaseClient = (function () {
             loadCanvas: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
+            listCanvases: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
+            applyCanvas: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
             signInWithMagicLink: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
@@ -43,11 +49,50 @@ window.CanvasApp.SupabaseClient = (function () {
         }
     });
 
-    function loadCanvas() {
-        return client.rpc('canvas_export').then(function (res) {
+    /**
+     * Fetch a single canvas's payload via canvas_export(slug). Slug-less call
+     * keeps the v0.3 default-canvas behaviour (the RPC's parameter has a
+     * 'default' DEFAULT in migration 006).
+     */
+    function loadCanvas(slug) {
+        var args = slug ? { canvas_slug: slug } : {};
+        return client.rpc('canvas_export', args).then(function (res) {
             if (res.error) throw new Error('Supabase canvas_export: ' + res.error.message);
             return res.data;
         });
+    }
+
+    /**
+     * Atomically replace the named canvas's content via the canvas_apply()
+     * RPC (migration 007). The payload is DB-shape — see State.serializeDraft.
+     * Resolves on success with the function's row-count summary; rejects on
+     * RLS / network / SQL errors.
+     */
+    function applyCanvas(slug, payload) {
+        return client.rpc('canvas_apply', { canvas_slug: slug, payload: payload })
+            .then(function (res) {
+                if (res.error) {
+                    var msg = res.error.message || 'canvas_apply failed';
+                    var code = res.error.code ? ' (' + res.error.code + ')' : '';
+                    throw new Error(msg + code);
+                }
+                return res.data;
+            });
+    }
+
+    /**
+     * Fetch the canvas overview list. Anon RLS exposes only public canvases;
+     * authenticated users see all (sign-in is what unlocks restricted ones).
+     */
+    function listCanvases() {
+        return client
+            .from('canvas')
+            .select('id, slug, label_de, label_fr, label_it, label_en, description_de, visibility, modified_at')
+            .order('modified_at', { ascending: false })
+            .then(function (res) {
+                if (res.error) throw new Error('Supabase canvas list: ' + res.error.message);
+                return res.data || [];
+            });
     }
 
     /**
@@ -96,6 +141,8 @@ window.CanvasApp.SupabaseClient = (function () {
     return {
         client:              client,
         loadCanvas:          loadCanvas,
+        listCanvases:        listCanvases,
+        applyCanvas:         applyCanvas,
         signInWithMagicLink: signInWithMagicLink,
         signOut:             signOut,
         getSession:          getSession,

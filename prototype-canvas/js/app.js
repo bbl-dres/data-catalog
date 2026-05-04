@@ -20,35 +20,49 @@ window.CanvasApp.App = (function () {
         wireUrlSync();
         wireGlobalKeys();
         wireCanvasEmpty();
+        wireHomeLink();
+        wireAuthRefresh();
 
         State.on(function (reason) {
-            if (reason === 'view') {
+            if (reason === 'view' || reason === 'canvas') {
                 applyViewVisibility();
+                renderBreadcrumb();
             }
             if (reason === 'view' || reason === 'selection' || reason === 'filter' ||
-                reason === 'replace' || reason === 'reset') {
-                // 'replace'/'reset' included so an import (which clears
-                // selection in state) also strips a stale `selected=` from
-                // the URL — otherwise a refresh would re-apply a ghost.
+                reason === 'replace' || reason === 'reset' || reason === 'canvas') {
                 syncStateToUrl();
             }
-            // Save-button affordance reflects draft dirtiness across every
-            // mutation — nodes/edges/replace plus mode toggles.
             updateSaveAffordance();
             updateCanvasEmpty();
         });
 
         wireLoadErrorRetry();
 
+        // Apply the URL into state BEFORE the first load so the dispatcher in
+        // State.load() picks the right code path (overview vs canvas).
+        applyUrlToState();
+        applyViewVisibility();
+        renderBreadcrumb();
+
+        return loadAndRender();
+    }
+
+    /**
+     * Fetches whatever the current state says is needed (canvas list when
+     * view='overview', canvas content otherwise) and re-renders the
+     * appropriate view. Single code path used by init AND by hashchange so
+     * URL navigation and first paint share behaviour.
+     */
+    function loadAndRender() {
         return State.load().then(function () {
             applyLoadError();
-            // Apply the URL's view/selection on top of what was loaded from
-            // localStorage. URL wins so shared links land you exactly where
-            // the sender was.
-            applyUrlToState();
-            applyViewVisibility();
+            renderBreadcrumb();
+            if (State.getLoadError()) return;
+            if (State.getView() === 'overview') {
+                window.CanvasApp.Overview.render();
+                return;
+            }
             window.CanvasApp.Canvas.renderAll();
-            // After renderAll, apply filter dim if URL carried filters.
             if (State.hasActiveFilters() && window.CanvasApp.Canvas.applyFilterDim) {
                 window.CanvasApp.Canvas.applyFilterDim();
             }
@@ -60,18 +74,58 @@ window.CanvasApp.App = (function () {
             updateCanvasEmpty();
             // Initial framing on first paint. goHome applies the curator's
             // saved Home view if present, otherwise falls back to
-            // initialView (fit-with-floor, never below 25%). The user can
-            // always reach full overview via the Zoom Extent button.
-            // Double rAF — first frame paints the freshly-rendered DOM,
-            // second frame fires after layout has been computed. Single
-            // rAF was racing layout on heavy initial trees and producing
-            // a stale 0×0 rect.
+            // initialView (fit-with-floor, never below 25%). Double rAF —
+            // first frame paints the freshly-rendered DOM, second frame
+            // fires after layout has been computed.
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () {
                     window.CanvasApp.Canvas.goHome();
                 });
             });
         });
+    }
+
+    /** Update the breadcrumb's "current canvas" text + visibility pill from state. */
+    function renderBreadcrumb() {
+        var labelEl = document.getElementById('header-canvas-label');
+        var visEl   = document.getElementById('header-canvas-visibility');
+        if (!labelEl) return;
+        if (State.getView() === 'overview') {
+            labelEl.textContent = '';
+            if (visEl) visEl.setAttribute('hidden', '');
+            return;
+        }
+        // Prefer the freshly-loaded current canvas; fall back to the overview
+        // list match by slug; last resort, the slug itself.
+        var c = State.getCurrentCanvas();
+        var label = c && c.label ? c.label : null;
+        var vis   = c && c.visibility ? c.visibility : null;
+        if (!label || !vis) {
+            var slug = State.getCurrentCanvasSlug();
+            var match = (State.getCanvases() || []).find(function (x) { return x.slug === slug; });
+            if (match) {
+                if (!label) label = match.label_de || slug;
+                if (!vis)   vis   = match.visibility;
+            }
+            if (!label) label = slug || '';
+        }
+        labelEl.textContent = label;
+
+        if (visEl) {
+            if (vis === 'public') {
+                visEl.textContent = 'öffentlich';
+                visEl.className = 'header-canvas-visibility is-public';
+                visEl.title = 'Auch ohne Anmeldung lesbar';
+                visEl.removeAttribute('hidden');
+            } else if (vis === 'restricted') {
+                visEl.textContent = 'Nur intern';
+                visEl.className = 'header-canvas-visibility is-restricted';
+                visEl.title = 'Nur für angemeldete Benutzer sichtbar';
+                visEl.removeAttribute('hidden');
+            } else {
+                visEl.setAttribute('hidden', '');
+            }
+        }
     }
 
     // ---- Load-error overlay --------------------------------------------
@@ -86,21 +140,7 @@ window.CanvasApp.App = (function () {
             btn.disabled = true;
             var bodyEl = document.getElementById('load-error-body');
             if (bodyEl) bodyEl.textContent = 'Lade Daten…';
-            State.load().then(function () {
-                btn.disabled = false;
-                applyLoadError();
-                if (!State.getLoadError()) {
-                    window.CanvasApp.Canvas.renderAll();
-                    window.CanvasApp.Table.render();
-                    window.CanvasApp.Api.render();
-                    window.CanvasApp.Panel.render();
-                    requestAnimationFrame(function () {
-                        requestAnimationFrame(function () {
-                            window.CanvasApp.Canvas.goHome();
-                        });
-                    });
-                }
-            });
+            loadAndRender().then(function () { btn.disabled = false; });
         });
     }
 
@@ -118,37 +158,78 @@ window.CanvasApp.App = (function () {
     }
 
     // ---- URL sync ------------------------------------------------------
-    // Hash format:
-    //   #/diagram                       view, no selection
-    //   #/diagram?selected=<nodeId>     view + selected node
-    //   #/table                         view (no selection)
-    //   #/api                           view (selection ignored — no panel)
+    // Hash format (v0.4 multi-canvas):
+    //   #/                              overview (canvas list)
+    //   #/c/<slug>                      canvas, default sub-view (diagram)
+    //   #/c/<slug>/diagram              canvas + diagram
+    //   #/c/<slug>/table                canvas + table
+    //   #/c/<slug>/api                  canvas + api
+    //   #/c/<slug>/diagram?selected=…   canvas + selection / filters
+    //   #/diagram (legacy)              redirects to #/c/default/diagram
 
     var applyingUrl = false;
     var VALID_VIEWS = { diagram: 1, table: 1, api: 1 };
 
     function wireUrlSync() {
-        window.addEventListener('hashchange', applyUrlToState);
+        window.addEventListener('hashchange', onHashChange);
     }
 
     /**
-     * Parse the URL hash into { view, selection }. Selection encoding:
+     * Hash change handler. Re-applies URL → state and triggers a reload only
+     * when the canvas slug or the overview/canvas mode actually changed; pure
+     * view tab switches and selection changes don't refetch.
+     */
+    function onHashChange() {
+        var prevSlug = State.getCurrentCanvasSlug();
+        var prevMode = State.getView() === 'overview' ? 'overview' : 'canvas';
+        applyUrlToState();
+        var nextMode = State.getView() === 'overview' ? 'overview' : 'canvas';
+        if (prevSlug !== State.getCurrentCanvasSlug() || prevMode !== nextMode) {
+            loadAndRender();
+        }
+    }
+
+    /**
+     * Parse the URL hash into { view, slug, selection, filters }. Path forms:
+     *   ''                             → view='overview', slug=null
+     *   'c/<slug>'                     → view='diagram',  slug=<slug>
+     *   'c/<slug>/<view>'              → view=<view>,     slug=<slug>
+     *   '<view>' (legacy)              → view=<view>,     slug='default'
+     *
+     * Selection encoding (unchanged):
      *   ?selected=node:<id>            (unprefixed = node — backwards compat)
      *   ?selected=edge:<id>
      *   ?selected=system:<name>
      *   ?selected=attr:<nodeId>|<columnName>
-     * All values are URL-decoded; the kind prefix is parsed off first.
      */
     function parseUrl() {
         var raw = (window.location.hash || '').replace(/^#\/?/, '');
         var qIdx = raw.indexOf('?');
         var path = qIdx === -1 ? raw : raw.slice(0, qIdx);
         var query = qIdx === -1 ? '' : raw.slice(qIdx + 1);
-        var view = VALID_VIEWS[path] ? path : null;
+
+        var view = null, slug = null;
+        if (path === '' || path === 'overview') {
+            view = 'overview';
+            slug = null;
+        } else if (path.indexOf('c/') === 0) {
+            var rest = path.slice(2);
+            var slashIdx = rest.indexOf('/');
+            if (slashIdx === -1) {
+                slug = decodeURIComponent(rest);
+                view = 'diagram';
+            } else {
+                slug = decodeURIComponent(rest.slice(0, slashIdx));
+                var sub = rest.slice(slashIdx + 1);
+                view = VALID_VIEWS[sub] ? sub : 'diagram';
+            }
+        } else if (VALID_VIEWS[path]) {
+            slug = 'default';
+            view = path;
+        }
+
         var selectedRaw = null;
-        // Filter values keyed by dimension. Comma-separated values; URL-decode
-        // each part. Empty string → empty filter (explicit clear).
-        var filters = {}; // key (without 'f.' prefix) → string[] | undefined
+        var filters = {};
         query.split('&').forEach(function (kv) {
             if (!kv) return;
             var eq = kv.indexOf('=');
@@ -162,7 +243,7 @@ window.CanvasApp.App = (function () {
             }
         });
         var selection = decodeSelection(selectedRaw);
-        return { view: view, selection: selection, filters: filters };
+        return { view: view, slug: slug, selection: selection, filters: filters };
     }
 
     function decodeSelection(raw) {
@@ -195,13 +276,17 @@ window.CanvasApp.App = (function () {
         return null;
     }
 
-    function buildUrl(view, selection, filters) {
-        var hash = '#/' + (view || 'diagram');
+    function buildUrl(view, slug, selection, filters) {
+        var hash;
+        if (view === 'overview' || !slug) {
+            hash = '#/';
+        } else {
+            hash = '#/c/' + encodeURIComponent(slug) + '/' + (VALID_VIEWS[view] ? view : 'diagram');
+        }
         var params = [];
         var encoded = encodeSelection(selection);
         if (encoded) params.push('selected=' + encodeURIComponent(encoded));
         if (filters) {
-            // Stable order so the URL is deterministic across renders.
             State.getFilterDimensions().forEach(function (dim) {
                 var vals = filters[dim] || [];
                 if (!vals.length) return;
@@ -215,33 +300,36 @@ window.CanvasApp.App = (function () {
 
     function applyUrlToState() {
         var url = parseUrl();
-        if (!url.view && url.selection === undefined &&
-            Object.keys(url.filters).length === 0 && !window.location.hash) return;
+        // Empty hash on first load is treated as "go to overview" so the URL
+        // bar normalises after the first sync.
         applyingUrl = true;
         try {
             if (url.view) State.setView(url.view);
-            // url.selection: undefined = no key, null = explicit clear, object = set
+            else         State.setView('overview');
+            State.setCurrentCanvasSlug(url.slug);
             if (url.selection !== undefined) State.setSelection(url.selection);
-            // Filters: only the dimensions present in the URL get reset.
-            // Missing keys leave the existing in-memory filter alone (so
-            // back-button + a partial URL doesn't clobber unrelated filters).
-            // Empty string ("f.system=") explicitly clears that dimension.
             State.getFilterDimensions().forEach(function (dim) {
                 if (url.filters.hasOwnProperty(dim)) State.setFilter(dim, url.filters[dim]);
             });
         } finally {
             applyingUrl = false;
         }
-        // Drop a selection that points at something this catalog doesn't
-        // contain (stale shared link, or post-import refresh). pruneSelection
-        // emits 'selection' on change, which is now also a sync trigger, so
-        // the URL self-corrects and panels re-render.
         State.pruneSelection();
+        // Rewrite the URL after parsing — turns legacy paths like #/diagram
+        // into the canonical #/c/default/diagram and also strips any
+        // unknown junk users might have typed. Cheap no-op when the URL
+        // was already canonical.
+        syncStateToUrl();
     }
 
     function syncStateToUrl() {
         if (applyingUrl) return;
-        var newHash = buildUrl(State.getView(), State.getSelection(), State.getFilters());
+        var newHash = buildUrl(
+            State.getView(),
+            State.getCurrentCanvasSlug(),
+            State.getSelection(),
+            State.getFilters()
+        );
         if (window.location.hash === newHash) return;
         history.replaceState(null, '', newHash);
     }
@@ -293,11 +381,23 @@ window.CanvasApp.App = (function () {
                 State.setMode('view');
                 return;
             }
-            // No confirm — saving is non-destructive. Toast acknowledges.
             var n = State.getUnsavedChangeCount();
-            State.commitDraft();
-            State.setMode('view');
-            toast(n === 1 ? '1 Änderung gespeichert' : n + ' Änderungen gespeichert', 'success');
+            var saveBtn = document.getElementById('btn-save');
+            // Disable synchronously so a second click during the in-flight
+            // RPC can't trigger a double-apply. updateSaveAffordance will
+            // pick up the post-success state via the 'mode' event.
+            if (saveBtn) saveBtn.disabled = true;
+            State.commitDraft().then(function () {
+                State.setMode('view');
+                var c = State.getCurrentCanvas();
+                var visNote = c && c.visibility === 'public' ? ' · jetzt öffentlich sichtbar' : '';
+                var msg = (n === 1 ? '1 Änderung gespeichert' : n + ' Änderungen gespeichert') + visNote;
+                toast(msg, 'success');
+            }).catch(function (err) {
+                console.error('Save failed', err);
+                if (saveBtn) saveBtn.disabled = false;
+                toast('Speichern fehlgeschlagen: ' + friendlySaveError(err), 'error');
+            });
         });
 
         // Esc anywhere outside an input reverts the draft and exits edit mode.
@@ -370,6 +470,72 @@ window.CanvasApp.App = (function () {
     function isTypingInField(t) {
         if (!t || !t.matches) return false;
         return t.matches('input, textarea, select, [contenteditable="true"]');
+    }
+
+    /**
+     * Intercept the breadcrumb home link so a click while there are unsaved
+     * changes prompts before navigating away. Same dialog the Cancel button
+     * uses — keeps user-driven nav consistent with the rest of edit-mode.
+     * Note: hashchange from the URL bar / back button cannot be intercepted
+     * the same way; that path discards silently.
+     */
+    function wireHomeLink() {
+        var link = document.getElementById('header-home-link');
+        if (!link) return;
+        link.addEventListener('click', function (e) {
+            if (!State.hasUnsavedChanges()) return;
+            if (!confirm('Ungespeicherte Änderungen verwerfen?')) {
+                e.preventDefault();
+            }
+        });
+    }
+
+    /**
+     * Refresh the overview when the user signs in or out — newly visible
+     * (or newly hidden) restricted canvases would otherwise only appear
+     * after a manual reload. Skipped for INITIAL_SESSION / TOKEN_REFRESHED
+     * since they don't change visibility.
+     *
+     * Also fires the welcome toast on a fresh sign-in. INITIAL_SESSION fires
+     * first (before app.js subscribes) so a session restore doesn't reach
+     * this listener at all — only a real sign-in does.
+     */
+    function wireAuthRefresh() {
+        if (!window.CanvasApp.Auth || !window.CanvasApp.Auth.on) return;
+        var prevSession = null;
+        window.CanvasApp.Auth.on(function (event, session) {
+            if (event === 'SIGNED_IN' && !prevSession) {
+                var email = session && session.user && session.user.email;
+                toast(email ? 'Angemeldet als ' + email : 'Erfolgreich angemeldet', 'success');
+            }
+            prevSession = session;
+            if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return;
+            if (State.getView() === 'overview') loadAndRender();
+        });
+    }
+
+    /**
+     * Translate the common canvas_apply RPC errors into user-readable German.
+     * Falls back to the raw message for unknown errors so the user at least
+     * sees something diagnosable.
+     */
+    function friendlySaveError(err) {
+        var msg = err && err.message ? String(err.message) : '';
+        var match = msg.match(/\(([0-9A-Z]{5})\)/);
+        var code = match ? match[1] : '';
+        if (code === '42501' || /forbidden|editor or admin/i.test(msg)) {
+            return 'Sie haben keine Berechtigung zum Bearbeiten dieses Canvas.';
+        }
+        if (code === 'P0002' || /canvas not found/i.test(msg)) {
+            return 'Canvas wurde nicht gefunden — vermutlich gelöscht.';
+        }
+        if (/network|fetch|failed to fetch|networkerror/i.test(msg)) {
+            return 'Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.';
+        }
+        if (/jwt|token|expired/i.test(msg)) {
+            return 'Sitzung abgelaufen. Bitte erneut anmelden.';
+        }
+        return msg || 'Speichern fehlgeschlagen.';
     }
 
     function wireCanvasEmpty() {
@@ -722,6 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.Canvas.init();
     window.CanvasApp.Editor.init();
     window.CanvasApp.Table.init();
+    window.CanvasApp.Overview.init();
     window.CanvasApp.Api.init();
     window.CanvasApp.Panel.init();
     window.CanvasApp.Filter.init();

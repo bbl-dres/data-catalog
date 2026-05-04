@@ -47,7 +47,10 @@ window.CanvasApp.Auth = (function () {
             // Resetting form state on SIGNED_OUT keeps the next open clean.
             if (event === 'SIGNED_OUT') { formState = 'idle'; formMessage = ''; }
             render();
-            listeners.forEach(function (fn) { try { fn(s); } catch (e) { console.error(e); } });
+            // Forward the event so subscribers can distinguish actual
+            // sign-in/out from quieter INITIAL_SESSION / TOKEN_REFRESHED
+            // ticks (App.wireAuthRefresh leans on this).
+            listeners.forEach(function (fn) { try { fn(event, s); } catch (e) { console.error(e); } });
         });
     }
 
@@ -63,9 +66,21 @@ window.CanvasApp.Auth = (function () {
             if (dropdown.hasAttribute('hidden')) open();
             else close();
         });
+        // Any element with [data-signin-trigger] opens the dropdown — used by
+        // the header sign-in button, the toolbar "Zum Bearbeiten anmelden"
+        // hint, and the empty-canvas signed-out CTA. Single delegation point
+        // means new entry points just need the attribute, no extra wiring.
+        document.addEventListener('click', function (e) {
+            var trigger = e.target.closest('[data-signin-trigger]');
+            if (!trigger) return;
+            e.preventDefault();
+            e.stopPropagation();
+            if (dropdown.hasAttribute('hidden')) open();
+        });
         document.addEventListener('click', function (e) {
             if (dropdown.hasAttribute('hidden')) return;
             if (e.target.closest('.user-menu')) return;
+            if (e.target.closest('[data-signin-trigger]')) return;
             close();
         });
         document.addEventListener('keydown', function (e) {
@@ -142,7 +157,7 @@ window.CanvasApp.Auth = (function () {
         if (formState === 'sent') {
             statusBlock =
                 '<div class="user-signin-status user-signin-status-success">' +
-                    'Magic Link gesendet. Prüfe dein E-Mail-Postfach.' +
+                    'Anmeldelink gesendet. Prüfen Sie Ihr E-Mail-Postfach.' +
                 '</div>';
         } else if (formState === 'error') {
             statusBlock =
@@ -154,15 +169,16 @@ window.CanvasApp.Auth = (function () {
         dropdown.innerHTML =
             '<div class="user-dropdown-header">' +
                 '<div class="user-dropdown-name">Nicht angemeldet</div>' +
-                '<div class="user-dropdown-sub">Magic Link an deine E-Mail</div>' +
+                '<div class="user-dropdown-sub">Anmeldelink per E-Mail</div>' +
             '</div>' +
             '<div class="vis-divider"></div>' +
             '<form class="user-signin-form" id="user-signin-form" autocomplete="on" novalidate>' +
+                '<label for="user-signin-email" class="user-signin-label">E-Mail-Adresse</label>' +
                 '<input type="email" id="user-signin-email" class="user-signin-input" placeholder="name@beispiel.ch" autocomplete="email" required ' +
                     (formState === 'sending' ? 'disabled' : '') + '>' +
                 '<button type="submit" class="tb-btn tb-btn-primary user-signin-submit"' +
                     (formState === 'sending' ? ' disabled' : '') + '>' +
-                    (formState === 'sending' ? 'Wird gesendet…' : 'Magic Link senden') +
+                    (formState === 'sending' ? 'Wird gesendet…' : 'Anmeldelink senden') +
                 '</button>' +
             '</form>' +
             statusBlock;
