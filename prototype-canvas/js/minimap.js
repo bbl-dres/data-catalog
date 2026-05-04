@@ -1,9 +1,7 @@
 /**
- * Minimap — bottom-right overview window with a draggable viewport rectangle.
- *
- * Renders a scaled SVG of every on-canvas node plus a faint frame per system,
- * with a viewport rect tracking the main canvas. Click or drag inside the
- * minimap pans the canvas so its centre lands on the picked point.
+ * Minimap — bottom-right overview window with a viewport rectangle that
+ * tracks the main canvas. A click anywhere inside the minimap pans the
+ * canvas so its centre lands on the picked point. Hovering does nothing.
  *
  * Coordinate spaces:
  *   world    — canvas (state) coords, the same as node.x / node.y
@@ -45,8 +43,6 @@ window.CanvasApp.Minimap = (function () {
     var mapOffsetY = 0;
     var bounds = null;
 
-    var dragging = false;
-
     function init() {
         State = window.CanvasApp.State;
         Canvas = window.CanvasApp.Canvas;
@@ -68,7 +64,11 @@ window.CanvasApp.Minimap = (function () {
         });
         Canvas.onTransform(scheduleViewport);
 
-        svgEl.addEventListener('pointerdown', onPointerDown);
+        // Click pans the main canvas to centre on the picked point. Using
+        // `click` (a complete down→up cycle on the same element) instead of
+        // pointerdown means hovering, right-click context menus, and
+        // pointer-capture mishaps cannot accidentally pan.
+        svgEl.addEventListener('click', onClick);
         // Stop wheel events on the minimap from also panning/zooming the
         // main canvas behind it.
         svgEl.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
@@ -220,26 +220,12 @@ window.CanvasApp.Minimap = (function () {
         };
     }
 
-    function onPointerDown(e) {
+    function onClick(e) {
         if (!bounds) return;
-        e.preventDefault();
-        dragging = true;
-        try { svgEl.setPointerCapture(e.pointerId); } catch (_) {}
+        // Left-click only — right-click on Linux/Firefox can still synthesise
+        // a click event in some configurations; ignore non-primary buttons.
+        if (e.button !== 0) return;
         panToEvent(e);
-        svgEl.addEventListener('pointermove', onPointerMove);
-        svgEl.addEventListener('pointerup', onPointerUp);
-        svgEl.addEventListener('pointercancel', onPointerUp);
-    }
-    function onPointerMove(e) {
-        if (!dragging) return;
-        panToEvent(e);
-    }
-    function onPointerUp(e) {
-        dragging = false;
-        try { svgEl.releasePointerCapture(e.pointerId); } catch (_) {}
-        svgEl.removeEventListener('pointermove', onPointerMove);
-        svgEl.removeEventListener('pointerup', onPointerUp);
-        svgEl.removeEventListener('pointercancel', onPointerUp);
     }
 
     function panToEvent(e) {

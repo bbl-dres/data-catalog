@@ -19,7 +19,6 @@ window.CanvasApp.App = (function () {
         wireSearch();
         wireUrlSync();
         wireGlobalKeys();
-        wireUserMenu();
         wireCanvasEmpty();
 
         State.on(function (reason) {
@@ -373,35 +372,6 @@ window.CanvasApp.App = (function () {
         return t.matches('input, textarea, select, [contenteditable="true"]');
     }
 
-    function wireUserMenu() {
-        var btn = document.getElementById('user-avatar-btn');
-        var dd  = document.getElementById('user-dropdown');
-        if (!btn || !dd) return;
-        btn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            var open = dd.hasAttribute('hidden');
-            if (open) {
-                dd.removeAttribute('hidden');
-                btn.setAttribute('aria-expanded', 'true');
-            } else {
-                dd.setAttribute('hidden', '');
-                btn.setAttribute('aria-expanded', 'false');
-            }
-        });
-        document.addEventListener('click', function (e) {
-            if (dd.hasAttribute('hidden')) return;
-            if (e.target.closest('.user-menu')) return;
-            dd.setAttribute('hidden', '');
-            btn.setAttribute('aria-expanded', 'false');
-        });
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && !dd.hasAttribute('hidden')) {
-                dd.setAttribute('hidden', '');
-                btn.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
     function wireCanvasEmpty() {
         var empty = document.getElementById('canvas-empty');
         if (!empty) return;
@@ -748,6 +718,7 @@ window.CanvasApp.App = (function () {
 
 // Bootstrap
 document.addEventListener('DOMContentLoaded', function () {
+    window.CanvasApp.Auth.init();
     window.CanvasApp.Canvas.init();
     window.CanvasApp.Editor.init();
     window.CanvasApp.Table.init();

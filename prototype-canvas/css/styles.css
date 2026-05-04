@@ -241,6 +241,47 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   color: var(--color-text-placeholder);
   cursor: not-allowed;
 }
+.user-avatar.is-anonymous {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+}
+.user-signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 6px 6px;
+}
+.user-signin-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-small);
+  box-sizing: border-box;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+.user-signin-input:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+.user-signin-input:disabled {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-placeholder);
+}
+.user-signin-submit {
+  width: 100%;
+  justify-content: center;
+}
+.user-signin-status {
+  padding: 4px 10px 6px;
+  font-size: var(--text-label);
+  line-height: 1.35;
+}
+.user-signin-status-success { color: var(--color-success); }
+.user-signin-status-error   { color: var(--color-error); }
 
 /* ---- Toolbar ---- */
 .app-toolbar {
@@ -1369,7 +1410,7 @@ body[data-panel="open"][data-view="diagram"] .minimap {
   width: 100%;
   height: 100%;
   display: block;
-  cursor: crosshair;
+  cursor: pointer;
   /* Page background hint so the empty letterbox area reads as "off-canvas". */
   background: var(--color-bg-page);
 }
@@ -1400,6 +1441,7 @@ body[data-panel="open"][data-view="diagram"] .minimap {
 
 body.mode-view .edit-only { display: none; }
 body.mode-edit .view-only { display: none; }
+body:not(.is-signed-in) .auth-only { display: none; }
 
 /* Floating action bar (appears above the selected node in edit mode) */
 .node-action-bar {
