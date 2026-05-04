@@ -14,8 +14,9 @@ data-catalog/
 ├── prototype-sqlite/           # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
 ├── prototype-lineage/      # Data Lineage Viewer
 ├── prototype-mermaid/     # Mermaid Diagram Editor (Simple Chart)
+├── prototype-ea-immo/      # EA-IMMO conceptual data model for real estate
 ├── assets/                 # Shared repo assets (social preview only)
-└── docs-concepts/          # Shared concept docs
+└── docs/                   # Repo-level docs (market research, etc.)
 ```
 
 The guidelines below document **`prototype-main/`** specifically (the main DCAT-AP catalog). Each other prototype has its own README.

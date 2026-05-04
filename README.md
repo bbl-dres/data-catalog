@@ -119,8 +119,9 @@ data-catalog/
 ├── prototype-lineage/      # Data Lineage Viewer
 ├── prototype-mermaid/      # Mermaid Diagram Editor (Simple Chart)
 ├── prototype-canvas/       # Architecture Canvas (Miro-style, BBL chrome)
+├── prototype-ea-immo/      # EA-IMMO conceptual data model for real estate
 ├── assets/                 # Shared repo assets (social preview)
-└── docs-concepts/          # Shared concept docs
+└── docs/                   # Repo-level docs (market research, etc.)
 ```
 
 ## License
