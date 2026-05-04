@@ -64,11 +64,12 @@ window.CanvasApp.Minimap = (function () {
         });
         Canvas.onTransform(scheduleViewport);
 
-        // Click pans the main canvas to centre on the picked point. Using
-        // `click` (a complete down→up cycle on the same element) instead of
-        // pointerdown means hovering, right-click context menus, and
-        // pointer-capture mishaps cannot accidentally pan.
-        svgEl.addEventListener('click', onClick);
+        // Press pans the main canvas to centre on the picked point. We use
+        // pointerdown (not click) so the pan is snappy on press, and we
+        // deliberately do NOT attach pointermove / pointerup listeners — the
+        // drag-while-pressed code path was the source of the prior
+        // "pans on hover" bug when pointerup was missed.
+        svgEl.addEventListener('pointerdown', onPointerDown);
         // Stop wheel events on the minimap from also panning/zooming the
         // main canvas behind it.
         svgEl.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
@@ -220,11 +221,11 @@ window.CanvasApp.Minimap = (function () {
         };
     }
 
-    function onClick(e) {
+    function onPointerDown(e) {
         if (!bounds) return;
-        // Left-click only — right-click on Linux/Firefox can still synthesise
-        // a click event in some configurations; ignore non-primary buttons.
+        // Primary button only — ignore right-click / middle-click / browser-back.
         if (e.button !== 0) return;
+        e.preventDefault();
         panToEvent(e);
     }
 
