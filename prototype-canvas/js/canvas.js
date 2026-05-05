@@ -29,10 +29,23 @@ window.CanvasApp.Canvas = (function () {
     // gestures funnel through.
     var transformListeners = [];
 
-    var MIN_SCALE = 0.05;
+    // 0.10 = label reads "10%" — going lower meant the percentage display
+    // approached 0% and individual node labels dropped below sub-pixel.
+    var MIN_SCALE = 0.10;
     var MAX_SCALE = 3.0;
     var ZOOM_STEP = 0.1;     // additive step for fine adjustments at scale ≥ 1
     var ZOOM_FACTOR = 1.25;  // multiplicative factor for button zoom
+
+    // Dot-grid hysteresis: a single threshold made the grid flap on / off as
+    // wheel zoom (factor 0.92 / 1.08) crossed scale = 0.4 repeatedly. With a
+    // 0.35–0.45 dead band, the grid only toggles once per zoom direction.
+    var GRID_OFF_BELOW = 0.35;
+    var GRID_ON_ABOVE  = 0.45;
+    var gridOn = null;          // null = unset, will resolve on first call
+    var lastGridSize = -1;
+    var lastGridPosX = NaN;
+    var lastGridPosY = NaN;
+    var lastZoomPct  = null;    // skip zoom-label writes when text hasn't changed
 
     var isPanning = false;
     var panStart = null;
@@ -310,13 +323,34 @@ window.CanvasApp.Canvas = (function () {
             });
         }
 
-        // State events
-        State.on(function (reason) {
+        // State events. Single-entity mutators (updateNode, updateEdge,
+        // addNode, deleteNode, addEdge, deleteEdge) pass the affected id as
+        // the payload — we route to an incremental renderer that swaps just
+        // that node/edge's DOM. Bulk events ('replace', 'reset') still take
+        // the full-rebuild path. The previous behaviour rebuilt the entire
+        // canvas on every label edit / column tweak / edge delete; on the
+        // 256-node IBPDI graph that's a multi-MB innerHTML write per blur
+        // — visible flash on commit.
+        State.on(function (reason, payload) {
             if (reason === 'replace' || reason === 'reset') {
                 collapsedSets = Object.create(null);
             }
-            if (reason === 'nodes' || reason === 'edges' || reason === 'replace' || reason === 'reset') {
+            if (reason === 'replace' || reason === 'reset') {
                 renderAll();
+                applyFilterDim();
+            } else if (reason === 'nodes') {
+                if (typeof payload === 'string' && payload) {
+                    renderNodeIncremental(payload);
+                } else {
+                    renderAll();
+                }
+                applyFilterDim();
+            } else if (reason === 'edges') {
+                if (typeof payload === 'string' && payload) {
+                    renderEdgeIncremental(payload);
+                } else {
+                    renderEdges();
+                }
                 applyFilterDim();
             } else if (reason === 'selection') {
                 updateNodeSelection();
@@ -327,11 +361,16 @@ window.CanvasApp.Canvas = (function () {
                 focusSelectedEdgeInput();
             } else if (reason === 'filter') {
                 applyFilterDim();
-                // Filtered nodes are now display:none, not dimmed — system
-                // frames must re-measure so an all-filtered system drops
-                // its rectangle instead of leaving an empty box. rAF lets
-                // the CSS hide settle before we read offsetParent.
-                requestAnimationFrame(renderGroups);
+                // Filtered nodes are display:none — system frames must
+                // re-measure so an all-filtered system drops its rectangle
+                // instead of leaving an empty box. We update geometry IN
+                // PLACE on the existing DOM (no innerHTML teardown), so
+                // there's no inter-frame state where boxes / overlays
+                // briefly disappear. Reading offsetParent below forces a
+                // synchronous style/layout pass, so the data-filtered
+                // attribute writes from applyFilterDim are reflected before
+                // we measure.
+                updateGroupsForFilter();
             }
         });
 
@@ -351,7 +390,13 @@ window.CanvasApp.Canvas = (function () {
     var GROUP_PAD = 18;
     var GROUP_LABEL_H = 14; // visible height of label badge
 
-    function buildGroupBoxFor(sysName, members) {
+    /**
+     * Compute the bounding rect for a system's visible members. Returns null
+     * when none of the members render (filtered out, or codelist-only system).
+     * Pulled out so both `buildGroupBoxFor` and the in-place filter updater
+     * share the same geometry math.
+     */
+    function computeGroupRect(members) {
         var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         var anyVisible = false;
         for (var i = 0; i < members.length; i++) {
@@ -372,20 +417,95 @@ window.CanvasApp.Canvas = (function () {
             if (y + h > maxY) maxY = y + h;
         }
         if (!anyVisible || minX === Infinity) return null;
+        return {
+            left:   minX - GROUP_PAD,
+            top:    minY - GROUP_PAD - GROUP_LABEL_H / 2,
+            width:  maxX - minX + GROUP_PAD * 2,
+            height: maxY - minY + GROUP_PAD * 2 + GROUP_LABEL_H / 2
+        };
+    }
+
+    function buildGroupBoxFor(sysName, members) {
+        var rect = computeGroupRect(members);
+        if (!rect) return null;
 
         var box = document.createElement('div');
         box.className = 'group-box';
         box.setAttribute('data-system', sysName);
-        box.style.left = (minX - GROUP_PAD) + 'px';
-        box.style.top = (minY - GROUP_PAD - GROUP_LABEL_H / 2) + 'px';
-        box.style.width = (maxX - minX + GROUP_PAD * 2) + 'px';
-        box.style.height = (maxY - minY + GROUP_PAD * 2 + GROUP_LABEL_H / 2) + 'px';
+        box.style.left   = rect.left   + 'px';
+        box.style.top    = rect.top    + 'px';
+        box.style.width  = rect.width  + 'px';
+        box.style.height = rect.height + 'px';
 
         var label = document.createElement('span');
         label.className = 'group-box-label';
         label.textContent = sysName;
         box.appendChild(label);
         return box;
+    }
+
+    /**
+     * Reposition the system-overlay for a given group-box. Used by the in-
+     * place updaters so a filter change or single-node drag never triggers a
+     * full systemOverlayLayer rebuild (which used to clear and re-create every
+     * overlay element on every drag tick — visible flash).
+     */
+    function syncSystemOverlayForBox(sysName, rect) {
+        if (!systemOverlayLayer) return;
+        var sel = '.system-overlay[data-system="' + cssEscape(sysName) + '"]';
+        var overlay = systemOverlayLayer.querySelector(sel);
+        if (!rect) {
+            if (overlay) overlay.style.display = 'none';
+            return;
+        }
+        if (overlay) {
+            overlay.style.display = '';
+            overlay.style.left = (rect.left + rect.width / 2) + 'px';
+            overlay.style.top  = (rect.top + 8) + 'px';
+            return;
+        }
+        overlay = document.createElement('div');
+        overlay.className = 'system-overlay';
+        overlay.setAttribute('data-system', sysName);
+        overlay.textContent = sysName;
+        overlay.style.left = (rect.left + rect.width / 2) + 'px';
+        overlay.style.top  = (rect.top + 8) + 'px';
+        systemOverlayLayer.appendChild(overlay);
+        // Cached node-lists are stale and the new element hasn't yet been
+        // given opacity / counter-scale. Invalidate, then run the updater so
+        // the new overlay matches the current zoom on the next paint.
+        invalidateOverlayCache();
+        updateSystemOverlays();
+    }
+
+    /**
+     * Walk every existing `.group-box` and recompute its geometry in place
+     * using only visible members. No DOM teardown — boxes whose members are
+     * all hidden get display:none. This is the filter-event path; the
+     * previous version did `groupLayer.innerHTML = ''` inside an rAF, which
+     * vanished every system frame and overlay for one paint cycle (the
+     * "elements disappearing" symptom).
+     */
+    function updateGroupsForFilter() {
+        if (!groupLayer) return;
+        var boxes = groupLayer.querySelectorAll('.group-box');
+        for (var i = 0; i < boxes.length; i++) {
+            var box = boxes[i];
+            var sysName = box.getAttribute('data-system') || '';
+            var members = membersOfSystem(sysName);
+            var rect = computeGroupRect(members);
+            if (!rect) {
+                box.style.display = 'none';
+                syncSystemOverlayForBox(sysName, null);
+                continue;
+            }
+            box.style.display = '';
+            box.style.left   = rect.left   + 'px';
+            box.style.top    = rect.top    + 'px';
+            box.style.width  = rect.width  + 'px';
+            box.style.height = rect.height + 'px';
+            syncSystemOverlayForBox(sysName, rect);
+        }
     }
 
     function membersOfSystem(sysName) {
@@ -408,6 +528,7 @@ window.CanvasApp.Canvas = (function () {
      */
     function renderGroups() {
         groupLayer.innerHTML = '';
+        invalidateOverlayCache();
         var byS = Object.create(null);
         var nodes = State.getNodes();
         for (var i = 0; i < nodes.length; i++) {
@@ -427,17 +548,37 @@ window.CanvasApp.Canvas = (function () {
     /**
      * Rebuild a single system's group-box in place. Used during node drag —
      * a full renderGroups() iterated every node and did a querySelector per
-     * member, which dominated drag CPU on a graph with many systems.
+     * member, which dominated drag CPU on a graph with many systems. We also
+     * sync only this system's overlay (instead of nuking the whole overlay
+     * layer); previously every drag tick called `renderSystemOverlays()`,
+     * which `innerHTML = ''`'d the layer and re-created every overlay
+     * element — visible flash on the labels of unrelated systems.
      */
     function renderGroupForSystem(sysName) {
         if (!sysName) return;
         var existing = groupLayer.querySelector('.group-box[data-system="' + cssEscape(sysName) + '"]');
         var members = membersOfSystem(sysName);
-        var box = members.length ? buildGroupBoxFor(sysName, members) : null;
-        if (existing && box) existing.replaceWith(box);
-        else if (existing) existing.remove();
-        else if (box) groupLayer.appendChild(box);
-        renderSystemOverlays();
+        var rect = members.length ? computeGroupRect(members) : null;
+
+        if (existing && rect) {
+            existing.style.display = '';
+            existing.style.left   = rect.left   + 'px';
+            existing.style.top    = rect.top    + 'px';
+            existing.style.width  = rect.width  + 'px';
+            existing.style.height = rect.height + 'px';
+        } else if (existing && !rect) {
+            existing.remove();
+            // The small-label NodeList lost a member — invalidate so
+            // updateSystemOverlays re-picks it up.
+            invalidateOverlayCache();
+        } else if (!existing && rect) {
+            var box = buildGroupBoxFor(sysName, members);
+            if (box) {
+                groupLayer.appendChild(box);
+                invalidateOverlayCache();
+            }
+        }
+        syncSystemOverlayForBox(sysName, rect);
     }
 
     // ---- System-name overlays ------------------------------------------
@@ -449,6 +590,27 @@ window.CanvasApp.Canvas = (function () {
     var SYSTEM_OVERLAY_FADE_HI = 0.65; // fully invisible at this scale and above
     var SYSTEM_OVERLAY_FADE_LO = 0.35; // fully opaque at this scale and below
 
+    // Cached node-lists + last-applied style strings for updateSystemOverlays.
+    // Without this, every wheel tick (post rAF-coalesce, still ~60/sec on
+    // sustained zoom) ran two querySelectorAll's over the document and wrote
+    // opacity + transform on every overlay/label, even when the values hadn't
+    // changed. Invalidated whenever renderSystemOverlays repopulates the
+    // layer (the new nodes don't yet carry the cached inline styles).
+    var cachedOverlays = null;
+    var cachedSmallLabels = null;
+    var lastBigOpacityStr = null;
+    var lastBigTransform = null;
+    var lastSmallOpacityStr = null;
+    var lastSmallPointerEvents = null;
+    function invalidateOverlayCache() {
+        cachedOverlays = null;
+        cachedSmallLabels = null;
+        lastBigOpacityStr = null;
+        lastBigTransform = null;
+        lastSmallOpacityStr = null;
+        lastSmallPointerEvents = null;
+    }
+
     /**
      * Read the geometry of every `.group-box` and emit a matching
      * `.system-overlay` element positioned at the box's top-centre. Cheap to
@@ -458,6 +620,10 @@ window.CanvasApp.Canvas = (function () {
     function renderSystemOverlays() {
         if (!systemOverlayLayer || !groupLayer) return;
         systemOverlayLayer.innerHTML = '';
+        // Cleared NodeLists + style strings — the next updateSystemOverlays
+        // pass needs to write the current opacity/transform onto the brand-new
+        // elements, even if scale hasn't changed since the last call.
+        invalidateOverlayCache();
         var boxes = groupLayer.querySelectorAll('.group-box');
         for (var i = 0; i < boxes.length; i++) {
             var b = boxes[i];
@@ -492,30 +658,47 @@ window.CanvasApp.Canvas = (function () {
         else if (s <= SYSTEM_OVERLAY_FADE_LO) bigOpacity = 1;
         else bigOpacity = (SYSTEM_OVERLAY_FADE_HI - s) / (SYSTEM_OVERLAY_FADE_HI - SYSTEM_OVERLAY_FADE_LO);
 
+        var bigStr = bigOpacity === 0 ? '0'
+                   : bigOpacity === 1 ? '1'
+                   : bigOpacity.toFixed(2);
+        var transform = bigOpacity === 0
+            ? null
+            : 'translate(-50%, 0) scale(' + (1 / s).toFixed(3) + ')';
+
         // Big overlay: fades in as zoom decreases.
-        var overlays = systemOverlayLayer.querySelectorAll('.system-overlay');
-        if (bigOpacity === 0) {
-            for (var i = 0; i < overlays.length; i++) overlays[i].style.opacity = '0';
-        } else {
-            var transform = 'translate(-50%, 0) scale(' + (1 / s).toFixed(3) + ')';
-            var bigStr = bigOpacity === 1 ? '1' : bigOpacity.toFixed(2);
-            for (var j = 0; j < overlays.length; j++) {
-                overlays[j].style.opacity = bigStr;
-                overlays[j].style.transform = transform;
+        if (cachedOverlays === null) {
+            cachedOverlays = systemOverlayLayer.querySelectorAll('.system-overlay');
+        }
+        if (bigStr !== lastBigOpacityStr || transform !== lastBigTransform) {
+            for (var i = 0; i < cachedOverlays.length; i++) {
+                var o = cachedOverlays[i];
+                if (bigStr !== lastBigOpacityStr) o.style.opacity = bigStr;
+                if (transform !== lastBigTransform && transform !== null) {
+                    o.style.transform = transform;
+                }
             }
+            lastBigOpacityStr = bigStr;
+            lastBigTransform = transform;
         }
 
         // Small corner badge: inverse fade so the two labels never compete
         // at mid-zoom. Pointer-events go to none when invisible so the badge
         // doesn't intercept clicks aimed at the canvas behind.
         if (groupLayer) {
-            var labels = groupLayer.querySelectorAll('.group-box-label');
+            if (cachedSmallLabels === null) {
+                cachedSmallLabels = groupLayer.querySelectorAll('.group-box-label');
+            }
             var smallOpacity = 1 - bigOpacity;
             var smallStr = smallOpacity === 1 ? '' : smallOpacity === 0 ? '0' : smallOpacity.toFixed(2);
             var pe = smallOpacity < 0.05 ? 'none' : '';
-            for (var k = 0; k < labels.length; k++) {
-                labels[k].style.opacity = smallStr;
-                labels[k].style.pointerEvents = pe;
+            if (smallStr !== lastSmallOpacityStr || pe !== lastSmallPointerEvents) {
+                for (var k = 0; k < cachedSmallLabels.length; k++) {
+                    var lbl = cachedSmallLabels[k];
+                    if (smallStr !== lastSmallOpacityStr) lbl.style.opacity = smallStr;
+                    if (pe !== lastSmallPointerEvents) lbl.style.pointerEvents = pe;
+                }
+                lastSmallOpacityStr = smallStr;
+                lastSmallPointerEvents = pe;
             }
         }
     }
@@ -705,6 +888,201 @@ window.CanvasApp.Canvas = (function () {
             // sit ABOVE the node-layer (nodes paint between the two SVGs).
             var target = (edge.id === selId) ? edgeOverlay : edgeLayer;
             target.appendChild(groupEl);
+        });
+    }
+
+    // ---- Incremental rendering (single-entity events) -------------------
+    // Single-entity state events (`'nodes'`/`'edges'` carrying an id) take
+    // these paths instead of the full renderAll. Replacing one .node or one
+    // .edge-group is bounded work — typing a new label on one node no
+    // longer rebuilds 256 nodes worth of attribute rows.
+
+    /**
+     * Build a fresh DOM element for `node` and put it in the right place,
+     * replacing the existing element if present, otherwise appending. Updates
+     * `nodeElById`.  Pulled out so renderNodeIncremental and the codelist
+     * badge-refresh path inside renderEdgeIncremental share the same logic.
+     */
+    function swapNodeDOM(node) {
+        if (!node || !isOnCanvas(node)) return;
+        var existing = nodeElById[node.id];
+        if (!existing && nodeLayer) {
+            existing = nodeLayer.querySelector('[data-node-id="' + cssEscape(node.id) + '"]');
+        }
+        var freshEl = createNodeEl(node);
+        nodeElById[node.id] = freshEl;
+        if (existing) existing.replaceWith(freshEl);
+        else nodeLayer.appendChild(freshEl);
+    }
+
+    /**
+     * Apply a single-node state change (add / update / delete) without
+     * touching unrelated DOM. Caller must follow up with applyFilterDim
+     * (which is what the State.on dispatcher does).
+     */
+    function renderNodeIncremental(id) {
+        var node = State.getNode(id);
+        var existing = nodeElById[id];
+        if (!existing && nodeLayer) {
+            existing = nodeLayer.querySelector('[data-node-id="' + cssEscape(id) + '"]');
+        }
+
+        // Codelist FK badges are derived from the edge index; rebuild it so
+        // the next createNodeEl call reflects current FKs. Cheap (linear in
+        // edges).
+        codelistRefsByNode = buildCodelistRefsIndex();
+
+        if (!node) {
+            // Delete (or off-canvas type change with stale DOM).
+            if (existing) existing.remove();
+            delete nodeElById[id];
+            // Cascade in the canvas: drop edge DOM whose endpoints reference
+            // the deleted id. State.deleteNode already removed those edges
+            // from state, but no per-edge events were emitted (we collapse
+            // the cascade into the single 'nodes' event).
+            var sel = '[data-from="' + cssEscape(id) + '"], [data-to="' + cssEscape(id) + '"]';
+            edgeLayer.querySelectorAll(sel).forEach(function (g) { g.remove(); });
+            edgeOverlay.querySelectorAll(sel).forEach(function (g) { g.remove(); });
+            rebuildGroupsIncremental();
+            updateNodeSelection();
+            return;
+        }
+
+        if (!isOnCanvas(node)) {
+            // Type changed to something off-canvas (e.g. → codelist). Drop
+            // any DOM we had for it; edges to/from it are codelist edges
+            // and shouldn't be drawn either.
+            if (existing) {
+                existing.remove();
+                delete nodeElById[id];
+            }
+            var sel2 = '[data-from="' + cssEscape(id) + '"], [data-to="' + cssEscape(id) + '"]';
+            edgeLayer.querySelectorAll(sel2).forEach(function (g) { g.remove(); });
+            edgeOverlay.querySelectorAll(sel2).forEach(function (g) { g.remove(); });
+            rebuildGroupsIncremental();
+            return;
+        }
+
+        swapNodeDOM(node);
+        // Edit-mode contenteditable on the new element. setEditMode walks
+        // every editable in the layer — fine here because there's only one
+        // newly-added subtree, and the cost is negligible.
+        setEditMode(State.getMode() === 'edit');
+
+        // Edges may need rerouting (column add/remove changes node height).
+        updateEdgesForNode(id);
+        // System membership / dimensions may have changed (label width,
+        // expanded sets, system reassignment).
+        rebuildGroupsIncremental();
+        updateNodeSelection();
+    }
+
+    /**
+     * Apply a single-edge state change without touching unrelated DOM.
+     * Codelist edges aren't drawn — they manifest as a badge on the
+     * non-codelist endpoint's column row, so we refresh that node's DOM
+     * when one comes or goes.
+     */
+    function renderEdgeIncremental(id) {
+        var edge = State.getEdge(id);
+        var sel = '[data-edge-id="' + cssEscape(id) + '"]';
+        var existing = edgeLayer.querySelector(sel) || edgeOverlay.querySelector(sel);
+
+        codelistRefsByNode = buildCodelistRefsIndex();
+
+        if (!edge) {
+            if (existing) existing.remove();
+            return;
+        }
+
+        var fromNode = State.getNode(edge.from);
+        var toNode = State.getNode(edge.to);
+
+        if (!isOnCanvas(fromNode) || !isOnCanvas(toNode)) {
+            // Codelist FK edge — drop any DOM (shouldn't exist) and refresh
+            // the on-canvas endpoint's badges.
+            if (existing) existing.remove();
+            var subjectId = (fromNode && fromNode.type === 'codelist') ? edge.to : edge.from;
+            var subjectNode = State.getNode(subjectId);
+            if (subjectNode) swapNodeDOM(subjectNode);
+            return;
+        }
+
+        var fresh = createEdgeEl(edge);
+        if (!fresh) {
+            if (existing) existing.remove();
+            return;
+        }
+        var selId = State.getSelectedEdgeId();
+        var target = (edge.id === selId) ? edgeOverlay : edgeLayer;
+        if (existing) {
+            if (existing.parentNode === target) {
+                target.replaceChild(fresh, existing);
+            } else {
+                existing.remove();
+                target.appendChild(fresh);
+            }
+        } else {
+            target.appendChild(fresh);
+        }
+    }
+
+    /**
+     * Diff-style rebuild of the system frames: walk existing boxes, update
+     * geometry on ones whose system still has visible members, drop ones
+     * whose system disappeared, append boxes for newly-introduced systems.
+     * No `innerHTML = ''` teardown — that was the source of the system-frame
+     * flash on every node edit.
+     */
+    function rebuildGroupsIncremental() {
+        if (!groupLayer) return;
+        var nodes = State.getNodes();
+        var byS = Object.create(null);
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (!isOnCanvas(n)) continue;
+            var s = (n.system || '').trim();
+            if (!s) continue;
+            (byS[s] = byS[s] || []).push(n);
+        }
+
+        var existingBoxes = groupLayer.querySelectorAll('.group-box');
+        var seen = Object.create(null);
+        for (var j = 0; j < existingBoxes.length; j++) {
+            var box = existingBoxes[j];
+            var sysName = box.getAttribute('data-system') || '';
+            if (!byS[sysName]) {
+                // System gone (last member deleted or moved out).
+                box.remove();
+                syncSystemOverlayForBox(sysName, null);
+                invalidateOverlayCache();
+                continue;
+            }
+            seen[sysName] = true;
+            var rect = computeGroupRect(byS[sysName]);
+            if (!rect) {
+                box.style.display = 'none';
+                syncSystemOverlayForBox(sysName, null);
+                continue;
+            }
+            box.style.display = '';
+            box.style.left   = rect.left   + 'px';
+            box.style.top    = rect.top    + 'px';
+            box.style.width  = rect.width  + 'px';
+            box.style.height = rect.height + 'px';
+            syncSystemOverlayForBox(sysName, rect);
+        }
+
+        // New systems — append a fresh box + overlay.
+        Object.keys(byS).forEach(function (sysName) {
+            if (seen[sysName]) return;
+            var members = byS[sysName];
+            var box = buildGroupBoxFor(sysName, members);
+            if (!box) return;
+            groupLayer.appendChild(box);
+            invalidateOverlayCache();
+            var rect = computeGroupRect(members);
+            if (rect) syncSystemOverlayForBox(sysName, rect);
         });
     }
 
@@ -1225,6 +1603,12 @@ window.CanvasApp.Canvas = (function () {
         }
     }
 
+    // Wheel events arrive at >60 Hz on trackpads. We update scale / translate
+    // synchronously per tick (so successive ticks compose correctly) but defer
+    // the visual `applyTransform()` to a single rAF — collapsing N events per
+    // frame into one transform write, one grid update, one overlay opacity
+    // pass, and one transform-listener fan-out.
+    var wheelRafQueued = false;
     function onWheel(e) {
         e.preventDefault();
         var factor = e.deltaY > 0 ? 0.92 : 1.08;
@@ -1235,7 +1619,12 @@ window.CanvasApp.Canvas = (function () {
         translateX = mx - (mx - translateX) * (newScale / scale);
         translateY = my - (my - translateY) * (newScale / scale);
         scale = newScale;
-        applyTransform();
+        if (wheelRafQueued) return;
+        wheelRafQueued = true;
+        requestAnimationFrame(function () {
+            wheelRafQueued = false;
+            applyTransform();
+        });
     }
 
     // Multiplicative zoom: each click feels proportional. Going 1.0 → 0.05
@@ -1381,26 +1770,55 @@ window.CanvasApp.Canvas = (function () {
         return true;
     }
 
+    /**
+     * Sync the dot-grid background to the current pan/zoom. Hysteresis around
+     * 0.4 prevents flapping when wheel zoom crosses the threshold; the cached
+     * `gridOn / lastGridSize / lastGridPos*` values mean a wheel burst writes
+     * only the props that actually changed (background-position, basically),
+     * not all three on every tick.
+     */
+    function updateGridBackground() {
+        if (!canvasEl) return;
+        var wantOn;
+        if (gridOn === null)      wantOn = scale >= GRID_ON_ABOVE;
+        else if (gridOn)          wantOn = scale >= GRID_OFF_BELOW;
+        else                      wantOn = scale >= GRID_ON_ABOVE;
+        if (wantOn !== gridOn) {
+            canvasEl.style.backgroundImage = wantOn
+                ? 'radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px)'
+                : 'none';
+            gridOn = wantOn;
+            if (!wantOn) {
+                // Force re-write of size/pos when the grid comes back on so a
+                // pan-while-off → zoom-on transition doesn't leave a stale offset.
+                lastGridSize = -1;
+                lastGridPosX = NaN;
+                lastGridPosY = NaN;
+            }
+        }
+        if (!wantOn) return;
+        var size = 24 * scale;
+        if (size !== lastGridSize) {
+            canvasEl.style.backgroundSize = size + 'px ' + size + 'px';
+            lastGridSize = size;
+        }
+        if (translateX !== lastGridPosX || translateY !== lastGridPosY) {
+            canvasEl.style.backgroundPosition = translateX + 'px ' + translateY + 'px';
+            lastGridPosX = translateX;
+            lastGridPosY = translateY;
+        }
+    }
+
     function applyTransform() {
         transformEl.style.transform =
             'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
-        // Match the dot grid to the current zoom — base 24px in canvas
-        // coordinates, scaled to viewport coordinates and offset by the
-        // current pan. Skips the work at extreme zoom-out where the grid
-        // becomes noise anyway.
-        if (canvasEl) {
-            var size = 24 * scale;
-            if (scale < 0.4) {
-                canvasEl.style.backgroundImage = 'none';
-            } else {
-                canvasEl.style.backgroundImage =
-                    'radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px)';
-                canvasEl.style.backgroundSize = size + 'px ' + size + 'px';
-                canvasEl.style.backgroundPosition = translateX + 'px ' + translateY + 'px';
-            }
-        }
+        updateGridBackground();
         if (zoomLabel) {
-            zoomLabel.textContent = Math.round(scale * 100) + '%';
+            var pct = Math.round(scale * 100);
+            if (pct !== lastZoomPct) {
+                zoomLabel.textContent = pct + '%';
+                lastZoomPct = pct;
+            }
         }
         // Selection chrome (node action bar) lives in canvas viewport coords —
         // re-anchor it whenever the transform changes.
@@ -1554,16 +1972,20 @@ window.CanvasApp.Canvas = (function () {
 
     /**
      * World-coordinate bounding box of every on-canvas node, or null when
-     * the canvas is empty. Codelists are excluded (they aren't drawn). No
-     * padding — callers add their own framing margin.
+     * the canvas is empty. Codelists are excluded (they aren't drawn). When
+     * filters are active, only the matching subset contributes — so the
+     * minimap reframes to what the user currently sees. No padding — callers
+     * add their own framing margin.
      */
     function getWorldBounds() {
         var nodes = State.getNodes();
+        var filtersActive = State.hasActiveFilters();
         var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         var any = false;
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
             if (!isOnCanvas(n)) continue;
+            if (filtersActive && !State.matchesFilters(n)) continue;
             var r = getNodeRect(n);
             any = true;
             if (r.x < minX) minX = r.x;

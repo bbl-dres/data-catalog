@@ -37,6 +37,16 @@ window.CanvasApp.Minimap = (function () {
     var renderQueued = false;
     var viewportQueued = false;
 
+    // Drag state. dragPointerId pins the gesture to the pointer that started
+    // it — if a second finger touches the minimap mid-drag we ignore it
+    // rather than tracking the wrong pointer. lastDragEvent + dragRafQueued
+    // rAF-coalesce pan-while-drag so a 120 Hz trackpad doesn't trigger 120
+    // canvas transforms per second.
+    var isMinimapDragging = false;
+    var dragPointerId = null;
+    var lastDragEvent = null;
+    var dragRafQueued = false;
+
     // Cached world → minimap mapping. Recomputed each render().
     var mapScale = 1;
     var mapOffsetX = 0;
@@ -64,12 +74,16 @@ window.CanvasApp.Minimap = (function () {
         });
         Canvas.onTransform(scheduleViewport);
 
-        // Press pans the main canvas to centre on the picked point. We use
-        // pointerdown (not click) so the pan is snappy on press, and we
-        // deliberately do NOT attach pointermove / pointerup listeners — the
-        // drag-while-pressed code path was the source of the prior
-        // "pans on hover" bug when pointerup was missed.
+        // Press pans the main canvas to centre on the picked point; holding
+        // and dragging tracks the cursor. setPointerCapture on pointerdown
+        // guarantees pointerup is delivered even if the pointer leaves the
+        // SVG mid-drag (the prior "pans on hover" bug came from a missed
+        // pointerup leaving isDragging stuck true — capture closes that hole,
+        // and pointercancel below covers OS-level gesture interruption).
         svgEl.addEventListener('pointerdown', onPointerDown);
+        svgEl.addEventListener('pointermove', onPointerMove);
+        svgEl.addEventListener('pointerup', onPointerEnd);
+        svgEl.addEventListener('pointercancel', onPointerEnd);
         // Stop wheel events on the minimap from also panning/zooming the
         // main canvas behind it.
         svgEl.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
@@ -139,10 +153,14 @@ window.CanvasApp.Minimap = (function () {
     function renderSystems() {
         systemsGroup.innerHTML = '';
         var nodes = State.getNodes();
+        var filtersActive = State.hasActiveFilters();
         var bySystem = Object.create(null);
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
             if (n.type === 'codelist') continue;
+            // When filters are active, mirror the canvas: only the matching
+            // subset shows, so empty systems drop their rectangle entirely.
+            if (filtersActive && !State.matchesFilters(n)) continue;
             var sys = (n.system || '').trim();
             if (!sys) continue;
             (bySystem[sys] = bySystem[sys] || []).push(n);
@@ -171,9 +189,11 @@ window.CanvasApp.Minimap = (function () {
     function renderNodes() {
         nodesGroup.innerHTML = '';
         var nodes = State.getNodes();
+        var filtersActive = State.hasActiveFilters();
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
             if (n.type === 'codelist') continue;
+            if (filtersActive && !State.matchesFilters(n)) continue;
             var r = Canvas.getNodeRect(n);
             var rect = document.createElementNS(SVG_NS, 'rect');
             rect.setAttribute('x', worldToMapX(r.x));
@@ -226,7 +246,39 @@ window.CanvasApp.Minimap = (function () {
         // Primary button only — ignore right-click / middle-click / browser-back.
         if (e.button !== 0) return;
         e.preventDefault();
+        isMinimapDragging = true;
+        dragPointerId = e.pointerId;
+        // Capture so a fast drag that exits the SVG bounds still receives
+        // pointermove/pointerup. Wrap in try/catch — capture can throw on
+        // detached elements during HMR.
+        try { svgEl.setPointerCapture(e.pointerId); } catch (err) {}
         panToEvent(e);
+    }
+
+    function onPointerMove(e) {
+        if (!isMinimapDragging) return;
+        if (e.pointerId !== dragPointerId) return;
+        e.preventDefault();
+        lastDragEvent = e;
+        if (dragRafQueued) return;
+        dragRafQueued = true;
+        requestAnimationFrame(flushDragFrame);
+    }
+
+    function flushDragFrame() {
+        dragRafQueued = false;
+        var e = lastDragEvent;
+        lastDragEvent = null;
+        if (!e || !isMinimapDragging) return;
+        panToEvent(e);
+    }
+
+    function onPointerEnd(e) {
+        if (e.pointerId !== dragPointerId && dragPointerId !== null) return;
+        isMinimapDragging = false;
+        dragPointerId = null;
+        lastDragEvent = null;
+        try { svgEl.releasePointerCapture(e.pointerId); } catch (err) {}
     }
 
     function panToEvent(e) {

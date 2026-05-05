@@ -121,8 +121,13 @@ window.CanvasApp.State = (function () {
     var listeners = [];
 
     function on(fn) { listeners.push(fn); }
-    function emit(reason) {
-        listeners.forEach(function (fn) { try { fn(reason); } catch (e) { console.error(e); } });
+    // Optional `payload` lets a mutator scope its emit to a single id (e.g.
+    // updateNode passes the affected node id). Listeners that don't care
+    // ignore the extra arg — the signature is fully backward-compatible.
+    function emit(reason, payload) {
+        listeners.forEach(function (fn) {
+            try { fn(reason, payload); } catch (e) { console.error(e); }
+        });
     }
 
     // ---- Loading -------------------------------------------------------
@@ -923,7 +928,7 @@ window.CanvasApp.State = (function () {
         Object.assign(e, patch);
         markModified('edge', id);
         schedulePersist();
-        emit('edges');
+        emit('edges', id);
     }
 
     /**
@@ -1020,7 +1025,7 @@ window.CanvasApp.State = (function () {
         if (!isLayoutOnly) markModified('node', id);
         pruneSelection();
         schedulePersist();
-        emit('nodes');
+        emit('nodes', id);
     }
 
     function addNode(node) {
@@ -1040,7 +1045,7 @@ window.CanvasApp.State = (function () {
         nodesById[id] = fresh;
         markAdded('node', id);
         schedulePersist();
-        emit('nodes');
+        emit('nodes', id);
         return fresh;
     }
 
@@ -1083,7 +1088,11 @@ window.CanvasApp.State = (function () {
         markRemoved('node', id);
         pruneSelection();
         schedulePersist();
-        emit('nodes');
+        // Cascade-deleted edges are handled by the canvas listener (it drops
+        // any DOM edge group whose endpoint matches the gone id), so a single
+        // 'nodes' emit is enough — no need to fire one 'edges' per cascaded
+        // edge.
+        emit('nodes', id);
     }
 
     function addEdge(edge) {
@@ -1101,7 +1110,7 @@ window.CanvasApp.State = (function () {
         edgesById[fresh.id] = fresh;
         markAdded('edge', fresh.id);
         schedulePersist();
-        emit('edges');
+        emit('edges', fresh.id);
         return fresh;
     }
 
@@ -1122,7 +1131,7 @@ window.CanvasApp.State = (function () {
         markRemoved('edge', id);
         pruneSelection();
         schedulePersist();
-        emit('edges');
+        emit('edges', id);
     }
 
     function replaceAll(payload) {

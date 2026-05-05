@@ -19,7 +19,12 @@
       "Bash(pkill -f \"http.server 8765\")",
       "Bash(PYTHONIOENCODING=utf-8 python scripts/generate-ibpdi-import.py)",
       "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js\")",
-      "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/elkjs/lib/elk.bundled.js\")"
+      "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/elkjs/lib/elk.bundled.js\")",
+      "Bash(node -c js/canvas.js)",
+      "Bash(node -c js/minimap.js)",
+      "Bash(node -c js/state.js)",
+      "Bash(node -c js/editor.js)",
+      "Bash(node -c js/app.js)"
     ]
   }
 }
