@@ -67,16 +67,348 @@ window.CanvasApp.XlsxIO = (function () {
 
     function init() {
         State = window.CanvasApp.State;
+        // The legacy <input id="file-input"> still lives in the DOM but is
+        // unused — the import flow now goes through the modal which has its
+        // own scoped file input. Empty-canvas's "import" action also calls
+        // btn-import.click(), so it ends up in openImportModal too.
         fileInput = document.getElementById('file-input');
+        document.getElementById('btn-import').addEventListener('click', openImportModal);
 
-        document.getElementById('btn-import').addEventListener('click', function () {
-            fileInput.value = '';
-            fileInput.click();
-        });
-        fileInput.addEventListener('change', onFile);
-
+        wireImportModal();
         wireExportDropdown();
     }
+
+    // ---- Import modal --------------------------------------------------
+
+    var modalEl       = null;
+    var modalContent  = null;
+    var modalState    = 'idle';   // 'idle' | 'pick' | 'parsing' | 'preview' | 'sending' | 'error'
+    var modalMessage  = '';
+    var parsedPayload = null;     // frontend-shape payload from parseWorkbook
+    var parsedDiff    = null;     // { nodes, edges, sets } each { added, removed, updated, unchanged }
+    var parsedFile    = null;     // { name, size }
+
+    function wireImportModal() {
+        modalEl      = document.getElementById('import-modal');
+        modalContent = document.getElementById('import-modal-content');
+        if (!modalEl) return;
+
+        modalEl.addEventListener('click', function (e) {
+            if (e.target.closest('[data-import-modal-close]')) closeImportModal();
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && modalEl && !modalEl.hasAttribute('hidden')) {
+                closeImportModal();
+            }
+        });
+    }
+
+    /**
+     * Triggered from the toolbar Import button. Warns if the user is mid-edit
+     * with unsaved changes, otherwise opens the modal in the pick state.
+     */
+    function openImportModal() {
+        if (typeof XLSX === 'undefined') {
+            toast('Excel-Bibliothek nicht geladen.', 'error');
+            return;
+        }
+        if (State.hasUnsavedChanges && State.hasUnsavedChanges()) {
+            var App = window.CanvasApp.App;
+            var doOpen = function () { actuallyOpenImportModal(); };
+            if (App && App.confirmDialog) {
+                App.confirmDialog({
+                    title: 'Ungespeicherte Änderungen verwerfen?',
+                    body:  'Beim Importieren gehen alle ungespeicherten Änderungen verloren.',
+                    confirmText: 'Fortfahren',
+                    cancelText:  'Abbrechen',
+                    danger: true
+                }).then(function (ok) { if (ok) doOpen(); });
+            } else {
+                if (window.confirm('Ungespeicherte Änderungen verwerfen?')) doOpen();
+            }
+        } else {
+            actuallyOpenImportModal();
+        }
+    }
+
+    function actuallyOpenImportModal() {
+        if (!modalEl) return;
+        modalState = 'pick';
+        modalMessage = '';
+        parsedPayload = null;
+        parsedDiff = null;
+        parsedFile = null;
+        modalEl.removeAttribute('hidden');
+        document.body.classList.add('auth-modal-open');
+        renderImportModal();
+    }
+
+    function closeImportModal() {
+        if (!modalEl) return;
+        modalEl.setAttribute('hidden', '');
+        document.body.classList.remove('auth-modal-open');
+        modalState = 'idle';
+        parsedPayload = null;
+        parsedDiff = null;
+        parsedFile = null;
+    }
+
+    function renderImportModal() {
+        if (!modalContent) return;
+        if (modalState === 'pick' || modalState === 'parsing') {
+            renderImportPick();
+        } else if (modalState === 'preview' || modalState === 'sending' || modalState === 'error') {
+            renderImportPreview();
+        }
+    }
+
+    function renderImportPick() {
+        var parsing = modalState === 'parsing';
+        var errorBlock = modalMessage
+            ? '<div class="auth-modal-status auth-modal-status-error">' + escapeHtml(modalMessage) + '</div>'
+            : '';
+        modalContent.innerHTML =
+            '<h2 class="auth-modal-title" id="import-modal-title">Excel importieren</h2>' +
+            '<p class="auth-modal-sub">Wählen Sie eine .xlsx-Datei (Export aus diesem Canvas) oder ziehen Sie sie ' +
+                'auf das Feld unten. Der gesamte Canvas-Inhalt wird ersetzt.</p>' +
+            '<div class="import-dropzone" id="import-dropzone">' +
+                '<svg class="import-dropzone-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>' +
+                '</svg>' +
+                '<p class="import-dropzone-main">' + (parsing ? 'Datei wird gelesen…' : 'Excel-Datei hier fallen lassen') + '</p>' +
+                (parsing ? '' :
+                    '<p class="import-dropzone-or">oder <button type="button" class="import-pick-btn" id="import-pick-btn">Datei auswählen</button></p>') +
+                '<input type="file" id="import-file-input" accept=".xlsx,.xls" hidden>' +
+                '<p class="import-dropzone-hint">.xlsx · max. ~10 MB</p>' +
+            '</div>' +
+            errorBlock;
+
+        var dz = modalContent.querySelector('#import-dropzone');
+        var fi = modalContent.querySelector('#import-file-input');
+        var pb = modalContent.querySelector('#import-pick-btn');
+        if (pb) pb.addEventListener('click', function () { fi.value = ''; fi.click(); });
+        if (fi) fi.addEventListener('change', function (e) {
+            var f = e.target.files && e.target.files[0];
+            if (f) handleImportFile(f);
+        });
+        if (dz) {
+            ['dragenter', 'dragover'].forEach(function (ev) {
+                dz.addEventListener(ev, function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    dz.classList.add('is-dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function (ev) {
+                dz.addEventListener(ev, function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    dz.classList.remove('is-dragover');
+                });
+            });
+            dz.addEventListener('drop', function (e) {
+                var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+                if (f) handleImportFile(f);
+            });
+        }
+    }
+
+    function renderImportPreview() {
+        if (!parsedDiff || !parsedFile) return;
+        var sending = modalState === 'sending';
+        var errorBlock = modalState === 'error'
+            ? '<div class="auth-modal-status auth-modal-status-error">' + escapeHtml(modalMessage) + '</div>'
+            : '';
+
+        modalContent.innerHTML =
+            '<h2 class="auth-modal-title" id="import-modal-title">Vorschau der Änderungen</h2>' +
+            '<div class="import-summary-file">' +
+                '<strong>' + escapeHtml(parsedFile.name) + '</strong>' +
+                '<span>· ' + (parsedPayload.nodes.length) + ' Knoten · ' + (parsedPayload.edges.length) + ' Beziehungen</span>' +
+            '</div>' +
+            renderSummarySection('Knoten',       parsedDiff.nodes) +
+            renderSummarySection('Beziehungen',  parsedDiff.edges) +
+            renderSummarySection('Datenpakete',  parsedDiff.sets) +
+            errorBlock +
+            '<div class="import-modal-actions">' +
+                '<button type="button" class="tb-btn" data-import-modal-close' + (sending ? ' disabled' : '') + '>Abbrechen</button>' +
+                '<button type="button" class="tb-btn tb-btn-primary" id="import-confirm-btn"' + (sending ? ' disabled' : '') + '>' +
+                    (sending ? 'Wird importiert…' : 'Importieren') +
+                '</button>' +
+            '</div>';
+
+        var btn = modalContent.querySelector('#import-confirm-btn');
+        if (btn) btn.addEventListener('click', onImportConfirm);
+    }
+
+    function renderSummarySection(title, diff) {
+        return '<div class="import-summary-section">' +
+            '<h3 class="import-summary-section-title">' + escapeHtml(title) + '</h3>' +
+            '<div class="import-summary-counts">' +
+                summaryCount('+', diff.added.length,     'hinzu',       'add') +
+                summaryCount('~', diff.updated.length,   'ändern',      'update') +
+                summaryCount('−', diff.removed.length,   'entfernen',   'remove') +
+                summaryCount('=', diff.unchanged.length, 'unverändert', 'same') +
+            '</div>' +
+        '</div>';
+    }
+
+    function summaryCount(prefix, count, label, kind) {
+        return '<div class="import-summary-count import-summary-count-' + kind + '">' +
+            '<span class="import-summary-count-num">' + (kind === 'same' ? '' : prefix) + count + '</span>' +
+            '<span class="import-summary-count-label">' + escapeHtml(label) + '</span>' +
+        '</div>';
+    }
+
+    function handleImportFile(file) {
+        if (!file) return;
+        if (typeof XLSX === 'undefined') {
+            toast('Excel-Bibliothek nicht geladen.', 'error');
+            return;
+        }
+        modalState = 'parsing';
+        modalMessage = '';
+        renderImportModal();
+
+        var reader = new FileReader();
+        reader.onload = function (ev) {
+            try {
+                var wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
+                var parsed = parseWorkbook(wb);
+                if (!parsed.nodes.length) {
+                    modalState = 'pick';
+                    modalMessage = 'Keine Knoten in den Excel-Blättern gefunden.';
+                    renderImportModal();
+                    return;
+                }
+                parsedPayload = parsed;
+                parsedFile = { name: file.name, size: file.size };
+                parsedDiff = computeImportDiff(State, parsed);
+                modalState = 'preview';
+                renderImportModal();
+            } catch (err) {
+                console.error(err);
+                modalState = 'pick';
+                modalMessage = 'Datei konnte nicht gelesen werden: ' + (err.message || 'unbekannter Fehler');
+                renderImportModal();
+            }
+        };
+        reader.onerror = function () {
+            modalState = 'pick';
+            modalMessage = 'Datei konnte nicht gelesen werden.';
+            renderImportModal();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function onImportConfirm() {
+        if (modalState === 'sending' || !parsedPayload) return;
+        // Snapshot the change-count *before* the request — closeImportModal
+        // nulls parsedDiff, so reading it in the .then() callback crashes.
+        var totalChanges = totalChangeCount(parsedDiff);
+        modalState = 'sending';
+        modalMessage = '';
+        renderImportModal();
+        State.commitImport(parsedPayload).then(function () {
+            closeImportModal();
+            toast('Import erfolgreich · ' + totalChanges + ' Änderungen', 'success');
+        }).catch(function (err) {
+            console.error('Import failed', err);
+            modalState = 'error';
+            modalMessage = friendlyImportError(err);
+            renderImportModal();
+        });
+    }
+
+    function totalChangeCount(diff) {
+        if (!diff) return 0;
+        return diff.nodes.added.length + diff.nodes.updated.length + diff.nodes.removed.length +
+               diff.edges.added.length + diff.edges.updated.length + diff.edges.removed.length +
+               diff.sets.added.length  + diff.sets.updated.length  + diff.sets.removed.length;
+    }
+
+    /**
+     * Categorise the parsed payload against the current State. Same key
+     * conventions as the DB:
+     *   - nodes by `id` (slug-without-prefix)
+     *   - edges by from+to+label (edges have no stable id from the user side)
+     *   - sets by `id`
+     * Updated vs unchanged is decided by a JSON fingerprint of the
+     * user-meaningful fields — internal coords (x,y) are intentionally
+     * excluded from "changed" detection so re-importing a file you just
+     * exported doesn't show every node as updated.
+     */
+    function computeImportDiff(State, parsed) {
+        var current = {
+            nodes: State.getNodes ? State.getNodes() : [],
+            edges: State.getEdges ? State.getEdges() : [],
+            sets:  State.getSets  ? State.getSets()  : []
+        };
+        return {
+            nodes: diffSet(current.nodes, parsed.nodes || [], nodeKey, nodeFingerprint),
+            edges: diffSet(current.edges, parsed.edges || [], edgeKey, edgeFingerprint),
+            sets:  diffSet(current.sets,  parsed.sets  || [], setKey,  setFingerprint)
+        };
+    }
+
+    function diffSet(currentArr, parsedArr, keyFn, fingerprintFn) {
+        var added = [], removed = [], updated = [], unchanged = [];
+        var currentByKey = Object.create(null);
+        var parsedByKey  = Object.create(null);
+        currentArr.forEach(function (e) { currentByKey[keyFn(e)] = e; });
+        parsedArr.forEach(function (e)  { parsedByKey[keyFn(e)]  = e; });
+        Object.keys(parsedByKey).forEach(function (k) {
+            if (!(k in currentByKey)) added.push(parsedByKey[k]);
+            else if (fingerprintFn(currentByKey[k]) !== fingerprintFn(parsedByKey[k])) updated.push(parsedByKey[k]);
+            else unchanged.push(parsedByKey[k]);
+        });
+        Object.keys(currentByKey).forEach(function (k) {
+            if (!(k in parsedByKey)) removed.push(currentByKey[k]);
+        });
+        return { added: added, removed: removed, updated: updated, unchanged: unchanged };
+    }
+
+    function nodeKey(n) { return String(n.id || ''); }
+    function nodeFingerprint(n) {
+        return JSON.stringify({
+            id:     n.id || '',
+            type:   n.type || '',
+            label:  n.label || '',
+            system: n.system || '',
+            schema: n.schema || '',
+            tags:   (n.tags || []).slice().sort(),
+            columns: (n.columns || []).map(function (c) {
+                return {
+                    name:            c.name || '',
+                    type:            c.type || '',
+                    key:             c.key || '',
+                    setId:           c.setId || '',
+                    sourceStructure: c.sourceStructure || ''
+                };
+            })
+        });
+    }
+    function edgeKey(e) { return [(e.from || ''), (e.to || ''), (e.label || '')].join('|'); }
+    function edgeFingerprint(e) {
+        return JSON.stringify({ from: e.from || '', to: e.to || '', label: e.label || '' });
+    }
+    function setKey(s) { return String(s.id || ''); }
+    function setFingerprint(s) {
+        return JSON.stringify({
+            id: s.id || '', label: s.label || '',
+            description: s.description || '', lineage: s.lineage || ''
+        });
+    }
+
+    function friendlyImportError(err) {
+        var msg = err && err.message ? String(err.message) : '';
+        if (/42501|forbidden|editor or admin/i.test(msg))
+            return 'Sie haben keine Berechtigung, Daten zu importieren.';
+        if (/network|fetch|failed to fetch/i.test(msg))
+            return 'Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.';
+        if (/canvas not found/i.test(msg))
+            return 'Canvas wurde nicht gefunden — vermutlich gelöscht.';
+        return msg || 'Import fehlgeschlagen.';
+    }
+
 
     // ---- Export dropdown -----------------------------------------------
 
@@ -291,49 +623,9 @@ window.CanvasApp.XlsxIO = (function () {
     }
 
     // ---- Import --------------------------------------------------------
-
-    function onFile(e) {
-        var file = e.target.files && e.target.files[0];
-        if (!file) return;
-        if (typeof XLSX === 'undefined') {
-            // Mirrors the guard in exportXlsx — CDN failure shouldn't surface
-            // as an uncaught ReferenceError inside the FileReader callback.
-            toast('Excel-Bibliothek nicht geladen.', 'error');
-            return;
-        }
-        var reader = new FileReader();
-        reader.onload = function (ev) {
-            try {
-                var wb = XLSX.read(new Uint8Array(ev.target.result), { type: 'array' });
-                var parsed = parseWorkbook(wb);
-                if (!parsed.nodes.length) {
-                    toast('Keine Knoten in den Tabellen-Blättern gefunden.', 'error');
-                    return;
-                }
-                var App = window.CanvasApp.App;
-                var ask = (App && App.confirmDialog)
-                    ? App.confirmDialog({
-                        title: 'Canvas ersetzen?',
-                        body:  'Der aktuelle Canvas wird durch den Excel-Inhalt ersetzt: ' +
-                                parsed.nodes.length + ' Knoten, ' + parsed.edges.length + ' Beziehungen. ' +
-                                'Diese Aktion kann nicht rückgängig gemacht werden.',
-                        confirmText: 'Ersetzen',
-                        cancelText:  'Abbrechen',
-                        danger: true
-                      })
-                    : Promise.resolve(confirm('Aktuelle Canvas-Inhalte ersetzen?'));
-                ask.then(function (ok) {
-                    if (!ok) return;
-                    State.replaceAll(parsed);
-                    toast('Import erfolgreich · ' + parsed.nodes.length + ' Knoten', 'success');
-                });
-            } catch (err) {
-                console.error(err);
-                toast('Import fehlgeschlagen: ' + err.message, 'error');
-            }
-        };
-        reader.readAsArrayBuffer(file);
-    }
+    // The import flow is owned by the modal block above (openImportModal,
+    // handleImportFile, onImportConfirm). This section provides parsing
+    // helpers that the modal calls.
 
     function findSheet(wb, names) {
         for (var i = 0; i < names.length; i++) {
@@ -551,6 +843,12 @@ window.CanvasApp.XlsxIO = (function () {
         if (window.CanvasApp.App && window.CanvasApp.App.toast) {
             window.CanvasApp.App.toast(msg, kind);
         }
+    }
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
     return { init: init, exportXlsx: exportXlsx, exportJson: exportJson };

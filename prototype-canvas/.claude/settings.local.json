@@ -16,7 +16,8 @@
       "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/canvas.js)",
       "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/app.js)",
       "Bash(kill %1)",
-      "Bash(pkill -f \"http.server 8765\")"
+      "Bash(pkill -f \"http.server 8765\")",
+      "Bash(PYTHONIOENCODING=utf-8 python scripts/generate-ibpdi-import.py)"
     ]
   }
 }

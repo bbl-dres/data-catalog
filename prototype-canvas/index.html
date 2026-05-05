@@ -329,6 +329,19 @@
     </section>
   </main>
 
+  <!-- Excel-import modal: opened from the toolbar Import button. Two
+       in-modal states (drop/pick → preview) and an in-flight indicator;
+       XlsxIO owns the content. Reuses the .auth-modal-* styling. -->
+  <div class="auth-modal" id="import-modal" hidden>
+    <div class="auth-modal-backdrop" data-import-modal-close aria-hidden="true"></div>
+    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="import-modal-title">
+      <button type="button" class="auth-modal-close" data-import-modal-close aria-label="Schließen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="auth-modal-content" id="import-modal-content"></div>
+    </div>
+  </div>
+
   <!-- Canvas-create modal: opened from the overview "+ Neuer Canvas" button.
        Reuses the auth-modal styles for consistency; Overview.js owns it. -->
   <div class="auth-modal" id="canvas-create-modal" hidden>

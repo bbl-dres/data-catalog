@@ -417,6 +417,65 @@ window.CanvasApp.State = (function () {
     }
 
     /**
+     * Atomic server-side replace from a parsed Excel payload (frontend-shape:
+     * { nodes, edges, sets, homeView? }). Bypasses the snapshot/draft model —
+     * Excel import is meant to be a single transactional save, not something
+     * the user reviews node-by-node.
+     *
+     * Implementation: temporarily install the parsed data into state, run
+     * the existing serializeDraftToPayload over it, restore the original
+     * state, then fire applyCanvas. On success, load() pulls server-truth
+     * back which triggers the normal re-render path.
+     */
+    function commitImport(parsed) {
+        if (!parsed || !Array.isArray(parsed.nodes)) {
+            return Promise.reject(new Error('Ungültiges Import-Format.'));
+        }
+        var slug = state.currentCanvasSlug;
+        if (!slug) return Promise.reject(new Error('Kein Canvas geladen.'));
+        var Sb = window.CanvasApp.SupabaseClient;
+        if (!Sb || !Sb.applyCanvas) {
+            return Promise.reject(new Error('Supabase nicht verfügbar.'));
+        }
+
+        // Snapshot the current arrays + homeView so we can restore.
+        var savedNodes = state.nodes;
+        var savedEdges = state.edges;
+        var savedSets  = state.sets;
+        var savedHome  = state.homeView;
+
+        // Install the parsed data so serializeDraftToPayload can read it.
+        state.nodes = parsed.nodes;
+        state.edges = (parsed.edges || []).map(function (e, i) {
+            return Object.assign({ id: e.id || ('e' + i) }, e);
+        });
+        if (Array.isArray(parsed.sets)) state.sets = parsed.sets;
+        if (parsed.hasOwnProperty('homeView')) {
+            state.homeView = isValidHomeView(parsed.homeView) ? parsed.homeView : null;
+        }
+        rebuildIndex();
+
+        var payload;
+        try {
+            payload = serializeDraftToPayload();
+        } finally {
+            // Always restore — even if serialisation throws.
+            state.nodes = savedNodes;
+            state.edges = savedEdges;
+            state.sets  = savedSets;
+            state.homeView = savedHome;
+            rebuildIndex();
+        }
+
+        return Sb.applyCanvas(slug, payload).then(function () {
+            // Server now holds the imported content; pull it back as truth.
+            state.snapshot = null;
+            dirtyMap.clear();
+            return load();
+        });
+    }
+
+    /**
      * Translate the in-memory draft into the DB-shape payload accepted by
      * canvas_apply(). The frontend stores a denormalised view (column lists
      * inline on each node, system as a label rather than a node, etc.); the
@@ -1165,6 +1224,7 @@ window.CanvasApp.State = (function () {
         getSelectedSet: getSelectedSet,
         setMode: setMode,
         commitDraft: commitDraft,
+        commitImport: commitImport,
         revertDraft: revertDraft,
         hasUnsavedChanges: hasUnsavedChanges,
         getUnsavedChangeCount: getUnsavedChangeCount,
