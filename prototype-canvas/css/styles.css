@@ -1019,9 +1019,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 /* ---- body.hide-* layout toggles ---- */
 /* Type-as-visibility (display:none on .node[data-type=*]) was removed when
    the Filter and Sichtbarkeit dropdowns merged. Type is now a filter
-   facet — non-matching nodes dim via [data-filtered="true"] (opacity)
-   instead of vanishing entirely, which made the canvas appear empty
-   when a user happened to toggle every type off. */
+   facet handled by the [data-filtered="true"] rule above (display: none). */
 
 body.hide-edges #edge-layer .edge-group,
 body.hide-edges #edge-overlay .edge-group { display: none; }
@@ -2942,24 +2940,18 @@ body.mode-edit .cell-select:focus {
   opacity: 1;
 }
 
-/* ---- Filter dim ----
+/* ---- Filter hide ----
    Mirrors Canvas/Diagramm's data-filtered behaviour: nodes/edges that
-   don't pass the active filters fade in place rather than being removed.
-   Layout stays stable, feedback is instant, and the unmatched nodes
-   remain as faint context.
-   The .has-filters root class is what arms the rules — when no filters
-   are active, the .is-filtered-out class is removed wholesale by JS so
-   no opacity rule is required to fire. */
+   don't pass the active filters are hidden entirely (display: none)
+   rather than dimmed. The earlier "ghost" treatment (opacity 0.12 / 0.05)
+   left a noisy backdrop of unrelated nodes that competed with the
+   matches for attention; hiding makes the filter result unambiguous.
+   Layout stays stable across filter changes — the simulation runs once
+   with all nodes, then this rule simply removes the unmatched ones from
+   the visual tree, so re-applying filters doesn't re-trigger layout. */
 .graph-canvas.has-filters .graph-node.is-filtered-out,
 .graph-canvas.has-filters .graph-edge.is-filtered-out {
-  transition: opacity 180ms ease;
-}
-.graph-canvas.has-filters .graph-node.is-filtered-out {
-  opacity: 0.12;
-  pointer-events: none;
-}
-.graph-canvas.has-filters .graph-edge.is-filtered-out {
-  opacity: 0.05;
+  display: none;
 }
 
 /* Tooltip — absolutely-positioned div following the cursor. */

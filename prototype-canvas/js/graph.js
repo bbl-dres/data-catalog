@@ -149,10 +149,10 @@ window.CanvasApp.Graph = (function () {
                 reason === 'nodes' || reason === 'edges') {
                 scheduleLayout();
             } else if (reason === 'filter') {
-                // Filter changes don't move nodes — just dim non-matching
-                // ones in place so the user can compare matching vs.
-                // unmatched without losing the spatial layout. Same UX
-                // pattern as Canvas/Diagramm's applyFilterDim.
+                // Filter changes don't move nodes — they hide non-matching
+                // ones in place so visible nodes keep their spatial
+                // relationship across filter toggles. Same UX pattern as
+                // Canvas/Diagramm's data-filtered handling.
                 applyFilterDim();
             } else if (reason === 'selection') {
                 renderSelection();
@@ -188,8 +188,8 @@ window.CanvasApp.Graph = (function () {
      * triggered a full re-layout (~2.5 s of animation from a fresh seed).
      * The current model mirrors Canvas/Diagramm: include every node + edge
      * in the simulation, then `applyFilterDim()` toggles a CSS class on
-     * non-matching ones for in-place dimming. Layout stays stable across
-     * filter changes; feedback is instant.
+     * non-matching ones to hide them via `display: none`. Visible nodes
+     * keep their positions across filter changes; feedback is instant.
      * Returns { simNodes, simLinks, idIndex, systemMembers }.
      */
     function buildSimData() {
@@ -539,13 +539,13 @@ window.CanvasApp.Graph = (function () {
 
     /**
      * Apply or clear the `is-filtered-out` class on every node + edge
-     * based on the current filter state. Mirrors Canvas/Diagramm's
-     * applyFilterDim — non-matching nodes stay in place but fade, so the
-     * user keeps the spatial layout while seeing what matches. System
-     * hubs are filtered out only if every member is filtered (otherwise
-     * they're still relevant context for the visible entities).
+     * based on the current filter state. Non-matching nodes are hidden
+     * (display: none) so the user sees only the matches without a noisy
+     * ghosted backdrop competing for attention. System hubs are filtered
+     * out only if every member is filtered (otherwise they're still
+     * relevant context for the visible entities).
      *
-     * Edges fade if either endpoint is filtered out. Cheap operation —
+     * Edges hide if either endpoint is filtered out. Cheap operation —
      * pure attribute toggling, no layout, no DOM rebuild.
      */
     function applyFilterDim() {
