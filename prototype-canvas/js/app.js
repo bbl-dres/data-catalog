@@ -300,8 +300,17 @@ window.CanvasApp.App = (function () {
 
     function applyUrlToState() {
         var url = parseUrl();
-        // Empty hash on first load is treated as "go to overview" so the URL
-        // bar normalises after the first sync.
+        // Detect Supabase auth-callback artefacts in the URL — recovery,
+        // OAuth, magic-link, error params. We mustn't normalise (= strip)
+        // the hash while these are present: the Supabase SDK reads them
+        // asynchronously during its own init and would lose them if we
+        // replaceState first. Once the SDK clears them, the next state
+        // change re-runs syncStateToUrl naturally.
+        var rawHash = window.location.hash || '';
+        var rawSearch = window.location.search || '';
+        var authMarker = /(?:^|[?#&])(access_token|refresh_token|provider_token|type=(?:recovery|signup|invite|magiclink|email_change)|error_description|error=)/;
+        var inAuthCallback = authMarker.test(rawHash) || authMarker.test(rawSearch);
+
         applyingUrl = true;
         try {
             if (url.view) State.setView(url.view);
@@ -315,11 +324,14 @@ window.CanvasApp.App = (function () {
             applyingUrl = false;
         }
         State.pruneSelection();
-        // Rewrite the URL after parsing — turns legacy paths like #/diagram
-        // into the canonical #/c/default/diagram and also strips any
-        // unknown junk users might have typed. Cheap no-op when the URL
-        // was already canonical.
-        syncStateToUrl();
+
+        if (!inAuthCallback) {
+            // Rewrite the URL after parsing — turns legacy paths like
+            // #/diagram into the canonical #/c/default/diagram and strips
+            // any unknown junk users might have typed. Cheap no-op when
+            // the URL was already canonical.
+            syncStateToUrl();
+        }
     }
 
     function syncStateToUrl() {
