@@ -32,6 +32,12 @@ window.CanvasApp.SupabaseClient = (function () {
             createCanvas: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
+            updateCanvas: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
+            deleteCanvas: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
             applyCanvas: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
@@ -86,6 +92,47 @@ window.CanvasApp.SupabaseClient = (function () {
                     throw new Error(msg + code);
                 }
                 return res.data;
+            });
+    }
+
+    /**
+     * Update an existing canvas row (label, description, visibility).
+     * Slug is intentionally not updated — changing it would break shared
+     * URLs and cascade through the seed snapshot.
+     */
+    function updateCanvas(id, data) {
+        return client
+            .from('canvas')
+            .update(data)
+            .eq('id', id)
+            .select()
+            .single()
+            .then(function (res) {
+                if (res.error) {
+                    var msg = res.error.message || 'canvas update failed';
+                    var code = res.error.code ? ' (' + res.error.code + ')' : '';
+                    throw new Error(msg + code);
+                }
+                return res.data;
+            });
+    }
+
+    /**
+     * Delete a canvas row. Cascades clear node, edge, all *_meta, etc. via
+     * the existing FK constraints — see migration 004. Irreversible.
+     */
+    function deleteCanvas(id) {
+        return client
+            .from('canvas')
+            .delete()
+            .eq('id', id)
+            .then(function (res) {
+                if (res.error) {
+                    var msg = res.error.message || 'canvas delete failed';
+                    var code = res.error.code ? ' (' + res.error.code + ')' : '';
+                    throw new Error(msg + code);
+                }
+                return true;
             });
     }
 
@@ -194,6 +241,8 @@ window.CanvasApp.SupabaseClient = (function () {
         loadCanvas:            loadCanvas,
         listCanvases:          listCanvases,
         createCanvas:          createCanvas,
+        updateCanvas:          updateCanvas,
+        deleteCanvas:          deleteCanvas,
         applyCanvas:           applyCanvas,
         signInWithPassword:    signInWithPassword,
         resetPasswordForEmail: resetPasswordForEmail,

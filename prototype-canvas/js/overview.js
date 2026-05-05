@@ -24,11 +24,37 @@ window.CanvasApp.Overview = (function () {
         if (!rootEl || !listEl) return;
 
         listEl.addEventListener('click', function (e) {
+            // Per-card hamburger toggle.
+            var menuBtn = e.target.closest('[data-card-menu]');
+            if (menuBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                toggleCardMenu(menuBtn);
+                return;
+            }
+            // Per-card menu action (rename / delete).
+            var actionBtn = e.target.closest('[data-card-action]');
+            if (actionBtn) {
+                e.stopPropagation();
+                e.preventDefault();
+                handleCardAction(actionBtn);
+                return;
+            }
+            // Click anywhere else inside the menu wrap shouldn't navigate
+            // to the canvas — just absorb it.
+            if (e.target.closest('.overview-card-menu-wrap')) return;
+            // Card click → navigate.
             var card = e.target.closest('[data-canvas-slug]');
             if (!card) return;
             var slug = card.getAttribute('data-canvas-slug');
             if (!slug) return;
             window.location.hash = '#/c/' + encodeURIComponent(slug) + '/diagram';
+        });
+
+        // Outside-click + Escape close any open card menu.
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('.overview-card-menu-wrap')) return;
+            closeAllCardMenus();
         });
 
         // "+ Neuer Canvas" button + modal — visibility controlled by the
@@ -43,6 +69,7 @@ window.CanvasApp.Overview = (function () {
         }
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            closeAllCardMenus();
             if (modal && !modal.hasAttribute('hidden')) closeCreateModal();
         });
 
@@ -55,10 +82,24 @@ window.CanvasApp.Overview = (function () {
 
     // ---- Create-canvas modal --------------------------------------------
 
-    var createState   = 'idle';   // 'idle' | 'sending' | 'error'
+    var createState   = 'idle';     // 'idle' | 'sending' | 'error'
     var createMessage = '';
+    var modalMode     = 'create';   // 'create' | 'rename'
+    var modalCanvas   = null;       // for rename: the canvas being edited
 
     function openCreateModal() {
+        modalMode = 'create';
+        modalCanvas = null;
+        openCanvasModal();
+    }
+
+    function openRenameModal(canvas) {
+        modalMode = 'rename';
+        modalCanvas = canvas;
+        openCanvasModal();
+    }
+
+    function openCanvasModal() {
         var modal = document.getElementById('canvas-create-modal');
         if (!modal) return;
         createState = 'idle';
@@ -83,32 +124,48 @@ window.CanvasApp.Overview = (function () {
         var content = document.getElementById('canvas-create-content');
         if (!content) return;
         var disabled = createState === 'sending';
+        var isRename = modalMode === 'rename';
+        var preLabel = isRename && modalCanvas ? (modalCanvas.label_de || '') : '';
+        var preDesc  = isRename && modalCanvas ? (modalCanvas.description_de || '') : '';
+        var preVis   = isRename && modalCanvas ? modalCanvas.visibility : 'public';
+
+        var title = isRename ? 'Canvas umbenennen' : 'Neuer Canvas';
+        var subtitle = isRename
+            ? 'Aktualisieren Sie Name, Beschreibung oder Sichtbarkeit. Der URL-Bezeichner bleibt unverändert.'
+            : 'Der Bezeichner für die URL wird automatisch aus dem Namen abgeleitet. Knoten und Beziehungen können nach dem Erstellen hinzugefügt werden.';
+        var submitText = isRename
+            ? (disabled ? 'Wird gespeichert…' : 'Änderungen speichern')
+            : (disabled ? 'Wird erstellt…'  : 'Canvas erstellen');
+
         var statusBlock = createState === 'error'
             ? '<div class="auth-modal-status auth-modal-status-error">' + escapeHtml(createMessage) + '</div>'
             : '';
+
         content.innerHTML =
-            '<h2 class="auth-modal-title" id="canvas-create-title">Neuer Canvas</h2>' +
-            '<p class="auth-modal-sub">Der Bezeichner für die URL wird automatisch aus dem Namen abgeleitet. Knoten und Beziehungen können nach dem Erstellen hinzugefügt werden.</p>' +
+            '<h2 class="auth-modal-title" id="canvas-create-title">' + escapeHtml(title) + '</h2>' +
+            '<p class="auth-modal-sub">' + escapeHtml(subtitle) + '</p>' +
             '<form class="auth-modal-form" id="canvas-create-form" novalidate>' +
                 '<div>' +
                     '<label class="auth-modal-label" for="canvas-create-label">Name</label>' +
-                    '<input class="auth-modal-input" id="canvas-create-label" type="text" required maxlength="200" placeholder="z. B. Personendaten" ' +
+                    '<input class="auth-modal-input" id="canvas-create-label" type="text" required maxlength="200" ' +
+                        'placeholder="z. B. Personendaten" value="' + escapeAttr(preLabel) + '" ' +
                         (disabled ? 'disabled' : '') + '>' +
                 '</div>' +
                 '<div>' +
                     '<label class="auth-modal-label" for="canvas-create-description">Beschreibung (optional)</label>' +
-                    '<input class="auth-modal-input" id="canvas-create-description" type="text" maxlength="500" placeholder="Kurzbeschreibung des Canvas" ' +
+                    '<input class="auth-modal-input" id="canvas-create-description" type="text" maxlength="500" ' +
+                        'placeholder="Kurzbeschreibung des Canvas" value="' + escapeAttr(preDesc) + '" ' +
                         (disabled ? 'disabled' : '') + '>' +
                 '</div>' +
                 '<div>' +
                     '<label class="auth-modal-label" for="canvas-create-visibility">Sichtbarkeit</label>' +
                     '<select class="auth-modal-input" id="canvas-create-visibility" ' + (disabled ? 'disabled' : '') + '>' +
-                        '<option value="public">Öffentlich (auch ohne Anmeldung sichtbar)</option>' +
-                        '<option value="restricted">Nur intern (Anmeldung erforderlich)</option>' +
+                        '<option value="public"'     + (preVis === 'public'     ? ' selected' : '') + '>Öffentlich (auch ohne Anmeldung sichtbar)</option>' +
+                        '<option value="restricted"' + (preVis === 'restricted' ? ' selected' : '') + '>Nur intern (Anmeldung erforderlich)</option>' +
                     '</select>' +
                 '</div>' +
                 '<button type="submit" class="tb-btn tb-btn-primary auth-modal-submit"' + (disabled ? ' disabled' : '') + '>' +
-                    (disabled ? 'Wird erstellt…' : 'Canvas erstellen') +
+                    escapeHtml(submitText) +
                 '</button>' +
             '</form>' +
             statusBlock;
@@ -129,6 +186,31 @@ window.CanvasApp.Overview = (function () {
         var description = (descEl && descEl.value || '').trim();
         var visibility  = (visEl && visEl.value) || 'public';
 
+        var Sb = window.CanvasApp.SupabaseClient;
+        var App = window.CanvasApp.App;
+
+        if (modalMode === 'rename' && modalCanvas) {
+            // Slug intentionally not updated — see updateCanvas comment.
+            createState = 'sending';
+            createMessage = '';
+            renderCreateModal();
+            Sb.updateCanvas(modalCanvas.id, {
+                label_de: label,
+                description_de: description || null,
+                visibility: visibility
+            }).then(function () {
+                closeCreateModal();
+                if (App && App.toast) App.toast('Canvas aktualisiert', 'success');
+                refreshOverview();
+            }).catch(function (err) {
+                createState = 'error';
+                createMessage = friendlyCreateError(err);
+                renderCreateModal();
+            });
+            return;
+        }
+
+        // Create flow.
         var slug = slugify(label);
         if (!slug) {
             createState = 'error';
@@ -136,12 +218,9 @@ window.CanvasApp.Overview = (function () {
             renderCreateModal();
             return;
         }
-
         createState = 'sending';
         createMessage = '';
         renderCreateModal();
-
-        var Sb = window.CanvasApp.SupabaseClient;
         Sb.createCanvas({
             slug: slug,
             label_de: label,
@@ -149,13 +228,88 @@ window.CanvasApp.Overview = (function () {
             visibility: visibility
         }).then(function (canvas) {
             closeCreateModal();
-            // Navigate to the new (empty) canvas in diagram view.
             var newSlug = (canvas && canvas.slug) || slug;
             window.location.hash = '#/c/' + encodeURIComponent(newSlug) + '/diagram';
         }).catch(function (err) {
             createState = 'error';
             createMessage = friendlyCreateError(err);
             renderCreateModal();
+        });
+    }
+
+    // ---- Card hamburger + actions --------------------------------------
+
+    function toggleCardMenu(btn) {
+        var wrap = btn.closest('.overview-card-menu-wrap');
+        if (!wrap) return;
+        var menu = wrap.querySelector('.card-menu');
+        if (!menu) return;
+        var willOpen = menu.hasAttribute('hidden');
+        closeAllCardMenus();
+        if (willOpen) {
+            menu.removeAttribute('hidden');
+            btn.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function closeAllCardMenus() {
+        document.querySelectorAll('.card-menu').forEach(function (m) {
+            m.setAttribute('hidden', '');
+        });
+        document.querySelectorAll('.overview-card-menu-btn[aria-expanded="true"]').forEach(function (b) {
+            b.setAttribute('aria-expanded', 'false');
+        });
+    }
+
+    function handleCardAction(btn) {
+        var action = btn.getAttribute('data-card-action');
+        var wrap   = btn.closest('.overview-card-wrap');
+        if (!wrap) return;
+        var canvasId = wrap.getAttribute('data-canvas-id');
+        var canvas = (State.getCanvases() || []).find(function (c) { return c.id === canvasId; });
+        if (!canvas) return;
+        closeAllCardMenus();
+        if (action === 'rename') openRenameModal(canvas);
+        else if (action === 'delete') confirmDeleteCanvas(canvas);
+    }
+
+    function confirmDeleteCanvas(canvas) {
+        var App = window.CanvasApp.App;
+        var label = canvas.label_de || canvas.slug;
+        var body = 'Möchten Sie den Canvas «' + label + '» wirklich löschen? ' +
+            'Alle Knoten, Beziehungen und Datenpakete in diesem Canvas gehen unwiderruflich verloren.';
+        if (App && App.confirmDialog) {
+            App.confirmDialog({
+                title: 'Canvas löschen',
+                body: body,
+                confirmText: 'Löschen',
+                cancelText: 'Abbrechen',
+                danger: true
+            }).then(function (confirmed) {
+                if (confirmed) doDeleteCanvas(canvas);
+            });
+        } else {
+            // Fallback to native confirm if App.confirmDialog isn't loaded.
+            if (window.confirm(body)) doDeleteCanvas(canvas);
+        }
+    }
+
+    function doDeleteCanvas(canvas) {
+        var Sb  = window.CanvasApp.SupabaseClient;
+        var App = window.CanvasApp.App;
+        Sb.deleteCanvas(canvas.id).then(function () {
+            if (App && App.toast) App.toast('Canvas gelöscht', 'success');
+            refreshOverview();
+        }).catch(function (err) {
+            if (App && App.toast) {
+                App.toast('Löschen fehlgeschlagen: ' + friendlyCreateError(err), 'error');
+            }
+        });
+    }
+
+    function refreshOverview() {
+        State.load().then(function () {
+            if (State.getView() === 'overview') render();
         });
     }
 
@@ -216,23 +370,40 @@ window.CanvasApp.Overview = (function () {
         var modified = c.modified_at ? formatDate(c.modified_at) : '';
         var restricted = c.visibility === 'restricted';
         return (
-            '<button type="button" class="overview-card" data-canvas-slug="' + escapeAttr(c.slug) + '" ' +
-                'aria-label="Canvas «' + escapeAttr(label) + '» öffnen">' +
-                '<div class="overview-card-head">' +
-                    '<span class="overview-card-title">' + escapeHtml(label) + '</span>' +
-                    (restricted
-                        ? '<span class="overview-card-badge" title="Nur für angemeldete Benutzer sichtbar">Nur intern</span>'
+            '<div class="overview-card-wrap" data-canvas-id="' + escapeAttr(c.id) + '">' +
+                '<button type="button" class="overview-card" data-canvas-slug="' + escapeAttr(c.slug) + '" ' +
+                    'aria-label="Canvas «' + escapeAttr(label) + '» öffnen">' +
+                    '<div class="overview-card-head">' +
+                        '<span class="overview-card-title">' + escapeHtml(label) + '</span>' +
+                        (restricted
+                            ? '<span class="overview-card-badge" title="Nur für angemeldete Benutzer sichtbar">Nur intern</span>'
+                            : '') +
+                    '</div>' +
+                    (description
+                        ? '<p class="overview-card-desc">' + escapeHtml(description) + '</p>'
                         : '') +
+                    '<div class="overview-card-meta">' +
+                        (modified
+                            ? '<span class="overview-card-modified" title="Zuletzt geändert">Zuletzt geändert: ' + escapeHtml(modified) + '</span>'
+                            : '<span></span>') +
+                    '</div>' +
+                '</button>' +
+                // auth-only: signed-out users never see the menu trigger.
+                '<div class="overview-card-menu-wrap auth-only">' +
+                    '<button type="button" class="overview-card-menu-btn" data-card-menu ' +
+                        'aria-label="Aktionen für ' + escapeAttr(label) + '" aria-haspopup="menu" aria-expanded="false">' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">' +
+                            '<circle cx="12" cy="5" r="1.6"/>' +
+                            '<circle cx="12" cy="12" r="1.6"/>' +
+                            '<circle cx="12" cy="19" r="1.6"/>' +
+                        '</svg>' +
+                    '</button>' +
+                    '<div class="card-menu" hidden role="menu">' +
+                        '<button type="button" class="card-menu-item" data-card-action="rename" role="menuitem">Umbenennen…</button>' +
+                        '<button type="button" class="card-menu-item card-menu-item-danger" data-card-action="delete" role="menuitem">Löschen…</button>' +
+                    '</div>' +
                 '</div>' +
-                (description
-                    ? '<p class="overview-card-desc">' + escapeHtml(description) + '</p>'
-                    : '') +
-                '<div class="overview-card-meta">' +
-                    (modified
-                        ? '<span class="overview-card-modified" title="Zuletzt geändert">Zuletzt geändert: ' + escapeHtml(modified) + '</span>'
-                        : '<span></span>') +
-                '</div>' +
-            '</button>'
+            '</div>'
         );
     }
 
