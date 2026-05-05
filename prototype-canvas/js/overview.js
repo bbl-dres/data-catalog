@@ -99,6 +99,10 @@ window.CanvasApp.Overview = (function () {
         openCanvasModal();
     }
 
+    // Focus-trap release function — set when the modal opens, called on
+    // close. WCAG 2.4.3 / 2.1.2.
+    var releaseFocusTrap = null;
+
     function openCanvasModal() {
         var modal = document.getElementById('canvas-create-modal');
         if (!modal) return;
@@ -107,6 +111,9 @@ window.CanvasApp.Overview = (function () {
         modal.removeAttribute('hidden');
         document.body.classList.add('auth-modal-open');
         renderCreateModal();
+        if (window.CanvasApp.App && window.CanvasApp.App.installFocusTrap) {
+            releaseFocusTrap = window.CanvasApp.App.installFocusTrap(modal);
+        }
         requestAnimationFrame(function () {
             var first = modal.querySelector('input:not([disabled])');
             if (first) first.focus();
@@ -118,6 +125,7 @@ window.CanvasApp.Overview = (function () {
         if (!modal) return;
         modal.setAttribute('hidden', '');
         document.body.classList.remove('auth-modal-open');
+        if (releaseFocusTrap) { releaseFocusTrap(); releaseFocusTrap = null; }
     }
 
     function renderCreateModal() {

@@ -27,7 +27,10 @@
       "Bash(node -c js/app.js)",
       "Bash(node -c js/autolayout.js)",
       "Bash(node -c js/panel.js)",
-      "Bash(node -c js/table.js)"
+      "Bash(node -c js/table.js)",
+      "Bash(node -c js/auth.js)",
+      "Bash(node -c js/xlsx_io.js)",
+      "Bash(node -c js/overview.js)"
     ]
   }
 }

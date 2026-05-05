@@ -131,6 +131,10 @@ window.CanvasApp.XlsxIO = (function () {
         }
     }
 
+    // Focus-trap release function — set when the modal opens, called on
+    // close. WCAG 2.4.3 / 2.1.2.
+    var releaseFocusTrap = null;
+
     function actuallyOpenImportModal() {
         if (!modalEl) return;
         modalState = 'pick';
@@ -141,12 +145,16 @@ window.CanvasApp.XlsxIO = (function () {
         modalEl.removeAttribute('hidden');
         document.body.classList.add('auth-modal-open');
         renderImportModal();
+        if (window.CanvasApp.App && window.CanvasApp.App.installFocusTrap) {
+            releaseFocusTrap = window.CanvasApp.App.installFocusTrap(modalEl);
+        }
     }
 
     function closeImportModal() {
         if (!modalEl) return;
         modalEl.setAttribute('hidden', '');
         document.body.classList.remove('auth-modal-open');
+        if (releaseFocusTrap) { releaseFocusTrap(); releaseFocusTrap = null; }
         modalState = 'idle';
         parsedPayload = null;
         parsedDiff = null;

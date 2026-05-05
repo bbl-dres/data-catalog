@@ -318,6 +318,13 @@ window.CanvasApp.Canvas = (function () {
             var id = nodeEl.getAttribute('data-node-id');
             if (id) State.setSelected(id);
         });
+        // Canvas-level keyboard navigation — keeps mouse pan/zoom intact,
+        // adds a parallel keyboard model so the diagram is operable without
+        // a pointer (WCAG 2.1.1). Listener sits on canvasEl so the keys
+        // only fire when the canvas (or one of its children) has focus —
+        // typing in an unrelated input in the toolbar doesn't pan the
+        // diagram.
+        canvasEl.addEventListener('keydown', onCanvasKeydown);
 
         // System frame label click → select system
         groupLayer.addEventListener('click', function (e) {
@@ -765,7 +772,22 @@ window.CanvasApp.Canvas = (function () {
         var headerLabel = node.label || node.id;
         var totalAttrs = (node.columns || []).length;
 
+        // Native tooltip on the card. Useful at LOD `low` where the
+        // centered card label can ellipsis-truncate long compound names —
+        // hover surfaces the full text without needing to zoom in.
+        el.setAttribute('title', headerLabel);
+
+        // Centred card label — visible only at LOD `low` (~22-45 % scale).
+        // Sits behind the regular header chrome (z-index 1) so hover
+        // affordances on the header still register at higher LODs. Span
+        // wrapper carries the truncation styles; the parent does the
+        // centring layout so the ellipsis kicks in within the card width.
         var html =
+            '<div class="node-low-label" aria-hidden="true">' +
+                '<span>' + escapeHtml(headerLabel) + '</span>' +
+            '</div>';
+
+        html +=
             '<div class="node-header">' +
                 '<span class="node-type-icon" data-edit="type" title="Typ wechseln">' + icon + '</span>' +
                 '<span class="node-title" data-edit="label" contenteditable="false" spellcheck="false">' + escapeHtml(headerLabel) + '</span>' +
@@ -1653,6 +1675,75 @@ window.CanvasApp.Canvas = (function () {
             wheelRafQueued = false;
             applyTransform();
         });
+    }
+
+    // ---- Canvas keyboard navigation (a11y parallel to mouse) -----------
+    // Keyboard model — keeps mouse pan/zoom untouched:
+    //   Arrow keys                      pan 60 px        (1 dot-grid row)
+    //   Shift + Arrow                   pan 240 px       (4×, fast pan)
+    //   +  / =                          zoom in  (centre-anchored)
+    //   −  / _                          zoom out
+    //   0                               home (curator's saved view, falls
+    //                                   back to fit-with-floor)
+    //   1                               fit to screen
+    //   Tab / Shift+Tab between nodes   handled by the browser's natural
+    //                                   tab order — only nodes inside the
+    //                                   current viewport are focusable
+    //                                   (roving tabindex below) so a 256-
+    //                                   node graph behaves like ~10-20.
+    //
+    // Active only when focus is inside the canvas. Inputs (text fields,
+    // contenteditable) bail before the handler reaches them so typing in
+    // a node label doesn't pan the diagram.
+    var KEY_PAN_STEP       = 60;   // px in canvas-world coords per Arrow press
+    var KEY_PAN_STEP_FAST  = 240;  // Shift modifier multiplies by 4
+
+    function onCanvasKeydown(e) {
+        // Don't preempt text input — the user is editing a label / system /
+        // attribute, not navigating.
+        if (e.target && e.target.matches &&
+            e.target.matches('input, textarea, select, [contenteditable="true"]')) {
+            return;
+        }
+        // Ignore when a modifier other than Shift is held — Ctrl+Z (undo),
+        // Ctrl+S (save) etc. should not hit this handler. We do allow
+        // Shift since it modifies the pan step (fast vs normal).
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        var step = e.shiftKey ? KEY_PAN_STEP_FAST : KEY_PAN_STEP;
+        var handled = true;
+
+        switch (e.key) {
+            case 'ArrowLeft':  translateX += step; break;
+            case 'ArrowRight': translateX -= step; break;
+            case 'ArrowUp':    translateY += step; break;
+            case 'ArrowDown':  translateY -= step; break;
+            case '+':
+            case '=':
+                zoomIn();
+                e.preventDefault();
+                return;
+            case '-':
+            case '_':
+                zoomOut();
+                e.preventDefault();
+                return;
+            case '0':
+                goHome();
+                e.preventDefault();
+                return;
+            case '1':
+                fitToScreen();
+                e.preventDefault();
+                return;
+            default:
+                handled = false;
+        }
+
+        if (handled) {
+            e.preventDefault();
+            applyTransform();
+        }
     }
 
     // Multiplicative zoom: each click feels proportional. Going 1.0 → 0.05

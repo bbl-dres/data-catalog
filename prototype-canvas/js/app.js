@@ -112,13 +112,21 @@ window.CanvasApp.App = (function () {
         labelEl.textContent = label;
 
         if (visEl) {
+            // Each variant carries a leading SVG icon (globe / lock) so the
+            // public-vs-restricted distinction is conveyed by shape, not just
+            // colour — passes WCAG 1.4.1 (no info via colour alone).
+            // aria-hidden="true" on the icon so screen readers don't double-
+            // announce it; the visible text already says "öffentlich" /
+            // "Nur intern".
+            var GLOBE_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
+            var LOCK_ICON  = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
             if (vis === 'public') {
-                visEl.textContent = 'öffentlich';
+                visEl.innerHTML = GLOBE_ICON + '<span>öffentlich</span>';
                 visEl.className = 'toolbar-canvas-visibility is-public';
                 visEl.title = 'Auch ohne Anmeldung lesbar';
                 visEl.removeAttribute('hidden');
             } else if (vis === 'restricted') {
-                visEl.textContent = 'Nur intern';
+                visEl.innerHTML = LOCK_ICON + '<span>Nur intern</span>';
                 visEl.className = 'toolbar-canvas-visibility is-restricted';
                 visEl.title = 'Nur für angemeldete Benutzer sichtbar';
                 visEl.removeAttribute('hidden');
@@ -354,6 +362,27 @@ window.CanvasApp.App = (function () {
             var view = btn.getAttribute('data-view');
             State.setView(view);
         });
+        // WAI-ARIA Tab Pattern: ArrowLeft / ArrowRight cycle within the
+        // tablist (with wrap-around), Home jumps to the first tab, End to
+        // the last. Tab itself moves focus OUT of the tablist into the
+        // tabpanel, so the user doesn't have to walk through every tab to
+        // leave the group. Roving tabindex (set by applyViewVisibility +
+        // here on key) keeps Tab from emitting three sequential stops.
+        seg.addEventListener('keydown', function (e) {
+            if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+            var tabs = Array.prototype.slice.call(seg.querySelectorAll('[role="tab"]'));
+            if (!tabs.length) return;
+            var idx = tabs.indexOf(document.activeElement);
+            if (idx < 0) idx = 0;
+            var next = idx;
+            if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
+            if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+            if (e.key === 'Home')       next = 0;
+            if (e.key === 'End')        next = tabs.length - 1;
+            e.preventDefault();
+            tabs[next].focus();
+            State.setView(tabs[next].getAttribute('data-view'));
+        });
     }
 
     function applyViewVisibility() {
@@ -362,6 +391,11 @@ window.CanvasApp.App = (function () {
             var active = b.getAttribute('data-view') === view;
             b.classList.toggle('is-active', active);
             b.setAttribute('aria-selected', active ? 'true' : 'false');
+            // Roving tabindex: only the active tab is in the Tab order;
+            // Arrow keys cycle the rest. Without this, all three tabs
+            // emit sequential Tab stops which violates the WAI-ARIA
+            // tab pattern.
+            b.setAttribute('tabindex', active ? '0' : '-1');
         });
         document.querySelectorAll('.view').forEach(function (v) {
             v.classList.toggle('is-active', v.getAttribute('data-view') === view);
@@ -450,8 +484,12 @@ window.CanvasApp.App = (function () {
 
             if (e.key === '?' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) {
                 e.preventDefault();
+                // Two lines because we now have meaningful canvas-keyboard
+                // shortcuts to surface. Toast wraps via .toast-text; long
+                // message readability is preserved by the 2.4 s timeout.
                 toast(
-                    'Tastenkürzel: / Suche · Strg+S Speichern · Strg+Z Rückgängig · Esc Abbrechen · Entf Auswahl löschen',
+                    'Allgemein: / Suche · Strg+S Speichern · Strg+Z Rückgängig · Esc Abbrechen · Entf Auswahl löschen. ' +
+                    'Diagramm (Fokus): Pfeile Verschieben (+ Shift schneller) · + / − Zoom · 0 Startansicht · 1 Anpassen.',
                     'success'
                 );
                 return;
@@ -818,9 +856,29 @@ window.CanvasApp.App = (function () {
         if (!toastEl) {
             toastEl = document.createElement('div');
             toastEl.className = 'toast';
+            // Live region: state changes (saves, errors, "?" cheatsheet) get
+            // announced to screen readers. polite > assertive — never
+            // interrupt the user's current activity.
+            toastEl.setAttribute('role', 'status');
+            toastEl.setAttribute('aria-live', 'polite');
+            toastEl.setAttribute('aria-atomic', 'true');
             document.body.appendChild(toastEl);
         }
-        toastEl.textContent = msg;
+        // Icon + textual prefix carry the success/error semantic so the
+        // status isn't conveyed by colour alone (WCAG 1.4.1). The prefix
+        // also gives screen readers a quick category cue before the body.
+        var icon = '';
+        var prefix = '';
+        if (kind === 'error') {
+            icon = '<svg class="toast-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="17" r="0.8" fill="currentColor"/></svg>';
+            prefix = 'Fehler: ';
+        } else if (kind === 'success') {
+            icon = '<svg class="toast-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 12 10 18 20 6"/></svg>';
+            // No prefix on success — too noisy when most toasts are positive
+            // confirmations ("Auto-Layout angewendet", "Gespeichert"). The
+            // checkmark icon already carries the cue.
+        }
+        toastEl.innerHTML = icon + '<span class="toast-text">' + escapeHtml(prefix + msg) + '</span>';
         toastEl.classList.remove('is-error', 'is-success');
         if (kind === 'error') toastEl.classList.add('is-error');
         if (kind === 'success') toastEl.classList.add('is-success');
@@ -832,6 +890,73 @@ window.CanvasApp.App = (function () {
         toastTimer = setTimeout(function () {
             toastEl.classList.remove('is-visible');
         }, 2400);
+    }
+
+    // ---- Focus trap (modal a11y) ---------------------------------------
+    // WCAG 2.4.3 + 2.1.2: keyboard users must not Tab "behind" an open modal,
+    // and focus must return to the trigger when the modal closes. This
+    // helper wraps any modal element (auth, import, canvas-create, confirm)
+    // with a Tab/Shift+Tab cycle and a previousFocus/restore pair.
+    //
+    // Usage:
+    //   var release = installFocusTrap(modalEl);
+    //   ... when closing the modal:
+    //   release(); // un-binds keydown + restores focus to the original trigger
+    //
+    // Caller is responsible for moving focus *into* the modal initially —
+    // typically the first input or the primary button. We don't auto-focus
+    // because each call site already has a sensible "first focus" target.
+    function installFocusTrap(modalEl) {
+        if (!modalEl) return function () {};
+        var previousFocus = document.activeElement;
+
+        function focusable() {
+            // Live query — modal contents can change (e.g. auth modal swaps
+            // from sign-in form to reset form to recovery form). The CSS
+            // `:not([hidden])` filter keeps invisible inputs out of the
+            // cycle.
+            return Array.prototype.slice.call(modalEl.querySelectorAll(
+                'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), ' +
+                'select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )).filter(function (el) {
+                // offsetParent is null for display:none / hidden ancestors —
+                // CSS that hides the auth-modal-card via the [hidden]
+                // attribute on the wrapper covers this case.
+                return el.offsetParent !== null || el === document.activeElement;
+            });
+        }
+
+        function onKey(e) {
+            if (e.key !== 'Tab') return;
+            var nodes = focusable();
+            if (!nodes.length) return;
+            var first = nodes[0];
+            var last  = nodes[nodes.length - 1];
+            // Wrap forward: last → first
+            if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+                return;
+            }
+            // Wrap backward: first → last
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            }
+        }
+
+        document.addEventListener('keydown', onKey, true);
+
+        return function release() {
+            document.removeEventListener('keydown', onKey, true);
+            // Restore focus only when it makes sense — if the user navigated
+            // away (e.g. clicked a different button mid-modal), don't yank
+            // focus back to a stale trigger.
+            if (previousFocus && typeof previousFocus.focus === 'function' &&
+                document.contains(previousFocus)) {
+                try { previousFocus.focus(); } catch (e) { /* detached */ }
+            }
+        };
     }
 
     // ---- Custom confirm dialog -----------------------------------------
@@ -861,6 +986,7 @@ window.CanvasApp.App = (function () {
                     '</div>' +
                 '</div>';
             document.body.appendChild(overlay);
+            var releaseTrap = installFocusTrap(overlay);
             // Focus the confirm button so Enter resolves true and Esc resolves false.
             requestAnimationFrame(function () {
                 overlay.classList.add('is-visible');
@@ -872,6 +998,7 @@ window.CanvasApp.App = (function () {
                 overlay.classList.remove('is-visible');
                 setTimeout(function () { overlay.remove(); }, 150);
                 document.removeEventListener('keydown', onKey, true);
+                releaseTrap();
                 resolve(result);
             }
             overlay.addEventListener('click', function (e) {
@@ -890,7 +1017,8 @@ window.CanvasApp.App = (function () {
     return {
         init: init,
         toast: toast,
-        confirmDialog: confirmDialog
+        confirmDialog: confirmDialog,
+        installFocusTrap: installFocusTrap
     };
 })();
 

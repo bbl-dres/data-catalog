@@ -19,6 +19,11 @@
 </head>
 <body>
 
+<!-- Skip-link: hidden until focused, then offered as the first Tab stop so
+     keyboard / screen-reader users can jump past ~14 toolbar controls
+     straight into the working area. WCAG 2.4.1. -->
+<a class="skip-link" href="#app-main">Zum Hauptinhalt springen</a>
+
 <div id="app">
   <header class="app-header">
     <a class="header-logo" href="#/" id="header-home-link">
@@ -32,11 +37,15 @@
         <span class="search-icon" aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </span>
-        <input type="text" id="search-input" placeholder="Suchen…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
+        <input type="text" id="search-input" placeholder="Suchen…" aria-label="Globale Suche – Knoten, Systeme, Beziehungen" aria-keyshortcuts="/" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-dropdown">
         <kbd class="header-search-hint" aria-hidden="true">/</kbd>
         <div class="search-dropdown" id="search-dropdown" hidden role="listbox" aria-label="Suchergebnisse"></div>
       </div>
-      <span class="lang-marker" aria-label="Sprache: Deutsch">DE</span>
+      <!-- Static language indicator. Multilingual content exists in the data
+           layer (label_de/_fr/_it/_en) but the UI is German-only for now —
+           this badge labels the active rendering language; it is NOT a
+           switcher. aria-disabled + cursor:default communicate that. -->
+      <span class="lang-marker" role="note" aria-disabled="true" aria-label="Sprache: Deutsch (nur Deutsch verfügbar)" title="Nur Deutsch verfügbar">DE</span>
       <div class="user-menu">
         <button type="button" class="header-signin-btn noauth-only" id="header-signin-btn" data-signin-trigger aria-haspopup="menu" aria-expanded="false">Anmelden</button>
         <button type="button" class="user-avatar auth-only" id="user-avatar-btn" aria-haspopup="menu" aria-expanded="false" title="Konto"></button>
@@ -58,10 +67,16 @@
       </nav>
     </div>
     <div class="toolbar-center">
+      <!-- Tablist a11y: each tab declares its tabpanel via aria-controls;
+           the panels (#view-diagram / #view-table / #view-api below) carry
+           role="tabpanel" + aria-labelledby. Active tab gets tabindex="0",
+           inactive tabs tabindex="-1" — roving-tabindex lets ArrowLeft /
+           ArrowRight (wired in app.js wireSegBar) cycle without jamming
+           Tab order with three sequential stops. WAI-ARIA Tab Pattern. -->
       <div class="seg" id="view-seg" role="tablist" aria-label="Ansicht">
-        <button class="seg-btn is-active" data-view="diagram" role="tab" aria-selected="true">Diagramm</button>
-        <button class="seg-btn" data-view="table" role="tab" aria-selected="false">Liste</button>
-        <button class="seg-btn" data-view="api" role="tab" aria-selected="false">API</button>
+        <button class="seg-btn is-active" id="tab-diagram" data-view="diagram" role="tab" aria-selected="true"  aria-controls="view-diagram" tabindex="0">Diagramm</button>
+        <button class="seg-btn"           id="tab-table"   data-view="table"   role="tab" aria-selected="false" aria-controls="view-table"   tabindex="-1">Liste</button>
+        <button class="seg-btn"           id="tab-api"     data-view="api"     role="tab" aria-selected="false" aria-controls="view-api"     tabindex="-1">API</button>
       </div>
     </div>
     <div class="toolbar-right">
@@ -143,7 +158,7 @@
   <!-- Active-filter pill bar — visible only when filters are applied. -->
   <div class="filter-pill-bar" id="filter-pill-bar" hidden></div>
 
-  <main class="app-main" id="app-main">
+  <main class="app-main" id="app-main" tabindex="-1">
     <!-- Load-error overlay: shown when state.loadError is set (Supabase unreachable, RPC failed, …). Sits above all three views. -->
     <div class="load-error-overlay" id="load-error-overlay" hidden role="alert" aria-live="assertive">
       <div class="load-error-card">
@@ -182,7 +197,7 @@
     </section>
 
     <!-- Diagram view -->
-    <section class="view view-diagram is-active" id="view-diagram" data-view="diagram">
+    <section class="view view-diagram is-active" id="view-diagram" data-view="diagram" role="tabpanel" aria-labelledby="tab-diagram" tabindex="0">
       <div class="canvas" id="canvas" role="application" aria-label="Architekturdiagramm – mit Maus oder Touch verschieben und zoomen; Liste-Ansicht für tastaturzugängliche Alternative" tabindex="0">
         <div class="canvas-transform" id="canvas-transform">
           <svg class="edge-layer" id="edge-layer" xmlns="http://www.w3.org/2000/svg">
@@ -286,7 +301,12 @@
 
         <!-- Minimap (bottom-right): scaled overview + draggable viewport rect.
              Click / drag to pan the canvas. Renders only in diagram view. -->
-        <div class="minimap" id="minimap" aria-label="Übersichtskarte">
+        <!-- Minimap is a visual orientation aid — pan/zoom alternatives are
+             reachable via the canvas keyboard model (Arrow / + / − / 0 / 1
+             when the canvas has focus). Marking aria-hidden + role="presentation"
+             keeps it out of the assistive-tech tree without removing it for
+             sighted users. WCAG 1.3.1 / 4.1.2. -->
+        <div class="minimap" id="minimap" aria-hidden="true" role="presentation">
           <svg id="minimap-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
             <g id="minimap-systems"></g>
             <g id="minimap-nodes"></g>
@@ -298,20 +318,24 @@
     </section>
 
     <!-- Table view -->
-    <section class="view view-table" id="view-table" data-view="table">
+    <section class="view view-table" id="view-table" data-view="table" role="tabpanel" aria-labelledby="tab-table" tabindex="0">
       <div class="table-toolbar">
+        <!-- Sub-tabs share a single tabpanel (#data-table) — the rendered
+             rows change per tab. Each tab points at the same region via
+             aria-controls. Roving tabindex + Arrow-key cycle wired in
+             table.js to match the WAI-ARIA Tab Pattern. -->
         <div class="seg seg-tabs" id="table-tabs" role="tablist" aria-label="Entitätstyp">
-          <button class="seg-btn is-active" data-tab="systems"   role="tab" aria-selected="true">Systeme</button>
-          <button class="seg-btn"           data-tab="tables"    role="tab" aria-selected="false">Tabellen</button>
-          <button class="seg-btn"           data-tab="apis"      role="tab" aria-selected="false">APIs</button>
-          <button class="seg-btn"           data-tab="files"     role="tab" aria-selected="false">Dateien</button>
-          <button class="seg-btn"           data-tab="codelists" role="tab" aria-selected="false">Wertelisten</button>
-          <button class="seg-btn"           data-tab="sets"      role="tab" aria-selected="false">Datenpakete</button>
-          <button class="seg-btn"           data-tab="cols"      role="tab" aria-selected="false">Attribute</button>
-          <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false">Beziehungen</button>
+          <button class="seg-btn is-active" data-tab="systems"   role="tab" aria-selected="true"  aria-controls="data-table" tabindex="0">Systeme</button>
+          <button class="seg-btn"           data-tab="tables"    role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Tabellen</button>
+          <button class="seg-btn"           data-tab="apis"      role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">APIs</button>
+          <button class="seg-btn"           data-tab="files"     role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Dateien</button>
+          <button class="seg-btn"           data-tab="codelists" role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Wertelisten</button>
+          <button class="seg-btn"           data-tab="sets"      role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Datenpakete</button>
+          <button class="seg-btn"           data-tab="cols"      role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Attribute</button>
+          <button class="seg-btn"           data-tab="edges"     role="tab" aria-selected="false" aria-controls="data-table" tabindex="-1">Beziehungen</button>
         </div>
         <span class="toolbar-sep"></span>
-        <input type="text" id="filter-text" class="toolbar-input" placeholder="Filtern…">
+        <input type="text" id="filter-text" class="toolbar-input" placeholder="Filtern…" aria-label="Tabelle filtern – Suchbegriff eingeben">
         <span class="table-count" id="table-count"></span>
       </div>
       <div class="table-wrap">
@@ -329,7 +353,7 @@
     </aside>
 
     <!-- API view -->
-    <section class="view view-api" id="view-api" data-view="api">
+    <section class="view view-api" id="view-api" data-view="api" role="tabpanel" aria-labelledby="tab-api" tabindex="0">
       <div class="api-header">
         <div>
           <div class="api-title">Catalog Management API</div>

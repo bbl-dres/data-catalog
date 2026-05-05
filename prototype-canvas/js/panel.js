@@ -175,6 +175,20 @@ window.CanvasApp.Panel = (function () {
         var open = supports && view !== 'api';
         panelEl.classList.toggle('is-open', open);
         document.body.setAttribute('data-panel', open ? 'open' : 'closed');
+        // a11y: when the panel is slid off-screen (transform: translateX
+        // 100 %) it remains in the DOM and would otherwise sit in the
+        // a11y tree — keyboard focus could enter it via Tab and screen
+        // readers would announce its (stale) contents. `inert` removes
+        // the whole subtree from focus + AT until it's open again.
+        // Mirror with aria-hidden for older screen readers that don't
+        // honour `inert` yet.
+        if (open) {
+            panelEl.removeAttribute('inert');
+            panelEl.removeAttribute('aria-hidden');
+        } else {
+            panelEl.setAttribute('inert', '');
+            panelEl.setAttribute('aria-hidden', 'true');
+        }
     }
 
     function render() {

@@ -4,11 +4,51 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
+/* WCAG 2.3.3 — respect the OS-level "reduce motion" preference. We don't
+   strip animation entirely (some hover/focus state changes still need the
+   ~120ms easing to communicate causality), but we collapse durations to a
+   tick so vestibular-disorder users don't get hit with the panel slide-in,
+   the LOD overlay opacity ramp, the toast/auth-modal entrances, or the
+   minimap viewport transition. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Baseline focus ring — uses :where() so any per-element rule overrides it
    without specificity gymnastics. */
 :where(button, a, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--color-focus-ring);
   outline-offset: 2px;
+}
+
+/* Skip-link: the first Tab stop on the page. Visually hidden until it
+   receives focus, then anchors to the top-left so screen-reader and
+   keyboard users can jump straight to #app-main. WCAG 2.4.1. */
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: 500;
+  text-decoration: none;
+  z-index: 1000;
+  /* Off-screen until focused. clip-path beats `display: none` because the
+     element must remain in the tab order. */
+  transform: translateY(-200%);
+  transition: transform 150ms ease;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 /* Suppress iOS Safari's grey tap-highlight rectangle on every interactive
@@ -22,6 +62,10 @@ html, body {
   height: 100%;
   font-family: var(--font-sans);
   font-size: var(--text-body);
+  /* 1.45 — comfortable for German prose (long compounds + dotted-Umlaute
+     need a touch more vertical space than English at the same point size).
+     Default browser ~1.2 was too tight. */
+  line-height: 1.45;
   color: var(--color-text-primary);
   background: var(--color-bg-page);
   overflow: hidden;
@@ -83,9 +127,13 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   pointer-events: none;
 }
 .header-search input {
-  /* Fixed width — no on-focus reflow that pushes the lang button + avatar
-     left every time the user types. */
-  width: 280px;
+  /* Stable width that scales gracefully on narrow viewports.
+     - 280 px stays the desktop ideal (room for "Suchen…" + the / hint
+       without the on-focus reflow that pushed lang + avatar left).
+     - clamp() lets the input shrink to 180 px before the mobile breakpoint
+       at 640 px takes over with a flex:1 rule, so the 480–640 px window
+       no longer overflows the header. */
+  width: clamp(180px, 40vw, 280px);
   padding: 6px 56px 6px 30px;
   font: inherit;
   font-size: var(--text-small);
@@ -107,7 +155,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   position: absolute;
   right: 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--text-label);
   color: var(--color-text-placeholder);
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-default);
@@ -201,6 +249,10 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   letter-spacing: 0.06em;
   color: var(--color-text-secondary);
   padding: 0 var(--space-2);
+  /* Static badge, not interactive — keep the cursor neutral so users don't
+     mistake it for a switcher. */
+  cursor: default;
+  user-select: none;
 }
 .user-menu { position: relative; }
 .user-avatar {
@@ -530,19 +582,24 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 /* ---- Toolbar ---- */
 .app-toolbar {
   /* 3-column grid: breadcrumb left, view-seg dead-centre, action buttons
-     right. The two outer columns are 1fr so the centre column stays
-     centred regardless of how wide the breadcrumb / actions cluster grow. */
+     right. `minmax(0, 1fr)` on the outer columns (rather than plain `1fr`)
+     allows them to shrink below their content's intrinsic width — combined
+     with `min-width: 0` + `overflow: hidden` on the children, the
+     breadcrumb truncates with an ellipsis and the action cluster wraps
+     internally rather than pushing the centre seg off-axis. The previous
+     `1fr auto 1fr` let the wider side displace the centre once edit-mode
+     buttons appeared. */
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-4);
   padding: 0 var(--space-5);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-subtle);
 }
-.toolbar-left   { grid-column: 1; justify-self: start;  display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-left   { grid-column: 1; justify-self: start;  display: flex; align-items: center; gap: var(--space-2); min-width: 0; overflow: hidden; }
 .toolbar-center { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: var(--space-2); }
-.toolbar-right  { grid-column: 3; justify-self: end;    display: flex; align-items: center; gap: var(--space-2); }
+.toolbar-right  { grid-column: 3; justify-self: end;    display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .toolbar-label { font-size: var(--text-small); color: var(--color-text-secondary); }
 .toolbar-select, .toolbar-input {
   padding: 6px 10px;
@@ -768,7 +825,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
-  font-size: 11px;
+  font-size: var(--text-label);
   font-weight: 600;
   /* Match line-height to the badge height so the digit's text box
      aligns with the pill geometry — Inter at line-height:1 left a
@@ -832,7 +889,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 }
 .filter-pill-dim {
   opacity: 0.7;
-  font-size: 11px;
+  font-size: var(--text-label);
   margin-right: 2px;
 }
 .filter-pill-remove {
@@ -1016,36 +1073,38 @@ body.hide-systems .group-layer { display: none; }
 .load-error-card {
   max-width: 460px;
   text-align: center;
-  padding: var(--space-7) var(--space-6);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  background: var(--color-bg-card, #fff);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  padding: var(--space-6) var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-card);
 }
 .load-error-icon {
+  /* One-off display element — deliberately larger than the heading scale
+     so the alert reads at a glance. Not tokenised (single use site). */
   font-size: 36px;
   line-height: 1;
   margin-bottom: var(--space-4);
-  color: var(--color-warning, #c0392b);
+  color: var(--color-warning);
 }
 .load-error-title {
   margin: 0 0 var(--space-3);
-  font-size: 1.15rem;
+  font-size: var(--text-heading-l);
   font-weight: 600;
-  color: var(--color-text-strong);
+  color: var(--color-text-primary);
 }
 .load-error-body {
   margin: 0 0 var(--space-5);
-  color: var(--color-text);
-  font-size: 0.95rem;
+  color: var(--color-text-primary);
+  font-size: var(--text-body);
   word-break: break-word;
 }
 .load-error-retry {
   padding: var(--space-2) var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-bg-card, #fff);
-  color: var(--color-text-strong);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
   font: inherit;
   cursor: pointer;
 }
@@ -1178,8 +1237,8 @@ body.hide-systems .group-layer { display: none; }
   display: -webkit-box;
   max-width: 100%;
   padding: 1px 5px;
-  font-size: 11px;
-  line-height: 1.25;
+  font-size: var(--text-label);
+  line-height: 1.35;
   color: var(--color-text-secondary);
   /* Background pill "stencils" the label through edge crossings, the way
      the previous SVG paint-order halo did. */
@@ -1235,7 +1294,7 @@ body.hide-systems .group-layer { display: none; }
 }
 .edge-label-input input {
   font: inherit;
-  font-size: 11px;
+  font-size: var(--text-label);
   padding: 3px 6px;
   border: none;
   outline: none;
@@ -1255,7 +1314,7 @@ body.hide-systems .group-layer { display: none; }
    readable; longer descriptions live in the option labels. */
 .edge-card-select {
   font: inherit;
-  font-size: 11px;
+  font-size: var(--text-label);
   padding: 2px 4px;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm);
@@ -1449,6 +1508,47 @@ body.hide-systems .group-layer { display: none; }
   display: none;
 }
 
+/* ---- Centred card label (LOD = low only) ----
+   Fills the readability gap between LOD `far` (silhouettes only) and LOD
+   `mid` (regular header text becomes legible). Hard-pinned at 40 px so it
+   reads at ~9-18 px on screen across the LOD-low band (scale 0.22-0.45) —
+   no per-tick JS counter-scaling, no 256-element style recalc on every
+   pan / zoom. Hidden at every other tier (default `display: none`).
+
+   Long compound names (`PortfolioAndAssetManagement`) ellipsis-truncate
+   within the card width; the regular `title` attribute on `.node` shows
+   the full text on hover.
+
+   `aria-hidden="true"` on the markup — screen readers already get the
+   label via the node's regular `aria-label`, no need to double-announce. */
+.node-low-label { display: none; }
+.canvas[data-lod="low"] .node-low-label {
+  /* Anchor the label to the card's centre and let it extend beyond the
+     card's width on either side. Long compound names ("PortfolioAnd-
+     AssetManagement") are common in IBPDI and would otherwise truncate
+     into "...Manage..." which is nearly useless for orientation. The
+     trade-off is that labels of neighbouring cards may visually overlap
+     at LOD low — that's accepted as the cost of legibility. */
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  white-space: nowrap;
+}
+.canvas[data-lod="low"] .node-low-label > span {
+  /* The 40 px is intentional and tuned to the LOD-low scale band — at
+     scale 0.22-0.45 it renders ~9-18 px on screen. Token would imply
+     portability across the design system; this value only makes sense
+     here. */
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
 /* ---- System-name overlays ----
    Big readable labels that fade in as the canvas zooms out, so the user can
    orient themselves when individual node text becomes too small. The layer
@@ -1471,7 +1571,7 @@ body.hide-systems .group-layer { display: none; }
   transform: translate(-50%, -50%);
   transform-origin: 50% 50%;
   font-family: var(--font-sans);
-  font-size: 22px;
+  font-size: var(--text-display);
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
@@ -1582,7 +1682,7 @@ body.mode-view .node { cursor: pointer; }
   min-width: 26px;
   padding: 1px 5px;
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--text-mono-xs);
   font-weight: 600;
   letter-spacing: 0.04em;
   border-radius: 3px;
@@ -1615,7 +1715,7 @@ body.mode-edit .node-col-key:not(.pk):not(.fk):not(.uk) {
 .node-col-type {
   color: var(--color-text-secondary);
   margin-left: auto;
-  font-size: 11px;
+  font-size: var(--text-label);
   white-space: nowrap;
   flex-shrink: 0;
   max-width: 40%;
@@ -1631,7 +1731,11 @@ body.mode-edit .node-col-key:not(.pk):not(.fk):not(.uk) {
 }
 
 /* Edge handles (edit mode) — four ports per node so users can pull
-   connections from any side. Centered on the node's edge, not a fixed Y. */
+   connections from any side. Centered on the node's edge, not a fixed Y.
+   The visible dot stays 12 × 12 (visually quiet against the node body)
+   but a 24 × 24 transparent ::before pseudo carries the actual hit area
+   so the WCAG 2.5.5 minimum (24 CSS px) is met without the visible dot
+   needing to grow. */
 .node-port {
   position: absolute;
   width: 12px; height: 12px;
@@ -1641,6 +1745,12 @@ body.mode-edit .node-col-key:not(.pk):not(.fk):not(.uk) {
   display: none;
   cursor: crosshair;
   z-index: 2;
+}
+.node-port::before {
+  /* Invisible 24 × 24 hit pad centred on the dot. */
+  content: '';
+  position: absolute;
+  inset: -6px;
 }
 .node-port.left   { left: -6px;   top: 50%; transform: translateY(-50%); }
 .node-port.right  { right: -6px;  top: 50%; transform: translateY(-50%); }
@@ -1842,6 +1952,11 @@ body.is-signed-in .noauth-only { display: none; }
   background: var(--color-bg-surface-hover);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border-default);
+}
+/* Icon (globe / lock) sits at currentColor — picks up the variant tint. */
+.toolbar-canvas-visibility svg {
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 /* ---- Overview (landing) chrome ----
@@ -2150,10 +2265,19 @@ body.mode-edit [contenteditable="true"]:focus {
 }
 
 .node-delete {
+  position: relative;
   background: none; border: none; padding: 2px;
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
   line-height: 0;
+}
+/* Invisible 24×24 hit pad — the visual icon stays 12 × 12 + 2 px padding
+   (~16 px) so the header chrome stays quiet, but the click target meets
+   the WCAG 2.5.5 (Level AAA) and platform-touch (24 CSS px) minimum. */
+.node-delete::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
 }
 .node-delete:hover { color: var(--color-error); background: var(--color-error-bg); }
 
@@ -2180,6 +2304,13 @@ body.mode-edit .node-col-key:hover {
   color: var(--color-text-placeholder);
   visibility: hidden;
   z-index: 1;
+}
+/* Hit-area extender — visible icon stays small but the click target
+   reaches WCAG 2.5.5 (24 px). */
+.node-col-del::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
 }
 body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
 .node-col-del:hover { color: var(--color-error); }
@@ -2231,6 +2362,18 @@ body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
   cursor: grab;
   visibility: hidden;
   z-index: 1;
+}
+/* Hit-area extender — keeps the visible grip dots small (10 × 14) but the
+   actual grab target reaches WCAG 2.5.5 (24 × 24 px). Important because
+   the handle initiates a HTML5 drag — a fiddly miss-click drops the row
+   into the wrong set. */
+.node-col-handle::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: -7px;
+  right: -7px;
 }
 body.mode-edit .node-col:hover .node-col-handle { visibility: visible; }
 .node-col-handle:hover { color: var(--color-text-secondary); }
@@ -2401,7 +2544,7 @@ body.mode-edit .node-col:hover .node-col-handle { visibility: visible; }
   background: var(--color-bg-page);
   color: var(--color-text-secondary);
   border-radius: 999px;
-  font-size: 10px;
+  font-size: var(--text-mono-xs);
   margin-right: 4px;
 }
 .row-del-btn {
@@ -2514,7 +2657,7 @@ body.mode-edit .cell-select:focus {
 .api-param-req {
   display: inline-block;
   padding: 0 6px;
-  font-size: 10px;
+  font-size: var(--text-mono-xs);
   background: var(--color-warning-bg);
   color: var(--color-warning);
   border-radius: 8px;
@@ -2549,7 +2692,7 @@ body.mode-edit .cell-select:focus {
   font-weight: 700;
   padding: 2px 8px;
   border-radius: 3px;
-  font-size: 11px;
+  font-size: var(--text-label);
   letter-spacing: 0.04em;
   min-width: 50px;
   text-align: center;
@@ -2796,7 +2939,7 @@ body.is-resizing-panel .minimap { transition: none; }
   background: var(--color-bg-page);
   color: var(--color-text-secondary);
   border-radius: 999px;
-  font-size: 10px;
+  font-size: var(--text-mono-xs);
   margin-right: 4px;
   margin-bottom: 2px;
 }
@@ -2881,7 +3024,10 @@ body.is-resizing-panel .minimap { transition: none; }
   min-width: 22px;
   padding: 1px 4px;
   font-family: var(--font-mono);
-  font-size: 9px;
+  /* 9 px raw was below the readable threshold for distinguishing PK / FK /
+     UK glyphs — the panel renders these at full canvas zoom (not the LOD
+     silhouette path), so they should sit at the label scale. */
+  font-size: var(--text-label);
   font-weight: 600;
   letter-spacing: 0.04em;
   border-radius: 3px;
@@ -2937,6 +3083,21 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
 .toast.is-visible { opacity: 1; }
 .toast.is-error { background: var(--color-error); }
 .toast.is-success { background: var(--color-success); }
+/* Icon + text layout — flex row so the SVG sits on the same baseline as the
+   message. The icon variants are added by toast(kind) in app.js so the
+   error/success state isn't conveyed by colour alone (WCAG 1.4.1). */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast-icon {
+  flex-shrink: 0;
+}
+.toast-text {
+  /* Allow long messages to wrap rather than overflow off-screen. */
+  word-break: break-word;
+}
 
 /* ---- Modal confirm dialog (Excel import, destructive replace) ---- */
 .confirm-overlay {

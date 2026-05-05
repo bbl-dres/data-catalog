@@ -140,6 +140,10 @@ window.CanvasApp.Auth = (function () {
         avatarBtn.setAttribute('aria-expanded', 'false');
     }
 
+    // Focus-trap release function — set when the modal opens, called on
+    // close. Single-instance because the auth modal is a singleton.
+    var releaseFocusTrap = null;
+
     function openModal(view) {
         if (!modal) return;
         modalView = view || 'signin';
@@ -152,6 +156,12 @@ window.CanvasApp.Auth = (function () {
         modal.removeAttribute('hidden');
         document.body.classList.add('auth-modal-open');
         renderModal();
+        // Focus trap: keep Tab inside the modal, restore focus to the
+        // trigger on close. Installed AFTER renderModal so the form inputs
+        // exist by the time `focusable()` queries them.
+        if (window.CanvasApp.App && window.CanvasApp.App.installFocusTrap) {
+            releaseFocusTrap = window.CanvasApp.App.installFocusTrap(modal);
+        }
         requestAnimationFrame(function () {
             var first = modal.querySelector('input:not([disabled])');
             if (first) first.focus();
@@ -161,6 +171,7 @@ window.CanvasApp.Auth = (function () {
         if (!modal) return;
         modal.setAttribute('hidden', '');
         document.body.classList.remove('auth-modal-open');
+        if (releaseFocusTrap) { releaseFocusTrap(); releaseFocusTrap = null; }
     }
 
     // ---- Render --------------------------------------------------------

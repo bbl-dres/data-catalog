@@ -151,12 +151,33 @@ window.CanvasApp.Minimap = (function () {
     }
 
     /**
-     * World-space rect for one node, using the stored x/y plus a fixed
-     * default size. Avoids the offsetWidth / offsetHeight reads that
-     * Canvas.getNodeRect does — those forced 256 layouts per render on
-     * IBPDI and were the dominant cost of a minimap update.
+     * World-space rect for one node — matches what's rendered on the main
+     * canvas. We delegate to Canvas.getNodeRect which reads offsetWidth /
+     * offsetHeight from the cached DOM element; when the DOM isn't ready
+     * yet (initial paint) it returns 220×80, and we substitute our larger
+     * defaults so empty placeholder rects don't make the minimap look
+     * sparse on a freshly-loaded canvas.
+     *
+     * Layout-cost note: this reads `offsetHeight` for every node, but
+     * within a single rAF the browser computes layout once and caches; the
+     * 256-node IBPDI minimap render doesn't trigger 256 individual layout
+     * passes — just one. The earlier "fixed default" optimisation was a
+     * micro-optimisation that traded accuracy for a perf gain that the
+     * browser layout cache already provides.
      */
     function nodeRectForMinimap(n) {
+        if (Canvas && Canvas.getNodeRect) {
+            var r = Canvas.getNodeRect(n);
+            // Canvas's fallback (220×80) is for a node whose DOM hasn't
+            // mounted yet — substitute our larger minimap defaults so the
+            // first paint isn't visibly thin.
+            return {
+                x: r.x,
+                y: r.y,
+                w: r.w > 220 ? r.w : DEFAULT_NODE_W,
+                h: r.h > 80  ? r.h : DEFAULT_NODE_H
+            };
+        }
         return { x: n.x || 0, y: n.y || 0, w: DEFAULT_NODE_W, h: DEFAULT_NODE_H };
     }
 

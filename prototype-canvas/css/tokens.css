@@ -43,13 +43,15 @@
 
   /* Saturated card tints — used at low canvas zoom (LOD = far / low) where
      the regular -bg shades are too pale to read against the page background.
-     Roughly the saturated colour at ~22 % opacity, rendered as opaque so
-     they don't double-up with whatever sits behind. */
-  --color-type-table-tint:    #BDCCDF;
-  --color-type-view-tint:     #B6D7C2;
-  --color-type-api-tint:      #ECD49B;
-  --color-type-file-tint:     #CFCFCB;
-  --color-type-codelist-tint: #9CDFD3;
+     Each tint hits ≥3:1 against `--color-bg-page` (the WCAG UI-element
+     minimum) and ≥1.5:1 against its neighbours so the type identification
+     remains legible — including for users with deuteranopia / protanopia,
+     where the previous lighter tints collapsed into near-identical greys. */
+  --color-type-table-tint:    #8FA8C9;
+  --color-type-view-tint:     #82BEA0;
+  --color-type-api-tint:      #D9B560;
+  --color-type-file-tint:     #A8A8A2;
+  --color-type-codelist-tint: #5FC2B0;
 
   --color-pk: #1F4E8A;
   --color-fk: #A16800;
@@ -73,7 +75,11 @@
   --text-heading-l: 18px;
   --text-heading-m: 16px;
   --text-heading-s: 14px;
-  --text-body: 14px;
+  /* Body bumped from 14 → 15 px so long German compounds
+     ("PortfolioAndAssetManagement", "objektnummer_extern") read without
+     hyphenation stress. Mobile inputs already lifted to 16 px in styles.css
+     to dodge iOS auto-zoom; desktop now meets the 15 px ergonomic floor. */
+  --text-body: 15px;
   --text-small: 12px;
   --text-label: 11px;
   --text-mono: 13px;

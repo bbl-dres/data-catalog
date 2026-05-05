@@ -58,6 +58,7 @@ window.CanvasApp.Table = (function () {
         textInput.addEventListener('input', debouncedRender);
 
         tabsEl.addEventListener('click', onTabClick);
+        tabsEl.addEventListener('keydown', onTabKeydown);
         bodyEl.addEventListener('click', onRowClick);
         bodyEl.addEventListener('blur', onCellBlur, true);
         bodyEl.addEventListener('change', onSelectChange);
@@ -95,11 +96,40 @@ window.CanvasApp.Table = (function () {
         render();
     }
 
+    /**
+     * WAI-ARIA Tab Pattern keyboard handling for the table sub-tabs.
+     * ArrowLeft / ArrowRight cycle (with wrap), Home / End jump to ends.
+     * Tab itself moves focus out of the tablist into the tabpanel.
+     */
+    function onTabKeydown(e) {
+        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
+        var tabs = Array.prototype.slice.call(tabsEl.querySelectorAll('[role="tab"]'));
+        if (!tabs.length) return;
+        var idx = tabs.indexOf(document.activeElement);
+        if (idx < 0) idx = 0;
+        var next = idx;
+        if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
+        if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
+        if (e.key === 'Home')       next = 0;
+        if (e.key === 'End')        next = tabs.length - 1;
+        e.preventDefault();
+        tabs[next].focus();
+        var nextTab = tabs[next].getAttribute('data-tab');
+        if (nextTab !== activeTab) {
+            activeTab = nextTab;
+            textInput.value = '';
+            applyTabUI();
+            render();
+        }
+    }
+
     function applyTabUI() {
         Array.prototype.forEach.call(tabsEl.querySelectorAll('.seg-btn'), function (b) {
             var active = b.getAttribute('data-tab') === activeTab;
             b.classList.toggle('is-active', active);
             b.setAttribute('aria-selected', active ? 'true' : 'false');
+            // Roving tabindex — only the active tab is in the Tab order.
+            b.setAttribute('tabindex', active ? '0' : '-1');
         });
         textInput.setAttribute('placeholder', TAB_PLACEHOLDERS[activeTab] || 'Filtern…');
     }
