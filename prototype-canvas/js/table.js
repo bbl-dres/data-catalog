@@ -205,39 +205,114 @@ window.CanvasApp.Table = (function () {
             return hay.indexOf(q) !== -1;
         });
 
-        // Codelists: rename the "Attribute" count column to "Codes"; drop "Property Sets"
+        // Codelists: rename the "Attribute" count column to "Codes"; drop
+        // "Property Sets" + "Schema" (codelists carry no schema_name) and
+        // add "Verwendet von" so users see which attributes consume each
+        // controlled vocabulary at a glance.
         var isCodelist = types.length === 1 && types[0] === 'codelist';
         var attrCol = isCodelist ? 'Codes' : 'Attribute';
+
+        // Pre-compute codelist usage once (O(nodes × columns × edges))
+        // instead of re-walking per row. Map: codelistId → [{nodeLabel, attrName}]
+        var codelistUsage = isCodelist ? buildCodelistUsage() : null;
 
         // Typ column dropped — the active sub-tab (Tabellen / APIs /
         // Dateien / Wertelisten) already disambiguates the row's type.
         // Editing the type in the Liste view is rare; users who need
         // it switch in the canvas detail panel.
         headEl.innerHTML = '<tr>' +
-            '<th>Name</th><th>System</th><th>Schema</th>' +
-            (isCodelist ? '' : '<th>Property Sets</th>') +
+            '<th>Name</th><th>System</th>' +
+            (isCodelist
+                ? '<th>Verwendet von</th>'
+                : '<th>Schema</th><th>Property Sets</th>') +
             '<th>' + attrCol + '</th><th>Tags</th><th></th></tr>';
 
         countEl.textContent = countLabel(rows.length, allOfKind.length, noun);
 
         bodyEl.innerHTML = rows.map(function (n) {
-            return typedNodeRowHtml(n, isEdit, isCodelist);
+            return typedNodeRowHtml(n, isEdit, isCodelist, codelistUsage);
         }).join('') || emptyRowHtml(isCodelist ? 6 : 7, q ? 'Keine Treffer' : 'Keine ' + noun);
     }
 
-    function typedNodeRowHtml(n, isEdit, isCodelist) {
+    /**
+     * Walk every node + its FK columns once, building a map from
+     * codelist id → list of `{nodeLabel, attrName}`. Mirrors
+     * findCodelistForAttribute in panel.js: an FK edge from a
+     * distribution to a codelist whose label matches the column name
+     * marks that column as consuming the codelist.
+     *
+     * Returns: Object<codelistId, Array<{nodeLabel, attrName}>>
+     */
+    function buildCodelistUsage() {
+        var usage = Object.create(null);
+        var edges = State.getEdges();
+        // Index edges by from-node-id for O(node) lookup instead of
+        // O(nodes × edges).
+        var edgesByFrom = Object.create(null);
+        edges.forEach(function (e) {
+            (edgesByFrom[e.from] = edgesByFrom[e.from] || []).push(e);
+        });
+        State.getNodes().forEach(function (n) {
+            if (!n.columns || !n.columns.length) return;
+            var outs = edgesByFrom[n.id] || [];
+            if (!outs.length) return;
+            n.columns.forEach(function (c) {
+                if (c.key !== 'FK' || !c.name) return;
+                for (var i = 0; i < outs.length; i++) {
+                    var e = outs[i];
+                    if (e.label !== c.name) continue;
+                    var target = State.getNode(e.to);
+                    if (!target || target.type !== 'codelist') continue;
+                    (usage[target.id] = usage[target.id] || []).push({
+                        nodeLabel: n.label || n.id,
+                        attrName:  c.name
+                    });
+                }
+            });
+        });
+        return usage;
+    }
+
+    function typedNodeRowHtml(n, isEdit, isCodelist, codelistUsage) {
         var ce = isEdit ? 'true' : 'false';
         var setCount = State.derivePropertySets(n).length;
         var colCount = (n.columns || []).length;
         var tags = (n.tags || []).map(function (t) { return '<span class="tag">' + escapeHtml(t) + '</span>'; }).join('');
+
+        // Wertelisten: "Verwendet von" cell. Show count + first 2
+        // attribute names so common cases ("used by 1 attribute on
+        // Gebäude") stay readable; full list is on the codelist's panel.
+        var usedByCell = '';
+        if (isCodelist) {
+            var users = (codelistUsage && codelistUsage[n.id]) || [];
+            if (!users.length) {
+                usedByCell = '<td>' + dash() + '</td>';
+            } else {
+                var preview = users.slice(0, 2).map(function (u) {
+                    return escapeHtml(u.nodeLabel) +
+                        '<span style="color:var(--color-text-placeholder)"> · ' +
+                        escapeHtml(u.attrName) + '</span>';
+                }).join('<br>');
+                var more = users.length > 2
+                    ? '<div style="color:var(--color-text-placeholder);font-size:var(--text-label);margin-top:2px">+' + (users.length - 2) + ' weitere</div>'
+                    : '';
+                usedByCell = '<td>' +
+                    '<span class="info-section-count" style="margin-right:6px">' + users.length + '</span>' +
+                    '<span style="font-size:var(--text-small)">' + preview + '</span>' +
+                    more +
+                '</td>';
+            }
+        }
 
         return '<tr data-node-id="' + escapeAttr(n.id) + '" data-kind="node">' +
                 '<td><span class="cell-name">' +
                     '<span data-edit="label" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.label || n.id) + '</span>' +
                 '</span></td>' +
                 '<td><span data-edit="system" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.system || '') + '</span></td>' +
-                '<td><span data-edit="schema" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.schema || '') + '</span></td>' +
-                (isCodelist ? '' : '<td>' + (setCount || '–') + '</td>') +
+                (isCodelist
+                    ? usedByCell
+                    : '<td><span data-edit="schema" contenteditable="' + ce + '" spellcheck="false">' + escapeHtml(n.schema || '') + '</span></td>' +
+                      '<td>' + (setCount || '–') + '</td>') +
                 '<td>' + (colCount || '–') + '</td>' +
                 '<td>' +
                     (isEdit
@@ -361,15 +436,70 @@ window.CanvasApp.Table = (function () {
             });
         }
 
-        headEl.innerHTML = '<tr><th>Name</th><th>Datentyp</th><th>Schlüssel</th><th>Set</th><th>Knoten</th><th>System</th><th></th></tr>';
+        // Pre-compute FK→codelist targets so colRowHtml doesn't re-walk
+        // edges per row. Map: nodeId → { columnName → codelistNode }.
+        var fkCodelistTargets = buildFkCodelistTargets();
+
+        headEl.innerHTML = '<tr>' +
+            '<th>Name</th><th>Datentyp</th><th>Schlüssel</th><th>PII</th>' +
+            '<th>Set</th><th>Knoten</th><th>System</th><th></th></tr>';
         countEl.textContent = countLabel(rows.length, total, 'Attribute');
-        bodyEl.innerHTML = rows.map(colRowHtml).join('') ||
-            emptyRowHtml(7, q ? 'Keine Treffer' : 'Keine Attribute');
+        bodyEl.innerHTML = rows.map(function (r) {
+            return colRowHtml(r, fkCodelistTargets);
+        }).join('') || emptyRowHtml(8, q ? 'Keine Treffer' : 'Keine Attribute');
     }
 
-    function colRowHtml(r) {
+    /**
+     * Walk every node's outgoing edges once, keying FK targets by
+     * (nodeId, columnName). Mirrors panel.js's findCodelistForAttribute
+     * but in O(edges) instead of O(rows × edges).
+     */
+    function buildFkCodelistTargets() {
+        var targets = Object.create(null);
+        var edges = State.getEdges();
+        edges.forEach(function (e) {
+            var to = State.getNode(e.to);
+            if (!to || to.type !== 'codelist') return;
+            if (!e.label) return;
+            (targets[e.from] = targets[e.from] || Object.create(null))[e.label] = to;
+        });
+        return targets;
+    }
+
+    function colRowHtml(r, fkCodelistTargets) {
         var keyClass = r.col.key === 'PK' ? 'pk' : r.col.key === 'FK' ? 'fk' : r.col.key === 'UK' ? 'uk' : '';
         var keyLabel = r.col.key || '–';
+
+        // Schlüssel cell: badge + (when FK and the target is a codelist)
+        // a quiet "→ <Werteliste>" affordance so the user sees the
+        // controlled vocab binding without opening the panel.
+        var keyCellInner;
+        if (r.col.key) {
+            keyCellInner = '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(keyLabel) + '</span>';
+            if (r.col.key === 'FK') {
+                var fkTarget = fkCodelistTargets[r.node.id] && fkCodelistTargets[r.node.id][r.col.name];
+                if (fkTarget) {
+                    keyCellInner += '<span style="color:var(--color-text-placeholder);font-size:var(--text-label);margin-left:6px">→ ' +
+                        escapeHtml(fkTarget.label || fkTarget.id) +
+                        '</span>';
+                }
+            }
+        } else {
+            keyCellInner = dash();
+        }
+
+        // PII pill — only render for non-default values. The schema's
+        // default is 'keine'; rendering a pill for every row would just
+        // be visual noise.
+        var piiCell;
+        if (r.col.pii && r.col.pii !== 'keine') {
+            piiCell = '<span class="info-pill info-pill--pii" data-value="' + escapeAttr(r.col.pii) + '">' +
+                escapeHtml(piiShortLabel(r.col.pii)) +
+            '</span>';
+        } else {
+            piiCell = dash();
+        }
+
         // Set column shows registry label (preferred) or SAP key (API node
         // fallback). Either way the cell is human-readable, not the raw id.
         var setCell;
@@ -383,12 +513,24 @@ window.CanvasApp.Table = (function () {
         return '<tr data-node-id="' + escapeAttr(r.node.id) + '" data-col-idx="' + r.idx + '" data-kind="col">' +
                 '<td><code class="cell-mono">' + escapeHtml(r.col.name) + '</code></td>' +
                 '<td><span style="color:var(--color-text-secondary)">' + escapeHtml(r.col.type || '') + '</span></td>' +
-                '<td>' + (r.col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(keyLabel) + '</span>' : dash()) + '</td>' +
+                '<td>' + keyCellInner + '</td>' +
+                '<td>' + piiCell + '</td>' +
                 '<td>' + setCell + '</td>' +
                 '<td><span class="cell-name">' + escapeHtml(r.node.label || r.node.id) + '</span></td>' +
                 '<td>' + (r.node.system ? escapeHtml(r.node.system) : dash()) + '</td>' +
                 '<td>' + delBtn('Attribut') + '</td>' +
             '</tr>';
+    }
+
+    /** Compact PII labels for the narrow Liste column. Full labels are
+     *  on the panel's Datenschutz row. */
+    function piiShortLabel(v) {
+        switch (v) {
+            case 'personenbezogen':             return 'Personenbezogen';
+            case 'besonders_schuetzenswert':    return 'Besonders';
+            case 'besonders schützenswert':     return 'Besonders';
+            default:                            return v;
+        }
     }
 
     // ---- Tab: Edges ----------------------------------------------------
@@ -416,10 +558,10 @@ window.CanvasApp.Table = (function () {
             return [e.label, fromLabel, toLabel, e.from, e.to].join(' ').toLowerCase().indexOf(q) !== -1;
         });
 
-        headEl.innerHTML = '<tr><th>Beziehung</th><th>Quelle</th><th>Ziel</th><th></th></tr>';
+        headEl.innerHTML = '<tr><th>Beziehung</th><th>Typ</th><th>Quelle</th><th>Ziel</th><th></th></tr>';
         countEl.textContent = countLabel(edges.length, allEdges.length, 'Beziehungen');
         bodyEl.innerHTML = edges.map(function (e) { return edgeRowHtml(e, byId); }).join('') ||
-            emptyRowHtml(4, q ? 'Keine Treffer' : 'Keine Beziehungen');
+            emptyRowHtml(5, q ? 'Keine Treffer' : 'Keine Beziehungen');
     }
 
     function edgeRowHtml(e, byId) {
@@ -427,12 +569,37 @@ window.CanvasApp.Table = (function () {
         var toNode = byId[e.to];
         var fromLabel = fromNode ? (fromNode.label || fromNode.id) : e.from;
         var toLabel = toNode ? (toNode.label || toNode.id) : e.to;
+        // Edge-type label: translate the schema enum to German for display.
+        // Falls back to the raw value (or dash) for pre-migration-008
+        // payloads that don't carry edgeType.
+        var typLabel = e.edgeType ? edgeTypeLabel(e.edgeType) : '';
         return '<tr data-edge-id="' + escapeAttr(e.id) + '" data-kind="edge" data-from="' + escapeAttr(e.from) + '">' +
                 '<td>' + (e.label ? escapeHtml(e.label) : dash()) + '</td>' +
+                '<td>' + (typLabel
+                    ? '<span style="color:var(--color-text-secondary);font-size:var(--text-small)">' + escapeHtml(typLabel) + '</span>'
+                    : dash()) + '</td>' +
                 '<td><span class="cell-name">' + escapeHtml(fromLabel) + '</span></td>' +
                 '<td><span class="cell-name">→ ' + escapeHtml(toLabel) + '</span></td>' +
                 '<td>' + delBtn('Beziehung') + '</td>' +
             '</tr>';
+    }
+
+    /** Schema enum → German display label. Mirrors panel.js's
+     *  edgeTypeLabel; kept inline here so table.js doesn't reach across
+     *  modules for one switch statement. */
+    function edgeTypeLabel(v) {
+        switch (v) {
+            case 'publishes':     return 'veröffentlicht';
+            case 'contains':      return 'enthält';
+            case 'realises':      return 'realisiert';
+            case 'in_pset':       return 'in Property Set';
+            case 'values_from':   return 'Werte aus';
+            case 'fk_references': return 'FK Referenz';
+            case 'derives_from':  return 'abgeleitet aus';
+            case 'flows_into':    return 'fliesst in';
+            case 'replaces':      return 'ersetzt';
+            default:              return v;
+        }
     }
 
     // ---- Row click + delete + inline edit ------------------------------

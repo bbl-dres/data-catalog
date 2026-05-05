@@ -39,7 +39,8 @@
       "Bash(node --check js/autolayout.js)",
       "Bash(node --check js/canvas.js)",
       "Bash(node --check js/state.js)",
-      "Bash(node --check js/panel.js)"
+      "Bash(node --check js/panel.js)",
+      "Bash(node --check js/table.js)"
     ]
   }
 }

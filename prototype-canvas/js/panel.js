@@ -500,6 +500,13 @@ window.CanvasApp.Panel = (function () {
         // dropped to reduce the "wall of dashes" look in the panel.
         var rows = [];
         rows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(node.id) + '</code></dd>');
+        // DB UUID is the gen_random_uuid PK from the node table — useful
+        // for direct DB lookups, audit / diagnostics, and external API
+        // integration without slug round-trips. Falls back gracefully on
+        // pre-migration-010 payloads (uuid absent → row skipped).
+        if (node.uuid) {
+            rows.push('<dt>UUID</dt><dd><code class="info-uuid" title="Datenbank-Schlüssel zum Kopieren">' + escapeHtml(node.uuid) + '</code></dd>');
+        }
         rows.push('<dt>Typ</dt><dd>' + escapeHtml(typeLabelOf(node.type)) + '</dd>');
         if (node.system) rows.push('<dt>System</dt><dd>' + escapeHtml(node.system) + '</dd>');
         if (node.schema) rows.push('<dt>Schema</dt><dd>' + escapeHtml(node.schema) + '</dd>');
@@ -763,6 +770,9 @@ window.CanvasApp.Panel = (function () {
         // every panel kind, instead of being mixed into Metadaten.
         var metaRows = [];
         metaRows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(setObj.id) + '</code></dd>');
+        if (setObj.uuid) {
+            metaRows.push('<dt>UUID</dt><dd><code class="info-uuid" title="Datenbank-Schlüssel zum Kopieren">' + escapeHtml(setObj.uuid) + '</code></dd>');
+        }
         if (setObj.lineage) {
             metaRows.push('<dt>Quelle</dt><dd>' + escapeHtml(setObj.lineage) + '</dd>');
         }
@@ -944,6 +954,8 @@ window.CanvasApp.Panel = (function () {
                 // same section name for its primary metadata block.
                 '<div class="info-section-label">Metadaten</div>' +
                 '<dl class="info-meta">' +
+                    (sysMeta && sysMeta.id    ? '<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(sysMeta.id)   + '</code></dd>' : '') +
+                    (sysMeta && sysMeta.uuid  ? '<dt>UUID</dt><dd><code class="info-uuid" title="Datenbank-Schlüssel zum Kopieren">' + escapeHtml(sysMeta.uuid) + '</code></dd>' : '') +
                     '<dt>Knoten</dt><dd>' + members.length + (typeBreakdown ? ' <span style="color:var(--color-text-secondary)">(' + escapeHtml(typeBreakdown) + ')</span>' : '') + '</dd>' +
                     '<dt>Sets</dt><dd>' + setCount + '</dd>' +
                     '<dt>Attribute</dt><dd>' + colCount + (pkCount ? ' <span style="color:var(--color-text-secondary)">· PK: ' + pkCount + '</span>' : '') + '</dd>' +

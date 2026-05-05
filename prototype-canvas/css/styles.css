@@ -3366,6 +3366,18 @@ body.is-resizing-panel .minimap { transition: none; }
   margin-bottom: 2px;
 }
 
+/* DB UUIDs are 36 chars and don't break naturally — `break-all` lets the
+   line wrap without overflowing the panel; the smaller font matches the
+   ID code style without leaving the row at a different visual weight.
+   Selectable text so users can copy/paste into DB queries. */
+.info-uuid {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  word-break: break-all;
+  user-select: all;
+}
+
 /* ---- Beschreibung block ----
    Free-text description rendered as its own section beneath Metadaten on
    every panel kind. The line-height is loose so multi-paragraph

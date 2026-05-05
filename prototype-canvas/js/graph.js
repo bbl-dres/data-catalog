@@ -845,20 +845,19 @@ window.CanvasApp.Graph = (function () {
 
     return {
         init: init,
-        // Exposed so app.js can trigger a layout when loadAndRender
-        // finishes. The 'view' event from applyUrlToState fires BEFORE
-        // State.load() populates nodes — that initial scheduleLayout
-        // hits empty data, paints renderEmpty(), and increments
-        // layoutToken. Without this fallback the canvas would stay on
-        // "Keine Knoten" forever (State.load doesn't emit 'replace' on
-        // success, so the listener-driven re-schedule never fires).
-        //
-        // Bail conditions: positions already computed (a real layout has
-        // landed) OR a simulation is currently running (don't disturb it).
-        // Re-running while empty is safe — scheduleLayout's first action
-        // is stopSimulation().
+        // Called by app.js loadAndRender after every successful load.
+        // Bail only on an actively running simulation (don't disturb it);
+        // do NOT bail when `positions` is non-empty — those positions
+        // might be left over from a previously-loaded canvas, and a
+        // canvas switch needs to rebuild from scratch even when leftover
+        // positions exist. The earlier "positions populated → no-op"
+        // guard caused stale canvas data to stay on screen across
+        // canvas switches when the listener-driven 'replace' rebuild
+        // also missed. With this looser guard, ensureLayout is a safe
+        // belt-and-suspenders re-render — scheduleLayout's first action
+        // (stopSimulation + buildSimData against current state) makes
+        // calling it twice idempotent.
         ensureLayout: function () {
-            if (Object.keys(positions).length) return;
             if (simulation) return;
             scheduleLayout();
         }

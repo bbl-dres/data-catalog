@@ -181,10 +181,29 @@ window.CanvasApp.State = (function () {
     var loading = false;
     function isLoading() { return loading; }
 
+    // Monotonic load counter — every call to load() bumps it. Inner
+    // promise continuations (loadCanvasContent's .then in particular)
+    // check whether their captured count still matches before mutating
+    // state.* — this prevents a slow-resolving fetch for canvas A from
+    // overwriting freshly-loaded canvas B data after the user clicked B.
+    //
+    // Without this gate the same-tab race went: load(A) starts → user
+    // clicks B → load(B) starts → B resolves first, paints → A resolves
+    // afterwards, overwrites state.nodes with A's data, fires
+    // 'replace' → graph view rebuilds against A's stale nodes while the
+    // breadcrumb says B. The Diagramm view appeared to "work" because
+    // its explicit render in app.js loadAndRender is loadToken-gated; the
+    // graph view was hit because its rebuild fires from the listener-
+    // driven 'replace' path.
+    var loadCounter = 0;
+    function isCurrentLoad(myCount) { return myCount === loadCounter; }
+
     function load() {
         try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
         try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (e) {}
         try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+
+        var myCount = ++loadCounter;
 
         if (!window.CanvasApp.SupabaseClient) {
             state.loadError = 'SupabaseClient nicht geladen.';
@@ -201,9 +220,16 @@ window.CanvasApp.State = (function () {
         loading = true;
         emit('loading');
         var p = (state.view === 'overview' || !state.currentCanvasSlug)
-            ? loadCanvasList()
-            : loadCanvasContent(state.currentCanvasSlug);
+            ? loadCanvasList(myCount)
+            : loadCanvasContent(state.currentCanvasSlug, myCount);
         return p.then(function () {
+            // Stale guard — a newer load() has bumped loadCounter past
+            // myCount, so the inner mutation already bailed and we must
+            // also suppress the emit (otherwise the listener-driven
+            // re-render would run with whatever state.nodes happens to
+            // hold, which is the newer load's data — harmless in this
+            // direction, but the duplicate render is wasted work).
+            if (!isCurrentLoad(myCount)) return;
             loading = false;
             emit('loading');
             // Tell view modules data has been wholesale replaced. Critical
@@ -213,26 +239,25 @@ window.CanvasApp.State = (function () {
             //      'replace' to schedule its layout post-fetch.
             //   2. Post-import re-render — commitImport returns load() and
             //      relies entirely on this emit to propagate the new data.
-            // Bootstrap views that are also called explicitly will render
-            // twice; redundant but cheap (each render is idempotent and
-            // Graph.ensureLayout bails when a simulation is already in
-            // flight).
             emit('replace');
         }, function (err) {
+            if (!isCurrentLoad(myCount)) return;
             loading = false;
             emit('loading');
             throw err;
         });
     }
 
-    function loadCanvasList() {
+    function loadCanvasList(myCount) {
         return window.CanvasApp.SupabaseClient.listCanvases()
             .then(function (canvases) {
+                if (!isCurrentLoad(myCount)) return; // newer load took over
                 state.loadError = null;
                 state.canvases = canvases || [];
                 clearCanvasData();
             })
             .catch(function (err) {
+                if (!isCurrentLoad(myCount)) return;
                 console.error('Failed to list canvases', err);
                 state.loadError = err && err.message
                     ? String(err.message)
@@ -242,9 +267,16 @@ window.CanvasApp.State = (function () {
             });
     }
 
-    function loadCanvasContent(slug) {
+    function loadCanvasContent(slug, myCount) {
         return window.CanvasApp.SupabaseClient.loadCanvas(slug)
             .then(function (data) {
+                // Stale-load gate: a newer load() bumped loadCounter past
+                // ours, so its mutations are already on state. Ours are
+                // expired and must NOT touch state — otherwise the older
+                // canvas's data would clobber the newer canvas's data
+                // (see the long comment on `loadCounter` above for the
+                // race scenario this prevents).
+                if (!isCurrentLoad(myCount)) return;
                 if (!data) {
                     state.loadError = 'Canvas "' + slug + '" wurde nicht gefunden.';
                     clearCanvasData();
@@ -265,6 +297,7 @@ window.CanvasApp.State = (function () {
                 rebuildIndex();
             })
             .catch(function (err) {
+                if (!isCurrentLoad(myCount)) return;
                 console.error('Failed to load canvas from Supabase', err);
                 state.loadError = err && err.message
                     ? String(err.message)
