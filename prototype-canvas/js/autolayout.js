@@ -52,9 +52,19 @@ window.CanvasApp.AutoLayout = (function () {
         // groups rather than a single soup.
         'elk.spacing.nodeNode':                           '180',
         'elk.layered.spacing.nodeNodeBetweenLayers':      '240',
-        'elk.spacing.componentComponent':                 '180',
+        // componentComponent applies to disconnected subgraphs. After
+        // junction-table pruning many leaf entities have zero edges and
+        // each becomes its own component — the previous 180 px stacked
+        // them into a tall vertical stripe of empty space. 60 px keeps
+        // them visually distinct without wasting canvas.
+        'elk.spacing.componentComponent':                 '60',
         'elk.spacing.edgeEdge':                           '40',
-        'elk.spacing.edgeNode':                           '40'
+        'elk.spacing.edgeNode':                           '40',
+        // Aspect-ratio hint nudges ELK toward a roughly 16:10 bounding box
+        // instead of an unbounded tall column when there are many small
+        // disconnected components. ELK treats this as a soft preference,
+        // so well-connected dense clusters still get the layout they need.
+        'elk.aspectRatio':                                '1.6'
     };
 
     var CLUSTER_OPTIONS = {

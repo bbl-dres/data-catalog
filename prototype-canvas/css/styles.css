@@ -1436,11 +1436,14 @@ body.hide-systems .group-layer { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .canvas-loading-spinner { animation: none; }
 }
+/* Preview edge drawn while the user is dragging to create a new
+   relationship. Solid line (no dasharray — solid feels more concrete
+   than dashed even for an in-progress shape) but slightly thicker so
+   it reads as "active in-flight gesture", not a settled edge. */
 .edge-preview path {
   fill: none;
   stroke: var(--color-edge-active);
-  stroke-width: 2;
-  stroke-dasharray: 4 4;
+  stroke-width: 2.5;
 }
 
 /* ---- System group boxes (Miro-style frames) ---- */
@@ -1674,9 +1677,14 @@ body.hide-systems .group-layer { display: none; }
   transition: box-shadow 150ms ease, border-color 150ms ease;
 }
 .node:hover { border-color: var(--color-border-strong); }
+/* Selection: brand-red border + halo, matching the Graph view's selection
+   treatment so the focal node reads with one consistent visual language
+   across both views. The halo is more pronounced than the previous blue
+   variant because red on a white card is louder than blue was — and
+   that's the point: selection should pop. */
 .node.is-selected {
-  border-color: var(--color-border-accent);
-  box-shadow: 0 0 0 3px rgba(var(--color-bg-accent-strong-rgb), 0.15), var(--shadow-card);
+  border-color: var(--color-brand-red);
+  box-shadow: 0 0 0 3px rgba(var(--color-brand-red-rgb), 0.35), var(--shadow-card);
 }
 .node:focus { outline: none; }
 .node:focus-visible {
@@ -2705,8 +2713,11 @@ body.mode-edit .cell-select:focus {
    Read-only force-laid-out network — sister of Diagramm. Same parent
    slot in #app-main (one of the .view sections); only one view is .is-active
    at a time, driven by app.js's applyViewVisibility. */
+/* Position + inset:0 are inherited from `.view` so the section fills its
+   slot. Overriding to `position: relative` here collapses the section to
+   0×0 (its only child, .graph-canvas, is absolutely positioned and so
+   doesn't contribute to flow height) — and the SVG renders invisibly. */
 .view-graph {
-  position: relative;
   background: var(--color-bg-page);
   overflow: hidden;
 }
@@ -2744,10 +2755,18 @@ body.mode-edit .cell-select:focus {
 }
 /* System → entity edges are quieter than entity → entity flows; the
    "publishes" relationship is structural ("X belongs to system Y"),
-   not dataflow. Show them as a faded dashed line. */
+   not dataflow. Convey the secondary status with a lighter colour
+   (no dashed/dotted strokes anywhere — solid lines read cleaner at
+   every zoom level and don't shimmer during simulation).
+
+   Was --color-border-subtle (#EFEFED) at 0.75 px which read as 100 %
+   transparent against the page background. Bumped to --color-border-strong
+   (#A3A39E) at 1 px so the lines are unambiguously visible while still
+   reading as clearly less prominent than the flow edges (--color-edge
+   #8A8A85). */
 .graph-edge--publishes {
-  stroke: var(--color-border-default);
-  stroke-dasharray: 3 3;
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
 }
 .graph-edge--flows {
   stroke: var(--color-edge);
@@ -2759,28 +2778,57 @@ body.mode-edit .cell-select:focus {
   stroke: var(--color-bg-surface);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
-  transition: stroke-width 120ms ease;
+  transition: stroke-width 120ms ease, filter 120ms ease;
 }
 .graph-node:hover .graph-node-circle { stroke-width: 3; }
+
+/* Selection: brand-red outline + soft halo + bold label so the active
+   node reads instantly even against a dense neighbourhood. We use red
+   (not the accent blue Diagramm uses) because entity circles are filled
+   with the same dark blue as --color-bg-accent-strong — a blue selection
+   stroke is invisible against a blue fill. Brand red gives maximum
+   contrast and is already part of the design system. */
 .graph-node.is-selected .graph-node-circle {
-  stroke: var(--color-bg-accent-strong);
-  stroke-width: 3;
+  stroke: var(--color-brand-red);
+  stroke-width: 4;
+  filter:
+    drop-shadow(0 0 0 2px rgba(var(--color-brand-red-rgb), 0.45))
+    drop-shadow(0 0 8px rgba(var(--color-brand-red-rgb), 0.7));
+}
+.graph-node.is-selected .graph-node-label {
+  font-weight: 700;
+  fill: var(--color-brand-red);
 }
 
-/* System node — bigger, accent-tinted. The single "anchor" for its
-   cluster of entities. */
+/* System node — bigger, light-blue solid. The single "anchor" for its
+   cluster of entities. Solid fill (no transparency) reads more clearly
+   against the page than the previous 12 %-tinted hub, especially when
+   the hub overlaps publish edges. Stroke keeps the dark accent so the
+   shape still has a defined edge. */
 .graph-node-circle--system {
-  fill: var(--color-bg-accent-strong);
-  fill-opacity: 0.12;
+  fill: var(--color-bg-accent);
+  fill-opacity: 1;
   stroke: var(--color-bg-accent-strong);
   stroke-width: 1.5;
 }
 .graph-node--system:hover .graph-node-circle--system {
-  fill-opacity: 0.22;
+  /* Slightly darker tint on hover — same blue family, just more weight. */
+  fill: var(--color-type-table-bg);
 }
+/* When a system hub is the selection, swap to brand red — same reasoning
+   as entity nodes: the hub already wears blue, so a blue selection halo
+   would vanish. Solid light-red fill (no transparency) mirrors the
+   non-selected hub's solid fill style — selection state changes colour,
+   not opacity. */
 .graph-node--system.is-selected .graph-node-circle--system {
-  fill-opacity: 0.32;
-  stroke-width: 2.5;
+  fill: #FCE7E8;
+  fill-opacity: 1;
+  stroke: var(--color-brand-red);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(var(--color-brand-red-rgb), 0.7));
+}
+.graph-node--system.is-selected .graph-node-label--system {
+  fill: var(--color-brand-red);
 }
 
 /* Entity nodes — coloured per data type. Same palette as the Diagramm
@@ -2808,6 +2856,110 @@ body.mode-edit .cell-select:focus {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   fill: var(--color-bg-accent-strong);
+}
+
+/* ==================================================================
+   Spotlight selection — fade everything except the selected node
+   and its 1st-degree neighbours, so a click on any entity instantly
+   reveals what it connects to. Applied to both Diagramm (.canvas)
+   and Graph (.graph-canvas) when a node or system is selected.
+
+   Class hierarchy:
+     .is-spotlighting   on the canvas root   → mode active
+     .is-selected       on the focal node    → existing styles win
+     .is-neighbour      on connected nodes   → softer accent ring
+     .is-related        on connecting edges  → accent colour, full opacity
+   Anything not flagged fades out.
+================================================================== */
+
+/* ---- Diagramm view ---- */
+
+.canvas.is-spotlighting .node {
+  transition: opacity 180ms ease, box-shadow 180ms ease;
+}
+.canvas.is-spotlighting .node:not(.is-selected):not(.is-neighbour) {
+  opacity: 0.28;
+}
+/* Red ring on neighbours — softer than .is-selected's bolder halo
+   (2 px @ 35 % vs 3 px @ 35 % w/ red border), keeping the focal node
+   the loudest element while giving connected nodes clear "related"
+   feedback. Same red as Graph view → unified focus story. */
+.canvas.is-spotlighting .node.is-neighbour {
+  box-shadow: 0 0 0 2px rgba(var(--color-brand-red-rgb), 0.45),
+              var(--shadow-card);
+}
+.canvas.is-spotlighting .edge-group {
+  transition: opacity 180ms ease;
+}
+/* :not(.is-selected) preserves a directly-clicked edge at full opacity
+   when the user has both an edge AND a node selected at once (rare but
+   possible — info panel can show edge metadata while spotlight is on). */
+.canvas.is-spotlighting .edge-group:not(.is-related):not(.is-selected) {
+  opacity: 0.12;
+}
+.canvas.is-spotlighting .edge-group.is-related .edge-path {
+  stroke: var(--color-brand-red);
+  stroke-width: 2;
+}
+.canvas.is-spotlighting .edge-group.is-related .edge-cardinality line,
+.canvas.is-spotlighting .edge-group.is-related .edge-cardinality circle {
+  stroke: var(--color-brand-red);
+}
+/* Group boxes pull back a touch too — keeps focus on the node, not the
+   ambient cluster. */
+.canvas.is-spotlighting .group-box:not(.is-selected) {
+  opacity: 0.4;
+  transition: opacity 180ms ease;
+}
+
+/* ---- Graph view ---- */
+
+.graph-canvas.is-spotlighting .graph-node,
+.graph-canvas.is-spotlighting .graph-edge {
+  transition: opacity 180ms ease, stroke 180ms ease, stroke-width 180ms ease;
+}
+.graph-canvas.is-spotlighting .graph-node:not(.is-selected):not(.is-neighbour) {
+  opacity: 0.22;
+}
+.graph-canvas.is-spotlighting .graph-edge:not(.is-related) {
+  opacity: 0.1;
+}
+/* Neighbour ring — visible red stroke + red label, but lighter than the
+   selected node's halo + bold label so the hierarchy reads. Same red as
+   the selection accent (see above) for visual coherence — selected node
+   is the loud red, neighbours echo it more softly. */
+.graph-canvas.is-spotlighting .graph-node.is-neighbour .graph-node-circle {
+  stroke: var(--color-brand-red);
+  stroke-width: 2.5;
+}
+.graph-canvas.is-spotlighting .graph-node.is-neighbour .graph-node-label {
+  fill: var(--color-brand-red);
+  font-weight: 600;
+}
+.graph-canvas.is-spotlighting .graph-edge.is-related {
+  stroke: var(--color-brand-red);
+  stroke-width: 2;
+  opacity: 1;
+}
+
+/* ---- Filter dim ----
+   Mirrors Canvas/Diagramm's data-filtered behaviour: nodes/edges that
+   don't pass the active filters fade in place rather than being removed.
+   Layout stays stable, feedback is instant, and the unmatched nodes
+   remain as faint context.
+   The .has-filters root class is what arms the rules — when no filters
+   are active, the .is-filtered-out class is removed wholesale by JS so
+   no opacity rule is required to fire. */
+.graph-canvas.has-filters .graph-node.is-filtered-out,
+.graph-canvas.has-filters .graph-edge.is-filtered-out {
+  transition: opacity 180ms ease;
+}
+.graph-canvas.has-filters .graph-node.is-filtered-out {
+  opacity: 0.12;
+  pointer-events: none;
+}
+.graph-canvas.has-filters .graph-edge.is-filtered-out {
+  opacity: 0.05;
 }
 
 /* Tooltip — absolutely-positioned div following the cursor. */
@@ -3212,6 +3364,100 @@ body.is-resizing-panel .minimap { transition: none; }
   font-size: var(--text-mono-xs);
   margin-right: 4px;
   margin-bottom: 2px;
+}
+
+/* ---- Beschreibung block ----
+   Free-text description rendered as its own section beneath Metadaten on
+   every panel kind. The line-height is loose so multi-paragraph
+   definitions stay readable; preserves whitespace so authors can break
+   into paragraphs with blank lines. */
+.info-description {
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- Header pills ----
+   Compact governance pills (classification, lifecycle, PII) shown below
+   the header subtitle. Same shape across every panel kind so the user
+   learns one visual idiom for "this thing's metadata at a glance".
+   Variant-specific colours via [data-value] attribute selectors —
+   semantic, not duplicated per kind. */
+.info-header-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.info-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: var(--text-mono-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+/* Classification — colour intensifies with confidentiality. */
+.info-pill--classification[data-value="oeffentlich"] {
+  background: #EDFAF3;
+  color: var(--color-type-view);
+  border-color: transparent;
+}
+.info-pill--classification[data-value="intern"] {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-color: transparent;
+}
+.info-pill--classification[data-value="vertraulich"],
+.info-pill--classification[data-value="geheim"] {
+  background: rgba(var(--color-brand-red-rgb), 0.12);
+  color: var(--color-brand-red);
+  border-color: transparent;
+}
+/* Lifecycle — Entwurf is muted, Produktiv is the most active green. */
+.info-pill--lifecycle[data-value="entwurf"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+}
+.info-pill--lifecycle[data-value="standardisiert"] {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-color: transparent;
+}
+.info-pill--lifecycle[data-value="produktiv"] {
+  background: #EDFAF3;
+  color: var(--color-type-view);
+  border-color: transparent;
+}
+.info-pill--lifecycle[data-value="abgeloest"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-placeholder);
+  text-decoration: line-through;
+}
+/* PII — DSG concern, the only pill that really needs to shout. The
+   "besonders schützenswert" variant gets the loud red treatment;
+   "personenbezogen" stays warning-amber. */
+.info-pill--pii[data-value="keine"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-placeholder);
+}
+.info-pill--pii[data-value="personenbezogen"] {
+  background: #FEF7E8;
+  color: #8A5A00;
+  border-color: transparent;
+}
+.info-pill--pii[data-value="besonders_schuetzenswert"],
+.info-pill--pii[data-value="besonders schützenswert"] {
+  background: rgba(var(--color-brand-red-rgb), 0.14);
+  color: var(--color-brand-red);
+  border-color: transparent;
+  font-weight: 600;
 }
 
 .info-set-list, .info-rel-list {

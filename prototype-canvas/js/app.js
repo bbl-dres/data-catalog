@@ -648,7 +648,16 @@ window.CanvasApp.App = (function () {
             if (!btn) return;
             var action = btn.getAttribute('data-empty-action');
             if (action === 'import') {
-                document.getElementById('btn-import').click();
+                // Call the modal opener directly. Forwarding via
+                // `btn-import.click()` was fragile — programmatic clicks
+                // on the toolbar button worked in practice but fell back
+                // to a silent no-op whenever the toolbar layout changed
+                // (e.g. the toolbar wraps the button in another element
+                // that swallows synthetic events). The direct call is
+                // also clearer about intent.
+                if (window.CanvasApp.XlsxIO && window.CanvasApp.XlsxIO.openImportModal) {
+                    window.CanvasApp.XlsxIO.openImportModal();
+                }
             } else if (action === 'add') {
                 State.setMode('edit');
                 // Fire a synthetic palette click for "Tabelle" — best entry point.

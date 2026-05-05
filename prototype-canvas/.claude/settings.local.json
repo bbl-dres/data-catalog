@@ -31,7 +31,15 @@
       "Bash(node -c js/auth.js)",
       "Bash(node -c js/xlsx_io.js)",
       "Bash(node -c js/overview.js)",
-      "Bash(grep -v -E \"util\\\\.js|//|\\\\*\")"
+      "Bash(grep -v -E \"util\\\\.js|//|\\\\*\")",
+      "Bash(node --check c:\\\\Users\\\\DavidRasner\\\\Documents\\\\GitHub\\\\data-catalog\\\\prototype-canvas\\\\js\\\\graph.js)",
+      "Bash(node --check js/graph.js)",
+      "Bash(node --check js/app.js)",
+      "Bash(node --check js/xlsx_io.js)",
+      "Bash(node --check js/autolayout.js)",
+      "Bash(node --check js/canvas.js)",
+      "Bash(node --check js/state.js)",
+      "Bash(node --check js/panel.js)"
     ]
   }
 }

@@ -1639,6 +1639,82 @@ window.CanvasApp.Canvas = (function () {
                 el.classList.toggle('is-selected', el.getAttribute('data-system') === selSystem);
             });
         }
+
+        applySpotlight(selNodeId, selSystem, selAttr);
+    }
+
+    /**
+     * Spotlight mode: when a node, attribute, or system is selected, dim
+     * everything else and highlight 1st-degree neighbours + connecting
+     * edges. Pure DOM toggling — actual styling is in styles.css under
+     * `.canvas.is-spotlighting`. Bails out (and clears classes) when no
+     * spotlight subject is present.
+     */
+    function applySpotlight(selNodeId, selSystem, selAttr) {
+        // Spotlight subject: the entity whose neighbourhood we light up.
+        // Direct node click → that node. Attribute click → its parent
+        // node (so the user still sees lineage even when an attribute is
+        // the focus). System click → all members of the system, with
+        // the system itself acting as the focal "neighbour set".
+        var nodeFocus = selNodeId || (selAttr ? selAttr.nodeId : null);
+        var spotlight = !!(nodeFocus || selSystem);
+
+        if (!spotlight) {
+            canvasEl.classList.remove('is-spotlighting');
+            nodeLayer.querySelectorAll('.is-neighbour').forEach(function (el) {
+                el.classList.remove('is-neighbour');
+            });
+            if (edgeLayer) {
+                edgeLayer.querySelectorAll('.is-related').forEach(function (el) {
+                    el.classList.remove('is-related');
+                });
+            }
+            if (edgeOverlay) {
+                edgeOverlay.querySelectorAll('.is-related').forEach(function (el) {
+                    el.classList.remove('is-related');
+                });
+            }
+            return;
+        }
+
+        // Compute neighbour id set.
+        var neighbours = Object.create(null);
+        if (nodeFocus) {
+            State.getEdges().forEach(function (e) {
+                if (e.from === nodeFocus) neighbours[e.to] = true;
+                if (e.to === nodeFocus)   neighbours[e.from] = true;
+            });
+        } else if (selSystem) {
+            // System selection: every node belonging to the system is a
+            // neighbour of the cluster. No edges qualify on their own.
+            State.getNodes().forEach(function (n) {
+                if ((n.system || '').trim() === selSystem) neighbours[n.id] = true;
+            });
+        }
+
+        nodeLayer.querySelectorAll('.node').forEach(function (el) {
+            var id = el.getAttribute('data-node-id');
+            el.classList.toggle('is-neighbour',
+                neighbours[id] === true && id !== nodeFocus);
+        });
+
+        // Edges connecting selected ↔ neighbour. For system selection
+        // there is no focal node, so no edges qualify (system
+        // membership isn't an edge in the data model).
+        function markEdges(layer) {
+            if (!layer) return;
+            layer.querySelectorAll('.edge-group').forEach(function (g) {
+                var from = g.getAttribute('data-from');
+                var to   = g.getAttribute('data-to');
+                var related = nodeFocus &&
+                    (from === nodeFocus || to === nodeFocus);
+                g.classList.toggle('is-related', !!related);
+            });
+        }
+        markEdges(edgeLayer);
+        markEdges(edgeOverlay);
+
+        canvasEl.classList.add('is-spotlighting');
     }
     // Keep a back-compat alias since editor.js / earlier callers used the old name
     var updateNodeSelection = updateSelectionVisuals;
@@ -1691,8 +1767,11 @@ window.CanvasApp.Canvas = (function () {
         canvasEl.classList.add('is-panning');
         try { canvasEl.setPointerCapture(e.pointerId); } catch (err) {}
 
-        // Click on background clears selection (and blurs any active editable)
-        State.setSelected(null);
+        // Background click only blurs any active editable; selection is
+        // preserved (deselection requires either picking a different node
+        // or clicking the × on the info panel). This way panning the
+        // canvas with a node selected keeps that node highlighted +
+        // spotlighted, which is the expected UX for inspect-and-explore.
         if (document.activeElement && document.activeElement.blur) {
             document.activeElement.blur();
         }

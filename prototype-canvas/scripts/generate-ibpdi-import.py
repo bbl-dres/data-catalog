@@ -64,8 +64,8 @@ CLUSTER_ORDER = [
 
 
 def to_snake(name: str) -> str:
-    """CamelCase / PascalCase → snake_case. Keeps acronyms readable
-    (e.g. 'HVACSystem' → 'hvac_system'). Numerics passed through."""
+    """CamelCase / PascalCase -> snake_case. Keeps acronyms readable
+    (e.g. 'HVACSystem' -> 'hvac_system'). Numerics passed through."""
     if not name:
         return ""
     s1 = re.sub(r"(.)([A-Z][a-z]+)", r"\1_\2", name)
@@ -74,7 +74,7 @@ def to_snake(name: str) -> str:
 
 
 def parse_fk(rel_name: str):
-    """Parse 'fk A.x to B.y' → ('A', 'x', 'B', 'y') or None on malformed."""
+    """Parse 'fk A.x to B.y' -> ('A', 'x', 'B', 'y') or None on malformed."""
     if not rel_name:
         return None
     m = re.match(r"^\s*fk\s+([\w]+)\.([\w]+)\s+to\s+([\w]+)\.([\w]+)\s*$", rel_name, re.IGNORECASE)
@@ -91,7 +91,7 @@ def read_source(path: Path):
     else:
         ws = wb[wb.sheetnames[0]]
 
-    # Header row → column index lookup so we don't depend on positional drift.
+    # Header row -> column index lookup so we don't depend on positional drift.
     header = [(c.value or "").strip() if c.value else "" for c in ws[1]]
     idx = {h: i for i, h in enumerate(header)}
     needed = ["Data Cluster", "Entity name", "Attribute Name", "Type",
@@ -119,14 +119,76 @@ def read_source(path: Path):
         }
 
 
+JUNCTION_PREFIXES = ("Role",)
+"""Wrapper words that turn an A+B junction name into a still-junction name —
+`RoleComponentContact` is a Component↔Contact role-assignment table, same
+visual clutter as `ComponentSpace` for graph-view purposes."""
+
+
+def detect_junctions(entity_attrs, entity_fk_targets):
+    """Identify pure many-to-many relation tables that exist only to bridge
+    two real entities (e.g. `ComponentSpace` between `Component` and
+    `Space`, or `RoleComponentContact` between `Component` and `Contact`).
+    They add no business meaning of their own and clutter the graph view.
+
+    Heuristic — entity is a junction if ALL of:
+      1. ≥ 2 FK columns to ≥ 2 distinct target entities (must actually be a
+         relation, not a regular table that happens to have a couple of FKs)
+      2. Name == A+B (in either order) for some pair of target entities,
+         optionally with a `Role` prefix — this is the strong signal that
+         it's purely a bridge:
+            ComponentSpace        ↔ {Component, Space}
+            RoleComponentContact  ↔ {Component, Contact}
+      3. Total attribute count is small (≤ 10) — pure junctions carry only
+         their FK columns + maybe an audit field; role tables carry a few
+         more (role enum, validity dates) but still nothing that warrants
+         their own lifecycle. This rules out regular entities that happen
+         to share a name pattern (e.g. `UserAccount` if both `User` and
+         `Account` exist as proper entities with rich attribute sets)
+
+    Returns a set of entity names judged to be junctions.
+    """
+    junctions = set()
+    for entity, targets in entity_fk_targets.items():
+        unique_targets = list(set(targets))
+        if len(unique_targets) < 2:
+            continue
+        if len(entity_attrs.get(entity, [])) > 10:
+            continue
+
+        # Build the list of name forms to test against A+B concat. For
+        # `RoleComponentContact` we also test `ComponentContact` so the
+        # Role-prefix wrapper doesn't hide the junction shape.
+        candidate_names = [entity]
+        for prefix in JUNCTION_PREFIXES:
+            if entity.startswith(prefix) and len(entity) > len(prefix):
+                candidate_names.append(entity[len(prefix):])
+
+        is_concat = False
+        for cn in candidate_names:
+            for a in unique_targets:
+                for b in unique_targets:
+                    if a != b and cn == a + b:
+                        is_concat = True
+                        break
+                if is_concat:
+                    break
+            if is_concat:
+                break
+        if is_concat:
+            junctions.add(entity)
+    return junctions
+
+
 def build(rows):
     """Walk source rows once, produce distribution/attribute/edge lists.
     Returns (distributions, attributes, edges)."""
-    # entity_to_cluster: entity name → cluster (first seen wins; entities
+    # entity_to_cluster: entity name -> cluster (first seen wins; entities
     # appear in many rows but always belong to one cluster).
     entity_to_cluster = {}
-    entity_attrs = defaultdict(list)         # entity_name → list of attr dicts
-    fk_pairs = defaultdict(list)             # (from_slug, to_slug) → list of attr names
+    entity_attrs = defaultdict(list)         # entity_name -> list of attr dicts
+    entity_fk_targets = defaultdict(list)    # entity_name -> list of target entity names (for junction detection)
+    fk_pairs = defaultdict(list)             # (from_slug, to_slug) -> list of attr names
     skipped_fks = 0
 
     for r in rows:
@@ -155,6 +217,7 @@ def build(rows):
                 skipped_fks += 1
                 continue
             src_ent, src_attr, dst_ent, dst_attr = parsed
+            entity_fk_targets[src_ent].append(dst_ent)
             from_slug = to_snake(src_ent)
             to_slug   = to_snake(dst_ent)
             if from_slug == to_slug:
@@ -165,10 +228,22 @@ def build(rows):
     if skipped_fks:
         print(f"  (warn) {skipped_fks} FK rows had unparseable relationship names — skipped")
 
-    # Distributions, with per-cluster grid layout.
+    # Detect + report junction tables before any output is built.
+    junctions = detect_junctions(entity_attrs, entity_fk_targets)
+    junction_slugs = {to_snake(j) for j in junctions}
+    if junctions:
+        print(f"  Detected {len(junctions)} junction tables — dropping + bridging edges:")
+        for j in sorted(junctions):
+            tgt_list = sorted(set(entity_fk_targets[j]))
+            print(f"    - {j} (FKs -> {', '.join(tgt_list)})")
+
+    # Distributions, with per-cluster grid layout. Junctions are skipped
+    # so they never appear in the canvas.
     distributions = []
     by_cluster = defaultdict(list)
     for ent, clu in entity_to_cluster.items():
+        if ent in junctions:
+            continue
         by_cluster[clu].append(ent)
     for clu in by_cluster:
         by_cluster[clu].sort()  # alphabetical within cluster, stable across runs
@@ -196,9 +271,12 @@ def build(rows):
         rows_needed = math.ceil(len(ents) / COLS_PER_CLUSTER)
         cluster_y += rows_needed * (NODE_H + ROW_GAP) + CLUSTER_GAP
 
-    # Attribute rows, in source order per entity.
+    # Attribute rows, in source order per entity. Skip attributes belonging
+    # to junctions — those entities are gone from distributions.
     attributes = []
     for ent, attrs in entity_attrs.items():
+        if ent in junctions:
+            continue
         node_id = to_snake(ent)
         for a in attrs:
             attributes.append({
@@ -210,23 +288,55 @@ def build(rows):
                 "source_structure": "",
             })
 
-    # Edges — one per (from, to) pair with combined labels.
+    # Edges — one per (from, to) pair with combined labels. Drop any edge
+    # touching a junction (its endpoints are gone), then synthesise bridge
+    # edges between every pair of entities the junction connected.
+    valid_ids = {d["id"] for d in distributions}
     edges = []
+    edge_pairs = set()  # (from, to) -> dedupe across original + synthetic edges
+
     for (frm, to), attr_names in sorted(fk_pairs.items()):
-        # Drop edges to entities that don't exist (e.g. typos in the source).
-        valid_ids = {d["id"] for d in distributions}
+        if frm in junction_slugs or to in junction_slugs:
+            continue  # bridged below
         if frm not in valid_ids or to not in valid_ids:
-            print(f"  (warn) edge dropped — endpoint missing: {frm} → {to}")
+            print(f"  (warn) edge dropped — endpoint missing: {frm} -> {to}")
             continue
-        # Dedupe attr names, sort for stable output.
         unique_attrs = sorted(set(attr_names))
-        label = ", ".join(unique_attrs)
         edges.append({
             "id":    f"e_{frm}__{to}",
             "from":  frm,
             "to":    to,
-            "label": label,
+            "label": ", ".join(unique_attrs),
         })
+        edge_pairs.add((frm, to))
+
+    # Synthesise bridge edges. For a junction with FKs to {A, B, …} we emit
+    # one edge per unordered pair of targets; the junction's name is the
+    # edge label (so the visual still tells you "A is associated with B
+    # via JunctionTable"). Sorted endpoints give a stable canonical form
+    # — unordered relationships shouldn't depend on FK declaration order.
+    bridged = 0
+    for j in sorted(junctions):
+        targets = sorted(set(entity_fk_targets[j]))
+        target_slugs = [to_snake(t) for t in targets]
+        for i in range(len(target_slugs)):
+            for k in range(i + 1, len(target_slugs)):
+                a, b = sorted([target_slugs[i], target_slugs[k]])
+                if a not in valid_ids or b not in valid_ids:
+                    continue
+                if (a, b) in edge_pairs or (b, a) in edge_pairs:
+                    continue  # original FK already wired these two — don't duplicate
+                edges.append({
+                    "id":    f"e_{a}__{b}__via_{to_snake(j)}",
+                    "from":  a,
+                    "to":    b,
+                    "label": j,
+                })
+                edge_pairs.add((a, b))
+                bridged += 1
+
+    if junctions:
+        print(f"  Bridged {bridged} synthetic edges across {len(junctions)} junctions")
 
     return distributions, attributes, edges
 

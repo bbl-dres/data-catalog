@@ -69,8 +69,8 @@ window.CanvasApp.XlsxIO = (function () {
         State = window.CanvasApp.State;
         // The legacy <input id="file-input"> still lives in the DOM but is
         // unused — the import flow now goes through the modal which has its
-        // own scoped file input. Empty-canvas's "import" action also calls
-        // btn-import.click(), so it ends up in openImportModal too.
+        // own scoped file input. The empty-state's "import" action calls
+        // openImportModal() directly via the public export below.
         fileInput = document.getElementById('file-input');
         document.getElementById('btn-import').addEventListener('click', openImportModal);
 
@@ -923,5 +923,10 @@ window.CanvasApp.XlsxIO = (function () {
 
     var escapeHtml = window.CanvasApp.Util.escapeHtml;
 
-    return { init: init, exportXlsx: exportXlsx, exportJson: exportJson };
+    return {
+        init:            init,
+        exportXlsx:      exportXlsx,
+        exportJson:      exportJson,
+        openImportModal: openImportModal
+    };
 })();

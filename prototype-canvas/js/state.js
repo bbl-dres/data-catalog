@@ -27,6 +27,7 @@ window.CanvasApp.State = (function () {
         nodes: [],
         edges: [],
         sets: [],            // global property-set registry — see canvas.json
+        systems: [],         // per-system metadata (Phase 2 RPC), keyed by name
         // Multi-canvas (v0.4):
         //   canvases — overview list (id, slug, label_de, …) for the landing view
         //   currentCanvasSlug — null when on the overview, otherwise the loaded canvas
@@ -189,6 +190,11 @@ window.CanvasApp.State = (function () {
             state.loadError = 'SupabaseClient nicht geladen.';
             clearCanvasData();
             state.canvases = [];
+            // Emit 'replace' so listener-driven views (Graph, Panel, etc.)
+            // re-render against the now-cleared state. Without this, modules
+            // that bootstrap via listeners (rather than the explicit calls
+            // in app.js loadAndRender) get stranded showing stale data.
+            emit('replace');
             return Promise.resolve();
         }
 
@@ -200,6 +206,18 @@ window.CanvasApp.State = (function () {
         return p.then(function () {
             loading = false;
             emit('loading');
+            // Tell view modules data has been wholesale replaced. Critical
+            // for two paths that don't go through app.js loadAndRender's
+            // explicit render calls:
+            //   1. Initial direct-load on /graph — Graph listener gates on
+            //      'replace' to schedule its layout post-fetch.
+            //   2. Post-import re-render — commitImport returns load() and
+            //      relies entirely on this emit to propagate the new data.
+            // Bootstrap views that are also called explicitly will render
+            // twice; redundant but cheap (each render is idempotent and
+            // Graph.ensureLayout bails when a simulation is already in
+            // flight).
+            emit('replace');
         }, function (err) {
             loading = false;
             emit('loading');
@@ -239,6 +257,10 @@ window.CanvasApp.State = (function () {
                     return Object.assign({ id: e.id || ('e' + i) }, e);
                 });
                 state.sets = data.sets || [];
+                // Phase 2: per-system metadata (technology_stack, base_url, …)
+                // keyed off the same label that distributions carry in their
+                // `system` field. The system panel looks these up by name.
+                state.systems = data.systems || [];
                 state.homeView = isValidHomeView(data.homeView) ? data.homeView : null;
                 rebuildIndex();
             })
@@ -252,7 +274,7 @@ window.CanvasApp.State = (function () {
     }
 
     function clearCanvasData() {
-        state.nodes = []; state.edges = []; state.sets = [];
+        state.nodes = []; state.edges = []; state.sets = []; state.systems = [];
         state.currentCanvas = null;
         state.homeView = null;
         rebuildIndex();
@@ -373,6 +395,18 @@ window.CanvasApp.State = (function () {
     function getNode(id) { return nodesById[id] || null; }
     function getSets()   { return state.sets; }
     function getSet(id)  { return id ? (setsById[id] || null) : null; }
+    /** Phase 2: per-system metadata keyed by the label string used in
+     *  distribution.system. Returns null when no entry exists (e.g. the
+     *  current data hasn't populated system_meta yet). */
+    function getSystems()      { return state.systems || []; }
+    function getSystemMeta(name) {
+        if (!name) return null;
+        var arr = state.systems || [];
+        for (var i = 0; i < arr.length; i++) {
+            if (arr[i].name === name) return arr[i];
+        }
+        return null;
+    }
     /** Convenience: setId → display label, falls back to the raw id. */
     function getSetLabel(id) {
         if (!id) return '';
@@ -1489,6 +1523,8 @@ window.CanvasApp.State = (function () {
         getSets: getSets,
         getSet: getSet,
         getSetLabel: getSetLabel,
+        getSystems: getSystems,
+        getSystemMeta: getSystemMeta,
         getGroupKey: getGroupKey,
         getMode: getMode,
         getView: getView,

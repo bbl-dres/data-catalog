@@ -43,8 +43,13 @@ window.CanvasApp.Panel = (function () {
                 updateOpenState();
                 return;
             }
+            // 'canvas' is included so the panel re-renders on canvas
+            // swap — without it, a stale selection from the previous
+            // canvas could keep showing whatever node had the same id
+            // (or an empty / partial render referencing a node that
+            // doesn't exist in the new canvas).
             if (reason !== 'selection' && reason !== 'nodes' && reason !== 'edges' &&
-                reason !== 'replace' && reason !== 'reset') {
+                reason !== 'replace' && reason !== 'reset' && reason !== 'canvas') {
                 return;
             }
             // Single-entity events ('nodes' / 'edges' with an id payload):
@@ -218,10 +223,219 @@ window.CanvasApp.Panel = (function () {
 
     function nodeContentHtml(node) {
         return headerHtml(node) +
+               descriptionSectionHtml(node.description) +
                metadataSectionHtml(node) +
+               distributionExtrasSectionHtml(node) +
                propertySetsSectionHtml(node) +
                attributesSectionHtml(node) +
+               rolesSectionHtml(node.roles) +
+               standardsSectionHtml(node.standards) +
                relationsSectionHtml(node);
+    }
+
+    /**
+     * Distribution-meta extras: URLs, license, format, periodicity, etc.
+     * Renders only when at least one field is populated, so unbridled
+     * IBPDI-style data doesn't show an empty section. Attribute rows
+     * follow the same "skip empty" rule as the main Metadaten block.
+     */
+    function distributionExtrasSectionHtml(node) {
+        if (node.type === 'codelist') return ''; // codelists don't carry these
+        var rows = [];
+        if (node.technicalName)      rows.push(metaRow('Technischer Name', codeFmt(node.technicalName)));
+        if (node.format)             rows.push(metaRow('Format',           escapeHtml(node.format)));
+        if (node.mediaType)          rows.push(metaRow('Medientyp',        codeFmt(node.mediaType)));
+        if (node.accessUrl)          rows.push(metaRow('Zugriff',          urlFmt(node.accessUrl)));
+        if (node.downloadUrl)        rows.push(metaRow('Download',         urlFmt(node.downloadUrl)));
+        if (node.license)            rows.push(metaRow('Lizenz',           escapeHtml(node.license)));
+        if (node.accrualPeriodicity) rows.push(metaRow('Aktualisierung',   escapeHtml(node.accrualPeriodicity)));
+        if (node.availability)       rows.push(metaRow('Verfügbarkeit',    escapeHtml(node.availability)));
+        if (node.spatialCoverage)    rows.push(metaRow('Geltungsbereich',  escapeHtml(node.spatialCoverage)));
+        if (node.temporalStart || node.temporalEnd) {
+            var span = (node.temporalStart || '–') + ' → ' + (node.temporalEnd || '–');
+            rows.push(metaRow('Zeitraum', escapeHtml(span)));
+        }
+        if (node.issued)   rows.push(metaRow('Veröffentlicht',  escapeHtml(formatDate(node.issued))));
+        if (node.modified) rows.push(metaRow('Letzte Änderung', escapeHtml(formatDate(node.modified))));
+        if (!rows.length) return '';
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Veröffentlichung</div>' +
+                '<dl class="info-meta">' + rows.join('') + '</dl>' +
+            '</div>';
+    }
+
+    /**
+     * Role assignments (Verantwortliche). Each row: role label + contact
+     * name (or org for team contacts) + email. Same shape as relations
+     * rows so the rendering reads consistently across panels. Returns
+     * empty when no roles are assigned (most current data).
+     */
+    function rolesSectionHtml(roles) {
+        if (!roles || !roles.length) return '';
+        var items = roles.map(function (r) {
+            var name = r.contactName || r.organisation || r.contactEmail || '–';
+            var sub = [];
+            if (r.contactName && r.organisation) sub.push(escapeHtml(r.organisation));
+            if (r.contactEmail) sub.push('<a href="mailto:' + escapeAttr(r.contactEmail) + '" class="info-link">' + escapeHtml(r.contactEmail) + '</a>');
+            var subLine = sub.length
+                ? '<span class="info-set-label">' + sub.join(' · ') + '</span>'
+                : '';
+            return '' +
+                '<li>' +
+                    '<span class="info-set-name">' + escapeHtml(roleLabel(r.role)) + '</span>' +
+                    '<span class="info-rel-target">' + escapeHtml(name) + '</span>' +
+                    subLine +
+                '</li>';
+        }).join('');
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Verantwortliche <span class="info-section-count">' + roles.length + '</span></div>' +
+                '<ul class="info-rel-list">' + items + '</ul>' +
+            '</div>';
+    }
+
+    /**
+     * Standards realised by this node ("realises" edges → standard_reference
+     * nodes). Each row carries organisation, code, version, and an optional
+     * URL. Rendered as a flat list because standards rarely number more
+     * than a handful per node.
+     */
+    function standardsSectionHtml(standards) {
+        if (!standards || !standards.length) return '';
+        var items = standards.map(function (s) {
+            var primary = s.label || (s.organisation ? s.organisation + ' ' + (s.code || '') : (s.code || s.id || '–'));
+            var sub = [];
+            if (s.organisation && s.label) sub.push(escapeHtml(s.organisation));
+            if (s.code)    sub.push(codeFmt(s.code));
+            if (s.version) sub.push('v' + escapeHtml(s.version));
+            var urlSpan = s.url
+                ? '<a href="' + escapeAttr(s.url) + '" target="_blank" rel="noopener noreferrer" class="info-link" title="Norm in neuem Tab öffnen">↗</a>'
+                : '';
+            return '' +
+                '<li>' +
+                    '<span class="info-set-name">' + escapeHtml(primary) + '</span>' +
+                    (sub.length ? '<span class="info-set-label">' + sub.join(' · ') + '</span>' : '') +
+                    urlSpan +
+                '</li>';
+        }).join('');
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Normen <span class="info-section-count">' + standards.length + '</span></div>' +
+                '<ul class="info-set-list">' + items + '</ul>' +
+            '</div>';
+    }
+
+    function roleLabel(v) {
+        // Schema enum values for role_assignment.role (DATAMODEL.sql:498-509).
+        switch (v) {
+            case 'data_owner':                    return 'Data Owner';
+            case 'local_data_steward':            return 'Local Data Steward';
+            case 'local_data_steward_statistics': return 'Local Data Steward Statistik';
+            case 'local_data_custodian':          return 'Local Data Custodian';
+            case 'data_producer':                 return 'Data Producer';
+            case 'data_consumer':                 return 'Data Consumer';
+            case 'swiss_data_steward':            return 'Swiss Data Steward';
+            case 'data_steward_statistics':       return 'Data Steward Statistik';
+            case 'ida_representative':            return 'IDA Vertretung';
+            case 'information_security_officer':  return 'ISO';
+            default:                              return v;
+        }
+    }
+
+    /** Small helpers used across the new Phase 2 sections. */
+    function metaRow(label, valueHtml) {
+        return '<dt>' + escapeHtml(label) + '</dt><dd>' + valueHtml + '</dd>';
+    }
+    function codeFmt(text) {
+        return '<code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(text) + '</code>';
+    }
+    function urlFmt(url) {
+        return '<a href="' + escapeAttr(url) + '" target="_blank" rel="noopener noreferrer" class="info-link">' +
+                   escapeHtml(url) +
+               '</a>';
+    }
+    function formatDate(iso) {
+        if (!iso) return '';
+        // ISO-8601 → DD.MM.YYYY (Swiss federal convention). Falls back to
+        // the raw value on parse failure so we never silently drop info.
+        var m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        return m ? (m[3] + '.' + m[2] + '.' + m[1]) : String(iso);
+    }
+
+    /**
+     * Free-text description block. Rendered consistently across every
+     * entity kind (node, attribute, system, edge, pset) right after the
+     * Metadaten section, so the user always knows where to look. Returns
+     * empty string when the value is missing/blank — caller doesn't have
+     * to gate.
+     */
+    function descriptionSectionHtml(text) {
+        if (!text || !String(text).trim()) return '';
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Beschreibung</div>' +
+                '<div class="info-description">' + escapeHtml(text) + '</div>' +
+            '</div>';
+    }
+
+    /**
+     * Small classification + lifecycle pills shown below the header
+     * subtitle. Compact governance signal that surfaces the same fields
+     * on every kind that has them. Returns empty string when neither
+     * field is set — keeps headers clean.
+     */
+    function governancePillsHtml(node) {
+        var pills = [];
+        if (node.classification) {
+            pills.push('<span class="info-pill info-pill--classification" data-value="' + escapeAttr(node.classification) + '">' +
+                escapeHtml(classificationLabel(node.classification)) +
+            '</span>');
+        }
+        if (node.lifecycle) {
+            pills.push('<span class="info-pill info-pill--lifecycle" data-value="' + escapeAttr(node.lifecycle) + '">' +
+                escapeHtml(lifecycleLabel(node.lifecycle)) +
+            '</span>');
+        }
+        if (!pills.length) return '';
+        return '<div class="info-header-pills">' + pills.join('') + '</div>';
+    }
+
+    function classificationLabel(v) {
+        // Schema enum values → human-readable German. See node_classification_chk
+        // in DATAMODEL.sql:147-148.
+        switch (v) {
+            case 'oeffentlich':  return 'Öffentlich';
+            case 'intern':       return 'Intern';
+            case 'vertraulich':  return 'Vertraulich';
+            case 'geheim':       return 'Geheim';
+            default:             return v;
+        }
+    }
+    function lifecycleLabel(v) {
+        // node_lifecycle_chk in DATAMODEL.sql:149-150.
+        switch (v) {
+            case 'entwurf':         return 'Entwurf';
+            case 'standardisiert':  return 'Standardisiert';
+            case 'produktiv':       return 'Produktiv';
+            case 'abgeloest':       return 'Abgelöst';
+            default:                return v;
+        }
+    }
+    function edgeTypeLabel(v) {
+        // edge_type_chk in DATAMODEL.sql:202-205.
+        switch (v) {
+            case 'publishes':     return 'veröffentlicht';
+            case 'contains':      return 'enthält';
+            case 'realises':      return 'realisiert';
+            case 'in_pset':       return 'in Property Set';
+            case 'values_from':   return 'Werte aus';
+            case 'fk_references': return 'FK Referenz';
+            case 'derives_from':  return 'abgeleitet aus';
+            case 'flows_into':    return 'fliesst in';
+            case 'replaces':      return 'ersetzt';
+            default:              return v;
+        }
     }
 
     function headerHtml(node) {
@@ -236,6 +450,7 @@ window.CanvasApp.Panel = (function () {
                 '<div class="info-header-text">' +
                     '<div class="info-header-title">' + escapeHtml(node.label || node.id) + '</div>' +
                     '<div class="info-header-sub">' + sub.join(' · ') + '</div>' +
+                    governancePillsHtml(node) +
                 '</div>' +
                 '<button class="info-header-close" data-action="close" title="Schliessen" aria-label="Panel schliessen">' +
                     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
@@ -370,6 +585,10 @@ window.CanvasApp.Panel = (function () {
         var fromLabel = fromNode ? (fromNode.label || fromNode.id) : edge.from;
         var toLabel   = toNode   ? (toNode.label   || toNode.id)   : edge.to;
         var headerLabel = edge.label || '(unbenannte Beziehung)';
+        // Sub-line: "Beziehung · fliesst in" — gives the edge type
+        // immediate visibility without a metadata-row hunt.
+        var subParts = ['Beziehung'];
+        if (edge.edgeType) subParts.push(edgeTypeLabel(edge.edgeType));
 
         var arrowSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 
@@ -383,6 +602,15 @@ window.CanvasApp.Panel = (function () {
                 '</li>';
         };
 
+        // Metadaten — surface every field the RPC carries, only rendering
+        // rows that have a value (mirrors the node panel's no-empty-rows
+        // approach so the section stays compact when fields are blank).
+        var metaRows = [];
+        metaRows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(edge.id) + '</code></dd>');
+        metaRows.push('<dt>Label</dt><dd>' + (edge.label ? escapeHtml(edge.label) : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>');
+        if (edge.edgeType)    metaRows.push('<dt>Typ</dt><dd>' + escapeHtml(edgeTypeLabel(edge.edgeType)) + '</dd>');
+        if (edge.cardinality) metaRows.push('<dt>Kardinalität</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(edge.cardinality) + '</code></dd>');
+
         return '' +
             '<div class="info-header">' +
                 '<span class="info-header-icon" style="background:var(--color-bg-accent);color:var(--color-bg-accent-strong)">' +
@@ -390,7 +618,7 @@ window.CanvasApp.Panel = (function () {
                 '</span>' +
                 '<div class="info-header-text">' +
                     '<div class="info-header-title">' + escapeHtml(headerLabel) + '</div>' +
-                    '<div class="info-header-sub">Beziehung</div>' +
+                    '<div class="info-header-sub">' + subParts.join(' · ') + '</div>' +
                 '</div>' +
                 '<button class="info-header-close" data-action="close" title="Schliessen" aria-label="Panel schliessen">' +
                     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
@@ -398,11 +626,9 @@ window.CanvasApp.Panel = (function () {
             '</div>' +
             '<div class="info-section">' +
                 '<div class="info-section-label">Metadaten</div>' +
-                '<dl class="info-meta">' +
-                    '<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(edge.id) + '</code></dd>' +
-                    '<dt>Label</dt><dd>' + (edge.label ? escapeHtml(edge.label) : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
-                '</dl>' +
+                '<dl class="info-meta">' + metaRows.join('') + '</dl>' +
             '</div>' +
+            descriptionSectionHtml(edge.note) +
             '<div class="info-section">' +
                 '<div class="info-section-label">Quelle</div>' +
                 '<ul class="info-set-list">' + endpointRow(fromLabel, edge.from, fromNode) + '</ul>' +
@@ -471,12 +697,11 @@ window.CanvasApp.Panel = (function () {
             '</div>';
 
         // Metadata section — only render rows that have a value, like the
-        // node panel does.
+        // node panel does. The Beschreibung block is now its own section
+        // (via descriptionSectionHtml) so it sits in the same slot across
+        // every panel kind, instead of being mixed into Metadaten.
         var metaRows = [];
         metaRows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(setObj.id) + '</code></dd>');
-        if (setObj.description) {
-            metaRows.push('<dt>Beschreibung</dt><dd>' + escapeHtml(setObj.description) + '</dd>');
-        }
         if (setObj.lineage) {
             metaRows.push('<dt>Quelle</dt><dd>' + escapeHtml(setObj.lineage) + '</dd>');
         }
@@ -484,7 +709,8 @@ window.CanvasApp.Panel = (function () {
             '<div class="info-section">' +
                 '<div class="info-section-label">Metadaten</div>' +
                 '<dl class="info-meta">' + metaRows.join('') + '</dl>' +
-            '</div>';
+            '</div>' +
+            descriptionSectionHtml(setObj.description);
 
         // Usage section — list of nodes referencing this set.
         var usageHtml;
@@ -516,9 +742,45 @@ window.CanvasApp.Panel = (function () {
 
         return headerHtml +
             metadataSection +
+            processingSectionHtml(setObj.processing) +
             '<div class="info-section">' +
                 '<div class="info-section-label">Verwendung <span class="info-section-count">' + byNode.length + '</span></div>' +
                 usageHtml +
+            '</div>';
+    }
+
+    /**
+     * DSG Art. 12 "Verzeichnis der Bearbeitungstätigkeiten" block. Renders
+     * only when the pset has a processing_activity row in the DB; field
+     * order follows the legal template (Zweck → Rechtsgrundlage → …).
+     * Boolean fields (cross-border transfer, DPIA required) only render
+     * when explicitly true since "false" is the default and clutters.
+     */
+    function processingSectionHtml(p) {
+        if (!p) return '';
+        var rows = [];
+        if (p.purpose)         rows.push(metaRow('Zweck',           escapeHtml(p.purpose)));
+        if (p.legalBasis)      rows.push(metaRow('Rechtsgrundlage', escapeHtml(p.legalBasis)));
+        if (p.dataSubjects)    rows.push(metaRow('Betroffene',      escapeHtml(p.dataSubjects)));
+        if (p.recipients)      rows.push(metaRow('Empfänger',       escapeHtml(p.recipients)));
+        if (p.retentionPolicy) rows.push(metaRow('Aufbewahrung',    escapeHtml(p.retentionPolicy)));
+        if (p.crossBorderTransfer) {
+            var countries = (p.transferCountries && p.transferCountries.length)
+                ? ' <span style="color:var(--color-text-secondary)">(' + escapeHtml(p.transferCountries.join(', ')) + ')</span>'
+                : '';
+            rows.push(metaRow('Auslandtransfer', 'Ja' + countries));
+        }
+        if (p.dpiaRequired) {
+            var dpia = p.dpiaUrl
+                ? '<a href="' + escapeAttr(p.dpiaUrl) + '" target="_blank" rel="noopener noreferrer" class="info-link">DSFA-Bericht ↗</a>'
+                : 'Ja';
+            rows.push(metaRow('DSFA erforderlich', dpia));
+        }
+        if (!rows.length) return '';
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Datenschutz</div>' +
+                '<dl class="info-meta">' + rows.join('') + '</dl>' +
             '</div>';
     }
 
@@ -527,6 +789,11 @@ window.CanvasApp.Panel = (function () {
         var edges = State.getEdges();
         var memberIds = {};
         members.forEach(function (n) { memberIds[n.id] = true; });
+        // Phase 2: per-system metadata from systems[] (technology stack,
+        // base URL, security zone, …). Null when the canvas doesn't carry
+        // a system_meta row for this label — we still render the synthesised
+        // member overview, just without the technical details section.
+        var sysMeta = (State.getSystemMeta && State.getSystemMeta(sysName)) || null;
 
         var setCount = 0;
         var colCount = 0;
@@ -570,6 +837,31 @@ window.CanvasApp.Panel = (function () {
             }).join('') + '</ul>'
             : '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">Keine externen Beziehungen</div>';
 
+        // Technical-details section from system_meta. Each row only renders
+        // when the underlying field is set, so an empty system_meta row
+        // collapses the whole section away.
+        var techRows = [];
+        if (sysMeta) {
+            if (sysMeta.technologyStack) techRows.push(metaRow('Technologie',  escapeHtml(sysMeta.technologyStack)));
+            if (sysMeta.baseUrl)         techRows.push(metaRow('Base URL',     urlFmt(sysMeta.baseUrl)));
+            if (sysMeta.securityZone)    techRows.push(metaRow('Sicherheitszone', escapeHtml(sysMeta.securityZone)));
+            if (sysMeta.isActive === false) {
+                techRows.push(metaRow('Status', '<span style="color:var(--color-text-placeholder)">Inaktiv</span>'));
+            }
+        }
+        var techSection = techRows.length
+            ? '<div class="info-section">' +
+                  '<div class="info-section-label">Technik</div>' +
+                  '<dl class="info-meta">' + techRows.join('') + '</dl>' +
+              '</div>'
+            : '';
+
+        // System-level governance pills mirror the node header layout.
+        var sysPills = sysMeta ? governancePillsHtml({
+            classification: sysMeta.classification,
+            lifecycle:      sysMeta.lifecycle
+        }) : '';
+
         return '' +
             '<div class="info-header">' +
                 '<span class="info-header-icon" style="background:var(--color-bg-accent);color:var(--color-bg-accent-strong)">' +
@@ -578,13 +870,18 @@ window.CanvasApp.Panel = (function () {
                 '<div class="info-header-text">' +
                     '<div class="info-header-title">' + escapeHtml(sysName) + '</div>' +
                     '<div class="info-header-sub">System · ' + members.length + ' Knoten · ' + colCount + ' Attribute</div>' +
+                    sysPills +
                 '</div>' +
                 '<button class="info-header-close" data-action="close" title="Schliessen" aria-label="Panel schliessen">' +
                     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
                 '</button>' +
             '</div>' +
+            descriptionSectionHtml(sysMeta && sysMeta.description) +
             '<div class="info-section">' +
-                '<div class="info-section-label">Übersicht</div>' +
+                // Renamed from "Übersicht" to "Metadaten" so every panel
+                // kind (node, attribute, system, edge, pset) uses the
+                // same section name for its primary metadata block.
+                '<div class="info-section-label">Metadaten</div>' +
                 '<dl class="info-meta">' +
                     '<dt>Knoten</dt><dd>' + members.length + (typeBreakdown ? ' <span style="color:var(--color-text-secondary)">(' + escapeHtml(typeBreakdown) + ')</span>' : '') + '</dd>' +
                     '<dt>Sets</dt><dd>' + setCount + '</dd>' +
@@ -592,8 +889,15 @@ window.CanvasApp.Panel = (function () {
                     '<dt>Tags</dt><dd>' + tagsHtml + '</dd>' +
                 '</dl>' +
             '</div>' +
+            techSection +
+            rolesSectionHtml(sysMeta && sysMeta.roles) +
+            standardsSectionHtml(sysMeta && sysMeta.standards) +
             '<div class="info-section">' +
-                '<div class="info-section-label">Externe Beziehungen <span class="info-section-count">' + external.length + '</span></div>' +
+                // Renamed from "Externe Beziehungen" → just "Beziehungen"
+                // for consistency with the node panel's section name.
+                // The "external" qualifier is now communicated by the
+                // section's content (only crossing edges are shown).
+                '<div class="info-section-label">Beziehungen <span class="info-section-count">' + external.length + '</span></div>' +
                 externalHtml +
             '</div>';
     }
@@ -691,6 +995,16 @@ window.CanvasApp.Panel = (function () {
             ? '<dt>System</dt><dd><a class="info-link" data-action="select-system" data-system="' + escapeAttr(node.system) + '" href="#">' + escapeHtml(node.system) + '</a></dd>'
             : '<dt>System</dt><dd><span style="color:var(--color-text-placeholder)">–</span></dd>';
 
+        // PII pill in the header — DSG-relevant flag, surfaced loud since
+        // catalog users need to know at a glance whether an attribute
+        // carries personal data. Also rendered as a Metadaten row below
+        // so the value is searchable + addressable.
+        var piiPill = col.pii
+            ? '<div class="info-header-pills"><span class="info-pill info-pill--pii" data-value="' + escapeAttr(col.pii) + '">' +
+                escapeHtml(piiLabel(col.pii)) +
+              '</span></div>'
+            : '';
+
         return '' +
             '<div class="info-header">' +
                 '<span class="info-header-icon" style="background:var(--color-bg-page);color:var(--color-text-secondary);font-family:var(--font-mono);font-size:10px;font-weight:600">' +
@@ -699,6 +1013,7 @@ window.CanvasApp.Panel = (function () {
                 '<div class="info-header-text">' +
                     '<div class="info-header-title" style="font-family:var(--font-mono);font-size:var(--text-mono)">' + keyBadge + escapeHtml(col.name) + '</div>' +
                     '<div class="info-header-sub">' + subParts.join(' · ') + '</div>' +
+                    piiPill +
                 '</div>' +
                 '<button class="info-header-close" data-action="close" title="Schliessen">' +
                     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
@@ -710,12 +1025,19 @@ window.CanvasApp.Panel = (function () {
                     '<dt>Name</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.name) + '</code></dd>' +
                     '<dt>Typ</dt><dd>' + (col.type ? '<code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.type) + '</code>' : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
                     '<dt>Schlüssel</dt><dd>' + (col.key ? '<span class="info-key-badge ' + keyClass + '">' + escapeHtml(col.key) + '</span>' : '<span style="color:var(--color-text-placeholder)">–</span>') + '</dd>' +
+                    (col.nullable === true || col.nullable === false
+                        ? '<dt>Nullable</dt><dd>' + (col.nullable ? 'Ja' : 'Nein') + '</dd>'
+                        : '') +
+                    (col.pii
+                        ? '<dt>Personenbezug</dt><dd>' + escapeHtml(piiLabel(col.pii)) + '</dd>'
+                        : '') +
                     '<dt>Property Set</dt><dd>' + setPickerOrLabelHtml(node, col) + '</dd>' +
                     (col.sourceStructure
                         ? '<dt>SAP-Struktur</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(col.sourceStructure) + '</code></dd>'
                         : '') +
                 '</dl>' +
             '</div>' +
+            descriptionSectionHtml(col.description) +
             '<div class="info-section">' +
                 '<div class="info-section-label">Kontext</div>' +
                 '<dl class="info-meta">' +
@@ -734,6 +1056,20 @@ window.CanvasApp.Panel = (function () {
                 var cl = findCodelistForAttribute(node, col);
                 return cl ? codelistValuesSectionHtml(cl) : '';
             })();
+    }
+
+    function piiLabel(v) {
+        // Schema enum values for attribute_meta.personal_data_category.
+        // Common CH/Swiss DSG taxonomy: keine | personenbezogen |
+        // besonders schuetzenswert. Falls through to raw value for any
+        // free-text variants in legacy data.
+        switch (v) {
+            case 'keine':                       return 'Keine';
+            case 'personenbezogen':             return 'Personenbezogen';
+            case 'besonders_schuetzenswert':    return 'Besonders schützenswert';
+            case 'besonders schützenswert':     return 'Besonders schützenswert';
+            default:                            return v;
+        }
     }
 
     function typeLabel(t) {
