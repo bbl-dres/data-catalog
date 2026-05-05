@@ -29,9 +29,13 @@ window.CanvasApp.Canvas = (function () {
     // gestures funnel through.
     var transformListeners = [];
 
-    // 0.10 = label reads "10%" — going lower meant the percentage display
-    // approached 0% and individual node labels dropped below sub-pixel.
-    var MIN_SCALE = 0.10;
+    // 0.01 ≈ "1%" floor — very large auto-laid-out graphs (IBPDI is several
+    // thousand world-pixels wide) need to fit-to-screen at single-digit
+    // percentages. Below 0.005 the percentage display rounds to "0%",
+    // which the user explicitly wanted as the visible bottom of the range.
+    // The math itself stays well clear of divide-by-zero (pinch + zoom
+    // anchor calculations divide by `scale`, never by zero).
+    var MIN_SCALE = 0.01;
     var MAX_SCALE = 3.0;
     var ZOOM_STEP = 0.1;     // additive step for fine adjustments at scale ≥ 1
     var ZOOM_FACTOR = 1.25;  // multiplicative factor for button zoom
@@ -1813,7 +1817,13 @@ window.CanvasApp.Canvas = (function () {
      * The Fit button (zoom-fit) still calls fitToScreen so users can
      * always reach a full overview on demand.
      */
-    var INITIAL_MIN_SCALE = 0.25;
+    // First-paint floor was 0.25 — a "don't make BBL too tiny on a big
+     // monitor" protection — but huge graphs (IBPDI-scale, ~10k×8k px after
+     // auto-layout) genuinely need to fit at single-digit percent. Drop to
+     // 0.05 so the initial framing actually shows the whole graph; the LOD
+     // tiers carry the now-tiny cards as silhouettes + system labels, which
+     // is what the user wants for orientation on first load.
+    var INITIAL_MIN_SCALE = 0.05;
     var INITIAL_MAX_SCALE = 1.0;
     function initialView() {
         var nodes = State.getNodes();
@@ -1972,9 +1982,20 @@ window.CanvasApp.Canvas = (function () {
         updateLod();
         if (zoomLabel) {
             var pct = Math.round(scale * 100);
-            if (pct !== lastZoomPct) {
-                zoomLabel.textContent = pct + '%';
-                lastZoomPct = pct;
+            // Append the LOD descriptor at the extremes — gives users a
+            // narrative for "why don't I see edge labels at 30 %?" instead
+            // of letting the disappearing detail read as a bug. Mid / full
+            // tiers get the bare percentage (no annotation needed; you can
+            // see everything at those levels).
+            var lodLabel = '';
+            if (lod === 'far') lodLabel = ' · Übersicht';
+            else if (lod === 'low') lodLabel = ' · Karte';
+            // Compose-then-compare so we don't fight ourselves on the LOD
+            // boundary (where pct may not change but the LOD does).
+            var next = pct + '%' + lodLabel;
+            if (next !== lastZoomPct) {
+                zoomLabel.textContent = next;
+                lastZoomPct = next;
             }
         }
         // Selection chrome (node action bar) lives in canvas viewport coords —

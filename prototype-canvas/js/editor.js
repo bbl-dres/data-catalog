@@ -177,10 +177,12 @@ window.CanvasApp.Editor = (function () {
 
         if (State.getMode() !== 'edit') return;
 
-        // Delete node — no confirm; users have Ctrl+Z and the cancel-revert net.
+        // Delete node — gated by requestNodeDelete which decides whether to
+        // confirm based on attribute count. Ctrl+Z is the safety net for
+        // small nodes; large ones get an explicit confirm.
         if (e.target.closest('[data-action="delete-node"]')) {
             e.stopPropagation();
-            State.deleteNode(nodeId);
+            requestNodeDelete(nodeId);
             return;
         }
 
@@ -474,12 +476,13 @@ window.CanvasApp.Editor = (function () {
             return;
         }
 
-        // Trash button — deletes the relation
+        // Trash button — gated by requestEdgeDelete (confirms only when
+        // the edge carries a label or cardinality worth preserving).
         var delBtn = e.target.closest('[data-action="delete-edge"]');
         if (delBtn) {
             e.stopPropagation();
             var selId = State.getSelectedEdgeId();
-            if (selId) State.deleteEdge(selId);
+            if (selId) requestEdgeDelete(selId);
             return;
         }
 
@@ -650,13 +653,73 @@ window.CanvasApp.Editor = (function () {
         var edgeId = State.getSelectedEdgeId();
         if (edgeId) {
             e.preventDefault();
-            State.deleteEdge(edgeId);
+            requestEdgeDelete(edgeId);
             return;
         }
         var nodeId = State.getSelectedId();
         if (nodeId) {
             e.preventDefault();
+            requestNodeDelete(nodeId);
+        }
+    }
+
+    /**
+     * Destructive-grammar gate. Single-attribute deletes and bare-edge
+     * deletes go through unconfirmed because Ctrl+Z (now also a visible
+     * toolbar button) is right there. We only stop and confirm when
+     * losing the action would cost real user work:
+     *   - nodes with ≥ 5 attributes (fewer is trivially re-creatable)
+     *   - edges that carry a label or cardinality (the relationship
+     *     metadata isn't recoverable from drawing the line again)
+     * Aligns the "asks-before-doing" behaviour across canvas/edge/node
+     * deletion paths — previously canvas-delete confirmed but node and
+     * edge did not, which surprised users.
+     */
+    function requestNodeDelete(nodeId) {
+        var node = State.getNode(nodeId);
+        if (!node) return;
+        var attrCount = (node.columns || []).length;
+        if (attrCount < 5) {
             State.deleteNode(nodeId);
+            return;
+        }
+        var App = window.CanvasApp.App;
+        var label = node.label || node.id;
+        if (App && App.confirmDialog) {
+            App.confirmDialog({
+                title: 'Knoten "' + label + '" löschen?',
+                body: 'Der Knoten und seine ' + attrCount + ' Attribute werden entfernt. ' +
+                      'Mit "Rückgängig" (Strg+Z) wieder herstellbar.',
+                confirmText: 'Löschen',
+                cancelText:  'Abbrechen',
+                danger: true
+            }).then(function (ok) { if (ok) State.deleteNode(nodeId); });
+        } else {
+            State.deleteNode(nodeId);
+        }
+    }
+
+    function requestEdgeDelete(edgeId) {
+        var edge = State.getEdge(edgeId);
+        if (!edge) return;
+        var hasMeta = !!(edge.label || edge.fromCardinality || edge.toCardinality);
+        if (!hasMeta) {
+            State.deleteEdge(edgeId);
+            return;
+        }
+        var App = window.CanvasApp.App;
+        if (App && App.confirmDialog) {
+            App.confirmDialog({
+                title: 'Beziehung löschen?',
+                body: 'Die Beziehung trägt ' +
+                      (edge.label ? 'eine Beschriftung' : 'Kardinalität') +
+                      '. Mit "Rückgängig" (Strg+Z) wieder herstellbar.',
+                confirmText: 'Löschen',
+                cancelText:  'Abbrechen',
+                danger: true
+            }).then(function (ok) { if (ok) State.deleteEdge(edgeId); });
+        } else {
+            State.deleteEdge(edgeId);
         }
     }
 
@@ -700,7 +763,7 @@ window.CanvasApp.Editor = (function () {
             var action = btn.getAttribute('data-action');
             var selId = State.getSelectedId();
             if (!selId) return;
-            if (action === 'delete-node') State.deleteNode(selId);
+            if (action === 'delete-node') requestNodeDelete(selId);
         });
         return el;
     }

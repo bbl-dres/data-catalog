@@ -11,6 +11,11 @@
   --color-bg-accent: #E8EEF6;
   --color-bg-accent-strong: #1F4E8A;
   --color-bg-accent-strong-rgb: 31, 78, 138;
+  /* Darker shade of --color-bg-accent-strong used by primary-button hovers
+     across the toolbar, floating zoom toolbar, and sign-in button. Was
+     repeated as a literal #183C6B in three rules — tokenised so a brand
+     accent change only edits one place. */
+  --color-bg-accent-strong-hover: #183C6B;
   --color-bg-grid: #ECECEA;
   --color-bg-grid-dot: #D8D8D5;
 
@@ -53,12 +58,30 @@
   --color-type-file-tint:     #A8A8A2;
   --color-type-codelist-tint: #5FC2B0;
 
+  /* Key-badge palette. --color-fk shares its hex with --color-warning and
+     --color-type-api by design — three uses of the same amber, each in a
+     different context (column-row badge / unsaved-changes indicator /
+     API node tint). On any single screen they're disambiguated by
+     placement and adjacent iconography (e.g. the unsaved-indicator's
+     leading dot pseudo-element); the shared hex keeps the brand palette
+     compact without introducing a near-duplicate amber. */
   --color-pk: #1F4E8A;
   --color-fk: #A16800;
   --color-uk: #6B46C1;
+  --color-uk-bg: #F3EDFA;       /* lighter UK shade — used by .api-method.patch */
+
+  /* Modal backdrop — used by both confirmDialog overlay and any future
+     full-screen blocking overlay. Single token avoids the two existing
+     literals drifting apart. */
+  --color-overlay-backdrop: rgba(17, 24, 39, 0.32);
+
+  /* Translucent surface used for the big system-overlay labels at low
+     zoom — the labels need to "stencil" through the canvas dot grid. */
+  --color-bg-surface-translucent: rgba(255, 255, 255, 0.88);
 
   --color-error: #B02A1F;
   --color-error-bg: #FEF0EE;
+  --color-error-hover: #8E1F16;
   --color-success: #15803D;
   --color-success-bg: #DCFCE7;
   --color-warning: #A16800;

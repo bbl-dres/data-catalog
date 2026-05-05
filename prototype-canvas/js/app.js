@@ -62,6 +62,16 @@ window.CanvasApp.App = (function () {
                 window.CanvasApp.Overview.render();
                 return;
             }
+            // Set the canvas transform (and thus the data-lod class) BEFORE
+            // any nodes are painted. Otherwise the initial render runs at
+            // scale = 1 (LOD = full → all attribute rows + edges + labels
+            // visible) and snaps to the home-view scale a frame later —
+            // which is exactly the "loads at full detail then collapses"
+            // flash the user reported. goHome reads positions from state
+            // (not DOM), so it works pre-renderAll; getNodeRect's 220×80
+            // fallback is close enough for the fit-with-floor math.
+            window.CanvasApp.Canvas.goHome();
+
             window.CanvasApp.Canvas.renderAll();
             if (State.hasActiveFilters() && window.CanvasApp.Canvas.applyFilterDim) {
                 window.CanvasApp.Canvas.applyFilterDim();
@@ -72,11 +82,10 @@ window.CanvasApp.App = (function () {
             window.CanvasApp.Minimap.render();
             updateSaveAffordance();
             updateCanvasEmpty();
-            // Initial framing on first paint. goHome applies the curator's
-            // saved Home view if present, otherwise falls back to
-            // initialView (fit-with-floor, never below 25%). Double rAF —
-            // first frame paints the freshly-rendered DOM, second frame
-            // fires after layout has been computed.
+            // Refine the framing once layout has settled — the pre-paint
+            // goHome used fallback node sizes, so a second pass picks up
+            // the actual measured heights. Double rAF: first frame for
+            // paint, second frame for layout to be queryable.
             requestAnimationFrame(function () {
                 requestAnimationFrame(function () {
                     window.CanvasApp.Canvas.goHome();
@@ -407,6 +416,13 @@ window.CanvasApp.App = (function () {
             State.setMode('edit');
         });
 
+        var undoBtn = document.getElementById('btn-undo');
+        if (undoBtn) {
+            undoBtn.addEventListener('click', function () {
+                performUndo();
+            });
+        }
+
         document.getElementById('btn-cancel').addEventListener('click', function () {
             if (document.activeElement && document.activeElement.blur) {
                 document.activeElement.blur();
@@ -507,14 +523,19 @@ window.CanvasApp.App = (function () {
                 if (State.getMode() !== 'edit') return;
                 if (typing) return; // browser handles inline text undo
                 e.preventDefault();
-                if (!State.canUndo()) {
-                    toast('Nichts zum Rückgängigmachen', 'success');
-                    return;
-                }
-                var label = State.undo();
-                toast('Rückgängig: ' + (label || 'letzte Aktion'), 'success');
+                performUndo();
             }
         });
+    }
+
+    /** Trigger one undo step — shared by Ctrl+Z and the toolbar Undo button. */
+    function performUndo() {
+        if (!State.canUndo()) {
+            toast('Nichts zum Rückgängigmachen', 'success');
+            return;
+        }
+        var label = State.undo();
+        toast('Rückgängig: ' + (label || 'letzte Aktion'), 'success');
     }
 
     function isTypingInField(t) {
@@ -631,8 +652,15 @@ window.CanvasApp.App = (function () {
             indicator.textContent = '';
         } else {
             indicator.removeAttribute('hidden');
+            // The leading warning dot is added by .unsaved-indicator::before
+            // in CSS, not here — it disambiguates "warning amber" from the
+            // adjacent FK badge / API type amber (all three share #A16800
+            // but mean different things). Just write the text.
             indicator.textContent = n === 1 ? '1 ungespeicherte Änderung' : n + ' ungespeicherte Änderungen';
         }
+        // Undo button mirrors State.canUndo() — same emit cadence.
+        var undoBtn = document.getElementById('btn-undo');
+        if (undoBtn) undoBtn.disabled = !inEdit || !State.canUndo();
     }
 
     var KIND_ICONS = {

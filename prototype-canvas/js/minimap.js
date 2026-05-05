@@ -26,16 +26,10 @@ window.CanvasApp.Minimap = (function () {
     // kiss the minimap border. Big enough to feel like breathing room at any
     // graph size.
     var WORLD_PADDING = 80;
-    // Above this node count the per-node rectangles overlap into pixel-soup
-    // (256 × 1–2 px each in a 240 × 160 viewBox blurs into a smear that
-    // tells the user nothing). On dense graphs we render only the system
-    // rectangles — discrete cluster blocks the user can use to orient. The
-    // viewport rect still works the same way.
-    var DENSE_NODE_THRESHOLD = 100;
-    // Default node size used by the minimap so we don't have to read
-    // offsetWidth/Height per node (256 forced layouts on IBPDI). The
-    // minimap is an overview — exact node dimensions don't matter, only
-    // approximate cluster footprints.
+    // Default node size used as a fallback when DOM hasn't measured yet
+    // (initial paint, before Canvas.renderAll has appended elements).
+    // Once the DOM is ready, nodeRectForMinimap delegates to
+    // Canvas.getNodeRect which reads the real offsetWidth/Height.
     var DEFAULT_NODE_W = 320;
     var DEFAULT_NODE_H = 200;
 
@@ -271,12 +265,14 @@ window.CanvasApp.Minimap = (function () {
     function renderNodes() {
         nodesGroup.innerHTML = '';
         var nodes = State.getNodes();
-        // Dense-graph short-circuit: above this count individual rects
-        // overlap to a few pixels and add no information — the system
-        // rectangles already convey cluster footprint, and skipping the
-        // per-node loop saves ~256 SVG createElement + 5 setAttribute
-        // calls per render on IBPDI.
-        if (nodes.length > DENSE_NODE_THRESHOLD) return;
+        // Note: we used to short-circuit above 100 nodes (rendered only
+        // the system rectangles) on the assumption that individual rects
+        // overlap into illegible pixel-soup at IBPDI scale. In practice
+        // they're still useful — discrete coloured marks read as "node
+        // density" and let the user spot tall hub clusters that the
+        // system rectangle alone hides. Cost (~256 setAttribute calls
+        // per render) is fine because minimap renders are rAF-coalesced
+        // and only fire on state events, not on every pan/zoom tick.
         var filtersActive = State.hasActiveFilters();
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
@@ -411,8 +407,20 @@ window.CanvasApp.Minimap = (function () {
         var e = lastDragEvent;
         lastDragEvent = null;
         if (!e || !isMinimapDragging || !dragGrabOffset) return;
-        // Pan so the viewport's top-left tracks (cursor − grab offset).
+        // Clamp the cursor's map coordinates to the minimap viewBox so the
+        // viewport rectangle stops at the minimap edge instead of trailing
+        // the cursor off-screen. Pointer capture (setPointerCapture in
+        // onPointerDown) keeps pointermove firing even when the cursor
+        // exits the SVG bounds — without this clamp, the canvas would
+        // pan further with every pixel of cursor travel beyond the
+        // minimap, which the user reads as "main view follows the mouse"
+        // and feels broken.
         var m = clientToMap(e);
+        if (m.x < 0)      m.x = 0;
+        if (m.x > WIDTH)  m.x = WIDTH;
+        if (m.y < 0)      m.y = 0;
+        if (m.y > HEIGHT) m.y = HEIGHT;
+        // Pan so the viewport's top-left tracks (cursor − grab offset).
         var w = mapToWorld(m.x, m.y);
         var newLeftWorld = w.x - dragGrabOffset.x;
         var newTopWorld  = w.y - dragGrabOffset.y;

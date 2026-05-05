@@ -88,16 +88,20 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
    Equal-width 1fr side columns mirror each other so the auto-sized middle
    lands at true page-centre, regardless of how wide actions is. */
 .app-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  /* Flex layout: brand mark + breadcrumb sit at the left, header-actions
+     (search / lang / avatar) push to the right via `margin-left: auto`.
+     Previous 3-column grid was tuned to centre the breadcrumb — the
+     breadcrumb now sits adjacent to the logo, so the simpler flex pattern
+     fits better. */
+  display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   padding: 0 var(--space-5);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-subtle);
   box-shadow: var(--shadow-header);
 }
-.header-logo { grid-column: 1; justify-self: start; }
+.header-logo { flex-shrink: 0; }
 .header-logo {
   display: inline-flex;
   align-items: center;
@@ -242,7 +246,9 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   border-radius: 999px;
   white-space: nowrap;
 }
-.header-actions { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: var(--space-2); }
+/* Pushed to the right edge of the header by margin-left:auto so the
+   breadcrumb has room to grow on the left. */
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
 .lang-marker {
   font-size: var(--text-label);
   font-weight: 500;
@@ -407,7 +413,7 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 .auth-modal-input:focus {
   outline: none;
   border-color: var(--color-border-accent);
-  box-shadow: 0 0 0 3px rgba(31, 78, 138, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--color-bg-accent-strong-rgb), 0.12);
 }
 .auth-modal-input:disabled {
   background: var(--color-bg-surface-hover);
@@ -581,25 +587,21 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 /* ---- Toolbar ---- */
 .app-toolbar {
-  /* 3-column grid: breadcrumb left, view-seg dead-centre, action buttons
-     right. `minmax(0, 1fr)` on the outer columns (rather than plain `1fr`)
-     allows them to shrink below their content's intrinsic width — combined
-     with `min-width: 0` + `overflow: hidden` on the children, the
-     breadcrumb truncates with an ellipsis and the action cluster wraps
-     internally rather than pushing the centre seg off-axis. The previous
-     `1fr auto 1fr` let the wider side displace the centre once edit-mode
-     buttons appeared. */
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /* Two-cluster flex: view-seg on the left, action buttons on the right.
+     `space-between` keeps them at the outer edges; on narrow viewports
+     the right cluster wraps internally rather than displacing the left.
+     Was a 3-column grid when the centre was used for view-seg — simpler
+     now that the breadcrumb has moved up to the header. */
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
   padding: 0 var(--space-5);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-subtle);
 }
-.toolbar-left   { grid-column: 1; justify-self: start;  display: flex; align-items: center; gap: var(--space-2); min-width: 0; overflow: hidden; }
-.toolbar-center { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: var(--space-2); }
-.toolbar-right  { grid-column: 3; justify-self: end;    display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-left  { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-right { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .toolbar-label { font-size: var(--text-small); color: var(--color-text-secondary); }
 .toolbar-select, .toolbar-input {
   padding: 6px 10px;
@@ -611,7 +613,8 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   color: var(--color-text-primary);
 }
 .toolbar-input { min-width: 200px; }
-.toolbar-sep { width: 1px; height: 20px; background: var(--color-border-subtle); margin: 0 var(--space-2); }
+/* Vertical divider — height matches the toolbar-input/seg-btn line-box (≈20 px). */
+.toolbar-sep { width: 1px; height: var(--space-5); background: var(--color-border-subtle); margin: 0 var(--space-2); }
 
 .tb-btn {
   display: inline-flex;
@@ -625,12 +628,19 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
   color: var(--color-text-primary);
 }
 .tb-btn:hover { background: var(--color-bg-surface-hover); border-color: var(--color-border-strong); }
+/* Icon-only variant — drops the gap and squares the padding so a single
+   icon sits centred. Used for the toolbar undo button (and any future
+   compact-action button). */
+.tb-btn-icon {
+  gap: 0;
+  padding: 6px 8px;
+}
 .tb-btn-primary {
   background: var(--color-bg-accent-strong);
   color: var(--color-text-on-accent);
   border-color: var(--color-bg-accent-strong);
 }
-.tb-btn-primary:hover { background: #183C6B; border-color: #183C6B; }
+.tb-btn-primary:hover { background: var(--color-bg-accent-strong-hover); border-color: var(--color-bg-accent-strong-hover); }
 /* Disabled state for primary toolbar buttons — keep brand colour but
    communicate "no action available" with reduced contrast and no hover. */
 .tb-btn-primary:disabled,
@@ -1405,23 +1415,27 @@ body.hide-systems .group-layer { display: none; }
   position: absolute;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
-  background: rgba(31, 78, 138, 0.025);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.025);
   pointer-events: none;
   transition: border-color 150ms ease, background-color 150ms ease;
 }
 .group-box.is-selected {
   border-color: var(--color-bg-accent-strong);
-  background: rgba(31, 78, 138, 0.07);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.07);
 }
 .group-box-label {
   position: absolute;
+  /* -10 px lifts the label half its own height above the box edge so the
+     label "punches through" the border. Magic by necessity (it's a vertical
+     centring on top of a 1 px stroke), but anchored to the 18 px label
+     height. */
   top: -10px;
-  left: 16px;
+  left: var(--space-4);
   height: 18px;
   display: inline-flex;
   align-items: center;
   background: var(--color-bg-page);
-  padding: 0 10px;
+  padding: 0 var(--space-3);
   font-family: var(--font-sans);
   font-size: var(--text-label);
   font-weight: 500;
@@ -1477,10 +1491,10 @@ body.hide-systems .group-layer { display: none; }
 /* Group box: bump the fill so the system region is unmistakably visible
    when its 1px border has shrunk to sub-pixel. */
 .canvas.is-low-zoom .group-box {
-  background: rgba(31, 78, 138, 0.08);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.08);
 }
 .canvas.is-low-zoom .group-box.is-selected {
-  background: rgba(31, 78, 138, 0.18);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
 }
 
 /* ---- LOD-specific overrides ----
@@ -1579,7 +1593,7 @@ body.hide-systems .group-layer { display: none; }
   pointer-events: none;
   opacity: 0;
   padding: 6px 16px;
-  background: rgba(255, 255, 255, 0.88);
+  background: var(--color-bg-surface-translucent);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
@@ -1776,12 +1790,12 @@ body.mode-edit .node.is-selected .node-port { display: block; }
    iPhones with the gesture bar, 0 elsewhere. Keeps the zoom controls out
    of the OS gesture-handle zone where taps would otherwise be ambiguous. */
 .ft-bottom-left  {
-  bottom: max(16px, env(safe-area-inset-bottom));
-  left: 16px;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  left: var(--space-4);
 }
 .ft-left-center  {
   top: 50%;
-  left: 16px;
+  left: var(--space-4);
   transform: translateY(-50%);
   flex-direction: column;
   padding: 4px;
@@ -1836,9 +1850,17 @@ body.mode-edit .node.is-selected .node-port { display: block; }
   color: var(--color-text-on-accent);
   padding: 6px 12px;
 }
-.ft-btn-primary:hover { background: #183C6B; }
+.ft-btn-primary:hover { background: var(--color-bg-accent-strong-hover); }
 .ft-sep { width: 1px; height: 16px; background: var(--color-border-subtle); }
 .ft-label { font-size: var(--text-small); color: var(--color-text-secondary); padding: 0 6px; min-width: 38px; text-align: center; }
+/* Zoom indicator carries an LOD descriptor at far/low ("30% · Karte") so
+   it can grow up to ~120 px. Tabular-nums stops the percentage column
+   from dancing as the integer width changes. */
+.ft-label--zoom {
+  min-width: 120px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
 
 /* ---- Minimap (bottom-right overview panel) ----
    180×120 SVG window mounted in the canvas viewport. Coloured rects per
@@ -1846,8 +1868,8 @@ body.mode-edit .node.is-selected .node-port { display: block; }
    viewport rectangle that pans the main canvas. Hidden outside diagram view. */
 .minimap {
   position: absolute;
-  bottom: max(16px, env(safe-area-inset-bottom));
-  right: 16px;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  right: var(--space-4);
   width: 240px;
   height: 160px;
   background: var(--color-bg-surface);
@@ -1865,7 +1887,7 @@ body[data-view="diagram"] .minimap { display: block; }
 /* Push the minimap left when the info panel is open — same logic the
    bottom-right zoom toolbar used to use. */
 body[data-panel="open"][data-view="diagram"] .minimap {
-  right: calc(var(--info-panel-width, 360px) + 16px);
+  right: calc(var(--info-panel-width, 360px) + var(--space-4));
 }
 .minimap svg {
   width: 100%;
@@ -1903,6 +1925,21 @@ body[data-panel="open"][data-view="diagram"] .minimap {
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
+  /* Dashed border = "movable thing" — universal draggability cue, much
+     stronger than the cursor-only hint we had before. SVG <rect> doesn't
+     accept ::before pseudos so we can't paint corner grab-dots, but the
+     dash pattern reads the same role. */
+  stroke-dasharray: 4 3;
+  transition: stroke-width 120ms ease, stroke-dasharray 120ms ease;
+}
+/* Hover / drag → solid + bolder stroke, signalling "you've engaged the
+   handle". Driven by classes that minimap.js already toggles on the SVG
+   wrapper for cursor styling (.is-over-viewport, .is-dragging). */
+.minimap svg.is-over-viewport #minimap-viewport,
+.minimap svg.is-dragging #minimap-viewport {
+  stroke-dasharray: none;
+  stroke-width: 2;
+  fill-opacity: 0.18;
 }
 
 body.mode-view .edit-only { display: none; }
@@ -1926,7 +1963,7 @@ body.is-signed-in .noauth-only { display: none; }
   display: inline-flex;
   align-items: center;
 }
-.header-signin-btn:hover { background: #183C6B; }
+.header-signin-btn:hover { background: var(--color-bg-accent-strong-hover); }
 
 /* Canvas-visibility pill in the toolbar breadcrumb. Sits next to the canvas
    label so users always see whether the current canvas is anon-readable.
@@ -2256,12 +2293,28 @@ body.mode-edit [contenteditable="true"] {
   border-radius: 2px;
   padding: 0 2px;
   margin: 0 -2px;
+  /* Persistent affordance — a faint dotted underline shows that the text
+     is editable, without waiting for hover. The previous hover-only cue
+     made first-time users miss inline edit altogether ("how do I rename
+     this?"). text-underline-offset pulls it 2 px below the baseline so
+     it sits on the line, not through the descenders. */
+  text-decoration: underline dotted var(--color-text-placeholder);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
   transition: background-color 120ms ease;
 }
-body.mode-edit [contenteditable="true"]:hover { background: var(--color-bg-page); }
+body.mode-edit [contenteditable="true"]:hover {
+  background: var(--color-bg-page);
+  /* Slightly stronger underline on hover to confirm "this is the
+     thing you'd be editing if you click". */
+  text-decoration-color: var(--color-text-secondary);
+}
 body.mode-edit [contenteditable="true"]:focus {
   background: var(--color-bg-surface);
   box-shadow: inset 0 0 0 1px var(--color-border-accent);
+  /* Drop the underline once focused — the focus ring + caret carry the
+     "you're editing this" signal, no need for the affordance hint. */
+  text-decoration: none;
 }
 
 .node-delete {
@@ -2700,7 +2753,7 @@ body.mode-edit .cell-select:focus {
 .api-method.get    { background: var(--color-type-table-bg); color: var(--color-type-table); }
 .api-method.post   { background: var(--color-type-view-bg);  color: var(--color-type-view); }
 .api-method.put    { background: var(--color-warning-bg);    color: var(--color-warning); }
-.api-method.patch  { background: #F3EDFA;                    color: var(--color-uk); }
+.api-method.patch  { background: var(--color-uk-bg);         color: var(--color-uk); }
 .api-method.delete { background: var(--color-error-bg);      color: var(--color-error); }
 .api-path { color: var(--color-text-primary); }
 .api-summary { color: var(--color-text-secondary); margin-left: auto; font-family: var(--font-sans); }
@@ -3103,7 +3156,7 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
 .confirm-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.32);
+  background: var(--color-overlay-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3151,8 +3204,8 @@ body[data-panel="open"]:not([data-view="api"]) .toast {
   color: var(--color-text-on-accent);
 }
 .confirm-card .tb-btn-danger:hover {
-  background: #8E1F16;
-  border-color: #8E1F16;
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
 }
 
 /* ============================================================
