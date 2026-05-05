@@ -120,6 +120,37 @@ window.CanvasApp.State = (function () {
 
     var listeners = [];
 
+    // Event-reason vocabulary. Listeners typically do `if (reason === 'nodes' || reason === 'edges' …)`;
+    // the string-typo failure mode there is "listener silently never fires"
+    // — easy to introduce, hard to spot. Exposing the set as constants
+    // (and on the public surface as State.EVENTS) lets call sites use
+    // identifiers that fail loudly when mistyped.
+    //
+    // Payload contract per reason:
+    //   'nodes' / 'edges'   → optional id (string) of the single mutated entity.
+    //                         Absent payload means "bulk change, listeners
+    //                         should rebuild from getNodes/getEdges". See
+    //                         canvas.js renderNodeIncremental for the
+    //                         payload-driven path.
+    //   'replace' / 'reset' → no payload. Major data flip (canvas swap, undo,
+    //                         server reload).
+    //   All others          → no payload.
+    var EVENTS = {
+        REPLACE:    'replace',
+        RESET:      'reset',
+        NODES:      'nodes',
+        EDGES:      'edges',
+        MODE:       'mode',
+        SELECTION:  'selection',
+        FILTER:     'filter',
+        VIEW:       'view',
+        CANVAS:     'canvas',
+        HOME:       'home',
+        COMMITTING: 'committing',
+        COMMITTED:  'committed',
+        LOADING:    'loading'
+    };
+
     function on(fn) { listeners.push(fn); }
     // Optional `payload` lets a mutator scope its emit to a single id (e.g.
     // updateNode passes the affected node id). Listeners that don't care
@@ -141,6 +172,14 @@ window.CanvasApp.State = (function () {
     //   * view = 'overview'  → fetch the canvas list via listCanvases()
     //   * view ∈ {diagram, table, api} with a slug → fetch canvas_export(slug)
     //   * any other shape → empty
+    // Loading flag — true while State.load()'s underlying RPC is in flight.
+    // Lets UI distinguish "still fetching" from "fetched and empty". Without
+    // it, the canvas-empty placeholder briefly flashes during the boot
+    // sequence (initial state has 0 nodes, load() runs, page paints, data
+    // arrives, paints again).
+    var loading = false;
+    function isLoading() { return loading; }
+
     function load() {
         try { localStorage.removeItem(LEGACY_LAYOUT_KEY); } catch (e) {}
         try { localStorage.removeItem(LEGACY_STORAGE_KEY); } catch (e) {}
@@ -153,10 +192,19 @@ window.CanvasApp.State = (function () {
             return Promise.resolve();
         }
 
-        if (state.view === 'overview' || !state.currentCanvasSlug) {
-            return loadCanvasList();
-        }
-        return loadCanvasContent(state.currentCanvasSlug);
+        loading = true;
+        emit('loading');
+        var p = (state.view === 'overview' || !state.currentCanvasSlug)
+            ? loadCanvasList()
+            : loadCanvasContent(state.currentCanvasSlug);
+        return p.then(function () {
+            loading = false;
+            emit('loading');
+        }, function (err) {
+            loading = false;
+            emit('loading');
+            throw err;
+        });
     }
 
     function loadCanvasList() {
@@ -350,9 +398,13 @@ window.CanvasApp.State = (function () {
             });
             dirtyMap.clear();
         } else if (mode === 'view' && state.snapshot) {
-            // Defensive: leaving edit mode without commit/revert silently discards
-            // the snapshot (live data wins). Normal UI flow always calls one of the
-            // two paths, so this is a safety net.
+            // Reached by the "Save with no changes" path (app.js btn-save):
+            // user entered edit mode, made no edits, clicked Save → snapshot
+            // is set, hasUnsavedChanges() returned false, so we skip the
+            // RPC and just transition back to view. The snapshot can be
+            // dropped silently because there's nothing to preserve.
+            // Other safety-net cases (a hypothetical caller bypassing
+            // commit/revert) get the same treatment.
             state.snapshot = null;
             dirtyMap.clear();
         }
@@ -393,6 +445,30 @@ window.CanvasApp.State = (function () {
     function canUndo() { return undoStack.length > 0; }
     function getUndoCount() { return undoStack.length; }
 
+    // Re-entrancy guard for commit/import. Set true while an applyCanvas RPC
+    // is in flight; mutator functions check this and reject so a fast click
+    // mid-save can't slip an edit into `state.nodes` between the payload
+    // being serialised and the success handler clearing dirtyMap (which
+    // would silently erase the new edit's dirty mark and orphan its data).
+    // Exposed via isCommitting() so the UI can disable Save+Edit affordances.
+    var committing = false;
+    function isCommitting() { return committing; }
+
+    // Defensive mutator gate. The UI disables Save/Cancel/Undo during a
+    // commit; this is a second line of defence for paths that bypass the
+    // toolbar — drag-in-progress that started before commit, keyboard
+    // shortcuts, programmatic mutations from extensions, etc.
+    function guardMutation(name) {
+        if (committing) {
+            // Don't throw — a thrown error from a pointer handler can leave
+            // gestures stuck (drag/pan never gets its post-handler). Quiet
+            // noop, with a console warning for the rare case it surfaces.
+            console.warn('State.' + name + ' ignored: commit in flight.');
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Server-side commit. Serialises the current (draft) state into the
      * DB-shape payload accepted by the canvas_apply() RPC, posts it, and
@@ -403,6 +479,9 @@ window.CanvasApp.State = (function () {
      */
     function commitDraft() {
         if (!state.snapshot) return Promise.resolve();
+        if (committing) {
+            return Promise.reject(new Error('Speichern läuft bereits.'));
+        }
         var slug = state.currentCanvasSlug;
         if (!slug) return Promise.reject(new Error('Kein Canvas geladen.'));
         var Sb = window.CanvasApp.SupabaseClient;
@@ -410,6 +489,8 @@ window.CanvasApp.State = (function () {
             return Promise.reject(new Error('Supabase nicht verfügbar.'));
         }
         var payload = serializeDraftToPayload();
+        committing = true;
+        emit('committing'); // let UI disable Save / Edit / etc.
         return Sb.applyCanvas(slug, payload).then(function () {
             state.snapshot = null;
             dirtyMap.clear();
@@ -417,7 +498,12 @@ window.CanvasApp.State = (function () {
             // schedulePersist's existing draft-mode-no-write semantics still
             // hold; on the next mutation outside edit mode (none expected
             // immediately after commit), the localStorage cache will refresh.
+            committing = false;
             emit('committed');
+        }, function (err) {
+            committing = false;
+            emit('committing'); // clear UI guard
+            throw err;
         });
     }
 
@@ -436,6 +522,9 @@ window.CanvasApp.State = (function () {
         if (!parsed || !Array.isArray(parsed.nodes)) {
             return Promise.reject(new Error('Ungültiges Import-Format.'));
         }
+        if (committing) {
+            return Promise.reject(new Error('Speichern läuft bereits.'));
+        }
         var slug = state.currentCanvasSlug;
         if (!slug) return Promise.reject(new Error('Kein Canvas geladen.'));
         var Sb = window.CanvasApp.SupabaseClient;
@@ -443,40 +532,34 @@ window.CanvasApp.State = (function () {
             return Promise.reject(new Error('Supabase nicht verfügbar.'));
         }
 
-        // Snapshot the current arrays + homeView so we can restore.
-        var savedNodes = state.nodes;
-        var savedEdges = state.edges;
-        var savedSets  = state.sets;
-        var savedHome  = state.homeView;
-
-        // Install the parsed data so serializeDraftToPayload can read it.
-        state.nodes = parsed.nodes;
-        state.edges = (parsed.edges || []).map(function (e, i) {
-            return Object.assign({ id: e.id || ('e' + i) }, e);
+        // Build the import payload *without* mutating live state. The
+        // previous "install → serialise → restore" pattern briefly broke
+        // every reactive consumer (panel, minimap rAFs running mid-mutation
+        // saw the parsed payload as live data, then the original came back).
+        // serializeDraftToPayload now accepts an explicit source.
+        var payload = serializeDraftToPayload({
+            nodes: parsed.nodes,
+            edges: (parsed.edges || []).map(function (e, i) {
+                return Object.assign({ id: e.id || ('e' + i) }, e);
+            }),
+            sets: Array.isArray(parsed.sets) ? parsed.sets : state.sets,
+            homeView: parsed.hasOwnProperty('homeView')
+                ? (isValidHomeView(parsed.homeView) ? parsed.homeView : null)
+                : state.homeView
         });
-        if (Array.isArray(parsed.sets)) state.sets = parsed.sets;
-        if (parsed.hasOwnProperty('homeView')) {
-            state.homeView = isValidHomeView(parsed.homeView) ? parsed.homeView : null;
-        }
-        rebuildIndex();
 
-        var payload;
-        try {
-            payload = serializeDraftToPayload();
-        } finally {
-            // Always restore — even if serialisation throws.
-            state.nodes = savedNodes;
-            state.edges = savedEdges;
-            state.sets  = savedSets;
-            state.homeView = savedHome;
-            rebuildIndex();
-        }
-
+        committing = true;
+        emit('committing');
         return Sb.applyCanvas(slug, payload).then(function () {
             // Server now holds the imported content; pull it back as truth.
             state.snapshot = null;
             dirtyMap.clear();
+            committing = false;
             return load();
+        }, function (err) {
+            committing = false;
+            emit('committing');
+            throw err;
         });
     }
 
@@ -486,28 +569,77 @@ window.CanvasApp.State = (function () {
      * inline on each node, system as a label rather than a node, etc.); the
      * payload re-derives the explicit catalog rows.
      *
-     * Caveats — known data losses on round-trip (frontend doesn't represent
-     * these, so a save will delete them from the DB):
-     *   - standard_reference nodes and their derives_from edges
-     *   - replaces, fk_references, values_from edges
-     *   - multiple psets per attribute (frontend stores a single setId)
-     *   - per-system technology_stack / base_url / security_zone metadata
+     * Decomposition: each helper below owns one section of the payload. The
+     * orchestrator threads slug-by-name maps between them so cross-section
+     * edges (system→distribution, attribute→pset) reference consistent ids.
+     *
+     * KNOWN DATA LOSSES on round-trip — the frontend doesn't represent
+     * these, so a save WILL delete them from the DB. Each lossy field is
+     * documented at the helper that omits it; collected here as a punch
+     * list:
+     *   - serializeDistributions — `standard_reference` nodes (the frontend
+     *     models only `distribution` and `code_list` kinds).
+     *   - serializeFlowEdges — `derives_from`, `replaces`, `fk_references`,
+     *     `values_from` edge types (frontend collapses inter-node edges to
+     *     `flows_into`).
+     *   - serializeDistributions — multiple psets per attribute (frontend
+     *     stores a single `setId`).
+     *   - serializeSystems — per-system `technology_stack`, `base_url`,
+     *     `security_zone` metadata (frontend stores only the system label).
      */
-    function serializeDraftToPayload() {
-        var nodes = [];
-        var system_meta = [];
-        var distribution_meta = [];
-        var attribute_meta = [];
-        var code_list_entry = [];
-        var edges = [];
+    function serializeDraftToPayload(source) {
+        // Default source = live state. commitImport passes an explicit
+        // source so it can serialise the parsed Excel payload without
+        // mutating live state mid-flight (which used to flicker every
+        // reactive consumer for the duration of the serialisation).
+        var srcNodes    = source ? source.nodes    : state.nodes;
+        var srcEdges    = source ? source.edges    : state.edges;
+        var srcSets     = source ? source.sets     : state.sets;
+        var srcHomeView = source ? source.homeView : state.homeView;
 
-        // 1. Derive system slugs from the unique system labels in use.
+        // 1. Systems — derive slugs from unique labels.
+        var sysOut = serializeSystems(srcNodes);
+        // 2. Psets — pure slug-by-id from the registry.
+        var psetOut = serializePsets(srcSets);
+        // 3. Distributions + codelists + their attributes / entries.
+        var distOut = serializeDistributions(srcNodes, sysOut.sysSlugByLabel, psetOut.psetSlugById);
+        // 4. Inter-node flows_into edges.
+        var flowEdges = serializeFlowEdges(srcNodes, srcEdges);
+        // 5. Optional canvas-level metadata (home view).
+        var canvasMeta = serializeCanvasMeta(srcHomeView);
+
+        return {
+            canvas:            canvasMeta,
+            nodes:             sysOut.nodes
+                                 .concat(psetOut.nodes)
+                                 .concat(distOut.nodes),
+            system_meta:       sysOut.system_meta,
+            distribution_meta: distOut.distribution_meta,
+            attribute_meta:    distOut.attribute_meta,
+            code_list_entry:   distOut.code_list_entry,
+            edges:             distOut.edges.concat(flowEdges)
+        };
+    }
+
+    /**
+     * Section 1: derive `sys:<slug>` nodes from the unique system labels in
+     * use across `srcNodes`. Returns the new node rows, the side-table
+     * meta rows, and a label→slug map for downstream "publishes" edges.
+     *
+     * LOSSY: per-system `technology_stack`, `base_url`, `security_zone` —
+     * the frontend stores only the label string, so `system_meta` rows
+     * carry no extra fields. Re-import from DB restores those columns,
+     * but a save-from-frontend overwrites them with empty.
+     */
+    function serializeSystems(srcNodes) {
         var sysSlugByLabel = Object.create(null);
-        state.nodes.forEach(function (n) {
+        srcNodes.forEach(function (n) {
             var sys = (n.system || '').trim();
             if (!sys || sysSlugByLabel[sys]) return;
             sysSlugByLabel[sys] = 'sys:' + slugify(sys);
         });
+        var nodes = [];
+        var system_meta = [];
         Object.keys(sysSlugByLabel).forEach(function (label) {
             var slug = sysSlugByLabel[label];
             nodes.push({
@@ -515,17 +647,23 @@ window.CanvasApp.State = (function () {
                 label_de: label,
                 lifecycle_status: 'produktiv'
             });
-            // Frontend doesn't track per-system technology_stack etc., so
-            // emit a minimal row — preserves the side-table-exists invariant
-            // without making up data.
+            // Minimal row — preserves the side-table-exists invariant
+            // without making up data the frontend doesn't track.
             system_meta.push({ node_slug: slug });
         });
+        return { nodes: nodes, system_meta: system_meta, sysSlugByLabel: sysSlugByLabel };
+    }
 
-        // 2. Pset nodes from state.sets. The seed format concatenates
-        //    description + lineage with "\n\nLineage: " — keep that so
-        //    canvas_export's splitter on the next load round-trips cleanly.
+    /**
+     * Section 2: emit a `pset:<id>` node per registry entry. The seed
+     * format concatenates description + lineage with "\n\nLineage: "
+     * (canvas_export's splitter relies on that exact separator on round-
+     * trip). Returns the new node rows + an id→slug map.
+     */
+    function serializePsets(srcSets) {
         var psetSlugById = Object.create(null);
-        (state.sets || []).forEach(function (s) {
+        var nodes = [];
+        (srcSets || []).forEach(function (s) {
             var slug = 'pset:' + s.id;
             psetSlugById[s.id] = slug;
             var description = s.description || '';
@@ -541,16 +679,36 @@ window.CanvasApp.State = (function () {
                 lifecycle_status: 'produktiv'
             });
         });
+        return { nodes: nodes, psetSlugById: psetSlugById };
+    }
 
-        // 3. Distribution / codelist nodes + their attributes / entries.
-        state.nodes.forEach(function (n) {
+    /**
+     * Section 3: per node, emit either a `distribution` or `code_list`
+     * row, the matching side-table row, the `publishes` edge from its
+     * system, and one row per column (attributes for distributions,
+     * code_list_entry for codelists). Pulls in slug maps from sections
+     * 1 + 2 for the cross-references.
+     *
+     * LOSSY:
+     *  - `standard_reference` kind (frontend only models distribution +
+     *    code_list).
+     *  - Multiple psets per attribute (frontend stores a single
+     *    `c.setId`; multi-pset memberships in the DB get squashed to one
+     *    on the next save).
+     */
+    function serializeDistributions(srcNodes, sysSlugByLabel, psetSlugById) {
+        var nodes = [];
+        var distribution_meta = [];
+        var attribute_meta = [];
+        var code_list_entry = [];
+        var edges = [];
+
+        srcNodes.forEach(function (n) {
             var isCodelist = n.type === 'codelist';
-            var prefix = isCodelist ? 'cl:' : 'dist:';
-            var kind   = isCodelist ? 'code_list' : 'distribution';
-            var nodeSlug = prefix + n.id;
+            var nodeSlug = (isCodelist ? 'cl:' : 'dist:') + n.id;
 
             nodes.push({
-                slug: nodeSlug, kind: kind,
+                slug: nodeSlug, kind: isCodelist ? 'code_list' : 'distribution',
                 label_de: n.label || n.id,
                 tags: Array.isArray(n.tags) ? n.tags : [],
                 x: n.x != null ? n.x : null,
@@ -566,7 +724,7 @@ window.CanvasApp.State = (function () {
                 });
             }
 
-            // System publishes edge.
+            // System → distribution `publishes` edge.
             var sysLabel = (n.system || '').trim();
             if (sysLabel && sysSlugByLabel[sysLabel]) {
                 edges.push({
@@ -582,7 +740,7 @@ window.CanvasApp.State = (function () {
                     code_list_entry.push({
                         code_list_node_slug: nodeSlug,
                         code:     c.name,
-                        label_de: c.type,            // codelist columns: name=code, type=label
+                        label_de: c.type, // codelist convention: name=code, type=label
                         sort_order: idx
                     });
                     return;
@@ -619,10 +777,33 @@ window.CanvasApp.State = (function () {
             });
         });
 
-        // 4. Inter-node flows_into edges from state.edges.
-        state.edges.forEach(function (e) {
-            var fromN = nodesById[e.from];
-            var toN   = nodesById[e.to];
+        return {
+            nodes: nodes,
+            distribution_meta: distribution_meta,
+            attribute_meta: attribute_meta,
+            code_list_entry: code_list_entry,
+            edges: edges
+        };
+    }
+
+    /**
+     * Section 4: inter-node `flows_into` edges. We resolve endpoint kind
+     * from the source node array (NOT the live `nodesById` index, which
+     * only knows about live state — an import payload would miss).
+     *
+     * LOSSY: `derives_from`, `replaces`, `fk_references`, `values_from`
+     * edge types. The frontend collapses all inter-node relationships to
+     * `flows_into` because those are the only ones the diagram visualises.
+     */
+    function serializeFlowEdges(srcNodes, srcEdges) {
+        var srcNodesById = Object.create(null);
+        for (var i = 0; i < srcNodes.length; i++) {
+            srcNodesById[srcNodes[i].id] = srcNodes[i];
+        }
+        var edges = [];
+        srcEdges.forEach(function (e) {
+            var fromN = srcNodesById[e.from];
+            var toN   = srcNodesById[e.to];
             if (!fromN || !toN) return;
             var fp = fromN.type === 'codelist' ? 'cl:' : 'dist:';
             var tp = toN.type   === 'codelist' ? 'cl:' : 'dist:';
@@ -633,25 +814,20 @@ window.CanvasApp.State = (function () {
                 label_de:  e.label || null
             });
         });
+        return edges;
+    }
 
-        // 5. Optional canvas-level updates (home view).
-        var canvasMeta = null;
-        if (state.homeView) {
-            canvasMeta = {
-                home_scale:    String(state.homeView.scale),
-                home_center_x: String(state.homeView.centerX),
-                home_center_y: String(state.homeView.centerY)
-            };
-        }
-
+    /**
+     * Section 5: optional canvas-level metadata. Stringifies the home-view
+     * floats because the canvas table stores them as TEXT (so the same
+     * column accepts the freeform other-meta fields the schema also uses).
+     */
+    function serializeCanvasMeta(srcHomeView) {
+        if (!srcHomeView) return null;
         return {
-            canvas:            canvasMeta,
-            nodes:             nodes,
-            system_meta:       system_meta,
-            distribution_meta: distribution_meta,
-            attribute_meta:    attribute_meta,
-            code_list_entry:   code_list_entry,
-            edges:             edges
+            home_scale:    String(srcHomeView.scale),
+            home_center_x: String(srcHomeView.centerX),
+            home_center_y: String(srcHomeView.centerY)
         };
     }
 
@@ -704,11 +880,18 @@ window.CanvasApp.State = (function () {
     }
 
     function deepClone(obj) {
+        // structuredClone is faster + handles cycles, Map/Set, typed
+        // arrays, dates, etc. Fallback to JSON for the rare environment
+        // (very old WebView) without it. Our payloads are plain JSON so
+        // the fallback is functionally identical.
+        if (typeof structuredClone === 'function') {
+            return structuredClone(obj);
+        }
         return JSON.parse(JSON.stringify(obj));
     }
 
     function setView(view) {
-        if (['overview', 'diagram', 'table', 'api'].indexOf(view) === -1) return;
+        if (['overview', 'diagram', 'table', 'graph', 'api'].indexOf(view) === -1) return;
         state.view = view;
         emit('view');
     }
@@ -915,6 +1098,7 @@ window.CanvasApp.State = (function () {
     function getEdge(id) { return edgesById[id] || null; }
 
     function updateEdge(id, patch) {
+        if (guardMutation('updateEdge')) return;
         var e = getEdge(id);
         if (!e) return;
         // Reject self-loops and duplicates
@@ -960,8 +1144,17 @@ window.CanvasApp.State = (function () {
         });
         if (!originals.length) return;
 
-        // Track which dirty marks WE added (vs ones already there from prior
-        // edits) so undo can clean up cleanly.
+        // Track which dirty marks WE added (vs ones already there from
+        // prior edits) so undo can clean up cleanly. Sequence is load-
+        // bearing here:
+        //   1. moveNode(p.id, …) updates x/y but is layout-only — it does
+        //      NOT call markModified, so dirtyMap is unchanged.
+        //   2. We check `dirtyMap.has(key)` — true means a prior edit
+        //      already dirtied this node; we don't claim ownership.
+        //   3. markModified runs AFTER the check and adds the key.
+        // If moveNode ever starts dirtying positions, step 2 needs to
+        // move BEFORE moveNode (or capture a pre-loop snapshot). Easy to
+        // get wrong; this comment is the assertion.
         var addedDirtyKeys = [];
         positions.forEach(function (p) {
             moveNode(p.id, p.x, p.y);
@@ -985,6 +1178,10 @@ window.CanvasApp.State = (function () {
     }
 
     function moveNode(id, x, y) {
+        // Drag in progress at commit-start would otherwise keep streaming
+        // moveNode calls into state. Quiet skip — drag handler in canvas.js
+        // will repaint correctly on next pointermove or end-drag.
+        if (guardMutation('moveNode')) return;
         var n = getNode(id);
         if (!n) return;
         n.x = x;
@@ -1007,6 +1204,7 @@ window.CanvasApp.State = (function () {
     }
 
     function updateNode(id, patch) {
+        if (guardMutation('updateNode')) return;
         var n = getNode(id);
         if (!n) return;
         // Snapshot before any structural column edit (add/remove/reorder/set
@@ -1029,6 +1227,7 @@ window.CanvasApp.State = (function () {
     }
 
     function addNode(node) {
+        if (guardMutation('addNode')) return null;
         var id = node.id || generateId(node.label || 'node');
         var fresh = Object.assign({
             id: id,
@@ -1050,14 +1249,15 @@ window.CanvasApp.State = (function () {
     }
 
     function deleteNode(id) {
+        if (guardMutation('deleteNode')) return;
         var n = getNode(id);
         if (!n) return;
         // Capture just the affected node + its edges for undo — full-graph
         // clone was the previous shape and dominated edit-mode memory.
-        var savedNode = JSON.parse(JSON.stringify(n));
+        var savedNode = deepClone(n);
         var savedEdges = state.edges
             .filter(function (e) { return e.from === id || e.to === id; })
-            .map(function (e) { return JSON.parse(JSON.stringify(e)); });
+            .map(deepClone);
         var savedDirtyForNode = dirtyMap.get(dkey('node', id));
         var savedDirtyForEdges = savedEdges.map(function (e) { return [e.id, dirtyMap.get(dkey('edge', e.id))]; });
 
@@ -1096,6 +1296,7 @@ window.CanvasApp.State = (function () {
     }
 
     function addEdge(edge) {
+        if (guardMutation('addEdge')) return null;
         if (!edge.from || !edge.to || edge.from === edge.to) return null;
         // Deduplicate
         var exists = state.edges.some(function (e) {
@@ -1115,9 +1316,10 @@ window.CanvasApp.State = (function () {
     }
 
     function deleteEdge(id) {
+        if (guardMutation('deleteEdge')) return;
         var e = getEdge(id);
         if (!e) return;
-        var savedEdge = JSON.parse(JSON.stringify(e));
+        var savedEdge = deepClone(e);
         var savedDirty = dirtyMap.get(dkey('edge', id));
 
         pushUndoOp('Beziehung gelöscht', function () {
@@ -1184,7 +1386,18 @@ window.CanvasApp.State = (function () {
         } else {
             return; // silently reject malformed input
         }
-        var changed = JSON.stringify(prev) !== JSON.stringify(state.homeView);
+        // Field-by-field change detection. Was JSON.stringify-equality
+        // before, which produces false negatives if either side ever
+        // gains a different key order — both sides happen to be built
+        // here in a fixed order, but the dependency was implicit and
+        // brittle. Direct compare makes it explicit.
+        var changed =
+            (prev === null) !== (state.homeView === null) ||
+            (prev !== null && state.homeView !== null && (
+                prev.scale   !== state.homeView.scale ||
+                prev.centerX !== state.homeView.centerX ||
+                prev.centerY !== state.homeView.centerY
+            ));
         if (changed && state.snapshot) {
             // Tag the canvas itself as modified so it counts toward
             // hasUnsavedChanges. The slug-keyed entry collapses cleanly
@@ -1259,6 +1472,7 @@ window.CanvasApp.State = (function () {
     function getLoadError() { return state.loadError; }
 
     return {
+        EVENTS: EVENTS,
         load: load,
         reset: reset,
         on: on,
@@ -1287,6 +1501,8 @@ window.CanvasApp.State = (function () {
         setMode: setMode,
         commitDraft: commitDraft,
         commitImport: commitImport,
+        isCommitting: isCommitting,
+        isLoading: isLoading,
         revertDraft: revertDraft,
         hasUnsavedChanges: hasUnsavedChanges,
         getUnsavedChangeCount: getUnsavedChangeCount,

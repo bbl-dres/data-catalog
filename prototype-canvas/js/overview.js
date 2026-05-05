@@ -286,20 +286,17 @@ window.CanvasApp.Overview = (function () {
         var label = canvas.label_de || canvas.slug;
         var body = 'Möchten Sie den Canvas «' + label + '» wirklich löschen? ' +
             'Alle Knoten, Beziehungen und Datenpakete in diesem Canvas gehen unwiderruflich verloren.';
-        if (App && App.confirmDialog) {
-            App.confirmDialog({
-                title: 'Canvas löschen',
-                body: body,
-                confirmText: 'Löschen',
-                cancelText: 'Abbrechen',
-                danger: true
-            }).then(function (confirmed) {
-                if (confirmed) doDeleteCanvas(canvas);
-            });
-        } else {
-            // Fallback to native confirm if App.confirmDialog isn't loaded.
-            if (window.confirm(body)) doDeleteCanvas(canvas);
-        }
+        // App.confirmDialog is guaranteed to exist by the bootstrap load-
+        // order check in app.js — no native-confirm fallback needed.
+        App.confirmDialog({
+            title: 'Canvas löschen',
+            body: body,
+            confirmText: 'Löschen',
+            cancelText: 'Abbrechen',
+            danger: true
+        }).then(function (confirmed) {
+            if (confirmed) doDeleteCanvas(canvas);
+        });
     }
 
     function doDeleteCanvas(canvas) {
@@ -423,12 +420,8 @@ window.CanvasApp.Overview = (function () {
         } catch (e) { return ''; }
     }
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
 
     return {
         init:   init,

@@ -1397,6 +1397,45 @@ body.hide-systems .group-layer { display: none; }
   gap: var(--space-2);
   margin-top: var(--space-2);
 }
+
+/* Loading-state overlay — sibling of .canvas-empty, mutually exclusive
+   via JS. Shown while State.load() is in flight; replaced by either the
+   real canvas (data arrived) or the canvas-empty placeholder (the fetch
+   succeeded but the DB returned zero nodes). */
+.canvas-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  pointer-events: none;
+  z-index: 5;
+}
+.canvas-loading[hidden] { display: none; }
+.canvas-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-bg-accent-strong);
+  animation: canvas-loading-spin 800ms linear infinite;
+}
+.canvas-loading-label {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+@keyframes canvas-loading-spin {
+  to { transform: rotate(360deg); }
+}
+/* Respect prefers-reduced-motion — collapse the spin to a still ring.
+   The accent-coloured top arc still gives a "this is the spinner" cue
+   without the rotation. */
+@media (prefers-reduced-motion: reduce) {
+  .canvas-loading-spinner { animation: none; }
+}
 .edge-preview path {
   fill: none;
   stroke: var(--color-edge-active);
@@ -1416,8 +1455,19 @@ body.hide-systems .group-layer { display: none; }
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
   background: rgba(var(--color-bg-accent-strong-rgb), 0.025);
-  pointer-events: none;
+  /* Interactive: click anywhere on the box (not just the small badge
+     label) selects the system. Nodes are in a later sibling layer and
+     paint on top, so clicks on a node still hit the node first; only
+     clicks on the gap-area between nodes inside a system frame land
+     here. The canvas pan handler sees pointerdown bubble up from the
+     box and starts a pan; if the user releases without moving, the
+     synthesized click event fires on the box and selects the system. */
+  pointer-events: auto;
+  cursor: pointer;
   transition: border-color 150ms ease, background-color 150ms ease;
+}
+.group-box:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.05);
 }
 .group-box.is-selected {
   border-color: var(--color-bg-accent-strong);
@@ -1488,13 +1538,20 @@ body.hide-systems .group-layer { display: none; }
   background: transparent;
 }
 
-/* Group box: bump the fill so the system region is unmistakably visible
-   when its 1px border has shrunk to sub-pixel. */
+/* Group box: bump the fill so the system region reads as a discrete block
+   even when its 1 px border has shrunk to sub-pixel. Same alpha across both
+   far + low tiers so the colour doesn't shift visibly when crossing the
+   LOD boundary on wheel-zoom. The previous 0.08 / 0.18 was too pale to
+   stand out against the canvas background; 0.14 / 0.26 gives system
+   regions visual weight without overpowering the per-card silhouettes. */
 .canvas.is-low-zoom .group-box {
-  background: rgba(var(--color-bg-accent-strong-rgb), 0.08);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.14);
+}
+.canvas.is-low-zoom .group-box:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
 }
 .canvas.is-low-zoom .group-box.is-selected {
-  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.26);
 }
 
 /* ---- LOD-specific overrides ----
@@ -1522,27 +1579,33 @@ body.hide-systems .group-layer { display: none; }
   display: none;
 }
 
-/* ---- Centred card label (LOD = low only) ----
-   Fills the readability gap between LOD `far` (silhouettes only) and LOD
-   `mid` (regular header text becomes legible). Hard-pinned at 40 px so it
-   reads at ~9-18 px on screen across the LOD-low band (scale 0.22-0.45) —
-   no per-tick JS counter-scaling, no 256-element style recalc on every
-   pan / zoom. Hidden at every other tier (default `display: none`).
+/* ---- Centred card label (LOD = far + low) ----
+   Visible across BOTH the far and low tiers so users can orient on big
+   diagrams from a zoomed-out view — the user explicitly asked for labels
+   "a bit lower" because most diagrams are sizable and people scan for
+   info at overview zoom levels.
 
-   Long compound names (`PortfolioAndAssetManagement`) ellipsis-truncate
-   within the card width; the regular `title` attribute on `.node` shows
-   the full text on hover.
+   Two font sizes by tier so the on-screen pixel height stays readable
+   across the full far-to-low scale span:
+     far  (~10-22 %): 80 px world ⇒ 8-18 px on screen
+     low  (~22-45 %): 40 px world ⇒ 9-18 px on screen
+   The transition between tiers shrinks the label by 2× — visible step
+   but immediately compensated by the canvas zoom, so the label's
+   on-screen size stays inside the readable band on both sides.
+
+   No per-tick JS counter-scaling — each tier's font is hard-pinned and
+   the LOD class on canvasEl gates visibility, so this costs nothing on
+   pan / zoom.
+
+   Long compound names (`PortfolioAndAssetManagement`) overflow the
+   card sideways rather than truncate; neighbouring labels can visually
+   overlap at low zoom — accepted as the cost of legibility.
 
    `aria-hidden="true"` on the markup — screen readers already get the
    label via the node's regular `aria-label`, no need to double-announce. */
 .node-low-label { display: none; }
+.canvas[data-lod="far"] .node-low-label,
 .canvas[data-lod="low"] .node-low-label {
-  /* Anchor the label to the card's centre and let it extend beyond the
-     card's width on either side. Long compound names ("PortfolioAnd-
-     AssetManagement") are common in IBPDI and would otherwise truncate
-     into "...Manage..." which is nearly useless for orientation. The
-     trade-off is that labels of neighbouring cards may visually overlap
-     at LOD low — that's accepted as the cost of legibility. */
   display: block;
   position: absolute;
   left: 50%;
@@ -1552,16 +1615,16 @@ body.hide-systems .group-layer { display: none; }
   z-index: 1;
   white-space: nowrap;
 }
+.canvas[data-lod="far"] .node-low-label > span,
 .canvas[data-lod="low"] .node-low-label > span {
-  /* The 40 px is intentional and tuned to the LOD-low scale band — at
-     scale 0.22-0.45 it renders ~9-18 px on screen. Token would imply
-     portability across the design system; this value only makes sense
-     here. */
-  font-size: 40px;
   font-weight: 700;
   line-height: 1.1;
   color: var(--color-text-primary);
 }
+/* far tier — bigger font for very-zoomed-out scale */
+.canvas[data-lod="far"] .node-low-label > span { font-size: 80px; }
+/* low tier — original size for the readable mid-low scale */
+.canvas[data-lod="low"] .node-low-label > span { font-size: 40px; }
 
 /* ---- System-name overlays ----
    Big readable labels that fade in as the canvas zooms out, so the user can
@@ -1925,19 +1988,17 @@ body[data-panel="open"][data-view="diagram"] .minimap {
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
-  /* Dashed border = "movable thing" — universal draggability cue, much
-     stronger than the cursor-only hint we had before. SVG <rect> doesn't
-     accept ::before pseudos so we can't paint corner grab-dots, but the
-     dash pattern reads the same role. */
-  stroke-dasharray: 4 3;
-  transition: stroke-width 120ms ease, stroke-dasharray 120ms ease;
+  /* Solid stroke. Was dashed for a "draggable thing" cue, but at zoom-
+     extent the rectangle covers nearly the whole minimap and the dashes
+     read as visual noise rather than affordance. The cursor change
+     (move / grabbing on hover / drag) still signals draggability. */
+  transition: stroke-width 120ms ease, fill-opacity 120ms ease;
 }
-/* Hover / drag → solid + bolder stroke, signalling "you've engaged the
-   handle". Driven by classes that minimap.js already toggles on the SVG
-   wrapper for cursor styling (.is-over-viewport, .is-dragging). */
+/* Hover / drag → bolder stroke + slightly heavier fill, signalling
+   "you've engaged the handle". Driven by classes that minimap.js already
+   toggles on the SVG wrapper for cursor styling. */
 .minimap svg.is-over-viewport #minimap-viewport,
 .minimap svg.is-dragging #minimap-viewport {
-  stroke-dasharray: none;
   stroke-width: 2;
   fill-opacity: 0.18;
 }
@@ -2638,6 +2699,162 @@ body.mode-edit .cell-select:focus {
   border-color: var(--color-border-accent);
   background: var(--color-bg-surface);
   outline: none;
+}
+
+/* ---- Graph view ----
+   Read-only force-laid-out network — sister of Diagramm. Same parent
+   slot in #app-main (one of the .view sections); only one view is .is-active
+   at a time, driven by app.js's applyViewVisibility. */
+.view-graph {
+  position: relative;
+  background: var(--color-bg-page);
+  overflow: hidden;
+}
+.graph-canvas {
+  position: absolute;
+  inset: 0;
+  /* Cursor flips to grabbing during a pan; rootEl gets .is-panning. */
+  cursor: grab;
+  background-color: var(--color-bg-page);
+  background-image: radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Mobile: claim every touch gesture as our own. Same reasoning as
+     .canvas — without this, browsers turn pan attempts into scroll
+     attempts and we never see the pointer stream. */
+  touch-action: none;
+  user-select: none;
+}
+.graph-canvas.is-panning { cursor: grabbing; }
+.graph-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* The transform group is what we pan/zoom. Children are absolute in graph
+   world coords (laid out by ELK). */
+.graph-transform { transform-origin: 0 0; }
+
+/* Edges */
+.graph-edge {
+  fill: none;
+  stroke: var(--color-edge);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+/* System → entity edges are quieter than entity → entity flows; the
+   "publishes" relationship is structural ("X belongs to system Y"),
+   not dataflow. Show them as a faded dashed line. */
+.graph-edge--publishes {
+  stroke: var(--color-border-default);
+  stroke-dasharray: 3 3;
+}
+.graph-edge--flows {
+  stroke: var(--color-edge);
+}
+
+/* Nodes */
+.graph-node { cursor: pointer; }
+.graph-node-circle {
+  stroke: var(--color-bg-surface);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  transition: stroke-width 120ms ease;
+}
+.graph-node:hover .graph-node-circle { stroke-width: 3; }
+.graph-node.is-selected .graph-node-circle {
+  stroke: var(--color-bg-accent-strong);
+  stroke-width: 3;
+}
+
+/* System node — bigger, accent-tinted. The single "anchor" for its
+   cluster of entities. */
+.graph-node-circle--system {
+  fill: var(--color-bg-accent-strong);
+  fill-opacity: 0.12;
+  stroke: var(--color-bg-accent-strong);
+  stroke-width: 1.5;
+}
+.graph-node--system:hover .graph-node-circle--system {
+  fill-opacity: 0.22;
+}
+.graph-node--system.is-selected .graph-node-circle--system {
+  fill-opacity: 0.32;
+  stroke-width: 2.5;
+}
+
+/* Entity nodes — coloured per data type. Same palette as the Diagramm
+   card type-tints, so the two views read as the same data. */
+.graph-node--type-table    .graph-node-circle { fill: var(--color-type-table); }
+.graph-node--type-view     .graph-node-circle { fill: var(--color-type-view); }
+.graph-node--type-file     .graph-node-circle { fill: var(--color-type-file); }
+.graph-node--type-codelist .graph-node-circle { fill: var(--color-type-codelist); }
+.graph-node--type-api      .graph-node-circle { fill: var(--color-type-api); }
+
+/* Labels — hide at low zoom would take a JS counter-scale; for v1 we
+   just keep them on. SVG handles the per-node positioning via the
+   <text>'s y offset set in graph.js. */
+.graph-node-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  fill: var(--color-text-primary);
+  pointer-events: none;
+  user-select: none;
+}
+.graph-node-label--system {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  fill: var(--color-bg-accent-strong);
+}
+
+/* Tooltip — absolutely-positioned div following the cursor. */
+.graph-tooltip {
+  position: absolute;
+  background: var(--color-text-primary);
+  color: var(--color-text-on-accent);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: var(--shadow-popover);
+  white-space: nowrap;
+}
+.graph-tooltip[hidden] { display: none; }
+
+/* Loading + empty overlays — same shape as canvas-loading / canvas-empty. */
+.graph-loading,
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  pointer-events: none;
+  z-index: 5;
+}
+.graph-loading[hidden],
+.graph-empty[hidden] { display: none; }
+.graph-empty {
+  text-align: center;
+}
+
+/* Floating zoom toolbar — reuses .ft styles. Match Diagramm's bottom-left
+   anchor so users find the controls in the same spot across both views. */
+.graph-zoom { position: absolute; }
+
+/* Minimap stays hidden in graph view — its bbox math is tied to the
+   Diagramm canvas's world coords, not the SVG's, and a graph-view
+   minimap would need its own bbox calc. The info-panel still works
+   (selecting a graph node shows its details on the right edge). */
+body[data-view="graph"] .minimap {
+  display: none;
 }
 
 /* ---- API view ---- */

@@ -31,7 +31,9 @@ window.CanvasApp.Editor = (function () {
     var retargetEnd = null;       // 'from' | 'to'
     var retargetPreviewPath = null;
 
-    var TYPE_CYCLE = ['table', 'view', 'api', 'file', 'codelist'];
+    // Type-cycle for the click-to-cycle node-type icon — order is the
+    // canonical NODE_TYPES order from Util (single source of truth).
+    var TYPE_CYCLE = window.CanvasApp.Util.NODE_TYPE_KEYS;
     var KEY_CYCLE = ['', 'PK', 'FK', 'UK'];
 
     var inited = false;
@@ -76,10 +78,17 @@ window.CanvasApp.Editor = (function () {
         // Enter commits / Escape cancels for editable spans
         nodeLayer.addEventListener('keydown', onEditableKeydown);
 
-        // Edge drag from ports — capture so it beats the canvas drag handler
+        // Edge drag from ports — capture so it beats the canvas drag handler.
+        // pointercancel covers OS-level gesture interruption (system swipes,
+        // incoming calls): without it, isDrawingEdge / isRetargeting stay
+        // true forever, the .is-edge-drawing class is stuck on canvasEl, and
+        // the SVG preview path leaks. Reuses onPointerUp for cleanup so the
+        // success-path code (finishDrawingEdge / finishRetargeting) is
+        // bypassed — cancel never wants to commit a connection.
         nodeLayer.addEventListener('pointerdown', onPortPointerDown, true);
         window.addEventListener('pointermove', onPointerMove);
         window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('pointercancel', onPointerCancel);
 
         // Edge handlers: bind to BOTH layers. Non-selected edges live in
         // #edge-layer (below node-layer); the selected edge moves to
@@ -313,23 +322,7 @@ window.CanvasApp.Editor = (function () {
 
     // ---- Add entity from palette ---------------------------------------
 
-    var TYPE_DEFAULTS = {
-        table:    { label: 'neue_tabelle',  columns: [{ name: 'id', type: 'uuid', key: 'PK' }] },
-        view:     { label: 'neue_view',     columns: [] },
-        api:      { label: '/api/neu',      columns: [] },
-        file:     { label: 'neue_datei',    columns: [] },
-        codelist: { label: 'neue_werteliste', columns: [
-            { name: 'code',        type: 'CHAR(10)', key: 'PK' },
-            { name: 'label',       type: 'TEXT',     key: ''   },
-            { name: 'description', type: 'TEXT',     key: ''   },
-            { name: 'sort_order',  type: 'INT',      key: ''   },
-            { name: 'deprecated',  type: 'BOOLEAN',  key: ''   }
-        ] }
-    };
-    var TYPE_LABELS = {
-        table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste'
-    };
-
+    // Defaults + labels come from Util.NODE_TYPES — single source of truth.
     var DRAG_MIME = 'application/x-canvas-type';
 
     /** Click-to-add: placed near viewport centre with a jitter. */
@@ -343,14 +336,14 @@ window.CanvasApp.Editor = (function () {
 
     /** Drop-to-add: placed at the canvas position under the drop cursor. */
     function addNodeAt(type, x, y) {
-        if (!TYPE_DEFAULTS[type]) type = 'table';
-        var defaults = TYPE_DEFAULTS[type];
+        if (window.CanvasApp.Util.NODE_TYPE_KEYS.indexOf(type) === -1) type = 'table';
+        var defaults = window.CanvasApp.Util.nodeTypeDefaults(type);
         var node = State.addNode({
             label: defaults.label,
             type: type,
             x: x,
             y: y,
-            columns: defaults.columns.map(function (c) { return Object.assign({}, c); })
+            columns: defaults.columns
         });
         State.setSelected(node.id);
         requestAnimationFrame(function () {
@@ -405,7 +398,7 @@ window.CanvasApp.Editor = (function () {
 
     function createDragGhost(btn, type) {
         var iconSvg = btn.querySelector('svg');
-        var label = TYPE_LABELS[type] || type;
+        var label = window.CanvasApp.Util.nodeTypeLabel(type);
         var ghost = document.createElement('div');
         ghost.className = 'palette-ghost';
         ghost.innerHTML = (iconSvg ? iconSvg.outerHTML : '') + '<span>+ ' + label + '</span>';
@@ -542,6 +535,27 @@ window.CanvasApp.Editor = (function () {
         if (isRetargeting) finishRetargeting(e);
     }
 
+    /**
+     * Cancellation path — reset all in-progress edge drag/retarget state
+     * without committing the connection. Triggered by `pointercancel` (OS
+     * gesture interruption) and reusable from any other "abort" path.
+     */
+    function onPointerCancel() {
+        if (isDrawingEdge) {
+            isDrawingEdge = false;
+            canvasEl.classList.remove('is-edge-drawing');
+            if (edgePreviewPath) { edgePreviewPath.remove(); edgePreviewPath = null; }
+            edgeFromNodeId = null;
+        }
+        if (isRetargeting) {
+            isRetargeting = false;
+            canvasEl.classList.remove('is-edge-drawing');
+            if (retargetPreviewPath) { retargetPreviewPath.remove(); retargetPreviewPath = null; }
+            retargetEdgeId = null;
+            retargetEnd = null;
+        }
+    }
+
     function finishDrawingEdge(e) {
         isDrawingEdge = false;
         canvasEl.classList.remove('is-edge-drawing');
@@ -554,7 +568,15 @@ window.CanvasApp.Editor = (function () {
 
         var newEdge = State.addEdge({ from: edgeFromNodeId, to: toId, label: '' });
         edgeFromNodeId = null;
-        if (newEdge) State.setSelectedEdge(newEdge.id); // open label editor immediately
+        if (newEdge) {
+            State.setSelectedEdge(newEdge.id); // open label editor immediately
+        } else {
+            // addEdge returned null → the (from, to, label) tuple is already
+            // a relation. Without feedback the user thought their drag did
+            // nothing; surface a toast so it's clear why.
+            var App = window.CanvasApp.App;
+            if (App && App.toast) App.toast('Beziehung existiert bereits.', 'success');
+        }
     }
 
     function finishRetargeting(e) {
@@ -984,10 +1006,7 @@ window.CanvasApp.Editor = (function () {
         sel.addRange(range);
     }
 
-    function cssEscape(s) {
-        if (window.CSS && window.CSS.escape) return window.CSS.escape(s);
-        return String(s).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
-    }
+    var cssEscape = window.CanvasApp.Util.cssEscape;
 
     return {
         init: init,

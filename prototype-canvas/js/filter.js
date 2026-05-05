@@ -48,10 +48,8 @@ window.CanvasApp.Filter = (function () {
     var LAYOUT_KEYS = ['edges', 'systems'];
     var layoutState = { edges: true, systems: true };
 
-    var TYPE_LABELS = {
-        table: 'Tabelle', view: 'View', api: 'API',
-        file: 'Datei', codelist: 'Werteliste'
-    };
+    // Node-type labels come from Util.nodeTypeLabel — single source of truth.
+    function typeLabelOf(key) { return window.CanvasApp.Util.nodeTypeLabel(key); }
     var DIMENSION_LABELS = {
         system: 'System',
         type: 'Typ',
@@ -159,8 +157,8 @@ window.CanvasApp.Filter = (function () {
         });
         return {
             system: Object.keys(systems).sort().map(function (s) { return { value: s, label: s }; }),
-            type: ['table', 'view', 'api', 'file', 'codelist'].map(function (t) {
-                return { value: t, label: TYPE_LABELS[t] };
+            type: window.CanvasApp.Util.NODE_TYPE_KEYS.map(function (t) {
+                return { value: t, label: typeLabelOf(t) };
             }),
             set: sets,
             tag: Object.keys(tags).sort().map(function (t) { return { value: t, label: t }; })
@@ -387,7 +385,7 @@ window.CanvasApp.Filter = (function () {
     }
 
     function pillLabel(dim, value, setLabelById) {
-        if (dim === 'type') return TYPE_LABELS[value] || value;
+        if (dim === 'type') return typeLabelOf(value);
         if (dim === 'set')  return setLabelById[value] || value;
         return value;
     }
@@ -495,12 +493,8 @@ window.CanvasApp.Filter = (function () {
 
     // ---- Util ----------------------------------------------------------
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
 
     return { init: init };
 })();

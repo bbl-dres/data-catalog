@@ -15,19 +15,12 @@ window.CanvasApp.Panel = (function () {
     var panelEl = null;
     var contentEl = null;
 
-    var TYPE_LABELS = {
-        table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste'
-    };
-    var TYPE_LABELS_PLURAL = {
-        table: 'Tabellen', view: 'Views', api: 'APIs', file: 'Dateien', codelist: 'Wertelisten'
-    };
-    var TYPE_ICONS = {
-        table: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>',
-        view:  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>',
-        api:   '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>',
-        file:  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>',
-        codelist: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
-    };
+    // Node-type metadata (labels, plurals, 16 px icons) come from Util's
+    // shared registry — same source as canvas.js / editor.js / filter.js.
+    var Util = window.CanvasApp.Util;
+    function typeLabelOf(key)       { return Util.nodeTypeLabel(key); }
+    function typeLabelPluralOf(key) { return Util.nodeTypeLabelPlural(key); }
+    function typeIcon(key)          { return Util.nodeTypeIcon(key, 16); }
 
     var WIDTH_STORAGE_KEY = 'canvas.panel.width.v1';
     var WIDTH_MIN = 280;
@@ -232,8 +225,8 @@ window.CanvasApp.Panel = (function () {
     }
 
     function headerHtml(node) {
-        var icon = TYPE_ICONS[node.type] || TYPE_ICONS.table;
-        var typeLabel = TYPE_LABELS[node.type] || node.type || 'Tabelle';
+        var icon = typeIcon(node.type);
+        var typeLabel = typeLabelOf(node.type);
         var sub = [escapeHtml(typeLabel)];
         if (node.system) sub.push(escapeHtml(node.system));
         if (node.schema) sub.push(escapeHtml(node.schema));
@@ -255,7 +248,7 @@ window.CanvasApp.Panel = (function () {
         // dropped to reduce the "wall of dashes" look in the panel.
         var rows = [];
         rows.push('<dt>ID</dt><dd><code style="font-family:var(--font-mono);font-size:var(--text-mono-sm)">' + escapeHtml(node.id) + '</code></dd>');
-        rows.push('<dt>Typ</dt><dd>' + escapeHtml(TYPE_LABELS[node.type] || node.type || 'Tabelle') + '</dd>');
+        rows.push('<dt>Typ</dt><dd>' + escapeHtml(typeLabelOf(node.type)) + '</dd>');
         if (node.system) rows.push('<dt>System</dt><dd>' + escapeHtml(node.system) + '</dd>');
         if (node.schema) rows.push('<dt>Schema</dt><dd>' + escapeHtml(node.schema) + '</dd>');
         if ((node.tags || []).length) {
@@ -550,7 +543,7 @@ window.CanvasApp.Panel = (function () {
 
         var typeBreakdown = Object.keys(typeCounts).map(function (t) {
             var n = typeCounts[t];
-            return n + ' ' + (n === 1 ? typeLabel(t) : (TYPE_LABELS_PLURAL[t] || typeLabel(t)));
+            return n + ' ' + (n === 1 ? typeLabelOf(t) : typeLabelPluralOf(t));
         }).join(', ');
 
         var tagsHtml = Object.keys(tagSet).sort().map(function (t) {
@@ -744,7 +737,8 @@ window.CanvasApp.Panel = (function () {
     }
 
     function typeLabel(t) {
-        return TYPE_LABELS[t] || t || '–';
+        // Kept for back-compat with internal callers; delegates to Util.
+        return t ? typeLabelOf(t) : '–';
     }
 
     /**
@@ -847,12 +841,8 @@ window.CanvasApp.Panel = (function () {
 
     // ---- Util ----------------------------------------------------------
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
 
     return { init: init, render: render };
 })();

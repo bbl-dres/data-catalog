@@ -440,17 +440,45 @@ window.CanvasApp.Auth = (function () {
 
     /**
      * Pull `error_description` out of a Supabase auth callback hash. Returns
-     * the decoded description string, or null if no error is present.
+     * a UI-safe description string, or null if no error is present.
+     *
+     * Hardening: a phishing URL like `…/#error=invalid_request&error_description=
+     * Click+here:+https://attacker.example` would otherwise render the
+     * attacker-supplied string inside a toast in our app chrome. We accept
+     * only Supabase's own vocabulary; everything else collapses to a
+     * generic message. The toast helper escapes HTML, so this is
+     * defence-in-depth for "looks legitimate" social-engineering risks
+     * rather than XSS.
      */
     function extractAuthErrorFromHash(hash) {
         if (!hash) return null;
         var match = hash.match(/[#&?]error_description=([^&]+)/);
         if (!match) return null;
+        var raw;
         try {
-            return decodeURIComponent(match[1].replace(/\+/g, ' '));
+            raw = decodeURIComponent(match[1].replace(/\+/g, ' '));
         } catch (e) {
-            return match[1];
+            raw = match[1];
         }
+        // Supabase's documented error_description messages are short
+        // ASCII strings drawn from a fixed vocabulary. Anything outside
+        // that set is replaced with a generic note so attacker-crafted
+        // URLs can't render arbitrary text in our chrome.
+        var KNOWN = [
+            'Email link is invalid or has expired',
+            'Token has expired or is invalid',
+            'Invalid login credentials',
+            'User not found',
+            'Email not confirmed'
+        ];
+        if (KNOWN.indexOf(raw) !== -1) return raw;
+        // Length cap as a secondary defence — any unusually long
+        // description is suspicious. 120 chars covers Supabase's longest
+        // real message comfortably.
+        if (raw.length > 120 || /[<>]/.test(raw)) {
+            return 'Anmeldung fehlgeschlagen — bitte erneut versuchen.';
+        }
+        return raw;
     }
 
     function nameFromSession(s) {
@@ -470,12 +498,9 @@ window.CanvasApp.Auth = (function () {
         return email ? email.slice(0, 2).toUpperCase() : '?';
     }
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    // Forwarded from Util — same behaviour, single source of truth.
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
 
     return {
         init:       init,

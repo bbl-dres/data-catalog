@@ -73,7 +73,13 @@ window.CanvasApp.Minimap = (function () {
     var mapOffsetY = 0;
     var bounds = null;
 
+    var inited = false;
     function init() {
+        // Idempotent guard — protects against accidental double-bootstrap
+        // (HMR, a second DOMContentLoaded path) which would otherwise add
+        // a second ResizeObserver and double up every pointer listener.
+        if (inited) return;
+        inited = true;
         State = window.CanvasApp.State;
         Canvas = window.CanvasApp.Canvas;
         rootEl = document.getElementById('minimap');
@@ -82,7 +88,10 @@ window.CanvasApp.Minimap = (function () {
         systemsGroup = document.getElementById('minimap-systems');
         viewportRect = document.getElementById('minimap-viewport');
         canvasEl = document.getElementById('canvas');
-        if (!rootEl || !svgEl || !nodesGroup || !systemsGroup || !viewportRect) return;
+        if (!rootEl || !svgEl || !nodesGroup || !systemsGroup || !viewportRect) {
+            inited = false; // allow a retry once the DOM is ready
+            return;
+        }
 
         svgEl.setAttribute('viewBox', '0 0 ' + WIDTH + ' ' + HEIGHT);
 

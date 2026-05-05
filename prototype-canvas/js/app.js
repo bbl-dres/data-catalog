@@ -53,8 +53,18 @@ window.CanvasApp.App = (function () {
      * appropriate view. Single code path used by init AND by hashchange so
      * URL navigation and first paint share behaviour.
      */
+    // Monotonic load token. Incremented on every loadAndRender entry; the
+    // resolver checks the token at every continuation and bails if a newer
+    // load has been started. Without this, two rapid canvas clicks (or a
+    // hashchange while a load is in flight) race their State.load promises
+    // and whichever resolves *last* wins — so you can end up viewing
+    // canvas A's URL with canvas B's nodes.
+    var loadToken = 0;
     function loadAndRender() {
+        var myToken = ++loadToken;
+        function isStale() { return myToken !== loadToken; }
         return State.load().then(function () {
+            if (isStale()) return; // a newer load took over while we awaited
             applyLoadError();
             renderBreadcrumb();
             if (State.getLoadError()) return;
@@ -80,16 +90,23 @@ window.CanvasApp.App = (function () {
             window.CanvasApp.Api.render();
             window.CanvasApp.Panel.render();
             window.CanvasApp.Minimap.render();
+            // If the URL landed directly on graph view, kick the layout
+            // now — the State.on listener inside Graph only triggers
+            // `scheduleLayout` on a `view` event, which doesn't fire
+            // for the initial bootstrap.
+            if (State.getView() === 'graph' && window.CanvasApp.Graph) {
+                window.CanvasApp.Graph.ensureLayout();
+            }
             updateSaveAffordance();
             updateCanvasEmpty();
             // Refine the framing once layout has settled — the pre-paint
             // goHome used fallback node sizes, so a second pass picks up
-            // the actual measured heights. Double rAF: first frame for
-            // paint, second frame for layout to be queryable.
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () {
-                    window.CanvasApp.Canvas.goHome();
-                });
+            // the actual measured heights. Stale-load guarded so a
+            // hashchange mid-rAF doesn't reframe the new canvas to the
+            // old one's home view.
+            window.CanvasApp.Util.afterLayout(function () {
+                if (isStale()) return;
+                window.CanvasApp.Canvas.goHome();
             });
         });
     }
@@ -185,7 +202,7 @@ window.CanvasApp.App = (function () {
     //   #/diagram (legacy)              redirects to #/c/default/diagram
 
     var applyingUrl = false;
-    var VALID_VIEWS = { diagram: 1, table: 1, api: 1 };
+    var VALID_VIEWS = { diagram: 1, table: 1, graph: 1, api: 1 };
 
     function wireUrlSync() {
         window.addEventListener('hashchange', onHashChange);
@@ -371,26 +388,12 @@ window.CanvasApp.App = (function () {
             var view = btn.getAttribute('data-view');
             State.setView(view);
         });
-        // WAI-ARIA Tab Pattern: ArrowLeft / ArrowRight cycle within the
-        // tablist (with wrap-around), Home jumps to the first tab, End to
-        // the last. Tab itself moves focus OUT of the tablist into the
-        // tabpanel, so the user doesn't have to walk through every tab to
-        // leave the group. Roving tabindex (set by applyViewVisibility +
-        // here on key) keeps Tab from emitting three sequential stops.
-        seg.addEventListener('keydown', function (e) {
-            if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
-            var tabs = Array.prototype.slice.call(seg.querySelectorAll('[role="tab"]'));
-            if (!tabs.length) return;
-            var idx = tabs.indexOf(document.activeElement);
-            if (idx < 0) idx = 0;
-            var next = idx;
-            if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
-            if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
-            if (e.key === 'Home')       next = 0;
-            if (e.key === 'End')        next = tabs.length - 1;
-            e.preventDefault();
-            tabs[next].focus();
-            State.setView(tabs[next].getAttribute('data-view'));
+        // WAI-ARIA Tab Pattern keyboard cycle (ArrowLeft/Right/Home/End).
+        // Roving tabindex is set by applyViewVisibility — only the active
+        // tab is in the Tab order, so this group emits one Tab stop, not
+        // three. Same helper drives the table sub-tabs in table.js.
+        window.CanvasApp.Util.wireTablistKeyboard(seg, function (tab) {
+            State.setView(tab.getAttribute('data-view'));
         });
     }
 
@@ -427,11 +430,11 @@ window.CanvasApp.App = (function () {
             if (document.activeElement && document.activeElement.blur) {
                 document.activeElement.blur();
             }
-            if (State.hasUnsavedChanges() && !confirm('Ungespeicherte Änderungen verwerfen?')) {
-                return;
-            }
-            State.revertDraft();
-            State.setMode('view');
+            confirmDiscardChanges().then(function (ok) {
+                if (!ok) return;
+                State.revertDraft();
+                State.setMode('view');
+            });
         });
 
         document.getElementById('btn-save').addEventListener('click', function () {
@@ -471,9 +474,31 @@ window.CanvasApp.App = (function () {
             var t = e.target;
             if (t && t.matches && t.matches('input, textarea, select, [contenteditable="true"]')) return;
 
-            if (State.hasUnsavedChanges() && !confirm('Ungespeicherte Änderungen verwerfen?')) return;
-            State.revertDraft();
-            State.setMode('view');
+            confirmDiscardChanges().then(function (ok) {
+                if (!ok) return;
+                State.revertDraft();
+                State.setMode('view');
+            });
+        });
+    }
+
+    /**
+     * "Discard unsaved changes?" confirm. Returns a resolved Promise<true>
+     * when there's nothing to discard (no prompt needed), otherwise the
+     * confirmDialog Promise. Centralised so the three sites that need it
+     * (Cancel button, Esc key, Excel import re-entry) share copy +
+     * focus-trap + Esc + Enter wiring rather than calling native confirm().
+     */
+    function confirmDiscardChanges() {
+        if (!State.hasUnsavedChanges || !State.hasUnsavedChanges()) {
+            return Promise.resolve(true);
+        }
+        return confirmDialog({
+            title: 'Ungespeicherte Änderungen verwerfen?',
+            body:  'Die nicht gespeicherten Änderungen gehen verloren.',
+            confirmText: 'Verwerfen',
+            cancelText:  'Zurück',
+            danger: true
         });
     }
 
@@ -555,9 +580,15 @@ window.CanvasApp.App = (function () {
         if (!link) return;
         link.addEventListener('click', function (e) {
             if (!State.hasUnsavedChanges()) return;
-            if (!confirm('Ungespeicherte Änderungen verwerfen?')) {
-                e.preventDefault();
-            }
+            // Always preventDefault first — confirmDialog is async, by the
+            // time the user answers the navigation has already started if
+            // we don't block it now. We re-trigger navigation manually
+            // when they accept.
+            e.preventDefault();
+            var href = link.getAttribute('href');
+            confirmDiscardChanges().then(function (ok) {
+                if (ok && href) window.location.href = href;
+            });
         });
     }
 
@@ -627,12 +658,32 @@ window.CanvasApp.App = (function () {
         });
     }
 
+    /**
+     * Three mutually-exclusive canvas overlay states:
+     *   1. loading            → spinner ("Canvas wird geladen…")
+     *   2. has nodes          → no overlay
+     *   3. fetched and empty  → "Canvas ist leer" placeholder
+     *
+     * Without the loading branch, the empty-state used to flash during
+     * the boot sequence — initial state has 0 nodes, page paints, data
+     * arrives, paints again. The spinner closes that hole.
+     */
     function updateCanvasEmpty() {
         var empty = document.getElementById('canvas-empty');
-        if (!empty) return;
-        var hasNodes = State.getNodes().length > 0;
-        if (hasNodes) empty.setAttribute('hidden', '');
-        else          empty.removeAttribute('hidden');
+        var loading = document.getElementById('canvas-loading');
+        if (!empty || !loading) return;
+        var isLoading = State.isLoading && State.isLoading();
+        var hasNodes  = State.getNodes().length > 0;
+        if (isLoading) {
+            loading.removeAttribute('hidden');
+            empty.setAttribute('hidden', '');
+        } else if (hasNodes) {
+            loading.setAttribute('hidden', '');
+            empty.setAttribute('hidden', '');
+        } else {
+            loading.setAttribute('hidden', '');
+            empty.removeAttribute('hidden');
+        }
     }
 
     /**
@@ -645,8 +696,14 @@ window.CanvasApp.App = (function () {
         var indicator = document.getElementById('unsaved-indicator');
         if (!saveBtn || !indicator) return;
         var inEdit = State.getMode() === 'edit';
+        // While a commit RPC is in flight, lock the action surface so a
+        // fast click can't slip a mutation in between the payload being
+        // serialised and the success-handler clearing dirtyMap (which
+        // would silently lose the new edit's dirty mark).
+        var busy = State.isCommitting && State.isCommitting();
+        document.body.classList.toggle('is-committing', !!busy);
         var n = inEdit ? State.getUnsavedChangeCount() : 0;
-        saveBtn.disabled = n === 0;
+        saveBtn.disabled = n === 0 || busy;
         if (n === 0) {
             indicator.setAttribute('hidden', '');
             indicator.textContent = '';
@@ -656,11 +713,17 @@ window.CanvasApp.App = (function () {
             // in CSS, not here — it disambiguates "warning amber" from the
             // adjacent FK badge / API type amber (all three share #A16800
             // but mean different things). Just write the text.
-            indicator.textContent = n === 1 ? '1 ungespeicherte Änderung' : n + ' ungespeicherte Änderungen';
+            indicator.textContent = busy
+                ? 'Speichere…'
+                : (n === 1 ? '1 ungespeicherte Änderung' : n + ' ungespeicherte Änderungen');
         }
-        // Undo button mirrors State.canUndo() — same emit cadence.
+        // Undo button mirrors State.canUndo() — same emit cadence. Disabled
+        // during commit so an undo can't run between payload-serialise and
+        // success.
         var undoBtn = document.getElementById('btn-undo');
-        if (undoBtn) undoBtn.disabled = !inEdit || !State.canUndo();
+        if (undoBtn) undoBtn.disabled = !inEdit || !State.canUndo() || busy;
+        var cancelBtn = document.getElementById('btn-cancel');
+        if (cancelBtn) cancelBtn.disabled = !!busy;
     }
 
     var KIND_ICONS = {
@@ -668,9 +731,7 @@ window.CanvasApp.App = (function () {
         attribute: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="14" y2="18"/></svg>',
         system:    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>'
     };
-    var TYPE_LABELS_LOCAL = {
-        table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste'
-    };
+    // Node-type labels delegate to Util.nodeTypeLabel — single source of truth.
 
     function wireSearch() {
         var input = document.getElementById('search-input');
@@ -814,7 +875,7 @@ window.CanvasApp.App = (function () {
     }
 
     function typeLabelLocal(t) {
-        return TYPE_LABELS_LOCAL[t] || t || 'Knoten';
+        return window.CanvasApp.Util.nodeTypeLabel(t);
     }
 
     function renderDropdown(items, dropdown) {
@@ -872,11 +933,8 @@ window.CanvasApp.App = (function () {
         });
     }
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+    // Forwarded from Util — keep the local name so call-sites don't change.
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
 
     // ---- Toast helper --------------------------------------------------
 
@@ -1052,6 +1110,25 @@ window.CanvasApp.App = (function () {
 
 // Bootstrap
 document.addEventListener('DOMContentLoaded', function () {
+    // Load-order sanity check. Each module's IIFE attaches itself to
+    // CanvasApp at script-evaluation time, so by DOMContentLoaded all
+    // expected modules should be present. A missing module here means a
+    // <script> tag was omitted from index.html, mistyped, or failed to
+    // download — all of which would otherwise fail silently and surface
+    // as cryptic "X.init is not a function" errors deep inside one of
+    // the inits below.
+    var REQUIRED = [
+        'Util', 'SupabaseClient', 'Auth', 'State', 'Canvas',
+        'Editor', 'Table', 'Overview', 'Api', 'Panel', 'Filter',
+        'XlsxIO', 'Minimap', 'AutoLayout', 'Graph', 'App'
+    ];
+    var missing = REQUIRED.filter(function (k) { return !window.CanvasApp[k]; });
+    if (missing.length) {
+        console.error('CanvasApp boot: missing modules — ' + missing.join(', '));
+        // Don't return; continue with init() so the existing modules still
+        // attach their listeners. Whichever init throws first will surface
+        // a useful stack trace.
+    }
     window.CanvasApp.Auth.init();
     window.CanvasApp.Canvas.init();
     window.CanvasApp.Editor.init();
@@ -1063,5 +1140,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.XlsxIO.init();
     window.CanvasApp.Minimap.init();
     window.CanvasApp.AutoLayout.init();
+    window.CanvasApp.Graph.init();
     window.CanvasApp.App.init();
 });

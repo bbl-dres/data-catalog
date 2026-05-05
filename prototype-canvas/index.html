@@ -4,17 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BBL Canvas — Datenarchitektur</title>
+
+<!-- Content Security Policy — defence-in-depth. `default-src 'self'` blocks
+     unexpected script/object/media origins. The CDN allowances cover the
+     three pinned external scripts (XLSX / supabase-js / ELK) and the
+     Google Fonts pair. `'unsafe-inline'` on style-src is required by the
+     existing inline-style writes in canvas.js (transform / opacity /
+     position). `connect-src` lists Supabase wildcards because the project's
+     PostgREST + auth + realtime endpoints all live on subdomains. The
+     `frame-ancestors 'none'` clause blocks clickjacking — without it, the
+     app could be iframed and an attacker could trick a signed-in editor
+     into clicking a destructive button via overlay deception. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: https:;
+  connect-src 'self' https://*.supabase.co https://*.supabase.in;
+  frame-ancestors 'none';
+  base-uri 'none';
+  form-action 'self';
+">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- External scripts pinned to specific versions (no floating major tags)
+     so a CDN compromise is bounded to that exact build. Action item: add
+     SRI `integrity="sha384-…" crossorigin="anonymous"` to each tag once
+     the prod version pins are finalised — generate hashes via
+     `openssl dgst -sha384 -binary <file> | openssl base64 -A` or copy
+     from the CDN's "Copy SRI" UI (jsdelivr / cdnjs both provide one). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.10/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 <!-- ELK manages its own internal worker for heavy layout computation, so
      load it on the main thread. Wrapping it in our own Worker fails because
      ELK's internal `_Worker` setup can't run from a nested worker context. -->
-<script src="https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js" crossorigin="anonymous"></script>
 
 </head>
 <body>
@@ -78,6 +108,7 @@
       <div class="seg" id="view-seg" role="tablist" aria-label="Ansicht">
         <button class="seg-btn is-active" id="tab-diagram" data-view="diagram" role="tab" aria-selected="true"  aria-controls="view-diagram" tabindex="0">Diagramm</button>
         <button class="seg-btn"           id="tab-table"   data-view="table"   role="tab" aria-selected="false" aria-controls="view-table"   tabindex="-1">Liste</button>
+        <button class="seg-btn"           id="tab-graph"   data-view="graph"   role="tab" aria-selected="false" aria-controls="view-graph"   tabindex="-1">Graph</button>
         <button class="seg-btn"           id="tab-api"     data-view="api"     role="tab" aria-selected="false" aria-controls="view-api"     tabindex="-1">API</button>
       </div>
     </div>
@@ -240,6 +271,15 @@
         <!-- Drag-edge preview (only in edit mode) -->
         <svg class="edge-preview" id="edge-preview" xmlns="http://www.w3.org/2000/svg"></svg>
 
+        <!-- Loading-state spinner (shown while State.load() is in flight). Sits in
+             the same overlay slot as canvas-empty; together they're mutually
+             exclusive: spinner during fetch, empty-state only after a
+             successful fetch returned zero nodes. -->
+        <div class="canvas-loading" id="canvas-loading" role="status" aria-live="polite" hidden>
+          <span class="canvas-loading-spinner" aria-hidden="true"></span>
+          <span class="canvas-loading-label">Canvas wird geladen…</span>
+        </div>
+
         <!-- Empty-state placeholder (visible only when there are zero nodes) -->
         <div class="canvas-empty" id="canvas-empty" hidden>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -361,6 +401,44 @@
       <div class="info-panel-content" id="info-panel-content"></div>
     </aside>
 
+    <!-- Graph view — read-only force-laid-out network of systems +
+         entities + APIs. Skips attributes (those live on each entity in
+         the Diagramm view). Layout is computed by ELK; rendering is plain
+         SVG so we can lean on event delegation + the existing State
+         selection model. -->
+    <section class="view view-graph" id="view-graph" data-view="graph" role="tabpanel" aria-labelledby="tab-graph" tabindex="0">
+      <div class="graph-canvas" id="graph-canvas">
+        <svg class="graph-svg" id="graph-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" aria-label="Netzwerk-Übersicht">
+          <g class="graph-transform" id="graph-transform">
+            <g class="graph-edges" id="graph-edges"></g>
+            <g class="graph-nodes" id="graph-nodes"></g>
+          </g>
+        </svg>
+        <div class="graph-loading" id="graph-loading" role="status" aria-live="polite" hidden>
+          <span class="canvas-loading-spinner" aria-hidden="true"></span>
+          <span class="canvas-loading-label">Layout wird berechnet…</span>
+        </div>
+        <div class="graph-empty" id="graph-empty" hidden>
+          <h2 class="canvas-empty-title">Keine Knoten</h2>
+          <p class="canvas-empty-sub">Es gibt nichts darzustellen — der Canvas ist leer.</p>
+        </div>
+        <div class="graph-tooltip" id="graph-tooltip" role="tooltip" hidden></div>
+        <!-- Floating zoom toolbar — same shape as the Diagramm zoom controls. -->
+        <div class="ft ft-bottom-left graph-zoom" id="graph-zoom" aria-label="Zoom">
+          <button class="ft-btn-icon" id="graph-zoom-out" type="button" title="Verkleinern" aria-label="Verkleinern">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="ft-btn-icon" id="graph-zoom-in" type="button" title="Vergrößern" aria-label="Vergrößern">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+          <button class="ft-btn-icon" id="graph-zoom-fit" type="button" title="An Bildschirm anpassen" aria-label="An Bildschirm anpassen">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 8 4 4 8 4"/><polyline points="20 8 20 4 16 4"/><polyline points="20 16 20 20 16 20"/><polyline points="4 16 4 20 8 20"/></svg>
+          </button>
+          <span class="ft-label ft-label--zoom" id="graph-zoom-level">100%</span>
+        </div>
+      </div>
+    </section>
+
     <!-- API view -->
     <section class="view view-api" id="view-api" data-view="api" role="tabpanel" aria-labelledby="tab-api" tabindex="0">
       <div class="api-header">
@@ -426,6 +504,9 @@
   </footer>
 </div>
 
+<!-- Util loads first — every other module aliases its escapeHtml /
+     escapeAttr / cssEscape / afterLayout helpers at IIFE-init time. -->
+<script src="js/util.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/state.js"></script>
@@ -439,6 +520,7 @@
 <script src="js/xlsx_io.js"></script>
 <script src="js/minimap.js"></script>
 <script src="js/autolayout.js"></script>
+<script src="js/graph.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

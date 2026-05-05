@@ -38,7 +38,17 @@ window.CanvasApp.Canvas = (function () {
     var MIN_SCALE = 0.01;
     var MAX_SCALE = 3.0;
     var ZOOM_STEP = 0.1;     // additive step for fine adjustments at scale ≥ 1
-    var ZOOM_FACTOR = 1.25;  // multiplicative factor for button zoom
+    var ZOOM_FACTOR = 1.25;  // multiplicative factor for button zoom (zoomIn / zoomOut)
+    // Wheel zoom multipliers — gentler than ZOOM_FACTOR because wheel events
+    // arrive in bursts (60-120 Hz on trackpads). 0.92 down × 1.08 up ≈ ±8 %
+    // per tick is the felt-right default; matches Miro / Figma trackpad
+    // calibration.
+    var WHEEL_ZOOM_OUT = 0.92;
+    var WHEEL_ZOOM_IN  = 1.08;
+    // Keyboard pan step (Arrow keys when canvas has focus). 60 px =
+    // one dot-grid row at 100 % zoom. Shift multiplies for fast pan.
+    var KEY_PAN_STEP      = 60;
+    var KEY_PAN_STEP_FAST = 240;
 
     // Dot-grid hysteresis: a single threshold made the grid flap on / off as
     // wheel zoom (factor 0.92 / 1.08) crossed scale = 0.4 repeatedly. With a
@@ -272,13 +282,10 @@ window.CanvasApp.Canvas = (function () {
     // Column-key labels — short text badges (PK / FK / UK / –)
     var KEY_LABELS = { PK: 'PK', FK: 'FK', UK: 'UK', '': '–' };
 
-    // Type icons for nodes (inline SVG)
-    var TYPE_ICONS = {
-        table: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="1.5" width="13" height="13" rx="1.5"/><line x1="1.5" y1="5.5" x2="14.5" y2="5.5"/><line x1="5.5" y1="5.5" x2="5.5" y2="14.5"/></svg>',
-        view:  '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2"/></svg>',
-        api:   '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5L2 9.5h6l-1 5L13.5 6.5h-6l1-5z"/></svg>',
-        file:  '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 1.5H3.5a1 1 0 0 0-1 1V13.5a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V6L9 1.5z"/><polyline points="9 1.5 9 6 13.5 6"/></svg>',
-        codelist: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="13" y2="3"/><line x1="6" y1="8" x2="13" y2="8"/><line x1="6" y1="13" x2="13" y2="13"/><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="8" r="1.2" fill="currentColor"/><circle cx="3" cy="13" r="1.2" fill="currentColor"/></svg>'
+    // Type icons come from Util.nodeTypeIcon — single source of truth
+    // shared with panel.js. The 14 px size is the node-header convention.
+    var nodeTypeIcon14 = function (key) {
+        return window.CanvasApp.Util.nodeTypeIcon(key, 14);
     };
 
     var inited = false;
@@ -330,12 +337,18 @@ window.CanvasApp.Canvas = (function () {
         // diagram.
         canvasEl.addEventListener('keydown', onCanvasKeydown);
 
-        // System frame label click → select system
+        // System frame click (anywhere on the .group-box, not just the
+        // small badge label) → select system. The CSS gives .group-box
+        // pointer-events: auto so clicks on the gap-area between nodes
+        // inside the frame land here; clicks on a node fall on the node
+        // first because .node-layer paints above .group-layer. Pan-gesture
+        // (down + drag) doesn't synthesise a click — only a discrete
+        // press-release fires this, so the user can still pan from inside
+        // a group frame.
         groupLayer.addEventListener('click', function (e) {
-            var label = e.target.closest('.group-box-label');
-            if (!label) return;
-            var box = label.closest('.group-box');
-            var sys = box && box.getAttribute('data-system');
+            var box = e.target.closest('.group-box');
+            if (!box) return;
+            var sys = box.getAttribute('data-system');
             if (sys) State.setSelectedSystem(sys);
         });
 
@@ -371,6 +384,15 @@ window.CanvasApp.Canvas = (function () {
         State.on(function (reason, payload) {
             if (reason === 'replace' || reason === 'reset') {
                 collapsedSets = Object.create(null);
+                // Cancel any in-progress gesture before the DOM is rebuilt.
+                // renderAll() rebuilds nodeLayer.innerHTML from scratch; if
+                // a drag was running, dragNodeId points at a freshly-detached
+                // element. Subsequent applyDragMove ticks would no-op
+                // visually but State.moveNode would keep mutating the
+                // restored / reloaded state to the cursor's world coords.
+                if (isDragging)   onDragEnd();
+                if (isPanning)    { isPanning = false; canvasEl.classList.remove('is-panning'); }
+                if (pinchInitial) endPinch();
             }
             if (reason === 'replace' || reason === 'reset') {
                 renderAll();
@@ -696,6 +718,15 @@ window.CanvasApp.Canvas = (function () {
         else if (s <= SYSTEM_OVERLAY_FADE_LO) bigOpacity = 1;
         else bigOpacity = (SYSTEM_OVERLAY_FADE_HI - s) / (SYSTEM_OVERLAY_FADE_HI - SYSTEM_OVERLAY_FADE_LO);
 
+        // At LOD `low` the per-node card labels are visible (centred on
+        // each card), and a fully-opaque system overlay sitting on top
+        // would obscure them. Cap the overlay at watermark opacity in
+        // that tier so the system label is still readable for orientation
+        // but card labels show through. LOD `far` keeps full opacity —
+        // at that zoom card labels are smaller and need the system
+        // overlay's stronger presence for orientation.
+        if (lod === 'low' && bigOpacity > 0.35) bigOpacity = 0.35;
+
         var bigStr = bigOpacity === 0 ? '0'
                    : bigOpacity === 1 ? '1'
                    : bigOpacity.toFixed(2);
@@ -772,7 +803,7 @@ window.CanvasApp.Canvas = (function () {
         el.style.left = (node.x || 0) + 'px';
         el.style.top  = (node.y || 0) + 'px';
 
-        var icon = TYPE_ICONS[node.type] || TYPE_ICONS.table;
+        var icon = nodeTypeIcon14(node.type);
         var headerLabel = node.label || node.id;
         var totalAttrs = (node.columns || []).length;
 
@@ -888,8 +919,8 @@ window.CanvasApp.Canvas = (function () {
         var keyLabel = KEY_LABELS[key] || KEY_LABELS[''];
         var keyTitle = 'Klicken: PK → FK → UK → –';
         // Codelist badge — only if this attribute is FK'd to a codelist node.
-        // Same icon as TYPE_ICONS.codelist for visual consistency. Click selects
-        // the codelist (info-panel renders its codes).
+        // Same icon as Util.nodeTypeIcon('codelist') for visual consistency.
+        // Click selects the codelist (info-panel renders its codes).
         var clBadge = '';
         if (codelistNode) {
             clBadge = '<button type="button" class="node-col-codelist"' +
@@ -1082,14 +1113,36 @@ window.CanvasApp.Canvas = (function () {
     }
 
     /**
-     * Diff-style rebuild of the system frames: walk existing boxes, update
-     * geometry on ones whose system still has visible members, drop ones
-     * whose system disappeared, append boxes for newly-introduced systems.
-     * No `innerHTML = ''` teardown — that was the source of the system-frame
-     * flash on every node edit.
+     * Diff-style rebuild of the system frames. Composed of two pure-ish
+     * passes:
+     *   1. `reconcileGroups()` — compute what should change, returning a
+     *      plan of {update / hide / remove / add} ops. Reads State + the
+     *      existing `.group-box` DOM, but doesn't mutate anything.
+     *   2. `applyGroupPlan(plan)` — execute the plan against the DOM and
+     *      the overlay layer.
+     * Splitting like this localises the "what changed" reasoning in one
+     * place; previously the choreography between three render targets
+     * (groupLayer + systemOverlayLayer + cachedOverlays) was tangled
+     * across one function. No `innerHTML = ''` teardown either way —
+     * that was the source of the system-frame flash on every node edit.
      */
     function rebuildGroupsIncremental() {
         if (!groupLayer) return;
+        var plan = reconcileGroups();
+        applyGroupPlan(plan);
+    }
+
+    /**
+     * Compute the set of group-box transitions needed to bring the DOM
+     * back in sync with State. Returns four arrays of ops; doesn't mutate.
+     *
+     *   update — { sysName, box, rect }      (existing box, geometry changed)
+     *   hide   — { sysName, box }            (existing box, no visible members)
+     *   remove — { sysName, box }            (existing box, system gone)
+     *   add    — { sysName, members, rect }  (new system, no box yet)
+     */
+    function reconcileGroups() {
+        // Group visible nodes by system label.
         var nodes = State.getNodes();
         var byS = Object.create(null);
         for (var i = 0; i < nodes.length; i++) {
@@ -1100,43 +1153,70 @@ window.CanvasApp.Canvas = (function () {
             (byS[s] = byS[s] || []).push(n);
         }
 
-        var existingBoxes = groupLayer.querySelectorAll('.group-box');
+        var update = [], hide = [], remove = [], add = [];
         var seen = Object.create(null);
+
+        // Walk existing DOM boxes — classify each as remove / hide / update.
+        var existingBoxes = groupLayer.querySelectorAll('.group-box');
         for (var j = 0; j < existingBoxes.length; j++) {
             var box = existingBoxes[j];
             var sysName = box.getAttribute('data-system') || '';
+            seen[sysName] = true;
             if (!byS[sysName]) {
-                // System gone (last member deleted or moved out).
-                box.remove();
-                syncSystemOverlayForBox(sysName, null);
-                invalidateOverlayCache();
+                remove.push({ sysName: sysName, box: box });
                 continue;
             }
-            seen[sysName] = true;
             var rect = computeGroupRect(byS[sysName]);
             if (!rect) {
-                box.style.display = 'none';
-                syncSystemOverlayForBox(sysName, null);
+                hide.push({ sysName: sysName, box: box });
                 continue;
             }
-            box.style.display = '';
-            box.style.left   = rect.left   + 'px';
-            box.style.top    = rect.top    + 'px';
-            box.style.width  = rect.width  + 'px';
-            box.style.height = rect.height + 'px';
-            syncSystemOverlayForBox(sysName, rect);
+            update.push({ sysName: sysName, box: box, rect: rect });
         }
 
-        // New systems — append a fresh box + overlay.
+        // Systems that exist in State but have no DOM box yet → append.
         Object.keys(byS).forEach(function (sysName) {
             if (seen[sysName]) return;
             var members = byS[sysName];
-            var box = buildGroupBoxFor(sysName, members);
+            var rect = computeGroupRect(members);
+            if (!rect) return; // no visible members — skip
+            add.push({ sysName: sysName, members: members, rect: rect });
+        });
+
+        return { update: update, hide: hide, remove: remove, add: add };
+    }
+
+    /**
+     * Execute a plan from reconcileGroups against the DOM. Each op kind
+     * maps to a focused mutation; the overlay-cache invalidation only
+     * fires on adds + removes (the structure changed) — display / geometry
+     * changes don't touch the cache.
+     */
+    function applyGroupPlan(plan) {
+        plan.remove.forEach(function (op) {
+            op.box.remove();
+            syncSystemOverlayForBox(op.sysName, null);
+            invalidateOverlayCache();
+        });
+        plan.hide.forEach(function (op) {
+            op.box.style.display = 'none';
+            syncSystemOverlayForBox(op.sysName, null);
+        });
+        plan.update.forEach(function (op) {
+            var box = op.box, r = op.rect;
+            box.style.display = '';
+            box.style.left   = r.left   + 'px';
+            box.style.top    = r.top    + 'px';
+            box.style.width  = r.width  + 'px';
+            box.style.height = r.height + 'px';
+            syncSystemOverlayForBox(op.sysName, r);
+        });
+        plan.add.forEach(function (op) {
+            var box = buildGroupBoxFor(op.sysName, op.members);
             if (!box) return;
             groupLayer.appendChild(box);
             invalidateOverlayCache();
-            var rect = computeGroupRect(members);
-            if (rect) syncSystemOverlayForBox(sysName, rect);
+            syncSystemOverlayForBox(op.sysName, op.rect);
         });
     }
 
@@ -1585,11 +1665,16 @@ window.CanvasApp.Canvas = (function () {
 
         if (activePointers.size >= 2) {
             // Two pointers down → pinch zoom takes over. Cancel any
-            // single-pointer pan that was in progress; it would otherwise
-            // double-up with the pinch translate computation.
+            // single-pointer pan or drag that was in progress; it would
+            // otherwise double-up with the pinch translate, or — for drag
+            // — keep mutating with a stale dragCursorOffset captured at
+            // the pre-pinch scale.
             if (isPanning) {
                 isPanning = false;
                 canvasEl.classList.remove('is-panning');
+            }
+            if (isDragging) {
+                onDragEnd();
             }
             beginPinch();
             return;
@@ -1634,7 +1719,17 @@ window.CanvasApp.Canvas = (function () {
     }
 
     function onPanEnd(e) {
-        if (e && e.pointerId != null) {
+        // pointercancel sometimes arrives with a real pointerId (e.g. one
+        // finger of a pinch) — but treat any cancel as "force-end the
+        // gesture entirely", since we can't trust the remaining tracked
+        // pointer's state once the OS has interrupted us. Without this,
+        // an interrupted pinch left pinchInitial set forever, clobbering
+        // every subsequent single-pointer pan via the "pinch wins" branch
+        // in flushPointerFrame.
+        var isCancel = e && e.type === 'pointercancel';
+        if (isCancel) {
+            activePointers.clear();
+        } else if (e && e.pointerId != null) {
             activePointers.delete(e.pointerId);
         } else {
             activePointers.clear();
@@ -1665,7 +1760,7 @@ window.CanvasApp.Canvas = (function () {
     var wheelRafQueued = false;
     function onWheel(e) {
         e.preventDefault();
-        var factor = e.deltaY > 0 ? 0.92 : 1.08;
+        var factor = e.deltaY > 0 ? WHEEL_ZOOM_OUT : WHEEL_ZOOM_IN;
         var newScale = clamp(scale * factor, MIN_SCALE, MAX_SCALE);
         var rect = canvasEl.getBoundingClientRect();
         var mx = e.clientX - rect.left;
@@ -1699,8 +1794,8 @@ window.CanvasApp.Canvas = (function () {
     // Active only when focus is inside the canvas. Inputs (text fields,
     // contenteditable) bail before the handler reaches them so typing in
     // a node label doesn't pan the diagram.
-    var KEY_PAN_STEP       = 60;   // px in canvas-world coords per Arrow press
-    var KEY_PAN_STEP_FAST  = 240;  // Shift modifier multiplies by 4
+    // KEY_PAN_STEP / KEY_PAN_STEP_FAST defined at the top of the module
+    // alongside ZOOM_FACTOR / WHEEL_ZOOM_* — single constants block.
 
     function onCanvasKeydown(e) {
         // Don't preempt text input — the user is editing a label / system /
@@ -1946,15 +2041,38 @@ window.CanvasApp.Canvas = (function () {
      * the band midpoints. See the LOD comment on lod-related constants
      * above for tier semantics.
      */
+    // Tier table — each row says "if previous tier was X, leave it when
+    // scale crosses {downAt, upAt}". `downAt` is the lower hysteresis bound
+    // (drop to coarser tier when scale falls past it); `upAt` is the upper
+    // bound (jump to finer tier when scale rises past it). The initial
+    // bucket (no prev state) is picked by the band midpoints below.
+    var LOD_BANDS = [
+        { tier: 'far',  downAt: -Infinity, upAt: 0.25 },
+        { tier: 'low',  downAt: 0.20,      upAt: 0.45 },
+        { tier: 'mid',  downAt: 0.40,      upAt: 0.75 },
+        { tier: 'full', downAt: 0.70,      upAt: Infinity }
+    ];
+    var LOD_INITIAL_PICKS = [
+        { tier: 'far',  below: 0.225 },
+        { tier: 'low',  below: 0.425 },
+        { tier: 'mid',  below: 0.725 },
+        { tier: 'full', below: Infinity }
+    ];
+
     function computeLod(prev, s) {
-        if (prev === 'far')  return s > 0.25 ? 'low'  : 'far';
-        if (prev === 'low')  return s < 0.20 ? 'far'  : (s > 0.45 ? 'mid'  : 'low');
-        if (prev === 'mid')  return s < 0.40 ? 'low'  : (s > 0.75 ? 'full' : 'mid');
-        if (prev === 'full') return s < 0.70 ? 'mid'  : 'full';
-        // Initial: pick the band the scale sits in (use midpoints).
-        if (s < 0.225) return 'far';
-        if (s < 0.425) return 'low';
-        if (s < 0.725) return 'mid';
+        for (var i = 0; i < LOD_BANDS.length; i++) {
+            var band = LOD_BANDS[i];
+            if (band.tier !== prev) continue;
+            // Cross down → previous tier on the coarser side.
+            if (s < band.downAt && i > 0) return LOD_BANDS[i - 1].tier;
+            // Cross up → next tier on the finer side.
+            if (s > band.upAt && i < LOD_BANDS.length - 1) return LOD_BANDS[i + 1].tier;
+            return band.tier;
+        }
+        // Initial pick — no `prev` matched, choose by band midpoint.
+        for (var j = 0; j < LOD_INITIAL_PICKS.length; j++) {
+            if (s < LOD_INITIAL_PICKS[j].below) return LOD_INITIAL_PICKS[j].tier;
+        }
         return 'full';
     }
 
@@ -2187,46 +2305,35 @@ window.CanvasApp.Canvas = (function () {
 
     function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    // Shared escape / cssEscape helpers — single source of truth in Util.
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
+    var cssEscape  = window.CanvasApp.Util.cssEscape;
 
-    function cssEscape(s) {
-        if (window.CSS && window.CSS.escape) return window.CSS.escape(s);
-        return String(s).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
-    }
-
+    // Public API — only methods called from outside this module. Bulk
+    // render entry points (renderNodes / renderEdges / renderGroups) and
+    // fine-grained internals (updateNodeSelection, updateEdgesForNode,
+    // initialView, setHomeFromCurrent, getWorldBounds) used to ship here
+    // but had zero external callers; trimmed to make the surface match
+    // actual use, so future contributors aren't tempted to wire to a
+    // private helper.
     return {
         init: init,
         renderAll: renderAll,
-        renderNodes: renderNodes,
-        renderEdges: renderEdges,
-        updateEdgesForNode: updateEdgesForNode,
-        updateNodeSelection: updateNodeSelection,
         applyFilterDim: applyFilterDim,
         toggleSet: toggleSet,
         isSetExpanded: isSetExpanded,
         setAllSetsExpanded: setAllSetsExpanded,
-        renderGroups: renderGroups,
         rebuildGroupsIncremental: rebuildGroupsIncremental,
         renderGroupForSystem: renderGroupForSystem,
         refreshNode: renderNodeIncremental,
         fitToScreen: fitToScreen,
-        initialView: initialView,
         goHome: goHome,
-        setHomeFromCurrent: setHomeFromCurrent,
         getNodeEl: getNodeEl,
         getNodeRect: getNodeRect,
         getTransform: getTransform,
         setTransform: setTransform,
         onTransform: onTransform,
-        getWorldBounds: getWorldBounds,
         clientToCanvas: clientToCanvas,
         setEditMode: setEditMode
     };

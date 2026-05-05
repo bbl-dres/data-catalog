@@ -58,7 +58,7 @@ window.CanvasApp.Table = (function () {
         textInput.addEventListener('input', debouncedRender);
 
         tabsEl.addEventListener('click', onTabClick);
-        tabsEl.addEventListener('keydown', onTabKeydown);
+        window.CanvasApp.Util.wireTablistKeyboard(tabsEl, activateTabFromKey);
         bodyEl.addEventListener('click', onRowClick);
         bodyEl.addEventListener('blur', onCellBlur, true);
         bodyEl.addEventListener('change', onSelectChange);
@@ -97,30 +97,17 @@ window.CanvasApp.Table = (function () {
     }
 
     /**
-     * WAI-ARIA Tab Pattern keyboard handling for the table sub-tabs.
-     * ArrowLeft / ArrowRight cycle (with wrap), Home / End jump to ends.
-     * Tab itself moves focus out of the tablist into the tabpanel.
+     * WAI-ARIA Tab Pattern keyboard handler — same shape as the view-seg
+     * tablist in app.js. Activation switches the active sub-tab and
+     * re-renders the table body.
      */
-    function onTabKeydown(e) {
-        if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) return;
-        var tabs = Array.prototype.slice.call(tabsEl.querySelectorAll('[role="tab"]'));
-        if (!tabs.length) return;
-        var idx = tabs.indexOf(document.activeElement);
-        if (idx < 0) idx = 0;
-        var next = idx;
-        if (e.key === 'ArrowLeft')  next = (idx - 1 + tabs.length) % tabs.length;
-        if (e.key === 'ArrowRight') next = (idx + 1) % tabs.length;
-        if (e.key === 'Home')       next = 0;
-        if (e.key === 'End')        next = tabs.length - 1;
-        e.preventDefault();
-        tabs[next].focus();
-        var nextTab = tabs[next].getAttribute('data-tab');
-        if (nextTab !== activeTab) {
-            activeTab = nextTab;
-            textInput.value = '';
-            applyTabUI();
-            render();
-        }
+    function activateTabFromKey(tab) {
+        var nextTab = tab.getAttribute('data-tab');
+        if (nextTab === activeTab) return;
+        activeTab = nextTab;
+        textInput.value = '';
+        applyTabUI();
+        render();
     }
 
     function applyTabUI() {
@@ -580,14 +567,10 @@ window.CanvasApp.Table = (function () {
         return out.sort();
     }
     function typeLabel(t) {
-        return ({ table: 'Tabelle', view: 'View', api: 'API', file: 'Datei', codelist: 'Werteliste' }[t] || t || '–');
+        return t ? window.CanvasApp.Util.nodeTypeLabel(t) : '–';
     }
-    function escapeHtml(s) {
-        return String(s == null ? '' : s)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-    function escapeAttr(s) { return escapeHtml(s); }
+    var escapeHtml = window.CanvasApp.Util.escapeHtml;
+    var escapeAttr = window.CanvasApp.Util.escapeAttr;
 
     /**
      * Public hook for the Datenpaket detail panel — switches to the

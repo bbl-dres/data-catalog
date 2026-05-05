@@ -30,7 +30,8 @@
       "Bash(node -c js/table.js)",
       "Bash(node -c js/auth.js)",
       "Bash(node -c js/xlsx_io.js)",
-      "Bash(node -c js/overview.js)"
+      "Bash(node -c js/overview.js)",
+      "Bash(grep -v -E \"util\\\\.js|//|\\\\*\")"
     ]
   }
 }
