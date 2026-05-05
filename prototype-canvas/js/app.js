@@ -906,5 +906,6 @@ document.addEventListener('DOMContentLoaded', function () {
     window.CanvasApp.Filter.init();
     window.CanvasApp.XlsxIO.init();
     window.CanvasApp.Minimap.init();
+    window.CanvasApp.AutoLayout.init();
     window.CanvasApp.App.init();
 });

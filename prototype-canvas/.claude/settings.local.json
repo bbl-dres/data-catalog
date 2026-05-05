@@ -17,7 +17,9 @@
       "Bash(node --check c:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-canvas/js/app.js)",
       "Bash(kill %1)",
       "Bash(pkill -f \"http.server 8765\")",
-      "Bash(PYTHONIOENCODING=utf-8 python scripts/generate-ibpdi-import.py)"
+      "Bash(PYTHONIOENCODING=utf-8 python scripts/generate-ibpdi-import.py)",
+      "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js\")",
+      "Bash(curl -sI \"https://cdn.jsdelivr.net/npm/elkjs/lib/elk.bundled.js\")"
     ]
   }
 }

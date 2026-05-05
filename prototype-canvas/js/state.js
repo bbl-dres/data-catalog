@@ -926,6 +926,59 @@ window.CanvasApp.State = (function () {
         emit('edges');
     }
 
+    /**
+     * Apply a batch of (id, x, y) layout positions in one shot, with a single
+     * undo frame so Ctrl+Z restores everything atomically. Used by Auto-Layout
+     * — node-by-node moveNode() works but produces N undo frames and N
+     * 'replace' renders, neither of which is desirable for a wholesale
+     * re-arrange.
+     *
+     * Unlike a plain drag (which uses moveNode directly and is treated as
+     * auto-saved layout), auto-layout is a substantial reorganisation the
+     * user explicitly triggered — they expect Speichern to commit it. So
+     * each moved node also gets a dirty mark, and the undo closure clears
+     * the marks WE added (without disturbing dirty entries from unrelated
+     * prior edits).
+     *
+     * moveNode still mirrors positions into state.snapshot, so a Cancel
+     * after Auto-Layout *keeps* the new positions but discards data edits
+     * — same trade-off as drag. Use Ctrl+Z to specifically undo the layout.
+     */
+    function applyLayoutTransform(label, positions) {
+        if (!Array.isArray(positions) || !positions.length) return;
+        // Capture originals so undo can restore them in one batch.
+        var originals = [];
+        positions.forEach(function (p) {
+            var n = getNode(p.id);
+            if (!n) return;
+            originals.push({ id: p.id, x: n.x || 0, y: n.y || 0 });
+        });
+        if (!originals.length) return;
+
+        // Track which dirty marks WE added (vs ones already there from prior
+        // edits) so undo can clean up cleanly.
+        var addedDirtyKeys = [];
+        positions.forEach(function (p) {
+            moveNode(p.id, p.x, p.y);
+            if (state.snapshot) {
+                var key = dkey('node', p.id);
+                if (!dirtyMap.has(key)) addedDirtyKeys.push(key);
+                markModified('node', p.id);
+            }
+        });
+
+        pushUndoOp(label || 'Auto-Layout', function () {
+            originals.forEach(function (p) { moveNode(p.id, p.x, p.y); });
+            // Clear dirty marks the forward pass introduced — positions are
+            // back to what they were, so Speichern shouldn't claim there's
+            // anything to save (assuming no other edits).
+            addedDirtyKeys.forEach(function (k) { dirtyMap.delete(k); });
+            emit('replace');
+        });
+        // One emit at the end so Canvas re-renders edges + group frames once.
+        emit('replace');
+    }
+
     function moveNode(id, x, y) {
         var n = getNode(id);
         if (!n) return;
@@ -1249,6 +1302,7 @@ window.CanvasApp.State = (function () {
         clearFilters: clearFilters,
         matchesFilters: matchesFilters,
         moveNode: moveNode,
+        applyLayoutTransform: applyLayoutTransform,
         updateNode: updateNode,
         addNode: addNode,
         deleteNode: deleteNode,

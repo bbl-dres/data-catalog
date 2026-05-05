@@ -11,6 +11,11 @@
 <link rel="stylesheet" href="css/styles.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- ELK manages its own internal worker for heavy layout computation, so
+     load it on the main thread. Wrapping it in our own Worker fails because
+     ELK's internal `_Worker` setup can't run from a nested worker context. -->
+<script src="https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js"></script>
+
 </head>
 <body>
 
@@ -112,6 +117,10 @@
       <button class="tb-btn noauth-only" id="btn-edit-signin" data-signin-trigger title="Anmelden, um zu bearbeiten">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Zum Bearbeiten anmelden
+      </button>
+      <button class="tb-btn edit-only auth-only" id="btn-auto-layout" title="Auto-Layout: Knoten pro System hierarchisch anordnen">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Auto-Layout
       </button>
       <span class="edit-only unsaved-indicator" id="unsaved-indicator" hidden aria-live="polite"></span>
       <button class="tb-btn edit-only" id="btn-cancel" title="Änderungen verwerfen (oder Esc)">
@@ -389,6 +398,7 @@
 <script src="js/filter.js"></script>
 <script src="js/xlsx_io.js"></script>
 <script src="js/minimap.js"></script>
+<script src="js/autolayout.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
