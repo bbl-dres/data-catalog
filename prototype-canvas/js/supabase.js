@@ -6,9 +6,9 @@
  * State.load() can therefore treat Supabase and the static JSON as
  * interchangeable seed sources.
  *
- * Auth path: wraps Supabase Auth's magic-link OTP flow. Sign-up is disabled
- * project-wide, so signInWithMagicLink only succeeds for emails that already
- * exist in auth.users. Authorization on top of that is enforced by RLS via
+ * Auth path: wraps Supabase Auth's email + password flow. Sign-up is disabled
+ * on the Email provider, so signInWithPassword only succeeds for credentials
+ * an admin pre-created. Authorization on top of that is enforced by RLS via
  * contact.app_role; this module is concerned only with authentication.
  *
  * The publishable key is intended for client-side embedding — it grants the
@@ -32,7 +32,13 @@ window.CanvasApp.SupabaseClient = (function () {
             applyCanvas: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
-            signInWithMagicLink: function () {
+            signInWithPassword: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
+            resetPasswordForEmail: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
+            updatePassword: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
             signOut:            function () { return Promise.resolve(); },
@@ -96,20 +102,40 @@ window.CanvasApp.SupabaseClient = (function () {
     }
 
     /**
-     * Request a magic-link email. shouldCreateUser:false belts-and-braces the
-     * project-level "Allow new users to sign up" toggle — both must agree.
-     * emailRedirectTo brings the user back to the page they signed in from;
-     * that URL must be in the Supabase project's Redirect URLs allowlist
-     * (Authentication → URL Configuration).
+     * Sign in with email + password. Stays on the page (no redirect, no
+     * PKCE, no URL hash params). Allowlisting is enforced at the Supabase
+     * side: "Allow new users to sign up" must be OFF on the Email provider
+     * so unknown emails get rejected with "Invalid login credentials"
+     * regardless of password.
      */
-    function signInWithMagicLink(email) {
-        return client.auth.signInWithOtp({
+    function signInWithPassword(email, password) {
+        return client.auth.signInWithPassword({
             email: email,
-            options: {
-                shouldCreateUser: false,
-                emailRedirectTo: window.location.origin + window.location.pathname
-            }
+            password: password
         }).then(function (res) {
+            if (res.error) throw res.error;
+            return res.data;
+        });
+    }
+
+    /**
+     * Send a password recovery email. The link in the email returns the user
+     * to redirectTo with auth tokens that the SDK turns into a temporary
+     * session and a PASSWORD_RECOVERY event — Auth.js opens the modal in
+     * "set new password" mode at that point.
+     */
+    function resetPasswordForEmail(email) {
+        return client.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + window.location.pathname
+        }).then(function (res) {
+            if (res.error) throw res.error;
+            return res.data;
+        });
+    }
+
+    /** Update the currently-signed-in user's password (used by the recovery flow). */
+    function updatePassword(newPassword) {
+        return client.auth.updateUser({ password: newPassword }).then(function (res) {
             if (res.error) throw res.error;
             return res.data;
         });
@@ -139,13 +165,15 @@ window.CanvasApp.SupabaseClient = (function () {
     }
 
     return {
-        client:              client,
-        loadCanvas:          loadCanvas,
-        listCanvases:        listCanvases,
-        applyCanvas:         applyCanvas,
-        signInWithMagicLink: signInWithMagicLink,
-        signOut:             signOut,
-        getSession:          getSession,
-        onAuthStateChange:   onAuthStateChange
+        client:                client,
+        loadCanvas:            loadCanvas,
+        listCanvases:          listCanvases,
+        applyCanvas:           applyCanvas,
+        signInWithPassword:    signInWithPassword,
+        resetPasswordForEmail: resetPasswordForEmail,
+        updatePassword:        updatePassword,
+        signOut:               signOut,
+        getSession:            getSession,
+        onAuthStateChange:     onAuthStateChange
     };
 })();
