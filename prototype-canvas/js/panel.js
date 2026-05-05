@@ -222,15 +222,52 @@ window.CanvasApp.Panel = (function () {
     }
 
     function nodeContentHtml(node) {
+        // Codelists carry their entries in `node.columns[]` (code in .name,
+        // label in .type) — same shape as a distribution's attributes, but
+        // semantically "controlled vocabulary values", not "table fields".
+        // Render them as a values list instead of a PK/FK stat block.
+        var isCodelist = node.type === 'codelist';
         return headerHtml(node) +
                descriptionSectionHtml(node.description) +
                metadataSectionHtml(node) +
                distributionExtrasSectionHtml(node) +
-               propertySetsSectionHtml(node) +
-               attributesSectionHtml(node) +
+               (isCodelist ? '' : propertySetsSectionHtml(node)) +
+               (isCodelist ? codelistEntriesSectionHtml(node)
+                           : attributesSectionHtml(node)) +
                rolesSectionHtml(node.roles) +
                standardsSectionHtml(node.standards) +
                relationsSectionHtml(node);
+    }
+
+    /**
+     * Werteliste entries — the actual `(code, label)` rows of a codelist
+     * node, rendered when the codelist is the panel subject. Uses the
+     * same row markup as the inline values list shown on attribute
+     * panels (codelistValuesSectionHtml) but without the "→ go to codelist"
+     * back-link, since we're already there.
+     */
+    function codelistEntriesSectionHtml(node) {
+        var cols = node.columns || [];
+        if (!cols.length) {
+            return '' +
+                '<div class="info-section">' +
+                    '<div class="info-section-label">Werteliste</div>' +
+                    '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">Keine Einträge</div>' +
+                '</div>';
+        }
+        var rows = cols.map(function (entry) {
+            var code  = entry.name || '';
+            var label = entry.type || '';
+            return '<li>' +
+                '<span class="info-set-name">' + escapeHtml(code) + '</span>' +
+                '<span class="info-set-label">' + escapeHtml(label) + '</span>' +
+            '</li>';
+        }).join('');
+        return '' +
+            '<div class="info-section">' +
+                '<div class="info-section-label">Werteliste <span class="info-section-count">' + cols.length + '</span></div>' +
+                '<ul class="info-set-list info-codelist-list">' + rows + '</ul>' +
+            '</div>';
     }
 
     /**
@@ -545,13 +582,22 @@ window.CanvasApp.Panel = (function () {
         var edges = State.getEdges();
         var outgoing = edges.filter(function (e) { return e.from === node.id; });
         var incoming = edges.filter(function (e) { return e.to === node.id; });
-        if (!outgoing.length && !incoming.length) {
+        // Synthetic "publishes" row for the node's system. The DB stores
+        // a real `publishes` edge, but the RPC consumes it into the
+        // string `node.system` instead of returning it in edges[]. The
+        // graph view re-synthesises a visual edge from that string;
+        // we do the same here so the relationship is clickable in the
+        // panel too. See "Why isn't the system in Beziehungen?".
+        var hasSystem = !!node.system;
+        var totalRows = outgoing.length + incoming.length + (hasSystem ? 1 : 0);
+        if (!totalRows) {
             return '' +
                 '<div class="info-section">' +
                     '<div class="info-section-label">Beziehungen</div>' +
                     '<div style="font-size:var(--text-small);color:var(--color-text-placeholder)">Keine Beziehungen</div>' +
                 '</div>';
         }
+        var sysRow = hasSystem ? systemRelRowHtml(node.system) : '';
         var out = outgoing.map(function (e) {
             return relRowHtml(e, '→', e.to);
         }).join('');
@@ -560,9 +606,24 @@ window.CanvasApp.Panel = (function () {
         }).join('');
         return '' +
             '<div class="info-section">' +
-                '<div class="info-section-label">Beziehungen <span class="info-section-count">' + (outgoing.length + incoming.length) + '</span></div>' +
-                '<ul class="info-rel-list">' + out + inc + '</ul>' +
+                '<div class="info-section-label">Beziehungen <span class="info-section-count">' + totalRows + '</span></div>' +
+                '<ul class="info-rel-list">' + sysRow + out + inc + '</ul>' +
             '</div>';
+    }
+
+    /**
+     * Synthetic "← <system> · System" row, rendered at the top of the
+     * Beziehungen list. Click handler is `select-system` (existing path
+     * in onContentClick) so the user can drill from a node into its
+     * system panel without going through the Metadaten field.
+     */
+    function systemRelRowHtml(systemName) {
+        return '' +
+            '<li data-action="select-system" data-system="' + escapeAttr(systemName) + '" title="System anzeigen">' +
+                '<span class="info-rel-arrow">←</span>' +
+                '<span class="info-rel-target">' + escapeHtml(systemName) + '</span>' +
+                '<span class="info-rel-label">System</span>' +
+            '</li>';
     }
 
     function relRowHtml(edge, arrow, otherId) {
