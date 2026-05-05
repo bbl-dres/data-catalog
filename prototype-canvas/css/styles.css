@@ -529,14 +529,20 @@ button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 /* ---- Toolbar ---- */
 .app-toolbar {
-  display: flex;
+  /* 3-column grid: breadcrumb left, view-seg dead-centre, action buttons
+     right. The two outer columns are 1fr so the centre column stays
+     centred regardless of how wide the breadcrumb / actions cluster grow. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--space-4);
   padding: 0 var(--space-5);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-subtle);
 }
-.toolbar-left, .toolbar-right { display: flex; align-items: center; gap: var(--space-2); }
+.toolbar-left   { grid-column: 1; justify-self: start;  display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-center { grid-column: 2; justify-self: center; display: flex; align-items: center; gap: var(--space-2); }
+.toolbar-right  { grid-column: 3; justify-self: end;    display: flex; align-items: center; gap: var(--space-2); }
 .toolbar-label { font-size: var(--text-small); color: var(--color-text-secondary); }
 .toolbar-select, .toolbar-input {
   padding: 6px 10px;
@@ -1378,6 +1384,71 @@ body.hide-systems .group-layer { display: none; }
   background: var(--color-bg-accent);
 }
 
+/* ---- Low-zoom view ----
+   At very small canvas scale (<30 % with hysteresis to 35 %), individual
+   attribute rows render as sub-pixel noise and dominate the paint cost on
+   the IBPDI workload (256 nodes × ~7 rows = ~1.8k <li> elements). The
+   intent is a minimap-like view: nodes keep their full silhouette so users
+   can use them for spatial orientation, but their inner contents stop
+   painting. `visibility: hidden` is the right tool — it preserves layout
+   (height stays intact) while skipping the paint of the hidden subtree. */
+.canvas.is-low-zoom .node-cols,
+.canvas.is-low-zoom .node-set,
+.canvas.is-low-zoom .node-col-add,
+.canvas.is-low-zoom .node-header > * { visibility: hidden; }
+
+/* The 1 px node and group-box borders disappear at low zoom (sub-pixel),
+   so we lean on the type-tinted background fills to keep nodes visible
+   against the canvas. The whole node gets the type tint — without the
+   header divider on top, the card reads as one solid colour block, like
+   the minimap rectangles. */
+.canvas.is-low-zoom .node {
+  background: var(--color-bg-surface-hover);
+}
+.canvas.is-low-zoom .node[data-type="table"]    { background: var(--color-type-table-tint); }
+.canvas.is-low-zoom .node[data-type="view"]     { background: var(--color-type-view-tint); }
+.canvas.is-low-zoom .node[data-type="api"]      { background: var(--color-type-api-tint); }
+.canvas.is-low-zoom .node[data-type="file"]     { background: var(--color-type-file-tint); }
+.canvas.is-low-zoom .node[data-type="codelist"] { background: var(--color-type-codelist-tint); }
+.canvas.is-low-zoom .node-header {
+  border-bottom: none;
+  background: transparent;
+}
+
+/* Group box: bump the fill so the system region is unmistakably visible
+   when its 1px border has shrunk to sub-pixel. */
+.canvas.is-low-zoom .group-box {
+  background: rgba(31, 78, 138, 0.08);
+}
+.canvas.is-low-zoom .group-box.is-selected {
+  background: rgba(31, 78, 138, 0.18);
+}
+
+/* ---- LOD-specific overrides ----
+   `data-lod` carries the current zoom tier (far / low / mid / full). The
+   `.is-low-zoom` rules above already cover the union of far + low (silhouette
+   cards, hidden attribute rows, hidden header chrome). The rules here add
+   tier-specific cuts: edges hide entirely at far; edge labels hide at far
+   AND low. */
+
+/* Far: hide all edges. At <22 % zoom each line is sub-pixel and contributes
+   nothing but paint cost on dense graphs (IBPDI: ~384 edges). Cluster
+   structure remains readable via the system frames + name overlays. */
+.canvas[data-lod="far"] #edge-layer,
+.canvas[data-lod="far"] #edge-overlay {
+  display: none;
+}
+
+/* Far + low: edge labels hidden — at 40 % zoom a 12 px label is ~5 px on
+   screen, illegible. Both the static label and the inline editor (only
+   shown when an edge is selected, but no point editing at this scale) go.
+   Each .edge-label-fo is a foreignObject + HTML wrapper so this saves a
+   meaningful amount of paint on the IBPDI workload. */
+.canvas.is-low-zoom .edge-label-fo,
+.canvas.is-low-zoom .edge-label-fo-static {
+  display: none;
+}
+
 /* ---- System-name overlays ----
    Big readable labels that fade in as the canvas zooms out, so the user can
    orient themselves when individual node text becomes too small. The layer
@@ -1393,11 +1464,12 @@ body.hide-systems .group-layer { display: none; }
 .system-overlay {
   position: absolute;
   /* JS overwrites transform every frame to apply the counter-scale; the
-     translate(-50%) offset keeps the label horizontally centred on the
-     anchor point. transform-origin pins the top edge so scale grows
-     downward, keeping the label inside the group box top region. */
-  transform: translate(-50%, 0);
-  transform-origin: 50% 0;
+     translate(-50%, -50%) offset keeps the label centred (both axes) on
+     the anchor point, which JS positions at the geometric centre of the
+     group box. transform-origin matches so counter-scale grows from the
+     centre, not a corner. */
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
   font-family: var(--font-sans);
   font-size: 22px;
   font-weight: 600;
@@ -1689,10 +1761,15 @@ body[data-panel="open"][data-view="diagram"] .minimap {
   width: 100%;
   height: 100%;
   display: block;
+  /* Default cursor: pointer (click anywhere = one-shot pan to that point).
+     JS swaps to `move` when hovering inside the viewport rectangle (drag
+     mode available) and `grabbing` while a drag is in progress. */
   cursor: pointer;
   /* Page background hint so the empty letterbox area reads as "off-canvas". */
   background: var(--color-bg-page);
 }
+.minimap svg.is-over-viewport { cursor: move; }
+.minimap svg.is-dragging       { cursor: grabbing; }
 .minimap-system-rect {
   fill: var(--color-bg-accent);
   fill-opacity: 0.55;
@@ -1741,9 +1818,11 @@ body.is-signed-in .noauth-only { display: none; }
 }
 .header-signin-btn:hover { background: #183C6B; }
 
-/* Canvas-visibility pill in the breadcrumb. Sits next to the canvas label
-   so users always see whether the current canvas is anon-readable. */
-.header-canvas-visibility {
+/* Canvas-visibility pill in the toolbar breadcrumb. Sits next to the canvas
+   label so users always see whether the current canvas is anon-readable.
+   The whole toolbar is display:none on the overview, so no separate
+   overview-hide rule is needed. */
+.toolbar-canvas-visibility {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -1754,17 +1833,16 @@ body.is-signed-in .noauth-only { display: none; }
   letter-spacing: 0.02em;
   white-space: nowrap;
 }
-.header-canvas-visibility[hidden] { display: none; }
-.header-canvas-visibility.is-public {
+.toolbar-canvas-visibility[hidden] { display: none; }
+.toolbar-canvas-visibility.is-public {
   background: var(--color-bg-accent);
   color: var(--color-bg-accent-strong);
 }
-.header-canvas-visibility.is-restricted {
+.toolbar-canvas-visibility.is-restricted {
   background: var(--color-bg-surface-hover);
   color: var(--color-text-secondary);
   border: 1px solid var(--color-border-default);
 }
-body[data-view="overview"] .header-canvas-visibility { display: none; }
 
 /* ---- Overview (landing) chrome ----
    The overview view has no canvas, so the per-canvas chrome (toolbar, view
@@ -1783,26 +1861,47 @@ body[data-view="overview"] #app {
   grid-template-rows: var(--header-height) 1fr var(--footer-height);
 }
 
-/* ---- Header breadcrumb ----
-   Logo always shows. Separator + canvas label appear only when a canvas is
-   loaded (any view that isn't the overview). */
-.header-breadcrumb {
-  grid-column: 2;
-  justify-self: center;
+/* ---- Toolbar breadcrumb ----
+   Lives in the left cell of .app-toolbar's 3-column grid. The toolbar
+   itself is display:none on the overview view, so the breadcrumb only
+   shows once a canvas is loaded — no per-element override needed. */
+.toolbar-breadcrumb {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
 }
-.header-breadcrumb-current {
+.toolbar-breadcrumb-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+.toolbar-breadcrumb-home:hover {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+.toolbar-breadcrumb-sep {
+  color: var(--color-text-placeholder);
+  font-size: var(--text-small);
+  user-select: none;
+}
+.toolbar-breadcrumb-current {
   font-size: var(--text-small);
   color: var(--color-text-primary);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* Constrain so a long canvas name can't push the centre column off-axis. */
+  max-width: 320px;
 }
-body[data-view="overview"] .header-breadcrumb-current { display: none; }
 
 /* ---- Overview view ---- */
 .view-overview {

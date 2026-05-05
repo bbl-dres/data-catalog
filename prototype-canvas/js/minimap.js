@@ -26,6 +26,18 @@ window.CanvasApp.Minimap = (function () {
     // kiss the minimap border. Big enough to feel like breathing room at any
     // graph size.
     var WORLD_PADDING = 80;
+    // Above this node count the per-node rectangles overlap into pixel-soup
+    // (256 × 1–2 px each in a 240 × 160 viewBox blurs into a smear that
+    // tells the user nothing). On dense graphs we render only the system
+    // rectangles — discrete cluster blocks the user can use to orient. The
+    // viewport rect still works the same way.
+    var DENSE_NODE_THRESHOLD = 100;
+    // Default node size used by the minimap so we don't have to read
+    // offsetWidth/Height per node (256 forced layouts on IBPDI). The
+    // minimap is an overview — exact node dimensions don't matter, only
+    // approximate cluster footprints.
+    var DEFAULT_NODE_W = 320;
+    var DEFAULT_NODE_H = 200;
 
     var rootEl = null;
     var svgEl = null;
@@ -37,15 +49,29 @@ window.CanvasApp.Minimap = (function () {
     var renderQueued = false;
     var viewportQueued = false;
 
-    // Drag state. dragPointerId pins the gesture to the pointer that started
-    // it — if a second finger touches the minimap mid-drag we ignore it
-    // rather than tracking the wrong pointer. lastDragEvent + dragRafQueued
-    // rAF-coalesce pan-while-drag so a 120 Hz trackpad doesn't trigger 120
-    // canvas transforms per second.
+    // Two distinct minimap interactions:
+    //   1. Click on the minimap *outside* the viewport rectangle → one-shot
+    //      pan: the canvas centres on the clicked world point. No drag, no
+    //      hold-to-track. Zoom is preserved.
+    //   2. Press AND HOLD on the viewport rectangle → drag-pan: the
+    //      rectangle follows the cursor with the original grab offset
+    //      preserved, so the rectangle doesn't jump under the cursor. The
+    //      canvas pans continuously while the pointer is held.
+    //
+    // Hit-test is geometry-based against viewportBounds (cached in
+    // updateViewport) — the viewport <rect> has pointer-events: none in
+    // CSS, so e.target on its area resolves to the SVG itself either way.
     var isMinimapDragging = false;
     var dragPointerId = null;
     var lastDragEvent = null;
     var dragRafQueued = false;
+    // Grab offset in WORLD coords: (cursor world point at drag start) −
+    // (viewport top-left at drag start). Preserved while dragging so the
+    // viewport's top-left stays at cursor − offset, no jump-to-centre.
+    var dragGrabOffset = null;
+    // Cached viewport-rect geometry in MINIMAP coords. Used by the
+    // pointerdown hit-test to decide click-mode vs drag-mode.
+    var viewportBounds = null;
 
     // Cached world → minimap mapping. Recomputed each render().
     var mapScale = 1;
@@ -124,9 +150,44 @@ window.CanvasApp.Minimap = (function () {
         });
     }
 
+    /**
+     * World-space rect for one node, using the stored x/y plus a fixed
+     * default size. Avoids the offsetWidth / offsetHeight reads that
+     * Canvas.getNodeRect does — those forced 256 layouts per render on
+     * IBPDI and were the dominant cost of a minimap update.
+     */
+    function nodeRectForMinimap(n) {
+        return { x: n.x || 0, y: n.y || 0, w: DEFAULT_NODE_W, h: DEFAULT_NODE_H };
+    }
+
+    /**
+     * Bounding box of every drawn node (filters respected when active).
+     * Local re-implementation of Canvas.getWorldBounds that uses
+     * stored sizes — same reason as nodeRectForMinimap.
+     */
+    function computeBounds() {
+        var nodes = State.getNodes();
+        var filtersActive = State.hasActiveFilters();
+        var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        var any = false;
+        for (var i = 0; i < nodes.length; i++) {
+            var n = nodes[i];
+            if (n.type === 'codelist') continue;
+            if (filtersActive && !State.matchesFilters(n)) continue;
+            var r = nodeRectForMinimap(n);
+            any = true;
+            if (r.x < minX) minX = r.x;
+            if (r.y < minY) minY = r.y;
+            if (r.x + r.w > maxX) maxX = r.x + r.w;
+            if (r.y + r.h > maxY) maxY = r.y + r.h;
+        }
+        if (!any) return null;
+        return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+    }
+
     function render() {
         if (!rootEl) return;
-        bounds = Canvas.getWorldBounds();
+        bounds = computeBounds();
         if (!bounds) {
             // Empty canvas — clear and bail.
             nodesGroup.innerHTML = '';
@@ -169,7 +230,7 @@ window.CanvasApp.Minimap = (function () {
             var members = bySystem[sys];
             var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
             for (var i = 0; i < members.length; i++) {
-                var r = Canvas.getNodeRect(members[i]);
+                var r = nodeRectForMinimap(members[i]);
                 if (r.x < minX) minX = r.x;
                 if (r.y < minY) minY = r.y;
                 if (r.x + r.w > maxX) maxX = r.x + r.w;
@@ -189,12 +250,18 @@ window.CanvasApp.Minimap = (function () {
     function renderNodes() {
         nodesGroup.innerHTML = '';
         var nodes = State.getNodes();
+        // Dense-graph short-circuit: above this count individual rects
+        // overlap to a few pixels and add no information — the system
+        // rectangles already convey cluster footprint, and skipping the
+        // per-node loop saves ~256 SVG createElement + 5 setAttribute
+        // calls per render on IBPDI.
+        if (nodes.length > DENSE_NODE_THRESHOLD) return;
         var filtersActive = State.hasActiveFilters();
         for (var i = 0; i < nodes.length; i++) {
             var n = nodes[i];
             if (n.type === 'codelist') continue;
             if (filtersActive && !State.matchesFilters(n)) continue;
-            var r = Canvas.getNodeRect(n);
+            var r = nodeRectForMinimap(n);
             var rect = document.createElementNS(SVG_NS, 'rect');
             rect.setAttribute('x', worldToMapX(r.x));
             rect.setAttribute('y', worldToMapY(r.y));
@@ -215,10 +282,16 @@ window.CanvasApp.Minimap = (function () {
         var wy = -t.translateY / t.scale;
         var ww = cr.width  / t.scale;
         var wh = cr.height / t.scale;
-        viewportRect.setAttribute('x', worldToMapX(wx));
-        viewportRect.setAttribute('y', worldToMapY(wy));
-        viewportRect.setAttribute('width',  Math.max(2, ww * mapScale));
-        viewportRect.setAttribute('height', Math.max(2, wh * mapScale));
+        var mx = worldToMapX(wx);
+        var my = worldToMapY(wy);
+        var mw = Math.max(2, ww * mapScale);
+        var mh = Math.max(2, wh * mapScale);
+        viewportRect.setAttribute('x', mx);
+        viewportRect.setAttribute('y', my);
+        viewportRect.setAttribute('width',  mw);
+        viewportRect.setAttribute('height', mh);
+        // Cached for the pointerdown hit-test (drag-mode vs click-mode).
+        viewportBounds = { x: mx, y: my, w: mw, h: mh };
     }
 
     function worldToMapX(x) { return x * mapScale + mapOffsetX; }
@@ -241,22 +314,69 @@ window.CanvasApp.Minimap = (function () {
         };
     }
 
+    /**
+     * Hit-test: did the pointerdown land inside the cached viewport-rect
+     * bounds? Drives the click-vs-drag mode split.
+     */
+    function isOverViewport(e) {
+        if (!viewportBounds) return false;
+        var m = clientToMap(e);
+        return m.x >= viewportBounds.x &&
+               m.x <= viewportBounds.x + viewportBounds.w &&
+               m.y >= viewportBounds.y &&
+               m.y <= viewportBounds.y + viewportBounds.h;
+    }
+
     function onPointerDown(e) {
         if (!bounds) return;
         // Primary button only — ignore right-click / middle-click / browser-back.
         if (e.button !== 0) return;
         e.preventDefault();
-        isMinimapDragging = true;
-        dragPointerId = e.pointerId;
-        // Capture so a fast drag that exits the SVG bounds still receives
-        // pointermove/pointerup. Wrap in try/catch — capture can throw on
-        // detached elements during HMR.
-        try { svgEl.setPointerCapture(e.pointerId); } catch (err) {}
+
+        if (isOverViewport(e)) {
+            // ---- Drag mode ----
+            // Held inside the rectangle: pan continuously while dragging,
+            // preserving the cursor offset within the rectangle.
+            isMinimapDragging = true;
+            dragPointerId = e.pointerId;
+            svgEl.classList.add('is-dragging');
+            // Capture so fast drags that exit the SVG bounds still deliver
+            // pointermove / pointerup. try/catch — can throw on detached
+            // elements during HMR.
+            try { svgEl.setPointerCapture(e.pointerId); } catch (err) {}
+            // Capture grab offset in WORLD coords so the rectangle's grab
+            // point stays under the cursor while dragging.
+            var t = Canvas.getTransform();
+            var viewportLeftWorld = -t.translateX / t.scale;
+            var viewportTopWorld  = -t.translateY / t.scale;
+            var m = clientToMap(e);
+            var w = mapToWorld(m.x, m.y);
+            dragGrabOffset = {
+                x: w.x - viewportLeftWorld,
+                y: w.y - viewportTopWorld
+            };
+            // No pan on the down — wait for movement so a click-without-move
+            // is a no-op rather than a re-centre.
+            return;
+        }
+
+        // ---- Click-to-pan mode ----
+        // Outside the rectangle: one-shot pan, no continuous tracking.
+        // Zoom is preserved (panToEvent only updates translate).
         panToEvent(e);
     }
 
     function onPointerMove(e) {
-        if (!isMinimapDragging) return;
+        if (!isMinimapDragging) {
+            // Hover-state cursor hint: 'move' over the viewport rect (drag
+            // available), default 'pointer' elsewhere (click-to-pan). We
+            // use a class toggle rather than inline style so the rule
+            // composes cleanly with .is-dragging during a drag.
+            if (svgEl) {
+                svgEl.classList.toggle('is-over-viewport', isOverViewport(e));
+            }
+            return;
+        }
         if (e.pointerId !== dragPointerId) return;
         e.preventDefault();
         lastDragEvent = e;
@@ -269,8 +389,17 @@ window.CanvasApp.Minimap = (function () {
         dragRafQueued = false;
         var e = lastDragEvent;
         lastDragEvent = null;
-        if (!e || !isMinimapDragging) return;
-        panToEvent(e);
+        if (!e || !isMinimapDragging || !dragGrabOffset) return;
+        // Pan so the viewport's top-left tracks (cursor − grab offset).
+        var m = clientToMap(e);
+        var w = mapToWorld(m.x, m.y);
+        var newLeftWorld = w.x - dragGrabOffset.x;
+        var newTopWorld  = w.y - dragGrabOffset.y;
+        var t = Canvas.getTransform();
+        Canvas.setTransform({
+            translateX: -newLeftWorld * t.scale,
+            translateY: -newTopWorld  * t.scale
+        });
     }
 
     function onPointerEnd(e) {
@@ -278,19 +407,21 @@ window.CanvasApp.Minimap = (function () {
         isMinimapDragging = false;
         dragPointerId = null;
         lastDragEvent = null;
+        dragGrabOffset = null;
+        if (svgEl) svgEl.classList.remove('is-dragging');
         try { svgEl.releasePointerCapture(e.pointerId); } catch (err) {}
     }
 
+    /**
+     * One-shot pan to centre the canvas on the clicked world point.
+     * Used by click-mode only; drag-mode does its own grab-offset math.
+     */
     function panToEvent(e) {
         var m = clientToMap(e);
         var w = mapToWorld(m.x, m.y);
         if (!canvasEl) return;
         var cr = canvasEl.getBoundingClientRect();
         var t = Canvas.getTransform();
-        // Centre canvas on (w.x, w.y): we want clientToCanvas(centerClient) = w
-        //   w.x = (centerClient.x - translateX) / scale
-        //   centerClient.x = canvasRect.width / 2  (canvas-local)
-        //   → translateX = canvasRect.width/2 - w.x * scale
         Canvas.setTransform({
             translateX: cr.width  / 2 - w.x * t.scale,
             translateY: cr.height / 2 - w.y * t.scale

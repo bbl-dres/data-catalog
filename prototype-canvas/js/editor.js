@@ -100,12 +100,25 @@ window.CanvasApp.Editor = (function () {
         // Keyboard Delete / Backspace — only when nothing is being edited
         document.addEventListener('keydown', onGlobalKeydown);
 
-        State.on(function (reason) {
+        State.on(function (reason, payload) {
             if (reason === 'mode') {
                 applyModeClasses();
                 Canvas.setEditMode(State.getMode() === 'edit');
                 updateActionBar();
-            } else if (reason === 'selection' || reason === 'nodes' || reason === 'replace' || reason === 'reset') {
+                return;
+            }
+            if (reason === 'selection' || reason === 'replace' || reason === 'reset') {
+                updateActionBar();
+                return;
+            }
+            if (reason === 'nodes') {
+                // The action bar floats over the currently-selected node.
+                // A node update for a different node can't change the bar's
+                // position, so skip the getBoundingClientRect × 2 / forced
+                // layout that repositionActionBar would do. With no payload
+                // (bulk update), fall through and reposition.
+                if (typeof payload === 'string' && payload &&
+                    payload !== State.getSelectedId()) return;
                 updateActionBar();
             }
         });
@@ -149,9 +162,14 @@ window.CanvasApp.Editor = (function () {
             if (setEl) {
                 Canvas.toggleSet(nodeId, setName);
                 setEl.classList.toggle('is-expanded', Canvas.isSetExpanded(nodeId, setName));
-                // Node height changed — refresh the system frame and the
-                // floating action bar (if it sits above this node)
-                Canvas.renderGroups();
+                // Node height changed → refresh the one system frame this
+                // node lives in. Avoids the full innerHTML='' rebuild of the
+                // group + overlay layers (which flashed every system frame
+                // on every set-expand click).
+                var n = State.getNode(nodeId);
+                var sys = n && (n.system || '').trim();
+                if (sys) Canvas.renderGroupForSystem(sys);
+                else     Canvas.rebuildGroupsIncremental();
                 repositionActionBar();
             }
             return;
@@ -279,12 +297,15 @@ window.CanvasApp.Editor = (function () {
             e.preventDefault();
             el.blur();
         } else if (e.key === 'Escape') {
-            // Revert to stored value by re-reading state
+            // Revert to stored value by re-reading state. The previous version
+            // re-rendered every node and every edge to discard one unsaved
+            // text edit — multi-MB innerHTML rewrite on IBPDI. Refresh only
+            // the node whose editable was active.
             e.preventDefault();
+            var nodeEl = el.closest('.node');
+            var nodeId = nodeEl && nodeEl.getAttribute('data-node-id');
             el.blur();
-            // Trigger a re-render to restore original text
-            Canvas.renderNodes();
-            Canvas.renderEdges();
+            if (nodeId) Canvas.refreshNode(nodeId);
         }
     }
 

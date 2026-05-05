@@ -27,10 +27,6 @@
       </span>
       <span>BBL Canvas</span>
     </a>
-    <nav class="header-breadcrumb" aria-label="Aktueller Canvas">
-      <span class="header-breadcrumb-current" id="header-canvas-label"></span>
-      <span class="header-canvas-visibility" id="header-canvas-visibility" hidden></span>
-    </nav>
     <div class="header-actions">
       <div class="header-search">
         <span class="search-icon" aria-hidden="true">
@@ -51,6 +47,17 @@
 
   <div class="app-toolbar">
     <div class="toolbar-left">
+      <nav class="toolbar-breadcrumb" aria-label="Aktueller Canvas">
+        <a class="toolbar-breadcrumb-home" href="#/" title="Zurück zur Übersicht">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          <span>Übersicht</span>
+        </a>
+        <span class="toolbar-breadcrumb-sep" aria-hidden="true">/</span>
+        <span class="toolbar-breadcrumb-current" id="toolbar-canvas-label"></span>
+        <span class="toolbar-canvas-visibility" id="toolbar-canvas-visibility" hidden></span>
+      </nav>
+    </div>
+    <div class="toolbar-center">
       <div class="seg" id="view-seg" role="tablist" aria-label="Ansicht">
         <button class="seg-btn is-active" data-view="diagram" role="tab" aria-selected="true">Diagramm</button>
         <button class="seg-btn" data-view="table" role="tab" aria-selected="false">Liste</button>

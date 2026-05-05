@@ -41,6 +41,16 @@
   --color-type-codelist: #0F766E;
   --color-type-codelist-bg: #CCFBF1;
 
+  /* Saturated card tints — used at low canvas zoom (LOD = far / low) where
+     the regular -bg shades are too pale to read against the page background.
+     Roughly the saturated colour at ~22 % opacity, rendered as opaque so
+     they don't double-up with whatever sits behind. */
+  --color-type-table-tint:    #BDCCDF;
+  --color-type-view-tint:     #B6D7C2;
+  --color-type-api-tint:      #ECD49B;
+  --color-type-file-tint:     #CFCFCB;
+  --color-type-codelist-tint: #9CDFD3;
+
   --color-pk: #1F4E8A;
   --color-fk: #A16800;
   --color-uk: #6B46C1;

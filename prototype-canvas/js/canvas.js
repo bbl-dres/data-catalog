@@ -47,6 +47,30 @@ window.CanvasApp.Canvas = (function () {
     var lastGridPosY = NaN;
     var lastZoomPct  = null;    // skip zoom-label writes when text hasn't changed
 
+    // Level-of-Detail (LOD) tiers — like a map's zoom levels. Driven by
+    // canvas scale, with hysteresis bands so wheel-zoom can't flap between
+    // tiers. We set both `data-lod` (CSS targeting) and `is-low-zoom` (kept
+    // for the existing styles that apply across far + low tiers) on the
+    // canvas element.
+    //
+    //   far  (~10–22 %): orientation only. Edges + edge labels hidden;
+    //                    cards render as type-tinted silhouettes. Just
+    //                    systems + node positions visible.
+    //   low  ( 22–45 %): + edge lines (no labels). Attribute rows + edge
+    //                    labels still hidden. Card silhouettes.
+    //   mid  ( 45–75 %): + edge labels. Full node header (icon + title +
+    //                    system pill). Attribute rows still hidden.
+    //   full (≥ 75 %  ): + attribute rows. Default detail.
+    //
+    // Bands:                     [enter-when-below, exit-when-above]
+    //   far: < 0.20 / > 0.25
+    //   low: < 0.40 / > 0.45  (between far and mid)
+    //   mid: < 0.70 / > 0.75  (between low and full)
+    //
+    // Thresholds tuned for IBPDI legibility — at 22 % a 12 px label is 2.6 px
+    // on screen, unreadable noise that costs paint cycles for nothing.
+    var lod = null;
+
     var isPanning = false;
     var panStart = null;
 
@@ -91,8 +115,10 @@ window.CanvasApp.Canvas = (function () {
                 setEl.classList.toggle('is-expanded', isSetExpanded(nodeId, name));
             }
         }
-        // Heights changed → system frames need re-measuring.
-        renderGroups();
+        // Heights changed → system frames need re-measuring. Use the in-place
+        // updater so we don't innerHTML='' the group / overlay layers (which
+        // produced a visible flash on bulk expand-all / collapse-all).
+        rebuildGroupsIncremental();
     }
 
     var isDragging = false;
@@ -461,7 +487,7 @@ window.CanvasApp.Canvas = (function () {
         if (overlay) {
             overlay.style.display = '';
             overlay.style.left = (rect.left + rect.width / 2) + 'px';
-            overlay.style.top  = (rect.top + 8) + 'px';
+            overlay.style.top  = (rect.top + rect.height / 2) + 'px';
             return;
         }
         overlay = document.createElement('div');
@@ -469,7 +495,7 @@ window.CanvasApp.Canvas = (function () {
         overlay.setAttribute('data-system', sysName);
         overlay.textContent = sysName;
         overlay.style.left = (rect.left + rect.width / 2) + 'px';
-        overlay.style.top  = (rect.top + 8) + 'px';
+        overlay.style.top  = (rect.top + rect.height / 2) + 'px';
         systemOverlayLayer.appendChild(overlay);
         // Cached node-lists are stale and the new element hasn't yet been
         // given opacity / counter-scale. Invalidate, then run the updater so
@@ -628,17 +654,18 @@ window.CanvasApp.Canvas = (function () {
         for (var i = 0; i < boxes.length; i++) {
             var b = boxes[i];
             var sysName = b.getAttribute('data-system') || '';
-            var bx = parseFloat(b.style.left) || 0;
-            var by = parseFloat(b.style.top)  || 0;
-            var bw = parseFloat(b.style.width) || 0;
+            var bx = parseFloat(b.style.left)   || 0;
+            var by = parseFloat(b.style.top)    || 0;
+            var bw = parseFloat(b.style.width)  || 0;
+            var bh = parseFloat(b.style.height) || 0;
             var label = document.createElement('div');
             label.className = 'system-overlay';
             label.setAttribute('data-system', sysName);
             label.textContent = sysName;
-            // Top-centre of the box, with a small inset so the label sits
-            // visually inside the frame rather than on its top edge.
+            // Geometric centre of the box. CSS counter-translates by -50%/-50%
+            // so the anchor sits dead-centre on (left+width/2, top+height/2).
             label.style.left = (bx + bw / 2) + 'px';
-            label.style.top  = (by + 8) + 'px';
+            label.style.top  = (by + bh / 2) + 'px';
             systemOverlayLayer.appendChild(label);
         }
         updateSystemOverlays();
@@ -663,7 +690,7 @@ window.CanvasApp.Canvas = (function () {
                    : bigOpacity.toFixed(2);
         var transform = bigOpacity === 0
             ? null
-            : 'translate(-50%, 0) scale(' + (1 / s).toFixed(3) + ')';
+            : 'translate(-50%, -50%) scale(' + (1 / s).toFixed(3) + ')';
 
         // Big overlay: fades in as zoom decreases.
         if (cachedOverlays === null) {
@@ -904,7 +931,7 @@ window.CanvasApp.Canvas = (function () {
      * badge-refresh path inside renderEdgeIncremental share the same logic.
      */
     function swapNodeDOM(node) {
-        if (!node || !isOnCanvas(node)) return;
+        if (!node || !isOnCanvas(node)) return null;
         var existing = nodeElById[node.id];
         if (!existing && nodeLayer) {
             existing = nodeLayer.querySelector('[data-node-id="' + cssEscape(node.id) + '"]');
@@ -913,6 +940,7 @@ window.CanvasApp.Canvas = (function () {
         nodeElById[node.id] = freshEl;
         if (existing) existing.replaceWith(freshEl);
         else nodeLayer.appendChild(freshEl);
+        return freshEl;
     }
 
     /**
@@ -963,11 +991,11 @@ window.CanvasApp.Canvas = (function () {
             return;
         }
 
-        swapNodeDOM(node);
-        // Edit-mode contenteditable on the new element. setEditMode walks
-        // every editable in the layer — fine here because there's only one
-        // newly-added subtree, and the cost is negligible.
-        setEditMode(State.getMode() === 'edit');
+        var freshEl = swapNodeDOM(node);
+        // Scope contenteditable update to the newly-built subtree — walking
+        // every editable in the entire layer (~2.5k on IBPDI) is wasteful
+        // when we just touched one node.
+        if (freshEl) setEditMode(State.getMode() === 'edit', freshEl);
 
         // Edges may need rerouting (column add/remove changes node height).
         updateEdgesForNode(id);
@@ -1809,10 +1837,48 @@ window.CanvasApp.Canvas = (function () {
         }
     }
 
+    /**
+     * State-machine LOD with hysteresis. Each tier has [enter-when-below,
+     * exit-when-above] bounds; we only step UP (more detail) when scale
+     * rises past the upper bound, only step DOWN (less detail) when it
+     * falls past the lower bound. The initial pick (no prior state) uses
+     * the band midpoints. See the LOD comment on lod-related constants
+     * above for tier semantics.
+     */
+    function computeLod(prev, s) {
+        if (prev === 'far')  return s > 0.25 ? 'low'  : 'far';
+        if (prev === 'low')  return s < 0.20 ? 'far'  : (s > 0.45 ? 'mid'  : 'low');
+        if (prev === 'mid')  return s < 0.40 ? 'low'  : (s > 0.75 ? 'full' : 'mid');
+        if (prev === 'full') return s < 0.70 ? 'mid'  : 'full';
+        // Initial: pick the band the scale sits in (use midpoints).
+        if (s < 0.225) return 'far';
+        if (s < 0.425) return 'low';
+        if (s < 0.725) return 'mid';
+        return 'full';
+    }
+
+    /**
+     * Recompute LOD on every transform change. CSS uses `visibility: hidden`
+     * (not `display: none`) on the row subtree so node heights are preserved
+     * across the far/low boundary — group boxes don't need re-measuring.
+     */
+    function updateLod() {
+        if (!canvasEl) return;
+        var next = computeLod(lod, scale);
+        if (next === lod) return;
+        lod = next;
+        canvasEl.setAttribute('data-lod', next);
+        // is-low-zoom remains the union of 'far' + 'low' so existing styles
+        // (silhouette tinting, hidden attribute rows, hidden header chrome)
+        // need no migration.
+        canvasEl.classList.toggle('is-low-zoom', next === 'far' || next === 'low');
+    }
+
     function applyTransform() {
         transformEl.style.transform =
             'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ')';
         updateGridBackground();
+        updateLod();
         if (zoomLabel) {
             var pct = Math.round(scale * 100);
             if (pct !== lastZoomPct) {
@@ -1889,8 +1955,16 @@ window.CanvasApp.Canvas = (function () {
      * Toggle contenteditable on every editable span inside the node layer
      * — driven by Editor when the mode flips.
      */
-    function setEditMode(isEdit) {
-        nodeLayer.querySelectorAll('[data-edit]').forEach(function (el) {
+    /**
+     * Toggle contenteditable on every editable span inside `root` (defaults
+     * to nodeLayer). After an incremental single-node render, callers should
+     * pass the freshly-built node element — walking the entire layer to set
+     * an attribute on every node's editables (~2.5k spans on IBPDI) was
+     * dominating the per-blur cost.
+     */
+    function setEditMode(isEdit, root) {
+        var scope = root || nodeLayer;
+        scope.querySelectorAll('[data-edit]').forEach(function (el) {
             // Type / key are click-to-cycle, not contenteditable.
             // Everything else (label, system, col-name, col-type, set-name)
             // becomes editable text in edit mode.
@@ -2028,6 +2102,9 @@ window.CanvasApp.Canvas = (function () {
         isSetExpanded: isSetExpanded,
         setAllSetsExpanded: setAllSetsExpanded,
         renderGroups: renderGroups,
+        rebuildGroupsIncremental: rebuildGroupsIncremental,
+        renderGroupForSystem: renderGroupForSystem,
+        refreshNode: renderNodeIncremental,
         fitToScreen: fitToScreen,
         initialView: initialView,
         goHome: goHome,

@@ -64,6 +64,16 @@ window.CanvasApp.Table = (function () {
         bodyEl.addEventListener('keydown', onCellKeydown);
 
         State.on(function (reason) {
+            // Background renders while the table view isn't visible were
+            // dominating typing-blur cost in the diagram view (every node
+            // label edit rebuilt the full table tbody — ~1k rows on IBPDI).
+            // Catch up by always rendering when the user enters the table
+            // view; otherwise, only react to events when already visible.
+            if (reason === 'view') {
+                if (State.getView() === 'table') render();
+                return;
+            }
+            if (State.getView() !== 'table') return;
             if (reason === 'nodes' || reason === 'edges' || reason === 'replace' || reason === 'reset') {
                 render();
             } else if (reason === 'mode' || reason === 'filter') {

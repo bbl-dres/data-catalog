@@ -24,7 +24,10 @@
       "Bash(node -c js/minimap.js)",
       "Bash(node -c js/state.js)",
       "Bash(node -c js/editor.js)",
-      "Bash(node -c js/app.js)"
+      "Bash(node -c js/app.js)",
+      "Bash(node -c js/autolayout.js)",
+      "Bash(node -c js/panel.js)",
+      "Bash(node -c js/table.js)"
     ]
   }
 }

@@ -44,16 +44,31 @@ window.CanvasApp.Panel = (function () {
         // Change delegation: edit-mode set picker on the attribute detail panel.
         contentEl.addEventListener('change', onContentChange);
 
-        State.on(function (reason) {
+        State.on(function (reason, payload) {
             if (reason === 'view') {
                 document.body.setAttribute('data-view', State.getView());
                 updateOpenState();
                 return;
             }
-            if (reason === 'selection' || reason === 'nodes' || reason === 'edges' ||
-                reason === 'replace' || reason === 'reset') {
-                render();
+            if (reason !== 'selection' && reason !== 'nodes' && reason !== 'edges' &&
+                reason !== 'replace' && reason !== 'reset') {
+                return;
             }
+            // Single-entity events ('nodes' / 'edges' with an id payload):
+            // skip the re-render when the changed entity provably can't
+            // affect what the panel is currently showing. The previous
+            // behaviour rebuilt the entire panel innerHTML on every node
+            // label edit even when the panel was closed or showing a
+            // different entity.
+            if ((reason === 'nodes' || reason === 'edges') &&
+                typeof payload === 'string' && payload) {
+                var sel = State.getSelection();
+                if (!sel) return;  // panel is closed, nothing to refresh
+                if (reason === 'nodes' && sel.kind === 'node'      && payload !== sel.id)     return;
+                if (reason === 'nodes' && sel.kind === 'attribute' && payload !== sel.nodeId) return;
+                if (reason === 'edges' && sel.kind === 'edge'      && payload !== sel.id)     return;
+            }
+            render();
         });
 
         // Initial state
@@ -90,6 +105,18 @@ window.CanvasApp.Panel = (function () {
         var dragging = false;
         var startX = 0;
         var startWidth = WIDTH_DEFAULT;
+        // rAF-coalesce pointermove → applyPanelWidth so a 120 Hz trackpad
+        // doesn't trigger 120 style recalcs (and 120 ResizeObserver
+        // notifications on canvasEl) per second. We stash the latest target
+        // width and apply once per frame.
+        var pendingWidth = null;
+        var resizeRafQueued = false;
+        function flushResize() {
+            resizeRafQueued = false;
+            if (pendingWidth == null) return;
+            applyPanelWidth(pendingWidth);
+            pendingWidth = null;
+        }
 
         handle.addEventListener('pointerdown', function (e) {
             // Only respond to primary button drags
@@ -107,13 +134,18 @@ window.CanvasApp.Panel = (function () {
             if (!dragging) return;
             // Drag-left widens (panel grows from its right anchor)
             var delta = startX - e.clientX;
-            var next = clampWidth(startWidth + delta);
-            applyPanelWidth(next);
+            pendingWidth = clampWidth(startWidth + delta);
+            if (resizeRafQueued) return;
+            resizeRafQueued = true;
+            requestAnimationFrame(flushResize);
         });
 
         function endDrag(e) {
             if (!dragging) return;
             dragging = false;
+            // Flush any rAF-pending width so the final cursor position lands
+            // on screen before we read computed width below.
+            if (pendingWidth != null) { applyPanelWidth(pendingWidth); pendingWidth = null; }
             panelEl.classList.remove('is-resizing');
             document.body.classList.remove('is-resizing-panel');
             try { handle.releasePointerCapture(e.pointerId); } catch (_) {}

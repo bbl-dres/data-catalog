@@ -37,6 +37,11 @@ window.CanvasApp.AutoLayout = (function () {
     var FALLBACK_NODE_H = 200;
     var NO_SYSTEM_KEY   = '__no_system__';
 
+    // Edge labels render in a 180 px-wide foreignObject (see LBL_W in
+    // canvas.js) anchored at the midpoint of a straight line. Inter-layer
+    // spacing must comfortably exceed that width or adjacent edges' labels
+    // will sit on top of each other — the original 60 px cluster value made
+    // labels unreadable on dense IBPDI clusters.
     var ROOT_OPTIONS = {
         'elk.algorithm':                                  'layered',
         'elk.direction':                                  'RIGHT',
@@ -45,16 +50,22 @@ window.CanvasApp.AutoLayout = (function () {
         'elk.hierarchyHandling':                          'INCLUDE_CHILDREN',
         // Generous spacing between compounds so clusters read as discrete
         // groups rather than a single soup.
-        'elk.spacing.nodeNode':                           '160',
-        'elk.layered.spacing.nodeNodeBetweenLayers':      '160',
-        'elk.spacing.componentComponent':                 '160'
+        'elk.spacing.nodeNode':                           '180',
+        'elk.layered.spacing.nodeNodeBetweenLayers':      '240',
+        'elk.spacing.componentComponent':                 '180',
+        'elk.spacing.edgeEdge':                           '40',
+        'elk.spacing.edgeNode':                           '40'
     };
 
     var CLUSTER_OPTIONS = {
         'elk.algorithm':                                  'layered',
         'elk.direction':                                  'RIGHT',
-        'elk.layered.spacing.nodeNodeBetweenLayers':      '60',
-        'elk.spacing.nodeNode':                           '40',
+        // Horizontal lane gap — at least 220 px so a 180 px-wide edge label
+        // anchored at the midpoint clears the nodes on either side.
+        'elk.layered.spacing.nodeNodeBetweenLayers':      '220',
+        'elk.spacing.nodeNode':                           '60',
+        'elk.spacing.edgeEdge':                           '24',
+        'elk.spacing.edgeNode':                           '24',
         // Top padding accommodates the system-name overlay that fades in at
         // low zoom; left/right/bottom give visual breathing room.
         'elk.padding':                                    '[top=60,left=30,bottom=30,right=30]'

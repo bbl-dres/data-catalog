@@ -87,8 +87,8 @@ window.CanvasApp.App = (function () {
 
     /** Update the breadcrumb's "current canvas" text + visibility pill from state. */
     function renderBreadcrumb() {
-        var labelEl = document.getElementById('header-canvas-label');
-        var visEl   = document.getElementById('header-canvas-visibility');
+        var labelEl = document.getElementById('toolbar-canvas-label');
+        var visEl   = document.getElementById('toolbar-canvas-visibility');
         if (!labelEl) return;
         if (State.getView() === 'overview') {
             labelEl.textContent = '';
@@ -114,12 +114,12 @@ window.CanvasApp.App = (function () {
         if (visEl) {
             if (vis === 'public') {
                 visEl.textContent = 'öffentlich';
-                visEl.className = 'header-canvas-visibility is-public';
+                visEl.className = 'toolbar-canvas-visibility is-public';
                 visEl.title = 'Auch ohne Anmeldung lesbar';
                 visEl.removeAttribute('hidden');
             } else if (vis === 'restricted') {
                 visEl.textContent = 'Nur intern';
-                visEl.className = 'header-canvas-visibility is-restricted';
+                visEl.className = 'toolbar-canvas-visibility is-restricted';
                 visEl.title = 'Nur für angemeldete Benutzer sichtbar';
                 visEl.removeAttribute('hidden');
             } else {
