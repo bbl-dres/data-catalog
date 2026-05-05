@@ -336,7 +336,13 @@ window.CanvasApp.State = (function () {
         if (state.mode === mode) return;
         if (mode === 'edit' && !state.snapshot) {
             // Capture rollback point. Live state becomes the draft.
-            state.snapshot = deepClone({ nodes: state.nodes, edges: state.edges });
+            // homeView is included so a Cancel after "Standardansicht
+            // speichern" actually undoes the new home view.
+            state.snapshot = deepClone({
+                nodes: state.nodes,
+                edges: state.edges,
+                homeView: state.homeView
+            });
             dirtyMap.clear();
         } else if (mode === 'view' && state.snapshot) {
             // Defensive: leaving edit mode without commit/revert silently discards
@@ -604,6 +610,13 @@ window.CanvasApp.State = (function () {
         if (!state.snapshot) return;
         state.nodes = state.snapshot.nodes;
         state.edges = state.snapshot.edges;
+        // Restore homeView too — Cancel after "Standardansicht speichern"
+        // should undo the new home view in addition to nodes/edges.
+        // Snapshot may not have the field if it was created pre-fix; treat
+        // missing as null (no home view) rather than leaving the live one.
+        state.homeView = state.snapshot.hasOwnProperty('homeView')
+            ? (state.snapshot.homeView || null)
+            : null;
         state.snapshot = null;
         state.selection = null;
         undoStack = [];
@@ -1035,11 +1048,14 @@ window.CanvasApp.State = (function () {
     function getHomeView() { return state.homeView; }
 
     /**
-     * Capture / clear the curated entry-point view. Persists immediately
-     * (always-saved, like node positions) so a Cancel from edit mode
-     * doesn't undo it. Pass null to clear.
+     * Capture / clear the curated entry-point view. The change becomes part
+     * of the current draft — `dirtyMap` is bumped under a `canvas:<slug>`
+     * key so the Speichern button enables and `commitDraft` ships the new
+     * home view to the canvas table via canvas_apply. Cancel reverts to
+     * the snapshot. Pass null to clear.
      */
     function setHomeView(v) {
+        var prev = state.homeView;
         if (v === null) {
             state.homeView = null;
         } else if (isValidHomeView(v)) {
@@ -1047,7 +1063,16 @@ window.CanvasApp.State = (function () {
         } else {
             return; // silently reject malformed input
         }
-        persistPositions(); // reuses the layout-merge path so draft state is OK
+        var changed = JSON.stringify(prev) !== JSON.stringify(state.homeView);
+        if (changed && state.snapshot) {
+            // Tag the canvas itself as modified so it counts toward
+            // hasUnsavedChanges. The slug-keyed entry collapses cleanly
+            // when the user toggles home view back to the original.
+            var slug = state.currentCanvasSlug || 'default';
+            markModified('canvas', slug);
+            emit('home');
+        }
+        persistPositions(); // session-only memory; localStorage gets wiped on load
     }
 
     // ---- Helpers -------------------------------------------------------

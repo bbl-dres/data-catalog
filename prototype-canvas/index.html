@@ -143,8 +143,14 @@
     <section class="view view-overview" id="view-overview" data-view="overview">
       <div class="overview-wrap">
         <header class="overview-header">
-          <h1 class="overview-title">Übersicht</h1>
-          <p class="overview-sub">Wählen Sie einen Canvas zum Anzeigen oder Bearbeiten.</p>
+          <div class="overview-header-text">
+            <h1 class="overview-title">Übersicht</h1>
+            <p class="overview-sub">Wählen Sie einen Canvas zum Anzeigen oder Bearbeiten.</p>
+          </div>
+          <button type="button" class="tb-btn tb-btn-primary auth-only" id="overview-new-canvas-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Neuer Canvas
+          </button>
         </header>
         <div class="overview-list" id="overview-list" role="list"></div>
         <div class="overview-empty" id="overview-empty" hidden>
@@ -323,6 +329,18 @@
       <div class="api-list" id="api-list"></div>
     </section>
   </main>
+
+  <!-- Canvas-create modal: opened from the overview "+ Neuer Canvas" button.
+       Reuses the auth-modal styles for consistency; Overview.js owns it. -->
+  <div class="auth-modal" id="canvas-create-modal" hidden>
+    <div class="auth-modal-backdrop" data-canvas-modal-close aria-hidden="true"></div>
+    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="canvas-create-title">
+      <button type="button" class="auth-modal-close" data-canvas-modal-close aria-label="Schließen">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="auth-modal-content" id="canvas-create-content"></div>
+    </div>
+  </div>
 
   <!-- Auth modal: shown for signed-out sign-in, password-reset request,
        and the recovery (set new password) flow. Auth.js owns the content. -->

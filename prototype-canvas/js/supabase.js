@@ -29,6 +29,9 @@ window.CanvasApp.SupabaseClient = (function () {
             listCanvases: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
+            createCanvas: function () {
+                return Promise.reject(new Error('Supabase SDK nicht geladen.'));
+            },
             applyCanvas: function () {
                 return Promise.reject(new Error('Supabase SDK nicht geladen.'));
             },
@@ -79,6 +82,28 @@ window.CanvasApp.SupabaseClient = (function () {
             .then(function (res) {
                 if (res.error) {
                     var msg = res.error.message || 'canvas_apply failed';
+                    var code = res.error.code ? ' (' + res.error.code + ')' : '';
+                    throw new Error(msg + code);
+                }
+                return res.data;
+            });
+    }
+
+    /**
+     * Create a new canvas row. Goes via PostgREST INSERT — RLS policy
+     * `canvas_write` already permits authenticated editors to INSERT, so no
+     * dedicated RPC is needed. The DB enforces slug uniqueness + format and
+     * visibility CHECK; failures bubble up as Supabase errors.
+     */
+    function createCanvas(data) {
+        return client
+            .from('canvas')
+            .insert([data])
+            .select()
+            .single()
+            .then(function (res) {
+                if (res.error) {
+                    var msg = res.error.message || 'canvas insert failed';
                     var code = res.error.code ? ' (' + res.error.code + ')' : '';
                     throw new Error(msg + code);
                 }
@@ -168,6 +193,7 @@ window.CanvasApp.SupabaseClient = (function () {
         client:                client,
         loadCanvas:            loadCanvas,
         listCanvases:          listCanvases,
+        createCanvas:          createCanvas,
         applyCanvas:           applyCanvas,
         signInWithPassword:    signInWithPassword,
         resetPasswordForEmail: resetPasswordForEmail,

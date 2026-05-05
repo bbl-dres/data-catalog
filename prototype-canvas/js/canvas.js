@@ -300,8 +300,12 @@ window.CanvasApp.Canvas = (function () {
         if (setHomeBtn) {
             setHomeBtn.addEventListener('click', function () {
                 if (setHomeFromCurrent()) {
+                    // The change goes into the current draft — say
+                    // "festgelegt" (set), not "gespeichert", since the user
+                    // still needs to click Speichern for the home view to
+                    // reach the canvas table on the server.
                     var App = window.CanvasApp.App;
-                    if (App && App.toast) App.toast('Startansicht gespeichert', 'success');
+                    if (App && App.toast) App.toast('Startansicht festgelegt – Speichern, um zu übernehmen', 'success');
                 }
             });
         }

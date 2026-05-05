@@ -31,11 +31,167 @@ window.CanvasApp.Overview = (function () {
             window.location.hash = '#/c/' + encodeURIComponent(slug) + '/diagram';
         });
 
+        // "+ Neuer Canvas" button + modal — visibility controlled by the
+        // existing auth-only CSS, so signed-out users never see them.
+        var newBtn = document.getElementById('overview-new-canvas-btn');
+        if (newBtn) newBtn.addEventListener('click', openCreateModal);
+        var modal = document.getElementById('canvas-create-modal');
+        if (modal) {
+            modal.addEventListener('click', function (e) {
+                if (e.target.closest('[data-canvas-modal-close]')) closeCreateModal();
+            });
+        }
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape') return;
+            if (modal && !modal.hasAttribute('hidden')) closeCreateModal();
+        });
+
         State.on(function (reason) {
             if (reason === 'replace' || reason === 'reset' || reason === 'canvas') {
                 if (State.getView() === 'overview') render();
             }
         });
+    }
+
+    // ---- Create-canvas modal --------------------------------------------
+
+    var createState   = 'idle';   // 'idle' | 'sending' | 'error'
+    var createMessage = '';
+
+    function openCreateModal() {
+        var modal = document.getElementById('canvas-create-modal');
+        if (!modal) return;
+        createState = 'idle';
+        createMessage = '';
+        modal.removeAttribute('hidden');
+        document.body.classList.add('auth-modal-open');
+        renderCreateModal();
+        requestAnimationFrame(function () {
+            var first = modal.querySelector('input:not([disabled])');
+            if (first) first.focus();
+        });
+    }
+
+    function closeCreateModal() {
+        var modal = document.getElementById('canvas-create-modal');
+        if (!modal) return;
+        modal.setAttribute('hidden', '');
+        document.body.classList.remove('auth-modal-open');
+    }
+
+    function renderCreateModal() {
+        var content = document.getElementById('canvas-create-content');
+        if (!content) return;
+        var disabled = createState === 'sending';
+        var statusBlock = createState === 'error'
+            ? '<div class="auth-modal-status auth-modal-status-error">' + escapeHtml(createMessage) + '</div>'
+            : '';
+        content.innerHTML =
+            '<h2 class="auth-modal-title" id="canvas-create-title">Neuer Canvas</h2>' +
+            '<p class="auth-modal-sub">Der Bezeichner für die URL wird automatisch aus dem Namen abgeleitet. Knoten und Beziehungen können nach dem Erstellen hinzugefügt werden.</p>' +
+            '<form class="auth-modal-form" id="canvas-create-form" novalidate>' +
+                '<div>' +
+                    '<label class="auth-modal-label" for="canvas-create-label">Name</label>' +
+                    '<input class="auth-modal-input" id="canvas-create-label" type="text" required maxlength="200" placeholder="z. B. Personendaten" ' +
+                        (disabled ? 'disabled' : '') + '>' +
+                '</div>' +
+                '<div>' +
+                    '<label class="auth-modal-label" for="canvas-create-description">Beschreibung (optional)</label>' +
+                    '<input class="auth-modal-input" id="canvas-create-description" type="text" maxlength="500" placeholder="Kurzbeschreibung des Canvas" ' +
+                        (disabled ? 'disabled' : '') + '>' +
+                '</div>' +
+                '<div>' +
+                    '<label class="auth-modal-label" for="canvas-create-visibility">Sichtbarkeit</label>' +
+                    '<select class="auth-modal-input" id="canvas-create-visibility" ' + (disabled ? 'disabled' : '') + '>' +
+                        '<option value="public">Öffentlich (auch ohne Anmeldung sichtbar)</option>' +
+                        '<option value="restricted">Nur intern (Anmeldung erforderlich)</option>' +
+                    '</select>' +
+                '</div>' +
+                '<button type="submit" class="tb-btn tb-btn-primary auth-modal-submit"' + (disabled ? ' disabled' : '') + '>' +
+                    (disabled ? 'Wird erstellt…' : 'Canvas erstellen') +
+                '</button>' +
+            '</form>' +
+            statusBlock;
+
+        var form = content.querySelector('#canvas-create-form');
+        if (form) form.addEventListener('submit', onCreateSubmit);
+    }
+
+    function onCreateSubmit(e) {
+        e.preventDefault();
+        if (createState === 'sending') return;
+        var labelEl = document.getElementById('canvas-create-label');
+        var descEl  = document.getElementById('canvas-create-description');
+        var visEl   = document.getElementById('canvas-create-visibility');
+        if (!labelEl) return;
+        var label = (labelEl.value || '').trim();
+        if (!label) return;
+        var description = (descEl && descEl.value || '').trim();
+        var visibility  = (visEl && visEl.value) || 'public';
+
+        var slug = slugify(label);
+        if (!slug) {
+            createState = 'error';
+            createMessage = 'Aus dem Namen konnte kein gültiger Bezeichner abgeleitet werden.';
+            renderCreateModal();
+            return;
+        }
+
+        createState = 'sending';
+        createMessage = '';
+        renderCreateModal();
+
+        var Sb = window.CanvasApp.SupabaseClient;
+        Sb.createCanvas({
+            slug: slug,
+            label_de: label,
+            description_de: description || null,
+            visibility: visibility
+        }).then(function (canvas) {
+            closeCreateModal();
+            // Navigate to the new (empty) canvas in diagram view.
+            var newSlug = (canvas && canvas.slug) || slug;
+            window.location.hash = '#/c/' + encodeURIComponent(newSlug) + '/diagram';
+        }).catch(function (err) {
+            createState = 'error';
+            createMessage = friendlyCreateError(err);
+            renderCreateModal();
+        });
+    }
+
+    /**
+     * Map common Supabase errors when inserting a canvas to user-readable
+     * German. The 23505 (unique_violation) is the slug clash case; 42501
+     * is RLS rejection (e.g., contact.app_role is `viewer`, not editor).
+     */
+    function friendlyCreateError(err) {
+        var msg = err && err.message ? String(err.message) : '';
+        if (/duplicate key|unique|already exists|23505/i.test(msg))
+            return 'Ein Canvas mit diesem Namen existiert bereits. Bitte wählen Sie einen anderen Namen.';
+        if (/permission|forbidden|42501|policy/i.test(msg))
+            return 'Sie haben keine Berechtigung, neue Canvases zu erstellen.';
+        if (/violates check constraint.*slug_format/i.test(msg))
+            return 'Aus dem Namen konnte kein gültiger Bezeichner abgeleitet werden.';
+        if (/violates check constraint/i.test(msg))
+            return 'Eine Eingabe ist ungültig.';
+        if (/network|fetch|failed to fetch/i.test(msg))
+            return 'Verbindung zum Server fehlgeschlagen.';
+        return msg || 'Canvas konnte nicht erstellt werden.';
+    }
+
+    /**
+     * Derive a DB-safe canvas slug from a free-text label. Result must match
+     * the canvas_slug_format_chk constraint: ^[a-z0-9][a-z0-9_.-]*$. German
+     * umlauts are transliterated; everything else non-alnum collapses to
+     * a single hyphen.
+     */
+    function slugify(s) {
+        var out = String(s || '').toLowerCase()
+            .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss')
+            .replace(/[^a-z0-9_.-]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^[-_.]+|[-_.]+$/g, '');
+        return out.replace(/^[^a-z0-9]+/, '');
     }
 
     function render() {
