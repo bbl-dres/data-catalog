@@ -15,7 +15,6 @@
 // and DML statements are rejected up front for defence in depth.
 // ============================================================
 
-import Anthropic from '@anthropic-ai/sdk';
 import initSqlJs from 'sql.js';
 
 // Bundled at build time via wrangler.toml [[rules]].
@@ -128,15 +127,32 @@ const TOOLS = [
   }
 ];
 
+// ── Anthropic API client (direct fetch, no SDK) ───────────────
+async function callAnthropic(env, body) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error(`Anthropic ${resp.status}: ${errText}`);
+  }
+  return resp.json();
+}
+
 // ── Tool loop ─────────────────────────────────────────────────
 async function runChat(env, userMessages) {
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const db = await getDb();
   const messages = [...userMessages];
   const trace = [];
 
   for (let turn = 0; turn < 8; turn++) {
-    const response = await client.messages.create({
+    const response = await callAnthropic(env, {
       model: env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
       max_tokens: 2048,
       system: [

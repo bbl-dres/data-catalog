@@ -10,7 +10,6 @@
     "sync-db": "node -e \"require('fs').mkdirSync('data',{recursive:true});require('fs').copyFileSync('../prototype-sqlite/data/catalog.db','data/catalog.db')\""
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.39.0",
     "sql.js": "^1.11.0"
   },
   "devDependencies": {

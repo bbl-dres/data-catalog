@@ -2446,10 +2446,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   gap: var(--space-2);
 }
 .chat-empty li {
+  padding: 0;
+  font-size: var(--text-small);
+}
+.chat-sample-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
   padding: var(--space-2) var(--space-3);
   background: var(--color-bg-surface-hover);
+  border: 1px solid transparent;
   border-radius: var(--radius-md);
-  font-size: var(--text-small);
+  font: inherit;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.chat-sample-btn:hover,
+.chat-sample-btn:focus-visible {
+  background: var(--color-bg-surface);
+  border-color: var(--color-border-default);
+  outline: none;
 }
 .chat-message {
   display: flex;

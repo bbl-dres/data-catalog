@@ -185,14 +185,19 @@ function renderChatView() {
   html += '<div class="chat-shell">';
   html += '<div class="chat-messages" id="chat-messages">';
   if (chatHistory.length === 0) {
+    const samples = [
+      'Welche Geschäftsobjekte gibt es in der Domäne Portfolio?',
+      'Welche Felder realisieren das Konzept Mietobjekt?',
+      'Zeig mir alle Codelisten aus dem eBKP-H Standard.'
+    ];
     html += `<div class="chat-empty">
       <i data-lucide="sparkles" style="width:32px;height:32px;"></i>
-      <p>Beispielfragen:</p>
-      <ul>
-        <li>Welche Geschäftsobjekte gibt es in der Domäne Portfolio?</li>
-        <li>Welche Felder realisieren das Konzept Mietobjekt?</li>
-        <li>Zeig mir alle Codelisten aus dem eBKP-H Standard.</li>
-      </ul>
+      <p>Beispielfragen (klicken zum Übernehmen):</p>
+      <ul>`;
+    samples.forEach(s => {
+      html += `<li><button type="button" class="chat-sample-btn" data-chat-sample="${escapeHtml(s)}">${escapeHtml(s)}</button></li>`;
+    });
+    html += `</ul>
     </div>`;
   } else {
     chatHistory.forEach(m => { html += renderChatMessage(m); });
@@ -226,6 +231,14 @@ function renderChatView() {
       e.preventDefault();
       sendChatMessage();
     }
+  });
+  // Sample-question buttons: drop the text into the input and focus,
+  // so the user can edit before sending or just hit Enter.
+  messagesEl.addEventListener('click', e => {
+    const btn = e.target.closest('[data-chat-sample]');
+    if (!btn) return;
+    field.value = btn.dataset.chatSample;
+    field.focus();
   });
   if (!chatInFlight) field.focus();
 }
