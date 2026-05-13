@@ -1612,19 +1612,6 @@ function renderConceptOverview(concept, collection, vocab, steward) {
   html += `<div class="content-section"><div class="section-label">${tr('sec_definition')}</div>`;
   html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
 
-  // Begriffe (linked terms)
-  const linkedTerms = query(`SELECT t.id, t.${nameCol('name')} as tname, t.standard_ref FROM term t JOIN concept_term ct ON ct.term_id = t.id WHERE ct.concept_id = ?`, [concept.id]);
-  if (linkedTerms.length > 0) {
-    html += '<div class="content-section"><div class="section-label">' + tr('sec_terms') + '</div>';
-    html += '<div class="domain-group-concepts">';
-    linkedTerms.forEach(t => {
-      html += `<a class="concept-box" href="#/terms/${t.id}">`;
-      html += `<span class="concept-box-name">${escapeHtml(t.tname)}</span>`;
-      html += `</a>`;
-    });
-    html += '</div></div>';
-  }
-
   // Metadata
   html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
   html += renderMetadataTable([

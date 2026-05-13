@@ -148,28 +148,143 @@ function renderSearchResults() {
   lucide.createIcons({ nodes: [main] });
 }
 
-// ── View: Chat (placeholder) ───────────────────────────────
+// ── View: Chat (KI-Assistent) ──────────────────────────────
+// Worker endpoint that proxies Anthropic API calls. Update after
+// `wrangler deploy` — the URL is printed by the deploy command.
+// Empty string disables the chat and shows a setup message instead.
+const CHAT_WORKER_URL = '';
+
+// Conversation kept at module scope so re-renders (route changes
+// within the chat view, language switches) don't drop the history.
+// Cleared only on full page reload.
+const chatHistory = [];
+let chatInFlight = false;
+
 function renderChatView() {
   const main = document.getElementById('main-content');
   let html = '<div class="content-wrapper">';
   html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">KI-Assistent</span></nav>';
   html += `<div class="section-header"><div>
     <h2 class="section-title"><i data-lucide="sparkles" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>KI-Assistent</h2>
-    <div class="section-subtitle">Stellen Sie Fragen zum BBL Datenkatalog. Diese Funktion ist ein Platzhalter.</div>
+    <div class="section-subtitle">Stellen Sie Fragen zu Geschäftsobjekten, Datasets, Codelisten und Systemen.</div>
   </div></div>`;
-  html += `<div class="chat-placeholder">
-    <div class="chat-placeholder-body">
-      <i data-lucide="message-square-text" style="width:56px;height:56px;"></i>
-      <h3 class="chat-placeholder-title">Chat-Funktion noch nicht verfügbar</h3>
-      <p class="chat-placeholder-description">In einer zukünftigen Version können Sie hier mit einem KI-Assistenten über die Inhalte des Datenkatalogs sprechen. Der Assistent wird Begriffe erklären, Zusammenhänge zwischen Geschäftsobjekten aufzeigen und Sie bei der Navigation durch den Katalog unterstützen.</p>
-    </div>
-    <div class="chat-placeholder-input">
-      <input type="text" disabled placeholder="Stellen Sie eine Frage zum Datenmodell…">
-      <button class="btn btn-primary" disabled>Senden</button>
-    </div>
-  </div>`;
+
+  if (!CHAT_WORKER_URL) {
+    html += `<div class="chat-placeholder">
+      <div class="chat-placeholder-body">
+        <i data-lucide="settings" style="width:56px;height:56px;"></i>
+        <h3 class="chat-placeholder-title">Chat-Backend nicht konfiguriert</h3>
+        <p class="chat-placeholder-description">Setzen Sie <code>CHAT_WORKER_URL</code> in <code>js/views/search.js</code> auf die URL Ihres Cloudflare Workers. Anleitung: siehe <code>chat-worker/README.md</code>.</p>
+      </div>
+    </div></div>`;
+    main.innerHTML = html;
+    lucide.createIcons({ nodes: [main] });
+    return;
+  }
+
+  html += '<div class="chat-shell">';
+  html += '<div class="chat-messages" id="chat-messages">';
+  if (chatHistory.length === 0) {
+    html += `<div class="chat-empty">
+      <i data-lucide="sparkles" style="width:32px;height:32px;"></i>
+      <p>Beispielfragen:</p>
+      <ul>
+        <li>Welche Geschäftsobjekte gibt es in der Domäne Portfolio?</li>
+        <li>Welche Felder realisieren das Konzept Mietobjekt?</li>
+        <li>Zeig mir alle Codelisten aus dem eBKP-H Standard.</li>
+      </ul>
+    </div>`;
+  } else {
+    chatHistory.forEach(m => { html += renderChatMessage(m); });
+  }
+  if (chatInFlight) {
+    html += '<div class="chat-message chat-message-assistant chat-thinking" id="chat-thinking"><i data-lucide="loader-2" style="width:16px;height:16px;" class="chat-spin"></i> denkt nach …</div>';
+  }
+  html += '</div>';
+
+  html += `<form class="chat-input" id="chat-form" autocomplete="off">
+    <textarea id="chat-input-field" rows="1" placeholder="Frage zum Katalog stellen…" ${chatInFlight ? 'disabled' : ''}></textarea>
+    <button type="submit" class="btn btn-primary" id="chat-send-btn" ${chatInFlight ? 'disabled' : ''}>
+      <i data-lucide="send" style="width:14px;height:14px;"></i>
+      <span>Senden</span>
+    </button>
+  </form>`;
+  html += '</div>';
+
   html += '</div>';
   main.innerHTML = html;
+  lucide.createIcons({ nodes: [main] });
+
+  const messagesEl = document.getElementById('chat-messages');
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  const form = document.getElementById('chat-form');
+  const field = document.getElementById('chat-input-field');
+  form.addEventListener('submit', e => { e.preventDefault(); sendChatMessage(); });
+  field.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+  if (!chatInFlight) field.focus();
+}
+
+function renderChatMessage(m) {
+  const role = m.role === 'user' ? 'user' : 'assistant';
+  const icon = role === 'user' ? 'user' : 'sparkles';
+  return `<div class="chat-message chat-message-${role}">
+    <div class="chat-message-avatar"><i data-lucide="${icon}" style="width:14px;height:14px;"></i></div>
+    <div class="chat-message-body">${formatChatText(m.content)}</div>
+  </div>`;
+}
+
+// Minimal Markdown-ish formatting: paragraphs, line breaks, inline code.
+// Real markdown rendering would need a dependency; the catalog UI keeps
+// zero JS deps, so we stick to a tiny escape-then-decorate pass.
+function formatChatText(text) {
+  const escaped = escapeHtml(text || '');
+  return escaped
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n\n+/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p>') + '</p>';
+}
+
+async function sendChatMessage() {
+  const field = document.getElementById('chat-input-field');
+  const text = (field.value || '').trim();
+  if (!text || chatInFlight) return;
+
+  chatHistory.push({ role: 'user', content: text });
+  field.value = '';
+  chatInFlight = true;
+  renderChatView();
+
+  try {
+    const payload = {
+      messages: chatHistory.map(m => ({ role: m.role, content: m.content }))
+    };
+    const resp = await fetch(CHAT_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error(`HTTP ${resp.status}: ${errText}`);
+    }
+    const data = await resp.json();
+    chatHistory.push({ role: 'assistant', content: data.reply || '(leere Antwort)' });
+  } catch (e) {
+    chatHistory.push({
+      role: 'assistant',
+      content: 'Fehler beim Aufruf des Chat-Backends: ' + (e.message || e)
+    });
+  } finally {
+    chatInFlight = false;
+    renderChatView();
+  }
 }
 
 // ── Search Dropdown ────────────────────────────────────────

@@ -1,0 +1,25 @@
+name = "bbl-datenkatalog-chat"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Bundle sql.js WebAssembly + the catalog SQLite file into the Worker.
+# Both are accessed as imports in src/index.js.
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+
+[[rules]]
+type = "Data"
+globs = ["**/*.db"]
+fallthrough = true
+
+# CORS origin allowed to call this worker. Override per-environment with
+# `wrangler deploy --var ALLOWED_ORIGIN:https://example.com`. The default
+# below permits local dev plus the published GitHub Pages site.
+[vars]
+ALLOWED_ORIGIN = "*"
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
+
+# Secrets (set with: wrangler secret put ANTHROPIC_API_KEY):
+#   ANTHROPIC_API_KEY
