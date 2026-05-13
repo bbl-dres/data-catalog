@@ -54,14 +54,19 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
    ============================================================ */
 .app-header {
   position: fixed; top: 0; left: 0; right: 0;
-  height: var(--header-height);
+  height: calc(var(--header-height) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top);
   background: var(--color-bg-surface);
   border-bottom: 1px solid var(--color-border-subtle);
   display: flex; align-items: center;
-  padding: 0 var(--space-5);
+  padding-left: calc(var(--space-5) + env(safe-area-inset-left));
+  padding-right: calc(var(--space-5) + env(safe-area-inset-right));
   gap: var(--space-4);
   z-index: 100;
 }
+/* Hidden by default; the phone media query reveals it. */
+.mobile-menu-btn { display: none; }
+.sidebar-backdrop { display: none; }
 .prototype-hint {
   margin-left: auto;
   font-size: var(--text-label);
@@ -248,8 +253,10 @@ a:hover { color: var(--color-text-link-hover); text-decoration: underline; }
    ============================================================ */
 .app-body {
   display: flex;
-  margin-top: var(--header-height);
-  height: calc(100vh - var(--header-height));
+  /* Account for the notch-aware header height. dvh (dynamic viewport)
+     keeps the layout correct on iOS as the URL bar shows/hides. */
+  margin-top: calc(var(--header-height) + env(safe-area-inset-top));
+  height: calc(100dvh - var(--header-height) - env(safe-area-inset-top));
 }
 /* Sidebar-collapse: override the token so everything keyed off
    var(--sidebar-width) (sidebar, main-content margin, header-logo
@@ -321,9 +328,11 @@ body.sidebar-collapsed .sidebar-toggle i {
      content area refuses to go below its intrinsic content width. */
   min-width: 0;
 }
-/* Programmatic focus (SPA route change) should not render an outline;
-   keyboard users reaching main via Tab still get the default ring. */
-.main-content:focus { outline: none; }
+/* Programmatic focus (SPA route change) should not render an outline,
+   but keyboard users tabbing into main DO get the default ring.
+   :focus-visible is the correct selector — :focus alone would also
+   hide the ring for keyboard users. */
+.main-content:focus:not(:focus-visible) { outline: none; }
 /* Scroll shadow at top of main content */
 .main-content {
   background:
@@ -348,11 +357,13 @@ body.sidebar-collapsed .sidebar-toggle i {
 .app-footer {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  height: 32px;
+  height: calc(32px + env(safe-area-inset-bottom));
+  padding: 0 calc(var(--space-4) + env(safe-area-inset-right))
+           env(safe-area-inset-bottom)
+           calc(var(--space-4) + env(safe-area-inset-left));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--space-4);
   background: var(--color-bg-surface);
   border-top: 1px solid var(--color-border-subtle);
   font-size: var(--text-label);
@@ -1934,6 +1945,200 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .search-bar-shortcut { display: none; }
 }
 
+/* Phone (≤768px) — drawer sidebar, stacked grids, hidden footer,
+   16px input font to stop iOS auto-zoom on focus. Touch-target
+   sizing bumps where it matters most. */
+@media (max-width: 768px) {
+  :root {
+    --content-padding: 14px;
+    --header-height: 52px;
+  }
+  /* Hide the icon-rail entirely; phone sidebar is an overlay drawer
+     gated by body.sidebar-open (toggled from the new hamburger). */
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 220ms ease;
+    width: 280px;
+    box-shadow: var(--shadow-md);
+  }
+  body.sidebar-open .sidebar { transform: translateX(0); }
+  body.sidebar-open .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.32);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease;
+    z-index: 49;
+  }
+  /* In drawer mode the inner toggle/labels are visible again. */
+  .sidebar .nav-item > span,
+  .sidebar .nav-count,
+  .sidebar .nav-section-label,
+  .sidebar .nav-recent-item,
+  .sidebar .sidebar-collapsed-hide,
+  .header-logo > span { display: revert; }
+  .sidebar .nav-item {
+    justify-content: flex-start;
+    padding-left: var(--space-3);
+    padding-right: var(--space-3);
+  }
+  .sidebar-toggle { display: none; }
+  .main-content {
+    margin-left: 0;
+    padding: var(--space-4) var(--content-padding) var(--space-6);
+  }
+  .header-logo {
+    width: auto;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .header-logo > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Phone hamburger lives in the header; hidden on larger screens. */
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center; justify-content: center;
+    width: 38px; height: 38px;
+    background: transparent; border: none;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .mobile-menu-btn:hover { background: var(--color-bg-page); color: var(--color-text-primary); }
+
+  /* Stop iOS Safari from zooming when an input receives focus. */
+  input, textarea, select { font-size: 16px; }
+  .search-bar-input,
+  .chat-input textarea,
+  .inline-filter input { font-size: 16px; }
+
+  /* Header: search collapses, prototype hint stays hidden. */
+  .header-search { flex: 1; max-width: none; }
+  .search-bar-shortcut { display: none; }
+  .search-bar-input { height: 36px; padding-left: 34px; }
+  .search-bar-icon { left: var(--space-2); }
+
+  /* Bigger touch targets in chrome. */
+  .header-icon-btn { width: 40px; height: 40px; }
+  .user-avatar { width: 36px; height: 36px; }
+  .lang-btn { padding: var(--space-2); min-height: 40px; }
+  .nav-item { padding: 10px var(--space-3); }
+  .search-bar-clear { width: 28px; height: 28px; }
+  .filter-pill-remove { width: 24px; height: 24px; }
+
+  /* Section header stops squashing — actions can wrap below the title. */
+  .section-header {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .section-title { font-size: var(--text-display); }
+
+  /* Home grids collapse to single column. */
+  .home-bottom-grid { grid-template-columns: 1fr; }
+  .home-kpi-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-3);
+  }
+  .home-kpi-card { padding: var(--space-3); }
+  .home-kpi-count { font-size: var(--text-display); }
+
+  /* Hide the fixed footer on phones — it can't fit the version + hint
+     + 4 links at this width. The same links surface in the sidebar
+     drawer's bottom or aren't critical at-a-glance on mobile. */
+  .app-footer { display: none; }
+  .main-content { padding-bottom: var(--space-6); }
+
+  /* Chat: dynamic-viewport-height keeps the input above the iOS keyboard. */
+  .chat-shell {
+    height: calc(100dvh - 56px - env(safe-area-inset-top) - var(--space-6));
+    min-height: 380px;
+  }
+
+  /* Loading skeleton: the desktop split-pane mock is wrong on phones. */
+  .loading-skeleton-sidebar { display: none; }
+  .loading-skeleton-main { padding: var(--space-4); }
+}
+
+/* Data tables → stacked cards below 640px. Requires <td data-label="...">
+   which renderDataTable() in components.js emits. Manual tables that
+   pre-date the helper still scroll horizontally, which is the previous
+   fallback behaviour. */
+@media (max-width: 640px) {
+  .data-table-wrap {
+    overflow-x: visible;
+  }
+  .data-table {
+    display: block;
+    min-width: 0;
+    table-layout: auto;
+  }
+  .data-table thead { display: none; }
+  .data-table tbody, .data-table tr { display: block; }
+  .data-table tr {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3);
+    margin-bottom: var(--space-2);
+    background: var(--color-bg-surface);
+  }
+  .data-table tbody tr:hover { background: var(--color-bg-surface); }
+  .data-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: 6px 0;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  .data-table tbody td:last-child { border-bottom: none; }
+  .data-table tbody td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: var(--text-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-placeholder);
+    /* If the renderer didn't set data-label, hide the pseudo so we
+       don't show an empty cell label. */
+  }
+  .data-table tbody td[data-label=""]::before,
+  .data-table tbody td:not([data-label])::before {
+    display: none;
+  }
+}
+
+/* Suppress :hover styling on touch-only devices: avoids "sticky hover"
+   after tapping a card and navigating away. Pointer queries are the
+   correct spec-blessed signal here, not viewport width. */
+@media (hover: none) {
+  .home-kpi-card:hover {
+    box-shadow: none;
+    border-color: var(--color-border-default);
+    transform: none;
+  }
+  .home-kpi-card:hover::before { opacity: 0; }
+  .data-table tbody tr:hover { background: transparent; }
+  .clickable-row:hover td:first-child { color: var(--color-text-primary); }
+  .home-domain-row:hover {
+    background: transparent;
+    color: var(--color-text-primary);
+  }
+  .stakeholder-card:hover { border-color: var(--color-border-default); }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: 0ms !important; animation-duration: 0ms !important; }
@@ -2498,9 +2703,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
   font-size: var(--text-body);
-  line-height: 1.5;
+  line-height: 1.6;
   color: var(--color-text-primary);
+  min-width: 0;
+  /* Wrap long unbreakable strings (URLs, identifiers) so they don't
+     blow out the bubble width. Tables and code blocks scroll inside
+     themselves — see their own rules below. */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
+/* First/last child margin reset so the bubble's own padding controls
+   the visual top/bottom — otherwise headings or paragraphs add their
+   own margin and the bubble looks bottom-heavy. */
+.chat-message-body > :first-child { margin-top: 0; }
+.chat-message-body > :last-child { margin-bottom: 0; }
 .chat-message-user .chat-message-body {
   background: var(--color-accent, var(--color-text-primary));
   color: var(--color-bg-surface);
@@ -2532,11 +2748,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .chat-message-body ul,
 .chat-message-body ol {
   margin: var(--space-2) 0;
-  padding-left: var(--space-5);
+  padding-left: var(--space-4);
 }
 .chat-message-body li {
-  margin-bottom: var(--space-1);
+  margin-bottom: 2px;
 }
+.chat-message-body li > p {
+  margin: 0;
+}
+.chat-message-body li:last-child { margin-bottom: 0; }
 .chat-message-body h1,
 .chat-message-body h2,
 .chat-message-body h3,
@@ -2566,11 +2786,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border-top: 1px solid var(--color-border-subtle);
   margin: var(--space-3) 0;
 }
+/* Wrap tables in a horizontally-scrollable shell so a wide schema
+   table doesn't blow out the bubble (especially on phones). `marked`
+   emits the <table> as a direct child — we use a parent overflow:auto
+   on .chat-message-body and `display:block` on the table itself. */
 .chat-message-body table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin: var(--space-3) 0;
   font-size: var(--text-small);
-  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 .chat-message-body th,
 .chat-message-body td {
@@ -2578,10 +2806,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   border: 1px solid var(--color-border-subtle);
   text-align: left;
   vertical-align: top;
+  white-space: nowrap;
 }
 .chat-message-body th {
   background: rgba(0,0,0,0.04);
   font-weight: 600;
+}
+/* Inside the assistant bubble, links should look like links so users
+   know they navigate somewhere — not blend with body text. */
+.chat-message-assistant .chat-message-body a {
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chat-message-assistant .chat-message-body a:hover {
+  color: var(--color-text-link-hover);
 }
 /* Tables sit nicely on the user's accent bubble too, but borders
    need lighter contrast since the background is dark. */

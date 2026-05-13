@@ -70,7 +70,10 @@ function renderDataTable(columns, rows, opts) {
       : `<tr${cls ? ` class="${cls}"` : ''}>`;
     const cells = columns.map(c => {
       const cc = c.cellClass ? ` class="${c.cellClass}"` : '';
-      return `<td${cc}>${c.render(row)}</td>`;
+      // data-label drives the stacked-card layout on phones (≤640px).
+      // The pseudo-element ::before reads it as the row's field label.
+      const label = c.label ? ` data-label="${escapeHtml(c.label)}"` : '';
+      return `<td${cc}${label}>${c.render(row)}</td>`;
     }).join('');
     return openTag + cells + '</tr>';
   }).join('');

@@ -49,6 +49,18 @@ function announceRoute() {
   if (text) live.textContent = text;
 }
 
+// Phone-only: open/close the sidebar drawer. CSS handles the slide
+// animation off body.sidebar-open. aria-expanded keeps screen readers
+// in sync. No-op on desktop because the trigger is display:none there.
+function setMobileDrawer(open) {
+  document.body.classList.toggle('sidebar-open', open);
+  const btn = document.getElementById('mobile-menu-btn');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Navigation schliessen' : 'Navigation öffnen');
+  }
+}
+
 // ── Router ─────────────────────────────────────────────────
 function navigate(hash) {
   window.location.hash = hash;
@@ -2708,6 +2720,24 @@ document.addEventListener('click', function(e) {
     return;
   }
 
+  // Mobile drawer toggle (phones only — button is CSS-hidden on desktop).
+  if (target.closest('#mobile-menu-btn')) {
+    e.preventDefault();
+    setMobileDrawer(!document.body.classList.contains('sidebar-open'));
+    return;
+  }
+  // Tap on backdrop closes the drawer.
+  if (target.closest('#sidebar-backdrop')) {
+    setMobileDrawer(false);
+    return;
+  }
+  // Any nav-item click inside the open drawer should close it after
+  // navigation. Detect before handing off to the normal nav handler.
+  if (document.body.classList.contains('sidebar-open') && target.closest('#sidebar [data-nav], #sidebar .nav-recent-item')) {
+    // Defer so the route change handler runs first, then we close.
+    setTimeout(() => setMobileDrawer(false), 0);
+  }
+
   // Data-export buttons
   if (target.closest('[data-export-full]')) {
     e.preventDefault();
@@ -2844,6 +2874,10 @@ document.addEventListener('keydown', function(e) {
       e.preventDefault();
       exitEditMode(article);
       handleRoute();
+      return;
+    }
+    if (document.body.classList.contains('sidebar-open')) {
+      setMobileDrawer(false);
       return;
     }
   }
