@@ -42,17 +42,23 @@ function getDb() {
     const db = new SQL.Database(new Uint8Array(catalogDbBytes));
     db.run('PRAGMA query_only = 1;');
     return db;
-  })();
+  })().catch(err => {
+    // Don't poison the cache: a failed init shouldn't make every future
+    // request fail with the same stale error. Clear the slot so the next
+    // request retries from scratch.
+    dbPromise = null;
+    throw err;
+  });
   return dbPromise;
 }
 
 // ── Tool implementation ───────────────────────────────────────
-const FORBIDDEN_SQL = /\b(insert|update|delete|drop|alter|create|attach|detach|replace|truncate|vacuum|reindex|pragma)\b/i;
-
+// Read-only is enforced at the engine level via `PRAGMA query_only = 1`
+// (set in getDb()). We don't try to filter SQL by regex — keyword-based
+// blocking has false positives (e.g. `name LIKE '%insert%'` literals) and
+// false negatives (comments, unicode, multi-statement). The engine flag
+// rejects mutations definitively; we trust it.
 function runCatalogQuery(db, sql) {
-  if (FORBIDDEN_SQL.test(sql)) {
-    return { error: 'Only read-only SELECT statements are permitted.' };
-  }
   try {
     const rows = [];
     const stmt = db.prepare(sql);
@@ -199,9 +205,21 @@ async function runChat(env, userMessages) {
 }
 
 // ── HTTP entry ────────────────────────────────────────────────
-function corsHeaders(env) {
+// CORS: echo back the request Origin only if it's on the allowlist;
+// otherwise return a non-matching value so the browser blocks the
+// response. ALLOWED_ORIGINS is comma-separated in wrangler.toml.
+// `*` is still honoured (any origin) for emergency overrides.
+function pickAllowedOrigin(env, req) {
+  const list = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+  if (list.includes('*')) return '*';
+  const origin = req?.headers?.get?.('Origin');
+  return origin && list.includes(origin) ? origin : 'null';
+}
+
+function corsHeaders(env, req) {
   return {
-    'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
+    'Access-Control-Allow-Origin': pickAllowedOrigin(env, req),
+    'Vary': 'Origin',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400'
@@ -211,7 +229,17 @@ function corsHeaders(env) {
 export default {
   async fetch(req, env) {
     if (req.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders(env) });
+      return new Response(null, { headers: corsHeaders(env, req) });
+    }
+    // Health endpoint: no auth, no API calls, costs nothing. Used by
+    // the post-deploy smoke test in CI.
+    if (req.method === 'GET') {
+      return new Response(JSON.stringify({ ok: true, service: 'bbl-datenkatalog-chat' }), {
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          ...corsHeaders(env, req)
+        }
+      });
     }
     if (req.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
@@ -221,11 +249,11 @@ export default {
     try {
       body = await req.json();
     } catch {
-      return jsonError('Invalid JSON body', 400, env);
+      return jsonError('Invalid JSON body', 400, env, req);
     }
     const messages = Array.isArray(body.messages) ? body.messages : null;
     if (!messages || messages.length === 0) {
-      return jsonError('Missing "messages" array', 400, env);
+      return jsonError('Missing "messages" array', 400, env, req);
     }
 
     try {
@@ -233,23 +261,28 @@ export default {
       return new Response(JSON.stringify(result), {
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
-          ...corsHeaders(env)
+          ...corsHeaders(env, req)
         }
       });
     } catch (e) {
+      // Always log full detail to the Worker console (visible in `wrangler tail`
+      // / CF dashboard logs). Only echo stack traces back to clients when
+      // DEBUG=1 — otherwise leak just a generic message.
       console.error('chat error:', e?.stack || e);
-      const detail = e?.stack ? `${e.message}\n${e.stack}` : (e?.message || String(e));
-      return jsonError(detail, 500, env);
+      const detail = env.DEBUG === '1'
+        ? (e?.stack ? `${e.message}\n${e.stack}` : (e?.message || String(e)))
+        : 'Internal server error';
+      return jsonError(detail, 500, env, req);
     }
   }
 };
 
-function jsonError(message, status, env) {
+function jsonError(message, status, env, req) {
   return new Response(JSON.stringify({ error: message }), {
     status,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      ...corsHeaders(env)
+      ...corsHeaders(env, req)
     }
   });
 }

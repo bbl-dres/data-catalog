@@ -246,22 +246,28 @@ function renderChatView() {
 function renderChatMessage(m) {
   const role = m.role === 'user' ? 'user' : 'assistant';
   const icon = role === 'user' ? 'user' : 'sparkles';
+  const body = role === 'assistant'
+    ? renderAssistantMarkdown(m.content)
+    : renderUserText(m.content);
   return `<div class="chat-message chat-message-${role}">
     <div class="chat-message-avatar"><i data-lucide="${icon}" style="width:14px;height:14px;"></i></div>
-    <div class="chat-message-body">${formatChatText(m.content)}</div>
+    <div class="chat-message-body">${body}</div>
   </div>`;
 }
 
-// Minimal Markdown-ish formatting: paragraphs, line breaks, inline code.
-// Real markdown rendering would need a dependency; the catalog UI keeps
-// zero JS deps, so we stick to a tiny escape-then-decorate pass.
-function formatChatText(text) {
-  const escaped = escapeHtml(text || '');
-  return escaped
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n\n+/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    .replace(/^/, '<p>') + '</p>';
+// User input: escape HTML and convert newlines. No markdown parsing —
+// users shouldn't be able to inject formatting (or worse) into their
+// own bubbles by typing it.
+function renderUserText(text) {
+  return '<p>' + escapeHtml(text || '').replace(/\n/g, '<br>') + '</p>';
+}
+
+// Assistant output: full markdown via `marked` (CDN). Falls back to
+// plain rendering if marked failed to load. `breaks: true` makes single
+// newlines turn into <br>, matching what Claude tends to emit.
+function renderAssistantMarkdown(text) {
+  if (typeof marked === 'undefined') return renderUserText(text);
+  return marked.parse(text || '', { breaks: true, gfm: true });
 }
 
 async function sendChatMessage() {
@@ -275,8 +281,13 @@ async function sendChatMessage() {
   renderChatView();
 
   try {
+    // Skip locally-generated error placeholders — they were never real
+    // assistant turns, and feeding them to Claude as if they were makes
+    // the model try to "explain" or "fix" its supposed previous failure.
     const payload = {
-      messages: chatHistory.map(m => ({ role: m.role, content: m.content }))
+      messages: chatHistory
+        .filter(m => !m.isError)
+        .map(m => ({ role: m.role, content: m.content }))
     };
     const resp = await fetch(CHAT_WORKER_URL, {
       method: 'POST',
@@ -292,6 +303,7 @@ async function sendChatMessage() {
   } catch (e) {
     chatHistory.push({
       role: 'assistant',
+      isError: true,
       content: 'Fehler beim Aufruf des Chat-Backends: ' + (e.message || e)
     });
   } finally {

@@ -14,12 +14,15 @@ type = "Data"
 globs = ["**/*.db"]
 fallthrough = true
 
-# CORS origin allowed to call this worker. Override per-environment with
-# `wrangler deploy --var ALLOWED_ORIGIN:https://example.com`. The default
-# below permits local dev plus the published GitHub Pages site.
+# Origins allowed to call this worker (comma-separated). Use "*" to
+# accept any origin (not recommended for production). The browser blocks
+# responses to other origins; this isn't real auth, just abuse deterrence.
 [vars]
-ALLOWED_ORIGIN = "*"
+ALLOWED_ORIGINS = "https://bbl-dres.github.io,http://localhost:8000"
 ANTHROPIC_MODEL = "claude-sonnet-4-6"
 
 # Secrets (set with: wrangler secret put ANTHROPIC_API_KEY):
 #   ANTHROPIC_API_KEY
+#
+# Optional: set DEBUG=1 (via `wrangler secret put DEBUG`) to echo full
+# stack traces to error responses. Leave unset in production.
