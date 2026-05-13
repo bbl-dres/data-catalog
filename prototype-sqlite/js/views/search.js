@@ -152,7 +152,7 @@ function renderSearchResults() {
 // Worker endpoint that proxies Anthropic API calls. Update after
 // `wrangler deploy` — the URL is printed by the deploy command.
 // Empty string disables the chat and shows a setup message instead.
-const CHAT_WORKER_URL = '';
+const CHAT_WORKER_URL = 'https://bbl-datenkatalog-chat.dav-ras.workers.dev';
 
 // Conversation kept at module scope so re-renders (route changes
 // within the chat view, language switches) don't drop the history.
