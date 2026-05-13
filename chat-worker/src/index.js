@@ -15,6 +15,8 @@
 // and DML statements are rejected up front for defence in depth.
 // ============================================================
 
+// MUST be first — polyfills browser globals that sql.js reads at init.
+import './polyfill.js';
 import initSqlJs from 'sql.js';
 
 // Bundled at build time via wrangler.toml [[rules]].
@@ -235,8 +237,9 @@ export default {
         }
       });
     } catch (e) {
-      console.error('chat error:', e);
-      return jsonError(e.message || 'Internal error', 500, env);
+      console.error('chat error:', e?.stack || e);
+      const detail = e?.stack ? `${e.message}\n${e.stack}` : (e?.message || String(e));
+      return jsonError(detail, 500, env);
     }
   }
 };
