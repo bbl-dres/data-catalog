@@ -27,7 +27,8 @@ You don't need to install anything - every prototype is deployed on GitHub Pages
 
 Main catalog. Browse business objects and datasets with search, filters, grid/list views, and detail pages. Follows the DCAT-AP CH v3.0 standard. Multilingual: DE / EN / FR / IT.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-main/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-main/
+- **Source Code:** [prototype-main/](prototype-main/)
 
 ![Preview](prototype-main/assets/Preview1.jpg)
 
@@ -37,7 +38,8 @@ Main catalog. Browse business objects and datasets with search, filters, grid/li
 
 Data catalog backed by a SQLite file that runs entirely in the browser via sql.js. Sidebar navigation, full-text search, detail views for every entity, and interactive lineage graphs.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-sqlite/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-sqlite/
+- **Source Code:** [prototype-sqlite/](prototype-sqlite/)
 
 <p>
   <img src="prototype-sqlite/assets/Preview1.jpg" width="45%" />
@@ -50,7 +52,8 @@ Data catalog backed by a SQLite file that runs entirely in the browser via sql.j
 
 Hierarchical metadata browser following a three-layer architecture model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-layers/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-layers/
+- **Source Code:** [prototype-layers/](prototype-layers/)
 
 <p>
   <img src="prototype-layers/assets/preview1.jpg" width="45%" />
@@ -63,7 +66,8 @@ Hierarchical metadata browser following a three-layer architecture model (Concep
 
 Interactive graph for exploring data lineage across systems. Live JSON editor on the left, viewer with pan / zoom / fit / expand on the right. Six layout presets, column-level mappings, system-based grouping - vanilla JS, no framework.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-lineage/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
+- **Source Code:** [prototype-lineage/](prototype-lineage/)
 
 ![Preview](prototype-lineage/assets/Preview1.jpg)
 
@@ -73,7 +77,8 @@ Interactive graph for exploring data lineage across systems. Live JSON editor on
 
 Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-mermaid/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-mermaid/
+- **Source Code:** [prototype-mermaid/](prototype-mermaid/)
 
 <p>
   <img src="prototype-mermaid/assets/Preview1.jpg" width="45%" />
@@ -85,7 +90,8 @@ Single-page editor for ER diagrams and flowcharts that accepts free-text names (
 
 Miro-style canvas for sketching data architecture. Drag-and-drop entity palette, draggable nodes with collapsible **property sets** (groups of attributes), inline-editable column rows with PK/FK/UK key cycling, drag-handle reorder, system-grouping frames, and a draft-mode editor with explicit Save / Cancel. Click a node or table row to open a right-side info panel showing metadata, sets, attribute counts, and relations. Three views over the same state - Diagram, Tabelle (entity-typed tabs), and a mock Catalog Management API. Excel round-trip across four sheets. Hash-based URLs for shareable links.
 
-- Link: https://bbl-dres.github.io/data-catalog/prototype-canvas/
+- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-canvas/
+- **Source Code:** [prototype-canvas/](prototype-canvas/)
 
 <p>
   <img src="prototype-canvas/assets/Preview1.jpg" width="45%" />
