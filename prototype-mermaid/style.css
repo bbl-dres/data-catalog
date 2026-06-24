@@ -381,21 +381,108 @@ main {
     text-align: center;
 }
 
-#preview .error {
+/* Render-error overlay — a linter-style card anchored bottom-left, leaving the
+   last good diagram visible (and dimmed) behind it. */
+
+#preview.has-error svg {
+    opacity: 0.4;
+    transition: opacity 0.15s;
+}
+
+.error-overlay {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: var(--error);
-    background: #fef2f2;
+    left: 12px;
+    bottom: 12px;
+    max-width: min(560px, calc(100% - 24px));
+    z-index: 15;
+}
+
+.error-card {
+    background: #fff;
     border: 1px solid #fecaca;
+    border-left: 4px solid var(--error);
     border-radius: 8px;
-    padding: 1rem 1.25rem;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.15);
+    overflow: hidden;
+}
+
+.error-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    background: #fef2f2;
+    border-bottom: 1px solid #fee2e2;
+}
+
+.error-head svg {
+    color: var(--error);
+    flex-shrink: 0;
+}
+
+.error-title {
     font-size: 0.85rem;
-    line-height: 1.5;
-    max-width: 500px;
-    white-space: pre-wrap;
+    font-weight: 600;
+    color: #991b1b;
+}
+
+.error-line {
     font-family: "Cascadia Code", "Fira Code", "Consolas", monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--error);
+    background: #fff;
+    border: 1px solid #fecaca;
+    border-radius: 999px;
+    padding: 1px 8px;
+}
+
+.error-dismiss {
+    margin-left: auto;
+    border: none;
+    background: transparent;
+    color: #b91c1c;
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 4px;
+    border-radius: 4px;
+}
+
+.error-dismiss:hover {
+    background: #fee2e2;
+}
+
+.error-hint {
+    padding: 0.6rem 0.75rem 0;
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+.error-hint strong {
+    color: var(--error);
+}
+
+.error-detail {
+    margin: 0.55rem 0 0;
+    padding: 0.6rem 0.75rem 0.75rem;
+    font-family: "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", monospace;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #334155;
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.error-caret {
+    color: var(--error);
+    font-weight: 700;
+}
+
+.error-expect {
+    color: #0f172a;
+    font-weight: 600;
 }
 
 /* Footer */

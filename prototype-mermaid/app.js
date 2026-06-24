@@ -34,7 +34,7 @@ function initMermaid(erDirection) {
 async function loadElkLayout() {
     if (elkLoaded) return true;
     try {
-        const module = await import("https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0/dist/mermaid-layout-elk.esm.min.mjs");
+        const module = await import("https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk@0.2.1/dist/mermaid-layout-elk.esm.min.mjs");
         mermaid.registerLayoutLoaders(module.default);
         elkLoaded = true;
         return true;
@@ -536,11 +536,85 @@ function postProcessSVG(container) {
     });
 }
 
+// ─── Error feedback ───────────────────────────────────────────────────────────
+//
+//  Mermaid reports errors against the *processed* code, so its messages mention
+//  sanitised IDs (e.g. "Gebaeude_ID") the user never typed.  We swap those back
+//  to the original display names, pull out the line number, and keep the last
+//  good diagram on screen so the error reads like an inline linter hint.
+
+const escapeHtml = (s) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function formatRenderError(err) {
+    let raw = err && (err.str || err.message) ? String(err.str || err.message) : String(err);
+
+    // Reverse the sanitisation so the message names what the user actually wrote.
+    const entries = Object.entries(nameMapping).sort((a, b) => b[0].length - a[0].length);
+    for (const [sanitized, display] of entries) {
+        if (sanitized && raw.includes(sanitized)) raw = raw.split(sanitized).join(display);
+    }
+
+    const lineMatch = raw.match(/line\s+(\d+)/i);
+    const line = lineMatch ? parseInt(lineMatch[1], 10) : null;
+
+    // Format the body: drop the redundant "Parse error on line N" header (it's in
+    // the badge), and highlight the caret row and the parser's "Expecting…" hint.
+    const body = raw
+        .split("\n")
+        .map((ln) => {
+            const t = ln.trimEnd();
+            if (/^Parse error on line/i.test(t)) return null;
+            const e = escapeHtml(ln);
+            if (t.includes("^") && /^[\s\-^]+$/.test(t)) return `<span class="error-caret">${e}</span>`;
+            if (/^Expecting\b/i.test(t) || /\bgot\b/.test(t)) return `<span class="error-expect">${e}</span>`;
+            return e;
+        })
+        .filter((x) => x !== null)
+        .join("\n")
+        .replace(/^\n+|\n+$/g, "");
+
+    return { body: body || escapeHtml(raw), line };
+}
+
+function clearError() {
+    preview.querySelector(".error-overlay")?.remove();
+    preview.classList.remove("has-error");
+}
+
+function showRenderError(err) {
+    clearError();
+    const { body, line } = formatRenderError(err);
+
+    const overlay = document.createElement("div");
+    overlay.className = "error-overlay";
+    overlay.innerHTML = `
+        <div class="error-card">
+            <div class="error-head">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span class="error-title">Syntax error</span>
+                ${line ? `<span class="error-line">line ${line}</span>` : ""}
+                <button class="error-dismiss" title="Dismiss" aria-label="Dismiss">&times;</button>
+            </div>
+            <div class="error-hint">Couldn't parse the diagram — the <strong>^</strong> marks where parsing stopped. The diagram below is your last working version.</div>
+            <pre class="error-detail">${body}</pre>
+        </div>`;
+
+    // Keep clicks/scroll inside the card from panning or zooming the canvas.
+    overlay.addEventListener("mousedown", (e) => e.stopPropagation());
+    overlay.addEventListener("wheel", (e) => e.stopPropagation());
+    overlay.querySelector(".error-dismiss").addEventListener("click", clearError);
+
+    preview.appendChild(overlay);
+    preview.classList.add("has-error");
+}
+
 // ─── Render ───────────────────────────────────────────────────────────────────
 
 async function render() {
     const raw = editor.value.trim();
     if (!raw) {
+        clearError();
         preview.innerHTML = '<div class="placeholder">Choose an example or start typing to see a live preview.</div>';
         processedCode.textContent = "";
         return;
@@ -559,17 +633,18 @@ async function render() {
 
     processedCode.textContent = processed;
 
+    const id = "mermaid-" + ++renderCounter;
     try {
-        const id = "mermaid-" + ++renderCounter;
         const { svg } = await mermaid.render(id, processed);
+        clearError();
         preview.innerHTML = svg;
         postProcessSVG(preview.querySelector("svg"));
         fitToView();
     } catch (err) {
-        const msg = (err.message || String(err))
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;");
-        preview.innerHTML = `<div class="error">Render error:\n${msg}</div>`;
+        // Mermaid can leave an orphaned node in <body> when a render throws.
+        document.getElementById("d" + id)?.remove();
+        document.getElementById(id)?.remove();
+        showRenderError(err);
     }
 }
 
