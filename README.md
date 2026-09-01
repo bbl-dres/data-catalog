@@ -2,139 +2,47 @@
 
 ![Social Preview](assets/Social1.jpg)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub Pages](https://img.shields.io/badge/demo-live-brightgreen)](https://bbl-dres.github.io/data-catalog/)
-[![Standard: DCAT-AP CH](https://img.shields.io/badge/standard-DCAT--AP%20CH%20v3.0-blue)](https://www.dcat-ap.ch/)
+A collection of experimental interfaces for finding, understanding, and documenting an organisation's data assets.
 
 > [!CAUTION]
-> **This is a collection of unofficial prototypes for demonstration purposes only.**
-> All data is fictional. Not all features are fully functional. This project serves as a visual and conceptual prototype - it is not intended for production use.
+> These are unofficial prototypes with fictional data. Features may be incomplete, and none of the applications is intended for production use.
 
-## What is this?
+## Demo
 
-A set of **experimental web prototypes** exploring different ways to browse, search, and document the data assets of a large organisation - here, the Swiss Federal Office for Buildings and Logistics (BBL).
+**Landing page:** <https://bbl-dres.github.io/data-catalog/>
 
-Each prototype tackles the same underlying question - *"how should people inside my organisation find out what data exists, what it means, and where it lives?"* - but from a different angle: a polished DCAT-AP catalog, an architecture-layer browser, a SQL-backed explorer, a lineage graph, a diagram editor, and a Miro-style architecture canvas.
-
-All here presented applications are unofficial mockups. They are **not** production systems - they're meant to compare ideas and spark discussion. Where relevant, metadata follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard (the Swiss profile of the EU catalog vocabulary), or best practice frameworks like TOGAF, or DAMA-DMBOK.
-
+The landing page opens the main catalog. Use the direct links below to compare every variant.
 
 ## Prototypes
 
-You don't need to install anything - every prototype is deployed on GitHub Pages.
+| Prototype | Focus | Demo | Details |
+|---|---|---|---|
+| Business Object & Dataset Catalog | Searchable DCAT-AP CH catalog | [Open](https://bbl-dres.github.io/data-catalog/prototype-main/) | [README](prototype-main/README.md) |
+| SQLite Catalog Explorer | In-browser SQLite catalog and lineage | [Open](https://bbl-dres.github.io/data-catalog/prototype-sqlite/) | [README](prototype-sqlite/README.md) |
+| Architecture Layer Browser | Conceptual, logical, and physical layers | [Open](https://bbl-dres.github.io/data-catalog/prototype-layers/) | [README](prototype-layers/README.md) |
+| Data Lineage Viewer | Interactive system and column lineage | [Open](https://bbl-dres.github.io/data-catalog/prototype-lineage/) | [README](prototype-lineage/README.md) |
+| Mermaid Diagram Editor | ER diagrams and flowcharts with free-text names | [Open](https://bbl-dres.github.io/data-catalog/prototype-mermaid/) | [README](prototype-mermaid/README.md) |
+| Architecture Canvas | Miro-style data-architecture modelling | [Open](https://bbl-dres.github.io/data-catalog/prototype-canvas/) | [README](prototype-canvas/README.md) |
+| EA-IMMO | Conceptual real-estate data model | [Open](https://bbl-dres.github.io/data-catalog/prototype-ea-immo/) | [README](prototype-ea-immo/README.md) |
 
-### Business Object & Dataset Catalog
-
-Main catalog. Browse business objects and datasets with search, filters, grid/list views, and detail pages. Follows the DCAT-AP CH v3.0 standard. Multilingual: DE / EN / FR / IT.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-main/
-- **Source Code:** [prototype-main/](prototype-main/)
-
-![Preview](prototype-main/assets/Preview1.jpg)
-
----
-
-### SQLite Catalog Explorer
-
-Data catalog backed by a SQLite file that runs entirely in the browser via sql.js. Sidebar navigation, full-text search, detail views for every entity, and interactive lineage graphs.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-sqlite/
-- **Source Code:** [prototype-sqlite/](prototype-sqlite/)
-
-<p>
-  <img src="prototype-sqlite/assets/Preview1.jpg" width="45%" />
-  <img src="prototype-sqlite/assets/Preview2.jpg" width="45%" />
-</p>
-
----
-
-### Architecture Layer Browser
-
-Hierarchical metadata browser following a three-layer architecture model (Conceptual → Logical → Physical), with wiki-style documentation and cross-layer traceability. Multilingual (DE / EN / FR / IT), dark and light theme.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-layers/
-- **Source Code:** [prototype-layers/](prototype-layers/)
-
-<p>
-  <img src="prototype-layers/assets/preview1.jpg" width="45%" />
-  <img src="prototype-layers/assets/preview2.jpg" width="45%" />
-</p>
-
----
-
-### Data Lineage Viewer
-
-Interactive graph for exploring data lineage across systems. Live JSON editor on the left, viewer with pan / zoom / fit / expand on the right. Six layout presets, column-level mappings, system-based grouping - vanilla JS, no framework.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
-- **Source Code:** [prototype-lineage/](prototype-lineage/)
-
-![Preview](prototype-lineage/assets/Preview1.jpg)
-
----
-
-### Mermaid Diagram Editor
-
-Single-page editor for ER diagrams and flowcharts that accepts free-text names (spaces, umlauts, special characters). Built on Mermaid.js.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-mermaid/
-- **Source Code:** [prototype-mermaid/](prototype-mermaid/)
-
-<p>
-  <img src="prototype-mermaid/assets/Preview1.jpg" width="45%" />
-</p>
-
----
-
-### Architecture Canvas
-
-Miro-style canvas for sketching data architecture. Drag-and-drop entity palette, draggable nodes with collapsible **property sets** (groups of attributes), inline-editable column rows with PK/FK/UK key cycling, drag-handle reorder, system-grouping frames, and a draft-mode editor with explicit Save / Cancel. Click a node or table row to open a right-side info panel showing metadata, sets, attribute counts, and relations. Three views over the same state - Diagram, Tabelle (entity-typed tabs), and a mock Catalog Management API. Excel round-trip across four sheets. Hash-based URLs for shareable links.
-
-- **Live Demo:** https://bbl-dres.github.io/data-catalog/prototype-canvas/
-- **Source Code:** [prototype-canvas/](prototype-canvas/)
-
-<p>
-  <img src="prototype-canvas/assets/Preview1.jpg" width="45%" />
-  <img src="prototype-canvas/assets/Preview2.jpg" width="45%" />
-</p>
+The catalog-oriented prototypes use DCAT-AP CH where relevant; other variants explore architecture, modelling, and lineage approaches.
 
 ## Run locally
 
-All prototypes are plain HTML/CSS/JS with **zero build step and zero npm dependencies**. Any static file server will do:
+From the repository root, serve every browser prototype with:
 
 ```bash
-git clone https://github.com/bbl-dres/data-catalog.git
-cd data-catalog
-
-# then either:
-python3 -m http.server 8000
-# or:
-npx http-server
+python -m http.server 8000
 ```
 
-Open <http://localhost:8000> - the root page redirects to the main catalog. Append `/prototype-layers/`, `/prototype-sqlite/`, `/prototype-lineage/`, `/prototype-mermaid/`, or `/prototype-canvas/` for the others.
+Open <http://localhost:8000>; the root redirects to `prototype-main/`. Append a path from the table for another prototype.
 
-## Repository layout
+## Documentation and related components
 
-```
-data-catalog/
-├── index.html              # Redirect to prototype-main/
-├── prototype-main/         # Business Object & Dataset Catalog (Datenkatalog IMMO)
-├── prototype-layers/       # Architecture Layer Browser (Meta-Atlas)
-├── prototype-sqlite/       # SQLite Catalog Explorer
-├── prototype-lineage/      # Data Lineage Viewer
-├── prototype-mermaid/      # Mermaid Diagram Editor (Simple Chart)
-├── prototype-canvas/       # Architecture Canvas (Miro-style, BBL chrome)
-├── prototype-ea-immo/      # EA-IMMO conceptual data model for real estate
-├── chat-worker/            # Cloudflare Worker — KI-Assistent backend for prototype-sqlite
-├── assets/                 # Shared repo assets (social preview)
-└── docs/                   # Repo-level docs (market research, etc.)
-```
+- [Market screening](docs/MARKTSCREENING.md) — data-catalog landscape and recommendations from a Swiss federal perspective
+- [Chat Worker](chat-worker/README.md) — optional Cloudflare Worker for the SQLite prototype's AI assistant
+- Each prototype's implementation notes, data model, and specific setup instructions are linked in the table above.
 
 ## License
 
-Licensed under the [MIT License](https://opensource.org/licenses/MIT).
-
----
-
-*Unofficial mockup - not affiliated with or endorsed by BBL.*
+[MIT](LICENSE)
