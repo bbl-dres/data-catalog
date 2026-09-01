@@ -3,8 +3,8 @@
 Data catalog backed by a SQLite file that runs entirely in the browser. Sidebar navigation, full-text search, detail views for every entity, interactive lineage graphs, and an optional **KI-Assistent** (Claude-powered chat) that answers natural-language questions by querying the catalog directly. In-app branding: *BBL Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
 
 <p>
-  <img src="assets/Preview1.jpg" width="45%" />
-  <img src="assets/Preview2.jpg" width="45%" />
+  <img src="assets/preview-1.jpg" width="45%" />
+  <img src="assets/preview-2.jpg" width="45%" />
 </p>
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-sqlite/

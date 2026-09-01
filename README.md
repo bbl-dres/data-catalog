@@ -1,6 +1,9 @@
 # Data Catalog Prototypes
 
-![Social Preview](assets/Social1.jpg)
+![Social Preview](assets/social-preview.jpg)
+
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A collection of experimental interfaces for finding, understanding, and documenting an organisation's data assets.
 

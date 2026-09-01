@@ -4,7 +4,7 @@
 
 Enterprise Architecture Immobilien (EA-IMMO) – Einheitliches Datenmodell und Geschäftsobjekte für das Immobilienmanagement.
 
-[![Konzeptionelles Datenmodell - Bubble Chart](assets/Preview.JPG)](https://bbl-dres.github.io/ea-immo/)
+[![Konzeptionelles Datenmodell - Bubble Chart](assets/preview.jpg)](https://bbl-dres.github.io/ea-immo/)
 
 **[Interaktive Visualisierung öffnen](https://bbl-dres.github.io/ea-immo/)**
 

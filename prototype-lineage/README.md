@@ -2,7 +2,7 @@
 
 Interactive data-lineage graph with a live JSON editor, pan / zoom, column-level mappings, and system-based grouping. Part of the [BBL Data Catalog prototypes](../README.md).
 
-![Preview](assets/Preview1.jpg)
+![Preview](assets/preview-1.jpg)
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
 

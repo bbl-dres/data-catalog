@@ -3,8 +3,8 @@
 Metadata catalog prototype for navigating enterprise data assets across a three-layer architecture model (Conceptual → Logical → Physical). In-app branding: *Meta-Atlas*. Part of the [BBL Data Catalog prototypes](../README.md).
 
 <p>
-  <img src="assets/preview1.jpg" width="45%" />
-  <img src="assets/preview2.jpg" width="45%" />
+  <img src="assets/preview-1.jpg" width="45%" />
+  <img src="assets/preview-2.jpg" width="45%" />
 </p>
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-layers/

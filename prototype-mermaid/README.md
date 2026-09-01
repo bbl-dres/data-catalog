@@ -2,7 +2,7 @@
 
 Single-page editor for **ER diagrams** and **flowcharts** with free-text names — spaces, umlauts, and special characters all work out of the box. Built on [Mermaid](https://github.com/mermaid-js/mermaid). In-app branding: *Simple Chart*. Part of the [BBL Data Catalog prototypes](../README.md).
 
-![Preview](assets/Preview1.jpg)
+![Preview](assets/preview-1.jpg)
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-mermaid/
 

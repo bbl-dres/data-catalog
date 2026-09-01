@@ -2,7 +2,7 @@
 
 Main data catalog prototype — browse business objects and datasets with search, filters, grid/list views, and detail pages. Follows the Swiss [DCAT-AP CH v3.0](https://www.dcat-ap.ch/) standard. In-app branding: *Datenkatalog IMMO*. Part of the [BBL Data Catalog prototypes](../README.md).
 
-![Preview](assets/Preview1.jpg)
+![Preview](assets/preview-1.jpg)
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-main/
 
