@@ -5,10 +5,10 @@
 [![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A collection of experimental interfaces for finding, understanding, and documenting an organisation's data assets.
-
 > [!CAUTION]
 > These are unofficial prototypes with fictional data. Features may be incomplete, and none of the applications is intended for production use.
+
+A collection of experimental interfaces for finding, understanding, and documenting an organisation's data assets.
 
 ## Demo
 
