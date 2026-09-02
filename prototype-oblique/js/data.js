@@ -4,7 +4,7 @@
   'use strict';
 
   const ui = DK.ui;
-  const t = k => DK.ui.t(k);
+  const t = (k, p) => DK.ui.t(k, p);
 
   const FILES = {
     config: 'config.json', i18n: 'i18n.json', model: 'model.json',
@@ -12,8 +12,10 @@
     refs: 'codelists.json', products: 'products.json', apis: 'apis.json',
     changelog: 'changelog.json', manual: 'manual.json',
   };
+  /** Entity kinds in canonical display order (also the URL section names). */
   const KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
-  const ORDERED_KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
+  /** Embedded lists that must exist on every entity of a kind. */
+  const LISTS = { objects: ['attributes', 'termdat'], tables: ['fields'], refs: ['values'], products: ['attributes', 'basedOn', 'sourcedFrom', 'servedBy'] };
 
   const data = { kinds: KINDS, navModelOverride: null };
   const index = {};
@@ -26,16 +28,52 @@
       return [key, await res.json()];
     }));
     entries.forEach(([k, v]) => { data[k] = v; });
-    KINDS.forEach(k => { index[k] = new Map(data[k].map(e => [e.identifier, e])); });
+    KINDS.forEach(kind => {
+      if (!Array.isArray(data[kind])) data[kind] = [];
+      data[kind].forEach(e => (LISTS[kind] || []).forEach(list => { if (!Array.isArray(e[list])) e[list] = []; }));
+      index[kind] = new Map(data[kind].map(e => [e.identifier, e]));
+    });
+    data.validate();
+  };
+
+  /** Report dangling cross-references once. The UI tolerates them, but the content should be fixed. */
+  data.validate = function () {
+    const problems = [];
+    const check = (kind, e, field, refKind, id) => { if (id && !index[refKind].has(id)) problems.push(`${kind}:${e.identifier}.${field} → ${refKind}:${id} not found`); };
+    data.objects.forEach(o => check('objects', o, 'domain', 'domains', o.domain));
+    data.tables.forEach(x => { check('tables', x, 'realizes', 'objects', x.realizes); check('tables', x, 'system', 'systems', x.system); });
+    data.refs.forEach(r => check('refs', r, 'businessObject', 'objects', r.businessObject));
+    data.products.forEach(p => {
+      check('products', p, 'domain', 'domains', p.domain);
+      p.basedOn.forEach(id => check('products', p, 'basedOn', 'objects', id));
+      p.sourcedFrom.forEach(id => check('products', p, 'sourcedFrom', 'tables', id));
+      p.servedBy.forEach(id => check('products', p, 'servedBy', 'apis', id));
+    });
+    data.apis.forEach(a => { check('apis', a, 'domain', 'domains', a.domain); check('apis', a, 'system', 'systems', a.system); });
+    if (problems.length) console.warn('Datenkatalog: inconsistent references\n' + problems.join('\n'));
+    return problems;
   };
 
   /* ---- lookups ----------------------------------------------------------- */
   data.list = kind => data[kind] || [];
   data.kindDef = kind => data.model.kinds[kind];
+  /** Kinds counted as catalog content (everything except the containers domains/systems). */
+  data.contentKinds = () => data.model.navModels.entity;
   data.get = function (kind, id) {
     if (kind === 'attrs') return data.attr(id);
     const m = index[kind];
-    return m ? m.get(id) || null : null;
+    return (m && m.get(id)) || null;
+  };
+  /** Display name of a referenced entity; falls back to the id when the reference dangles. */
+  data.nameOf = function (kind, id) {
+    const e = data.get(kind, id);
+    return e ? e.name : (id || '–');
+  };
+  /** Name as shown in lists, crumbs and links (tables carry the technical name, APIs the version). */
+  data.displayName = function (kind, e) {
+    if (kind === 'tables') return `${e.name} (${e.technicalName})`;
+    if (kind === 'apis') return `${e.name} ${e.version}`;
+    return e.name;
   };
   /** Attribute as a first-class entity: id = "<objectId>/<attributeId>". */
   data.attr = function (id) {
@@ -64,23 +102,7 @@
     return '';
   };
 
-  data.objectsOfDomain = d => data.objects.filter(o => o.domain === d.identifier);
-  data.tablesOfDomain = d => data.tables.filter(x => data.objOf(x.realizes).domain === d.identifier);
-  data.refsOfDomain = d => data.refs.filter(r => data.objOf(r.businessObject).domain === d.identifier);
-  data.productsOfDomain = d => data.products.filter(p => p.domain === d.identifier);
-  data.apisOfDomain = d => data.apis.filter(a => a.domain === d.identifier);
-  data.tablesOfSystem = s => data.tables.filter(x => x.system === s.identifier);
-  data.apisOfSystem = s => data.apis.filter(a => a.system === s.identifier);
-
-  /** The domain an entity belongs to (null for systems). */
-  data.domainForEntity = function (kind, e) {
-    if (kind === 'domains') return e;
-    if (kind === 'systems') return null;
-    if (kind === 'tables') return data.domainOf(data.objOf(e.realizes).domain);
-    if (kind === 'refs') return data.domainOf(data.objOf(e.businessObject).domain);
-    return data.domainOf(e.domain); // objects, attrs, products, apis
-  };
-  /** The business object an entity realises / types / belongs to. */
+  /** The business object an entity realises / types / belongs to (null for domains, systems, products, APIs). */
   data.objectForEntity = function (kind, e) {
     if (kind === 'objects') return e;
     if (kind === 'tables') return data.objOf(e.realizes);
@@ -88,6 +110,22 @@
     if (kind === 'attrs') return data.objOf(e.object);
     return null;
   };
+  /** The domain an entity belongs to (null for systems and for dangling references). */
+  data.domainForEntity = function (kind, e) {
+    if (kind === 'domains') return e;
+    if (kind === 'systems') return null;
+    const o = data.objectForEntity(kind, e);
+    return data.domainOf(o ? o.domain : e.domain);
+  };
+
+  data.membersOfDomain = (kind, d) => data.list(kind).filter(e => data.domainForEntity(kind, e) === d);
+  data.objectsOfDomain = d => data.membersOfDomain('objects', d);
+  data.tablesOfDomain = d => data.membersOfDomain('tables', d);
+  data.refsOfDomain = d => data.membersOfDomain('refs', d);
+  data.productsOfDomain = d => data.membersOfDomain('products', d);
+  data.apisOfDomain = d => data.membersOfDomain('apis', d);
+  data.tablesOfSystem = s => data.tables.filter(x => x.system === s.identifier);
+  data.apisOfSystem = s => data.apis.filter(a => a.system === s.identifier);
 
   data.sizeOf = function (kind, e) {
     switch (kind) {
@@ -110,28 +148,15 @@
   data.sections = () => data.model.navModels[data.navModel()];
 
   /* ---- list presentation ------------------------------------------------- */
-  /** Tile subtitle. */
-  data.sub = function (kind, e) {
-    const n = data.sizeOf(kind, e);
-    switch (kind) {
-      case 'objects': return `${e.responsibleOrg} · ${n} ${t('unit.attributes')}`;
-      case 'tables': return `${e.technicalName} · ${n} ${t('unit.fields')}`;
-      case 'domains': return `${e.responsibleOrg} · ${n} ${t('unit.objects')}`;
-      case 'systems': return `${e.technology} · ${n} ${t('unit.tables')}`;
-      case 'products': return `${e.accessRights} · ${e.format}`;
-      case 'apis': return `${e.protocol} · ${e.version}`;
-      default: return n ? `${n} ${t('unit.values')}` : t('fact.notCaptured');
-    }
-  };
-  /** Table cells [col2, description, col4, (status fallback)]. */
+  /** Table cells [col2, description, col4] of a section row; the status column is added by the view. */
   data.cols = function (kind, e) {
     switch (kind) {
       case 'objects': return [e.responsibleOrg, e.description, String(e.attributes.length)];
-      case 'tables': return [`${data.sysOf(e.system).name} · ${e.technicalName}`, e.description, String(e.fields.length)];
+      case 'tables': return [data.nameOf('systems', e.system), e.description, String(e.fields.length)];
       case 'domains': return [e.responsibleOrg, e.description, String(data.objectsOfDomain(e).length)];
       case 'systems': return [e.technology, e.description, String(data.tablesOfSystem(e).length)];
       case 'products': return [e.accessRights, e.description, e.format];
-      case 'apis': return [`${data.sysOf(e.system).name} · ${e.version}`, e.description, e.protocol];
+      case 'apis': return [`${data.nameOf('systems', e.system)} · ${e.version}`, e.description, e.protocol];
       default: return [e.sourceAuthority, e.description, e.values.length ? String(e.values.length) : '–'];
     }
   };
@@ -140,7 +165,7 @@
     const c = (label, width) => ({ label: t(label), width });
     switch (kind) {
       case 'objects': return [c('col.name', '20%'), c('col.responsibility', '25%'), c('col.description'), c('col.attributes', '11%'), c('col.status', '11%')];
-      case 'tables': return [c('col.name', '18%'), c('col.systemTech', '22%'), c('col.description'), c('col.fields', '9%'), c('col.status', '14%')];
+      case 'tables': return [c('col.name', '18%'), c('col.system', '18%'), c('col.description'), c('col.fields', '9%'), c('col.status', '14%')];
       case 'domains': return [c('col.domain', '18%'), c('col.responsibility', '18%'), c('col.description'), c('col.object', '12%'), c('col.status', '12%')];
       case 'systems': return [c('col.system', '18%'), c('col.technology', '18%'), c('col.description'), c('col.tables', '12%'), c('col.status', '12%')];
       case 'products': return [c('col.product', '18%'), c('col.access', '16%'), c('col.description'), c('col.format', '14%'), c('col.status', '12%')];
@@ -148,13 +173,10 @@
       default: return [c('col.name', '20%'), c('col.source', '14%'), c('col.description'), c('col.values', '9%'), c('col.status', '12%')];
     }
   };
-  /** Search result columns (4 columns: name, col2, description, status). */
+  /** Search result columns: the list columns without the count column. */
   data.searchColumns = function (kind) {
-    const map = {
-      products: ['col.access', 'col.status'], apis: ['col.systemVersion', 'col.status'], domains: ['col.responsibility', 'col.status'],
-      systems: ['col.technology', 'col.status'], objects: ['col.responsibility', 'col.status'], tables: ['col.systemTech', 'col.status'], refs: ['col.source', 'col.status'],
-    }[kind];
-    return [{ label: t('col.name'), width: '24%' }, { label: t(map[0]), width: '22%' }, { label: t('col.description') }, { label: t(map[1]), width: '14%' }];
+    const cols = data.columns(kind);
+    return [{ label: t('col.name'), width: '24%' }, { label: cols[1].label, width: '22%' }, { label: t('col.description') }, { label: cols[4].label, width: '14%' }];
   };
 
   /* ---- grouping ---------------------------------------------------------- */
@@ -174,15 +196,20 @@
   data.groupOptions = function (kind) {
     return (GROUP_IDS[kind] || []).map(id => ({ id, label: t('group.' + id) }));
   };
+  /** The container entity a grouping refers to ({ kind, entity }), or null for value groupings. */
+  data.groupEntity = function (kind, e, g) {
+    if (g === 'domain') return { kind: 'domains', entity: data.domainForEntity(kind, e) };
+    if (g === 'system') return { kind: 'systems', entity: data.sysOf(e.system) };
+    return null;
+  };
   data.groupKey = function (kind, e, g) {
-    if (!g || g === 'none') return DK.ui.t('group.all', { what: data.kindDef(kind).plural });
-    if (g === 'domain') return data.domainForEntity(kind, e).name;
-    if (g === 'resp') return e.responsibleOrg;
-    if (g === 'status') return data.statusOf(kind, e);
-    if (g === 'system') return data.sysOf(e.system).name;
-    if (g === 'source') return e.sourceAuthority;
-    if (g === 'access') return e.accessRights;
-    return DK.ui.t('group.all', { what: data.kindDef(kind).plural });
+    const ref = data.groupEntity(kind, e, g);
+    if (ref) return ref.entity ? ref.entity.name : '–';
+    if (g === 'resp') return e.responsibleOrg || '–';
+    if (g === 'status') return data.statusOf(kind, e) || '–';
+    if (g === 'source') return e.sourceAuthority || '–';
+    if (g === 'access') return e.accessRights || '–';
+    return t('group.all', { what: data.kindDef(kind).plural });
   };
   data.groupOrder = function (g) {
     if (g === 'domain') return data.domains.map(d => d.name);
@@ -193,94 +220,97 @@
     if (g === 'status') return Object.keys(data.model.statuses);
     return [];
   };
-  /** Groups [{id, title, items}] of a section, in canonical order. */
+  /** Groups [{ id, title, items, entityKind, entity }] of a section, in canonical order. */
   data.buildGroups = function (kind, g, sortByName) {
     const order = data.groupOrder(g);
     const map = new Map();
     data.list(kind).forEach(e => {
-      const k = data.groupKey(kind, e, g);
-      if (!map.has(k)) map.set(k, []);
-      map.get(k).push(e);
+      const ref = data.groupEntity(kind, e, g);
+      const entity = ref ? ref.entity : null;
+      const title = data.groupKey(kind, e, g);
+      const id = `${kind}:${g}:${entity ? entity.identifier : title}`;
+      if (!map.has(id)) map.set(id, { id, title, items: [], entityKind: ref ? ref.kind : null, entity });
+      map.get(id).items.push(e);
     });
-    const rank = k => { const i = order.indexOf(k); return i < 0 ? 1e6 : i; };
-    const keys = [...map.keys()].sort((a, b) => rank(a) - rank(b));
-    return keys.map(k => {
-      const items = map.get(k).slice();
-      if (sortByName) items.sort((a, b) => a.name.localeCompare(b.name, 'de'));
-      return { id: `${kind}:${g}:${k}`, title: k, items };
-    });
+    const rank = title => { const i = order.indexOf(title); return i < 0 ? 1e6 : i; };
+    const groups = [...map.values()].sort((a, b) => rank(a.title) - rank(b.title));
+    if (sortByName) groups.forEach(group => group.items.sort((a, b) => a.name.localeCompare(b.name, 'de')));
+    return groups;
   };
 
   /* ---- relations ----------------------------------------------------------- */
-  data.termsOf = o => (o.termdat || []).map(tm => ({ name: tm.name, sub: 'TERMDAT ' + tm.id, href: tm.url, external: true }));
+  data.termsOf = o => o.termdat.map(tm => ({ name: tm.name, sub: 'TERMDAT ' + tm.id, href: tm.url, external: true }));
   data.relations = function (kind, e) {
     const href = (k, id) => DK.router.entityHref(k, id);
-    const linkT = x => ({ name: `${x.name} (${x.technicalName})`, sub: data.sysOf(x.system).name, href: href('tables', x.identifier) });
-    const linkR = r => ({ name: r.name, sub: r.sourceAuthority, href: href('refs', r.identifier) });
-    const linkO = o => ({ name: o.name, sub: `${o.attributes.length} ${t('unit.attributes')}`, href: href('objects', o.identifier) });
-    const linkD = d => ({ name: d.name, sub: d.responsibleOrg, href: href('domains', d.identifier) });
-    const linkS = s => ({ name: s.name, sub: s.technology, href: href('systems', s.identifier) });
-    const linkP = p => ({ name: p.name, sub: p.accessRights, href: href('products', p.identifier) });
-    const linkA = a => ({ name: `${a.name} ${a.version}`, sub: a.protocol, href: href('apis', a.identifier) });
-    const mk = (key, icon, items) => ({ key, title: t('rel.' + key), icon, items: items.filter(Boolean) });
-    const uniq = arr => [...new Set(arr)];
+    const link = {
+      tables: x => ({ name: data.displayName('tables', x), sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) }),
+      refs: r => ({ name: r.name, sub: r.sourceAuthority, href: href('refs', r.identifier) }),
+      objects: o => ({ name: o.name, sub: `${o.attributes.length} ${t('unit.attributes')}`, href: href('objects', o.identifier) }),
+      domains: d => ({ name: d.name, sub: d.responsibleOrg, href: href('domains', d.identifier) }),
+      systems: s => ({ name: s.name, sub: s.technology, href: href('systems', s.identifier) }),
+      products: p => ({ name: p.name, sub: p.accessRights, href: href('products', p.identifier) }),
+      apis: a => ({ name: data.displayName('apis', a), sub: a.protocol, href: href('apis', a.identifier) }),
+    };
+    /** Relation group of entities of kind `k` (dangling references are dropped). */
+    const mk = (key, icon, k, entities) => ({ key, title: t('rel.' + key), icon, items: entities.filter(Boolean).map(link[k]) });
+    const byIds = (k, ids) => [...new Set(ids)].map(id => data.get(k, id));
 
     if (kind === 'domains') {
-      const sysIds = uniq(data.tablesOfDomain(e).map(x => x.system));
+      const tables = data.tablesOfDomain(e);
       return [
-        mk('productsOfDomain', 'briefcase', data.productsOfDomain(e).map(linkP)),
-        mk('apisOfDomain', 'branch', data.apisOfDomain(e).map(linkA)),
-        mk('tablesOfDomain', 'database', data.tablesOfDomain(e).map(linkT)),
-        mk('codelistsOfDomain', 'file_list', data.refsOfDomain(e).map(linkR)),
-        mk('systemsInvolved', 'apps', sysIds.map(id => linkS(data.sysOf(id)))),
+        mk('productsOfDomain', 'briefcase', 'products', data.productsOfDomain(e)),
+        mk('apisOfDomain', 'branch', 'apis', data.apisOfDomain(e)),
+        mk('tablesOfDomain', 'database', 'tables', tables),
+        mk('codelistsOfDomain', 'file_list', 'refs', data.refsOfDomain(e)),
+        mk('systemsInvolved', 'apps', 'systems', byIds('systems', tables.map(x => x.system))),
       ];
     }
     if (kind === 'systems') {
-      const objIds = uniq(data.tablesOfSystem(e).map(x => x.realizes));
-      const domIds = uniq(objIds.map(id => data.objOf(id).domain));
+      const objs = byIds('objects', data.tablesOfSystem(e).map(x => x.realizes)).filter(Boolean);
       return [
-        mk('realizedObjects', 'stack', objIds.map(id => linkO(data.objOf(id)))),
-        mk('providedApis', 'branch', data.apisOfSystem(e).map(linkA)),
-        mk('domains', 'folder', domIds.map(id => linkD(data.domainOf(id)))),
+        mk('realizedObjects', 'stack', 'objects', objs),
+        mk('providedApis', 'branch', 'apis', data.apisOfSystem(e)),
+        mk('domains', 'folder', 'domains', byIds('domains', objs.map(o => o.domain))),
       ];
     }
     if (kind === 'products') {
       return [
-        mk('basedOn', 'stack', e.basedOn.map(id => data.objOf(id)).filter(Boolean).map(linkO)),
-        mk('sourcedFrom', 'database', e.sourcedFrom.map(id => data.get('tables', id)).filter(Boolean).map(linkT)),
-        mk('servedBy', 'branch', e.servedBy.map(id => data.get('apis', id)).filter(Boolean).map(linkA)),
+        mk('basedOn', 'stack', 'objects', byIds('objects', e.basedOn)),
+        mk('sourcedFrom', 'database', 'tables', byIds('tables', e.sourcedFrom)),
+        mk('servedBy', 'branch', 'apis', byIds('apis', e.servedBy)),
       ];
     }
     if (kind === 'apis') {
       return [
-        mk('serves', 'briefcase', data.products.filter(p => p.servedBy.includes(e.identifier)).map(linkP)),
-        mk('sourceSystem', 'apps', [linkS(data.sysOf(e.system))]),
+        mk('serves', 'briefcase', 'products', data.products.filter(p => p.servedBy.includes(e.identifier))),
+        mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]),
       ];
     }
     if (kind === 'attrs') {
       const o = data.objOf(e.object);
-      const fieldName = e.name.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
+      const fieldName = ui.fieldName(e.name);
       const relTables = data.tables.filter(x => x.realizes === o.identifier && x.fields.some(f => f.name === fieldName));
       const relRefs = e.valueType === 'Code' ? data.refs.filter(r => r.businessObject === o.identifier) : [];
       const stem = e.name.toLowerCase().split(/[ -]/)[0];
       return [
-        mk('object', 'stack', [linkO(o)]),
-        mk('realizedInFields', 'database', relTables.map(x => ({ name: `${fieldName} in ${x.technicalName}`, sub: data.sysOf(x.system).name, href: href('tables', x.identifier) }))),
-        mk('typedBy', 'file_list', relRefs.map(linkR)),
-        mk('termdat', 'tag', data.termsOf(o).filter(tm => tm.name.toLowerCase().includes(stem))),
+        mk('object', 'stack', 'objects', [o]),
+        { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: relTables.map(x => ({ name: `${fieldName} in ${x.technicalName}`, sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) })) },
+        mk('typedBy', 'file_list', 'refs', relRefs),
+        { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: data.termsOf(o).filter(tm => tm.name.toLowerCase().includes(stem)) },
       ];
     }
     // objects, tables, refs
     const o = data.objectForEntity(kind, e);
+    if (!o) return [];
     const relTables = data.tables.filter(x => x.realizes === o.identifier && !(kind === 'tables' && x.identifier === e.identifier));
     const relRefs = data.refs.filter(r => r.businessObject === o.identifier && !(kind === 'refs' && r.identifier === e.identifier));
     const rels = [
-      mk('realizedInTables', 'database', relTables.map(linkT)),
-      mk('usesCodelists', 'file_list', relRefs.map(linkR)),
-      mk('usedInProducts', 'briefcase', data.products.filter(p => p.basedOn.includes(o.identifier)).map(linkP)),
-      mk('termdat', 'tag', data.termsOf(o)),
+      mk('realizedInTables', 'database', 'tables', relTables),
+      mk('usesCodelists', 'file_list', 'refs', relRefs),
+      mk('usedInProducts', 'briefcase', 'products', data.products.filter(p => p.basedOn.includes(o.identifier))),
+      { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: data.termsOf(o) },
     ];
-    if (kind !== 'objects') rels.splice(2, 0, mk('object', 'stack', [linkO(o)]));
+    if (kind !== 'objects') rels.splice(2, 0, mk('object', 'stack', 'objects', [o]));
     return rels;
   };
 
@@ -288,44 +318,34 @@
   data.match = function (e, q) {
     return !!q && (e.name.toLowerCase().includes(q) || (e.description || '').toLowerCase().includes(q) || (e.technicalName || '').toLowerCase().includes(q));
   };
+  const resultGroup = (kind, items) => ({ kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items });
   /** Full result groups for the search page. */
   data.search = function (query) {
     const q = (query || '').trim().toLowerCase();
     if (!q) return [];
-    return ORDERED_KINDS.map(kind => ({ kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items: data.list(kind).filter(e => data.match(e, q)) })).filter(g => g.items.length);
+    return KINDS.map(kind => resultGroup(kind, data.list(kind).filter(e => data.match(e, q)))).filter(g => g.items.length);
   };
   /** Suggestion groups: name-first ranking, at most 4 per kind. */
   data.suggest = function (query) {
     const q = (query || '').trim().toLowerCase();
     if (!q) return [];
     const rank = e => e.name.toLowerCase().startsWith(q) ? 0 : e.name.toLowerCase().includes(q) ? 1 : 2;
-    return ORDERED_KINDS.map(kind => ({
-      kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon,
-      items: data.list(kind).filter(e => data.match(e, q)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'de')).slice(0, 4),
-    })).filter(g => g.items.length);
+    return KINDS.map(kind => resultGroup(kind, data.list(kind).filter(e => data.match(e, q)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'de')).slice(0, 4))).filter(g => g.items.length);
   };
 
   /* ---- home ----------------------------------------------------------------- */
   data.recent = function (n) {
     const feed = [];
-    ORDERED_KINDS.forEach(kind => data.list(kind).forEach(e => {
+    KINDS.forEach(kind => data.list(kind).forEach(e => {
       const dom = data.domainForEntity(kind, e);
-      const name = kind === 'tables' ? `${e.name} (${e.technicalName})` : kind === 'apis' ? `${e.name} ${e.version}` : e.name;
-      feed.push({ kind, id: e.identifier, name, kindLabel: data.kindDef(kind).singular, group: dom ? dom.name : '–', status: data.statusOf(kind, e), modified: e.modified, href: DK.router.entityHref(kind, e.identifier) });
+      feed.push({ kind, id: e.identifier, name: data.displayName(kind, e), kindLabel: data.kindDef(kind).singular, group: dom ? dom.name : '–', status: data.statusOf(kind, e), modified: e.modified || '', href: DK.router.entityHref(kind, e.identifier) });
     }));
     return feed.sort((a, b) => (b.modified > a.modified ? 1 : b.modified < a.modified ? -1 : a.name.localeCompare(b.name, 'de'))).slice(0, n);
   };
-  data.kpis = function () {
-    const T = DK.ui.t;
-    const O = data.objects, Tb = data.tables, R = data.refs, P = data.products, A = data.apis;
-    return [
-      { kind: 'objects', count: O.length },
-      { kind: 'tables', count: Tb.length },
-      { kind: 'refs', count: R.length },
-      { kind: 'products', count: P.length },
-      { kind: 'apis', count: A.length },
-    ].map(k => Object.assign(k, { label: data.kindDef(k.kind).plural, icon: data.kindDef(k.kind).icon, unit: T('unit.' + (k.kind === 'refs' ? 'codelists' : k.kind)) }));
-  };
+  data.kpis = () => data.contentKinds().map(kind => {
+    const def = data.kindDef(kind);
+    return { kind, count: data.list(kind).length, label: def.plural, icon: def.icon, unit: t('unit.' + kind) };
+  });
 
   /* ---- history ---------------------------------------------------------------- */
   data.history = function (kind, id) {

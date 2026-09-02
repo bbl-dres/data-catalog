@@ -7,8 +7,6 @@
   const t = ui.t, esc = ui.esc, icon = ui.icon, fmt = ui.fmtDate;
   const detail = {};
   const PAGE_SIZE = 20;
-  const tableEntityLink = (href, label) => `<a class="ob-table-entity-link" href="${esc(href)}">${esc(label)}</a>`;
-  const tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });
 
   detail.rowsLabel = e => data.kindDef(e.kind).rows;
 
@@ -37,16 +35,14 @@
 
   /* ---- Übersicht ---------------------------------------------------------- */
   detail.facts = function (e) {
-    const plain = (label, value) => ({ label, value: String(value), type: 'plain' });
-    const chip = (label, value, tone) => ({ label, value: String(value), type: 'chip', tone });
+    const plain = (label, value) => ({ label, value, type: 'plain' });
+    const chip = (label, value, tone) => ({ label, value, type: 'chip', tone });
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
     const ext = (label, value, href) => ({ label, value, type: 'link', href });
     const dom = data.domainForEntity(e.kind, e);
     const primary = [chip(t('fact.status'), e.status, data.statusTone(e.status))];
     if (dom && e.kind !== 'domains') primary.push(internal(t('fact.domain'), dom.name, 'domains', dom.identifier));
     switch (e.kind) {
-      case 'domains':
-        break;
       case 'systems':
         primary.push(plain(t('fact.technology'), e.technology));
         if (e.informationUrl) primary.push(ext(t('fact.moreInformation'), t('fact.openInformation'), e.informationUrl));
@@ -62,25 +58,24 @@
           plain(t('fact.normReference'), e.normReference), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: o.attributes.length })));
         break;
       }
-      case 'tables': {
-        primary.push(internal(t('fact.system'), data.sysOf(e.system).name, 'systems', e.system), plain(t('fact.technicalName'), e.technicalName),
-          internal(t('fact.realizes'), data.objOf(e.realizes).name, 'objects', e.realizes));
+      case 'tables':
+        primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.technicalName'), e.technicalName),
+          internal(t('fact.realizes'), data.nameOf('objects', e.realizes), 'objects', e.realizes));
         break;
-      }
       case 'products':
         primary.push(plain(t('fact.access'), e.accessRights), plain(t('fact.license'), e.license), plain(t('fact.format'), e.format), plain(t('fact.refresh'), e.accrualPeriodicity), ext(t('fact.obtain'), t('fact.obtainProduct')));
         break;
       case 'apis':
-        primary.push(internal(t('fact.system'), data.sysOf(e.system).name, 'systems', e.system), plain(t('fact.protocol'), e.protocol), plain(t('fact.access'), e.accessRights),
+        primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.protocol'), e.protocol), plain(t('fact.access'), e.accessRights),
           plain(t('fact.baseUrl'), e.endpointURL), ext(t('fact.documentation'), t('fact.openDocs'), e.documentation));
         break;
       case 'refs':
-        primary.push(plain(t('fact.codeSource'), e.sourceAuthority), internal(t('fact.object'), data.objOf(e.businessObject).name, 'objects', e.businessObject), ext(t('fact.sourceDocument'), t('fact.openSourceDocument')));
+        primary.push(plain(t('fact.codeSource'), e.sourceAuthority), internal(t('fact.object'), data.nameOf('objects', e.businessObject), 'objects', e.businessObject), ext(t('fact.sourceDocument'), t('fact.openSourceDocument')));
         break;
     }
     primary.push(plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), e.personalData ? t('yes') : t('no')));
     const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.source'), e.source), plain(t('fact.synced'), fmt(e.synced))];
-    const present = f => f.value != null && f.value !== '' && f.value !== 'undefined';
+    const present = f => f.value != null && f.value !== '';
     return { primary: primary.filter(present), metadata: metadata.filter(present) };
   };
 
@@ -122,13 +117,13 @@
   const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'neutral') : '<span class="ob-cell-muted">—</span>';
   const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
 
-  /** Columns + rows for the entity's list tab. rows: [{cells, text, href}] */
+  /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column (sort, CSV). */
   detail.rowsData = function (e) {
     const c = (label, width) => ({ label: t(label), width });
     switch (e.kind) {
       case 'objects': return {
         columns: [c('col.attribute', '22%'), c('col.description'), c('col.valueType', '14%'), c('col.key', '12%')],
-        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`); return { href, cells: [tableEntityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole)], text: [a.name, a.description, a.valueType, keyText(a.keyRole)] }; }),
+        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`); return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole)], text: [a.name, a.description, a.valueType, keyText(a.keyRole)] }; }),
       };
       case 'tables': return {
         columns: [c('col.field', '22%'), c('col.description'), c('col.dataType', '14%'), c('col.key', '12%')],
@@ -140,11 +135,11 @@
       };
       case 'domains': return {
         columns: [c('col.object', '22%'), c('col.description'), c('col.attributes', '14%'), c('col.status', '12%')],
-        rows: data.objectsOfDomain(e).map(o => { const href = router.entityHref('objects', o.identifier); return { href, cells: [tableEntityLink(href, o.name), esc(o.description), o.attributes.length, ui.chip(o.status, data.statusTone(o.status))], text: [o.name, o.description, o.attributes.length, o.status] }; }),
+        rows: data.objectsOfDomain(e).map(o => { const href = router.entityHref('objects', o.identifier); return { href, cells: [ui.entityLink(href, o.name), esc(o.description), o.attributes.length, ui.chip(o.status, data.statusTone(o.status))], text: [o.name, o.description, o.attributes.length, o.status] }; }),
       };
       case 'systems': return {
         columns: [c('col.table', '26%'), c('col.description'), c('col.fields', '12%'), c('col.status', '14%')],
-        rows: data.tablesOfSystem(e).map(x => { const href = router.entityHref('tables', x.identifier); const st = data.statusOf('tables', x); return { href, cells: [tableEntityLink(href, `${x.name} (${x.technicalName})`), esc(x.description), x.fields.length, ui.chip(st, data.statusTone(st))], text: [`${x.name} (${x.technicalName})`, x.description, x.fields.length, st] }; }),
+        rows: data.tablesOfSystem(e).map(x => { const href = router.entityHref('tables', x.identifier), name = data.displayName('tables', x), st = data.statusOf('tables', x); return { href, cells: [ui.entityLink(href, name), esc(x.description), x.fields.length, ui.chip(st, data.statusTone(st))], text: [name, x.description, x.fields.length, st] }; }),
       };
       case 'products': return {
         columns: [c('col.attribute', '22%'), c('col.description'), c('col.valueType', '14%')],
@@ -156,8 +151,8 @@
 
   detail.rows = function (e, route, state) {
     const rd = detail.rowsData(e);
-    if (!rd.rows.length) return `<div class="ob-empty"><div class="ob-empty-title">${esc(t('detail.noRows', { what: detail.rowsLabel(e) }))}</div></div>`;
-    const options = tableOptions(state, `detail:${e.kind}:rows`);
+    if (!rd.rows.length) return ui.empty(t('detail.noRows', { what: detail.rowsLabel(e) }));
+    const options = ui.tableOptions(state, `detail:${e.kind}:rows`);
     const ordered = ui.sortRows(rd.rows, options.sort, row => row.text);
     const pages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
     const page = Math.min(pages, Math.max(1, parseInt(route.params.page, 10) || 1));
@@ -166,8 +161,8 @@
     const pager = `<div class="ob-pager">
       <span class="ob-pager-current" aria-current="page">${page}</span>
       <span>${esc(pages === 1 ? t('detail.page', { n: pages }) : t('detail.pagePlural', { n: pages }))}</span>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
+      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
+      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
     </div>`;
     return ui.table(rd.columns, rows, options) + pager;
   };
@@ -213,7 +208,7 @@
     return svg + center + satsHtml;
   };
 
-  detail.graphTransform = g => `translate(${g.x}px,${g.y}px) scale(${g.scale})`;
+  detail.graphTransform = g => `translate(${g.x}px,${g.y}px)`;
 
   detail.graph = function (e, state) {
     const { rels } = detail.layout(e);
@@ -225,7 +220,7 @@
 
   detail.relationList = function (e) {
     const groups = data.relations(e.kind, e).filter(r => r.items.length);
-    if (!groups.length) return `<div class="ob-empty"><div class="ob-empty-title">${esc(t('detail.noRelations'))}</div></div>`;
+    if (!groups.length) return ui.empty(t('detail.noRelations'));
     return `<div class="ob-relation-groups">${groups.map(group => `
       <section class="ob-relation-group">
         <h2>${icon(group.icon, 'lg')}<span>${esc(group.title)}</span><span class="ob-relation-count">${group.items.length}</span></h2>
@@ -246,7 +241,7 @@
   /* ---- Verlauf --------------------------------------------------------------- */
   detail.history = function (e, state) {
     const columns = [{ label: t('col.date'), width: '12%' }, { label: t('col.change'), width: '22%' }, { label: t('col.details') }, { label: t('col.editedBy'), width: '18%' }];
-    const options = tableOptions(state, `detail:${e.kind}:history`, { column: 0, direction: 'desc' });
+    const options = ui.tableOptions(state, `detail:${e.kind}:history`, { column: 0, direction: 'desc' });
     const history = ui.sortRows(data.history(e.kind, e.identifier), options.sort, h => [h.date, h.action, h.detail, h.user]);
     const rows = history.map(h => ui.tr([{ html: esc(fmt(h.date)), cls: 'ob-cell-nowrap' }, esc(h.action), { html: esc(h.detail), cls: 'ob-cell-muted' }, esc(h.user)], null, columns)).join('');
     const note = e.kind === 'attrs' ? `<p class="ob-context-note">${esc(t('detail.historyInherited'))}</p>` : '';

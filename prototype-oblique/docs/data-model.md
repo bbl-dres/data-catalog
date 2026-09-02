@@ -16,7 +16,7 @@ All data is static JSON under `data/`, loaded once at start-up. Field names foll
 | `changelog.json` | Change history per entity | – |
 | `model.json` | Information model: kind labels, collection descriptions and icons, navigation models, core fields, type-specific fields, statuses, canonical orders | – |
 | `config.json` | App configuration, help and footer content | – |
-| `i18n.json` | UI strings per language | – |
+| `i18n.json` | UI strings, one entry per key with `de`, `fr`, `it`, `en` (German is the reference; other languages are drafts until validated) | – |
 | `manual.json` | Handbook chapters | – |
 | `swagger.json` | OpenAPI 3.1 contract rendered by Swagger UI | – |
 
@@ -57,7 +57,7 @@ All data is static JSON under `data/`, loaded once at start-up. Field names foll
 
 ## Derived values
 
-Counts are always derived from the embedded lists (attributes, fields, values) so that the KPIs, tree counts and profile pages stay consistent. Relations are computed from the ids above: tables realise objects, code lists type objects, products are based on objects and sourced from tables, APIs serve products and belong to a system. The "Letzte Änderungen" list on the home page sorts all entities by `modified`.
+Counts are always derived from the embedded lists (attributes, fields, values) so that the KPIs, tree counts and profile pages stay consistent. Missing embedded lists are treated as empty at load time, and every cross-reference above is checked by `data.validate()`; a dangling id is reported in the browser console and rendered as the id. Relations are computed from the ids above: tables realise objects, code lists type objects, products are based on objects and sourced from tables, APIs serve products and belong to a system. The "Letzte Änderungen" list on the home page sorts all entities by `modified`.
 
 ## Regenerating
 

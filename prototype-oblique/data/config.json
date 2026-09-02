@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Datenkatalog",
-    "organisation": "Bundesamt für Bauten und Logistik",
+    "organisation": "Bundesamt für Bauten und Logistik BBL",
     "version": "0.4.0",
     "badge": "Prototyp",
     "footerNote": "Prototyp, fiktive Inhalte – nur zur Demonstration",
@@ -27,9 +27,8 @@
     "formUrl": "https://www.bbl.admin.ch/"
   },
   "footerLinks": [
-    { "label": "Rechtliches", "url": "https://www.admin.ch/gov/de/start/rechtliches.html" },
-    { "label": "Barrierefreiheit", "url": "https://www.admin.ch/gov/de/start/barrierefreiheit.html" },
-    { "label": "Hilfe", "route": "#/manual" },
-    { "label": "Kontakt", "url": "mailto:datenkatalog@bbl.admin.ch" }
+    { "label": "Rechtliches", "url": "https://www.admin.ch/de/rechtliches" },
+    { "label": "Barrierefreiheit", "url": "https://www.bbl.admin.ch/de/barrierefreiheit-in-der-bundesverwaltung" },
+    { "label": "Kontakt", "url": "https://www.bbl.admin.ch/de/kontakt" }
   ]
 }

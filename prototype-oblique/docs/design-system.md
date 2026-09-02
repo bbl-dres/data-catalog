@@ -44,7 +44,7 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 | Headings | 28/32 bold −0.5px, 23/28, 17/24 | `core/mixins/_typography.scss` | heading/default/H1–H3 |
 | Body | Noto Sans 16/24 | `$ob-font` | body/default |
 | Overline | 12/16 medium, letter-spacing 2px | – | body/Overline |
-| App title | 26/34 light | – | _components-only/App title |
+| Header titles | 17/28, top-aligned; organisation regular, app title light (`--ob-header-title-*`) | – | _components-only/App title is 26/34 light; reduced so both lines fit beside the 53 px logo |
 | Radius | control 2px, input 4px, pill | `$ob-border-radius-button`, `$ob-border-radius-base` | button 2, text 4, chip pill |
 | Shadows | sm, md, default, lg | `core/mixins/_shadow.scss` | shadow/sm … shadow/lg |
 | Focus ring | 3px box-shadow | `ob-tab-focus-box-shadow` | 3px spread |

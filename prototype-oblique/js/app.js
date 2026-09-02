@@ -9,17 +9,16 @@
 
   /** Transient UI state that is not part of the URL. */
   const state = {
-    query: '', suggest: false, suggestIdx: -1, suggestFlat: [], suggestAllIdx: 0,
+    query: '', suggest: false, suggestIdx: -1,
     menu: null,                       // null | 'info' | 'group' | 'actions'
     mode: 'tiles',                    // tiles | table (URL ?view= overrides)
     groupBy: {},                      // per section (URL ?group= overrides)
     closed: {},                       // collapsed list groups
     treeOpen: { objects: true },      // expanded tree nodes
     treeSection: 'objects',           // section whose branch is open (others collapse on section change)
-    graph: { scale: 1, x: 0, y: 0 },
+    graph: { x: 0, y: 0 },            // pan offset of the relation graph
     relationDiagram: false,
     navDrawerOpen: false,
-    isPhone: false,
     chapter: 'einleitung',
     lastEntity: null,
     detailTab: 'overview',             // carried only between consecutive detail routes
@@ -55,41 +54,52 @@
     return k;
   }
 
+  /** Selector that re-identifies a focused control after `container` is re-rendered, or null. */
+  function focusSelector(el, container) {
+    if (!el || !container.contains(el)) return null;
+    // A menu item disappears with its menu: return to the button that opened it.
+    if (el.closest('.ob-menu')) el = el.closest('.ob-menu-host').querySelector('[data-action="menu"]');
+    if (el.dataset.focus) return `[data-focus="${CSS.escape(el.dataset.focus)}"]`;
+    if (el.id) return '#' + CSS.escape(el.id);
+    const attrs = [...el.attributes].filter(a => a.name.startsWith('data-') && !['data-label', 'data-href'].includes(a.name));
+    return attrs.length ? el.tagName.toLowerCase() + attrs.map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join('') : null;
+  }
+
+  /** Replace a container's HTML and keep keyboard focus on the equivalent control. */
+  function replaceHtml(container, html) {
+    const selector = focusSelector(document.activeElement, container);
+    container.innerHTML = html;
+    const target = selector && container.querySelector(selector);
+    if (target && !target.disabled) target.focus({ preventScroll: true });
+  }
+
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
-    const previousRoute = route;
+    const previous = route;
     route = resolveRoute();
     state.navDrawerOpen = false;
+    state.menu = null; state.suggest = false; state.suggestIdx = -1;
 
-    // A fresh load and entry from a non-detail view start at Übersicht. While
-    // moving between profiles, retain the semantic tab when the target has it.
     if (route.view === 'detail') {
-      const requested = previousRoute
-        ? (route.params.tab || (previousRoute.view === 'detail' ? state.detailTab : 'overview'))
-        : 'overview';
-      const tab = detail.resolveTab(route.entity, requested);
-      state.detailTab = tab;
-      if ((route.params.tab || 'overview') !== tab || (tab === 'overview' && route.params.tab)) {
-        router.replaceParams({ tab: tab === 'overview' ? null : tab, page: null });
-        route = resolveRoute();
-      }
+      // Fresh loads and entries from non-detail views start at Übersicht; between profiles the
+      // semantic tab is kept when the target has it (docs/design-review-responsive.md, "Tab continuity").
+      const requested = !previous ? 'overview' : route.params.tab || (previous.view === 'detail' ? state.detailTab : 'overview');
+      state.detailTab = detail.resolveTab(route.entity, requested);
+      const wanted = state.detailTab === 'overview' ? undefined : state.detailTab;
+      if (route.params.tab !== wanted) router.replaceParams({ tab: wanted || null, page: null });
     } else {
       state.detailTab = 'overview';
     }
 
-    state.menu = null; state.suggest = false; state.suggestIdx = -1;
     // Entering another section collapses the other branches so the tree shows only the current path.
     const section = sectionOf(route);
     if (section && section !== state.treeSection) { state.treeOpen = { [section]: true }; state.treeSection = section; }
+    if (section) state.treeOpen[section] = true;
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) {
-      state.graph = { scale: 1, x: 0, y: 0 }; state.relationDiagram = false; state.lastEntity = key;
-      if (route.entity) state.treeOpen[route.kind === 'attrs' ? 'objects' : route.kind] = true;
-    }
-    if (route.view === 'list') state.treeOpen[route.kind] = true;
+    if (key !== state.lastEntity) { state.graph = { x: 0, y: 0 }; state.relationDiagram = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
-    app.render();
+    app.render(true);
     renderHelp();
     if (route.view === 'manual' && route.params.ch) {
       const el = $('hb-' + route.params.ch);
@@ -99,21 +109,21 @@
     }
   };
 
-  /** Re-render nav + main from the current route and state. */
-  app.render = function () {
+  /** Re-render nav + main from the current route and state. `navigated`: a new page, focus is not restored. */
+  app.render = function (navigated) {
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     if (route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
     if (route.view === 'list' && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
     $('main-nav').innerHTML = views.mainNav(route);
-    $('main').innerHTML = page.html;
+    if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
     requestAnimationFrame(revealActiveTab);
     scheduleTreeViewport();
     updateBackToTop();
-    if (route.view === 'api') requestAnimationFrame(renderSwagger);
+    if (route.view === 'api') renderSwagger();
   };
 
   /** Keep a desktop tree's complete scrollport inside the visible viewport. */
@@ -146,17 +156,35 @@
     requestAnimationFrame(() => $('main').focus({ preventScroll: true }));
   }
 
-  function renderSwagger() {
+  /* ---- API page: Swagger UI is loaded on first use (1.7 MB that other pages never need) ---- */
+  let swaggerLoader = null;
+  function loadSwagger() {
+    if (typeof window.SwaggerUIBundle === 'function') return Promise.resolve();
+    if (!swaggerLoader) swaggerLoader = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet'; css.href = 'vendor/swagger-ui/swagger-ui.css';
+      document.head.insertBefore(css, $('main-css')); // before main.css so the app's overrides keep winning
+      const script = document.createElement('script');
+      script.src = 'vendor/swagger-ui/swagger-ui-bundle.js';
+      script.onload = resolve;
+      script.onerror = () => { swaggerLoader = null; script.remove(); css.remove(); reject(new Error('swagger-ui-bundle.js could not be loaded')); };
+      document.head.appendChild(script);
+    });
+    return swaggerLoader;
+  }
+  async function renderSwagger() {
     const host = $('swagger-ui');
     if (!host) return;
+    try { await loadSwagger(); } catch (err) { console.error(err); }
+    if (!host.isConnected) return; // the page was re-rendered or left while the bundle loaded
     if (typeof window.SwaggerUIBundle !== 'function') {
       host.setAttribute('aria-busy', 'false');
-      host.innerHTML = `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(t('api.unavailable'))}</div></div>`;
+      host.innerHTML = ui.empty(t('api.unavailable'));
       return;
     }
-    window.swaggerUi = window.SwaggerUIBundle({
+    window.SwaggerUIBundle({
       url: 'data/swagger.json',
-      dom_id: '#swagger-ui',
+      domNode: host,
       deepLinking: false,
       docExpansion: 'list',
       defaultModelsExpandDepth: 1,
@@ -181,11 +209,11 @@
     app.render();
     requestAnimationFrame(() => {
       const target = open ? document.querySelector('.ob-tree-panel.is-mobile-open [data-action="close-navigation"]') : document.querySelector('[data-action="open-navigation"]');
-      if (target) target.focus();
+      if (target) target.focus({ preventScroll: true });
     });
   }
 
-  function renderHelp() { const h = $('help-host'); if (h) h.innerHTML = views.helpHost(state); }
+  function renderHelp() { const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state)); }
   function renderSuggest() {
     const host = $('search-suggest-host'); if (!host) return;
     host.innerHTML = views.suggest(state);
@@ -194,14 +222,25 @@
     input.setAttribute('aria-expanded', String(open));
     if (open && state.suggestIdx >= 0) input.setAttribute('aria-activedescendant', 'suggest-' + state.suggestIdx); else input.removeAttribute('aria-activedescendant');
   }
-  function closeTransient() {
-    const wasOpen = state.menu || state.suggest;
-    state.menu = null; state.suggest = false; state.suggestIdx = -1;
-    if (!wasOpen) return;
-    app.render(); renderHelp();
+  /** Open a menu (`info` lives in the header, the others in main) or close all; re-renders only what changed. */
+  function setMenu(next) {
+    const prev = state.menu, hadSuggest = state.suggest;
+    state.menu = next; state.suggest = false; state.suggestIdx = -1;
+    const inMain = m => !!m && m !== 'info';
+    if (inMain(prev) || inMain(next)) app.render();
+    else if (hadSuggest) renderSuggest();
+    if (prev === 'info' || next === 'info') renderHelp();
+  }
+  function closeTransient() { if (state.menu || state.suggest) setMenu(null); }
+  function closeSuggest() {
+    if (!state.suggest) return;
+    state.suggest = false; state.suggestIdx = -1;
+    renderSuggest();
   }
 
   /* ---- search ---------------------------------------------------------------- */
+  /** Hrefs of the current suggestions in listbox order; the "all results" row follows at index length. */
+  const suggestHrefs = () => data.suggest(state.query).flatMap(g => g.items.map(e => router.entityHref(g.kind, e.identifier)));
   function openResults() {
     const q = state.query.trim();
     state.suggest = false; state.suggestIdx = -1;
@@ -210,16 +249,16 @@
   }
   function onSearchKey(e) {
     const open = state.suggest && !!state.query.trim();
-    const n = state.suggestAllIdx; // index of the "all results" row
-    if (e.key === 'ArrowDown' && open) { e.preventDefault(); state.suggestIdx = Math.min(state.suggestIdx + 1, n); renderSuggest(); return; }
+    if (e.key === 'ArrowDown' && open) { e.preventDefault(); state.suggestIdx = Math.min(state.suggestIdx + 1, suggestHrefs().length); renderSuggest(); return; }
     if (e.key === 'ArrowUp' && open) { e.preventDefault(); state.suggestIdx = Math.max(state.suggestIdx - 1, -1); renderSuggest(); return; }
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (open && state.suggestIdx >= 0 && state.suggestIdx < n) { const href = state.suggestFlat[state.suggestIdx]; state.suggest = false; router.navigate(href); return; }
+      const href = open && state.suggestIdx >= 0 ? suggestHrefs()[state.suggestIdx] : null;
+      if (href) { state.suggest = false; state.suggestIdx = -1; router.navigate(href); return; }
       openResults(); return;
     }
     if (e.key === 'Escape') {
-      if (state.suggest) { state.suggest = false; state.suggestIdx = -1; renderSuggest(); }
+      if (state.suggest) closeSuggest();
       else { state.query = ''; e.target.value = ''; $('search-clear').hidden = true; }
     }
   }
@@ -248,23 +287,27 @@
 
   /* ---- handbook ---------------------------------------------------------------- */
   let hbLock = null, hbTimer = null;
+  /** Mark the current chapter in the chapter list and the drawer button without re-rendering the page. */
   function updateChapterNav() {
     document.querySelectorAll('[data-action="chapter"]').forEach(a => {
-      if (a.dataset.chapter === state.chapter) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+      const active = a.dataset.chapter === state.chapter;
+      if (active) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+      a.closest('.ob-tree-row').classList.toggle('is-active', active);
     });
+    const path = document.querySelector('.ob-mobile-navigation-path');
+    const chapter = data.manual.chapters.find(c => c.id === state.chapter);
+    if (path && chapter) path.textContent = chapter.title;
   }
   function goChapter(id) {
     state.chapter = id;
-    state.navDrawerOpen = false;
     router.replaceParams({ ch: id });
-    app.render();
+    if (state.navDrawerOpen) setNavigation(false); else updateChapterNav();
     const el = $('hb-' + id);
     if (el) {
       hbLock = id;
       window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior: 'smooth' });
       clearTimeout(hbTimer); hbTimer = setTimeout(() => { hbLock = null; }, 900);
     }
-    updateChapterNav();
   }
   function onScroll() {
     scheduleTreeViewport();
@@ -283,6 +326,9 @@
       if (e.target.closest('.ob-popover, .ob-menu, #search-suggest')) return;
       const tr = e.target.closest('tr.is-clickable[data-href]');
       if (tr && !e.target.closest('a, button')) { router.navigate(tr.dataset.href); return; }
+      // A link to another route re-renders through hashchange; do not pull the link out of the DOM before it is followed.
+      const link = e.target.closest('a[href^="#"]');
+      if (link && link.getAttribute('href') !== location.hash) { state.menu = null; state.suggest = false; state.suggestIdx = -1; return; }
       closeTransient();
       return;
     }
@@ -290,8 +336,8 @@
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
       case 'back-to-top': e.preventDefault(); backToTop(); return;
-      case 'help-toggle': e.stopPropagation(); state.menu = state.menu === 'info' ? null : 'info'; state.suggest = false; app.render(); renderHelp(); return;
-      case 'menu': e.stopPropagation(); state.menu = state.menu === el.dataset.menu ? null : el.dataset.menu; state.suggest = false; app.render(); renderHelp(); return;
+      case 'help-toggle': e.stopPropagation(); setMenu(state.menu === 'info' ? null : 'info'); return;
+      case 'menu': e.stopPropagation(); setMenu(state.menu === el.dataset.menu ? null : el.dataset.menu); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': state.mode = el.dataset.view; router.replaceParams({ view: state.mode }); app.render(); return;
       case 'sort-table': {
@@ -302,10 +348,6 @@
         state.tableSorts[sortKey] = { column, direction };
         if (route.view === 'detail' && route.params.page) router.replaceParams({ page: null });
         app.render();
-        requestAnimationFrame(() => {
-          const button = [...document.querySelectorAll('[data-action="sort-table"]')].find(x => x.dataset.sortKey === sortKey && parseInt(x.dataset.sortColumn, 10) === column);
-          if (button) button.focus();
-        });
         return;
       }
       case 'toggle-group': state.closed[key] = !state.closed[key]; app.render(); return;
@@ -318,9 +360,8 @@
         return;
       }
       case 'open-tree': {
-        const same = el.getAttribute('href') === location.hash;
-        if (same) { e.preventDefault(); state.treeOpen[key] = el.dataset.toggle ? !state.treeOpen[key] : true; app.render(); }
-        else state.treeOpen[key] = true;
+        state.treeOpen[key] = true;
+        if (el.getAttribute('href') === location.hash) { e.preventDefault(); app.render(); }
         return;
       }
       case 'set-tab': {
@@ -329,7 +370,7 @@
         app.render();
         return;
       }
-      case 'set-page': router.replaceParams({ page: el.dataset.page }); app.render(); return;
+      case 'set-page': router.replaceParams({ page: el.dataset.page === '1' ? null : el.dataset.page }); app.render(); return;
       case 'toggle-relation-view': state.relationDiagram = !state.relationDiagram; app.render(); return;
       case 'export': { const id = el.dataset.export, label = el.dataset.label; state.menu = null; app.render(); doExport(id, label); return; }
       case 'clear-query': {
@@ -352,7 +393,6 @@
       state.query = e.target.value; state.suggest = true; state.suggestIdx = -1;
       $('search-clear').hidden = !state.query;
       renderSuggest();
-      return;
     }
   }
 
@@ -362,9 +402,9 @@
       const tabs = [...e.target.parentElement.querySelectorAll('.ob-tab')];
       const current = tabs.indexOf(e.target);
       const next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (current + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
-      const nextId = tabs[next].id;
-      e.preventDefault(); tabs[next].click();
-      requestAnimationFrame(() => document.getElementById(nextId)?.focus());
+      e.preventDefault();
+      tabs[next].focus(); // focus first so the re-render keeps it on the new tab
+      tabs[next].click();
       return;
     }
     if (e.key === 'Escape' && state.navDrawerOpen) { setNavigation(false); return; }
@@ -373,6 +413,10 @@
 
   function onFocusin(e) {
     if (e.target.id === 'search-input' && state.query.trim() && !state.suggest) { state.suggest = true; renderSuggest(); }
+  }
+  function onFocusout(e) {
+    const search = state.suggest && e.target.closest('.ob-search');
+    if (search && !(e.relatedTarget && search.contains(e.relatedTarget))) closeSuggest();
   }
 
   function onPointerDown(e) {
@@ -400,34 +444,30 @@
     try {
       await data.load('data/');
     } catch (err) {
-      $('main').innerHTML = `<div class="ob-empty"><div class="ob-empty-title">Fehler beim Laden</div><div>${ui.esc(t('loadError'))}</div><div class="ob-cell-muted" style="margin-top:8px">${ui.esc(err.message)}</div></div>`;
+      $('main').innerHTML = ui.empty(t('loadError.title'), `${ui.esc(t('loadError'))}<div class="ob-cell-muted" style="margin-top:8px">${ui.esc(err.message)}</div>`);
       console.error(err);
       return;
     }
     const cfg = data.config;
-    ui.setDictionary(data.i18n[cfg.app.language] || data.i18n.de);
+    ui.setDictionary(data.i18n, cfg.app.language || 'de', 'de');
     document.documentElement.lang = cfg.app.language || 'de';
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
+    $('skip-link').textContent = t('skip');
+    $('brand-link').setAttribute('aria-label', `${cfg.app.name} – ${t('nav.home')}`);
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
+    $('main-nav').setAttribute('aria-label', t('nav.main'));
     $('header-tools').innerHTML = views.headerTools(state);
     $('footer').innerHTML = views.footer();
     const backToTopButton = $('back-to-top');
     backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
     backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
 
-    const phoneMedia = window.matchMedia('(max-width: 600px)');
-    state.isPhone = phoneMedia.matches;
-    phoneMedia.addEventListener('change', event => {
-      if (state.isPhone === event.matches) return;
-      state.isPhone = event.matches;
-      if (route && route.view === 'list') app.render();
-    });
-
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
+    document.addEventListener('focusout', onFocusout);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('pointermove', onPointerMove);

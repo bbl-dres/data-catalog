@@ -12,7 +12,7 @@
 (function (DK) {
   'use strict';
 
-  const KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
+  const KINDS = DK.data.kinds;
   const router = {};
 
   router.parse = function (hash) {
@@ -46,7 +46,6 @@
     const qs = params ? Object.entries(params).filter(([, v]) => v != null && v !== '').map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&') : '';
     return '#' + path + (qs ? '?' + qs : '');
   };
-  router.homeHref = '#/';
   router.listHref = (kind, params) => router.build('/' + kind, params);
   router.entityHref = function (kind, id, params) {
     if (kind === 'attrs') {

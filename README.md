@@ -16,11 +16,7 @@ A collection of experimental interfaces for finding, understanding, and document
 
 <div align="center">
   <img src="assets/prototype-oblique-overview.png" alt="Oblique data catalog overview" width="49%" align="top">
-  <img src="assets/prototype-oblique-catalog.png" alt="Oblique data catalog grouped catalog view" width="49%" align="top">
-</div>
-<div align="center">
   <img src="assets/prototype-oblique-profile.png" alt="Oblique data catalog entity profile" width="49%" align="top">
-  <img src="assets/prototype-oblique-relations.png" alt="Oblique data catalog relationship graph" width="49%" align="top">
 </div>
 
 The root URL opens the Oblique Data Catalog. Use the direct links below to compare every variant.

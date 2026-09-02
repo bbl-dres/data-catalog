@@ -5,8 +5,15 @@
   const ui = {};
   let dict = {};
 
-  /** Install the active language dictionary (data/i18n.json → one language). */
-  ui.setDictionary = function (d) { dict = d || {}; };
+  /** Pick one language from the i18n table (key → { de, fr, it, en }); a missing or empty translation falls back to `fallback`. */
+  ui.setDictionary = function (table, lang, fallback) {
+    dict = {};
+    Object.keys(table || {}).forEach(key => {
+      const v = table[key];
+      if (!v || typeof v !== 'object') return;
+      dict[key] = v[lang] || v[fallback || 'de'] || key;
+    });
+  };
 
   /** Translate a UI key; `{name}` placeholders are replaced from params. Unknown keys return the key itself. */
   ui.t = function (key, params) {
@@ -28,6 +35,15 @@
   ui.chip = function (label, tone) {
     return `<span class="ob-chip ob-chip--${tone || 'neutral'}">${ui.esc(label)}</span>`;
   };
+
+  /** Link to a catalog entity inside a table cell. */
+  ui.entityLink = (href, label) => `<a class="ob-table-entity-link" href="${ui.esc(href)}">${ui.esc(label)}</a>`;
+
+  /** Sort options for `ui.table`: the stored sort of `key`, else the default. */
+  ui.tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });
+
+  /** Empty state block with a title and optional hint. */
+  ui.empty = (title, hint) => `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}</div>`;
 
   /** ISO date (yyyy-mm-dd) → Swiss short date (d.m.yyyy). */
   ui.fmtDate = function (iso) {
@@ -88,7 +104,7 @@
     if (!region) return;
     const el = document.createElement('div');
     el.className = 'ob-alert' + (tone ? ' ob-alert--' + tone : '');
-    el.innerHTML = `<span>${ui.esc(message)}</span><button type="button" class="ob-alert-close" aria-label="Schliessen" data-action="toast-close">${ui.icon('xmark', 'sm')}</button>`;
+    el.innerHTML = `<span>${ui.esc(message)}</span><button type="button" class="ob-alert-close" aria-label="${ui.esc(ui.t('toast.close'))}" data-action="toast-close">${ui.icon('xmark', 'sm')}</button>`;
     region.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.remove(); }, 6000);
   };
@@ -97,7 +113,7 @@
   ui.downloadCsv = function (filename, header, rows) {
     const q = v => { const s = String(v == null ? '' : v); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
     const lines = [header].concat(rows).map(r => r.map(q).join(';'));
-    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename;
@@ -108,6 +124,11 @@
   /** Stable ASCII slug for names (ä→ae etc.), same rule as the data generator. */
   ui.slug = function (s) {
     return String(s).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  };
+
+  /** Technical field name for an attribute name (Gebäudehöhe → GEBAEUDEHOEHE), same rule as the data generator. */
+  ui.fieldName = function (s) {
+    return String(s).replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
   };
 
   DK.ui = ui;

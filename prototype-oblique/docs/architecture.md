@@ -1,6 +1,6 @@
 # Architecture
 
-No build step and no framework. One HTML page, three stylesheets, six application JavaScript files, static JSON data, and a pinned self-hosted Swagger UI distribution.
+No build step and no framework. One HTML page, two stylesheets, six application JavaScript files, static JSON data, and a pinned self-hosted Swagger UI distribution that is loaded only when the API page is opened.
 
 ## File structure
 
@@ -11,8 +11,8 @@ prototype-oblique/
 │   ├── tokens.css        Design tokens (custom properties) – see design-system.md
 │   └── main.css          Fonts, reset, layout and components; responsive and print rules
 ├── js/
-│   ├── ui.js             DK.ui     – html helpers: t(), esc(), icon(), chip(), table(), tr(), toast(), downloadCsv()
-│   ├── data.js           DK.data   – loads JSON, lookups, grouping, relations, search, KPIs, history
+│   ├── ui.js             DK.ui     – html helpers: t(), esc(), icon(), chip(), entityLink(), table(), tr(), empty(), toast(), downloadCsv(), slug(), fieldName()
+│   ├── data.js           DK.data   – loads and validates JSON, lookups, grouping, relations, search, KPIs, history
 │   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams()
 │   ├── views.js          DK.views  – header, nav, breadcrumb, toolbar, tree, home, lists, search, manual, API page
 │   ├── detail.js         DK.detail – profile pages: facts, rows, orbit graph, history
@@ -27,7 +27,7 @@ prototype-oblique/
 └── docs/
 ```
 
-Swagger UI loads first as a vendored browser bundle. The six application scripts then load in the order above; each is an IIFE that adds one object to the `window.DK` namespace.
+The six application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace (`router.js` reads `DK.data.kinds`, so `data.js` must come first). Swagger UI is not in `index.html`: `app.js` inserts its stylesheet and bundle on the first visit of `#/api`.
 
 ## JavaScript strategy
 
@@ -36,13 +36,15 @@ Six files, split by responsibility rather than by page, so a feature usually tou
 | File | Owns | Does not |
 |---|---|---|
 | `ui.js` | String helpers, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
-| `data.js` | All questions about the data: `get`, `domainForEntity`, `sizeOf`, `statusOf`, `buildGroups`, `relations`, `search`, `suggest`, `recent`, `kpis`, `history` | Touch the DOM |
+| `data.js` | All questions about the data: `get`, `nameOf`, `displayName`, `domainForEntity`, `sizeOf`, `statusOf`, `buildGroups`, `relations`, `search`, `suggest`, `recent`, `kpis`, `history`; `validate()` logs dangling references after loading | Touch the DOM |
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row tables with paging, orbit graph layout | Handle events |
-| `app.js` | State, rendering cycle, all event listeners, CSV/print exports, handbook scroll spy, graph drag/zoom | Contain HTML templates |
+| `app.js` | State, rendering cycle with focus restoration, all event listeners, lazy Swagger UI, CSV/print exports, handbook scroll spy, graph drag | Contain HTML templates |
 
-Rendering is "render everything from state": `views.page(route, state)` returns the whole `<main>` as a string and `app.render()` replaces `innerHTML`. After the API route is composed, `app.js` mounts Swagger UI into `#swagger-ui` using `data/swagger.json`. Two exceptions avoid losing keyboard focus: typing in the search box only re-renders the suggestion listbox, and typing in the graph search only re-renders the graph canvas. Graph pan and zoom update the transform directly.
+Rendering is "render everything from state": `views.page(route, state)` returns the whole `<main>` as a string and `app.render()` replaces `innerHTML`. Because that drops keyboard focus, `replaceHtml()` records a selector for the focused control before the swap (`data-focus`, `id`, or its `data-*` attributes; a menu item maps to its menu button) and refocuses it afterwards without scrolling. Route changes skip this and scroll to the top. Three things bypass the full render: typing in the search box only re-renders the suggestion listbox, the help popover re-renders only its host, and graph panning sets the canvas transform directly. After the API route is composed, `app.js` loads Swagger UI on first use and mounts it into `#swagger-ui` using `data/swagger.json`; the mount is skipped if the page was re-rendered while the bundle was loading.
+
+Every entity lookup tolerates a missing target: `data.nameOf()` falls back to the id, relation builders drop unresolved ids, and breadcrumbs skip missing containers. `data.validate()` reports such references once in the console.
 
 ## Routing
 
@@ -52,7 +54,7 @@ The URL is the source of truth for everything that should be bookmarkable:
 |---|---|
 | `#/` | Home |
 | `#/objects`, `#/tables`, `#/refs`, `#/products`, `#/apis`, `#/domains`, `#/systems` | Section list. Params: `view=tiles|table`, `group=<option>` |
-| `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n` |
+| `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n`. The tab is kept in the hash during a session, but a fresh load always opens Übersicht (see design-review-responsive.md, "Tab continuity") |
 | `#/objects/gebaeude/attributes/egid` | Attribute profile |
 | `#/search?q=…` | Search results |
 | `#/manual?ch=<chapter>` | Handbook |
@@ -63,26 +65,26 @@ The URL is the source of truth for everything that should be bookmarkable:
 
 ## Transient state (`app.js`)
 
-Held in memory, not in the URL: search query and suggestion index, open menu (`info`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph transform and filters, active handbook chapter. URL params override `mode` and `groupBy` when present.
+Held in memory, not in the URL: search query and suggestion index, open menu (`info`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph pan offset, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles. URL params override `mode` and `groupBy` when present.
 
 ## Events
 
-One `click` listener on `document` dispatches on `data-action` attributes (`menu`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-tree`, `set-tab`, `set-page`, `export`, `clear-query`, `suggest-pick`, `open-results`, `graph-zoom`, `graph-clear`, `chapter`, `help-toggle`, `not-available`, `toast-close`). Clicks with no action close open menus. `input`, `change`, `keydown`, `focusin`, pointer and `scroll` listeners cover the search box, graph and handbook.
+One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
 
 Catalog data tables use native buttons in their column headers and expose the active direction through `aria-sort`. Repeated headers in grouped L0 tables share one sort state. Detail rows are sorted before pagination, and changing their sort resets the pager to page 1. Handbook reference tables remain unsorted because their authored row order conveys meaning.
 
 ## Configuration (`data/config.json`)
 
-`navModel` (`entity` or `container`), `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links.
+`navModel` (`entity` or `container`), `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links (`route` for in-app hashes, `url` for external pages).
 
 ## How to extend
 
-- **New entity type**: add a JSON file and a `kinds` entry in `model.json`; add it to `FILES`, `KINDS` and the `cols`/`columns`/`sub`/`sizeOf`/`relations` switches in `data.js`; add `rowsData` and facts in `detail.js`; add crumbs in `views.context()`.
+- **New entity type**: add a JSON file and a `kinds` entry in `model.json`; add it to `FILES`, `KINDS`, `LISTS` and the `cols`/`columns`/`sizeOf`/`relations` switches in `data.js`; add `rowsData` and facts in `detail.js`; add its crumb path in `views.context()`.
 - **New grouping option**: extend `GROUP_IDS`, `groupKey` and `groupOrder` in `data.js`; add a `group.<id>` label in `i18n.json`.
-- **New language**: add a language object to `i18n.json` and set `app.language`; data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
+- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts and set `app.language`. Missing translations fall back to German. Data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
 - **Real backend**: replace `data.load()` with API calls that return the same shapes as the JSON files; nothing else depends on the file layout.
 - **Excel / DCAT export**: implement in `doExport()` in `app.js`; the menu entries already exist and show a notice today.
 
 ## Testing
 
-No automated tests are checked in. A Playwright smoke script (routes, grouping, view toggle, tree, tabs, paging, graph pan/zoom, search keyboard flow, help popover, handbook, API page, container model, mobile overflow, print media) was run during development with zero console errors. Manual checks: navigate every route, toggle views and grouping, use the search box with the keyboard, drag the graph, print a profile page, resize to a phone width.
+No automated tests are checked in. A Playwright smoke script (routes, grouping, view toggle, sorting, tree, tabs, paging, graph pan, search keyboard flow, help popover, handbook, API page, container model, mobile drawer, focus restoration, rendering with broken references) was run during development and for the code review (see code-review.md) with zero console errors. Manual checks: navigate every route, toggle views and grouping, use the search box with the keyboard, drag the graph, print a profile page, resize to a phone width.

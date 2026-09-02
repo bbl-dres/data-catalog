@@ -7,15 +7,14 @@
   <meta name="description" content="Datenkatalog des BBL: Geschäftsobjekte, Datentabellen, Referenzdaten, Datenprodukte und APIs. Prototyp mit fiktiven Inhalten.">
   <link rel="icon" type="image/svg+xml" href="assets/swiss-logo-flag.svg">
   <link rel="stylesheet" href="css/tokens.css">
-  <link rel="stylesheet" href="vendor/swagger-ui/swagger-ui.css">
-  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/main.css" id="main-css">
 </head>
 <body>
-  <a class="ob-skip-link" href="#main" data-action="skip">Zum Inhalt springen</a>
+  <a class="ob-skip-link" href="#main" id="skip-link" data-action="skip">Zum Inhalt springen</a>
 
   <header class="ob-header" id="header">
     <div class="ob-header-bar">
-      <a class="ob-header-brand" href="#/" id="brand-link" aria-label="Datenkatalog – Startseite">
+      <a class="ob-header-brand" href="#/" id="brand-link">
         <img class="ob-header-logo-flag" src="assets/swiss-logo-flag.svg" alt="" width="30" height="33">
         <img class="ob-header-logo-name" src="assets/swiss-logo-name.svg" alt="" width="174" height="50">
       </a>
@@ -36,7 +35,6 @@
   <button type="button" class="ob-button ob-back-to-top" id="back-to-top" data-action="back-to-top" aria-controls="main" hidden></button>
   <div class="ob-toast-region" id="toasts" role="status" aria-live="polite"></div>
 
-  <script src="vendor/swagger-ui/swagger-ui-bundle.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/data.js"></script>
   <script src="js/router.js"></script>

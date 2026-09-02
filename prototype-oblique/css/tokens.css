@@ -178,8 +178,8 @@
   /* ---- 3. Component tokens --------------------------------------------- */
   --ob-content-max-width: 1440px;
   --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
-  --ob-header-app-font-size: 1.625rem;                   /* Figma "App title": Light 26/34 */
-  --ob-header-app-line-height: 2.125rem;
+  --ob-header-title-font-size: var(--ob-font-size-lg);   /* organisation and app title share one size */
+  --ob-header-title-line-height: var(--ob-line-height-lg);
   --ob-header-logo-flag-width: 30px;
   --ob-header-logo-flag-height: 33px;
   --ob-header-logo-name-width: 174px;

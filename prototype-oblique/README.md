@@ -11,14 +11,14 @@ Data catalog prototype for the Swiss Federal Office for Buildings and Logistics 
 
 - Home page with KPI cards, domain overview and latest changes
 - Seven catalog sections with a navigation tree, tiles or sortable table view, and grouping by domain, responsibility, system, source, access or status
-- Profile pages ("Steckbrief") with tabs: Übersicht, Attribute / Felder / Werte, Beziehungen (pannable and zoomable orbit graph), Verlauf
+- Profile pages ("Steckbrief") with tabs: Übersicht, Attribute / Felder / Werte, Beziehungen (relation list, or a pannable orbit graph), Verlauf
 - Search with grouped suggestions, keyboard navigation and a results page
 - Handbook (Handbuch) with chapter navigation and scroll spy, an OpenAPI 3.1 reference rendered by Swagger UI, and a help/contact popover
 - CSV export and print-to-PDF from the Exportieren menu (Excel and DCAT-AP CH exports are placeholders)
-- Deep-linkable hash routes: section, entity, tab, page, view mode, grouping, search query and handbook chapter are all in the URL
+- Deep-linkable hash routes: section, entity, view mode, grouping, search query and handbook chapter are in the URL; the profile tab and page are kept in the hash during a session and reset to Übersicht on a fresh load
 - Two navigation models (entity-first or container-first tree), switched in `data/config.json` or with `?nav=container`
-- German UI, i18n-ready (all strings in `data/i18n.json`)
-- Self-hosted Noto Sans and pinned Swagger UI assets, no external requests and no build step
+- German UI, i18n-ready (every string in `data/i18n.json` carries de/fr/it/en; fr/it/en are drafts awaiting validation)
+- Self-hosted Noto Sans and pinned Swagger UI assets (loaded only on the API page), no external requests and no build step
 
 ## Run locally
 
@@ -47,6 +47,7 @@ Any static file server works. Opening `index.html` directly from the file system
 - [docs/architecture.md](docs/architecture.md): file structure, rendering model, routing, state, events, how to extend
 - [docs/design-system.md](docs/design-system.md): how the tokens map to Oblique, what was taken from the Figma library, known deltas
 - [docs/data-model.md](docs/data-model.md): JSON files and fields
+- [docs/code-review.md](docs/code-review.md): findings of the 2026-09 code review and what was changed
 - [docs/wireframes/](docs/wireframes/): the Claude Design mockup this app was built from
 
 ## Tech notes
