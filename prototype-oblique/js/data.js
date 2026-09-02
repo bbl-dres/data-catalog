@@ -10,7 +10,7 @@
     config: 'config.json', i18n: 'i18n.json', model: 'model.json',
     domains: 'domains.json', systems: 'systems.json', objects: 'objects.json', tables: 'tables.json',
     refs: 'codelists.json', products: 'products.json', apis: 'apis.json',
-    changelog: 'changelog.json', manual: 'manual.json', apiDocs: 'api-docs.json',
+    changelog: 'changelog.json', manual: 'manual.json',
   };
   const KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
   const ORDERED_KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
@@ -55,6 +55,14 @@
   data.domainOf = id => data.get('domains', id);
   data.objOf = id => data.get('objects', id);
   data.sysOf = id => data.get('systems', id);
+  data.custodianOf = function (kind, e) {
+    if (kind === 'systems') return e.dataCustodian || '';
+    if (kind === 'tables') {
+      const system = data.sysOf(e.system);
+      return e.dataCustodian || (system && system.dataCustodian) || '';
+    }
+    return '';
+  };
 
   data.objectsOfDomain = d => data.objects.filter(o => o.domain === d.identifier);
   data.tablesOfDomain = d => data.tables.filter(x => data.objOf(x.realizes).domain === d.identifier);
@@ -92,7 +100,7 @@
       default: return 0;
     }
   };
-  data.statusOf = (kind, e) => kind === 'tables' ? (e.certified ? 'Zertifiziert' : 'Nicht zertifiziert') : (e.status || '');
+  data.statusOf = (kind, e) => e.status || '';
   data.statusTone = st => ((data.model.statuses || {})[st] || {}).tone || 'neutral';
 
   data.navModel = function () {
@@ -131,8 +139,8 @@
   data.columns = function (kind) {
     const c = (label, width) => ({ label: t(label), width });
     switch (kind) {
-      case 'objects': return [c('col.name', '18%'), c('col.responsibility', '20%'), c('col.description'), c('col.attributes', '10%'), c('col.status', '12%')];
-      case 'tables': return [c('col.name', '18%'), c('col.systemTech', '22%'), c('col.description'), c('col.fields', '9%'), c('col.certification', '14%')];
+      case 'objects': return [c('col.name', '20%'), c('col.responsibility', '25%'), c('col.description'), c('col.attributes', '11%'), c('col.status', '11%')];
+      case 'tables': return [c('col.name', '18%'), c('col.systemTech', '22%'), c('col.description'), c('col.fields', '9%'), c('col.status', '14%')];
       case 'domains': return [c('col.domain', '18%'), c('col.responsibility', '18%'), c('col.description'), c('col.object', '12%'), c('col.status', '12%')];
       case 'systems': return [c('col.system', '18%'), c('col.technology', '18%'), c('col.description'), c('col.tables', '12%'), c('col.status', '12%')];
       case 'products': return [c('col.product', '18%'), c('col.access', '16%'), c('col.description'), c('col.format', '14%'), c('col.status', '12%')];
@@ -144,7 +152,7 @@
   data.searchColumns = function (kind) {
     const map = {
       products: ['col.access', 'col.status'], apis: ['col.systemVersion', 'col.status'], domains: ['col.responsibility', 'col.status'],
-      systems: ['col.technology', 'col.status'], objects: ['col.responsibility', 'col.status'], tables: ['col.systemTech', 'col.certification'], refs: ['col.source', 'col.status'],
+      systems: ['col.technology', 'col.status'], objects: ['col.responsibility', 'col.status'], tables: ['col.systemTech', 'col.status'], refs: ['col.source', 'col.status'],
     }[kind];
     return [{ label: t('col.name'), width: '24%' }, { label: t(map[0]), width: '22%' }, { label: t('col.description') }, { label: t(map[1]), width: '14%' }];
   };
@@ -152,7 +160,7 @@
   /* ---- grouping ---------------------------------------------------------- */
   const GROUP_IDS = {
     objects: ['none', 'domain', 'resp', 'status'],
-    tables: ['none', 'system', 'domain', 'cert'],
+    tables: ['none', 'system', 'domain', 'status'],
     refs: ['none', 'source', 'domain', 'status'],
     products: ['none', 'domain', 'access', 'status'],
     apis: ['none', 'domain', 'system', 'status'],
@@ -164,16 +172,13 @@
     return { tables: 'system', refs: 'source' }[kind] || 'none';
   };
   data.groupOptions = function (kind) {
-    return (GROUP_IDS[kind] || []).map(id => {
-      const n = data.buildGroups(kind, id).length;
-      return { id, label: t('group.' + id), hint: id === 'none' ? DK.ui.t('group.all', { what: data.kindDef(kind).plural }) : (n === 1 ? t('unit.group') : DK.ui.t('unit.groups', { n })) };
-    });
+    return (GROUP_IDS[kind] || []).map(id => ({ id, label: t('group.' + id) }));
   };
   data.groupKey = function (kind, e, g) {
     if (!g || g === 'none') return DK.ui.t('group.all', { what: data.kindDef(kind).plural });
     if (g === 'domain') return data.domainForEntity(kind, e).name;
     if (g === 'resp') return e.responsibleOrg;
-    if (g === 'status' || g === 'cert') return data.statusOf(kind, e);
+    if (g === 'status') return data.statusOf(kind, e);
     if (g === 'system') return data.sysOf(e.system).name;
     if (g === 'source') return e.sourceAuthority;
     if (g === 'access') return e.accessRights;
@@ -185,7 +190,7 @@
     if (g === 'system') return data.systems.map(s => s.name);
     if (g === 'source') return data.model.sourceAuthorities;
     if (g === 'access') return data.model.accessOrder;
-    if (g === 'status' || g === 'cert') return Object.keys(data.model.statuses);
+    if (g === 'status') return Object.keys(data.model.statuses);
     return [];
   };
   /** Groups [{id, title, items}] of a section, in canonical order. */
@@ -312,15 +317,13 @@
   };
   data.kpis = function () {
     const T = DK.ui.t;
-    const count = (list, f) => list.filter(f).length;
-    const sum = (list, f) => list.reduce((a, x) => a + f(x), 0);
     const O = data.objects, Tb = data.tables, R = data.refs, P = data.products, A = data.apis;
     return [
-      { kind: 'objects', count: O.length, sub: `${sum(O, o => o.attributes.length)} ${T('unit.attributes')} · ${count(O, o => o.status === 'Gültig')} ${T('kpi.valid')} · ${count(O, o => o.status === 'Entwurf')} ${T('kpi.draft')}` },
-      { kind: 'tables', count: Tb.length, sub: `${sum(Tb, x => x.fields.length)} ${T('unit.fields')} · ${count(Tb, x => x.certified)} ${T('kpi.certified')} · ${count(Tb, x => !x.certified)} ${T('kpi.notCertified')}` },
-      { kind: 'refs', count: R.length, sub: `${sum(R, r => r.values.length)} ${T('unit.values')} · ${count(R, r => !r.values.length)} ${T('kpi.notCaptured')}` },
-      { kind: 'products', count: P.length, sub: `${count(P, p => p.accessRights === 'öffentlich')} ${T('kpi.public')} · ${count(P, p => p.status === 'Gültig')} ${T('kpi.valid')} · ${count(P, p => p.status === 'Entwurf')} ${T('kpi.draft')}` },
-      { kind: 'apis', count: A.length, sub: `${count(A, a => a.accessRights === 'öffentlich')} ${T('kpi.public')} · ${count(A, a => a.status === 'Gültig')} ${T('kpi.valid')} · ${count(A, a => a.status === 'Entwurf')} ${T('kpi.draft')}` },
+      { kind: 'objects', count: O.length },
+      { kind: 'tables', count: Tb.length },
+      { kind: 'refs', count: R.length },
+      { kind: 'products', count: P.length },
+      { kind: 'apis', count: A.length },
     ].map(k => Object.assign(k, { label: data.kindDef(k.kind).plural, icon: data.kindDef(k.kind).icon, unit: T('unit.' + (k.kind === 'refs' ? 'codelists' : k.kind)) }));
   };
 

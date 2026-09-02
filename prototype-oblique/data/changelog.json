@@ -983,7 +983,7 @@
     "entity": "tables:t-we",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 9 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1018,7 +1018,7 @@
     "entity": "tables:t-geb-sap",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 12 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1053,7 +1053,7 @@
     "entity": "tables:t-bem",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 9 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1088,7 +1088,7 @@
     "entity": "tables:t-mo",
     "date": "2026-03-12",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 10 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1123,7 +1123,7 @@
     "entity": "tables:t-mv",
     "date": "2026-03-12",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 9 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1158,7 +1158,7 @@
     "entity": "tables:t-geb-gis",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 12 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1193,7 +1193,7 @@
     "entity": "tables:t-huelle",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 12 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1228,7 +1228,7 @@
     "entity": "tables:t-proj",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 10 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1263,7 +1263,7 @@
     "entity": "tables:t-boden",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 9 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {
@@ -1298,7 +1298,7 @@
     "entity": "tables:t-parzelle",
     "date": "2026-04-20",
     "action": "Abgeglichen",
-    "detail": "Automatischer Scan des Quellsystems, 10 Felder erkannt",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
     "user": "System"
   },
   {

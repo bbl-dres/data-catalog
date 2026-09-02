@@ -17,8 +17,7 @@
     "helpText": "Anleitungen und Hintergrundinformationen zum Katalog.",
     "links": [
       { "label": "Handbuch zum Datenkatalog", "route": "#/manual" },
-      { "label": "API-Dokumentation", "route": "#/api" },
-      { "label": "Datengovernance BBL", "url": "https://www.bbl.admin.ch/", "external": true }
+      { "label": "API-Dokumentation", "route": "#/api" }
     ],
     "contactText": "Fragen zum Katalog beantwortet das Team DRES – Digital Solutions.",
     "email": "datenkatalog@bbl.admin.ch",

@@ -13,7 +13,7 @@
     "intro": "Der Datenkatalog zeigt, welche Daten das BBL im Immobilienmanagement führt, was sie bedeuten, wo sie liegen und wer dafür verantwortlich ist. Er richtet sich an Fachpersonen, Datenverantwortliche und Entwicklerinnen. Er beantwortet:",
     "questions": [
       "Was bedeutet ein Begriff wie «Mietobjekt», unabhängig vom System?",
-      "In welcher Tabelle liegen die Daten, und ist sie zertifiziert?",
+      "In welcher Tabelle liegen die Daten, und wer ist dafür Datenhalter?",
       "Wer verantwortet eine Domäne?",
       "Welche Wertelisten gelten, und woher stammen sie?"
     ],
@@ -23,12 +23,12 @@
     ]
   },
   "gouvernanz": {
-    "intro": "Die Rollen folgen dem Rollenmodell der Nationalen Datenbewirtschaftung (NaDB, BFS). Jede Domäne und jedes System nennt die verantwortliche Organisationseinheit und die Personen in diesen Rollen.",
+    "intro": "Die Rollen folgen dem Rollenmodell der Nationalen Datenbewirtschaftung (NaDB, BFS). Jede Domäne und jedes System nennt die verantwortliche Organisationseinheit und die Personen in diesen Rollen. Datentabellen übernehmen den Datenhalter ihres Systems, sofern kein eigener Datenhalter angegeben ist.",
     "roles": [
       { "label": "Datenverantwortung", "nadb": "Verantwortliche Organisationseinheit", "en": "Bereich / Kreis", "task": "Erste Anlaufstelle bei fachlichen Fragen zu einer Domäne." },
       { "label": "Dateneigner", "nadb": "Dateninhaber", "en": "Data Owner", "task": "Entscheidet über Zweck, Qualität, Zugriff und Schutz; genehmigt Definitionen und Statuswechsel." },
       { "label": "Datenverwalter", "nadb": "Lokaler Datenverwalter", "en": "Local Data Steward", "task": "Pflegt Geschäftsobjekte, Attribute und Wertelisten im Repository." },
-      { "label": "Systembetrieb", "nadb": "Lokaler Datenhalter", "en": "Local Data Custodian", "task": "Betreibt das Quellsystem und stellt die Daten bereit." },
+      { "label": "Datenhalter", "nadb": "Lokaler Datenhalter", "en": "Local Data Custodian", "task": "Betreut das Quellsystem oder die Datentabelle und stellt die Daten bereit." },
       { "label": "Nutzende", "nadb": "Datennutzer / Datenbearbeiter", "en": "Data Consumer / Producer", "task": "Lesen im Katalog nach; arbeiten in den Quellsystemen." }
     ],
     "workflowTitle": "Arbeitsablauf",
@@ -36,7 +36,7 @@
     "workflow": [
       { "title": "Melden", "who": "Fachbereich", "text": "Neues Geschäftsobjekt, Korrektur oder geänderte Verantwortung an den Datenverwalter der Domäne." },
       { "title": "Modellieren", "who": "Datenverwalter", "text": "Erfassung im Repository nach Modellierungsmethode Bund: Definition, Attribute, Normreferenz, Tabellen, Wertelisten." },
-      { "title": "Freigeben", "who": "Dateneigner", "text": "Prüfung und Statuswechsel von «Entwurf» auf «Gültig»; Tabellen bei Bedarf zertifizieren." },
+      { "title": "Freigeben", "who": "Dateneigner", "text": "Prüfung und Statuswechsel von «Entwurf» auf «Gültig»." },
       { "title": "Abgleichen", "who": "automatisch, täglich", "text": "Der Katalog übernimmt den freigegebenen Stand und vermerkt das Datum unter «Letzter Abgleich»." }
     ],
     "reportTitle": "Änderungen melden",
@@ -54,14 +54,14 @@
     "coreTitle": "Gemeinsame Kernattribute",
     "coreIntro": "Jeder Eintrag – Domäne, System, Geschäftsobjekt, Attribut, Datentabelle, Werteliste – trägt denselben Kern. Die Feldnamen sind englisch; die Spalten zeigen die Entsprechung in DCAT-AP CH / I14Y, ArchiMate und DMBOK.",
     "extTitle": "Typspezifische Attribute",
-    "statusTitle": "Status und Zertifizierung"
+    "statusTitle": "Status"
   },
   "nutzen": {
     "steps": [
       { "title": "Suchen", "text": "Begriff eingeben, Enter. Gefunden wird nach Name, Beschreibung und technischem Namen." },
       { "title": "Navigieren", "text": "Der Baum gliedert Geschäftsobjekte nach Domäne, Datentabellen nach System, Referenzdaten nach Quelle. Domäne oder System anklicken öffnet den Steckbrief." },
       { "title": "Gruppieren", "text": "Inhalte nach Domäne, Verantwortung, Status oder System ordnen; Kacheln oder Tabelle wählen." },
-      { "title": "Steckbrief lesen", "text": "Beschreibung, Kerndaten, Status, Ansprechpersonen; Register für Attribute, Beziehungen und Verlauf." },
+      { "title": "Steckbrief lesen", "text": "Beschreibung, Kerndaten, Status und Verantwortliche; Register für Attribute, Beziehungen und Verlauf." },
       { "title": "Exportieren", "text": "Über «Aktionen» als CSV, Excel oder PDF; maschinell über die API." }
     ]
   },
@@ -73,7 +73,6 @@
     { "q": "Kann ich im Katalog etwas ändern?", "a": "Nein. Der Katalog ist eine Lesesicht. Änderungen erfasst der Datenverwalter im Architektur-Repository; sie erscheinen mit dem nächsten Abgleich." },
     { "q": "Wie aktuell sind die Inhalte?", "a": "Der Abgleich läuft täglich. Das Datum steht in jedem Steckbrief unter «Abgeglichen»." },
     { "q": "Warum gibt es «Gebäude» zweimal?", "a": "Einmal als Geschäftsobjekt (fachlicher Begriff) und einmal als Datentabelle in SAP RE-FX und GIS IMMO (technische Umsetzung). Der Steckbrief verknüpft beide." },
-    { "q": "Was heisst «Zertifiziert»?", "a": "Die Datentabelle ist vom Dateneigner als verlässliche Quelle für das Geschäftsobjekt bestätigt. Nicht zertifizierte Tabellen sind beschrieben, aber ohne Gewähr." },
     { "q": "An wen wende ich mich bei einer falschen Beschreibung?", "a": "An den im Steckbrief genannten Datenverwalter der Domäne. Fragen zum Katalog selbst an DRES – Digital Solutions über «Hilfe und Kontakt»." },
     { "q": "Wer darf den Katalog nutzen?", "a": "Alle Mitarbeitenden des BBL. Die API ist über eIAM zugänglich; publizierte Datenprodukte erscheinen zusätzlich auf I14Y." },
     { "q": "Kann ich Daten selbst herunterladen?", "a": "Ja, über «Aktionen» als CSV, Excel oder PDF. Der Katalog enthält Metadaten, keine Fachdaten; diese bleiben in den Quellsystemen." }
@@ -83,7 +82,6 @@
     { "term": "Geschäftsobjekt", "text": "Systemneutraler Fachbegriff mit Definition und Attributen (Business Object gemäss ArchiMate, skos:Concept)." },
     { "term": "Attribut", "text": "Fachliche Eigenschaft eines Geschäftsobjekts mit Werttyp und Schlüsselrolle (PK, FK)." },
     { "term": "Datentabelle", "text": "Physische Tabelle in einem Quellsystem, die ein Geschäftsobjekt realisiert." },
-    { "term": "Zertifiziert", "text": "Die Datentabelle ist vom Dateninhaber als verlässliche Quelle für das Geschäftsobjekt bestätigt." },
     { "term": "Referenzdaten", "text": "Wertelisten und Codes mit endlichem Wertevorrat (z.B. GWR Gebäudekategorie)." },
     { "term": "Führendes System", "text": "System, in dem eine Information erfasst wird; für den Katalog das Architektur-Repository." },
     { "term": "DCAT-AP CH", "text": "Schweizer Anwendungsprofil des Data Catalog Vocabulary (eCH-0200); Grundlage von Modell und Export." },

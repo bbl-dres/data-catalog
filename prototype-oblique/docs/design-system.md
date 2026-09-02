@@ -18,7 +18,7 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 |---|---|---|
 | Primitives | `--ob-red-500`, `--ob-secondary-800`, `--ob-font-size-xl`, `--ob-space-lg`, `--ob-radius-lg`, `--ob-shadow-default`, `--ob-z-widget` | Raw values, only used to define the tiers below |
 | Semantic | `--ob-color-text`, `--ob-color-surface`, `--ob-color-border-strong`, `--ob-color-accent`, `--ob-color-link`, `--ob-color-focus`, `--ob-color-success` | What `main.css` uses |
-| Component | `--ob-control-height`, `--ob-header-logo-width`, `--ob-tree-panel-basis`, `--ob-table-row-padding`, `--ob-graph-height` | Sizes that several components share |
+| Component | `--ob-control-height`, `--ob-header-logo-flag-width`, `--ob-header-logo-name-width`, `--ob-tree-panel-basis`, `--ob-table-row-padding`, `--ob-graph-height` | Sizes that several components share |
 
 ## Mapping
 

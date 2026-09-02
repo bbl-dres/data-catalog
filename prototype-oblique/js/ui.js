@@ -36,17 +36,48 @@
     return m ? `${+m[3]}.${+m[2]}.${m[1]}` : iso;
   };
 
-  /** Table shell. columns: [{label, width}], rowsHtml: string of <tr>…</tr>. */
-  ui.table = function (columns, rowsHtml) {
-    const head = columns.map(c => `<th scope="col"${c.width ? ` style="width:${c.width}"` : ''}>${ui.esc(c.label)}</th>`).join('');
+  /** Stable, locale-aware table sort. `getValues(row)` returns one raw value per column. */
+  ui.sortRows = function (rows, sort, getValues) {
+    if (!sort || !Number.isInteger(sort.column)) return rows.slice();
+    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+    const direction = sort.direction === 'desc' ? -1 : 1;
+    const value = row => (getValues(row) || [])[sort.column];
+    const empty = v => v == null || String(v).trim() === '' || String(v).trim() === '–';
+    return rows.map((row, index) => ({ row, index })).sort((a, b) => {
+      const av = value(a.row), bv = value(b.row);
+      if (empty(av) && empty(bv)) return a.index - b.index;
+      if (empty(av)) return 1;
+      if (empty(bv)) return -1;
+      const result = typeof av === 'number' && typeof bv === 'number'
+        ? av - bv
+        : collator.compare(String(av).trim(), String(bv).trim());
+      return result ? result * direction : a.index - b.index;
+    }).map(item => item.row);
+  };
+
+  /** Table shell. Options `{ key, sort }` make column headers sortable. */
+  ui.table = function (columns, rowsHtml, options) {
+    const opts = options || {};
+    const head = columns.map((c, i) => {
+      const sortable = !!opts.key && c.sortable !== false;
+      const active = sortable && opts.sort && opts.sort.column === i;
+      const direction = active ? opts.sort.direction : null;
+      const ariaSort = direction === 'desc' ? 'descending' : 'ascending';
+      const next = active && direction === 'asc' ? 'descending' : 'ascending';
+      const content = sortable
+        ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
+        : ui.esc(c.label);
+      return `<th scope="col"${active ? ` aria-sort="${ariaSort}"` : ''}${c.width ? ` style="width:${c.width}"` : ''}>${content}</th>`;
+    }).join('');
     return `<div class="ob-table-wrap"><table class="ob-table"><thead><tr>${head}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
   };
 
-  /** Table row. cells: html string | {html, cls}. href makes the whole row clickable. */
-  ui.tr = function (cells, href) {
-    const tds = cells.map(c => {
+  /** Table row. cells: html string | {html, cls}. Column labels support mobile cards. */
+  ui.tr = function (cells, href, columns) {
+    const tds = cells.map((c, i) => {
       const o = c && typeof c === 'object' ? c : { html: c };
-      return `<td${o.cls ? ` class="${o.cls}"` : ''}>${o.html == null ? '' : o.html}</td>`;
+      const label = o.label || (columns && columns[i] && columns[i].label) || '';
+      return `<td${label ? ` data-label="${ui.esc(label)}"` : ''}${o.cls ? ` class="${o.cls}"` : ''}>${o.html == null ? '' : o.html}</td>`;
     }).join('');
     return `<tr${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
   };

@@ -14,11 +14,11 @@ All data is static JSON under `data/`, loaded once at start-up. Field names foll
 | `products.json` | Data products (dcat:Dataset) | `products` |
 | `apis.json` | API directory (dcat:DataService) | `apis` |
 | `changelog.json` | Change history per entity | – |
-| `model.json` | Information model: kind labels and icons, navigation models, core fields, type-specific fields, statuses, canonical orders | – |
+| `model.json` | Information model: kind labels, collection descriptions and icons, navigation models, core fields, type-specific fields, statuses, canonical orders | – |
 | `config.json` | App configuration, help and footer content | – |
 | `i18n.json` | UI strings per language | – |
 | `manual.json` | Handbook chapters | – |
-| `api-docs.json` | Endpoint list for the API page | – |
+| `swagger.json` | OpenAPI 3.1 contract rendered by Swagger UI | – |
 
 ## Core fields (every entity)
 
@@ -41,11 +41,11 @@ All data is static JSON under `data/`, loaded once at start-up. Field names foll
 
 **domains**: `contact { email, phone }`.
 
-**systems**: `technology`, `operator`, `lastScan`, `contact`.
+**systems**: `technology`, `dataCustodian`, optional `informationUrl`, `contact`. The catalogue does not actively scan systems; `modified` records the last known change.
 
 **objects**: `domain` (domain id), `normReference`, `termdat [{ name, id, url }]`, `attributes [{ identifier, name, description, valueType, keyRole, mandatory, position }]`. `valueType` is one of `Text`, `Ganzzahl`, `Dezimal`, `Datum`, `Code`, `Geometrie`; `keyRole` is `PK`, `FK` or `null`. An attribute is addressed as `<objectId>/<attributeId>` (route `#/objects/<objectId>/attributes/<attributeId>`).
 
-**tables**: `technicalName`, `system` (system id), `realizes` (object id), `certified` (boolean, shown as Zertifiziert / Nicht zertifiziert), `lastScan`, `fields [{ name, description, dataType, keyRole }]`.
+**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), `realizes` (object id), `fields [{ name, description, dataType, keyRole }]`. The catalogue does not actively scan or certify tables; `modified` records the last known change.
 
 **codelists** (`refs`): `sourceAuthority`, `businessObject` (object id), `values [{ code, label }]`. An empty `values` array means "noch nicht erfasst".
 
@@ -67,4 +67,4 @@ The fictional content was ported from the Claude Design wireframe by [generate-d
 python docs/generate-data.py data
 ```
 
-`config.json`, `i18n.json`, `model.json`, `manual.json` and `api-docs.json` are maintained by hand. For small content changes edit the JSON files directly; keep ids stable because they appear in URLs and cross-references.
+`config.json`, `i18n.json`, `model.json`, `manual.json` and `swagger.json` are maintained by hand. For small content changes edit the JSON files directly; keep ids stable because they appear in URLs and cross-references.

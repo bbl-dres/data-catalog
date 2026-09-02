@@ -142,16 +142,16 @@ PERSONAL = {'person', 'kontakt', 'mietvertrag', 'mietobjekt', 'unternehmen'}
 
 # ---------------------------------------------------------------- tables
 TABLES = [
-    dict(id='t-we', name='Wirtschaftseinheit', tech='VIBDBU', system='sap', obj='wirtschaftseinheit', cert=True, date='2026-04-20', desc='Stammdaten der Wirtschaftseinheiten (Immobilienbuchhaltung).'),
-    dict(id='t-geb-sap', name='Gebäude', tech='VIBDBE', system='sap', obj='gebaeude', cert=True, date='2026-04-20', desc='Gebäudestammdaten in SAP RE-FX inkl. Adresse und Zuordnung zur Wirtschaftseinheit.'),
-    dict(id='t-bem', name='Bemessungen', tech='VIBDMEAS', system='sap', obj='bemessung', cert=False, date='2026-04-20', desc='Flächen- und Volumenbemessungen je Objekt.'),
-    dict(id='t-mo', name='Mietobjekt', tech='VIBDRO', system='sap', obj='mietobjekt', cert=True, date='2026-03-12', desc='Vermietbare Einheiten mit Flächen und Nutzungsart.'),
-    dict(id='t-mv', name='Mietvertrag', tech='VICNCN', system='sap', obj='mietvertrag', cert=True, date='2026-03-12', desc='Mietverträge mit Laufzeiten, Partnern und Konditionen.'),
-    dict(id='t-geb-gis', name='Gebäude', tech='BUILDING', system='gis', obj='gebaeude', cert=True, date='2026-04-20', desc='Gebäudegeometrien und GWR-Attribute.'),
-    dict(id='t-huelle', name='Gebäudehülle', tech='BUILDING_ENVELOPE', system='gis', obj='gebaeude', cert=False, date='2026-04-20', desc='Fassaden- und Dachflächen mit Materialisierung.'),
-    dict(id='t-proj', name='Bauprojekt', tech='CONSTRUCTION_PROJECT', system='gis', obj='areal', cert=False, date='2026-04-20', desc='Laufende und geplante Bauprojekte mit Perimeter.'),
-    dict(id='t-boden', name='Bodenbedeckung', tech='LAND_COVER', system='gis', obj='bodenbedeckung', cert=False, date='2026-04-20', desc='Bodenbedeckungsflächen gemäss amtlicher Vermessung.'),
-    dict(id='t-parzelle', name='Grundstück', tech='PARCEL', system='gis', obj='grundstueck', cert=True, date='2026-04-20', desc='Liegenschaften mit EGRID und Grundbuchdaten.'),
+    dict(id='t-we', name='Wirtschaftseinheit', tech='VIBDBU', system='sap', obj='wirtschaftseinheit', date='2026-04-20', desc='Stammdaten der Wirtschaftseinheiten (Immobilienbuchhaltung).'),
+    dict(id='t-geb-sap', name='Gebäude', tech='VIBDBE', system='sap', obj='gebaeude', date='2026-04-20', desc='Gebäudestammdaten in SAP RE-FX inkl. Adresse und Zuordnung zur Wirtschaftseinheit.'),
+    dict(id='t-bem', name='Bemessungen', tech='VIBDMEAS', system='sap', obj='bemessung', date='2026-04-20', desc='Flächen- und Volumenbemessungen je Objekt.'),
+    dict(id='t-mo', name='Mietobjekt', tech='VIBDRO', system='sap', obj='mietobjekt', date='2026-03-12', desc='Vermietbare Einheiten mit Flächen und Nutzungsart.'),
+    dict(id='t-mv', name='Mietvertrag', tech='VICNCN', system='sap', obj='mietvertrag', date='2026-03-12', desc='Mietverträge mit Laufzeiten, Partnern und Konditionen.'),
+    dict(id='t-geb-gis', name='Gebäude', tech='BUILDING', system='gis', obj='gebaeude', date='2026-04-20', desc='Gebäudegeometrien und GWR-Attribute.'),
+    dict(id='t-huelle', name='Gebäudehülle', tech='BUILDING_ENVELOPE', system='gis', obj='gebaeude', date='2026-04-20', desc='Fassaden- und Dachflächen mit Materialisierung.'),
+    dict(id='t-proj', name='Bauprojekt', tech='CONSTRUCTION_PROJECT', system='gis', obj='areal', date='2026-04-20', desc='Laufende und geplante Bauprojekte mit Perimeter.'),
+    dict(id='t-boden', name='Bodenbedeckung', tech='LAND_COVER', system='gis', obj='bodenbedeckung', date='2026-04-20', desc='Bodenbedeckungsflächen gemäss amtlicher Vermessung.'),
+    dict(id='t-parzelle', name='Grundstück', tech='PARCEL', system='gis', obj='grundstueck', date='2026-04-20', desc='Liegenschaften mit EGRID und Grundbuchdaten.'),
 ]
 SQL_TYPE = {'Text': 'VARCHAR(40)', 'Datum': 'DATE', 'Ganzzahl': 'INTEGER', 'Dezimal': 'DECIMAL(15,2)', 'Code': 'CHAR(4)'}
 def fields_of(t):
@@ -238,19 +238,19 @@ def core(kind, e):
     else:
         classification = 'intern'
     personal = obj['id'] in PERSONAL if obj else any(o in PERSONAL for o in e['objs']) if kind == 'products' else (kind == 'systems' and e['id'] == 'sap')
-    scanned = kind in ('tables', 'systems')
+    technical_asset = kind in ('tables', 'systems')
     status = 'Gültig' if kind == 'tables' else e.get('status', 'Gültig')
     return dict(
         identifier=e['id'], name=e['name'], description=e['desc'],
         status=status,
-        version=e.get('version') or ('2023.1' if kind == 'refs' else '2025.12' if scanned else '2024.1'),
-        created='2022-01-14' if scanned else '2021-09-03',
+        version=e.get('version') or ('2023.1' if kind == 'refs' else '2025.12' if technical_asset else '2024.1'),
+        created='2022-01-14' if technical_asset else '2021-09-03',
         modified=e.get('date') or ('2026-02-03' if status == 'Entwurf' else '2024-06-01'),
         responsibleOrg=e.get('resp') or dom['resp'],
         dataOwner=owner, dataSteward=steward,
         classification=classification, personalData=bool(personal),
-        source='Quellsystem-Scan' if scanned else 'Architektur-Repository',
-        sourceDetail='Metadaten-Scanner' if scanned else 'Innovator / smartfacts',
+        source='Architektur-Repository',
+        sourceDetail='Innovator / smartfacts',
         synced='2024-06-01',
     )
 
@@ -265,7 +265,7 @@ dump('domains.json', domains)
 systems = []
 for s in SYSTEMS:
     c = core('systems', s)
-    c.update(technology=s['tech'], operator=s['resp'], lastScan=s['date'], contact=CONTACT[s['resp']])
+    c.update(technology=s['tech'], dataCustodian=s['resp'], contact=CONTACT[s['resp']])
     systems.append(c)
 dump('systems.json', systems)
 
@@ -281,7 +281,9 @@ dump('objects.json', objects)
 tables = []
 for t in TABLES:
     c = core('tables', t)
-    c.update(technicalName=t['tech'], system=t['system'], realizes=t['obj'], certified=t['cert'], lastScan=t['date'], fields=fields_of(t))
+    c.update(technicalName=t['tech'], system=t['system'], realizes=t['obj'], fields=fields_of(t))
+    if t.get('dataCustodian'):
+        c['dataCustodian'] = t['dataCustodian']
     tables.append(c)
 dump('tables.json', tables)
 
@@ -328,7 +330,7 @@ for kind, lst in [('domains', domains), ('systems', systems), ('objects', object
         key = kind + ':' + c['identifier']
         n = rows_count(kind, c)
         entries = [
-            dict(date=c['modified'], action='Abgeglichen', detail=('Automatischer Scan des Quellsystems, %d Felder erkannt' % n) if kind == 'tables' else 'Abgleich mit Architektur-Repository (Innovator / smartfacts)', user='System'),
+            dict(date=c['modified'], action='Abgeglichen', detail='Abgleich mit Architektur-Repository (Innovator / smartfacts)', user='System'),
             dict(date='2026-02-03', action='Beschreibung geändert', detail='Beschreibung präzisiert und Normreferenz ergänzt', user=who[0]),
             dict(date='2024-06-01', action='Status geändert', detail='Entwurf → ' + c['status'], user=who[1]),
         ]
