@@ -161,7 +161,7 @@
   const GROUP_IDS = {
     objects: ['none', 'domain', 'resp', 'status'],
     tables: ['none', 'system', 'domain', 'status'],
-    refs: ['none', 'source', 'domain', 'status'],
+    refs: ['none', 'domain', 'status'],
     products: ['none', 'domain', 'access', 'status'],
     apis: ['none', 'domain', 'system', 'status'],
     domains: ['none', 'resp'],
@@ -169,7 +169,7 @@
   };
   data.defaultGroup = function (kind) {
     if (kind === 'objects') return data.config.defaultGrouping || 'domain';
-    return { tables: 'system', refs: 'source' }[kind] || 'none';
+    return { tables: 'system', refs: 'domain' }[kind] || 'none';
   };
   data.groupOptions = function (kind) {
     return (GROUP_IDS[kind] || []).map(id => ({ id, label: t('group.' + id) }));

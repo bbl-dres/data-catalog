@@ -14,7 +14,7 @@ Data catalog prototype for the Swiss Federal Office for Buildings and Logistics 
 - Profile pages ("Steckbrief") with tabs: Übersicht, Attribute / Felder / Werte, Beziehungen (pannable and zoomable orbit graph), Verlauf
 - Search with grouped suggestions, keyboard navigation and a results page
 - Handbook (Handbuch) with chapter navigation and scroll spy, an OpenAPI 3.1 reference rendered by Swagger UI, and a help/contact popover
-- CSV export and print-to-PDF from the Aktionen menu (Excel and DCAT-AP CH exports are placeholders)
+- CSV export and print-to-PDF from the Exportieren menu (Excel and DCAT-AP CH exports are placeholders)
 - Deep-linkable hash routes: section, entity, tab, page, view mode, grouping, search query and handbook chapter are all in the URL
 - Two navigation models (entity-first or container-first tree), switched in `data/config.json` or with `?nav=container`
 - German UI, i18n-ready (all strings in `data/i18n.json`)

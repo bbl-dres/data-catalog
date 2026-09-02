@@ -94,9 +94,11 @@
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
     };
     if (ctx.isList) {
-      const g = state.groupBy[route.kind] || data.defaultGroup(route.kind);
+      const requestedGroup = state.groupBy[route.kind] || data.defaultGroup(route.kind);
+      const availableGroups = data.groupOptions(route.kind);
+      const g = availableGroups.some(o => o.id === requestedGroup) ? requestedGroup : data.defaultGroup(route.kind);
       ctx.groupBy = g;
-      ctx.groupOptions = data.groupOptions(route.kind).map(o => Object.assign(o, { active: o.id === g }));
+      ctx.groupOptions = availableGroups.map(o => Object.assign(o, { active: o.id === g }));
       ctx.groupLabel = (ctx.groupOptions.find(o => o.id === g) || ctx.groupOptions[0] || { label: '' }).label;
       ctx.groups = data.buildGroups(route.kind, g, ctx.mode === 'table').map(x => Object.assign(x, { open: !state.closed[x.id] }));
       ctx.columns = data.columns(route.kind);
@@ -131,7 +133,7 @@
         case 'tables': { const sy = data.sysOf(e.system); crumbs.push(container ? sec('systems') : sec('tables'), ent('systems', sy.identifier, sy.name), { label: `${e.name} (${e.technicalName})` }); break; }
         case 'products': crumbs.push(sec('products'), ent('domains', dom.identifier, dom.name), { label: e.name }); break;
         case 'apis': crumbs.push(sec('apis'), { label: `${e.name} ${e.version}` }); break;
-        case 'refs': crumbs.push(sec('refs'), { label: e.sourceAuthority, href: router.listHref('refs') }, { label: e.name }); break;
+        case 'refs': crumbs.push(sec('refs'), ent('domains', dom.identifier, dom.name), { label: e.name }); break;
         case 'domains': crumbs.push(container ? sec('domains') : sec('objects'), { label: e.name }); break;
         case 'systems': crumbs.push(container ? sec('systems') : sec('tables'), { label: e.name }); break;
       }
@@ -176,13 +178,13 @@
     if (!ctx.actions.length) return '';
     const open = ctx.state.menu === 'actions';
     const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}">${esc(a.label)}</button>`).join('')}</div>` : '';
-    return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${esc(t('toolbar.actions'))} ${icon('chevron_down', 'sm')}</button>${menu}</div>`;
+    return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${esc(t('toolbar.export'))} ${icon('chevron_down', 'sm')}</button>${menu}</div>`;
   };
 
   views.titleRow = function (ctx, title, eyebrow, modifier, description, descriptionClass) {
     return `<header class="ob-view-header${modifier ? ` ${modifier}` : ''}">
       ${eyebrow ? `<div class="ob-entity-type">${esc(eyebrow)}</div>` : ''}
-      <div class="ob-title-row"><div class="ob-title-copy"><h1>${esc(title)}</h1>${description ? `<p class="ob-prose ${descriptionClass || 'ob-view-description'}" title="${esc(description)}">${esc(description)}</p>` : ''}</div>${views.actionsMenu(ctx)}</div>
+      <div class="ob-title-row"><div class="ob-title-copy"><h1>${esc(title)}</h1>${description ? `<p class="ob-prose ${descriptionClass || 'ob-view-description'}" title="${esc(description)}">${esc(description)}</p>` : ''}</div></div>
     </header>`;
   };
 
@@ -208,7 +210,7 @@
     const tabs = modes.map(([id, label]) => `<button type="button" role="tab" id="view-tab-${id}" class="ob-tab ob-view-tab" aria-selected="${ctx.mode === id}" aria-controls="collection-view-panel" tabindex="${ctx.mode === id ? '0' : '-1'}" data-action="set-view" data-view="${id}">${esc(label)}</button>`).join('');
     return `<div class="ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
-      ${views.groupMenu(ctx)}
+      <div class="ob-local-actions">${views.groupMenu(ctx)}${views.actionsMenu(ctx)}</div>
     </div>`;
   };
 
@@ -253,7 +255,7 @@
         });
         return;
       }
-      const gBy = { objects: 'domain', tables: 'system', refs: 'source', products: 'domain', apis: 'domain' }[sec];
+      const gBy = { objects: 'domain', tables: 'system', refs: 'domain', products: 'domain', apis: 'domain' }[sec];
       data.buildGroups(sec, gBy).forEach(g => {
         const gOpen = !!state.treeOpen[g.id] || (!!treeE && treeE.kind === sec && g.items.some(i => i.identifier === treeE.id));
         const cont = gBy === 'domain' ? ['domains', data.domains.find(d => d.name === g.title)] : gBy === 'system' ? ['systems', data.systems.find(s => s.name === g.title)] : null;
@@ -422,7 +424,7 @@
       if (route.view === 'home') content = views.home(ctx);
       else if (route.view === 'list') content = `${views.collectionHeader(ctx)}${views.collectionControls(ctx)}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${views.list(ctx)}</div>`;
       else if (route.view === 'search') content = views.viewHeader(ctx) + views.searchResults(ctx);
-      else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state);
+      else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state, views.actionsMenu(ctx));
       else content = views.viewHeader(ctx) + views.notFound();
       const path = ctx.crumbs.slice(1).map(c => c.label).join(' / ');
       body = views.toolbar(ctx) + views.drawerToggle('catalog-navigation', t('tree.open'), path, state) + `<div class="ob-catalog"><section class="ob-content">${content}</section>${views.tree(route, state)}</div>${views.drawerBackdrop(state)}`;

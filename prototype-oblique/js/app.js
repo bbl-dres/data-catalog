@@ -112,6 +112,7 @@
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
     requestAnimationFrame(revealActiveTab);
     scheduleTreeViewport();
+    updateBackToTop();
     if (route.view === 'api') requestAnimationFrame(renderSwagger);
   };
 
@@ -129,6 +130,20 @@
         panel.style.setProperty('--ob-tree-available-height', `${Math.max(160, Math.floor(window.innerHeight - top))}px`);
       });
     });
+  }
+
+  function updateBackToTop() {
+    const button = $('back-to-top');
+    if (!button) return;
+    const threshold = Math.max(400, window.innerHeight * 0.75);
+    const shouldBeHidden = window.scrollY <= threshold;
+    if (button.hidden !== shouldBeHidden) button.hidden = shouldBeHidden;
+  }
+
+  function backToTop() {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+    requestAnimationFrame(() => $('main').focus({ preventScroll: true }));
   }
 
   function renderSwagger() {
@@ -253,6 +268,7 @@
   }
   function onScroll() {
     scheduleTreeViewport();
+    updateBackToTop();
     if (!route || route.view !== 'manual' || hbLock) return;
     let cur = data.manual.chapters[0].id;
     data.manual.chapters.forEach(c => { const el = $('hb-' + c.id); if (el && el.getBoundingClientRect().top <= 120) cur = c.id; });
@@ -273,6 +289,7 @@
     const key = el.dataset.key;
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
+      case 'back-to-top': e.preventDefault(); backToTop(); return;
       case 'help-toggle': e.stopPropagation(); state.menu = state.menu === 'info' ? null : 'info'; state.suggest = false; app.render(); renderHelp(); return;
       case 'menu': e.stopPropagation(); state.menu = state.menu === el.dataset.menu ? null : el.dataset.menu; state.suggest = false; app.render(); renderHelp(); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
@@ -395,6 +412,9 @@
     $('brand-app').textContent = cfg.app.name;
     $('header-tools').innerHTML = views.headerTools(state);
     $('footer').innerHTML = views.footer();
+    const backToTopButton = $('back-to-top');
+    backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
+    backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
 
     const phoneMedia = window.matchMedia('(max-width: 600px)');
     state.isPhone = phoneMedia.matches;
@@ -415,6 +435,7 @@
     document.addEventListener('pointercancel', onPointerUp);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', scheduleTreeViewport, { passive: true });
+    window.addEventListener('resize', updateBackToTop, { passive: true });
     window.addEventListener('hashchange', app.onRoute);
 
     app.onRoute();

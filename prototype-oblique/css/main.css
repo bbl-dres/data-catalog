@@ -437,19 +437,23 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
 /* ---- View and detail headers ---------------------------------------------- */
 .ob-view-header { padding-bottom: var(--ob-space-default); }
 .ob-entity-type { margin-bottom: var(--ob-space-xs); color: var(--ob-color-text-tertiary); font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-semibold); letter-spacing: var(--ob-letter-spacing-caps); text-transform: uppercase; }
-.ob-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ob-space-default); }
-.ob-title-copy { flex: 1 1 auto; min-width: 0; }
+.ob-title-row, .ob-title-copy { min-width: 0; }
 .ob-title-row h1 { min-width: 0; overflow-wrap: anywhere; }
 .ob-view-description { margin-top: var(--ob-space-sm); color: var(--ob-color-text-secondary); }
 .ob-actions-menu { flex: none; }
 
-.ob-collection-controls {
+.ob-collection-controls, .ob-detail-controls {
   display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--ob-space-sm) var(--ob-space-lg);
   margin-bottom: var(--ob-space-lg); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border);
 }
-.ob-tabs-frame.ob-collection-tabs-frame { flex: 1 1 280px; min-width: 0; margin-bottom: -1px; }
-.ob-collection-tabs-frame .ob-tabs { border-bottom: 0; }
-.ob-collection-group { margin: 0 0 var(--ob-space-sm) auto; }
+.ob-tabs-frame.ob-collection-tabs-frame, .ob-tabs-frame.ob-detail-tabs-frame { flex: 1 1 280px; min-width: 0; margin-bottom: -1px; }
+.ob-collection-tabs-frame .ob-tabs, .ob-detail-tabs-frame .ob-tabs { border-bottom: 0; }
+.ob-local-actions {
+  display: flex; flex: none; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--ob-space-sm);
+  margin: 0 0 var(--ob-space-sm) auto;
+}
+.ob-local-actions:empty { display: none; }
+.ob-collection-group { margin: 0; }
 
 .ob-tabs-frame { position: relative; margin-bottom: var(--ob-space-lg); overflow: hidden; }
 .ob-tabs { display: flex; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
@@ -578,6 +582,16 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
 .ob-footer-version, .ob-footer-note { margin-top: 2px; }
 .ob-footer-note { text-align: right; }
 
+/* ---- Back to top ------------------------------------------------------------ */
+.ob-back-to-top {
+  position: fixed; right: var(--ob-space-lg); bottom: var(--ob-space-lg); z-index: var(--ob-z-widget);
+  height: var(--ob-touch-target); padding: 0 var(--ob-space-default); background: var(--ob-color-bg); box-shadow: var(--ob-shadow-default);
+}
+.ob-back-to-top .ob-icon-arrow_right { transform: rotate(-90deg); }
+.ob-back-to-top:not([hidden]) + .ob-toast-region {
+  bottom: calc(var(--ob-space-lg) + var(--ob-touch-target) + var(--ob-space-sm));
+}
+
 /* ---- Toast (status messages) ------------------------------------------------ */
 .ob-toast-region { position: fixed; right: var(--ob-space-lg); bottom: var(--ob-space-lg); display: flex; flex-direction: column; gap: var(--ob-space-sm); z-index: var(--ob-z-toast); max-width: min(420px, calc(100vw - 2 * var(--ob-space-lg))); }
 .ob-alert {
@@ -661,12 +675,10 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
   .ob-mobile-navigation { margin-bottom: var(--ob-space-default); }
   .ob-mobile-navigation-button { min-height: var(--ob-touch-target); }
   .ob-view-header { padding-bottom: var(--ob-space-md); }
-  .ob-title-row { flex-wrap: wrap; gap: var(--ob-space-sm); }
-  .ob-title-copy { flex-basis: 210px; }
   .ob-actions-menu .ob-button { min-height: var(--ob-touch-target); }
-  .ob-collection-controls { gap: 0 var(--ob-space-sm); margin-bottom: var(--ob-space-default); }
-  .ob-collection-tabs-frame { flex-basis: 220px; }
-  .ob-collection-group { margin-bottom: var(--ob-space-sm); }
+  .ob-collection-controls, .ob-detail-controls { gap: 0 var(--ob-space-sm); margin-bottom: var(--ob-space-default); }
+  .ob-tabs-frame.ob-collection-tabs-frame, .ob-tabs-frame.ob-detail-tabs-frame { flex-basis: 100%; }
+  .ob-local-actions { order: -1; flex: 1 0 100%; margin: 0 0 var(--ob-space-sm); }
   .ob-tabs-frame { margin-bottom: var(--ob-space-default); }
   .ob-tab { min-height: var(--ob-touch-target); padding: var(--ob-space-sm) var(--ob-space-default); }
   .ob-detail-sections { gap: var(--ob-space-lg); }
@@ -710,7 +722,12 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
   .ob-swagger .swagger-ui .opblock .opblock-summary-path-description-wrapper { min-width: 0; flex: 1 1 calc(100% - 76px); }
   .ob-swagger .swagger-ui .opblock .opblock-summary-description { flex-basis: 100%; }
   .ob-footer { padding: var(--ob-space-lg) var(--ob-space-default); }
+  .ob-back-to-top { right: var(--ob-space-default); bottom: var(--ob-space-default); width: var(--ob-touch-target); padding: 0; }
+  .ob-back-to-top span:last-child { display: none; }
   .ob-toast-region { right: var(--ob-space-default); bottom: var(--ob-space-default); max-width: calc(100vw - 2 * var(--ob-space-default)); }
+  .ob-back-to-top:not([hidden]) + .ob-toast-region {
+    bottom: calc(var(--ob-space-default) + var(--ob-touch-target) + var(--ob-space-sm));
+  }
 }
 @media (max-width: 360px) {
   .ob-header-app { font-size: var(--ob-font-size-md); }
@@ -720,7 +737,7 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
 /* ---- Print ------------------------------------------------------------------- */
 @media print {
   body { background: #fff; color: #000; font-size: 11pt; }
-  .ob-header-tools, .ob-main-nav, .ob-breadcrumb, .ob-toolbar, .ob-tree-panel, .ob-footer, .ob-toast-region,
+  .ob-header-tools, .ob-main-nav, .ob-breadcrumb, .ob-toolbar, .ob-tree-panel, .ob-footer, .ob-back-to-top, .ob-toast-region,
   .ob-tabs-frame, .ob-pager, .ob-skip-link, .ob-mobile-navigation, .ob-drawer-backdrop, .ob-actions-menu, .ob-relation-view-switch { display: none !important; }
   .ob-main { max-width: none; padding: 0; }
   .ob-catalog, .ob-manual { display: block; }

@@ -23,10 +23,10 @@
     return detail.tabs(e).some(x => x[0] === tab) ? tab : 'overview';
   };
 
-  detail.render = function (e, route, state) {
+  detail.render = function (e, route, state, actionsHtml) {
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);
-    const tabsHtml = `<div class="ob-tabs-frame"><div class="ob-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}</button>`).join('')}</div></div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}</button>`).join('')}</div></div><div class="ob-local-actions">${actionsHtml || ''}</div></div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state);

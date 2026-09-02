@@ -11,6 +11,8 @@
     "header.language": "Sprache",
     "header.languageCurrent": "Deutsch",
     "header.languagePending": "Weitere Sprachen folgen",
+    "backToTop.label": "Nach oben",
+    "backToTop.aria": "Zum Seitenanfang",
     "help.title": "Hilfe",
     "help.contact": "Kontakt",
 
@@ -40,7 +42,7 @@
     "sort.descending": "{column} absteigend sortieren",
 
     "toolbar.group": "Gruppieren",
-    "toolbar.actions": "Aktionen",
+    "toolbar.export": "Exportieren",
     "toolbar.view": "Darstellung",
     "toolbar.tiles": "Kacheln",
     "toolbar.table": "Tabelle",

@@ -63,6 +63,8 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 
 Master layout (header with logo and app title, main navigation, footer), breadcrumb, buttons (default, ghost, icon, pager), badge and chip, popover, dropdown menu, search field with listbox, view toggle, navigation tree, tables (zebra, hover, clickable rows), KPI cards, collapsible groups with tiles, tabs, description lists for facts, orbit graph, pagination, alert toast, empty state, handbook and API layouts, responsive rules at 905px and 600px, print stylesheet.
 
+Oblique provides general scrolling utilities, but its documentation, source component inventory and bundled Figma 15.1.2 library do not define a back-to-top UI component. The prototype therefore uses an application-specific pattern built from the standard secondary button, spacing, shadow, focus and icon tokens. It appears only after meaningful page scrolling, respects reduced-motion preferences, and uses a compact icon-only presentation on phones.
+
 Naming follows Oblique's flat kebab-case convention: `.ob-<component>-<part>`, variants as `.ob-<component>--<variant>`, states as `.is-*` or ARIA attributes (`aria-selected`, `aria-pressed`, `aria-current`, `aria-expanded`).
 
 ## Icons and fonts

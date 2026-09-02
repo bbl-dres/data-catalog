@@ -203,7 +203,8 @@ Recommendation:
 - Do not remove the page's `h1`.
 - For non-detail pages, simplify the component to a normal page title with a smaller responsive gap.
 - For detail pages, move the entity identity into `.ob-content`, above the tabs, so it stays visually associated with the profile rather than the catalog tree.
-- Move the detail **Aktionen** control into that entity-header row.
+- Keep the entity-header row focused on identity and description.
+- Rename the export-only **Aktionen** control to **Exportieren** and place it in a page-local control row beside the tabs. Keep it outside the tablist and out of the global `.ob-main-nav`.
 - Keep the global search separate from entity identity. On smaller screens it can collapse to a search control or remain as a full-width row.
 
 This is preferable to globally deleting the header because lists, search, handbook, API, and not-found pages still need a clear page title.
@@ -298,9 +299,9 @@ Global search
 
 +----------------------+  +---------------------------------------------+
 | Catalog tree         |  | DOMÄNE                                      |
-|                      |  | Architektonische Sicht          [Aktionen] |
+|                      |  | Architektonische Sicht                     |
 |                      |  |---------------------------------------------|
-|                      |  | Übersicht | Geschäftsobjekte | ...          |
+|                      |  | Übersicht | Geschäftsobjekte | [Exportieren]|
 |                      |  |                                             |
 |                      |  | Physische Gebäudehierarchie ...             |
 |                      |  |                                             |
@@ -318,7 +319,8 @@ Breadcrumb
 [Katalog öffnen] [Suchen]
 
 GESCHÄFTSOBJEKT
-Gebäude                                      [Aktionen]
+Gebäude
+[Exportieren]
 Scrollable tabs with overflow cue
 
 Lead description
