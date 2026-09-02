@@ -15,6 +15,7 @@ data-catalog/
 ├── prototype-lineage/      # Data Lineage Viewer
 ├── prototype-mermaid/     # Mermaid Diagram Editor (Simple Chart)
 ├── prototype-ea-immo/      # EA-IMMO conceptual data model for real estate
+├── prototype-oblique/      # Datenkatalog following the Oblique design system (see its docs/)
 ├── assets/                 # Shared repo assets (social preview only)
 └── docs/                   # Repo-level docs (market research, etc.)
 ```

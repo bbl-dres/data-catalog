@@ -1,0 +1,36 @@
+{
+  "app": {
+    "name": "Datenkatalog",
+    "organisation": "Bundesamt für Bauten und Logistik",
+    "version": "0.4.0",
+    "badge": "Prototyp",
+    "footerNote": "Prototyp, fiktive Inhalte – nur zur Demonstration",
+    "language": "de",
+    "user": { "name": "David Reber", "initials": "DR" }
+  },
+  "navModel": "entity",
+  "defaultGrouping": "domain",
+  "showTreeCounts": true,
+  "compactTables": false,
+  "help": {
+    "intro": "Der Datenkatalog dokumentiert die Geschäftsobjekte, Datentabellen und Referenzdaten des BBL. Er richtet sich an Fachpersonen, Datenverantwortliche und Entwicklerinnen.",
+    "helpText": "Anleitungen und Hintergrundinformationen zum Katalog.",
+    "links": [
+      { "label": "Handbuch zum Datenkatalog", "route": "#/manual" },
+      { "label": "API-Dokumentation", "route": "#/api" },
+      { "label": "Datengovernance BBL", "url": "https://www.bbl.admin.ch/", "external": true }
+    ],
+    "contactText": "Fragen zum Katalog beantwortet das Team DRES – Digital Solutions.",
+    "email": "datenkatalog@bbl.admin.ch",
+    "phone": "+41 58 465 50 00",
+    "hours": "Mo–Fr, 08:00–12:00 und 13:30–17:00",
+    "formLabel": "Kontaktformular",
+    "formUrl": "https://www.bbl.admin.ch/"
+  },
+  "footerLinks": [
+    { "label": "Rechtliches", "url": "https://www.admin.ch/gov/de/start/rechtliches.html" },
+    { "label": "Barrierefreiheit", "url": "https://www.admin.ch/gov/de/start/barrierefreiheit.html" },
+    { "label": "Hilfe", "route": "#/manual" },
+    { "label": "Kontakt", "url": "mailto:datenkatalog@bbl.admin.ch" }
+  ]
+}

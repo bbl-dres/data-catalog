@@ -1,0 +1,70 @@
+# Data model
+
+All data is static JSON under `data/`, loaded once at start-up. Field names follow the catalog information model described in the handbook (DCAT-AP CH / I14Y, ArchiMate and DMBOK aligned). Dates are ISO `yyyy-mm-dd`; the UI formats them as `d.m.yyyy`. Content is fictional.
+
+## Files
+
+| File | Content | Entity kind |
+|---|---|---|
+| `domains.json` | Domains (Domänen) | `domains` |
+| `systems.json` | Source systems (Systeme) | `systems` |
+| `objects.json` | Business objects with embedded attributes | `objects`, `attrs` |
+| `tables.json` | Data tables with embedded fields | `tables` |
+| `codelists.json` | Reference data (Wertelisten) with embedded values | `refs` |
+| `products.json` | Data products (dcat:Dataset) | `products` |
+| `apis.json` | API directory (dcat:DataService) | `apis` |
+| `changelog.json` | Change history per entity | – |
+| `model.json` | Information model: kind labels and icons, navigation models, core fields, type-specific fields, statuses, canonical orders | – |
+| `config.json` | App configuration, help and footer content | – |
+| `i18n.json` | UI strings per language | – |
+| `manual.json` | Handbook chapters | – |
+| `api-docs.json` | Endpoint list for the API page | – |
+
+## Core fields (every entity)
+
+| Field | Type | Meaning | DCAT-AP CH |
+|---|---|---|---|
+| `identifier` | string | Stable id, used in URLs | `dct:identifier` |
+| `name` | string | Display name | `dct:title` |
+| `description` | string | Definition | `dct:description` |
+| `status` | `Gültig` \| `Entwurf` \| `Zurückgezogen` | Lifecycle status | `adms:status` |
+| `version` | string | | `owl:versionInfo` |
+| `created`, `modified` | date | | `dct:issued`, `dct:modified` |
+| `responsibleOrg` | string | Responsible organisational unit | `dct:publisher` |
+| `dataOwner`, `dataSteward` | string | Persons in the NaDB roles | `dcat:contactPoint` |
+| `classification` | `öffentlich` \| `intern` \| `vertraulich` \| `geheim` | | `dct:accessRights` |
+| `personalData` | boolean | Contains personal data | DSG flag |
+| `source`, `sourceDetail` | string | System of record and tool | `prov:wasDerivedFrom` |
+| `synced` | date | Last harvest | `prov:generatedAtTime` |
+
+## Type-specific fields
+
+**domains**: `contact { email, phone }`.
+
+**systems**: `technology`, `operator`, `lastScan`, `contact`.
+
+**objects**: `domain` (domain id), `normReference`, `termdat [{ name, id, url }]`, `attributes [{ identifier, name, description, valueType, keyRole, mandatory, position }]`. `valueType` is one of `Text`, `Ganzzahl`, `Dezimal`, `Datum`, `Code`, `Geometrie`; `keyRole` is `PK`, `FK` or `null`. An attribute is addressed as `<objectId>/<attributeId>` (route `#/objects/<objectId>/attributes/<attributeId>`).
+
+**tables**: `technicalName`, `system` (system id), `realizes` (object id), `certified` (boolean, shown as Zertifiziert / Nicht zertifiziert), `lastScan`, `fields [{ name, description, dataType, keyRole }]`.
+
+**codelists** (`refs`): `sourceAuthority`, `businessObject` (object id), `values [{ code, label }]`. An empty `values` array means "noch nicht erfasst".
+
+**products**: `domain`, `accessRights`, `license`, `format`, `accrualPeriodicity`, `basedOn [object ids]`, `sourcedFrom [table ids]`, `servedBy [api ids]`, `attributes [{ name, description, valueType }]` (optional, may be empty).
+
+**apis**: `version`, `domain`, `system`, `protocol`, `endpointURL`, `documentation`, `accessRights`.
+
+**changelog**: `[{ entity: "<kind>:<identifier>", date, action, detail, user }]`. Attributes show the history of their business object.
+
+## Derived values
+
+Counts are always derived from the embedded lists (attributes, fields, values) so that the KPIs, tree counts and profile pages stay consistent. Relations are computed from the ids above: tables realise objects, code lists type objects, products are based on objects and sourced from tables, APIs serve products and belong to a system. The "Letzte Änderungen" list on the home page sorts all entities by `modified`.
+
+## Regenerating
+
+The fictional content was ported from the Claude Design wireframe by [generate-data.py](generate-data.py), which writes `domains.json`, `systems.json`, `objects.json`, `tables.json`, `codelists.json`, `products.json`, `apis.json` and `changelog.json`:
+
+```bash
+python docs/generate-data.py data
+```
+
+`config.json`, `i18n.json`, `model.json`, `manual.json` and `api-docs.json` are maintained by hand. For small content changes edit the JSON files directly; keep ids stable because they appear in URLs and cross-references.

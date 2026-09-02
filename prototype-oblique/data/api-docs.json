@@ -1,0 +1,45 @@
+{
+  "openapi": "3.1",
+  "title": "Datenkatalog BBL API",
+  "version": "0.4.0",
+  "servers": ["https://datenkatalog.bbl.admin.ch"],
+  "auth": "Bearer (eIAM)",
+  "specUrl": "https://datenkatalog.bbl.admin.ch/openapi.json",
+  "groups": [
+    {
+      "tag": "Geschäftsobjekte",
+      "description": "Fachliches Vokabular (skos:Concept)",
+      "endpoints": [
+        { "method": "GET", "path": "/api/v1/concepts", "summary": "Liste aller Geschäftsobjekte", "params": "domain, responsibility, status, q" },
+        { "method": "GET", "path": "/api/v1/concepts/{id}", "summary": "Steckbrief eines Geschäftsobjekts", "params": "id" },
+        { "method": "GET", "path": "/api/v1/concepts/{id}/attributes", "summary": "Attribute eines Geschäftsobjekts", "params": "id" },
+        { "method": "GET", "path": "/api/v1/concepts/{id}/relations", "summary": "Beziehungen zu Tabellen und Wertelisten", "params": "id" }
+      ]
+    },
+    {
+      "tag": "Datentabellen",
+      "description": "Physische Tabellen der Quellsysteme (bv:Dataset)",
+      "endpoints": [
+        { "method": "GET", "path": "/api/v1/systems", "summary": "Liste der Quellsysteme", "params": "–" },
+        { "method": "GET", "path": "/api/v1/datasets", "summary": "Liste aller Datentabellen", "params": "system, certified, q" },
+        { "method": "GET", "path": "/api/v1/datasets/{id}/fields", "summary": "Felder einer Datentabelle", "params": "id" }
+      ]
+    },
+    {
+      "tag": "Referenzdaten",
+      "description": "Wertelisten und Codes (skos:ConceptScheme)",
+      "endpoints": [
+        { "method": "GET", "path": "/api/v1/codelists", "summary": "Liste aller Wertelisten", "params": "source, q" },
+        { "method": "GET", "path": "/api/v1/codelists/{id}/values", "summary": "Werte einer Werteliste", "params": "id, lang" }
+      ]
+    },
+    {
+      "tag": "Export",
+      "description": "DCAT-AP CH 2.x",
+      "endpoints": [
+        { "method": "GET", "path": "/api/v1/export/dcat", "summary": "Katalog als DCAT-AP CH (Turtle / JSON-LD)", "params": "format" },
+        { "method": "GET", "path": "/api/v1/search", "summary": "Volltextsuche über alle Bereiche", "params": "q, limit" }
+      ]
+    }
+  ]
+}

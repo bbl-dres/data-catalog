@@ -12,14 +12,24 @@ A collection of experimental interfaces for finding, understanding, and document
 
 ## Demo
 
-**Landing page:** <https://bbl-dres.github.io/data-catalog/>
+**Live app:** <https://bbl-dres.github.io/data-catalog/>
 
-The landing page opens the main catalog. Use the direct links below to compare every variant.
+<div align="center">
+  <img src="assets/prototype-oblique-overview.png" alt="Oblique data catalog overview" width="49%" align="top">
+  <img src="assets/prototype-oblique-catalog.png" alt="Oblique data catalog grouped catalog view" width="49%" align="top">
+</div>
+<div align="center">
+  <img src="assets/prototype-oblique-profile.png" alt="Oblique data catalog entity profile" width="49%" align="top">
+  <img src="assets/prototype-oblique-relations.png" alt="Oblique data catalog relationship graph" width="49%" align="top">
+</div>
+
+The root URL opens the Oblique Data Catalog. Use the direct links below to compare every variant.
 
 ## Prototypes
 
 | Prototype | Focus | Demo | Details |
 |---|---|---|---|
+| Oblique Data Catalog | Datenkatalog following the Oblique design system | [Open](https://bbl-dres.github.io/data-catalog/prototype-oblique/) | [README](prototype-oblique/README.md) |
 | Business Object & Dataset Catalog | Searchable DCAT-AP CH catalog | [Open](https://bbl-dres.github.io/data-catalog/prototype-main/) | [README](prototype-main/README.md) |
 | SQLite Catalog Explorer | In-browser SQLite catalog and lineage | [Open](https://bbl-dres.github.io/data-catalog/prototype-sqlite/) | [README](prototype-sqlite/README.md) |
 | Architecture Layer Browser | Conceptual, logical, and physical layers | [Open](https://bbl-dres.github.io/data-catalog/prototype-layers/) | [README](prototype-layers/README.md) |
@@ -38,7 +48,7 @@ From the repository root, serve every browser prototype with:
 python -m http.server 8000
 ```
 
-Open <http://localhost:8000>; the root redirects to `prototype-main/`. Append a path from the table for another prototype.
+Open <http://localhost:8000>; the root redirects to `prototype-oblique/`. Append a path from the table for another prototype.
 
 ## Documentation and related components
 
