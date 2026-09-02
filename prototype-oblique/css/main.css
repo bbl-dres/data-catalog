@@ -164,6 +164,7 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-button--icon.ob-button--outlined { border-color: var(--ob-color-border-control); background: var(--ob-color-bg); }
 .ob-button--icon.ob-button--outlined:hover { background: var(--ob-color-surface); }
 .ob-button--pager { width: var(--ob-touch-target); height: var(--ob-touch-target); padding: 0; }
+.ob-language-select { min-width: 64px; }
 
 /* Badge / chip */
 .ob-badge, .ob-chip {
@@ -282,11 +283,10 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
   text-transform: uppercase; color: var(--ob-color-text-tertiary);
 }
 .ob-suggest-option {
-  display: flex; align-items: baseline; justify-content: space-between; gap: var(--ob-space-md);
+  display: flex; align-items: center;
   padding: 6px var(--ob-space-default); border-left: var(--ob-border-width-md) solid transparent; background: var(--ob-color-bg); cursor: pointer;
 }
 .ob-suggest-option > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ob-suggest-option-sub { font-size: var(--ob-font-size-sm); color: var(--ob-color-text-tertiary); white-space: nowrap; }
 .ob-suggest-option:hover, .ob-suggest-option[aria-selected="true"] { background: var(--ob-color-surface); border-left-color: var(--ob-color-accent); }
 .ob-suggest-all {
   display: flex; align-items: center; gap: var(--ob-space-sm); margin-top: var(--ob-space-xs);
@@ -326,6 +326,7 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
   padding-left: calc((var(--level, 1) - 1) * var(--ob-space-default) + var(--ob-space-xs));
   border-left: var(--ob-border-width-md) solid transparent; background: transparent;
 }
+.ob-tree-row--chapter { grid-template-columns: minmax(0, 1fr); }
 .ob-tree-row:hover { background: var(--ob-color-surface); border-left-color: var(--ob-color-accent); }
 .ob-tree-row.is-active { background: var(--ob-color-surface); border-left-color: var(--ob-color-accent); font-weight: var(--ob-font-weight-bold); }
 .ob-tree-toggle {
@@ -344,7 +345,6 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
 .ob-tree-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ob-tree-count { font-size: var(--ob-font-size-sm); color: var(--ob-color-text-tertiary); letter-spacing: var(--ob-letter-spacing-wide); }
 .ob-tree-divider { height: 0; border-top: var(--ob-border-width-xs) solid var(--ob-color-border); margin: var(--ob-space-sm) var(--ob-space-default); }
-.ob-tree-number { color: var(--ob-color-text-tertiary); min-width: 16px; }
 
 .ob-content { grid-column: 2; grid-row: 1; min-width: 0; }
 .ob-content h2 { margin-bottom: var(--ob-space-md); }
@@ -526,7 +526,6 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
 .ob-manual { display: grid; grid-template-columns: minmax(220px, 260px) minmax(0, 1fr); gap: var(--ob-space-lg); align-items: start; }
 .ob-manual-content { grid-column: 2; grid-row: 1; min-width: 0; }
 .ob-manual-chapters { display: flex; flex-direction: column; gap: var(--ob-space-2xl); }
-.ob-tree-link--chapter { grid-column: 1 / -1; display: grid; grid-template-columns: 32px minmax(0, 1fr); }
 .ob-chapter { display: flex; flex-direction: column; gap: 20px; max-width: var(--ob-prose-max-width); scroll-margin-top: var(--ob-space-default); }
 .ob-chapter:last-child { min-height: 60vh; }
 .ob-chapter h3 { margin-bottom: var(--ob-space-xs); }
@@ -647,6 +646,7 @@ button.ob-tree-link { width: 100%; font: inherit; letter-spacing: inherit; }
   .ob-header-tools { gap: 0; }
   .ob-header-tools .ob-badge, .ob-avatar { display: none; }
   .ob-header-tools .ob-button { width: var(--ob-touch-target); height: var(--ob-touch-target); }
+  .ob-header-tools .ob-language-select { width: auto; min-width: 56px; padding: 0 var(--ob-space-sm); }
   .ob-main-nav { padding: 0 var(--ob-space-xs); }
   .ob-main-nav-item { min-height: var(--ob-touch-target); padding: var(--ob-space-sm) var(--ob-space-md); font-size: var(--ob-font-size-sm); }
   .ob-main { padding-top: var(--ob-space-default); padding-bottom: var(--ob-space-xl); }

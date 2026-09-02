@@ -250,7 +250,7 @@ Recommendation:
 
 ### Priority 0: repair the mobile header
 
-1. Remove the disabled language selector until it is functional.
+1. Keep the compact **DE** language selector as a clearly disabled placeholder until language switching is implemented; the reduced mobile wordmark leaves enough room for it without hiding the app title.
 2. Prioritize a readable **Datenkatalog** title over the prototype badge and avatar.
 3. Hide or move nonessential utilities into an overflow menu on phones. Keep help reachable.
 4. Test the header at 320, 375, 390, and 600 px. It must not create horizontal overflow and the app name must remain visible.

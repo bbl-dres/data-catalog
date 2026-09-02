@@ -8,6 +8,9 @@
     "nav.home": "Startseite",
     "header.help": "Hilfe und Kontakt",
     "header.logoAlt": "Schweizerische Eidgenossenschaft",
+    "header.language": "Sprache",
+    "header.languageCurrent": "Deutsch",
+    "header.languagePending": "Weitere Sprachen folgen",
     "help.title": "Hilfe",
     "help.contact": "Kontakt",
 

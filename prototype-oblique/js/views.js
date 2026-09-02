@@ -13,9 +13,11 @@
   /* ---- header, nav, footer ------------------------------------------------ */
   views.headerTools = function (state) {
     const cfg = data.config;
+    const language = String(cfg.app.language || 'de').toUpperCase();
     return `
       <span class="ob-badge ob-chip--warning">${esc(cfg.app.badge)}</span>
       <div class="ob-popover-host" id="help-host">${views.helpHost(state)}</div>
+      <button type="button" class="ob-button ob-language-select" disabled title="${esc(t('header.languagePending'))}" aria-label="${esc(`${t('header.language')}: ${t('header.languageCurrent')}. ${t('header.languagePending')}`)}">${esc(language)} ${icon('chevron_down', 'sm')}</button>
       <div class="ob-avatar" title="${esc(cfg.app.user.name)}" aria-label="${esc(cfg.app.user.name)}">${esc(cfg.app.user.initials)}</div>`;
   };
 
@@ -163,7 +165,7 @@
       const i = idx++;
       const href = router.entityHref(g.kind, e.identifier);
       state.suggestFlat.push(href);
-      return `<div role="option" id="suggest-${i}" class="ob-suggest-option" aria-selected="${state.suggestIdx === i}" data-action="suggest-pick" data-href="${esc(href)}"><span>${esc(e.name)}</span><span class="ob-suggest-option-sub">${esc(data.sub(g.kind, e))}</span></div>`;
+      return `<div role="option" id="suggest-${i}" class="ob-suggest-option" aria-selected="${state.suggestIdx === i}" data-action="suggest-pick" data-href="${esc(href)}"><span>${esc(e.name)}</span></div>`;
     }).join('')}</div>`).join('');
     state.suggestAllIdx = idx;
     const label = groups.length ? t('search.showAll', { q }) : t('search.noSuggest', { q });
@@ -370,7 +372,7 @@
   views.manual = function (ctx) {
     const state = ctx.state;
     const m = data.manual, model = data.model;
-    const aside = `<aside class="ob-tree-panel is-sticky${state.navDrawerOpen ? ' is-mobile-open' : ''}" id="manual-navigation" aria-label="${esc(t('manual.title'))}">${views.drawerHeader(t('manual.title'))}<h2 class="ob-tree-title">${esc(t('manual.title'))}</h2><ul class="ob-tree">${m.chapters.map((c, i) => `<li><div class="ob-tree-row${state.chapter === c.id ? ' is-active' : ''}" style="--level:1"><a class="ob-tree-link ob-tree-link--chapter" href="${router.build('/manual', { ch: c.id })}"${state.chapter === c.id ? ' aria-current="location"' : ''} data-action="chapter" data-chapter="${esc(c.id)}"><span class="ob-tree-number">${i + 1}.</span><span class="ob-tree-label">${esc(c.title)}</span></a></div></li>`).join('')}</ul></aside>`;
+    const aside = `<aside class="ob-tree-panel is-sticky${state.navDrawerOpen ? ' is-mobile-open' : ''}" id="manual-navigation" aria-label="${esc(t('manual.title'))}">${views.drawerHeader(t('manual.title'))}<h2 class="ob-tree-title">${esc(t('manual.title'))}</h2><ul class="ob-tree">${m.chapters.map((c, i) => `<li><div class="ob-tree-row ob-tree-row--chapter${state.chapter === c.id ? ' is-active' : ''}" style="--level:1"><a class="ob-tree-link" href="${router.build('/manual', { ch: c.id })}"${state.chapter === c.id ? ' aria-current="location"' : ''} data-action="chapter" data-chapter="${esc(c.id)}"><span class="ob-tree-label">${i + 1}. ${esc(c.title)}</span></a></div></li>`).join('')}</ul></aside>`;
     const sec = (n, inner) => { const c = m.chapters[n - 1]; return `<section id="hb-${esc(c.id)}" class="ob-chapter" data-chapter="${esc(c.id)}"><h2>${n}. ${esc(c.title)}</h2>${inner}</section>`; };
     const li = arr => arr.join('');
 
