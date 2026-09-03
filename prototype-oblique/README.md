@@ -48,6 +48,7 @@ Any static file server works. Opening `index.html` directly from the file system
 - [docs/design-system.md](docs/design-system.md): how the tokens map to Oblique, what was taken from the Figma library, known deltas
 - [docs/data-model.md](docs/data-model.md): JSON files and fields
 - [docs/code-review.md](docs/code-review.md): findings of the 2026-09 code review and what was changed
+- [docs/design-review.md](docs/design-review.md): design and accessibility review against the Oblique CD, with contrast measurements
 - [docs/wireframes/](docs/wireframes/): the Claude Design mockup this app was built from
 
 ## Tech notes

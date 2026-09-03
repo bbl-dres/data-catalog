@@ -326,7 +326,7 @@
     const { kind, groups, mode, columns, state } = ctx;
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
-      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group" style="--basis:${g.items.length > 8 ? '100%' : '400px'}">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
+      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group" style="--basis:${g.items.length > 8 ? '100%' : 'var(--ob-group-basis)'}">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {
@@ -349,7 +349,7 @@
     }).join('')}</div>`;
   };
 
-  views.notFound = () => ui.empty(t('notfound.title'), `${esc(t('notfound.text'))}<p style="margin-top:12px"><a href="#/">${esc(t('notfound.link'))}</a></p>`);
+  views.notFound = () => ui.empty(t('notfound.title'), `${esc(t('notfound.text'))}<p class="ob-empty-action"><a href="#/">${esc(t('notfound.link'))}</a></p>`);
 
   /* ---- handbook -------------------------------------------------------------------------- */
   views.manual = function (ctx) {
@@ -380,7 +380,7 @@
       abrufen: a => `<ul class="ob-list"><li><strong>Export</strong>: ${esc(a.export)}</li><li><strong>API</strong>: ${esc(a.api)} <a href="#/api">${esc(t('manual.toApi'))}</a></li></ul>`,
       faq: f => `<ul class="ob-list ob-list--loose">${li(f.map(x => `<li><strong>${esc(x.q)}</strong><br>${esc(x.a)}</li>`))}</ul>`,
       glossar: g => `<ul class="ob-list">${li(g.map(x => `<li><strong>${esc(x.term)}</strong>: ${esc(x.text)}</li>`))}</ul>`,
-      grundlagen: r => `<ul class="ob-list">${li(r.map(x => `<li><strong>${esc(x.title)}</strong> (${esc(x.source)}): <a href="${esc(x.url)}" target="_blank" rel="noopener" style="overflow-wrap:anywhere">${esc(x.url)}</a></li>`))}</ul>`,
+      grundlagen: r => `<ul class="ob-list">${li(r.map(x => `<li><strong>${esc(x.title)}</strong> (${esc(x.source)}): <a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a></li>`))}</ul>`,
     };
     const chapters = m.chapters.map((c, i) => {
       const render = body[c.id];

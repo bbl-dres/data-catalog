@@ -18,7 +18,7 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 |---|---|---|
 | Primitives | `--ob-red-500`, `--ob-secondary-800`, `--ob-font-size-xl`, `--ob-space-lg`, `--ob-radius-lg`, `--ob-shadow-default`, `--ob-z-widget` | Raw values, only used to define the tiers below |
 | Semantic | `--ob-color-text`, `--ob-color-surface`, `--ob-color-border-strong`, `--ob-color-accent`, `--ob-color-link`, `--ob-color-focus`, `--ob-color-success` | What `main.css` uses |
-| Component | `--ob-control-height`, `--ob-header-logo-flag-width`, `--ob-header-logo-name-width`, `--ob-tree-panel-basis`, `--ob-table-row-padding`, `--ob-graph-height` | Sizes that several components share |
+| Component | `--ob-control-height`, `--ob-control-height-sm`, `--ob-icon-size-*`, `--ob-header-logo-*`, `--ob-tree-panel-min/max-width`, `--ob-popover-width`, `--ob-table-row-padding`, `--ob-graph-*` | Sizes that several components share; every length in `main.css` outside media queries comes from here (see design-review.md) |
 
 ## Mapping
 
@@ -45,6 +45,10 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 | Body | Noto Sans 16/24 | `$ob-font` | body/default |
 | Overline | 12/16 medium, letter-spacing 2px | – | body/Overline |
 | Header titles | 17/28, top-aligned; organisation regular, app title light (`--ob-header-title-*`) | – | _components-only/App title is 26/34 light; reduced so both lines fit beside the 53 px logo |
+| Overline (entity type) | 12/16 medium, 2 px tracking | `ob-overline` mixin | body/Overline |
+| Breadcrumb | 14 px (`--ob-font-size-sm`) | 0.8 rem in `breadcrumb.component.scss` | – |
+| Placeholder | secondary-400 (`--ob-color-placeholder`) | – | – |
+| Pressed state | secondary-100 (`--ob-color-surface-hover`) | `ob-nav-hover` mixin `:active` | Components-States |
 | Radius | control 2px, input 4px, pill | `$ob-border-radius-button`, `$ob-border-radius-base` | button 2, text 4, chip pill |
 | Shadows | sm, md, default, lg | `core/mixins/_shadow.scss` | shadow/sm … shadow/lg |
 | Focus ring | 3px box-shadow | `ob-tab-focus-box-shadow` | 3px spread |
@@ -55,6 +59,11 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 - **Focus colour**: code uses `#8655f6`, the Figma variable Border/focus is `#8b5cf6`. Code value kept.
 - **Active tab underline**: Figma uses pure red `#ff0000` (red-bund) for active highlights; code and wireframe use `#d8232a`. Code value kept.
 - **Button label**: Figma 14px medium, Oblique code 16px. 16px kept.
+- **Breadcrumb**: Oblique uses 0.8 rem (12.8 px); the app uses 14 px so the smallest interactive text matches the other secondary text.
+- **Warning chip**: Oblique uses orange-600 (3.3:1 with white text); the app uses orange-700 (5.2:1) to pass AA for 12 px text.
+- **Footer**: version and note are one step smaller than the links, as in Oblique, but the links are 14 px instead of 16 px to keep the bar compact.
+- **Alert / toast**: a compact variant (4 px status border plus light background) instead of Oblique's icon column; the status colours are the same.
+- **Visited links**: only prose links (handbook, help popover) take Oblique's purple-700; catalogue navigation links are controls and stay blue.
 - **Letter spacing**: the wireframe adds 0.5px to body text; Figma body/default uses 0.1%. The wireframe value is kept for fidelity with the approved mockup.
 - **Breakpoints**: Figma had a removed collection (375 / 768 / 1024 / 1440); the code grid (600 / 905 / 1240 / 1440) is used.
 - The Figma file has **no spacing or radius variables**; spacing follows the legacy `$ob-spacing-*` scale (4 / 8 / 12 / 16 / 24 / 32 / 48).

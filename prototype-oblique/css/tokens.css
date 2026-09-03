@@ -61,8 +61,9 @@
   --ob-blue-800: #1e40af;
   --ob-blue-900: #1e3a8a;
 
-  /* Purple (focus ring) */
+  /* Purple (focus ring, visited links) */
   --ob-purple-500: #8655f6;
+  --ob-purple-700: #6d28d9;
 
   /* ---- 1. Primitives: typography --------------------------------------- */
   --ob-font-family-body: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -82,6 +83,14 @@
   --ob-line-height-xl: 2rem;
   --ob-line-height-body: 1.5;
   --ob-line-height-table: 1.42857;
+  /* Icon sizes: xs 12, sm 14, md 16, lg 18, xl 20, 2xl 22, 3xl 28 */
+  --ob-icon-size-xs: 12px;
+  --ob-icon-size-sm: 14px;
+  --ob-icon-size-md: 16px;
+  --ob-icon-size-lg: 18px;
+  --ob-icon-size-xl: 20px;
+  --ob-icon-size-2xl: 22px;
+  --ob-icon-size-3xl: 28px;
 
   --ob-font-weight-light: 300;
   --ob-font-weight-regular: 400;
@@ -160,7 +169,11 @@
   --ob-color-link: var(--ob-blue-700);
   --ob-color-link-hover: var(--ob-blue-800);
   --ob-color-link-active: var(--ob-blue-900);
+  --ob-color-link-visited: var(--ob-purple-700);      /* prose links only (core/_type.scss) */
   --ob-color-focus: var(--ob-purple-500);
+  --ob-color-placeholder: var(--ob-color-text-tertiary); /* 5.65:1 on white, distinct from typed text */
+  --ob-color-tab-text: var(--ob-black);                  /* material/mixins/_mat-tab.scss */
+  --ob-color-backdrop: rgba(19, 27, 34, 0.42);           /* secondary-900 at 42 % behind the drawer */
 
   --ob-color-success: var(--ob-green-700);
   --ob-color-success-bg: var(--ob-green-100);
@@ -189,13 +202,41 @@
   --ob-control-height: 36px;
   --ob-control-height-lg: 40px;
   --ob-touch-target: 44px;
-  --ob-tree-panel-basis: 300px;
-  --ob-content-basis: 560px;
+  --ob-control-height-sm: 32px;                          /* icon buttons inside controls, avatar, tree toggles */
+  --ob-avatar-size: var(--ob-control-height-sm);
+  --ob-badge-size: 24px;                                 /* count badges (graph, relation groups) */
+  --ob-language-select-min-width: 64px;
+  --ob-tree-panel-min-width: 220px;
+  --ob-tree-panel-max-width: 260px;
+  --ob-drawer-width: 360px;
+  --ob-drawer-header-height: 56px;
+  --ob-search-min-width: 260px;
+  --ob-search-max-width: 480px;
+  --ob-suggest-max-height: 420px;
+  --ob-menu-min-width: 240px;
+  --ob-menu-min-width-wide: 260px;
+  --ob-popover-width: 395px;                             /* Oblique service navigation popover (empiric) */
+  --ob-breadcrumb-item-max-width: 240px;
+  --ob-breadcrumb-current-max-width: 320px;
+  --ob-kpi-min-width: 240px;
+  --ob-facts-label-min-width: 140px;
+  --ob-facts-label-max-width: 200px;
   --ob-tile-min-width: 180px;
+  --ob-tile-min-height: 56px;
+  --ob-group-basis: 400px;                               /* list groups with up to 8 tiles share a row */
+  --ob-tabs-min-width: 280px;
+  --ob-toast-max-width: 420px;
+  --ob-card-label-min-width: 96px;                       /* label column of phone table cards and facts */
+  --ob-api-max-width: 1200px;
+  --ob-graph-canvas-size: 1000px;                        /* must match SIZE in detail.js */
+  --ob-graph-center-size: 100px;
+  --ob-graph-center-circle-size: 68px;
+  --ob-graph-item-width: 64px;
   --ob-prose-max-width: 72ch;
   --ob-table-row-padding: var(--ob-space-sm);
   --ob-graph-height: 720px;
   --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
+  --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */
 }
 
 /* Compact tables (config.compactTables) */
@@ -206,7 +247,9 @@
 /* Breakpoints (Oblique legacy grid plus a content-led 960px catalog breakpoint).
    Custom properties cannot be used in @media, so these are documented here
    and repeated literally in main.css:
+     @media (max-width: 360px)   – smallest phones
      @media (max-width: 600px)   – down(sm)
      @media (max-width: 960px)   – catalog drawer
-     @media (min-width: 1241px)  – up(lg)
+     @media (max-width: 1100px)  – narrow tree column, compact tables
+     @media (prefers-reduced-motion: reduce) – no transitions
 */
