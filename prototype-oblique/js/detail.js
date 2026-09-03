@@ -92,14 +92,18 @@
     }).join('');
     const facts = detail.facts(e);
     const dataCustodian = data.custodianOf(e.kind, e);
+    // Persons link to the federal directory. Prototype: the base URL without a person id (config.admindirUrl).
+    const person = name => name
+      ? `<a class="ob-inline-link" href="${esc(data.config.admindirUrl)}" target="_blank" rel="noopener" title="${esc(t('detail.openAdmindir', { name }))}">${esc(name)} ${icon('link_external', 'sm')}</a>`
+      : '–';
     return `
       <div class="ob-detail-sections">
         <section>
           <h2>${esc(t('detail.contacts'))}</h2>
           <dl class="ob-facts">
-            <dt>${esc(t('detail.owner'))}</dt><dd>${esc(e.dataOwner)}</dd>
-            <dt>${esc(t('detail.steward'))}</dt><dd>${esc(e.dataSteward)}</dd>
-            ${dataCustodian ? `<dt>${esc(t('detail.dataCustodian'))}</dt><dd>${esc(dataCustodian)}</dd>` : ''}
+            <dt>${esc(t('detail.owner'))}</dt><dd>${person(e.dataOwner)}</dd>
+            <dt>${esc(t('detail.steward'))}</dt><dd>${person(e.dataSteward)}</dd>
+            ${dataCustodian ? `<dt>${esc(t('detail.dataCustodian'))}</dt><dd>${person(dataCustodian)}</dd>` : ''}
           </dl>
         </section>
         <section>

@@ -122,6 +122,7 @@
   "detail.contacts": { "de": "Verantwortlich", "fr": "Responsables", "it": "Responsabili", "en": "Responsible" },
   "detail.owner": { "de": "Dateneigner", "fr": "Propriétaire des données", "it": "Proprietario dei dati", "en": "Data owner" },
   "detail.steward": { "de": "Datenverwalter", "fr": "Gestionnaire des données", "it": "Gestore dei dati", "en": "Data steward" },
+  "detail.openAdmindir": { "de": "{name} im Admindir öffnen", "fr": "Ouvrir {name} dans Admindir", "it": "Apri {name} in Admindir", "en": "Open {name} in Admindir" },
   "detail.dataCustodian": { "de": "Datenhalter", "fr": "Dépositaire des données", "it": "Detentore dei dati", "en": "Data custodian" },
   "detail.page": { "de": "von {n} Seite", "fr": "sur {n} page", "it": "di {n} pagina", "en": "of {n} page" },
   "detail.pagePlural": { "de": "von {n} Seiten", "fr": "sur {n} pages", "it": "di {n} pagine", "en": "of {n} pages" },

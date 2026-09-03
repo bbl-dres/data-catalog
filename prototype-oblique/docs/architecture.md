@@ -77,7 +77,7 @@ Catalog data tables use native buttons in their column headers and expose the ac
 
 ## Configuration (`data/config.json`)
 
-`navModel` (`entity` or `container`), `app.languages` offered by the header switch, `app.language` as the default, `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links (`route` for in-app hashes, `url` for external pages).
+`admindirUrl` (base URL of the federal directory that the persons under Verantwortlich link to; the prototype has no person ids yet), `navModel` (`entity` or `container`), `app.languages` offered by the header switch, `app.language` as the default, `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links (`route` for in-app hashes, `url` for external pages).
 
 ## How to extend
 

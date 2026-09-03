@@ -14,14 +14,18 @@
 
   <header class="ob-header" id="header">
     <div class="ob-header-bar">
-      <a class="ob-header-brand" href="#/" id="brand-link">
-        <img class="ob-header-logo-flag" src="assets/swiss-logo-flag.svg" alt="" width="30" height="33">
-        <img class="ob-header-logo-name" src="assets/swiss-logo-name.svg" alt="" width="174" height="50">
+      <!-- Logo lockup after the federal design system (designsystem/app/components/ch/components/Logo.vue):
+           flag, wordmark, separator and title inside one link; the app name is the extra line this app needs. -->
+      <a class="ob-logo" href="#/" id="brand-link">
+        <img class="ob-logo-flag" src="assets/swiss-logo-flag.svg" alt="" width="30" height="33">
+        <img class="ob-logo-name" src="assets/swiss-logo-name.svg" alt="" width="174" height="50">
+        <span class="ob-logo-separator" role="separator" aria-hidden="true"></span>
+        <span class="ob-logo-title-container">
+          <span class="ob-logo-acronym" id="brand-acronym" aria-hidden="true"></span>
+          <span class="ob-logo-title" id="brand-org"></span>
+          <span class="ob-logo-subtitle" id="brand-app"></span>
+        </span>
       </a>
-      <span class="ob-header-titles">
-        <span class="ob-header-org" id="brand-org"></span>
-        <span class="ob-header-app" id="brand-app"></span>
-      </span>
       <div class="ob-header-tools" id="header-tools"></div>
     </div>
     <nav class="ob-main-nav" id="main-nav" aria-label="Hauptnavigation"></nav>

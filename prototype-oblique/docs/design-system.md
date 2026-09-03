@@ -44,7 +44,7 @@ All three agree on the palette, the type scale and the shadows. Where they diffe
 | Headings | 28/32 bold −0.5px, 23/28, 17/24 | `core/mixins/_typography.scss` | heading/default/H1–H3 |
 | Body | Noto Sans 16/24 | `$ob-font` | body/default |
 | Overline | 12/16 medium, letter-spacing 2px | – | body/Overline |
-| Header titles | 17/28, top-aligned; organisation regular, app title light (`--ob-header-title-*`) | – | _components-only/App title is 26/34 light; reduced so both lines fit beside the 53 px logo |
+| Logo lockup | Flag 30×33, wordmark 174×50, 1 px separator 56 px high with 24 px on both sides, bold 16 px title (line-height 1.375, −0.16 rem trim), all inside one link and top-aligned (`--ob-logo-*`) | – | Not Oblique: taken from the federal design system for public sites, `designsystem/css/components/logo.postcss` and `Logo.vue`; the app name is an extra regular-weight line below the title |
 | Overline (entity type) | 12/16 medium, 2 px tracking | `ob-overline` mixin | body/Overline |
 | Breadcrumb | 14 px (`--ob-font-size-sm`) | 0.8 rem in `breadcrumb.component.scss` | – |
 | Placeholder | secondary-400 (`--ob-color-placeholder`) | – | – |

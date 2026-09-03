@@ -2,6 +2,7 @@
   "app": {
     "name": "Datenkatalog",
     "organisation": "Bundesamt für Bauten und Logistik BBL",
+    "organisationShort": "BBL",
     "version": "0.4.0",
     "badge": "Prototyp",
     "footerNote": "Prototyp, fiktive Inhalte – nur zur Demonstration",
@@ -13,6 +14,7 @@
   "defaultGrouping": "domain",
   "showTreeCounts": true,
   "compactTables": false,
+  "admindirUrl": "https://admindir.verzeichnisse.admin.ch",
   "help": {
     "intro": "Der Datenkatalog dokumentiert die Geschäftsobjekte, Datentabellen und Referenzdaten des BBL. Er richtet sich an Fachpersonen, Datenverantwortliche und Entwicklerinnen.",
     "helpText": "Anleitungen und Hintergrundinformationen zum Katalog.",

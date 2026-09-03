@@ -485,6 +485,7 @@
     }
     const cfg = data.config;
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
+    $('brand-acronym').textContent = cfg.app.organisationShort || '';
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
     setLanguage(storedLanguage() || cfg.app.language || 'de');

@@ -191,14 +191,17 @@
   /* ---- 3. Component tokens --------------------------------------------- */
   --ob-content-max-width: 1440px;
   --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
-  --ob-header-title-font-size: var(--ob-font-size-lg);   /* organisation and app title share one size */
-  --ob-header-title-line-height: var(--ob-line-height-lg);
-  --ob-header-logo-flag-width: 30px;
-  --ob-header-logo-flag-height: 33px;
-  --ob-header-logo-name-width: 174px;
-  --ob-header-logo-name-height: 50px;
-  --ob-header-brand-width: 218px;
-  --ob-header-brand-height: 53px;
+  /* Logo lockup: values from the federal design system (css/components/logo.postcss), desktop tier */
+  --ob-logo-flag-width: 30px;
+  --ob-logo-flag-height: 33px;
+  --ob-logo-name-width: 174px;
+  --ob-logo-name-height: 50px;
+  --ob-logo-separator-height: 56px;                      /* h-14 from md up; 40px below */
+  --ob-logo-separator-gap: var(--ob-space-lg);           /* ml-6 / mr-6 from lg up; 16px from sm, 8px below */
+  --ob-logo-separator-color: #d1d5db;                    /* bg-[#D1D5DB]; no Oblique primitive matches exactly */
+  --ob-logo-title-font-size: var(--ob-font-size-md);     /* text-base from xl up */
+  --ob-logo-title-line-height: 1.375;                    /* leading-snug */
+  --ob-logo-title-trim: 0.16rem;                         /* mt-[-0.160rem]: caps flush with the wordmark text */
   --ob-control-height: 36px;
   --ob-control-height-lg: 40px;
   --ob-touch-target: 44px;
