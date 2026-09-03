@@ -36,8 +36,23 @@
     return `<span class="ob-chip ob-chip--${tone || 'neutral'}">${ui.esc(label)}</span>`;
   };
 
-  /** Link to a catalog entity inside a table cell. */
-  ui.entityLink = (href, label) => `<a class="ob-table-entity-link" href="${ui.esc(href)}">${ui.esc(label)}</a>`;
+  /** Link to a catalog entity inside a table cell. `labelHtml` is used verbatim when given (already escaped). */
+  ui.entityLink = (href, label, labelHtml) => `<a class="ob-table-entity-link" href="${ui.esc(href)}">${labelHtml || ui.esc(label)}</a>`;
+
+  /** Escaped text with every occurrence of `query` wrapped in <mark>, case- and diacritic-insensitive. */
+  ui.highlight = function (text, query) {
+    const s = String(text == null ? '' : text);
+    const fold = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const q = fold((query || '').trim());
+    const f = fold(s);
+    if (!q || f.length !== s.length) return ui.esc(s); // folding changed the length: no safe offsets
+    let out = '', pos = 0, i;
+    while ((i = f.indexOf(q, pos)) >= 0) {
+      out += ui.esc(s.slice(pos, i)) + '<mark class="ob-mark">' + ui.esc(s.slice(i, i + q.length)) + '</mark>';
+      pos = i + q.length;
+    }
+    return out + ui.esc(s.slice(pos));
+  };
 
   /** Sort options for `ui.table`: the stored sort of `key`, else the default. */
   ui.tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });

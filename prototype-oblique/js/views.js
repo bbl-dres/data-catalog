@@ -11,12 +11,21 @@
   /* ---- header, nav, footer ------------------------------------------------ */
   views.headerTools = function (state) {
     const cfg = data.config;
-    const language = String(cfg.app.language || 'de').toUpperCase();
     return `
       <span class="ob-badge ob-chip--warning">${esc(cfg.app.badge)}</span>
       <div class="ob-popover-host" id="help-host">${views.helpHost(state)}</div>
-      <button type="button" class="ob-button ob-language-select" disabled title="${esc(t('header.languagePending'))}" aria-label="${esc(`${t('header.language')}: ${t('header.languageCurrent')}. ${t('header.languagePending')}`)}">${esc(language)} ${icon('chevron_down', 'sm')}</button>
+      <div class="ob-menu-host" id="language-host">${views.languageHost(state)}</div>
       <div class="ob-avatar" title="${esc(cfg.app.user.name)}" aria-label="${esc(cfg.app.user.name)}">${esc(cfg.app.user.initials)}</div>`;
+  };
+
+  /** Language switch: a menu with the languages offered in config.json (app.languages); the UI dictionary changes, the catalog content stays German. */
+  views.languageHost = function (state) {
+    const open = state.menu === 'language';
+    const languages = data.config.app.languages || ['de'];
+    const button = `<button type="button" class="ob-button ob-language-select${open ? ' is-active' : ''}" aria-haspopup="menu" aria-expanded="${open}" aria-label="${esc(`${t('header.language')}: ${t('header.languageCurrent')}`)}" data-action="menu" data-menu="language">${esc(state.lang.toUpperCase())} ${icon('chevron_down', 'sm')}</button>`;
+    if (!open) return button;
+    const items = languages.map(l => `<button type="button" role="menuitemradio" aria-checked="${l === state.lang}" class="ob-menu-item${l === state.lang ? ' is-active' : ''}" lang="${l}" data-action="set-language" data-lang="${l}">${esc(t('lang.' + l))}</button>`).join('');
+    return button + `<div class="ob-menu ob-menu--narrow" role="menu" aria-label="${esc(t('header.language'))}">${items}<p class="ob-menu-note">${esc(t('header.languageNote'))}</p></div>`;
   };
 
   views.helpHost = function (state) {
@@ -165,7 +174,7 @@
     let idx = 0;
     const html = groups.map(g => `<div role="group" aria-label="${esc(g.title)}"><div class="ob-suggest-group-title">${icon(g.icon, 'sm')}${esc(g.title)}</div>${g.items.map(e => {
       const i = idx++;
-      return `<div role="option" id="suggest-${i}" class="ob-suggest-option" aria-selected="${state.suggestIdx === i}" data-action="suggest-pick" data-href="${esc(router.entityHref(g.kind, e.identifier))}"><span>${esc(e.name)}</span></div>`;
+      return `<div role="option" id="suggest-${i}" class="ob-suggest-option" aria-selected="${state.suggestIdx === i}" data-action="suggest-pick" data-href="${esc(router.entityHref(g.kind, e.identifier))}"><span>${ui.highlight(e.name, q)}</span></div>`;
     }).join('')}</div>`).join('');
     const label = groups.length ? t('search.showAll', { q }) : t('search.noSuggest', { q });
     return `<div id="search-suggest" class="ob-suggest" role="listbox" aria-label="${esc(t('search.suggestions'))}">${html}<div role="option" id="suggest-${idx}" class="ob-suggest-all" aria-selected="${state.suggestIdx === idx}" data-action="open-results">${esc(label)}</div></div>`;
@@ -311,12 +320,13 @@
     const c = data.cols(kind, e);
     return withCount ? [e.name, c[0], c[1], c[2], data.statusOf(kind, e)] : [e.name, c[0], c[1], data.statusOf(kind, e)];
   };
-  /** One row of a section list (`withCount`) or of a search result table. */
-  views.row = function (kind, e, columns, withCount) {
+  /** One row of a section list (`withCount`) or of a search result table (`query` highlights the hits). */
+  views.row = function (kind, e, columns, withCount, query) {
     const c = data.cols(kind, e);
     const st = data.statusOf(kind, e);
     const href = router.entityHref(kind, e.identifier);
-    const cells = [ui.entityLink(href, e.name), esc(c[0]), { html: `<span class="ob-clamp-2">${esc(c[1])}</span>`, cls: 'ob-cell-muted' }];
+    const text = query ? v => ui.highlight(v, query) : esc;
+    const cells = [ui.entityLink(href, e.name, text(e.name)), text(c[0]), { html: `<span class="ob-clamp-2">${text(c[1])}</span>`, cls: 'ob-cell-muted' }];
     if (withCount) cells.push(esc(c[2]));
     cells.push(st ? ui.chip(st, data.statusTone(st)) : '');
     return ui.tr(cells, href, columns);
@@ -335,16 +345,20 @@
     }).join('')}</div>`;
   };
 
+  /** Search results: groups and rows in relevance order (data.search); a column sort chosen by the user overrides the row order. */
   views.searchResults = function (ctx) {
-    const groups = data.search(ctx.state.query);
-    if (!groups.length) return ui.empty(t('search.none'), esc(t('search.noneHint')));
-    return `<div class="ob-search-groups">${groups.map(g => {
+    const q = ctx.state.query.trim();
+    const groups = data.search(q);
+    const total = groups.reduce((n, g) => n + g.items.length, 0);
+    const summary = `<p class="ob-view-description ob-search-summary">${esc(t(total === 1 ? 'search.summaryOne' : 'search.summary', { n: total, q }))}</p>`;
+    if (!groups.length) return summary + ui.empty(t('search.none'), esc(t('search.noneHint')));
+    return summary + `<div class="ob-search-groups">${groups.map(g => {
       const columns = data.searchColumns(g.kind);
-      const options = ui.tableOptions(ctx.state, `search:${g.kind}`, { column: 0, direction: 'asc' });
+      const options = ui.tableOptions(ctx.state, `search:${g.kind}`);
       const items = ui.sortRows(g.items, options.sort, e => rowValues(g.kind, e, false));
       return `<div>
         <div class="ob-search-group-head">${icon(g.icon, 'lg')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></div>
-        ${ui.table(columns, items.map(e => views.row(g.kind, e, columns, false)).join(''), options)}
+        ${ui.table(columns, items.map(e => views.row(g.kind, e, columns, false, q)).join(''), options)}
       </div>`;
     }).join('')}</div>`;
   };

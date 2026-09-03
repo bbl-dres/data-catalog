@@ -215,6 +215,7 @@
   --ob-suggest-max-height: 420px;
   --ob-menu-min-width: 240px;
   --ob-menu-min-width-wide: 260px;
+  --ob-menu-min-width-narrow: 200px;
   --ob-popover-width: 395px;                             /* Oblique service navigation popover (empiric) */
   --ob-breadcrumb-item-max-width: 240px;
   --ob-breadcrumb-current-max-width: 320px;

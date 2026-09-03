@@ -6,6 +6,7 @@
     "badge": "Prototyp",
     "footerNote": "Prototyp, fiktive Inhalte – nur zur Demonstration",
     "language": "de",
+    "languages": ["de", "fr", "it", "en"],
     "user": { "name": "David Reber", "initials": "DR" }
   },
   "navModel": "entity",

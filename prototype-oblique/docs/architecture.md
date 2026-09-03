@@ -36,7 +36,7 @@ Six files, split by responsibility rather than by page, so a feature usually tou
 | File | Owns | Does not |
 |---|---|---|
 | `ui.js` | String helpers, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
-| `data.js` | All questions about the data: `get`, `nameOf`, `displayName`, `domainForEntity`, `sizeOf`, `statusOf`, `buildGroups`, `relations`, `search`, `suggest`, `recent`, `kpis`, `history`; `validate()` logs dangling references after loading | Touch the DOM |
+| `data.js` | All questions about the data: `get`, `nameOf`, `displayName`, `domainForEntity`, `sizeOf`, `statusOf`, `buildGroups`, `relations`, `relevance`, `search`, `suggest`, `recent`, `kpis`, `history`; `validate()` logs dangling references after loading | Touch the DOM |
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row tables with paging, orbit graph layout | Handle events |
@@ -65,23 +65,25 @@ The URL is the source of truth for everything that should be bookmarkable:
 
 ## Transient state (`app.js`)
 
-Held in memory, not in the URL: search query and suggestion index, open menu (`info`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph pan offset, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles. URL params override `mode` and `groupBy` when present.
+Held in memory, not in the URL: the UI language (also in `localStorage`), search query and suggestion index, open menu (`info`, `language`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph pan offset, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles. URL params override `mode` and `groupBy` when present.
 
 ## Events
 
-One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
+One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-language`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
+
+Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Groups are ordered by their best hit, ties by content order (objects, tables, code lists, products, APIs, then domains and systems); rows by score, shorter names first. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`. Result tables start in relevance order; a click on a column header switches that group to the chosen sort.
 
 Catalog data tables use native buttons in their column headers and expose the active direction through `aria-sort`. Repeated headers in grouped L0 tables share one sort state. Detail rows are sorted before pagination, and changing their sort resets the pager to page 1. Handbook reference tables remain unsorted because their authored row order conveys meaning.
 
 ## Configuration (`data/config.json`)
 
-`navModel` (`entity` or `container`), `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links (`route` for in-app hashes, `url` for external pages).
+`navModel` (`entity` or `container`), `app.languages` offered by the header switch, `app.language` as the default, `defaultGrouping` for business objects, `showTreeCounts`, `compactTables`, app name, organisation, version, badge, footer note, help and contact content, footer links (`route` for in-app hashes, `url` for external pages).
 
 ## How to extend
 
 - **New entity type**: add a JSON file and a `kinds` entry in `model.json`; add it to `FILES`, `KINDS`, `LISTS` and the `cols`/`columns`/`sizeOf`/`relations` switches in `data.js`; add `rowsData` and facts in `detail.js`; add its crumb path in `views.context()`.
 - **New grouping option**: extend `GROUP_IDS`, `groupKey` and `groupOrder` in `data.js`; add a `group.<id>` label in `i18n.json`.
-- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts and set `app.language`. Missing translations fall back to German. Data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
+- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts, list the language in `app.languages` and optionally set it as `app.language`. Missing translations fall back to German; `setLanguage()` in `app.js` swaps the dictionary and re-renders. Data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
 - **Real backend**: replace `data.load()` with API calls that return the same shapes as the JSON files; nothing else depends on the file layout.
 - **Excel / DCAT export**: implement in `doExport()` in `app.js`; the menu entries already exist and show a notice today.
 

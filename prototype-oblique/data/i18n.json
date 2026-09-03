@@ -11,7 +11,11 @@
   "header.help": { "de": "Hilfe und Kontakt", "fr": "Aide et contact", "it": "Aiuto e contatto", "en": "Help and contact" },
   "header.language": { "de": "Sprache", "fr": "Langue", "it": "Lingua", "en": "Language" },
   "header.languageCurrent": { "de": "Deutsch", "fr": "Français", "it": "Italiano", "en": "English" },
-  "header.languagePending": { "de": "Weitere Sprachen folgen", "fr": "D'autres langues suivront", "it": "Altre lingue seguiranno", "en": "More languages to follow" },
+  "header.languageNote": { "de": "Die Inhalte des Katalogs sind nur auf Deutsch verfügbar.", "fr": "Le contenu du catalogue n'est disponible qu'en allemand.", "it": "I contenuti del catalogo sono disponibili solo in tedesco.", "en": "Catalog content is available in German only." },
+  "lang.de": { "de": "Deutsch", "fr": "Deutsch", "it": "Deutsch", "en": "Deutsch" },
+  "lang.fr": { "de": "Français", "fr": "Français", "it": "Français", "en": "Français" },
+  "lang.it": { "de": "Italiano", "fr": "Italiano", "it": "Italiano", "en": "Italiano" },
+  "lang.en": { "de": "English", "fr": "English", "it": "English", "en": "English" },
 
   "backToTop.label": { "de": "Nach oben", "fr": "Vers le haut", "it": "In alto", "en": "Back to top" },
   "backToTop.aria": { "de": "Zum Seitenanfang", "fr": "Retour en haut de la page", "it": "Torna all'inizio della pagina", "en": "Back to top of page" },
@@ -38,6 +42,8 @@
   "search.title": { "de": "Suche", "fr": "Recherche", "it": "Ricerca", "en": "Search" },
   "search.showAll": { "de": "Alle Treffer für «{q}» anzeigen", "fr": "Afficher tous les résultats pour «{q}»", "it": "Mostra tutti i risultati per «{q}»", "en": "Show all results for “{q}”" },
   "search.noSuggest": { "de": "Keine Vorschläge – Ergebnisseite für «{q}» öffnen", "fr": "Aucune suggestion – ouvrir la page de résultats pour «{q}»", "it": "Nessun suggerimento – apri la pagina dei risultati per «{q}»", "en": "No suggestions – open the results page for “{q}”" },
+  "search.summary": { "de": "{n} Treffer für «{q}»", "fr": "{n} résultats pour «{q}»", "it": "{n} risultati per «{q}»", "en": "{n} results for “{q}”" },
+  "search.summaryOne": { "de": "1 Treffer für «{q}»", "fr": "1 résultat pour «{q}»", "it": "1 risultato per «{q}»", "en": "1 result for “{q}”" },
   "search.none": { "de": "Keine Treffer", "fr": "Aucun résultat", "it": "Nessun risultato", "en": "No results" },
   "search.noneHint": { "de": "Versuchen Sie einen anderen Begriff, z.B. «Gebäude» oder «SAP».", "fr": "Essayez un autre terme, p. ex. «Gebäude» ou «SAP».", "it": "Provi un altro termine, ad es. «Gebäude» o «SAP».", "en": "Try another term, e.g. “Gebäude” or “SAP”." },
 

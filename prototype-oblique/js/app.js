@@ -10,7 +10,8 @@
   /** Transient UI state that is not part of the URL. */
   const state = {
     query: '', suggest: false, suggestIdx: -1,
-    menu: null,                       // null | 'info' | 'group' | 'actions'
+    menu: null,                       // null | 'info' | 'language' | 'group' | 'actions'
+    lang: 'de',                       // active UI language (one of config.languages)
     mode: 'tiles',                    // tiles | table (URL ?view= overrides)
     groupBy: {},                      // per section (URL ?group= overrides)
     closed: {},                       // collapsed list groups
@@ -213,7 +214,11 @@
     });
   }
 
-  function renderHelp() { const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state)); }
+  /** Re-render the header widgets that depend on transient state (help popover, language menu). */
+  function renderHelp() {
+    const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state));
+    const l = $('language-host'); if (l) replaceHtml(l, views.languageHost(state));
+  }
   function renderSuggest() {
     const host = $('search-suggest-host'); if (!host) return;
     host.innerHTML = views.suggest(state);
@@ -222,14 +227,15 @@
     input.setAttribute('aria-expanded', String(open));
     if (open && state.suggestIdx >= 0) input.setAttribute('aria-activedescendant', 'suggest-' + state.suggestIdx); else input.removeAttribute('aria-activedescendant');
   }
-  /** Open a menu (`info` lives in the header, the others in main) or close all; re-renders only what changed. */
+  /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
+  const HEADER_MENUS = ['info', 'language'];
   function setMenu(next) {
     const prev = state.menu, hadSuggest = state.suggest;
     state.menu = next; state.suggest = false; state.suggestIdx = -1;
-    const inMain = m => !!m && m !== 'info';
+    const inMain = m => !!m && !HEADER_MENUS.includes(m);
     if (inMain(prev) || inMain(next)) app.render();
     else if (hadSuggest) renderSuggest();
-    if (prev === 'info' || next === 'info') renderHelp();
+    if (HEADER_MENUS.includes(prev) || HEADER_MENUS.includes(next)) renderHelp();
   }
   function closeTransient() { if (state.menu || state.suggest) setMenu(null); }
   function closeSuggest() {
@@ -338,6 +344,7 @@
       case 'back-to-top': e.preventDefault(); backToTop(); return;
       case 'help-toggle': e.stopPropagation(); setMenu(state.menu === 'info' ? null : 'info'); return;
       case 'menu': e.stopPropagation(); setMenu(state.menu === el.dataset.menu ? null : el.dataset.menu); return;
+      case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': state.mode = el.dataset.view; router.replaceParams({ view: state.mode }); app.render(); return;
       case 'sort-table': {
@@ -439,6 +446,34 @@
     drag = null;
   }
 
+  /* ---- language ---------------------------------------------------------------------- */
+  const LANG_KEY = 'datenkatalog.lang';
+  /** Install a UI language: dictionary, <html lang>, static chrome, then a full re-render. Remembered per browser. */
+  function setLanguage(lang) {
+    const cfg = data.config;
+    const languages = cfg.app.languages || [cfg.app.language || 'de'];
+    state.lang = languages.includes(lang) ? lang : languages[0];
+    try { localStorage.setItem(LANG_KEY, state.lang); } catch (err) { /* storage unavailable */ }
+    ui.setDictionary(data.i18n, state.lang, 'de');
+    document.documentElement.lang = state.lang;
+    $('skip-link').textContent = t('skip');
+    $('brand-link').setAttribute('aria-label', `${cfg.app.name} – ${t('nav.home')}`);
+    $('main-nav').setAttribute('aria-label', t('nav.main'));
+    $('header-tools').innerHTML = views.headerTools(state);
+    $('footer').innerHTML = views.footer();
+    const backToTopButton = $('back-to-top');
+    backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
+    backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
+    if (route) {
+      app.render();
+      const button = document.querySelector('.ob-language-select');
+      if (button) button.focus({ preventScroll: true });
+    }
+  }
+  function storedLanguage() {
+    try { return localStorage.getItem(LANG_KEY); } catch (err) { return null; }
+  }
+
   /* ---- init ------------------------------------------------------------------------ */
   app.init = async function () {
     try {
@@ -449,19 +484,10 @@
       return;
     }
     const cfg = data.config;
-    ui.setDictionary(data.i18n, cfg.app.language || 'de', 'de');
-    document.documentElement.lang = cfg.app.language || 'de';
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
-    $('skip-link').textContent = t('skip');
-    $('brand-link').setAttribute('aria-label', `${cfg.app.name} – ${t('nav.home')}`);
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
-    $('main-nav').setAttribute('aria-label', t('nav.main'));
-    $('header-tools').innerHTML = views.headerTools(state);
-    $('footer').innerHTML = views.footer();
-    const backToTopButton = $('back-to-top');
-    backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
-    backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
+    setLanguage(storedLanguage() || cfg.app.language || 'de');
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);

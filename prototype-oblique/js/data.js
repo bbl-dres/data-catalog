@@ -315,22 +315,54 @@
   };
 
   /* ---- search --------------------------------------------------------------- */
-  data.match = function (e, q) {
-    return !!q && (e.name.toLowerCase().includes(q) || (e.description || '').toLowerCase().includes(q) || (e.technicalName || '').toLowerCase().includes(q));
+  /* Matching is case-insensitive and tolerant of umlaut spellings: "Gebäude" is found by
+     "gebäu", "gebau" and "gebaeu". Two foldings are tried: diacritics stripped (keeps the
+     string length, used for highlighting too) and ä→ae / ö→oe / ü→ue / ß→ss. */
+  const foldMarks = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const foldUmlauts = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const WORD_BOUNDARY = /[\s\-–—(/.,:;«»"']/;
+  /** First occurrence of `q` in `text` under either folding: { index, folded } or null. */
+  const find = (text, q) => {
+    if (!text) return null;
+    for (const fold of [foldMarks, foldUmlauts]) {
+      const folded = fold(text), index = folded.indexOf(fold(q));
+      if (index >= 0) return { index, folded };
+    }
+    return null;
   };
-  const resultGroup = (kind, items) => ({ kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items });
+  const atWordStart = hit => hit.index === 0 || WORD_BOUNDARY.test(hit.folded[hit.index - 1]);
+  /** Relevance of an entity for a query (0 = no match). Name hits outrank technical-name hits, which outrank description hits. */
+  data.relevance = function (e, q) {
+    let hit = find(e.name, q);
+    if (hit) return hit.folded.length === foldMarks(q).length || hit.folded === foldUmlauts(q) ? 100 : hit.index === 0 ? 90 : atWordStart(hit) ? 80 : 70;
+    hit = find(e.technicalName, q);
+    if (hit) return atWordStart(hit) ? 50 : 40;
+    hit = find(e.description, q);
+    if (hit) return atWordStart(hit) ? 20 : 10;
+    return 0;
+  };
+  data.match = (e, q) => data.relevance(e, q) > 0;
+  /** One result group: items by relevance, then shorter names first, then alphabetical. */
+  const resultGroup = (kind, q, limit) => {
+    const ranked = data.list(kind).map(e => ({ e, score: data.relevance(e, q) })).filter(x => x.score > 0)
+      .sort((a, b) => b.score - a.score || a.e.name.length - b.e.name.length || a.e.name.localeCompare(b.e.name, 'de'));
+    const items = (limit ? ranked.slice(0, limit) : ranked).map(x => x.e);
+    return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: ranked.length, best: ranked.length ? ranked[0].score : 0 };
+  };
+  /** Groups with the best hit first; ties follow the content order (business objects before the tables that realise them), containers last. */
+  const SEARCH_ORDER = ['objects', 'tables', 'refs', 'products', 'apis', 'domains', 'systems'];
+  const byRelevance = (a, b) => b.best - a.best || SEARCH_ORDER.indexOf(a.kind) - SEARCH_ORDER.indexOf(b.kind);
   /** Full result groups for the search page. */
   data.search = function (query) {
-    const q = (query || '').trim().toLowerCase();
+    const q = (query || '').trim();
     if (!q) return [];
-    return KINDS.map(kind => resultGroup(kind, data.list(kind).filter(e => data.match(e, q)))).filter(g => g.items.length);
+    return KINDS.map(kind => resultGroup(kind, q)).filter(g => g.items.length).sort(byRelevance);
   };
-  /** Suggestion groups: name-first ranking, at most 4 per kind. */
+  /** Suggestion groups: same ranking, at most 4 per kind. */
   data.suggest = function (query) {
-    const q = (query || '').trim().toLowerCase();
+    const q = (query || '').trim();
     if (!q) return [];
-    const rank = e => e.name.toLowerCase().startsWith(q) ? 0 : e.name.toLowerCase().includes(q) ? 1 : 2;
-    return KINDS.map(kind => resultGroup(kind, data.list(kind).filter(e => data.match(e, q)).sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name, 'de')).slice(0, 4))).filter(g => g.items.length);
+    return KINDS.map(kind => resultGroup(kind, q, 4)).filter(g => g.items.length).sort(byRelevance);
   };
 
   /* ---- home ----------------------------------------------------------------- */
