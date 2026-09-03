@@ -1,73 +1,48 @@
 # SQLite Catalog Explorer
 
-Data catalog backed by a SQLite file that runs entirely in the browser. Sidebar navigation, full-text search, detail views for every entity, interactive lineage graphs, and an optional **KI-Assistent** (Claude-powered chat) that answers natural-language questions by querying the catalog directly. In-app branding: *BBL Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/prototype-sqlite/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 
-<p>
-  <img src="assets/preview-1.jpg" width="45%" />
-  <img src="assets/preview-2.jpg" width="45%" />
-</p>
+> [!CAUTION]
+> Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
+
+Data catalog backed by a SQLite file that runs entirely in the browser through sql.js: sidebar navigation, full-text search, detail views for every entity, interactive lineage graphs, and an optional **KI-Assistent** that answers natural-language questions by querying the catalog through a Claude-powered Cloudflare Worker. In-app branding: *BBL Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
+
+## Demo
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-sqlite/
 
+<p align="center">
+  <img src="assets/preview-1.jpg" alt="Business object list grouped by domain with status and responsibility" width="49%" align="top"/>
+  <img src="assets/preview-2.jpg" alt="Relationship graph of the business object Gebäude" width="49%" align="top"/>
+</p>
+
 ## Features
 
-- SQLite catalog loaded client-side via sql.js (WASM)
-- Keyboard search (Ctrl+K) and dedicated search page
-- Sidebar navigation across systems, tables, columns, and vocabulary
-- Detail pages for every catalog entity with metadata, attributes, lineage, and relationships
-- Interactive UML / lineage graphs
-- Excel export and SQLite database download
-- **KI-Assistent**: natural-language chat over the catalog, backed by Claude Sonnet 4.6 with tool-call access to SQL
-- Multilingual UI (DE, FR, IT, EN), German primary
-
-## Architecture
-
-```mermaid
-flowchart LR
-  User[Browser]
-  subgraph Static[GitHub Pages]
-    HTML[index.html]
-    JS[js/app.js + views/]
-    DB[(catalog.db)]
-  end
-  Worker[Cloudflare Worker<br/>chat-worker/]
-  API[Anthropic API<br/>Claude Sonnet 4.6]
-
-  User -->|page load| HTML
-  HTML --> JS
-  JS -->|sql.js + WASM| DB
-  User -->|KI-Assistent| Worker
-  Worker -->|tool: query_catalog| DB
-  Worker -->|chat completion| API
-```
-
-The frontend is **pure static**: no build step, no server. The Worker is a separate, optional component — without it, the KI-Assistent shows a "not configured" state but everything else works.
+- SQLite catalog loaded client-side via sql.js (WASM); the `.db` file is the single source of truth.
+- Keyboard search (Ctrl+K) and a dedicated search page.
+- Sidebar navigation across terms, business objects, code lists, systems and datasets.
+- Detail pages with metadata, attributes, lineage and relationships; interactive UML and lineage graphs.
+- Excel export and SQLite database download.
+- KI-Assistent: natural-language chat over the catalog, backed by Claude with tool-call access to SQL (optional backend).
+- Multilingual UI: German primary, with French, Italian and English.
 
 ## Run locally
 
+Static vanilla JavaScript that loads the SQLite file over HTTP, so serve it from the repository root:
+
 ```bash
 python -m http.server 8000
-# open http://localhost:8000
 ```
 
-Any static file server works.
+Open <http://localhost:8000/prototype-sqlite/>. The KI-Assistent needs the Cloudflare Worker in [`../chat-worker/`](../chat-worker/README.md); without it the view shows a "not configured" notice and everything else works. After deploying, set `CHAT_WORKER_URL` in `js/views/search.js`.
 
-## Chat backend (optional)
+## Documentation
 
-The KI-Assistent view talks to a Cloudflare Worker that proxies Anthropic API calls and gives Claude tool-call access to a bundled copy of `catalog.db`. See [`../chat-worker/README.md`](../chat-worker/README.md) for setup. After deploy, update `CHAT_WORKER_URL` in [`js/views/search.js`](js/views/search.js).
-
-## Tech notes
-
-- [sql.js](https://github.com/sql-js/sql.js) for in-browser SQLite (loaded via CDN)
-- [Lucide](https://lucide.dev/) icons via CDN
-- [SheetJS](https://sheetjs.com/) for Excel export
-- Catalog data lives in `data/` as a SQLite file and supporting JSON
-- Chat backend (separate folder): Cloudflare Workers, deployed via GitHub Actions
-
-## Development guide
-
-See [`CLAUDE.md`](CLAUDE.md) for the in-depth developer guide: data model, code organisation, conventions, and how the chat backend fits in.
+- [Development guide](CLAUDE.md) — architecture, data model, routing, conventions and the chat integration.
+- [Data model](docs/DATAMODEL.md) — full ERD and entity reference; the [generic-node](docs/DATAMODEL-NODE.md) and [hybrid](docs/DATAMODEL-HYBRID.md) variants are exploratory drafts.
+- [Chat worker](../chat-worker/README.md) — deploying the KI-Assistent backend.
 
 ## License
 
-MIT — see repo root [LICENSE](../LICENSE).
+Project code is covered by the [MIT License](../LICENSE). sql.js, Lucide and SheetJS are loaded from CDN under their own licenses.

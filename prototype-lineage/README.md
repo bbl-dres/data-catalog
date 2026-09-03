@@ -1,46 +1,46 @@
 # Data Lineage Viewer
 
-Interactive data-lineage graph with a live JSON editor, pan / zoom, column-level mappings, and system-based grouping. Part of the [BBL Data Catalog prototypes](../README.md).
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/prototype-lineage/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 
-![Preview](assets/preview-1.jpg)
+> [!CAUTION]
+> Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
+
+Interactive data-lineage graph with a live JSON editor, pan and zoom, column-level mappings and system-based grouping, laid out with dagre. Part of the [BBL Data Catalog prototypes](../README.md).
+
+## Demo
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-lineage/
 
+<p align="center">
+  <img src="assets/preview-1.jpg" alt="E-commerce example with column-level lineage from source tables through a pipeline to a dashboard" width="49%" align="top"/>
+  <img src="assets/preview-2.jpg" alt="Split view with the live JSON editor beside the e-commerce lineage graph" width="49%" align="top"/>
+</p>
+
 ## Features
 
-- Split view: live JSON editor on the left, graph viewer on the right (toggle the editor pane on/off)
-- Three bundled examples: E-commerce Orders, Swiss Buildings / RE-FX, Music Streaming
-- Six layout presets: **Lineage** (default), **Auto**, **Horizontal**, **Vertical**, **Compact**, **Flat**
-- Dagre-based layered layout, optionally in compound mode so system boxes don't overlap
-- Expand tables to see columns; column-level lineage drawn across pipelines
-- Click a node or column to highlight its upstream / downstream
-- Reference validation in the editor — every edge and `columnMapping` endpoint must resolve
+- Split view: live JSON editor on the left, graph viewer on the right; the editor pane can be hidden.
+- Three bundled examples: E-commerce Orders, Buildings (RE-FX and Net Zero), Music Streaming.
+- Six layout presets: Lineage (default), Auto, Horizontal, Vertical, Compact and Flat.
+- Dagre-based layered layout, optionally in compound mode so system boxes do not overlap.
+- Expand tables to see columns; column-level lineage is drawn across pipelines.
+- Click a node or column to highlight its upstream and downstream.
+- Reference validation in the editor: every edge and `columnMapping` endpoint must resolve.
 
 ## Run locally
 
+Static vanilla JavaScript with JSON data loaded by `fetch()`, so serve it over HTTP from the repository root:
+
 ```bash
 python -m http.server 8000
-# open http://localhost:8000
 ```
 
-Any static file server works.
+Open <http://localhost:8000/prototype-lineage/>.
 
-## Data model
+## Documentation
 
-Each example in `data/*.json` has a `nodes[]` / `edges[]` shape:
-
-- **Tables** carry `id`, `label`, optional `system`, `database`, `schema`, and `columns[]`
-- **Pipelines** carry `description` and `platform`
-- **Dashboards** carry `platform` and `charts[]`
-- **Edges** carry `source`, `target`, and optional `columnMapping[]` for column-level lineage
-
-Grouping priority for the coloured system boxes: `system` > `database.schema` > (optional) `platform`.
-
-## Tech notes
-
-- [dagre](https://github.com/dagrejs/dagre) loaded via CDN for layered layout
-- Vanilla JS, no build step, no npm dependencies
+- [Data model](docs/DATAMODEL.md) — the `nodes[]` and `edges[]` shape of the example files.
 
 ## License
 
-MIT — see repo root [LICENSE](../LICENSE).
+Project code is covered by the [MIT License](../LICENSE). [dagre](https://github.com/dagrejs/dagre) is loaded from CDN under its own license.

@@ -4,34 +4,37 @@ This document provides development guidelines for Claude Code when working on th
 
 ## Repository Layout
 
-The repo hosts **five sibling prototypes** under `prototype-*/` folders, plus a root `index.html` that redirects to the main catalog.
+The repo hosts **eight sibling prototypes** under `prototype-*/` folders, plus a root `index.html` that redirects to the Oblique catalog. A root `404.html` forwards the folder names retired in September 2026 (`prototype-main`, `prototype-mermaid`, `prototype-ea-immo`) to their successors on GitHub Pages.
 
 ```
 data-catalog/
-├── index.html              # Redirect to prototype-main/
-├── prototype-main/         # Business Object & Dataset Catalog (Datenkatalog IMMO)
-├── prototype-layers/        # Architecture Layer Browser (Meta-Atlas)
-├── prototype-sqlite/           # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
-├── prototype-lineage/      # Data Lineage Viewer
-├── prototype-mermaid/     # Mermaid Diagram Editor (Simple Chart)
-├── prototype-ea-immo/      # EA-IMMO conceptual data model for real estate
+├── index.html              # Redirect to prototype-oblique/
+├── 404.html                # GitHub Pages fallback: forwards retired prototype folder names
 ├── prototype-oblique/      # Datenkatalog following the Oblique design system (see its docs/)
-├── assets/                 # Shared repo assets (social preview only)
+├── prototype-dcat/         # Business Object & Dataset Catalog on DCAT-AP CH (Datenkatalog IMMO)
+├── prototype-sqlite/       # SQLite Catalog Explorer (BBL Datenkatalog, SQLite)
+├── prototype-layers/       # Architecture Layer Browser (Meta-Atlas)
+├── prototype-lineage/      # Data Lineage Viewer
+├── prototype-erd/          # ER diagram and flowchart editor on Mermaid (Simple Chart)
+├── prototype-canvas/       # Architecture Canvas (Miro-style data-architecture modelling)
+├── prototype-datamodel/    # EA-IMMO conceptual data model for real estate
+├── chat-worker/            # Cloudflare Worker behind the SQLite prototype's AI assistant
+├── assets/                 # Shared repo assets (social preview, screenshots)
 └── docs/                   # Repo-level docs (market research, etc.)
 ```
 
-The guidelines below document **`prototype-main/`** specifically (the main DCAT-AP catalog). Each other prototype has its own README.
+The guidelines below document **`prototype-dcat/`** specifically (the DCAT-AP catalog). Each other prototype has its own README.
 
 ## Project Overview
 
-`prototype-main/` is a **minimalist web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. It runs from `prototype-main/index.html` with CSS and JavaScript in separate files and zero external JavaScript dependencies.
+`prototype-dcat/` is a **minimalist web application** for cataloging business objects and datasets for the Swiss Federal Office for Buildings and Logistics. It runs from `prototype-dcat/index.html` with CSS and JavaScript in separate files and zero external JavaScript dependencies.
 
 ## Architecture
 
 ### Design
-- HTML structure in `prototype-main/index.html` (~360 lines)
-- CSS styles in `prototype-main/css/style.css` (~966 lines)
-- JavaScript application in `prototype-main/js/app.js` (~850 lines)
+- HTML structure in `prototype-dcat/index.html` (~360 lines)
+- CSS styles in `prototype-dcat/css/style.css` (~966 lines)
+- JavaScript application in `prototype-dcat/js/app.js` (~850 lines)
 - No build system, bundlers, or transpilers
 - Data loaded from JSON files at runtime
 - Hash-based client-side routing
@@ -39,7 +42,7 @@ The guidelines below document **`prototype-main/`** specifically (the main DCAT-
 ### Code Organization
 
 ```
-prototype-main/
+prototype-dcat/
 ├── index.html          → HTML structure only
 ├── css/style.css       → All styles (~966 lines)
 └── js/app.js           → JavaScript application (~850 lines)
@@ -59,20 +62,20 @@ prototype-main/
 
 ## File Locations
 
-All paths below are inside `prototype-main/`.
+All paths below are inside `prototype-dcat/`.
 
 | Purpose | Location |
 |---------|----------|
-| HTML structure | `prototype-main/index.html` |
-| Styles | `prototype-main/css/style.css` |
-| JavaScript | `prototype-main/js/app.js` |
-| Business objects | `prototype-main/data/concepts.json` |
-| Dataset definitions | `prototype-main/data/datasets.json` |
-| UI translations | `prototype-main/data/i18n.json` |
-| About page content | `prototype-main/content/about-{de,fr,it,en}.html` |
-| User manual | `prototype-main/content/manual-{de,fr,it,en}.html` |
-| Concept images | `prototype-main/assets/concepts/` |
-| Dataset images | `prototype-main/assets/datasets/` |
+| HTML structure | `prototype-dcat/index.html` |
+| Styles | `prototype-dcat/css/style.css` |
+| JavaScript | `prototype-dcat/js/app.js` |
+| Business objects | `prototype-dcat/data/concepts.json` |
+| Dataset definitions | `prototype-dcat/data/datasets.json` |
+| UI translations | `prototype-dcat/data/i18n.json` |
+| About page content | `prototype-dcat/content/about-{de,fr,it,en}.html` |
+| User manual | `prototype-dcat/content/manual-{de,fr,it,en}.html` |
+| Concept images | `prototype-dcat/assets/concepts/` |
+| Dataset images | `prototype-dcat/assets/datasets/` |
 
 ## Development Commands
 
@@ -82,30 +85,30 @@ python3 -m http.server 8000
 # or
 npx http-server
 
-# Open in browser — root redirects to the main catalog
+# Open in browser — root redirects to prototype-oblique/
 open http://localhost:8000
-# direct URL for the main catalog:
-open http://localhost:8000/prototype-main/
+# direct URL for this catalog:
+open http://localhost:8000/prototype-dcat/
 ```
 
 ## Making Changes
 
 ### Adding a New Concept
 
-1. Edit `prototype-main/data/concepts.json`
+1. Edit `prototype-dcat/data/concepts.json`
 2. Add a new object with required fields:
    - `id`, `title` (multilingual `{de,fr,it,en}` object), `description`, `fullDescription`
    - `image`, `tags` (language-independent keys), `meta`, `standards`, `attributes`
    - Optional: `responsiblePersons`
-3. Add tag translations to `prototype-main/data/i18n.json` if using new tags
+3. Add tag translations to `prototype-dcat/data/i18n.json` if using new tags
 4. Add corresponding image to `assets/concepts/`
 
 ### Adding a New Dataset
 
-1. Edit `prototype-main/data/datasets.json`
+1. Edit `prototype-dcat/data/datasets.json`
 2. Add a new object with required fields:
    - Same as concepts plus `distributions` and `publications`
-3. Add tag translations to `prototype-main/data/i18n.json` if using new tags
+3. Add tag translations to `prototype-dcat/data/i18n.json` if using new tags
 4. Add corresponding image to `assets/datasets/`
 
 ### i18n / Translations

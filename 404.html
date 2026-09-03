@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Seite nicht gefunden</title>
+  <script>
+    // GitHub Pages serves this page for unknown paths. Prototype folders renamed in
+    // September 2026 keep their old URLs working: the path is rewritten and the
+    // query string and hash route are carried over.
+    (function () {
+      var renamed = {
+        'prototype-main': 'prototype-dcat',
+        'prototype-mermaid': 'prototype-erd',
+        'prototype-ea-immo': 'prototype-datamodel'
+      };
+      var m = location.pathname.match(/^(.*\/)(prototype-[a-z-]+)(\/.*)?$/);
+      if (m && renamed[m[2]]) {
+        location.replace(m[1] + renamed[m[2]] + (m[3] || '/') + location.search + location.hash);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Seite nicht gefunden. <a href="https://bbl-dres.github.io/data-catalog/">Zum Datenkatalog</a></p>
+</body>
+</html>

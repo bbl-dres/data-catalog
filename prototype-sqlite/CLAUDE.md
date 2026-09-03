@@ -1,6 +1,6 @@
 # CLAUDE.md — prototype-sqlite
 
-Developer guide for the **BBL Datenkatalog** SQLite prototype. Scoped to this folder; the repo-root [`../CLAUDE.md`](../CLAUDE.md) documents `prototype-main/`.
+Developer guide for the **BBL Datenkatalog** SQLite prototype. Scoped to this folder; the repo-root [`../CLAUDE.md`](../CLAUDE.md) documents `prototype-dcat/`.
 
 ## Overview
 

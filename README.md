@@ -26,13 +26,13 @@ The root URL opens the Oblique Data Catalog. Use the direct links below to compa
 | Prototype | Focus | Demo | Details |
 |---|---|---|---|
 | Oblique Data Catalog | Datenkatalog following the Oblique design system | [Open](https://bbl-dres.github.io/data-catalog/prototype-oblique/) | [README](prototype-oblique/README.md) |
-| Business Object & Dataset Catalog | Searchable DCAT-AP CH catalog | [Open](https://bbl-dres.github.io/data-catalog/prototype-main/) | [README](prototype-main/README.md) |
+| Business Object & Dataset Catalog | Searchable DCAT-AP CH catalog | [Open](https://bbl-dres.github.io/data-catalog/prototype-dcat/) | [README](prototype-dcat/README.md) |
 | SQLite Catalog Explorer | In-browser SQLite catalog and lineage | [Open](https://bbl-dres.github.io/data-catalog/prototype-sqlite/) | [README](prototype-sqlite/README.md) |
 | Architecture Layer Browser | Conceptual, logical, and physical layers | [Open](https://bbl-dres.github.io/data-catalog/prototype-layers/) | [README](prototype-layers/README.md) |
 | Data Lineage Viewer | Interactive system and column lineage | [Open](https://bbl-dres.github.io/data-catalog/prototype-lineage/) | [README](prototype-lineage/README.md) |
-| Mermaid Diagram Editor | ER diagrams and flowcharts with free-text names | [Open](https://bbl-dres.github.io/data-catalog/prototype-mermaid/) | [README](prototype-mermaid/README.md) |
+| Mermaid Diagram Editor | ER diagrams and flowcharts with free-text names | [Open](https://bbl-dres.github.io/data-catalog/prototype-erd/) | [README](prototype-erd/README.md) |
 | Architecture Canvas | Miro-style data-architecture modelling | [Open](https://bbl-dres.github.io/data-catalog/prototype-canvas/) | [README](prototype-canvas/README.md) |
-| EA-IMMO | Conceptual real-estate data model | [Open](https://bbl-dres.github.io/data-catalog/prototype-ea-immo/) | [README](prototype-ea-immo/README.md) |
+| EA-IMMO | Conceptual real-estate data model | [Open](https://bbl-dres.github.io/data-catalog/prototype-datamodel/) | [README](prototype-datamodel/README.md) |
 
 The catalog-oriented prototypes use DCAT-AP CH where relevant; other variants explore architecture, modelling, and lineage approaches.
 

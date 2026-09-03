@@ -1,60 +1,50 @@
-# Architektur-Canvas
+# Architecture Canvas
 
-Miro-style sketching surface for data architecture — drag tables, views, APIs, files, and code lists onto a canvas, group attributes into property sets, and connect them with relationships. In-app branding: *BBL Canvas*. Part of the [BBL Data Catalog prototypes](../README.md).
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/prototype-canvas/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
+
+> [!CAUTION]
+> Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
+
+Miro-style sketching surface for data architecture: drag tables, views, APIs, files and code lists onto a canvas, group attributes into property sets and connect them with relationships. In-app branding: *BBL Canvas*. Part of the [BBL Data Catalog prototypes](../README.md).
+
+## Demo
 
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-canvas/
 
+<p align="center">
+  <img src="assets/preview-1.jpg" alt="Diagram view with tables, property sets and relationships inside system frames" width="49%" align="top"/>
+  <img src="assets/preview-2.jpg" alt="Graph view of systems and their nodes as a network" width="49%" align="top"/>
+</p>
+
 ## Features
 
-- Three views: **Diagramm** (canvas), **Tabelle** (filterable lists per entity type), **API** (Swagger-style mock spec)
-- Two modes: **Ansicht** (read-only) / **Bearbeiten** (inline editing, drag-to-edge, palette, action bar)
-- Five node types: Tabellen, Views, APIs, Dateien, Wertelisten
-- Property sets derived from the free-text `set` column of attributes — no separate set entity
-- System frames (Miro-style group bounding boxes) per `system` value
-- Right-side info panel for selected node / system / attribute / edge
-- Sichtbarkeits-Dropdown with tri-state master toggle and bulk expand/collapse for property sets
-- Excel round-trip (8-sheet workbook) and JSON download
-- localStorage persistence — refresh keeps your layout
-- Hash-based URL sync for view + selection — shareable deep links
-- German UI
+- Four views: Diagramm (canvas), Liste (filterable lists per entity type), Graph (network of systems and nodes) and API (Swagger-style mock spec).
+- Two modes: Ansicht (read-only) and Bearbeiten (inline editing, drag-to-edge, palette, action bar).
+- Five node types: tables, views, APIs, files and code lists.
+- Property sets derived from the free-text `set` column of attributes; system frames per `system` value.
+- Right-side info panel for the selected node, system, attribute or edge.
+- Visibility dropdown with a tri-state master toggle and bulk expand or collapse of property sets.
+- Excel round-trip (one workbook sheet per entity type) and JSON download.
+- `localStorage` persistence and hash-based deep links for view and selection.
+- German UI.
 
 ## Run locally
 
+Static vanilla JavaScript with JSON data loaded by `fetch()`, so serve it over HTTP from the repository root:
+
 ```bash
 python -m http.server 8000
-# open http://localhost:8000/prototype-canvas/
 ```
 
-Any static file server works.
+Open <http://localhost:8000/prototype-canvas/>.
 
-## Excel round-trip
+## Documentation
 
-Seven-sheet workbook. Sheet names mirror the DB node kinds in [docs/DATAMODEL.sql](docs/DATAMODEL.sql):
-
-| Sheet | Description |
-|-------|-------------|
-| `system`           | Aggregated stats per source system |
-| `distribution`     | Nodes of kind `distribution` (type ∈ `table` / `view` / `api` / `file`) |
-| `code_list`        | Nodes of kind `code_list` (type = `codelist`) |
-| `pset`             | Property-set / Datenpaket registry (kind `pset`) |
-| `attribute`        | Every column across all nodes (kind `attribute`); `set_id` references `pset.id` |
-| `source_structure` | Per-node SAP BAPI substructure registry (auxiliary) |
-| `edge`             | Relations between nodes with optional label |
-
-Import accepts the pre-rename sheet names (`Tables`, `APIs`, `Files`, `ValueLists`, `PropertySets`, `Attributes`, `SourceStructures`, `Relations`, `Systems`) so older exports still load; the workbook is re-emitted with the current names on the next export.
-
-**Import** replaces the canvas after a confirmation prompt. **Export ▾** offers Excel, JSON, and (planned) PDF.
-
-## Data model
-
-See [docs/DATAMODEL.md](docs/DATAMODEL.md) for the Supabase-target relational model (system / node / attribute / relationship / canvas_layout / data_classification / contact / revision) and the i18n strategy.
-
-## Tech notes
-
-- Vanilla JavaScript IIFE modules on `window.CanvasApp.<Module>`
-- [SheetJS](https://github.com/SheetJS/sheetjs) loaded via CDN for Excel I/O
-- No build step, no npm dependencies
+- [Data model](docs/DATAMODEL.md) — Supabase-target relational model and i18n strategy.
+- [Excel round-trip](docs/EXCEL-ROUNDTRIP.md) — workbook sheets, import and export.
+- [Auto-layout research](docs/AUTOLAYOUT_RESEARCH.md)
 
 ## License
 
-MIT — see repo root [LICENSE](../LICENSE).
+Project code is covered by the [MIT License](../LICENSE). SheetJS is loaded from CDN under its own license.

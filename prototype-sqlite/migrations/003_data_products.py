@@ -1,7 +1,7 @@
 """
 One-shot migration: replace the two placeholder data_product rows in
 catalog.db with 11 richer entries sourced from
-prototype-main/data/datasets.json.
+prototype-dcat/data/datasets.json.
 
 Also replaces all distribution rows and rebuilds data_product_dataset,
 data_product_contact, and data_product_classification joins.
@@ -35,7 +35,7 @@ import sqlite3
 from pathlib import Path
 
 DB = Path(__file__).resolve().parent.parent / "data" / "catalog.db"
-SRC = Path(r"C:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-main/data/datasets.json")
+SRC = Path(r"C:/Users/DavidRasner/Documents/GitHub/data-catalog/prototype-dcat/data/datasets.json")
 
 
 # -- dataset.id (from datasets.json) -> source dataset UUID in catalog.db
