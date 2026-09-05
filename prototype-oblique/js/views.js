@@ -325,7 +325,6 @@
           ${views.searchField(ctx.state, true)}
           <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${ctx.state.query.trim() ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
         </form>
-        <div class="ob-search-examples"><span>${esc(t('home.search.examples'))}</span>${['Gebäude', 'SAP', 'Energie'].map(q => `<a href="${esc(router.searchHref(q))}">${esc(q)}</a>`).join('')}</div>
       </section>
       <div class="ob-kpi-grid">${kpis}</div>
       <div class="ob-home-sections">

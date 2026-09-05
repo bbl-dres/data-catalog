@@ -129,7 +129,8 @@
   graph.resize = function () {
     if (!current || !$('graph-shell')?.checkVisibility()) return;
     const shell = $('graph-shell');
-    if (!fullscreen) shell.style.height = Math.max(380, window.innerHeight - Math.max(0, shell.getBoundingClientRect().top) - 16) + 'px';
+    // CSS owns the minimum height and bottom spacing; JS supplies viewport geometry.
+    if (!fullscreen) shell.style.height = `calc(${window.innerHeight - Math.max(0, shell.getBoundingClientRect().top)}px - var(--ob-space-default))`;
     if (current.layout.narrow !== ($('graph').clientWidth < 640) || (current.layout.narrow && current.layout.availableWidth !== $('graph').clientWidth)) { draw(); current.state.autoFit = true; }
     if (current.state.autoFit) fit();
   };

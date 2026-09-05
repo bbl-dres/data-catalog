@@ -26,7 +26,7 @@ const server = createServer();
       await settle(page);
     };
 
-    await check('home search supports suggestions, submit, examples and the header shortcut at desktop and phone widths', async () => {
+    await check('home search supports suggestions, submit and the header shortcut at desktop and phone widths', async () => {
       for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: 900 });
         await visit('#/');
@@ -66,9 +66,6 @@ const server = createServer();
         await page.locator('.ob-empty').waitFor();
         assert(await page.locator('.ob-empty').isVisible());
 
-        await page.click('#brand-link'); await settle(page);
-        await page.locator('.ob-search-examples a').filter({ hasText: 'SAP' }).click();
-        await page.waitForURL(url => url.hash === '#/search?q=SAP');
         await page.click('#brand-link'); await settle(page);
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         await page.click('[data-action="toggle-search"]');

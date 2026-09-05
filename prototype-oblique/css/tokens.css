@@ -10,7 +10,9 @@
      1. Primitives   --ob-<hue>-<step>, --ob-font-*, --ob-space-*, …
      2. Semantic     --ob-color-*, --ob-shadow-*, --ob-z-*
      3. Component    --ob-header-*, --ob-control-*, …
-   Use tier 2 and 3 in main.css; tier 1 only to define them.
+   Use semantic colours and component dimensions in component styles.
+   Shared spacing, typography, borders and radii may use primitives directly.
+   Compact app additions are identified below; they are not Oblique defaults.
    ========================================================================== */
 
 :root {
@@ -71,12 +73,15 @@
 
   --ob-font-size-xs: 0.75rem;     /* 12px */
   --ob-font-size-sm: .8125rem;    /* 13px */
-  --ob-font-size-md: .875rem;        /* 14px */
-  --ob-font-size-lg: .875rem;   /* 17px – legacy h3 */
-  --ob-font-size-xl: 1.0625rem;   /* 23px – h2 */
-  --ob-font-size-2xl: 1.5rem;    /* 28px – h1 */
+  --ob-font-size-md: .875rem;    /* 14px */
+  --ob-font-size-lg: var(--ob-font-size-md); /* compact h3 */
+  --ob-font-size-xl: 1.0625rem;  /* 17px – h2 */
+  --ob-font-size-2xl: 1.5rem;    /* 24px – h1 */
+  --ob-font-size-body-lg: .9375rem; /* 15px – compact app reading text */
+  --ob-font-size-input: 1rem;    /* 16px – hero and touch inputs, avoids iOS auto-zoom */
 
   --ob-line-height-xs: 1rem;
+  --ob-line-height-tight: 1.125rem; /* 18px – compact labels */
   --ob-line-height-sm: 1.25rem;
   --ob-line-height-md: 1.25rem;
   --ob-line-height-lg: 1.5rem;
@@ -101,12 +106,14 @@
   --ob-letter-spacing-narrow: -0.5px;
   --ob-letter-spacing-normal: 0;
   --ob-letter-spacing-wide: 0.25px;
+  --ob-letter-spacing-table: 0.15px; /* compact app table tracking */
   --ob-letter-spacing-wider: 0.5px;
   --ob-letter-spacing-caps: 1px;
 
   /* ---- 1. Primitives: spacing (legacy $ob-spacing-*) -------------------- */
   --ob-space-2xs: 2px;
   --ob-space-xs: 4px;
+  --ob-space-compact: 6px; /* app addition for dense diagram controls */
   --ob-space-sm: 8px;
   --ob-space-md: 12px;
   --ob-space-default: 16px;
@@ -187,36 +194,40 @@
   --ob-color-neutral: var(--ob-secondary-600);
 
   --ob-color-avatar-bg: var(--ob-secondary-600);
-  --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
 
   /* ---- 3. Component tokens --------------------------------------------- */
   --ob-content-max-width: 1600px;
+  --ob-home-max-width: 1120px;                         /* shared by summary cards and both tables */
+  --ob-sidebar-width: 240px;
+  --ob-sidebar-rail-width: 56px;
+  --ob-sidebar-flyout-width: 300px;
+  --ob-sidebar-heading-height: 36px;
+  --ob-tree-indent: var(--ob-space-default);
+  --ob-tree-toggle-width: 24px;
   --ob-header-identity-height: 56px;                    /* includes the header's bottom border; grows with the logo */
-  --ob-header-navigation-height: 45px;                  /* 44px links + top border; zero in drawer mode */
+  --ob-header-navigation-height: calc(var(--ob-touch-target) + var(--ob-border-width-xs)); /* zero in drawer mode */
   --ob-header-height: calc(var(--ob-header-identity-height) + var(--ob-header-navigation-height));
   --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
-  /* Federal logo: base tier from designsystem/css/components/logo.postcss; breakpoints in main.css. */
+  /* Federal flag/type dimensions, adapted to a compact flag + text composition. */
   --ob-logo-flag-width: 30px;
   --ob-logo-flag-height: 33px;
-  --ob-logo-separator-height: 40px;
-  --ob-logo-separator-gap: 8px;
-  --ob-logo-separator-color: #d1d5db;                    /* bg-[#D1D5DB]; no Oblique primitive matches exactly */
-  --ob-logo-title-font-size: 14px;
+  --ob-logo-gap: var(--ob-space-default);
+  --ob-logo-title-font-size: var(--ob-font-size-md);
   --ob-logo-title-line-height: 1.375;                    /* leading-snug */
   --ob-logo-title-trim: 0.16rem;                         /* optical title adjustment from the federal logo reference */
   --ob-control-height: 32px;
-  --ob-control-height-lg: 32px;
+  --ob-control-height-lg: var(--ob-control-height);
   --ob-touch-target: 44px;
-  --ob-control-height-sm: 32px;                          /* icon buttons inside controls, avatar, tree toggles */
-  --ob-avatar-size: var(--ob-control-height-sm);
-  --ob-badge-size: 24px;                                 /* count badges (graph, relation groups) */
+  --ob-control-height-sm: var(--ob-control-height);       /* icon buttons inside controls, tree toggles */
+  --ob-avatar-size: 28px;
   --ob-language-select-min-width: 64px;
-  --ob-tree-panel-min-width: 220px;
-  --ob-tree-panel-max-width: 260px;
-  --ob-drawer-width: 360px;
+  --ob-drawer-width: 320px;
   --ob-drawer-header-height: 56px;
   --ob-search-min-width: 260px;
   --ob-search-max-width: 480px;
+  --ob-hero-search-max-width: 880px;
+  --ob-hero-control-height: 48px;
+  --ob-hero-suggest-max-height: 360px;
   --ob-suggest-max-height: 420px;
   --ob-menu-min-width: 240px;
   --ob-menu-min-width-wide: 260px;
@@ -224,19 +235,22 @@
   --ob-popover-width: 395px;                             /* Oblique service navigation popover (empiric) */
   --ob-breadcrumb-item-max-width: 240px;
   --ob-breadcrumb-current-max-width: 320px;
-  --ob-kpi-min-width: 240px;
-  --ob-facts-label-min-width: 140px;
-  --ob-facts-label-max-width: 200px;
+  --ob-kpi-count-font-size-small: 1.375rem;               /* 22px, stacked summary cards */
+  --ob-facts-label-width: 160px;
+  --ob-facts-row-min-height: 36px;
+  --ob-facts-row-padding: var(--ob-space-sm);
   --ob-tile-min-width: 220px;
-  --ob-tile-min-height: 56px;
-  --ob-tabs-min-width: 280px;
+  --ob-tile-min-height: 74px;
+  --ob-tile-gap: var(--ob-space-default);
   --ob-toast-max-width: 420px;
-  --ob-card-label-min-width: 96px;                       /* label column of phone table cards and facts */
+  --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
+  --ob-table-card-min-width: 300px;
   --ob-api-max-width: 1200px;
   --ob-prose-max-width: 72ch;
   --ob-manual-max-width: 1120px;
   --ob-manual-prose-max-width: 100ch;
-  --ob-table-row-padding: 6px;
+  --ob-table-row-padding: var(--ob-space-sm);
+  --ob-table-row-min-height: 36px;
   --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
   --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */
 }
@@ -244,14 +258,36 @@
 /* Compact tables (config.compactTables) */
 .ob-density-compact {
   --ob-table-row-padding: var(--ob-space-xs);
+  --ob-table-row-min-height: 28px;
 }
 
-/* Breakpoints (Oblique legacy grid plus a content-led 960px catalog breakpoint).
-   Custom properties cannot be used in @media, so these are documented here
-   and repeated literally in main.css:
-     @media (max-width: 360px)   – smallest phones
-     @media (max-width: 600px)   – down(sm)
-     @media (max-width: 960px)   – catalog drawer
-     @media (max-width: 1100px)  – narrow tree column, compact tables
-     @media (prefers-reduced-motion: reduce) – no transitions
-*/
+/* Centralised responsive token values. Native @media/@container conditions
+   cannot reference custom properties; component layout queries stay literal.
+   Flag/type breakpoints follow the federal logo reference. */
+@media (min-width: 480px) {
+  :root { --ob-logo-title-font-size: var(--ob-font-size-xs); }
+}
+@media (min-width: 640px) {
+  :root { --ob-logo-title-font-size: var(--ob-font-size-md); }
+}
+@media (min-width: 768px) {
+  :root { --ob-header-identity-height: 72px; }
+}
+@media (min-width: 1024px) {
+  :root { --ob-logo-flag-width: 32px; --ob-logo-flag-height: 34px; }
+}
+@media (min-width: 1280px) {
+  :root { --ob-logo-title-font-size: var(--ob-font-size-input); }
+}
+@media (min-width: 1920px) {
+  :root { --ob-logo-flag-width: 40px; --ob-logo-flag-height: 44px; --ob-logo-title-font-size: 1.125rem; --ob-header-identity-height: 86px; }
+}
+@media (max-width: 1200px) {
+  :root { --ob-facts-label-width: 128px; }
+}
+@media (max-width: 960px) {
+  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; }
+}
+@media (max-width: 600px) {
+  :root { --ob-facts-row-min-height: 32px; }
+}

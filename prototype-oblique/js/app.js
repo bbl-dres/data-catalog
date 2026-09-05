@@ -107,7 +107,7 @@
     const diagramHadFocus = DK.graph.closeFullscreen(false);
     DK.graph.onPointerUp();
     const previous = route;
-    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, #home-search, .ob-search-examples');
+    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, #home-search');
     route = resolveRoute();
     state.navDrawerOpen = false;
     state.flyout = null;
@@ -311,12 +311,12 @@
     if (!list) return;
     const viewport = window.visualViewport;
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
-    let available = bottom - list.getBoundingClientRect().top - 8;
+    let available = bottom - list.getBoundingClientRect().top;
     if (available < 88 && document.activeElement === $('search-input')) {
       $('home-search').scrollIntoView({ block: 'start' });
-      available = bottom - list.getBoundingClientRect().top - 8;
+      available = bottom - list.getBoundingClientRect().top;
     }
-    list.style.maxHeight = Math.max(44, Math.min(360, available)) + 'px';
+    list.style.setProperty('--ob-suggest-available-height', available + 'px');
   }
   /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
   const HEADER_MENUS = ['info', 'language'];
@@ -413,7 +413,7 @@
     const el = $('hb-' + id);
     if (el) {
       hbLock = id;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - $('header').getBoundingClientRect().height - 16, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(el).scrollMarginTop), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       clearTimeout(hbTimer); hbTimer = setTimeout(() => { hbLock = null; }, 900);
     }
   }
@@ -629,7 +629,7 @@
       await data.load('data/');
     } catch (err) {
       // The dictionary is part of the failed load, so this bootstrap fallback must stand on its own.
-      $('main').innerHTML = ui.empty('Datenkatalog konnte nicht geladen werden', `Bitte laden Sie die Seite erneut.<div class="ob-cell-muted" style="margin-top:8px">${ui.esc(err.message)}</div>`);
+      $('main').innerHTML = ui.empty('Datenkatalog konnte nicht geladen werden', `Bitte laden Sie die Seite erneut.<div class="ob-load-error-detail">${ui.esc(err.message)}</div>`);
       console.error(err);
       return;
     }

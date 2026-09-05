@@ -50,7 +50,6 @@
   "search.placeholder": { "de": "Im Katalog suchen…", "fr": "Rechercher dans le catalogue…", "it": "Cerca nel catalogo…", "en": "Search the catalog…" },
   "home.search.title": { "de": "Daten finden", "fr": "Trouver des données", "it": "Trovare dati", "en": "Find data" },
   "home.search.description": { "de": "Finden Sie Daten und fachliche Begriffe im Katalog.", "fr": "Trouvez des données et des termes métier dans le catalogue.", "it": "Trova dati e termini di business nel catalogo.", "en": "Find data and business terms in the catalog." },
-  "home.search.examples": { "de": "Zum Beispiel:", "fr": "Par exemple :", "it": "Ad esempio:", "en": "For example:" },
   "search.submit": { "de": "Suchen", "fr": "Rechercher", "it": "Cerca", "en": "Search" },
   "search.label": { "de": "Im Katalog suchen", "fr": "Rechercher dans le catalogue", "it": "Cerca nel catalogo", "en": "Search the catalog" },
   "search.clear": { "de": "Suche löschen", "fr": "Effacer la recherche", "it": "Cancella la ricerca", "en": "Clear search" },

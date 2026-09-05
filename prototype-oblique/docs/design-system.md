@@ -2,7 +2,7 @@
 
 For current responsive dimensions and deliberate deviations, see the [responsive strategy](responsive-strategy.md): a 1600 px workspace, a separate desktop navigation row, 15/24 reading text and 14/20 data rows. The source mappings below document the Oblique origin and earlier compact scale.
 
-The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body and controls, 13/18 data rows, 12/16 supporting labels and a 240/56 px sidebar. The header identity follows the federal logo dimensions below; the selected mockup determines the remaining density.
+The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body, controls and data rows, 12/16 supporting labels and a 240/56 px sidebar. The header identity follows the federal flag/type dimensions below; the selected mockup determines the remaining density. See the [token consistency review](token-consistency.md) for the current token policy and cleanup.
 
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) ships as an Angular library. This prototype does not use it directly. Instead `css/tokens.css` reproduces Oblique's tokens as plain CSS custom properties and `css/main.css` hand-writes the components against them.
@@ -21,9 +21,9 @@ The source audit established the palette and shadows. The selected 1b mockup now
 
 | Tier | Prefix | Examples |
 |---|---|---|
-| Primitives | `--ob-red-500`, `--ob-secondary-800`, `--ob-font-size-xl`, `--ob-space-lg`, `--ob-radius-lg`, `--ob-shadow-default`, `--ob-z-widget` | Raw values, only used to define the tiers below |
-| Semantic | `--ob-color-text`, `--ob-color-surface`, `--ob-color-border-strong`, `--ob-color-accent`, `--ob-color-link`, `--ob-color-focus`, `--ob-color-success` | What `main.css` uses |
-| Component | `--ob-control-height`, `--ob-control-height-sm`, `--ob-icon-size-*`, `--ob-header-logo-*`, `--ob-tree-panel-min/max-width`, `--ob-popover-width`, `--ob-table-row-padding`, `--ob-graph-*` | Reusable widget sizes; compact layout measurements in `main.css` follow option 1b |
+| Primitives | `--ob-red-500`, `--ob-secondary-800`, `--ob-font-size-xl`, `--ob-space-lg`, `--ob-radius-lg`, `--ob-shadow-default`, `--ob-z-widget` | Colour primitives define semantic aliases; components may use shared spacing/type/radius/elevation tokens directly |
+| Semantic | `--ob-color-text`, `--ob-color-surface`, `--ob-color-border-strong`, `--ob-color-accent`, `--ob-color-link`, `--ob-color-focus`, `--ob-color-success` | Purpose-based colours used by components |
+| Component | `--ob-control-height`, `--ob-touch-target`, `--ob-logo-*`, `--ob-sidebar-width`, `--ob-tile-gap`, `--ob-home-max-width`, `--ob-table-row-padding` | Shared component dimensions and compact application choices, with responsive value overrides in `tokens.css` |
 
 ## Mapping
 
@@ -49,7 +49,7 @@ The source audit established the palette and shadows. The selected 1b mockup now
 | Headings | 24/32 bold, 17/24, 14/20 | Compact mockup 1b; Oblique font family/weights | heading/default/H1?H3 |
 | Body | Noto Sans 14/20 | `$ob-font` | body/default |
 | Overline | 12/16 medium, letter-spacing 1px | – | body/Overline |
-| Logo lockup | Federal flag + spaced divider + organisation/app text; responsive dimensions below | Federal design system `logo.postcss`, adapted for the compact app | Existing flag SVG |
+| Logo lockup | Federal flag + 16 px gap + organisation/app text; responsive dimensions below | Federal design system `logo.postcss`, adapted for the compact app | Existing flag SVG |
 | Entity type | Outlined 12/16 chip beside the title | Compact mockup 1b | ? |
 | Breadcrumb | 13/20 | Compact mockup 1b | ? |
 | Placeholder | secondary-400 (`--ob-color-placeholder`) | – | – |
@@ -77,21 +77,21 @@ The source audit established the palette and shadows. The selected 1b mockup now
 
 Only the logo composition and its breakpoints are taken from the local `C:\Users\david\Documents\GitHub\designsystem` checkout. Source files: [logo.postcss](../../../designsystem/css/components/logo.postcss), [Logo.vue](../../../designsystem/app/components/ch/components/Logo.vue) and [tailwind.config.js](../../../designsystem/app/tailwind.config.js). The prototype keeps Oblique typography, colors, navigation and controls; it does not import the other design system's header or stylesheet.
 
-The header uses the existing flag SVG followed by a one-pixel `#d1d5db` divider with equal gaps on either side, then the organisation and app text. The multilingual wordmark was removed at the user's request because it distracted from the compact app; its SVG remains available as a reference asset. From 768 px the flag, divider and title align at the top, including the source's `-0.16rem` optical title adjustment. The organisation stays bold and the app name regular.
+The header uses the existing flag SVG followed by a 16 px gap (`--ob-logo-gap`), then the organisation and app text. The multilingual wordmark and divider are omitted at the user's request for the compact app; the wordmark SVG remains available as a reference asset. From 768 px the flag and title align at the top, including the source's `-0.16rem` optical title adjustment. The organisation stays bold and the app name regular.
 
-| Viewport | Flag box | Divider height / gap each side | Title size |
-|---|---|---|---|
-| Below 480 px | 30 × 33 px | 40 / 8 px | 14 px; acronym + app name |
-| 480–639 px | 30 × 33 px | 40 / 8 px | 12 px; full organisation + app name |
-| 640–767 px | 30 × 33 px | 40 / 16 px | 14 px |
-| 768–1023 px | 30 × 33 px | 56 / 16 px | 14 px |
-| 1024–1279 px | 32 × 34 px | 56 / 24 px | 14 px |
-| 1280–1919 px | 32 × 34 px | 56 / 24 px | 16 px |
-| From 1920 px | 40 × 44 px | 70 / 32 px | 18 px |
+| Viewport | Flag box | Title size |
+|---|---|---|
+| Below 480 px | 30 × 33 px | 14 px; acronym + app name |
+| 480–639 px | 30 × 33 px | 12 px; full organisation + app name |
+| 640–767 px | 30 × 33 px | 14 px |
+| 768–1023 px | 30 × 33 px | 14 px |
+| 1024–1279 px | 32 × 34 px | 14 px |
+| 1280–1919 px | 32 × 34 px | 16 px |
+| From 1920 px | 40 × 44 px | 18 px |
 
 The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
 
-The flag image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The original logo integration was checked at 21 widths; the later wordmark removal retains the flag, divider and typography dimensions.
+The flag image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The original logo integration was checked at 21 widths; the simplified composition retains the flag and typography dimensions and has been checked from phone to wide desktop sizes.
 
 ## Components written in `main.css`
 
