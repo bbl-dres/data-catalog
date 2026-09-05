@@ -1,13 +1,4 @@
 {
-  "navigation.title": { "de": "Navigation", "fr": "Navigation", "it": "Navigazione", "en": "Navigation" },
-  "navigation.open": { "de": "Navigation öffnen", "fr": "Ouvrir la navigation", "it": "Apri navigazione", "en": "Open navigation" },
-  "navigation.expand": { "de": "Seitenspalte ausklappen", "fr": "Développer la barre latérale", "it": "Espandi barra laterale", "en": "Expand sidebar" },
-  "navigation.collapse": { "de": "Seitenspalte einklappen", "fr": "Réduire la barre latérale", "it": "Comprimi barra laterale", "en": "Collapse sidebar" },
-  "navigation.closeFlyout": { "de": "Navigationsfenster schliessen", "fr": "Fermer le volet de navigation", "it": "Chiudi pannello di navigazione", "en": "Close navigation flyout" },
-  "detail.pageSize": { "de": "Zeilen pro Seite", "fr": "Lignes par page", "it": "Righe per pagina", "en": "Rows per page" },
-  "detail.rowRange": { "de": "{from}–{to} von {total} Einträgen", "fr": "{from}–{to} sur {total} entrées", "it": "{from}–{to} di {total} voci", "en": "{from}–{to} of {total} entries" },
-  "col.position": { "de": "#", "fr": "#", "it": "#", "en": "#" },
-  "col.mandatory": { "de": "Pflicht", "fr": "Obligatoire", "it": "Obbligatorio", "en": "Required" },
   "_comment": "UI strings: one entry per key with de/fr/it/en. German is the reference; fr/it/en are machine-drafted for validation by translators. A missing or empty translation falls back to German.",
 
   "nav.catalog": { "de": "Katalog", "fr": "Catalogue", "it": "Catalogo", "en": "Catalog" },
@@ -37,7 +28,7 @@
   "home.recent": { "de": "Letzte Änderungen", "fr": "Dernières modifications", "it": "Ultime modifiche", "en": "Latest changes" },
   "home.col.domain": { "de": "Domäne", "fr": "Domaine", "it": "Dominio", "en": "Domain" },
   "home.col.responsibility": { "de": "Verantwortung", "fr": "Responsabilité", "it": "Responsabilità", "en": "Responsibility" },
-  "home.col.objects": { "de": "Objekte", "fr": "Objets", "it": "Oggetti", "en": "Objects" },
+  "home.col.objects": { "de": "Geschäftsobjekte", "fr": "Objets métier", "it": "Oggetti di business", "en": "Business objects" },
   "home.col.attributes": { "de": "Attribute", "fr": "Attributs", "it": "Attributi", "en": "Attributes" },
   "home.col.name": { "de": "Name", "fr": "Nom", "it": "Nome", "en": "Name" },
   "home.col.type": { "de": "Typ", "fr": "Type", "it": "Tipo", "en": "Type" },

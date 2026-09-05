@@ -2,13 +2,11 @@
 
 No build step and no framework. One HTML page, two stylesheets, six application JavaScript files, static JSON data, and a pinned self-hosted Swagger UI distribution that is loaded only when the API page is opened.
 
-The current page composition implements [compact layout 1b](compact-layout.md): a sticky 56 px header, shared 240 px sidebar / 56 px icon rail, header search, and a mobile modal drawer. The document scrolls normally; the footer remains at the page end.
-
 ## File structure
 
 ```
 prototype-oblique/
-├── index.html            Page shell: one-row header (logo, nav, search, tools), <main id="main">, footer
+├── index.html            Page shell: header (logo, titles, tools), nav, <main id="main">, footer
 ├── css/
 │   ├── tokens.css        Design tokens (custom properties) – see design-system.md
 │   └── main.css          Fonts, reset, layout and components; responsive and print rules
@@ -44,7 +42,7 @@ Six files, split by responsibility rather than by page, so a feature usually tou
 | `detail.js` | Profile page tabs, facts, sortable row tables with paging, orbit graph layout | Handle events |
 | `app.js` | State, rendering cycle with focus restoration, all event listeners, lazy Swagger UI, CSV/print exports, handbook scroll spy, graph drag | Contain HTML templates |
 
-Rendering is "render everything from state": `views.page(route, state)` returns the whole `<main>` as a string and `app.render()` replaces `innerHTML`. Because that drops keyboard focus, `replaceHtml()` records a selector for the focused control before the swap (`data-focus`, `id`, or its `data-*` attributes; a menu item maps to its menu button) and refocuses it afterwards without scrolling. Route changes skip this and scroll to the top. The header controls and main navigation are refreshed with the same focus-preserving helper. Sidebar and flyout scroll offsets survive re-renders. Three things bypass the full render: typing in the search box only re-renders the suggestion listbox, the help popover re-renders only its host, and graph panning sets the canvas transform directly. After the API route is composed, `app.js` loads Swagger UI on first use and mounts it into `#swagger-ui` using `data/swagger.json`; the mount is skipped if the page was re-rendered while the bundle was loading.
+Rendering is "render everything from state": `views.page(route, state)` returns the whole `<main>` as a string and `app.render()` replaces `innerHTML`. Because that drops keyboard focus, `replaceHtml()` records a selector for the focused control before the swap (`data-focus`, `id`, or its `data-*` attributes; a menu item maps to its menu button) and refocuses it afterwards without scrolling. Route changes skip this and scroll to the top. Three things bypass the full render: typing in the search box only re-renders the suggestion listbox, the help popover re-renders only its host, and graph panning sets the canvas transform directly. After the API route is composed, `app.js` loads Swagger UI on first use and mounts it into `#swagger-ui` using `data/swagger.json`; the mount is skipped if the page was re-rendered while the bundle was loading.
 
 Every entity lookup tolerates a missing target: `data.nameOf()` falls back to the id, relation builders drop unresolved ids, and breadcrumbs skip missing containers. `data.validate()` reports such references once in the console.
 
@@ -56,7 +54,7 @@ The URL is the source of truth for everything that should be bookmarkable:
 |---|---|
 | `#/` | Home |
 | `#/objects`, `#/tables`, `#/refs`, `#/products`, `#/apis`, `#/domains`, `#/systems` | Section list. Params: `view=tiles|table`, `group=<option>` |
-| `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n`, `size=50|100|200` (50 is the default). The tab is kept in the hash during a session, but a fresh load always opens Übersicht (see design-review-responsive.md, "Tab continuity") |
+| `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n`. The tab is kept in the hash during a session, but a fresh load always opens Übersicht (see design-review-responsive.md, "Tab continuity") |
 | `#/objects/gebaeude/attributes/egid` | Attribute profile |
 | `#/search?q=…` | Search results |
 | `#/manual?ch=<chapter>` | Handbook |
@@ -67,11 +65,11 @@ The URL is the source of truth for everything that should be bookmarkable:
 
 ## Transient state (`app.js`)
 
-Held in memory, not in the URL: the UI language (also in `localStorage`), search query and suggestion index, open menu (`info`, `language`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph pan offset, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles, header-search expansion, sidebar expansion (also in local storage), and the currently open rail flyout. URL params override `mode` and `groupBy` when present.
+Held in memory, not in the URL: the UI language (also in `localStorage`), search query and suggestion index, open menu (`info`, `language`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph pan offset, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles. URL params override `mode` and `groupBy` when present.
 
 ## Events
 
-A `change` listener handles the detail-row page-size selector. Sidebar/rail/search controls dispatch `toggle-sidebar`, `rail-section`, `close-flyout` and `toggle-search`; the mobile drawer keeps focus inside and makes the background inert. One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-language`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
+One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-language`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
 
 Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Groups are ordered by their best hit, ties by content order (objects, tables, code lists, products, APIs, then domains and systems); rows by score, shorter names first. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`. Result tables start in relevance order; a click on a column header switches that group to the chosen sort.
 

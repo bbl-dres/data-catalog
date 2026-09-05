@@ -70,18 +70,18 @@
   --ob-font-family-code: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
 
   --ob-font-size-xs: 0.75rem;     /* 12px */
-  --ob-font-size-sm: .8125rem;    /* 13px */
-  --ob-font-size-md: .875rem;        /* 14px */
-  --ob-font-size-lg: .875rem;   /* 17px – legacy h3 */
-  --ob-font-size-xl: 1.0625rem;   /* 23px – h2 */
-  --ob-font-size-2xl: 1.5rem;    /* 28px – h1 */
+  --ob-font-size-sm: 0.875rem;    /* 14px */
+  --ob-font-size-md: 1rem;        /* 16px */
+  --ob-font-size-lg: 1.0625rem;   /* 17px – legacy h3 */
+  --ob-font-size-xl: 1.4375rem;   /* 23px – h2 */
+  --ob-font-size-2xl: 1.75rem;    /* 28px – h1 */
 
   --ob-line-height-xs: 1rem;
   --ob-line-height-sm: 1.25rem;
-  --ob-line-height-md: 1.25rem;
-  --ob-line-height-lg: 1.5rem;
+  --ob-line-height-md: 1.5rem;
+  --ob-line-height-lg: 1.75rem;
   --ob-line-height-xl: 2rem;
-  --ob-line-height-body: 1.42857;
+  --ob-line-height-body: 1.5;
   --ob-line-height-table: 1.42857;
   /* Icon sizes: xs 12, sm 14, md 16, lg 18, xl 20, 2xl 22, 3xl 28 */
   --ob-icon-size-xs: 12px;
@@ -102,7 +102,7 @@
   --ob-letter-spacing-normal: 0;
   --ob-letter-spacing-wide: 0.25px;
   --ob-letter-spacing-wider: 0.5px;
-  --ob-letter-spacing-caps: 1px;
+  --ob-letter-spacing-caps: 2px;
 
   /* ---- 1. Primitives: spacing (legacy $ob-spacing-*) -------------------- */
   --ob-space-2xs: 2px;
@@ -157,7 +157,6 @@
 
   --ob-color-bg: var(--ob-white);
   --ob-color-surface: var(--ob-secondary-50);          /* panels, zebra rows */
-  --ob-color-ancestor: #f7f9fb;
   --ob-color-surface-hover: var(--ob-secondary-100);
   --ob-color-border: var(--ob-secondary-100);
   --ob-color-border-strong: var(--ob-secondary-200);
@@ -190,7 +189,7 @@
   --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
 
   /* ---- 3. Component tokens --------------------------------------------- */
-  --ob-content-max-width: 2560px;
+  --ob-content-max-width: 1440px;
   --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
   /* Logo lockup: values from the federal design system (css/components/logo.postcss), desktop tier */
   --ob-logo-flag-width: 30px;
@@ -203,8 +202,8 @@
   --ob-logo-title-font-size: var(--ob-font-size-md);     /* text-base from xl up */
   --ob-logo-title-line-height: 1.375;                    /* leading-snug */
   --ob-logo-title-trim: 0.16rem;                         /* mt-[-0.160rem]: caps flush with the wordmark text */
-  --ob-control-height: 32px;
-  --ob-control-height-lg: 32px;
+  --ob-control-height: 36px;
+  --ob-control-height-lg: 40px;
   --ob-touch-target: 44px;
   --ob-control-height-sm: 32px;                          /* icon buttons inside controls, avatar, tree toggles */
   --ob-avatar-size: var(--ob-control-height-sm);
@@ -238,7 +237,7 @@
   --ob-graph-center-circle-size: 68px;
   --ob-graph-item-width: 64px;
   --ob-prose-max-width: 72ch;
-  --ob-table-row-padding: 6px;
+  --ob-table-row-padding: var(--ob-space-sm);
   --ob-graph-height: 720px;
   --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
   --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */

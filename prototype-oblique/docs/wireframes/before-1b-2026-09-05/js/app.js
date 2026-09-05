@@ -20,9 +20,6 @@
     graph: { x: 0, y: 0 },            // pan offset of the relation graph
     relationDiagram: false,
     navDrawerOpen: false,
-    sidebarCollapsed: false,
-    flyout: null,
-    searchOpen: false,
     chapter: 'einleitung',
     lastEntity: null,
     detailTab: 'overview',             // carried only between consecutive detail routes
@@ -31,6 +28,7 @@
   const app = { state };
   let route = null;
   let ctx = null;
+  let treeViewportFrame = null;
 
   /* ---- rendering ---------------------------------------------------------- */
   const $ = id => document.getElementById(id);
@@ -79,11 +77,8 @@
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
     const previous = route;
-    const navigationHadFocus = state.navDrawerOpen || !!state.flyout;
     route = resolveRoute();
     state.navDrawerOpen = false;
-    state.flyout = null;
-    state.searchOpen = false;
     state.menu = null; state.suggest = false; state.suggestIdx = -1;
 
     if (route.view === 'detail') {
@@ -106,7 +101,6 @@
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
     app.render(true);
-    if (navigationHadFocus) $('page-content').focus({ preventScroll: true });
     renderHelp();
     if (route.view === 'manual' && route.params.ch) {
       const el = $('hb-' + route.params.ch);
@@ -118,26 +112,36 @@
 
   /** Re-render nav + main from the current route and state. `navigated`: a new page, focus is not restored. */
   app.render = function (navigated) {
-    const treeScroll = document.querySelector('.ob-sidebar-tree')?.scrollTop || 0;
-    const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     if (route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
     if (route.view === 'list' && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
-    replaceHtml($('main-nav'), views.mainNav(route));
-    replaceHtml($('header-tools'), views.headerTools(state));
+    $('main-nav').innerHTML = views.mainNav(route);
     if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
-    const tree = document.querySelector('.ob-sidebar-tree');
-    if (tree) tree.scrollTop = treeScroll;
-    if ($('sidebar-flyout')) $('sidebar-flyout').scrollTop = flyoutScroll;
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
-    syncDrawer();
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
     requestAnimationFrame(revealActiveTab);
+    scheduleTreeViewport();
     updateBackToTop();
     if (route.view === 'api') renderSwagger();
   };
+
+  /** Keep a desktop tree's complete scrollport inside the visible viewport. */
+  function scheduleTreeViewport() {
+    if (treeViewportFrame !== null) return;
+    treeViewportFrame = requestAnimationFrame(() => {
+      treeViewportFrame = null;
+      document.querySelectorAll('.ob-tree-panel:not(.is-mobile-open)').forEach(panel => {
+        if (window.matchMedia('(max-width: 960px)').matches) {
+          panel.style.removeProperty('--ob-tree-available-height');
+          return;
+        }
+        const top = Math.max(0, panel.getBoundingClientRect().top);
+        panel.style.setProperty('--ob-tree-available-height', `${Math.max(160, Math.floor(window.innerHeight - top))}px`);
+      });
+    });
+  }
 
   function updateBackToTop() {
     const button = $('back-to-top');
@@ -203,10 +207,6 @@
 
   function setNavigation(open) {
     state.navDrawerOpen = open;
-    state.menu = null;
-    state.flyout = null;
-    state.searchOpen = false;
-    state.suggest = false; state.suggestIdx = -1;
     app.render();
     requestAnimationFrame(() => {
       const target = open ? document.querySelector('.ob-tree-panel.is-mobile-open [data-action="close-navigation"]') : document.querySelector('[data-action="open-navigation"]');
@@ -214,40 +214,10 @@
     });
   }
 
-  function syncDrawer() {
-    const modal = state.navDrawerOpen && window.matchMedia('(max-width: 960px)').matches;
-    const panel = $('navigation-panel');
-    ['header', 'page-content', 'footer', 'back-to-top'].forEach(id => { if ($(id)) $(id).inert = modal; });
-    if (panel) {
-      if (modal) { panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); }
-      else { panel.removeAttribute('role'); panel.removeAttribute('aria-modal'); }
-    }
-  }
-
-  function setSearch(open, restoreFocus = true) {
-    state.searchOpen = open;
-    state.flyout = null;
-    state.suggest = open && !!state.query.trim();
-    state.suggestIdx = -1;
-    state.menu = null;
-    app.render();
-    if (restoreFocus) (open ? $('search-input') : document.querySelector('[data-action="toggle-search"]')).focus();
-  }
-
-  function closeFlyout(restoreFocus) {
-    const key = state.flyout;
-    if (!key) return;
-    state.flyout = null;
-    app.render();
-    if (restoreFocus) document.querySelector(`[data-action="rail-section"][data-key="${CSS.escape(key)}"]`)?.focus();
-  }
-
   /** Re-render the header widgets that depend on transient state (help popover, language menu). */
   function renderHelp() {
     const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state));
     const l = $('language-host'); if (l) replaceHtml(l, views.languageHost(state));
-    const dh = $('drawer-help-host'); if (dh) replaceHtml(dh, views.helpHost(state));
-    const dl = $('drawer-language-host'); if (dl) replaceHtml(dl, views.languageHost(state));
   }
   function renderSuggest() {
     const host = $('search-suggest-host'); if (!host) return;
@@ -261,13 +231,9 @@
   const HEADER_MENUS = ['info', 'language'];
   function setMenu(next) {
     const prev = state.menu, hadSuggest = state.suggest;
-    const hadFlyout = !!state.flyout;
-    const closeSearch = !!next && state.searchOpen;
-    if (closeSearch) state.searchOpen = false;
-    state.flyout = null;
     state.menu = next; state.suggest = false; state.suggestIdx = -1;
     const inMain = m => !!m && !HEADER_MENUS.includes(m);
-    if (inMain(prev) || inMain(next) || hadFlyout || closeSearch) app.render();
+    if (inMain(prev) || inMain(next)) app.render();
     else if (hadSuggest) renderSuggest();
     if (HEADER_MENUS.includes(prev) || HEADER_MENUS.includes(next)) renderHelp();
   }
@@ -299,7 +265,7 @@
     }
     if (e.key === 'Escape') {
       if (state.suggest) closeSuggest();
-      else setSearch(false);
+      else { state.query = ''; e.target.value = ''; $('search-clear').hidden = true; }
     }
   }
 
@@ -341,17 +307,16 @@
   function goChapter(id) {
     state.chapter = id;
     router.replaceParams({ ch: id });
-    if (state.navDrawerOpen) setNavigation(false);
-    else if (state.flyout) closeFlyout(true);
-    else updateChapterNav();
+    if (state.navDrawerOpen) setNavigation(false); else updateChapterNav();
     const el = $('hb-' + id);
     if (el) {
       hbLock = id;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior: 'smooth' });
       clearTimeout(hbTimer); hbTimer = setTimeout(() => { hbLock = null; }, 900);
     }
   }
   function onScroll() {
+    scheduleTreeViewport();
     updateBackToTop();
     if (!route || route.view !== 'manual' || hbLock) return;
     let cur = data.manual.chapters[0].id;
@@ -361,18 +326,7 @@
 
   /* ---- events ------------------------------------------------------------------- */
   function onClick(e) {
-    const action = e.target.closest('[data-action]');
-    const samePageLink = e.target.closest('a[href^="#/"]');
-    if (samePageLink && samePageLink.getAttribute('href') === location.hash && (state.navDrawerOpen || state.flyout)) {
-      e.preventDefault();
-      state.navDrawerOpen = false; state.flyout = null;
-      app.render(); $('page-content').focus({ preventScroll: true }); return;
-    }
-    if (state.flyout && !e.target.closest('.ob-tree-panel') && !samePageLink) {
-      state.flyout = null;
-      app.render();
-    }
-    const el = action;
+    const el = e.target.closest('[data-action]');
     if (!el) {
       if (e.target.id === 'search-input') { if (!state.suggest && state.query.trim()) { state.suggest = true; renderSuggest(); } return; }
       if (e.target.closest('.ob-popover, .ob-menu, #search-suggest')) return;
@@ -381,7 +335,6 @@
       // A link to another route re-renders through hashchange; do not pull the link out of the DOM before it is followed.
       const link = e.target.closest('a[href^="#"]');
       if (link && link.getAttribute('href') !== location.hash) { state.menu = null; state.suggest = false; state.suggestIdx = -1; return; }
-      if (state.searchOpen && !e.target.closest('.ob-header-search')) setSearch(false, false);
       closeTransient();
       return;
     }
@@ -389,21 +342,6 @@
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
       case 'back-to-top': e.preventDefault(); backToTop(); return;
-      case 'toggle-search': setSearch(!state.searchOpen); return;
-      case 'toggle-sidebar':
-        state.sidebarCollapsed = !state.sidebarCollapsed;
-        state.flyout = null;
-        try { localStorage.setItem('datenkatalog.sidebarCollapsed', String(state.sidebarCollapsed)); } catch (err) { /* storage unavailable */ }
-        app.render(); return;
-      case 'rail-section': {
-        state.flyout = state.flyout === key ? null : key;
-        state.menu = null; state.searchOpen = false; state.suggest = false; state.suggestIdx = -1;
-        if (key !== 'manual') { state.treeOpen[key] = true; }
-        app.render();
-        if (state.flyout) $('sidebar-flyout').querySelector('a, button')?.focus();
-        return;
-      }
-      case 'close-flyout': closeFlyout(true); return;
       case 'help-toggle': e.stopPropagation(); setMenu(state.menu === 'info' ? null : 'info'); return;
       case 'menu': e.stopPropagation(); setMenu(state.menu === el.dataset.menu ? null : el.dataset.menu); return;
       case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
@@ -439,9 +377,7 @@
         app.render();
         return;
       }
-      case 'set-page':
-        router.replaceParams({ page: el.dataset.page === '1' ? null : el.dataset.page }); app.render();
-        document.querySelector('.ob-detail-rows')?.scrollIntoView({ block: 'start' }); return;
+      case 'set-page': router.replaceParams({ page: el.dataset.page === '1' ? null : el.dataset.page }); app.render(); return;
       case 'toggle-relation-view': state.relationDiagram = !state.relationDiagram; app.render(); return;
       case 'export': { const id = el.dataset.export, label = el.dataset.label; state.menu = null; app.render(); doExport(id, label); return; }
       case 'clear-query': {
@@ -468,13 +404,6 @@
   }
 
   function onKeydown(e) {
-    if (e.key === 'Tab' && state.navDrawerOpen) {
-      const panel = $('navigation-panel');
-      const controls = [...panel.querySelectorAll('a, button:not(:disabled), input, select, [tabindex="0"]')].filter(el => el.getClientRects().length);
-      const first = controls[0], last = controls[controls.length - 1];
-      if (e.shiftKey && (e.target === first || !panel.contains(e.target))) { e.preventDefault(); last?.focus(); }
-      else if (!e.shiftKey && (e.target === last || !panel.contains(e.target))) { e.preventDefault(); first?.focus(); }
-    }
     if (e.target.id === 'search-input') { onSearchKey(e); return; }
     if (e.target.matches('.ob-tab') && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
       const tabs = [...e.target.parentElement.querySelectorAll('.ob-tab')];
@@ -485,10 +414,8 @@
       tabs[next].click();
       return;
     }
-    if (e.key === 'Escape' && (state.menu || state.suggest)) { closeTransient(); return; }
     if (e.key === 'Escape' && state.navDrawerOpen) { setNavigation(false); return; }
-    if (e.key === 'Escape' && state.flyout) { closeFlyout(true); return; }
-    if (e.key === 'Escape' && state.searchOpen) setSearch(false);
+    if (e.key === 'Escape' && (state.menu || state.suggest)) closeTransient();
   }
 
   function onFocusin(e) {
@@ -539,7 +466,7 @@
     backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
     if (route) {
       app.render();
-      const button = document.querySelector(state.navDrawerOpen ? '#drawer-language-host .ob-language-select' : '#language-host .ob-language-select');
+      const button = document.querySelector('.ob-language-select');
       if (button) button.focus({ preventScroll: true });
     }
   }
@@ -557,7 +484,6 @@
       return;
     }
     const cfg = data.config;
-    try { state.sidebarCollapsed = localStorage.getItem('datenkatalog.sidebarCollapsed') === 'true'; } catch (err) { /* storage unavailable */ }
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
     $('brand-acronym').textContent = cfg.app.organisationShort || '';
     $('brand-org').textContent = cfg.app.organisation;
@@ -566,12 +492,6 @@
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
-    document.addEventListener('change', e => {
-      if (e.target.matches('[data-action="set-page-size"]')) {
-        router.replaceParams({ size: e.target.value === '50' ? null : e.target.value, page: null });
-        app.render();
-      }
-    });
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
     document.addEventListener('focusout', onFocusout);
@@ -581,9 +501,9 @@
     document.addEventListener('pointerup', onPointerUp);
     document.addEventListener('pointercancel', onPointerUp);
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', scheduleTreeViewport, { passive: true });
     window.addEventListener('resize', updateBackToTop, { passive: true });
     window.addEventListener('hashchange', app.onRoute);
-    window.matchMedia('(max-width: 960px)').addEventListener('change', () => { state.navDrawerOpen = false; state.flyout = null; app.render(); });
 
     app.onRoute();
   };

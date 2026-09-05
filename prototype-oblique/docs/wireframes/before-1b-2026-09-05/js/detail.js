@@ -6,8 +6,7 @@
   const ui = DK.ui, data = DK.data, router = DK.router;
   const t = ui.t, esc = ui.esc, icon = ui.icon, fmt = ui.fmtDate;
   const detail = {};
-  const PAGE_SIZES = [50, 100, 200];
-  detail.pageSize = route => PAGE_SIZES.includes(Number(route.params.size)) ? Number(route.params.size) : 50;
+  const PAGE_SIZE = 20;
 
   detail.rowsLabel = e => data.kindDef(e.kind).rows;
 
@@ -22,11 +21,10 @@
     return detail.tabs(e).some(x => x[0] === tab) ? tab : 'overview';
   };
 
-  detail.render = function (e, route, state) {
+  detail.render = function (e, route, state, actionsHtml) {
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);
-    const counts = { rows: detail.rowsData(e).rows.length, relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
-    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div></div></div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}</button>`).join('')}</div></div><div class="ob-local-actions">${actionsHtml || ''}</div></div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state);
@@ -38,10 +36,11 @@
   /* ---- Übersicht ---------------------------------------------------------- */
   detail.facts = function (e) {
     const plain = (label, value) => ({ label, value, type: 'plain' });
+    const chip = (label, value, tone) => ({ label, value, type: 'chip', tone });
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
     const ext = (label, value, href) => ({ label, value, type: 'link', href });
     const dom = data.domainForEntity(e.kind, e);
-    const primary = [];
+    const primary = [chip(t('fact.status'), e.status, data.statusTone(e.status))];
     if (dom && e.kind !== 'domains') primary.push(internal(t('fact.domain'), dom.name, 'domains', dom.identifier));
     switch (e.kind) {
       case 'systems':
@@ -99,14 +98,6 @@
       : '–';
     return `
       <div class="ob-detail-sections">
-        <section class="ob-core-facts">
-          <h2>${esc(t('detail.facts'))}</h2>
-          <dl class="ob-facts">${renderFacts(facts.primary)}</dl>
-          <details class="ob-metadata">
-            <summary>${esc(t('detail.metadata'))}</summary>
-            <dl class="ob-facts">${renderFacts(facts.metadata)}</dl>
-          </details>
-        </section>
         <section>
           <h2>${esc(t('detail.contacts'))}</h2>
           <dl class="ob-facts">
@@ -115,11 +106,19 @@
             ${dataCustodian ? `<dt>${esc(t('detail.dataCustodian'))}</dt><dd>${person(dataCustodian)}</dd>` : ''}
           </dl>
         </section>
+        <section>
+          <h2>${esc(t('detail.facts'))}</h2>
+          <dl class="ob-facts">${renderFacts(facts.primary)}</dl>
+        </section>
+        <details class="ob-metadata">
+          <summary>${esc(t('detail.metadata'))}</summary>
+          <dl class="ob-facts">${renderFacts(facts.metadata)}</dl>
+        </details>
       </div>`;
   };
 
   /* ---- rows (Attribute / Felder / Werte / Geschäftsobjekte / Datentabellen) */
-  const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'outline') : '<span class="ob-cell-muted">—</span>';
+  const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'neutral') : '<span class="ob-cell-muted">—</span>';
   const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
 
   /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column (sort, CSV). */
@@ -127,8 +126,8 @@
     const c = (label, width) => ({ label: t(label), width });
     switch (e.kind) {
       case 'objects': return {
-        columns: [c('col.position', '48px'), c('col.attribute', '240px'), c('col.description'), c('col.valueType', '128px'), c('col.key', '104px'), c('col.mandatory', '80px')],
-        rows: e.attributes.map((a, i) => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), position = a.position || i + 1, mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [position, ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [position, a.name, a.description, a.valueType, keyText(a.keyRole), mandatory] }; }),
+        columns: [c('col.attribute', '22%'), c('col.description'), c('col.valueType', '14%'), c('col.key', '12%')],
+        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`); return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole)], text: [a.name, a.description, a.valueType, keyText(a.keyRole)] }; }),
       };
       case 'tables': return {
         columns: [c('col.field', '22%'), c('col.description'), c('col.dataType', '14%'), c('col.key', '12%')],
@@ -159,20 +158,17 @@
     if (!rd.rows.length) return ui.empty(t('detail.noRows', { what: detail.rowsLabel(e) }));
     const options = ui.tableOptions(state, `detail:${e.kind}:rows`);
     const ordered = ui.sortRows(rd.rows, options.sort, row => row.text);
-    const pageSize = detail.pageSize(route);
-    const pages = Math.max(1, Math.ceil(ordered.length / pageSize));
+    const pages = Math.max(1, Math.ceil(ordered.length / PAGE_SIZE));
     const page = Math.min(pages, Math.max(1, parseInt(route.params.page, 10) || 1));
-    const slice = ordered.slice((page - 1) * pageSize, page * pageSize);
+    const slice = ordered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     const rows = slice.map(r => ui.tr(r.cells, r.href, rd.columns)).join('');
     const pager = `<div class="ob-pager">
       <span class="ob-pager-current" aria-current="page">${page}</span>
       <span>${esc(pages === 1 ? t('detail.page', { n: pages }) : t('detail.pagePlural', { n: pages }))}</span>
       <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
       <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
-      <label class="ob-page-size">${esc(t('detail.pageSize'))}<select data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${PAGE_SIZES.map(n => `<option value="${n}"${n === pageSize ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
-      <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
     </div>`;
-    return `<div class="ob-detail-rows">${ui.table(rd.columns, rows, options)}${pager}</div>`;
+    return ui.table(rd.columns, rows, options) + pager;
   };
 
   /* ---- Beziehungen: orbit graph ------------------------------------------- */

@@ -19,7 +19,6 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 
 ## Features
 
-- Compact 1b sidebar layout: sticky 56 px header, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer.
 - Home page with KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
 - Profile pages with tabs for overview, attributes or fields or values, relationships as a list or a pannable orbit graph, and history.
@@ -44,7 +43,6 @@ Open <http://localhost:8000/prototype-oblique/>.
 ## Documentation
 
 - [Architecture](docs/architecture.md) — file structure, rendering model, routing, state, events, how to extend.
-- [Compact layout 1b](docs/compact-layout.md) — implementation plan, mockup mapping, responsive behavior and validation; includes the preserved original prototype.
 - [Design system](docs/design-system.md) — how the tokens map to Oblique, what was taken from the Figma library, known deltas.
 - [Data model](docs/data-model.md) — JSON files and fields.
 - [Code review](docs/code-review.md) — findings of the September 2026 review and what changed.
