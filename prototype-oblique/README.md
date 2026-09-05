@@ -13,7 +13,7 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 **Live demo:** https://bbl-dres.github.io/data-catalog/prototype-oblique/
 
 <p align="center">
-  <img src="assets/preview-1.jpg" alt="Datenkatalog home page with KPI cards, domain table and latest changes" width="49%" align="top"/>
+  <img src="assets/preview-1.jpg" alt="Datenkatalog home page with hero search, search filters, KPI cards, domain table and latest changes" width="49%" align="top"/>
   <img src="assets/preview-2.jpg" alt="Profile page of a business object with contacts, facts and metadata" width="49%" align="top"/>
 </p>
 
