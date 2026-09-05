@@ -1,0 +1,71 @@
+{
+  "reviewed": "2026-09-05",
+  "authority": "Catalog owner's corrections in this session",
+  "excludeViews": ["usage"],
+  "excludeClasses": ["Areal"],
+  "classAliases": { "Grundstück_AS": "Grundstück" },
+  "reason": "The diagram mixes conceptual and implementation models. Remove every Nutzungssicht entry; Areal and Infrastrukturgefäss are not SAP RE-FX entities, and Buchungskreis does not belong to this RE-FX catalog scope.",
+  "consolidations": [
+    {
+      "tableId": "t-sap-architectural-object",
+      "name": "Architektonisches Objekt",
+      "technicalName": "VIBDAO",
+      "technicalNameSource": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/2725228b197441c5a092e6ba12c0b931.html?locale=de-DE",
+      "domain": "bau",
+      "classes": ["Ebene", "Raum"],
+      "reason": "Ebene and Raum are types of Architektonisches Objekt, not independent SAP entities. Preserve the diagram fields with explicit type applicability; no shared physical schema is established."
+    }
+  ],
+  "apiTables": [
+    {
+      "tableId": "t-sap-building",
+      "replacesClass": "Gebäude_AS",
+      "name": "Gebäude",
+      "technicalName": "VIBDBU",
+      "structure": "BUILDING",
+      "domain": "bau",
+      "realizes": "gebaeude",
+      "technicalNameSource": "https://help.sap.com/docs/SAP_S4HANA_ON-PREMISE/d3a3eb7caa1842858bf0372e17ad3909/b14687d42cee443eb6a664e3e1526fd4.html",
+      "reason": "Owner approved replacing the architectural diagram entry with the documented building table. API field IDs are not physical column IDs; only the BUILDING response structure is projected here."
+    }
+  ],
+  "dataSourceTables": [
+    {
+      "tableId": "t-sap-business-entity",
+      "dataSource": "0BUSENTITY_ATTR",
+      "name": "Wirtschaftseinheit",
+      "domain": "finanzen",
+      "realizes": "wirtschaftseinheit",
+      "reason": "Owner requested the SAP-documented Wirtschaftseinheit table. This independently sourced entry does not restore the excluded Wirtschaftseinheit_NS diagram class."
+    },
+    {
+      "tableId": "t-sap-rental-object",
+      "dataSource": "0RENTOBJECT_ATTR",
+      "name": "Mietobjekt",
+      "domain": "miete",
+      "realizes": "mietobjekt",
+      "reason": "Owner requested Mietobjekt. Import the documented SAP extraction inventory independently of the excluded diagram class."
+    },
+    {
+      "tableId": "t-sap-contract",
+      "dataSource": "0RECONTRACT_ATTR",
+      "name": "Vertrag",
+      "domain": "miete",
+      "reason": "Owner requested Vertrag. Its scope is broader than the existing Mietvertrag business object; leave realizes unset pending business-model review."
+    }
+  ],
+  "tableComments": {
+    "t-sap-business-entity": "Feldinventar: neun dokumentierte Extraktionsfelder der SAP DataSource 0BUSENTITY_ATTR; keine vollständige physische Tabellendefinition.",
+    "t-sap-rental-object": "Feldinventar: zwölf Extraktionsfelder der SAP DataSource 0RENTOBJECT_ATTR. Der SAP-Begriff umfasst auch den nicht direkt vermietbaren Flächenpool; die fachliche Zuordnung zum Geschäftsobjekt Mietobjekt ist noch zu prüfen.",
+    "t-sap-contract": "Feldinventar: neun Extraktionsfelder der SAP DataSource 0RECONTRACT_ATTR. Vertrag ist weiter gefasst als das Geschäftsobjekt Mietvertrag; die fachliche Zuordnung ist noch offen.",
+    "t-sap-building": "Die 66 Felder stammen aus der BIT-API-Struktur BUILDING. Ihre Zuordnung zu physischen SAP-Spalten ist unbestätigt. Abweichende Tabellenbezeichnungen in BIT- und SAP-Dokumentation wurden zur Prüfung im SAP-Frontend vorgemerkt; es wurde keine Gleichsetzung abgeleitet.",
+    "t-sap-land-architecture": "Die Definition beschreibt den SAP-Begriff Grundstück. Die 19 Felder stammen aus der Diagrammklasse Grundstück_AS; die fachliche Zuordnung und der technische Tabellenname sind noch zu prüfen.",
+    "t-sap-architectural-object": "Die 24 Diagrammfelder sind den Typen Ebene und Raum zugeordnet. Sie bilden keine bestätigte gemeinsame physische SAP-Felddefinition.",
+    "t-sap-area": "Ungeklärte Diagrammklasse mit den Feldern Energieverbrauch, M2 und ID. Ob damit DWG-Geometrie, eine räumliche Einheit oder ein lokales Integrationsobjekt gemeint ist, ist nicht belegt. Technischer Tabellenname und AOID-Zuordnung sind offen.",
+    "t-bem": "BBL-Praxis laut Katalogverantwortlichem: Bemessungszeilen tragen eine AOID als Verknüpfung zu Geometrie in DWG-Plänen im Korasoft-Umfeld, z.B. Räume oder Flächenpolygone. Physische Spaltenzuordnung, Gültigkeitsbezug und Kardinalität sind noch zu prüfen; die bisherige Beispielfeldliste wurde nicht als SAP-Schema bestätigt."
+  },
+  "apiComments": {
+    "api-sap-building": "Abweichende Tabellenbezeichnungen zwischen BIT-API-Dokumentation und SAP Help wurden vom Katalogverantwortlichen zur Prüfung im SAP-Frontend vorgemerkt. API-Strukturen, physische Tabellen und architektonische Objekte dürfen bis zur Bestätigung nicht gleichgesetzt werden."
+  },
+  "requirementsAuthority": "Business objects lead requirements. Archived model/API differences are evidence for subsequent review, not automatically API change requirements."
+}

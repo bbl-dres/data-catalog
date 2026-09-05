@@ -143,7 +143,10 @@
   };
   /** Name as shown in lists, crumbs and links (tables/fields carry the technical name, APIs the version). */
   data.displayName = function (kind, e) {
-    if (kind === 'tables') return `${e.name} (${e.technicalName})`;
+    if (kind === 'tables') {
+      const name = ui.localized(e.labels) || e.name;
+      return e.technicalName && e.technicalName !== name ? `${name} (${e.technicalName})` : name;
+    }
     if (kind === 'fields') {
       const label = ui.localized(e.labels);
       return label && label !== e.technicalName ? `${label} (${e.technicalName})` : e.technicalName;
@@ -260,7 +263,7 @@
     }
   };
   /** Raw column order shared by collection sorting and Excel export. */
-  data.collectionValues = (kind, entity) => [entity.name, ...data.cols(kind, entity), data.statusOf(kind, entity)];
+  data.collectionValues = (kind, entity) => [kind === 'tables' ? data.displayName(kind, entity) : entity.name, ...data.cols(kind, entity), data.statusOf(kind, entity)];
 
   // Official source headings remain unchanged in imported JSON and workbook documentation.
   data.fieldSourceFacts = field => ({
@@ -416,7 +419,7 @@
       const stem = e.name.toLowerCase().split(/[ -]/)[0];
       return [
         mk('object', 'stack', 'objects', [o]),
-        { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: relTables.map(x => ({ name: `${fieldName} in ${x.technicalName}`, sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) })) },
+        { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: relTables.map(x => ({ name: `${fieldName} in ${x.technicalName || x.name}`, sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) })) },
         mk('typedBy', 'file_list', 'refs', relRefs),
         { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: data.termsOf(o).filter(tm => tm.name.toLowerCase().includes(stem)) },
       ];
@@ -466,12 +469,16 @@
     return 0;
   };
   data.match = (e, q) => data.relevance(e, q) > 0;
+  data.matchesValues = (values, query) => {
+    const q = (query || '').trim();
+    return !q || values.some(value => value != null && find(String(value), q));
+  };
   /** Collection filtering includes visible table metadata and container names, without changing sort order. */
   data.matchesCollection = function (kind, e, query) {
     const q = (query || '').trim();
     if (!q || data.match(e, q)) return true;
     const values = [e.identifier, ...data.cols(kind, e), data.statusOf(kind, e), data.domainForEntity(kind, e)?.name, data.sysOf(e.system)?.name];
-    return values.some(value => value != null && find(String(value), q));
+    return data.matchesValues(values, q);
   };
   /** One result group: items by relevance, then shorter names first, then alphabetical. */
   const resultGroup = (kind, q) => {

@@ -26,7 +26,6 @@
       "areal"
     ],
     "sourcedFrom": [
-      "t-geb-sap",
       "t-geb-gis",
       "t-parzelle"
     ],
@@ -174,10 +173,7 @@
       "mietvertrag",
       "kondition"
     ],
-    "sourcedFrom": [
-      "t-mo",
-      "t-mv"
-    ],
+    "sourcedFrom": [],
     "servedBy": [
       "api-immo"
     ],

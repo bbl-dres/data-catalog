@@ -1,0 +1,63 @@
+{
+  "captured": "2026-09-05",
+  "method": "Reviewed SAP Help field inventories. Extraction field IDs and source-table assignments are retained; these inventories are not complete physical schemas.",
+  "sources": [
+    {
+      "identifier": "0BUSENTITY_ATTR",
+      "title": "RE: Wirtschaftseinheit (Attribute)",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/4419895360b93d58e10000000a174cb4.html?locale=de-DE",
+      "technicalName": "VIBDBE",
+      "description": "Stammdaten der Wirtschaftseinheit in SAP RE-FX. Die Feldliste umfasst die neun dokumentierten Extraktionsfelder der DataSource 0BUSENTITY_ATTR aus der Tabelle VIBDBE.",
+      "fields": [
+        { "technicalName": "BUKRS", "label": "Buchungskreis", "sourceTable": "VIBDBE" },
+        { "technicalName": "SWENR", "label": "Wirtschaftseinheit", "sourceTable": "VIBDBE" },
+        { "technicalName": "SINSTBEZ", "label": "Instandhaltungsbezirk", "sourceTable": "VIBDBE" },
+        { "technicalName": "SLAGEWE", "label": "Grundstück", "sourceTable": "VIBDBE" },
+        { "technicalName": "SOBJLAGE", "label": "Kennzeichen Ortslage", "sourceTable": "VIBDBE" },
+        { "technicalName": "SMIETSP", "label": "Mietspiegel", "sourceTable": "VIBDBE" },
+        { "technicalName": "SMIETR", "label": "Mietrecht", "sourceTable": "VIBDBE" },
+        { "technicalName": "SSTDORT", "label": "Standort", "sourceTable": "VIBDBE" },
+        { "technicalName": "KOKRS", "label": "Kostenrechnungskreis", "sourceTable": "VIBDBE" }
+      ]
+    },
+    {
+      "identifier": "0RENTOBJECT_ATTR",
+      "title": "RE: Mietobjekt (Attribute)",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/3219895360b93d58e10000000a174cb4.html?locale=de-DE",
+      "technicalName": "VIBDRO",
+      "description": "Stammdaten des Mietobjekts in SAP RE-FX. Die Feldliste umfasst die zwölf dokumentierten Extraktionsfelder der DataSource 0RENTOBJECT_ATTR aus der Tabelle VIBDRO.",
+      "fields": [
+        { "technicalName": "BUKRS", "label": "Buchungskreis", "sourceTable": "VIBDRO" },
+        { "technicalName": "SWENR", "label": "Wirtschaftseinheit", "sourceTable": "VIBDRO" },
+        { "technicalName": "SMENR", "label": "Mietobjekt", "sourceTable": "VIBDRO" },
+        { "technicalName": "SGENR", "label": "Gebäude", "sourceTable": "VIBDRO" },
+        { "technicalName": "SGRNR", "label": "Grundstück", "sourceTable": "VIBDRO" },
+        { "technicalName": "SNUNR", "label": "Externe Nutzungsart", "sourceTable": "VIBDRO" },
+        { "technicalName": "ROTYPE", "label": "Typ des Mietobjekts", "sourceTable": "VIBDRO" },
+        { "technicalName": "SGEBT", "label": "Gebäudeteil", "sourceTable": "VIBDRO" },
+        { "technicalName": "XAUSTKL", "label": "Ausstattungsklasse", "sourceTable": "VIBDRO" },
+        { "technicalName": "XLAGE", "label": "Lageklasse", "sourceTable": "VIBDRO" },
+        { "technicalName": "RLGESCH", "label": "Lage im Geschoss", "sourceTable": "VIBDRO" },
+        { "technicalName": "KOKRS", "label": "Kostenrechnungskreis", "sourceTable": "VIBDRO" }
+      ]
+    },
+    {
+      "identifier": "0RECONTRACT_ATTR",
+      "title": "RE: Vertrag (Attribute)",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/3b19895360b93d58e10000000a174cb4.html?locale=de-DE",
+      "technicalName": "VICNCN",
+      "description": "Vertragsstammdaten in SAP RE-FX, unter anderem Vertragsart, Laufzeit und Kündigung. Die Feldliste umfasst die neun dokumentierten Extraktionsfelder der DataSource 0RECONTRACT_ATTR aus der Tabelle VICNCN.",
+      "fields": [
+        { "technicalName": "BUKRS", "label": "Buchungskreis", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNNR", "label": "Nummer des Vertrags", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNTYPE", "label": "Vertragsart", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNBEG", "label": "Datum Vertragsbeginn", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNENDABS", "label": "Datum Laufzeitende", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNTLAW", "label": "Mietrecht", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNNOTPER", "label": "Kündigung des Vertrags zum...", "sourceTable": "VICNCN" },
+        { "technicalName": "RECNNOTREASON", "label": "Kündigungsgrund", "sourceTable": "VICNCN" },
+        { "technicalName": "SRRELEVANT", "label": "Kennzeichen Umsatzrelevant", "sourceTable": "VICNCN" }
+      ]
+    }
+  ]
+}

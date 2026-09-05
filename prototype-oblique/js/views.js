@@ -123,6 +123,7 @@
     const ctx = {
       route, state, entity: route.entity, kind: isDomain ? 'objects' : route.kind, mode, isDomain,
       isList: route.view === 'list' || (isDomain && mode !== 'overview'),
+      isRows: route.view === 'detail' && !isDomain && DK.detail.resolveTab(route.entity, route.params.tab) === 'rows',
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
       filter: isDomain && mode === 'overview' ? '' : (route.params.filter || '').trim(), total: 0, matched: 0,
       domain: isDomain ? route.entity : route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
@@ -148,13 +149,18 @@
       ctx.columns = data.columns(ctx.kind);
     }
 
+    if (ctx.isRows) {
+      ctx.rowList = DK.detail.rowsContext(route.entity, route, state);
+      ctx.total = ctx.rowList.total;
+      ctx.matched = ctx.rowList.matched;
+    }
     if (route.view === 'search') {
       ctx.searchGroups = DK.search.results((route.params.q || '').trim(), state.searchOptions);
       ctx.searchPage = DK.search.page(ctx.searchGroups, (route.params.q || '').trim(), route.params);
     }
 
     const e = route.entity;
-    const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.name };
+    const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.kind === 'tables' ? data.displayName('tables', e) : e.name };
     ctx.title = (titles[route.view] || (() => t('notfound.title')))();
     if (ctx.domain && !isDomain) ctx.title += ' – ' + ctx.domain.name;
 
@@ -234,7 +240,7 @@
 
   views.entityHeader = function (ctx) {
     const e = ctx.entity;
-    return `<header class="ob-view-header ob-entity-header"><div class="ob-title-row"><h1>${esc(e.name)}</h1>${views.actionsMenu(ctx)}</div>${e.description ? `<p class="ob-prose ob-detail-description">${esc(e.description)}</p>` : ''}</header>`;
+    return `<header class="ob-view-header ob-entity-header"><div class="ob-title-row"><h1>${esc(ctx.title)}</h1>${views.actionsMenu(ctx)}</div>${e.description ? `<p class="ob-prose ob-detail-description">${esc(e.description)}</p>` : ''}</header>`;
   };
 
   views.collectionHeader = ctx => `<header class="ob-view-header ob-collection-header"><div class="ob-title-row"><h1>${esc(ctx.title)}</h1>${views.actionsMenu(ctx)}</div><p class="ob-prose ob-view-description">${esc(data.kindDef(ctx.kind).description)}</p></header>`;
@@ -253,17 +259,12 @@
     return `<div class="ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
       ${ctx.mode === 'overview' ? '' : `<div class="ob-local-actions">
-        <div class="ob-collection-search" role="search" aria-label="${esc(t('collection.search.label'))}">
-          ${icon('search', 'lg', 'ob-search-icon')}
-          <input type="search" class="ob-input ob-search-input" id="collection-filter" value="${esc(ctx.filter)}" placeholder="${esc(t('collection.search.placeholder'))}" aria-label="${esc(t('collection.search.label'))}" aria-controls="collection-view-panel" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
-          <button type="button" class="ob-icon-button ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${esc(t('collection.search.clear'))}"${ctx.filter ? '' : ' hidden'}>${icon('xmark')}</button>
-        </div>${views.groupMenu(ctx)}
+        ${ui.collectionSearch(ctx.filter, 'collection-view-panel')}${views.groupMenu(ctx)}
       </div>`}
     </div>`;
   };
 
-  views.collectionStatus = ctx => t('collection.search.count', { n: ctx.matched, total: ctx.total });
-  views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : `<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${esc(views.collectionStatus(ctx))}</p>`}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${ctx.mode === 'overview' ? DK.detail.overview(ctx.entity, ctx.state) : views.list(ctx)}</div>`;
+  views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : ui.collectionStatus(ctx)}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${ctx.mode === 'overview' ? DK.detail.overview(ctx.entity, ctx.state) : views.list(ctx)}</div>`;
 
   /** One combobox for home, results and the expandable header. */
   views.searchField = function (state, home = false) {
@@ -322,6 +323,7 @@
   /* catalog tree */
   views.tree = function (route, state, onlySection) {
     const kinds = data.model.kinds;
+    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
     const navParams = routeNav(route);
     const listHref = kind => router.listHref(kind, navParams);
     const entityHref = (kind, id) => router.entityHref(kind, id, navParams);
@@ -342,7 +344,7 @@
       const branches = childKind
         ? data.list(sec).map(c => ({ key: `${sec}:${c.identifier}`, title: c.name, entityKind: sec, entity: c, itemKind: childKind, items: sec === 'domains' ? data.objectsOfDomain(c) : data.tablesOfSystem(c) }))
         : data.buildGroups(sec, sec === 'tables' ? 'system' : 'domain').map(g => ({ key: g.id, title: g.title, entityKind: g.entityKind, entity: g.entity, itemKind: sec, items: g.items }));
-      branches.forEach(b => {
+      branches.sort((a, b) => collator.compare(a.title, b.title)).forEach(b => {
         // Repeated domains group these collections; their labels must not jump to the business-object domain profile.
         const scoped = b.entityKind === 'domains' && ['refs', 'products', 'apis'].includes(sec);
         const active = !!b.entity && (scoped
@@ -355,7 +357,9 @@
           href: b.entity ? (scoped ? router.domainListHref(sec, b.entity.identifier, navParams) : entityHref(b.entityKind, b.entity.identifier)) : listHref(sec), toggleOnly: !b.entity,
         });
         if (!bOpen) return;
-        b.items.forEach(m => items.push({ label: m.name, count: data.sizeOf(b.itemKind, m), level: 3, icon: kinds[b.itemKind].icon, active: isActive(b.itemKind, m.identifier), href: entityHref(b.itemKind, m.identifier) }));
+        b.items.map(m => ({ entity: m, label: data.displayName(b.itemKind, m) }))
+          .sort((a, b) => collator.compare(a.label, b.label))
+          .forEach(({ entity: m, label }) => items.push({ label, count: data.sizeOf(b.itemKind, m), level: 3, icon: kinds[b.itemKind].icon, active: isActive(b.itemKind, m.identifier), href: entityHref(b.itemKind, m.identifier) }));
       });
     });
     items.forEach((it, i) => { if (it.level === 1 && i > 0) items[i - 1].divider = true; });
@@ -436,10 +440,10 @@
   views.list = function (ctx) {
     const { kind, groups, mode, columns, state } = ctx;
     const nav = routeNav(ctx.route);
-    if (!groups.length) return ui.empty(t('collection.search.none'), ctx.filter ? `${esc(t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${esc(t('collection.search.clear'))}</button></p>` : '');
+    if (!groups.length) return ui.collectionEmpty(ctx.filter);
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
-      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-card ob-tile" href="${router.entityHref(kind, e.identifier, nav)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
+      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-card ob-tile" href="${router.entityHref(kind, e.identifier, nav)}"><span class="ob-tile-name">${esc(kind === 'tables' ? data.displayName(kind, e) : e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {

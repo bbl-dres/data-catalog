@@ -24,24 +24,32 @@
   {
     "identifier": "gis",
     "name": "GIS IMMO",
-    "description": "Geoinformationssystem für die Bundesimmobilien. Enthält Geodaten zu Gebäuden, Grundstücken und Energieinfrastruktur.",
+    "description": "Geoinformationssystem für Bundesimmobilien. Das dokumentierte Modell umfasst Gebäude, Bodenabdeckung mit dem Typ Gebäude, Grundstück, Gebäudehülle (AO), Raum, Bauprojekt und Grünfläche.",
     "status": "Entwurf",
-    "version": "2025.12",
     "created": "2022-01-14",
-    "modified": "2025-12-02",
+    "modified": "2026-09-05",
     "responsibleOrg": "Immobilienmanagement",
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "classification": "intern",
-    "personalData": false,
-    "source": "Architektur-Repository",
-    "synced": "2024-06-01",
+    "source": "BBL GIS IMMO – Modellbeschreibung",
+    "synced": "2026-09-05",
     "technology": "ArcGIS Enterprise",
     "dataCustodian": "Immobilienmanagement",
     "contact": {
       "email": "immobilienmanagement@bbl.admin.ch",
       "phone": "+41 58 465 50 10"
-    }
+    },
+    "sourceDetail": "BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx · Attribute · 7 Modellgruppen",
+    "sourceModified": "2025-03-02T10:28:54",
+    "provenance": {
+      "importId": "gis-immo-workbook",
+      "captured": "2026-09-05",
+      "sourceFile": "BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx",
+      "sourceSha256": "0b66440714c1ffa8dea48c034231304a16df8e1913c05733b70ae0cf54751197",
+      "sourceSheet": "Attribute"
+    },
+    "comment": "Die Arbeitsmappe enthält Felddefinitionen mit den Quellenstatus LIVE und DEV. Der Katalogstatus bleibt Entwurf. Technische Tabellennamen, Geometrietypen und API-Verfügbarkeit sind daraus nicht bestätigt; vorhandene Zuständigkeiten bleiben Katalogangaben."
   },
   {
     "status": "Gültig",

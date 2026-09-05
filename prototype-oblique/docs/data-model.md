@@ -33,6 +33,7 @@ Domain membership is based on the stable domain identifier, including when calle
 | `identifier` | string | Stable id, used in URLs | `dct:identifier` |
 | `name` | string | Display name | `dct:title` |
 | `description` | string | Definition | `dct:description` |
+| `comment` | string (optional) | Review notes, separate from the definition; shown as Kommentar in Kerndaten | Local catalog metadata |
 | `status` | `Gültig` \| `Entwurf` \| `Zurückgezogen` | Lifecycle status | `adms:status` |
 | `version` | string | | `owl:versionInfo` |
 | `created`, `modified` | date | | `dct:issued`, `dct:modified` |
@@ -46,6 +47,8 @@ Domain membership is based on the stable domain identifier, including when calle
 
 ## Responsibility and contacts
 
+Every entity kind, including embedded business attributes and table fields, supports an optional plain-text `comment`. Empty comments are omitted. Line breaks are preserved and HTML is escaped. Comments are local to the record: attributes and fields do not inherit their parent's comment. Excel metadata retains them. SAP source refreshes preserve existing table/field comments and curated documentation links.
+
 The overview's **Verantwortlich** section shows `responsibleOrg`, documented owner/steward/custodian roles and the organisation's shared email and phone. `contact.url` links the organisation to its website; mail and phone links use `mailto:` and `tel:`. Empty roles are omitted, and the organisation is not repeated in Kerndaten. `responsibleOrg` stays a string so collection grouping and exports remain compatible.
 
 Role values can be `{ "type": "person" | "organisation", "name": "…", "url": "…" }`, with optional `url`. Legacy owner/steward strings denote persons; legacy custodian strings denote organisational units. Only persons without a supplied URL use the configured federal directory; organisations without a website remain plain text. URLs and labels use the existing safe rendering helpers. No owner/steward role is inferred from an organisation's name.
@@ -54,13 +57,25 @@ Attributes inherit the object's organisation, roles and shared contact. Fields i
 
 ## Type-specific fields
 
+The [GIS IMMO workbook import](gis-immo-import.md) replaces GIS samples with seven reviewed model inventories and 275 source rows. It uses `fieldScope: "model-inventory"`, exact DB field names and German/available English aliases. Reported formats remain model types; LIVE/DEV is retained separately as `sourceStatus`, displayed in field Kerndaten. Physical table IDs and constraints absent from the workbook are omitted. Source metadata and unresolved duplicate names remain traceable in the report. Bodenabdeckung retains `t-boden` with type Gebäude (Polygon), corresponding to source group BBL Gebäude (AO); all 46 fields retain that type in `appliesToObjectTypes`, also shown in field Kerndaten.
+
 **domains**: shared core contact metadata as above.
 
 **systems**: `technology`, `dataCustodian`, optional `informationUrl`, `contact`. The catalogue does not actively scan systems; `modified` records the last known change.
 
 **objects**: `domain` (domain id), `normReference`, `termdat [{ name, id, url }]`, `attributes [{ identifier, name, description, valueType, keyRole, mandatory, position }]`. `valueType` is one of `Text`, `Ganzzahl`, `Dezimal`, `Datum`, `Code`, `Geometrie`; `keyRole` is `PK`, `FK` or `null`. An attribute is addressed as `<objectId>/<attributeId>` (route `#/objects/<objectId>/attributes/<attributeId>`).
 
-**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), optional `realizes` (object id), optional `domain` (fallback when no business object is mapped), `fields [{ technicalName, labels, description, dataType, keyRole, codeList? }]`. `codeList` references a code-list ID and drives the optional Werteliste column and inverse relationships. Imported fields also retain `sourceUrl` and `catalogMetadata`. The catalogue does not actively scan or certify tables; `modified` records the last known catalog change.
+**tables**: optional `technicalName` (documented technical table ID), optional `labels` (localized alias), `system` (system id), optional `dataCustodian` (otherwise inherited from the system), optional `realizes` (object id), optional `domain` (fallback when no business object is mapped), `fields [{ technicalName, labels, description, dataType?, keyRole, codeList? }]`. Unknown technical table IDs are omitted; display uses `Alias (technicalName)` only when defined. `codeList` references a code-list ID and drives the optional Werteliste column and inverse relationships. Imported fields also retain `sourceUrl` and `catalogMetadata`. The catalogue does not actively scan or certify tables; `modified` records the last known catalog change.
+
+The [SAP RE-FX import](sap-refx-reconciliation.md) separates the original diagram transcription from reviewed catalog decisions. Remaining model entries retain `modelClass`, `modelView`, `modelAbstract` and `modelAssociations`; the model class name is not reused as a physical table ID. Documented table IDs use `technicalNameKind: "physical-table"` and `technicalNameSource`. Architectural object types are retained in `objectTypes`, with `appliesToObjectTypes` on their source fields. Fields with `technicalNameKind: "model-attribute"` are not verified database columns. Missing types/constraints remain unspecified; explicit diagram types use `dataTypeKind: "model-type"`.
+
+The building entry has `fieldScope: "api-projection"` and `apiStructure: "BUILDING"`. Its 66 `api-field` names come directly from the saved API documentation; `apiMappings` marks them `documented-api-field` with `physicalColumnVerified: false`. Related response structures are not folded into the building's physical schema. The original 75 semantic matches to the removed usage model remain in the reconciliation report, not as live field mappings. Retired sample names, field IDs and related references remain in the source audit.
+
+Wirtschaftseinheit, Mietobjekt and Vertrag use `fieldScope: "datasource-projection"` with `dataSource` identifying their reviewed SAP extraction inventories. Their table IDs VIBDBE, VIBDRO and VICNCN are documented by SAP. Their `datasource-field` IDs describe extraction inventories; `catalogMetadata` retains the DataSource and source-table assignment. Unknown physical types, keys and constraints are omitted. These inventories are separate from API mappings and excluded diagram classes. Vertrag leaves `realizes` unset pending review of its broader scope against the existing Mietvertrag business object.
+
+Tables may define `informationUrls: string[]` with unique absolute HTTP(S) documentation URLs. These appear together as **Weitere Informationen** in Kerndaten; invalid links are omitted and a matching `sourceUrl` is not displayed twice. An empty or absent array adds no row. `sourceUrl` remains provenance, while `informationUrls` can contain several supporting documents. Excel metadata preserves the array. SAP imports populate known source/table documentation URLs and retain additional curated URLs.
+
+SAP descriptions can carry `descriptionSource: { title, url, kind, reviewed, version }`. `kind` distinguishes `source-excerpt` from `source-summary`; Kerndaten displays that distinction and a documentation link. Definition provenance is independent of the field inventory's source and does not certify that model/API fields match the physical table. [sap-refx-definitions.json](sap-refx-definitions.json) retains the reviewed definitions; comments hold scope limits and unresolved mappings.
 
 **fields**: Every embedded field has a non-empty `technicalName` and a `labels` language map. German (`de`) is required; French (`fr`), Italian (`it`) and English (`en`) are optional non-empty strings. Omit translations that are not available. For example:
 
@@ -91,6 +106,10 @@ Imported records may carry `sourceUrl`, `sourceDetail` and `provenance` with sou
 **products**: `domain`, `accessRights`, `license`, `format`, `accrualPeriodicity`, `basedOn [object ids]`, `sourcedFrom [table ids]`, `servedBy [api ids]`, `attributes [{ name, description, valueType }]` (optional, may be empty).
 
 **apis**: `version`, `domain`, `system`, `protocol`, `endpointURL`, `documentation`, `accessRights`.
+
+The [SAP RE-FX documentation import](sap-refx-reconciliation.md) also records `technicalName`, `sourceStatus`, `sourceModified`, `operation`, `httpMethod`, `readOnly`, `callType`, `bulkSupported`, `authentication`, `oauthSupported`, `documentedRequestParameters`, `responseStructures`, `documentedServers`, `documentedPath`, `endpointVerification`, `wsdlDocumentation`, `errorHandling` and `documentationIssues`. These optional source details are preserved by the metadata export. A response structure has a technical name, title, description, documented field count and source link; it does not imply a physical table or a verified API-to-table mapping. Reported API lifecycle status is separate from the catalog record's review status. The endpoint base URL is sourced from the rendered documentation, with verification status recorded separately.
+
+`modelMappings` contains only candidates targeting active catalog entries; `modelCoverage` describes active scope. `sourceReconciliation` separately summarizes the original diagram comparison, while `documentedFieldMappings` connects projected API fields to their documented structure. These optional source annotations are exported as metadata. They do not establish physical foreign keys or runtime relationship-graph edges.
 
 **changelog**: `[{ entity: "<kind>:<identifier>", date, action, detail, user }]`. Attributes show the history of their business object; fields explicitly show the history of their data table.
 

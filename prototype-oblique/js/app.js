@@ -126,8 +126,9 @@
       if (state.detailTab !== 'overview') state.mode = state.detailTab;
       router.replaceParams({ tab: state.detailTab, view: null, page: null });
     } else if (route.view === 'detail') {
-      // Fresh loads start at overview; profile-to-profile navigation can retain a supported tab.
-      const requested = !previous ? 'overview' : route.params.tab || (previous.view === 'detail' ? state.detailTab : 'overview');
+      // A bookmarked row search must reopen its table; other fresh loads start at overview.
+      const rowSearch = route.params.tab === 'rows' && route.params.filter;
+      const requested = !previous && !rowSearch ? 'overview' : route.params.tab || (previous?.view === 'detail' ? state.detailTab : 'overview');
       state.detailTab = detail.resolveTab(route.entity, requested);
       const wanted = state.detailTab === 'overview' ? undefined : state.detailTab;
       if (route.params.tab !== wanted) router.replaceParams({ tab: wanted || null, page: null });
@@ -389,18 +390,19 @@
   }
   /** Update only results: keeping the input node preserves focus, selection and IME composition. */
   function filterCollection(value) {
-    if (!ctx.isList) return;
+    if (!ctx.isList && !ctx.isRows) return;
     const q = value.trim();
     $('collection-filter-clear').hidden = !value;
     if (q === ctx.filter) return;
     state.filteredClosed = {};
-    router.replaceParams({ filter: q || null });
+    router.replaceParams({ filter: q || null, ...(ctx.isRows ? { page: null } : {}) });
     route = resolveRoute();
     ctx = views.context(route, state);
-    $('collection-view-panel').innerHTML = views.list(ctx);
+    if (ctx.isRows) $('panel-rows').innerHTML = detail.rows(route.entity, route, state, ctx.rowList);
+    else $('collection-view-panel').innerHTML = views.list(ctx);
     const status = $('collection-filter-status');
     status.className = q ? 'ob-collection-status' : 'ob-sr-only';
-    status.textContent = views.collectionStatus(ctx);
+    status.textContent = ui.collectionCount(ctx);
     observeTables();
   }
   function clearCollectionFilter() {

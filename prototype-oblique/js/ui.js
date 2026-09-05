@@ -108,6 +108,16 @@
 
   ui.empty = (title, hint) => `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}</div>`;
 
+  /** Shared local search for collections and detail rows; only one is mounted per page. */
+  ui.collectionSearch = (filter, panel) => `<div class="ob-collection-search" role="search" aria-label="${ui.esc(ui.t('collection.search.label'))}">
+    ${ui.icon('search', 'lg', 'ob-search-icon')}
+    <input type="search" class="ob-input ob-search-input" id="collection-filter" value="${ui.esc(filter)}" placeholder="${ui.esc(ui.t('collection.search.placeholder'))}" aria-label="${ui.esc(ui.t('collection.search.label'))}" aria-controls="${ui.esc(panel)}" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
+    <button type="button" class="ob-icon-button ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${ui.esc(ui.t('collection.search.clear'))}"${filter ? '' : ' hidden'}>${ui.icon('xmark')}</button>
+  </div>`;
+  ui.collectionCount = ({ matched, total }) => ui.t('collection.search.count', { n: matched, total });
+  ui.collectionStatus = ctx => `<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${ui.esc(ui.collectionCount(ctx))}</p>`;
+  ui.collectionEmpty = filter => ui.empty(ui.t('collection.search.none'), filter ? `${ui.esc(ui.t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${ui.esc(ui.t('collection.search.clear'))}</button></p>` : '');
+
   /** ISO date (yyyy-mm-dd) → Swiss short date (d.m.yyyy). */
   ui.fmtDate = function (iso) {
     if (!iso) return '';

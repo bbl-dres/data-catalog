@@ -18,6 +18,7 @@ npm install --prefix $testTools --no-save playwright@1.62.1
 $env:PLAYWRIGHT_MODULE = Join-Path $testTools 'node_modules/playwright'
 $env:PLAYWRIGHT_CHANNEL = 'msedge'
 node prototype-oblique/tests/functional.cjs
+node prototype-oblique/tests/list-search.cjs
 node prototype-oblique/tests/responsive.cjs
 node prototype-oblique/tests/graph.cjs
 node prototype-oblique/tests/gwr.cjs
@@ -36,8 +37,11 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `core.test.cjs` | Real and deliberately invalid fixtures; handbook chapter aliases, preference compatibility/failures, domain integrity, routing, loading, safe URLs, workbook round-trips, types/long text and sorting |
 | `functional.cjs` | Handbook legacy links and navigation; hero/header search examples, domain/type filters, one result table, global pagination/sorting, mock answers and URLs; collection filtering, IME, export and history; shared domain tabs, legacy links, scoped export, metadata, focus, menus, API lifecycle/races/retry and load failures |
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
+| `list-search.cjs` | Shared collection/detail search: complete row coverage, technical names/descriptions, pagination, IME/focus, empty states, URL restoration, responsive controls and full entity export |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |
 | `gwr.cjs` | Real GWR field coverage, project-domain/object mappings, system/tree navigation, field/code-list links, 119-value pagination, sorting, complete Excel workbooks, collection search and mobile layouts |
+| `sap.cjs` | Curated SAP scope, source inventories, alphabetical tree, retired entries, architectural types, field search, documentation/comments, responsive layouts and complete Excel metadata |
+| `gis.cjs` | GIS workbook scope, Bodenabdeckung type Gebäude, duplicate field identities, source statuses, pagination/search, mobile layouts and complete 275-field Excel export |
 | `fields.cjs` | Field links/profiles, localized labels and German fallback, stable technical names and URLs, consistent table fonts, organisation/person contacts and inheritance, breadcrumbs, both tree models, inherited history, code lists, invalid routes, keyboard and mobile navigation |
 | `excel.cjs` | Lazy local writer, actual downloads, retry, mobile profile/empty-list exports, duplicate guard and scope preservation across navigation |
 | `sidebar.cjs` | Live mouse resizing without DOM replacement, saved width, keyboard/reset/cancellation, collapse, responsive bounds, mobile/API exclusions and unavailable storage |

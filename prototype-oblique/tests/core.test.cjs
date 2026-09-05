@@ -249,14 +249,15 @@ test('field identifiers support encoded names and reject ambiguous duplicates', 
   const { data, router } = await loaded((name, value) => {
     if (name === 'tables.json') value[0].fields.push({ identifier: 'cost / m²?net#', technicalName: 'RENAMED_COLUMN', labels: { de: 'Kosten pro Quadratmeter' }, description: 'Stable identifier', dataType: 'DECIMAL' });
   });
-  const href = router.entityHref('fields', 't-we/cost / m²?net#');
-  assert.equal(router.parse(href).id, 't-we/cost / m²?net#');
+  const id = `${data.tables[0].identifier}/cost / m²?net#`;
+  const href = router.entityHref('fields', id);
+  assert.equal(router.parse(href).id, id);
   assert.equal(data.get('fields', router.parse(href).id).technicalName, 'RENAMED_COLUMN');
   for (const explicit of [false, true]) {
     const { data: invalid } = runtime((name, value) => {
       if (name === 'tables.json') {
         const f = value[0].fields[0];
-        value[0].fields.push(explicit ? { ...f, identifier: f.technicalName, technicalName: 'another-name' } : { ...f });
+        value[0].fields.push(explicit ? { ...f, identifier: f.identifier || f.technicalName, technicalName: 'another-name' } : { ...f });
       }
     });
     await assert.rejects(invalid.load('data/'), /duplicate field identifier/);
@@ -265,11 +266,11 @@ test('field identifiers support encoded names and reject ambiguous duplicates', 
 
 test('field labels follow the selected language with a German fallback and stable technical identity', async () => {
   const { data, ui, detail, excel } = await loaded((name, value) => {
-    if (name === 'tables.json') value[0].fields[0].labels.fr = 'Mandant FR <test>';
+    if (name === 'tables.json') value[0].fields[0] = { technicalName: 'MANDT', labels: { de: 'Mandant', fr: 'Mandant FR <test>' } };
   });
   const embedded = data.tables[0].fields[0];
   const stored = JSON.stringify(embedded);
-  const id = `t-we/${data.fieldId(embedded)}`;
+  const id = `${data.tables[0].identifier}/${data.fieldId(embedded)}`;
   for (const [lang, expected] of [['fr', 'Mandant FR <test>'], ['it', 'Mandant'], ['en', 'Mandant'], ['de', 'Mandant']]) {
     ui.setDictionary(data.i18n, lang);
     const field = { ...data.field(id), kind: 'fields' };
@@ -397,7 +398,8 @@ test('mock answers handle simple questions conservatively and escape source exce
   assert.equal(search.results('Welche Gebäude enthalten verschwundeneMarsdaten?', options).length, 0);
   assert.equal(search.answer('unfindable-query', options).sources.length, 0);
   const answer = search.answer('Gebäude', options);
-  assert.equal(answer.sources[0].id, 't-gwr-gebaeude');
+  const candidates = new Set(search.results('Gebäude', options).flatMap(group => group.items.map(item => item.identifier)));
+  assert.ok(answer.sources.length && answer.sources.every(source => source.kind === 'tables' && candidates.has(source.id)));
   for (const source of answer.sources) {
     const description = data.get(source.kind, source.id).description.trim().replace(/\s+/g, ' ');
     assert.ok(description.startsWith(source.excerpt.replace(/…$/, '')));
@@ -407,7 +409,7 @@ test('mock answers handle simple questions conservatively and escape source exce
   const html = views.searchAnswer('search-fixture', options);
   assert.ok(!html.includes('<svg') && !html.includes('<img'));
   assert.ok(html.includes('&lt;img') && html.includes('&lt;svg') && html.includes('&amp; literal excerpt'));
-  assert.ok(html.includes('Demo') && html.includes('#/tables/t-we'));
+  assert.ok(html.includes('Demo') && html.includes('#/tables/' + data.tables[0].identifier));
 });
 
 test('the shipped data has no dangling references or missing record identities', async () => {
@@ -417,6 +419,219 @@ test('the shipped data has no dangling references or missing record identities',
     assert.equal(data.get(kind, e.identifier), e);
     assert.ok(e.name);
   }
+});
+
+test('tree groups and members sort by displayed labels without changing source order', async () => {
+  const { data, views } = await loaded();
+  const source = JSON.stringify([data.tables, data.objects, data.domains, data.systems]);
+  const treeOpen = Object.fromEntries(data.sections().map(kind => [kind, true]));
+  for (const kind of data.sections()) {
+    for (const group of data.buildGroups(kind, kind === 'tables' ? 'system' : 'domain')) treeOpen[group.id] = true;
+  }
+  const html = views.tree({ view: 'home', params: {} }, { treeOpen });
+  const labels = [...html.matchAll(/style="--level:(\d)"[^]*?<span class="ob-tree-label"[^>]*>([^]*?)<\/span>/g)];
+  const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+  let group = '', member = '';
+  for (const [, level, label] of labels) {
+    if (level === '1') { group = ''; member = ''; }
+    else if (level === '2') { assert.ok(collator.compare(group, label) <= 0, `${group} before ${label}`); group = label; member = ''; }
+    else { assert.ok(collator.compare(member, label) <= 0, `${member} before ${label}`); member = label; }
+  }
+  assert.ok(labels.length > 50);
+  assert.equal(JSON.stringify([data.tables, data.objects, data.domains, data.systems]), source);
+  const fixture = data.tables.filter(table => table.system === 'sap').slice(0, 4);
+  for (let i = 0; i < fixture.length; i++) fixture[i].labels = { de: ['Zulu', 'Ärea 10', 'Area 2', 'Alpha'][i] };
+  const named = views.tree({ view: 'home', params: {} }, { treeOpen }, 'tables');
+  assert.ok(named.indexOf('Alpha (') < named.indexOf('Area 2'));
+  assert.ok(named.indexOf('Area 2') < named.indexOf('Ärea 10'));
+  assert.ok(named.indexOf('Ärea 10') < named.indexOf('Zulu ('));
+});
+
+test('table information links are safe, optional and preserved in Excel metadata', async () => {
+  const { data, detail, excel } = await loaded();
+  const urls = ['https://example.org/reference?a=1&b=2', 'https://example.org/second'];
+  const entity = { ...data.tables[0], kind: 'tables', sourceUrl: urls[0], informationUrls: [...urls, urls[0], 'javascript:alert(1)', null, 'https://example.org/\ninvalid'] };
+  const html = detail.overview(entity);
+  assert.ok(html.includes('Weitere Informationen'));
+  assert.equal((html.match(/href="https:\/\/example.org\/reference/g) || []).length, 1);
+  assert.ok(html.includes('a=1&amp;b=2'));
+  assert.ok(html.includes('target="_blank" rel="noopener"'));
+  assert.ok(!html.includes('javascript:') && !html.includes('/invalid'));
+  for (const informationUrls of [undefined, [], ['javascript:alert(1)']]) {
+    assert.ok(!detail.overview({ ...entity, informationUrls }).includes('ob-fact-links'));
+  }
+  entity.informationUrls = urls;
+  const plan = excel.plan({ view: 'detail', kind: 'tables', entity }, { title: entity.name, state: { tableSorts: {} } }, 'http://localhost/');
+  assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'informationUrls' && row[4] === JSON.stringify(urls)));
+});
+
+test('comments belong to each entity and render safely in core facts and Excel', async () => {
+  const { data, detail, excel } = await loaded();
+  const comment = 'Review <script> & field mapping\nSecond line';
+  for (const kind of data.kinds) {
+    const entity = { ...data.list(kind)[0], kind, comment };
+    assert.equal(detail.facts(entity).primary.find(fact => fact.label === 'Kommentar').value, comment);
+    const html = detail.overview(entity);
+    assert.ok(html.includes('Review &lt;script&gt; &amp; field mapping\nSecond line'));
+    assert.ok(!html.includes('<script>'));
+    assert.ok(!detail.overview({ ...entity, comment: '  ' }).includes('ob-comment'));
+  }
+  const table = data.tables[0], object = data.objects[0];
+  table.comment = 'Parent table only'; object.comment = 'Parent object only';
+  const fieldId = `${table.identifier}/${data.fieldId(table.fields[0])}`;
+  const attrId = `${object.identifier}/${object.attributes[0].identifier}`;
+  assert.equal(data.field(fieldId).comment, undefined);
+  assert.equal(data.attr(attrId).comment, undefined);
+  table.fields[0].comment = comment; object.attributes[0].comment = comment;
+  for (const [kind, entity] of [['fields', data.field(fieldId)], ['attrs', data.attr(attrId)]]) {
+    entity.kind = kind;
+    assert.equal(detail.facts(entity).primary.find(fact => fact.type === 'comment').value, comment);
+    const plan = excel.plan({ view: 'detail', kind, entity }, { title: entity.name, state: {} }, 'http://localhost/');
+    assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'comment' && row[4] === comment));
+  }
+});
+
+test('SAP catalog curation excludes rejected classes and preserves source evidence separately', async () => {
+  const { data } = await loaded();
+  const tables = data.tables.filter(table => table.provenance?.importId === 'sap-refx-innovator-model');
+  assert.equal(tables.length, 7);
+  assert.equal(tables.reduce((sum, table) => sum + table.fields.length, 0), 142);
+  assert.ok(tables.every(table => table.modelView !== 'usage'));
+  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/sap-refx-import-report.json'), 'utf8'));
+  const definitions = JSON.parse(fs.readFileSync(path.join(root, 'docs/sap-refx-definitions.json'), 'utf8'));
+  for (const definition of definitions.entries) {
+    const table = data.get('tables', definition.tableId);
+    assert.equal(table.description, definition.description);
+    assert.equal(table.descriptionSource.kind, definition.kind);
+    assert.ok(table.informationUrls.includes(definition.sourceUrl));
+    assert.ok(table.comment);
+  }
+  assert.ok(data.get('tables', 't-sap-area').comment.includes('Ungeklärte Diagrammklasse'));
+  assert.ok(data.get('apis', 'api-sap-building').comment.includes('SAP-Frontend'));
+  for (const change of report.catalogCuration.changes) assert.equal(data.get('tables', change.tableId), null);
+  const building = data.get('tables', 't-sap-building');
+  assert.equal(building.fields.length, 66);
+  assert.equal(building.technicalName, 'VIBDBU');
+  assert.equal(data.displayName('tables', building), 'Gebäude (VIBDBU)');
+  const land = data.get('tables', 't-sap-land-architecture');
+  assert.equal(land.technicalName, undefined);
+  assert.equal(data.displayName('tables', land), 'Grundstück');
+  const businessEntity = data.get('tables', 't-sap-business-entity');
+  assert.equal(data.displayName('tables', businessEntity), 'Wirtschaftseinheit (VIBDBE)');
+  assert.equal(businessEntity.realizes, 'wirtschaftseinheit');
+  assert.equal(businessEntity.domain, 'finanzen');
+  assert.equal(businessEntity.fieldScope, 'datasource-projection');
+  assert.equal(businessEntity.dataSource, '0BUSENTITY_ATTR');
+  assert.equal(businessEntity.fields.map(field => field.technicalName).join(','), 'BUKRS,SWENR,SINSTBEZ,SLAGEWE,SOBJLAGE,SMIETSP,SMIETR,SSTDORT,KOKRS');
+  assert.ok(businessEntity.fields.every(field => field.technicalNameKind === 'datasource-field' && field.catalogMetadata.sourceTable === 'VIBDBE'));
+  assert.ok(businessEntity.fields.every(field => field.dataType === undefined && field.mandatory === undefined && field.keyRole === null && field.apiMappings === undefined));
+  assert.equal(data.field('t-sap-business-entity/SWENR').name, 'Wirtschaftseinheit (SWENR)');
+  assert.equal(businessEntity.modelClass, undefined, 'the rejected diagram class is not republished');
+  for (const [id, name, technicalName, source, fieldIds, realizes] of [
+    ['t-sap-rental-object', 'Mietobjekt', 'VIBDRO', '0RENTOBJECT_ATTR', 'BUKRS,SWENR,SMENR,SGENR,SGRNR,SNUNR,ROTYPE,SGEBT,XAUSTKL,XLAGE,RLGESCH,KOKRS', 'mietobjekt'],
+    ['t-sap-contract', 'Vertrag', 'VICNCN', '0RECONTRACT_ATTR', 'BUKRS,RECNNR,RECNTYPE,RECNBEG,RECNENDABS,RECNTLAW,RECNNOTPER,RECNNOTREASON,SRRELEVANT', undefined],
+  ]) {
+    const table = data.get('tables', id);
+    assert.equal(data.displayName('tables', table), `${name} (${technicalName})`);
+    assert.equal(table.realizes, realizes);
+    assert.equal(table.domain, 'miete');
+    assert.equal(table.modelClass, undefined);
+    assert.equal(table.dataSource, source);
+    assert.equal(table.fieldScope, 'datasource-projection');
+    assert.equal(table.fields.map(field => field.technicalName).join(','), fieldIds);
+    assert.ok(table.informationUrls.includes(table.sourceUrl));
+    assert.ok(table.fields.every(field => field.technicalNameKind === 'datasource-field' && field.catalogMetadata.sourceTable === technicalName));
+    assert.ok(table.fields.every(field => field.labels.de && field.dataType === undefined && field.mandatory === undefined && field.keyRole === null && field.apiMappings === undefined));
+  }
+  const object = data.get('tables', 't-sap-architectural-object');
+  assert.equal(object.technicalName, 'VIBDAO');
+  assert.equal(data.displayName('tables', object), 'Architektonisches Objekt (VIBDAO)');
+  assert.equal(object.fields.length, 24);
+  assert.equal(object.objectTypes.map(type => type.name).join(','), 'Ebene,Raum');
+  assert.ok(object.fields.every(field => field.appliesToObjectTypes.length === 1));
+  for (const type of object.objectTypes) {
+    assert.equal(type.fieldIds.length, type.name === 'Ebene' ? 1 : 23);
+    assert.ok(type.fieldIds.every(id => data.field(`${object.identifier}/${id}`).appliesToObjectTypes.includes(type.name)));
+  }
+  assert.equal(data.field('t-sap-building/EGID'), null, 'the API projection must not invent EGID coverage');
+  assert.equal(data.field('t-sap-building/BUILDING_TEXT').dataType, undefined, 'the shifted API type must not be imported');
+  assert.equal(data.displayName('fields', building.fields.find(field => field.technicalName === 'CONSTRUCTION_YEAR')), 'Baujahr (CONSTRUCTION_YEAR)');
+  const api = data.get('apis', 'api-sap-building');
+  assert.equal(api.modelMappings.length, 0, 'archived source candidates must not link to retired catalog tables');
+  assert.equal(api.sourceReconciliation.candidateModelFields, 75);
+  assert.equal(api.documentedFieldMappings.length, 66);
+  for (const mapping of api.documentedFieldMappings) {
+    const field = data.field(`${mapping.table}/${mapping.fieldId}`);
+    assert.equal(field.technicalName, mapping.field);
+    assert.equal(field.technicalNameKind, 'api-field');
+    assert.equal(mapping.physicalColumnVerified, false);
+    assert.equal(mapping.structure, 'BUILDING');
+  }
+  assert.equal(report.reconciliation.summary.modelFields, 508);
+  const ambiguous = report.reconciliation.candidates.find(match => match.modelAttribute === 'Umbaujahr');
+  assert.equal(ambiguous.status, 'ambiguous');
+  assert.equal(ambiguous.targets.length, 2);
+  assert.ok(!report.reconciliation.candidates.some(match => match.modelAttribute === 'EGID'));
+  assert.equal(api.modelCoverage.candidateModelFields, api.modelMappings.length);
+  assert.equal(api.modelCoverage.verifiedPhysicalTableMappings, 0);
+});
+
+test('GIS workbook preserves every source row, ambiguous field names and typed land coverage', async () => {
+  const { data, detail } = await loaded();
+  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/gis-immo-import-report.json'), 'utf8'));
+  const expected = { 't-geb-gis': 74, 't-boden': 46, 't-parzelle': 42, 't-huelle': 30, 't-gis-room': 32, 't-proj': 27, 't-gis-green-area': 24 };
+  const tables = data.tablesOfSystem(data.sysOf('gis'));
+  assert.equal(tables.length, 7);
+  assert.equal(report.summary.fieldRows, 275);
+  assert.deepEqual(report.summary.sourceStatuses, { LIVE: 131, DEV: 143, unspecified: 1 });
+  const visited = [];
+  for (const table of tables) {
+    assert.equal(table.fields.length, expected[table.identifier]);
+    assert.equal(table.status, 'Entwurf');
+    assert.equal(table.technicalName, undefined);
+    assert.equal(table.fieldScope, 'model-inventory');
+    assert.ok(table.comment);
+    for (const field of table.fields) {
+      const source = report.sourceRows.find(row => row.row === field.catalogMetadata.sourceRow);
+      assert.equal(field.technicalName, source.technicalName);
+      assert.equal(field.labels.de, source.labelDe);
+      assert.equal(field.labels.en, source.labelEn || undefined);
+      assert.equal(field.description, source.description || '');
+      assert.equal(field.dataType, source.format);
+      assert.equal(field.sourceStatus, source.status || undefined);
+      assert.equal(field.catalogMetadata.origin, source.origin);
+      assert.equal(field.keyRole, null);
+      assert.equal(field.mandatory, undefined);
+      assert.equal(field.nullable, undefined);
+      assert.equal(field.length, undefined);
+      assert.equal(field.codeList, undefined);
+      assert.equal(field.apiMappings, undefined);
+      assert.ok(data.field(`${table.identifier}/${data.fieldId(field)}`));
+      visited.push(source.row);
+    }
+  }
+  assert.equal(new Set(visited).size, 275);
+  const duplicate = data.get('tables', 't-geb-gis').fields.filter(field => field.technicalName === 'bbl_hist');
+  assert.equal(duplicate.length, 2);
+  assert.equal(duplicate.map(field => data.fieldId(field)).join(','), 'bbl_hist-source-41,bbl_hist-source-42');
+  assert.ok(duplicate.every(field => field.comment.includes('zweimal')));
+  const ground = data.get('tables', 't-boden');
+  assert.equal(ground.name, 'Bodenabdeckung');
+  assert.equal(ground.realizes, 'bodenbedeckung');
+  assert.equal(ground.objectTypes[0].name, 'Gebäude');
+  assert.equal(ground.objectTypes[0].geometryType, 'Polygon');
+  assert.equal(ground.objectTypes[0].sourceClass, 'BBL Gebäude (AO)');
+  assert.equal(ground.objectTypes[0].fieldIds.length, 46);
+  assert.ok(ground.fields.every(field => field.appliesToObjectTypes.join(',') === 'Gebäude'));
+  assert.equal(data.get('tables', 't-gis-building-ao'), null);
+  assert.equal(data.field('t-geb-gis/wgs84_lat').dataType, 'String');
+  assert.equal(data.field('t-gis-room/ao_id').source, 'BBL SAP Korasoft');
+  const room = { ...data.field('t-gis-room/ao_id'), kind: 'fields' };
+  assert.equal(detail.facts(room).primary.find(fact => fact.label === 'Status in Quelle').value, 'DEV');
+  assert.equal(data.field('t-gis-green-area/bbl_port').sourceStatus, undefined);
+  assert.ok(data.field('t-gis-green-area/bbl_port').comment.includes('nicht angegeben'));
+  assert.equal(report.replacedCatalog.tables.length, 5);
+  assert.equal(report.retiredTableIds.length, 0);
 });
 
 test('GWR import preserves source coverage, versions and explicit field-to-code-list links', async () => {
@@ -516,7 +731,7 @@ test('duplicate entity and attribute IDs are rejected instead of silently overwr
 test('absent optional lists are normalized and broken references remain diagnosable', async () => {
   const { data, warnings } = await loaded((name, v) => {
     if (name === 'objects.json') { delete v[0].attributes; delete v[0].termdat; }
-    if (name === 'tables.json') v[0].realizes = 'missing-object';
+    if (name === 'tables.json') { v[0].realizes = 'missing-object'; delete v[0].domain; }
   });
   assert.equal(data.objects[0].attributes.length, 0);
   assert.equal(data.domainForEntity('tables', data.tables[0]), null);

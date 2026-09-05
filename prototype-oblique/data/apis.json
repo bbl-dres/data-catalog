@@ -90,5 +90,856 @@
     "endpointURL": "https://opendata.swiss/api",
     "documentation": "https://handbook.opendata.swiss/de/",
     "accessRights": "öffentlich"
+  },
+  {
+    "identifier": "api-sap-building",
+    "name": "SAP RE-FX – Gebäudestammdaten lesen",
+    "description": "Lesender, synchroner SOAP-Service ZAPI_X4AI_BAPI_RE_BU_GET_DET für die Detaildaten eines Gebäudes aus SAP RE-FX. Die Dokumentation beschreibt 25 Service-Strukturen, darunter Gebäudestammdaten, Adresse, Bemessungen, Partner, Status und kundeneigene Erweiterungen. Kein Massenabruf. Die Katalogbeschreibung bleibt wegen widersprüchlicher Angaben und nicht verifizierter technischer Feldzuordnung im Entwurf; der Service ist in der Quelle als ACTIVE dokumentiert.",
+    "status": "Entwurf",
+    "sourceStatus": "ACTIVE",
+    "version": "1.0.0",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "responsibleOrg": "Immobilien",
+    "source": "SAP API Dokumentation Bund",
+    "sourceDetail": "Building Master Data - Get Detail · Confluence-Seite 1105159761 · Version 7 · API-Stand 2024-05-14 · BUILDING als API-Feldprojektion dokumentiert; physische Spaltenzuordnung ausstehend",
+    "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761",
+    "synced": "2026-09-05",
+    "provenance": {
+      "importId": "sap-refx-building-documentation",
+      "captured": "2026-09-05",
+      "files": {
+        "Building Master Data - Get Detail - SAP API Dokumentation Bund - Confluence.htm": "1c2e4029d69105b16fce9daeff488f6ef5a6cb0e540e36eae18ee7b9afad2a06",
+        "SAP RE-FX.png": "9b91f595ab14bca982fadecc6a751be7b099ae233b5b36ea43f8a30b9f502c1c"
+      }
+    },
+    "domain": "bau",
+    "system": "sap",
+    "protocol": "SOAP",
+    "technicalName": "ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+    "documentation": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761",
+    "accessRights": "Autorisierung durch das Fachamt; für Drittanwendungen Vereinbarung mit dem BIT. Konkrete Berechtigungsobjekte nicht dokumentiert.",
+    "operation": "ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+    "httpMethod": "POST",
+    "readOnly": true,
+    "callType": "synchronous",
+    "bulkSupported": false,
+    "sourceModified": "2024-05-14",
+    "endpointURL": "https://bit-prd-cpi-2.it-cpi022-rt.cfapps.ch20.hana.ondemand.com/sap/opu/odata/sap/ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+    "endpointVerification": "unverified",
+    "documentedServers": [
+      {
+        "url": "https://bit-prd-cpi-2.it-cpi022-rt.cfapps.ch20.hana.ondemand.com/sap/opu/odata/sap/ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+        "description": "CPI Cloud Production"
+      },
+      {
+        "url": "https://bit-abn-cpi-2.it-cpi022-rt.cfapps.ch20.hana.ondemand.com/sap/opu/odata/sap/ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+        "description": "CPI Cloud Acceptance"
+      },
+      {
+        "url": "https://bit-vor-cpi-2.it-cpi022-rt.cfapps.ch20.hana.ondemand.com/sap/opu/odata/sap/ZAPI_X4AI_BAPI_RE_BU_GET_DET",
+        "description": "CPI Cloud Validation"
+      }
+    ],
+    "documentedPath": "/BuildingGetDetail",
+    "wsdlDocumentation": "https://confluence.bit.admin.ch/download/attachments/1105159761/ZAPI_X4AI_BAPI_RE_BU_GET_DET.wsdl",
+    "authentication": [
+      {
+        "method": "Basic Authentication",
+        "note": "SAP-Benutzer über HTTPS"
+      },
+      {
+        "method": "SAP Logon Ticket",
+        "note": "Vertrauensbasierte Authentifizierung (SSO)"
+      },
+      {
+        "method": "SAML / X.509",
+        "note": "Optional über SAP PI/PO oder Middleware"
+      }
+    ],
+    "oauthSupported": false,
+    "documentedRequestParameters": [
+      {
+        "technicalName": "BUILDING_ID",
+        "labels": {
+          "de": "Gebäude-Identifikator"
+        },
+        "dataType": "String",
+        "mandatory": true,
+        "verification": "conflicts-with-structure-documentation"
+      }
+    ],
+    "responseStructures": [
+      {
+        "technicalName": "ARCH_REL",
+        "name": "Objekte der Architekturverknüpfung",
+        "description": "Enthält Informationen zu baulichen Verbindungen zwischen Immobilienobjekten, z.B. wie Gebäude, Gebäudeteile oder Grundstücke miteinander verknüpft sind.",
+        "fieldCount": 7,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.1.title"
+      },
+      {
+        "technicalName": "ARCH_RELMS",
+        "name": "Objektteile der Architekturverknüpfung",
+        "description": "Detaillierte Liste einzelner Komponenten innerhalb einer baulichen Verbindung, z.B. Stockwerke oder Gebäudeflügel.",
+        "fieldCount": 11,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.2.title"
+      },
+      {
+        "technicalName": "CHARACT",
+        "name": "Ausstattungsmerkmal eines RE-Objekts",
+        "description": "Beschreibt spezifische Eigenschaften eines Immobilienobjekts, z.B. Bodenbelag, Heizungsart oder besondere Ausstattungen.",
+        "fieldCount": 17,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.4.title"
+      },
+      {
+        "technicalName": "COSETTLE_RULE",
+        "name": "CO Abrechnungsvorschrift: Verteilregeln",
+        "description": "Legt fest, wie Kosten oder Erlöse eines Immobilienobjekts auf Kostenstellen, Projekte oder andere Kontierungen verteilt werden.",
+        "fieldCount": 26,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.6.title"
+      },
+      {
+        "technicalName": "CUS_DATA_0MM",
+        "name": "Struktur für Extension-Daten BAPI_RE_BE_GET_LIST",
+        "description": "Kundenspezifische Zusatzinformationen zu Immobilienobjekten aus der Materialwirtschaft.",
+        "fieldCount": 7,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.7.title"
+      },
+      {
+        "technicalName": "CUS_DATA_7GE",
+        "name": "Struktur für Extension-Daten BAPI_RE_BE_GET_LIST",
+        "description": "Erweiterte kundenspezifische Daten für geografische oder gebäudespezifische Informationen.",
+        "fieldCount": 12,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.8.title"
+      },
+      {
+        "technicalName": "CUS_DATA_BU1",
+        "name": "Struktur für Extension-Daten – Gebäudeflexibilität",
+        "description": "Enthält zusätzliche Informationen zu variablen Nutzungs- oder Umbauoptionen eines Gebäudes.",
+        "fieldCount": 8,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.9.title"
+      },
+      {
+        "technicalName": "CUS_DATA_BU2",
+        "name": "Struktur für Extension-Daten – Grundstück/Gebäude-Anteile",
+        "description": "Zeigt die prozentuale Aufteilung von Grundstücks- und Gebäudewerten, z.B. für steuerliche Bewertungen.",
+        "fieldCount": 10,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.10.title"
+      },
+      {
+        "technicalName": "CUS_DATA_BU3",
+        "name": "Struktur für Extension-Daten – Faktor Gebäudeart Ausland",
+        "description": "Enthält Faktoren oder Kennzahlen zur Bewertung von Gebäuden im Ausland, z.B. für länderspezifische Vorschriften.",
+        "fieldCount": 8,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.11.title"
+      },
+      {
+        "technicalName": "INFRASTRUCTURE",
+        "name": "Infrastruktur eines RE-Objekts",
+        "description": "Beschreibt die vorhandene Infrastruktur, z.B. Strom- und Wasseranschlüsse, Parkplätze oder Internetanbindung.",
+        "fieldCount": 10,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.14.title"
+      },
+      {
+        "technicalName": "MEASUREMENT",
+        "name": "Bemessung eines RE-Objekts",
+        "description": "Enthält Maße und Flächenangaben, z.B. Wohnfläche, Grundstücksgröße oder Raumvolumen.",
+        "fieldCount": 12,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.15.title"
+      },
+      {
+        "technicalName": "OBJ_ASSIGN",
+        "name": "Objektzuordnung",
+        "description": "Dokumentiert die Zuordnung des Immobilienobjekts zu anderen Objekten, Organisationseinheiten oder Projekten.",
+        "fieldCount": 17,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.17.title"
+      },
+      {
+        "technicalName": "OPTION_RATE",
+        "name": "Optionssätze eines RE-Objekts",
+        "description": "Enthält vordefinierte Optionen und Konditionen, z.B. Miet- oder Kaufoptionen.",
+        "fieldCount": 7,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.18.title"
+      },
+      {
+        "technicalName": "PARTNER",
+        "name": "Partner eines RE-Objekts",
+        "description": "Liste der zugeordneten Partnerrollen, z.B. Eigentümer, Mieter oder Verwalter.",
+        "fieldCount": 13,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.19.title"
+      },
+      {
+        "technicalName": "PROP_TAX",
+        "name": "Grundsteuer Gebäude",
+        "description": "Enthält Informationen zur steuerlichen Bewertung und Grundsteuer für das Gebäude.",
+        "fieldCount": 16,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.20.title"
+      },
+      {
+        "technicalName": "RESUBM_DATE",
+        "name": "Wiedervorlagetermin eines RE-Objekts",
+        "description": "Definiert ein Datum, an dem ein Vorgang oder Objekt erneut geprüft oder bearbeitet werden soll.",
+        "fieldCount": 16,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.21.title"
+      },
+      {
+        "technicalName": "RESUBM_RULE",
+        "name": "Wiedervorlageregel eines RE-Objekts",
+        "description": "Legt Regeln für die automatische Wiedervorlage fest, z.B. periodische Prüfintervalle.",
+        "fieldCount": 12,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.22.title"
+      },
+      {
+        "technicalName": "RETURN",
+        "name": "Rückgabemeldungen",
+        "description": "Enthält Meldungen, Fehlerhinweise oder Statusinformationen aus der API-Abfrage.",
+        "fieldCount": 14,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.23.title"
+      },
+      {
+        "technicalName": "STATUS",
+        "name": "Status für RE-Objekte",
+        "description": "Zeigt den aktuellen Status des Objekts, z.B. „aktiv“, „in Bearbeitung“ oder „stillgelegt“.",
+        "fieldCount": 9,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.24.title"
+      },
+      {
+        "technicalName": "TERM_ORG_ASSIGNMENT",
+        "name": "Org. Zuordnung eines RE-Objekts",
+        "description": "Dokumentiert die organisatorische Zuordnung, z.B. zu einer Gesellschaft oder Geschäftseinheit.",
+        "fieldCount": 16,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.25.title"
+      },
+      {
+        "technicalName": "BUILDING",
+        "name": "Gebäude",
+        "description": "Stammdaten und grundlegende Informationen zu einem Gebäude.",
+        "fieldCount": 66,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title"
+      },
+      {
+        "technicalName": "COSETTLE_PARAM",
+        "name": "CO Abrechnungsvorschrift: Parameter",
+        "description": "Parameter für die Abrechnung von Kosten und Erlösen im Controlling.",
+        "fieldCount": 18,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.5.title"
+      },
+      {
+        "technicalName": "CUS_DATA_0BU",
+        "name": "Kundeneigene Felder zum Gebäude",
+        "description": "Individuell definierte Zusatzfelder für Gebäudedaten.",
+        "fieldCount": 27,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.12.title"
+      },
+      {
+        "technicalName": "CUS_DATA_GENERAL",
+        "name": "Kundeneigene Felder VIBDBU",
+        "description": "Allgemeine kundenspezifische Felder für Immobilienobjekte.",
+        "fieldCount": 1,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.13.title"
+      },
+      {
+        "technicalName": "OBJECT_ADDRESS",
+        "name": "Adresse eines RE-Objekts",
+        "description": "Vollständige Adressinformationen zum Immobilienobjekt.",
+        "fieldCount": 17,
+        "sourceUrl": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.16.title"
+      }
+    ],
+    "errorHandling": "Rückgabemeldungen im Service-Knoten RETURN auswerten, auch bei technisch erfolgreichem Aufruf. Laut Dokumentation höchstens 20 Meldungen; die letzte weist gegebenenfalls auf weitere Meldungen hin.",
+    "documentationIssues": [
+      {
+        "id": "missing-physical-schema",
+        "detail": "The PNG provides model classes and attributes, but no verified physical column names, database types or constraints."
+      },
+      {
+        "id": "building-types-misaligned",
+        "structures": [
+          "BUILDING"
+        ],
+        "detail": "Examples: CREATION_USER is DATS(8), CREATION_DATE is TIMS(6), BUILDING_TEXT is NUMC(2); FUNCTION has no type or length. Do not use the reported types as a verified schema."
+      },
+      {
+        "id": "property-tax-copy-errors",
+        "structures": [
+          "PROP_TAX"
+        ],
+        "detail": "Multiple descriptions and types repeat OPTION_RATE or unrelated fields. MEAS_TYPE_BUILDING_AREA and DATA_REPORTED have no descriptions or types."
+      },
+      {
+        "id": "request-response-conflict",
+        "detail": "Prose expects BUILDING_ID; BUILDING lists COMP_CODE, BUSINESS_ENTITY and BUILDING. Examples use DESCRIPTION, STATUS, POSTAL_CODE and CITY, which do not match the documented BUILDING fields."
+      },
+      {
+        "id": "transport-endpoint-conflict",
+        "detail": "Documentation identifies SOAP but rendered OpenAPI servers use an /sap/opu/odata/sap/ path plus POST /BuildingGetDetail. These are documented addresses, not verified operational URLs."
+      },
+      {
+        "id": "inconsistent-access-description",
+        "detail": "Access prose specifies natural persons; technical context specifies a technical user. Authorization objects remain unspecified (offen)."
+      },
+      {
+        "id": "inconsistent-operation-description",
+        "detail": "Read-only operation is labelled NotIdempotence; restrictions mention unrelated Sell-from-Stock scenarios. The response section also calls the building a business entity."
+      },
+      {
+        "id": "missing-contract",
+        "detail": "The saved files contain neither the WSDL nor ApiSchema.yaml. Required flags, cardinalities, decimal scale and physical-table mappings cannot be established from the HTML tables."
+      }
+    ],
+    "comment": "Abweichende Tabellenbezeichnungen zwischen BIT-API-Dokumentation und SAP Help wurden vom Katalogverantwortlichen zur Prüfung im SAP-Frontend vorgemerkt. API-Strukturen, physische Tabellen und architektonische Objekte dürfen bis zur Bestätigung nicht gleichgesetzt werden.",
+    "modelMappings": [],
+    "documentedFieldMappings": [
+      {
+        "table": "t-sap-building",
+        "fieldId": "COMP_CODE",
+        "structure": "BUILDING",
+        "field": "COMP_CODE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUSINESS_ENTITY",
+        "structure": "BUILDING",
+        "field": "BUSINESS_ENTITY",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING",
+        "structure": "BUILDING",
+        "field": "BUILDING",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "IDENT_OBJECT_TYPE",
+        "structure": "BUILDING",
+        "field": "IDENT_OBJECT_TYPE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "IDENT_KEY",
+        "structure": "BUILDING",
+        "field": "IDENT_KEY",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CREATION_USER",
+        "structure": "BUILDING",
+        "field": "CREATION_USER",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CREATION_DATE",
+        "structure": "BUILDING",
+        "field": "CREATION_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CREATION_TIME",
+        "structure": "BUILDING",
+        "field": "CREATION_TIME",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "LASTCHANGE_USER",
+        "structure": "BUILDING",
+        "field": "LASTCHANGE_USER",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "LASTCHANGE_DATE",
+        "structure": "BUILDING",
+        "field": "LASTCHANGE_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "LASTCHANGE_TIME",
+        "structure": "BUILDING",
+        "field": "LASTCHANGE_TIME",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_TEXT",
+        "structure": "BUILDING",
+        "field": "BUILDING_TEXT",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_TYPE",
+        "structure": "BUILDING",
+        "field": "BUILDING_TYPE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_CONDITION",
+        "structure": "BUILDING",
+        "field": "BUILDING_CONDITION",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CONSTRUCTION_YEAR",
+        "structure": "BUILDING",
+        "field": "CONSTRUCTION_YEAR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MODERNIZATION_YEAR",
+        "structure": "BUILDING",
+        "field": "MODERNIZATION_YEAR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "RECONSTRUCTION_YEAR",
+        "structure": "BUILDING",
+        "field": "RECONSTRUCTION_YEAR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BEGIN_CONSTRUCTION_YEAR",
+        "structure": "BUILDING",
+        "field": "BEGIN_CONSTRUCTION_YEAR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "READY_FOR_OCCUPANCY_DATE",
+        "structure": "BUILDING",
+        "field": "READY_FOR_OCCUPANCY_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "COMPLETION_DATE",
+        "structure": "BUILDING",
+        "field": "COMPLETION_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "FINAL_INSPECTION_DATE",
+        "structure": "BUILDING",
+        "field": "FINAL_INSPECTION_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "PLANNING_INQUIRY_DATE",
+        "structure": "BUILDING",
+        "field": "PLANNING_INQUIRY_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "PRIOR_NOTICE_DATE",
+        "structure": "BUILDING",
+        "field": "PRIOR_NOTICE_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_PERMIT_APPLIC_DATE",
+        "structure": "BUILDING",
+        "field": "BUILDING_PERMIT_APPLIC_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_PERMIT_DATE",
+        "structure": "BUILDING",
+        "field": "BUILDING_PERMIT_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "TRANSF_USE_AND_ENCUMBR_DATE",
+        "structure": "BUILDING",
+        "field": "TRANSF_USE_AND_ENCUMBR_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "SALE_DATE",
+        "structure": "BUILDING",
+        "field": "SALE_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "PLANNED_SALE_DATE",
+        "structure": "BUILDING",
+        "field": "PLANNED_SALE_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "USAGE_END_DATE",
+        "structure": "BUILDING",
+        "field": "USAGE_END_DATE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_PERMIT_NOTE",
+        "structure": "BUILDING",
+        "field": "BUILDING_PERMIT_NOTE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BUILDING_VALUE",
+        "structure": "BUILDING",
+        "field": "BUILDING_VALUE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CURRENT_BUILDING_VALUE",
+        "structure": "BUILDING",
+        "field": "CURRENT_BUILDING_VALUE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "AMOUNT_PER_VOLUME",
+        "structure": "BUILDING",
+        "field": "AMOUNT_PER_VOLUME",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "HAS_HIST_SITE_PROTECTION",
+        "structure": "BUILDING",
+        "field": "HAS_HIST_SITE_PROTECTION",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "ASSESSMENT_VALUE",
+        "structure": "BUILDING",
+        "field": "ASSESSMENT_VALUE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "ASSESSMENT_VALUE_YEAR",
+        "structure": "BUILDING",
+        "field": "ASSESSMENT_VALUE_YEAR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "INSURANCE_VALUE",
+        "structure": "BUILDING",
+        "field": "INSURANCE_VALUE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "INSURANCE_VALUE_TYPE",
+        "structure": "BUILDING",
+        "field": "INSURANCE_VALUE_TYPE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "HERITABLE_BLDG_RIGHT_IND",
+        "structure": "BUILDING",
+        "field": "HERITABLE_BLDG_RIGHT_IND",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "REPR_LIST_OF_RENTS",
+        "structure": "BUILDING",
+        "field": "REPR_LIST_OF_RENTS",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "LOCATION_CLASS",
+        "structure": "BUILDING",
+        "field": "LOCATION_CLASS",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MAIN_USAGE_TYPE",
+        "structure": "BUILDING",
+        "field": "MAIN_USAGE_TYPE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "PUBLIC_FUNDING_FROM",
+        "structure": "BUILDING",
+        "field": "PUBLIC_FUNDING_FROM",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "PUBLIC_FUNDING_TO",
+        "structure": "BUILDING",
+        "field": "PUBLIC_FUNDING_TO",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "FLOORS",
+        "structure": "BUILDING",
+        "field": "FLOORS",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "BASEMENTS",
+        "structure": "BUILDING",
+        "field": "BASEMENTS",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "TOP_FLOOR",
+        "structure": "BUILDING",
+        "field": "TOP_FLOOR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "ELEVATOR_TO_FLOOR",
+        "structure": "BUILDING",
+        "field": "ELEVATOR_TO_FLOOR",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MUNICIPALITY_KEY",
+        "structure": "BUILDING",
+        "field": "MUNICIPALITY_KEY",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "HAS_CURR_OCC_PRINC",
+        "structure": "BUILDING",
+        "field": "HAS_CURR_OCC_PRINC",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "UNIT_VOLUME",
+        "structure": "BUILDING",
+        "field": "UNIT_VOLUME",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "UNIT_VOLUME_ISO",
+        "structure": "BUILDING",
+        "field": "UNIT_VOLUME_ISO",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CURRENCY",
+        "structure": "BUILDING",
+        "field": "CURRENCY",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "CURRENCY_ISO",
+        "structure": "BUILDING",
+        "field": "CURRENCY_ISO",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "AUTHORIZATION_GROUP",
+        "structure": "BUILDING",
+        "field": "AUTHORIZATION_GROUP",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "OBJECT_VALID_FROM",
+        "structure": "BUILDING",
+        "field": "OBJECT_VALID_FROM",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "OBJECT_VALID_TO",
+        "structure": "BUILDING",
+        "field": "OBJECT_VALID_TO",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "REAL_VALID_FROM",
+        "structure": "BUILDING",
+        "field": "REAL_VALID_FROM",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "REAL_VALID_TO",
+        "structure": "BUILDING",
+        "field": "REAL_VALID_TO",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "RESPONSIBLE",
+        "structure": "BUILDING",
+        "field": "RESPONSIBLE",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "STAT_PROF",
+        "structure": "BUILDING",
+        "field": "STAT_PROF",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MANDATE_OBJECT_ID",
+        "structure": "BUILDING",
+        "field": "MANDATE_OBJECT_ID",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MANDATE_MNG_OBJECT_ID",
+        "structure": "BUILDING",
+        "field": "MANDATE_MNG_OBJECT_ID",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "MANDATE_CR_OBJECT_ID",
+        "structure": "BUILDING",
+        "field": "MANDATE_CR_OBJECT_ID",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "USES_REPR_LIST_OF_RENTS",
+        "structure": "BUILDING",
+        "field": "USES_REPR_LIST_OF_RENTS",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      },
+      {
+        "table": "t-sap-building",
+        "fieldId": "FUNCTION",
+        "structure": "BUILDING",
+        "field": "FUNCTION",
+        "verification": "documented-api-field",
+        "physicalColumnVerified": false
+      }
+    ],
+    "modelCoverage": {
+      "scope": "active-catalog",
+      "classes": 7,
+      "modelFields": 142,
+      "candidateModelFields": 0,
+      "documentedApiFields": 66,
+      "verifiedPhysicalTableMappings": 0
+    },
+    "sourceReconciliation": {
+      "scope": "source-diagram-only",
+      "classes": 17,
+      "modelFields": 508,
+      "emptyClasses": 6,
+      "candidateModelFields": 75,
+      "ambiguousModelFields": 3,
+      "matchedApiFields": 77,
+      "unmatchedModelFields": 433,
+      "unmatchedApiFields": 300,
+      "verifiedPhysicalTableMappings": 0,
+      "report": "docs/sap-refx-import-report.json",
+      "note": "Source matches are retained as evidence. Removed Nutzungssicht entries are not active catalog mappings or approved requirements."
+    }
   }
 ]

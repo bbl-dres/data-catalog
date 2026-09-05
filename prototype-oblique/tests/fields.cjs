@@ -85,16 +85,16 @@ const server = createServer();
     await visit(link + '?nav=container');
     assert.equal(await page.evaluate(() => DK.app.state.treeSection), 'systems');
     assert.equal(await page.locator('#sidebar-tree a[aria-current="page"]').getAttribute('href'), '#/tables/t-gwr-gebaeude?nav=container');
-    await visit('#/tables/t-geb-sap/fields/EGID');
-    assert.equal(await page.locator('h1').innerText(), 'Eidgenössischer Gebäudeidentifikator (EGID)');
+    await visit('#/tables/t-sap-building/fields/BUILDING');
+    assert.equal(await page.locator('h1').innerText(), 'Nummer des Gebäudes (BUILDING)');
     assert((await page.locator('.ob-core-facts').innerText()).includes('Entwurf'));
-    assert((await page.locator('.ob-core-facts').innerText()).includes('Primärschlüssel (PK)'));
+    assert((await page.locator('.ob-core-facts').innerText()).includes('Nicht dokumentiert'));
     assert.equal(await page.locator('.ob-field-documentation').count(), 0);
-    assert.equal(await page.locator('.ob-responsibility a[title*="im Admindir öffnen"]').count(), 2);
+    assert.equal(await page.locator('.ob-responsibility a[title*="im Admindir öffnen"]').count(), 0, 'imported model fields do not inherit fictional person contacts');
     assert.equal(await page.locator('.ob-responsibility dd').filter({hasText: /^Portfoliomanagement$/}).locator('a').count(), 0, 'organisation custodians do not link to the person directory');
 
     // A supplied translation changes the label immediately, while technical names and bookmarks stay stable.
-    await page.evaluate(() => { DK.data.get('tables', 't-geb-sap').fields.find(f => f.technicalName === 'EGID').labels.fr = 'Libellé de test'; });
+    await page.evaluate(() => { DK.data.get('tables', 't-sap-building').fields.find(f => f.technicalName === 'BUILDING').labels.fr = 'Libellé de test'; });
     const originalUrl = page.url();
     const language = async lang => {
       await page.locator('#language-host .ob-language-select').click();
@@ -102,11 +102,11 @@ const server = createServer();
       await settle(page);
     };
     await language('fr');
-    assert.equal(await page.locator('h1').innerText(), 'Libellé de test (EGID)');
+    assert.equal(await page.locator('h1').innerText(), 'Libellé de test (BUILDING)');
     assert.equal(page.url(), originalUrl);
-    assert((await page.locator('.ob-core-facts').innerText()).includes('Nom technique\nEGID'));
+    assert((await page.locator('.ob-core-facts').innerText()).includes('Nom technique\nBUILDING'));
     await language('it');
-    assert.equal(await page.locator('h1').innerText(), 'Eidgenössischer Gebäudeidentifikator (EGID)');
+    assert.equal(await page.locator('h1').innerText(), 'Nummer des Gebäudes (BUILDING)');
     assert.equal(page.url(), originalUrl);
     await language('de');
 

@@ -210,41 +210,6 @@
     "user": "Nadia Ferrari"
   },
   {
-    "entity": "systems:gis",
-    "date": "2025-12-02",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "systems:gis",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "systems:gis",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "systems:gis",
-    "date": "2024-03-12",
-    "action": "Datentabellen ergänzt",
-    "detail": "5 Datentabellen erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "systems:gis",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "System im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
     "entity": "objects:areal",
     "date": "2024-06-01",
     "action": "Abgeglichen",
@@ -980,76 +945,6 @@
     "user": "Nadia Ferrari"
   },
   {
-    "entity": "tables:t-we",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-we",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-we",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-we",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "9 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-we",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-geb-sap",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-geb-sap",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-geb-sap",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-geb-sap",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "12 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-geb-sap",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
     "entity": "tables:t-bem",
     "date": "2026-04-20",
     "action": "Abgeglichen",
@@ -1079,251 +974,6 @@
   },
   {
     "entity": "tables:t-bem",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-mo",
-    "date": "2026-03-12",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-mo",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Thomas Wyss"
-  },
-  {
-    "entity": "tables:t-mo",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Andrea Kaufmann"
-  },
-  {
-    "entity": "tables:t-mo",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "10 Felder erfasst",
-    "user": "Thomas Wyss"
-  },
-  {
-    "entity": "tables:t-mo",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-mv",
-    "date": "2026-03-12",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-mv",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Thomas Wyss"
-  },
-  {
-    "entity": "tables:t-mv",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Andrea Kaufmann"
-  },
-  {
-    "entity": "tables:t-mv",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "9 Felder erfasst",
-    "user": "Thomas Wyss"
-  },
-  {
-    "entity": "tables:t-mv",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-geb-gis",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-geb-gis",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-geb-gis",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-geb-gis",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "12 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-geb-gis",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-huelle",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-huelle",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-huelle",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-huelle",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "12 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-huelle",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-proj",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-proj",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-proj",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-proj",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "10 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-proj",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-boden",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-boden",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-boden",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-boden",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "9 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-boden",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Datentabelle im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "tables:t-parzelle",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Metadaten im Architektur-Repository aktualisiert",
-    "user": "System"
-  },
-  {
-    "entity": "tables:t-parzelle",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-parzelle",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "tables:t-parzelle",
-    "date": "2024-03-12",
-    "action": "Felder ergänzt",
-    "detail": "10 Felder erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "tables:t-parzelle",
     "date": "2024-02-01",
     "action": "Erstellt",
     "detail": "Datentabelle im Katalog angelegt",
@@ -2532,5 +2182,69 @@
     "action": "Erstellt",
     "detail": "Geschäftsobjekt als Entwurf für Projekt Management angelegt.",
     "user": "Prototyp"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-gis-room",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-gis-green-area",
+    "date": "2026-09-05",
+    "action": "Modell importiert",
+    "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "gis-immo-workbook"
   }
 ]

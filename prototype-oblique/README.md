@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
 
 > [!CAUTION]
-> Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
+> Unofficial prototype combining fictional examples and imported catalog metadata. Features may be incomplete, and it is not intended for production use.
 
 Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that follows the [Oblique](https://oblique.bit.admin.ch) design system of the federal administration. Browse domains, systems, business objects, attributes, data tables, code lists, data products and APIs. Domains combine an overview with tile/table browsing; other entries have profile pages with core metadata, applicable rows, relationships and a change history. In-app branding: *Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
 
@@ -14,7 +14,7 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 
 <p align="center">
   <img src="assets/preview-1.jpg" alt="Datenkatalog home page with hero search, search filters, KPI cards, domain table and latest changes" width="49%" align="top"/>
-  <img src="assets/preview-2.jpg" alt="Profile page of a business object with contacts, facts and metadata" width="49%" align="top"/>
+  <img src="assets/preview-3.jpg" alt="Gebäude business object with its relationship bubble diagram and navigation controls" width="49%" align="top"/>
 </p>
 
 ## Features
@@ -44,6 +44,7 @@ Open <http://localhost:8000/prototype-oblique/>.
 
 ## Documentation
 
+- [SAP RE-FX reconciliation](docs/sap-refx-reconciliation.md) — Innovator model import, building SOAP API candidates and source discrepancies.
 - [Maintainability review, 5 September](docs/maintainability-review-2026-09-05.md) — English code naming, compact comments, module boundaries and shared contracts.
 - [Design polish review, 5 September](docs/design-polish-2026-09-05.md) — visual bugs, shared components, token refinements and verification.
 - [Developer review, 5 September](docs/developer-review-2026-09-05.md) — code findings, implemented fixes, verification and remaining limits.

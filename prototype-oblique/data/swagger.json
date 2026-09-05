@@ -510,6 +510,7 @@
           "identifier": { "type": "string", "example": "gebaeude" },
           "name": { "type": "string", "example": "Gebäude" },
           "description": { "type": "string", "example": "Ein dauerhaftes, überdachtes Bauwerk." },
+          "comment": { "type": "string", "description": "Optionaler Kommentar zum Katalogeintrag, getrennt von der Definition." },
           "status": { "$ref": "#/components/schemas/Status" },
           "version": { "type": "string", "example": "2024.1" },
           "created": { "type": "string", "format": "date", "example": "2021-09-03" },
@@ -559,6 +560,7 @@
           "identifier": { "type": "string", "example": "egid" },
           "name": { "type": "string", "example": "EGID" },
           "description": { "type": "string", "example": "Eidgenössischer Gebäudeidentifikator." },
+          "comment": { "type": "string", "description": "Optionaler Kommentar zum Attribut; wird nicht vom Geschäftsobjekt geerbt." },
           "valueType": { "type": "string", "example": "Text (9)" },
           "keyRole": { "type": "string", "enum": ["PK", "FK", "Keine"], "example": "PK" },
           "codeList": { "type": ["string", "null"], "example": null }
@@ -592,9 +594,14 @@
           { "$ref": "#/components/schemas/EntityCore" },
           {
             "type": "object",
-            "required": ["technicalName", "system", "realizes"],
+              "required": ["system"],
             "properties": {
-              "technicalName": { "type": "string", "example": "VIBDBE" },
+                "technicalName": { "type": "string", "example": "VIBDBU", "description": "Dokumentierter technischer Tabellenname. Fehlt, wenn nur ein fachlicher Alias oder Modellname bekannt ist." },
+                "labels": { "$ref": "#/components/schemas/LocalizedLabel" },
+                "fieldScope": { "type": "string", "enum": ["api-projection", "datasource-projection", "model-inventory"], "description": "Kennzeichnet eine API-, DataSource- oder Modell-Feldliste anstelle einer bestätigten physischen Tabellendefinition." },
+                "dataSource": { "type": "string", "example": "0BUSENTITY_ATTR", "description": "Technischer Name der dokumentierten SAP DataSource." },
+                "informationUrls": { "type": "array", "uniqueItems": true, "items": { "type": "string", "format": "uri", "pattern": "^https?://" }, "description": "Links zur offiziellen Dokumentation und weiteren Informationen zur Datentabelle." },
+                "descriptionSource": { "type": "object", "properties": { "title": { "type": "string" }, "url": { "type": "string", "format": "uri" }, "kind": { "type": "string", "enum": ["source-excerpt", "source-summary"] }, "reviewed": { "type": "string", "format": "date" }, "version": { "type": "string" } } },
               "system": { "type": "string", "example": "sap" },
               "realizes": { "type": "string", "example": "gebaeude" },
               "dataCustodian": { "type": "string", "example": "Portfoliomanagement" },
@@ -605,13 +612,18 @@
       },
       "Field": {
         "type": "object",
-        "required": ["technicalName", "labels", "dataType"],
+        "required": ["technicalName", "labels"],
         "properties": {
           "identifier": { "type": "string", "minLength": 1, "description": "Optionaler stabiler Feldidentifikator; ohne Angabe wird technicalName verwendet." },
-          "technicalName": { "type": "string", "minLength": 1, "example": "SWERK", "description": "Technischer Spaltenname; wird nicht übersetzt." },
+          "technicalName": { "type": "string", "minLength": 1, "example": "SWERK", "description": "Spalten- oder Modellattributname; wird nicht übersetzt. Modellnamen belegen keine physische SAP-Spalte." },
+            "technicalNameKind": { "type": "string", "enum": ["physical-column", "model-attribute", "api-field", "datasource-field"], "description": "Unterscheidet physische Spalten, Modellattribute sowie dokumentierte API- und DataSource-Feldnamen." },
+            "appliesToObjectTypes": { "type": "array", "items": { "type": "string" }, "description": "Objekttypen, denen das Feld laut Quelle zugeordnet ist." },
           "labels": { "$ref": "#/components/schemas/LocalizedLabel" },
           "description": { "type": "string", "example": "Bewirtschaftungseinheit" },
-          "dataType": { "type": "string", "example": "CHAR(4)" },
+          "comment": { "type": "string", "description": "Optionaler Kommentar zum Feld; wird nicht von der Datentabelle geerbt." },
+          "sourceStatus": { "type": "string", "description": "Status der Felddefinition in der Quelle, getrennt vom Katalogstatus.", "example": "DEV" },
+          "dataType": { "type": "string", "example": "CHAR(4)", "description": "Dokumentierter Datentyp; fehlt, wenn kein verlässlicher Typ vorliegt." },
+          "dataTypeKind": { "type": "string", "enum": ["model-type"], "description": "Ein Modelltyp ist keine verifizierte physische Datenbankdefinition." },
           "nullable": { "type": "boolean", "example": false },
           "mapsToAttribute": { "type": ["string", "null"], "example": "gebaeude/bewirtschaftungseinheit" }
         }
