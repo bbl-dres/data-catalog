@@ -22,21 +22,21 @@
     let query = '';
     const qi = path.indexOf('?');
     if (qi >= 0) { query = path.slice(qi + 1); path = path.slice(0, qi); }
-    const params = {};
+    const params = Object.create(null);
     new URLSearchParams(query).forEach((v, k) => { params[k] = v; });
-    const seg = path.split('/').filter(Boolean).map(s => { try { return decodeURIComponent(s); } catch (e) { return s; } });
     const r = { view: 'home', kind: null, id: null, params, path, hash };
+    let seg;
+    try { seg = path.split('/').filter(Boolean).map(decodeURIComponent); }
+    catch (e) { r.view = 'notfound'; return r; }
     if (!seg.length) return r;
-    if (seg[0] === 'search') { r.view = 'search'; return r; }
-    if (seg[0] === 'manual') { r.view = 'manual'; return r; }
-    if (seg[0] === 'api') { r.view = 'api'; return r; }
+    if (seg.length === 1 && ['search', 'manual', 'api'].includes(seg[0])) { r.view = seg[0]; return r; }
     if (KINDS.includes(seg[0])) {
       r.kind = seg[0];
       if (seg.length === 1) { r.view = 'list'; return r; }
-      r.view = 'detail';
-      r.id = seg[1];
-      if (seg[0] === 'objects' && seg[2] === 'attributes' && seg[3]) { r.kind = 'attrs'; r.id = seg[1] + '/' + seg[3]; }
-      return r;
+      if (seg.length === 2) { r.view = 'detail'; r.id = seg[1]; return r; }
+      if (seg.length === 4 && seg[0] === 'objects' && seg[2] === 'attributes') {
+        r.view = 'detail'; r.kind = 'attrs'; r.id = seg[1] + '/' + seg[3]; return r;
+      }
     }
     r.view = 'notfound';
     return r;
@@ -65,7 +65,7 @@
   /** Patch query params of the current route without firing hashchange (caller re-renders). */
   router.replaceParams = function (patch) {
     const r = router.parse();
-    const params = Object.assign({}, r.params, patch);
+    const params = Object.assign(Object.create(null), r.params, patch);
     Object.keys(params).forEach(k => { if (params[k] == null || params[k] === '') delete params[k]; });
     const h = router.build(r.path, params);
     history.replaceState(null, '', location.pathname + location.search + h);

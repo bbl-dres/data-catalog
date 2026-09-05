@@ -17,8 +17,9 @@
     closed: {},                       // collapsed list groups
     treeOpen: { objects: true },      // expanded tree nodes
     treeSection: 'objects',           // section whose branch is open (others collapse on section change)
-    graph: { x: 0, y: 0 },            // pan offset of the relation graph
-    relationDiagram: false,
+    graph: DK.graph.createState(),
+    relationDiagram: true,
+    metadataOpen: false,
     navDrawerOpen: false,
     sidebarCollapsed: false,
     flyout: null,
@@ -34,6 +35,31 @@
 
   /* ---- rendering ---------------------------------------------------------- */
   const $ = id => document.getElementById(id);
+
+  // Tables respond to their own width (also when the sidebar or home columns change).
+  // One observer keeps DOM semantics and keyboard focus in sync with card mode.
+  function adaptTable(region) {
+    if (!region.isConnected) return;
+    const cards = region.clientWidth < Number(region.dataset.tableMinWidth);
+    const wasCards = region.classList.contains('is-cards');
+    const focused = region.contains(document.activeElement) ? document.activeElement : null;
+    region.classList.toggle('is-cards', cards);
+    const select = region.querySelector('[data-action="sort-cards"]');
+    if (select) select.closest('label').hidden = !cards;
+    if (cards !== wasCards && focused) {
+      if (cards && focused.matches('.ob-table-sort')) select?.focus({ preventScroll: true });
+      else if (!cards && focused === select) {
+        const column = Number(select.value.split(':')[0]);
+        region.querySelector(`[data-sort-column="${column}"]`)?.focus({ preventScroll: true });
+      }
+    }
+  }
+  const tableLayoutObserver = new ResizeObserver(entries => entries.forEach(entry => adaptTable(entry.target)));
+
+  function observeTables() {
+    tableLayoutObserver.disconnect();
+    document.querySelectorAll('.ob-table-region').forEach(region => { adaptTable(region); tableLayoutObserver.observe(region); });
+  }
 
   function resolveRoute() {
     const r = router.parse();
@@ -78,8 +104,10 @@
 
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
+    const diagramHadFocus = DK.graph.closeFullscreen(false);
+    DK.graph.onPointerUp();
     const previous = route;
-    const navigationHadFocus = state.navDrawerOpen || !!state.flyout;
+    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, #home-search, .ob-search-examples');
     route = resolveRoute();
     state.navDrawerOpen = false;
     state.flyout = null;
@@ -102,7 +130,7 @@
     if (section && section !== state.treeSection) { state.treeOpen = { [section]: true }; state.treeSection = section; }
     if (section) state.treeOpen[section] = true;
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) { state.graph = { x: 0, y: 0 }; state.relationDiagram = false; state.lastEntity = key; }
+    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
     app.render(true);
@@ -118,6 +146,11 @@
 
   /** Re-render nav + main from the current route and state. `navigated`: a new page, focus is not restored. */
   app.render = function (navigated) {
+    const mainFocus = !navigated && focusSelector(document.activeElement, $('main'));
+    if (!navigated) state.metadataOpen = document.querySelector('.ob-metadata')?.open ?? state.metadataOpen;
+    // Swagger owns a live component tree. Reattach its node on chrome updates instead of remounting it.
+    const swaggerHost = !navigated && route?.view === 'api' ? $('swagger-ui') : null;
+    const swaggerFocus = swaggerHost?.contains(document.activeElement) ? document.activeElement : null;
     const treeScroll = document.querySelector('.ob-sidebar-tree')?.scrollTop || 0;
     const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
@@ -126,15 +159,21 @@
     const page = views.page(route, state);
     ctx = page.ctx;
     replaceHtml($('main-nav'), views.mainNav(route));
-    replaceHtml($('header-tools'), views.headerTools(state));
+    replaceHtml($('header-tools'), views.headerTools(state, route));
     if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
+    DK.graph.restoreFullscreen();
+    if (swaggerHost) $('swagger-ui')?.replaceWith(swaggerHost);
+    observeTables();
+    DK.graph.mount(route.entity, state.graph);
+    swaggerFocus?.focus({ preventScroll: true });
+    if (mainFocus) $('main').querySelector(mainFocus)?.focus({ preventScroll: true });
     const tree = document.querySelector('.ob-sidebar-tree');
     if (tree) tree.scrollTop = treeScroll;
     if ($('sidebar-flyout')) $('sidebar-flyout').scrollTop = flyoutScroll;
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
     syncDrawer();
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
-    requestAnimationFrame(revealActiveTab);
+    requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitHomeSuggestions(); });
     updateBackToTop();
     if (route.view === 'api') renderSwagger();
   };
@@ -155,6 +194,7 @@
 
   /* ---- API page: Swagger UI is loaded on first use (1.7 MB that other pages never need) ---- */
   let swaggerLoader = null;
+  const swaggerMounts = new WeakSet();
   function loadSwagger() {
     if (typeof window.SwaggerUIBundle === 'function') return Promise.resolve();
     if (!swaggerLoader) swaggerLoader = new Promise((resolve, reject) => {
@@ -171,10 +211,12 @@
   }
   async function renderSwagger() {
     const host = $('swagger-ui');
-    if (!host) return;
+    if (!host || swaggerMounts.has(host)) return;
+    swaggerMounts.add(host); // includes pending mounts while the bundle is loading
     try { await loadSwagger(); } catch (err) { console.error(err); }
     if (!host.isConnected) return; // the page was re-rendered or left while the bundle loaded
     if (typeof window.SwaggerUIBundle !== 'function') {
+      swaggerMounts.delete(host); // a later render can retry a failed load
       host.setAttribute('aria-busy', 'false');
       host.innerHTML = ui.empty(t('api.unavailable'));
       return;
@@ -194,7 +236,7 @@
   }
 
   function revealActiveTab() {
-    const tabs = document.querySelector('.ob-tabs');
+    const tabs = document.querySelector('.ob-tab-list') || document.querySelector('.ob-tabs');
     const active = tabs && tabs.querySelector('.ob-tab[aria-selected="true"]');
     if (!active || tabs.scrollWidth <= tabs.clientWidth) return;
     const left = active.offsetLeft - (tabs.clientWidth - active.offsetWidth) / 2;
@@ -225,13 +267,17 @@
   }
 
   function setSearch(open, restoreFocus = true) {
-    state.searchOpen = open;
+    state.searchOpen = open && route.view !== 'home';
     state.flyout = null;
     state.suggest = open && !!state.query.trim();
     state.suggestIdx = -1;
     state.menu = null;
     app.render();
-    if (restoreFocus) (open ? $('search-input') : document.querySelector('[data-action="toggle-search"]')).focus();
+    if (restoreFocus) {
+      const target = open ? $('search-input') : document.querySelector('[data-action="toggle-search"]');
+      if (open && route.view === 'home') $('home-search').scrollIntoView({ block: 'start' });
+      target.focus({ preventScroll: true });
+    }
   }
 
   function closeFlyout(restoreFocus) {
@@ -254,8 +300,23 @@
     host.innerHTML = views.suggest(state);
     const input = $('search-input');
     const open = state.suggest && !!state.query.trim();
+    if ($('search-submit')) $('search-submit').disabled = !state.query.trim();
     input.setAttribute('aria-expanded', String(open));
     if (open && state.suggestIdx >= 0) input.setAttribute('aria-activedescendant', 'suggest-' + state.suggestIdx); else input.removeAttribute('aria-activedescendant');
+    fitHomeSuggestions();
+    if (open && state.suggestIdx >= 0) $('suggest-' + state.suggestIdx)?.scrollIntoView({ block: 'nearest' });
+  }
+  function fitHomeSuggestions() {
+    const list = $('home-search') && $('search-suggest');
+    if (!list) return;
+    const viewport = window.visualViewport;
+    const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
+    let available = bottom - list.getBoundingClientRect().top - 8;
+    if (available < 88 && document.activeElement === $('search-input')) {
+      $('home-search').scrollIntoView({ block: 'start' });
+      available = bottom - list.getBoundingClientRect().top - 8;
+    }
+    list.style.maxHeight = Math.max(44, Math.min(360, available)) + 'px';
   }
   /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
   const HEADER_MENUS = ['info', 'language'];
@@ -272,6 +333,14 @@
     if (HEADER_MENUS.includes(prev) || HEADER_MENUS.includes(next)) renderHelp();
   }
   function closeTransient() { if (state.menu || state.suggest) setMenu(null); }
+
+  function openMenu(button, last = false) {
+    const host = button.closest('.ob-menu-host');
+    const selector = (host.id ? '#' + CSS.escape(host.id) + ' ' : '') + `[data-action="menu"][data-menu="${CSS.escape(button.dataset.menu)}"]`;
+    setMenu(button.dataset.menu);
+    const items = document.querySelector(selector)?.closest('.ob-menu-host').querySelectorAll('.ob-menu-item');
+    if (items?.length) items[last ? items.length - 1 : 0].focus();
+  }
   function closeSuggest() {
     if (!state.suggest) return;
     state.suggest = false; state.suggestIdx = -1;
@@ -288,6 +357,7 @@
     router.navigate(router.searchHref(q));
   }
   function onSearchKey(e) {
+    if (e.isComposing) return;
     const open = state.suggest && !!state.query.trim();
     if (e.key === 'ArrowDown' && open) { e.preventDefault(); state.suggestIdx = Math.min(state.suggestIdx + 1, suggestHrefs().length); renderSuggest(); return; }
     if (e.key === 'ArrowUp' && open) { e.preventDefault(); state.suggestIdx = Math.max(state.suggestIdx - 1, -1); renderSuggest(); return; }
@@ -299,13 +369,9 @@
     }
     if (e.key === 'Escape') {
       if (state.suggest) closeSuggest();
-      else setSearch(false);
+      else if (route.view !== 'home') setSearch(false);
     }
   }
-
-  /* ---- graph ------------------------------------------------------------------- */
-  let drag = null;
-  function applyGraphTransform() { const c = $('graph-canvas'); if (c) c.style.transform = detail.graphTransform(state.graph); }
 
   /* ---- exports --------------------------------------------------------------- */
   function doExport(id, label) {
@@ -347,7 +413,7 @@
     const el = $('hb-' + id);
     if (el) {
       hbLock = id;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - $('header').getBoundingClientRect().height - 16, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
       clearTimeout(hbTimer); hbTimer = setTimeout(() => { hbLock = null; }, 900);
     }
   }
@@ -355,7 +421,8 @@
     updateBackToTop();
     if (!route || route.view !== 'manual' || hbLock) return;
     let cur = data.manual.chapters[0].id;
-    data.manual.chapters.forEach(c => { const el = $('hb-' + c.id); if (el && el.getBoundingClientRect().top <= 120) cur = c.id; });
+    const chapterThreshold = $('header').getBoundingClientRect().height + 24;
+    data.manual.chapters.forEach(c => { const el = $('hb-' + c.id); if (el && el.getBoundingClientRect().top <= chapterThreshold) cur = c.id; });
     if (cur !== state.chapter) { state.chapter = cur; updateChapterNav(); }
   }
 
@@ -386,6 +453,7 @@
       return;
     }
     const key = el.dataset.key;
+    if (el.dataset.action.startsWith('graph-')) { DK.graph.action(el, e); return; }
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
       case 'back-to-top': e.preventDefault(); backToTop(); return;
@@ -405,14 +473,18 @@
       }
       case 'close-flyout': closeFlyout(true); return;
       case 'help-toggle': e.stopPropagation(); setMenu(state.menu === 'info' ? null : 'info'); return;
-      case 'menu': e.stopPropagation(); setMenu(state.menu === el.dataset.menu ? null : el.dataset.menu); return;
+      case 'menu':
+        e.stopPropagation();
+        if (state.menu === el.dataset.menu) setMenu(null); else openMenu(el);
+        return;
       case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': state.mode = el.dataset.view; router.replaceParams({ view: state.mode }); app.render(); return;
       case 'sort-table': {
         const sortKey = el.dataset.sortKey;
         const column = parseInt(el.dataset.sortColumn, 10);
-        const current = state.tableSorts[sortKey];
+        const headerDirection = el.closest('th')?.getAttribute('aria-sort');
+        const current = state.tableSorts[sortKey] || (headerDirection ? { column, direction: headerDirection === 'ascending' ? 'asc' : 'desc' } : null);
         const direction = current && current.column === column && current.direction === 'asc' ? 'desc' : 'asc';
         state.tableSorts[sortKey] = { column, direction };
         if (route.view === 'detail' && route.params.page) router.replaceParams({ page: null });
@@ -468,12 +540,35 @@
   }
 
   function onKeydown(e) {
+    if (DK.graph.onKeydown(e)) return;
+    if (e.target.matches('[data-action="menu"]') && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
+      e.preventDefault(); openMenu(e.target, e.key === 'ArrowUp'); return;
+    }
+    const menu = e.target.closest('[role="menu"]');
+    if (menu) {
+      const items = [...menu.querySelectorAll('.ob-menu-item:not(:disabled)')];
+      const current = items.indexOf(e.target);
+      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+        e.preventDefault();
+        const next = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (current + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+        items[next]?.focus(); return;
+      }
+      if (e.key === 'Tab') {
+        // Restore the trigger synchronously; the native Tab action then leaves the closed menu.
+        closeTransient();
+      } else if (e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const next = items.slice(current + 1).concat(items.slice(0, current + 1)).find(item => item.textContent.trim().toLocaleLowerCase().startsWith(e.key.toLocaleLowerCase()));
+        if (next) { e.preventDefault(); next.focus(); }
+        return;
+      }
+    }
     if (e.key === 'Tab' && state.navDrawerOpen) {
       const panel = $('navigation-panel');
       const controls = [...panel.querySelectorAll('a, button:not(:disabled), input, select, [tabindex="0"]')].filter(el => el.getClientRects().length);
       const first = controls[0], last = controls[controls.length - 1];
-      if (e.shiftKey && (e.target === first || !panel.contains(e.target))) { e.preventDefault(); last?.focus(); }
-      else if (!e.shiftKey && (e.target === last || !panel.contains(e.target))) { e.preventDefault(); first?.focus(); }
+      const focused = document.activeElement; // closing an inner menu may have restored its trigger
+      if (e.shiftKey && (focused === first || !panel.contains(focused))) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && (focused === last || !panel.contains(focused))) { e.preventDefault(); first?.focus(); }
     }
     if (e.target.id === 'search-input') { onSearchKey(e); return; }
     if (e.target.matches('.ob-tab') && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
@@ -492,31 +587,12 @@
   }
 
   function onFocusin(e) {
+    DK.graph.onFocusin(e);
     if (e.target.id === 'search-input' && state.query.trim() && !state.suggest) { state.suggest = true; renderSuggest(); }
   }
   function onFocusout(e) {
     const search = state.suggest && e.target.closest('.ob-search');
     if (search && !(e.relatedTarget && search.contains(e.relatedTarget))) closeSuggest();
-  }
-
-  function onPointerDown(e) {
-    const g = e.target.closest('#graph');
-    if (!g || e.button !== 0 || e.target.closest('a')) return;
-    drag = { x: e.clientX, y: e.clientY, px: state.graph.x, py: state.graph.y, el: g };
-    g.classList.add('is-dragging');
-    if (g.setPointerCapture) { try { g.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } }
-    e.preventDefault();
-  }
-  function onPointerMove(e) {
-    if (!drag) return;
-    state.graph.x = drag.px + e.clientX - drag.x;
-    state.graph.y = drag.py + e.clientY - drag.y;
-    applyGraphTransform();
-  }
-  function onPointerUp() {
-    if (!drag) return;
-    drag.el.classList.remove('is-dragging');
-    drag = null;
   }
 
   /* ---- language ---------------------------------------------------------------------- */
@@ -530,9 +606,9 @@
     ui.setDictionary(data.i18n, state.lang, 'de');
     document.documentElement.lang = state.lang;
     $('skip-link').textContent = t('skip');
-    $('brand-link').setAttribute('aria-label', `${cfg.app.name} – ${t('nav.home')}`);
+    $('brand-link').setAttribute('aria-label', `${cfg.app.organisation} – ${cfg.app.name} – ${t('nav.home')}`);
     $('main-nav').setAttribute('aria-label', t('nav.main'));
-    $('header-tools').innerHTML = views.headerTools(state);
+    $('header-tools').innerHTML = views.headerTools(state, route);
     $('footer').innerHTML = views.footer();
     const backToTopButton = $('back-to-top');
     backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
@@ -552,7 +628,8 @@
     try {
       await data.load('data/');
     } catch (err) {
-      $('main').innerHTML = ui.empty(t('loadError.title'), `${ui.esc(t('loadError'))}<div class="ob-cell-muted" style="margin-top:8px">${ui.esc(err.message)}</div>`);
+      // The dictionary is part of the failed load, so this bootstrap fallback must stand on its own.
+      $('main').innerHTML = ui.empty('Datenkatalog konnte nicht geladen werden', `Bitte laden Sie die Seite erneut.<div class="ob-cell-muted" style="margin-top:8px">${ui.esc(err.message)}</div>`);
       console.error(err);
       return;
     }
@@ -566,24 +643,46 @@
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
+    document.addEventListener('submit', e => {
+      if (e.target.id !== 'home-search') return;
+      e.preventDefault(); openResults();
+    });
     document.addEventListener('change', e => {
       if (e.target.matches('[data-action="set-page-size"]')) {
         router.replaceParams({ size: e.target.value === '50' ? null : e.target.value, page: null });
+        app.render();
+      }
+      if (e.target.matches('[data-action="sort-cards"]') && e.target.value) {
+        const [column, direction] = e.target.value.split(':');
+        state.tableSorts[e.target.dataset.sortKey] = { column: Number(column), direction };
+        if (route.view === 'detail') router.replaceParams({ page: null });
         app.render();
       }
     });
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
     document.addEventListener('focusout', onFocusout);
+    document.addEventListener('toggle', e => {
+      if (e.target.matches('.ob-metadata') && e.target.isConnected) state.metadataOpen = e.target.open;
+    }, true);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('pointermove', onPointerMove);
-    document.addEventListener('pointerup', onPointerUp);
-    document.addEventListener('pointercancel', onPointerUp);
+    document.addEventListener('pointerdown', DK.graph.onPointerDown);
+    document.addEventListener('pointermove', DK.graph.onPointerMove);
+    document.addEventListener('pointerup', DK.graph.onPointerUp);
+    document.addEventListener('pointercancel', DK.graph.onPointerUp);
+    document.addEventListener('wheel', DK.graph.onWheel, { passive: false });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', updateBackToTop, { passive: true });
+    window.addEventListener('resize', () => { updateBackToTop(); requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitHomeSuggestions(); }); }, { passive: true });
+    window.visualViewport?.addEventListener('resize', fitHomeSuggestions, { passive: true });
     window.addEventListener('hashchange', app.onRoute);
-    window.matchMedia('(max-width: 960px)').addEventListener('change', () => { state.navDrawerOpen = false; state.flyout = null; app.render(); });
+    window.matchMedia('(max-width: 960px)').addEventListener('change', event => {
+      const navigationHadFocus = state.navDrawerOpen || state.flyout || document.activeElement?.closest('#navigation-panel, .ob-navigation-toggle');
+      state.navDrawerOpen = false; state.flyout = null; app.render();
+      if (navigationHadFocus) {
+        const target = event.matches ? document.querySelector('.ob-navigation-toggle') : document.querySelector('[data-action="toggle-sidebar"]') || $('main-nav').querySelector('[aria-current="page"]');
+        target?.focus({ preventScroll: true });
+      }
+    });
 
     app.onRoute();
   };

@@ -9,12 +9,13 @@
   const views = {};
 
   /* ---- header, nav, footer ------------------------------------------------ */
-  views.headerTools = function (state) {
+  views.headerTools = function (state, route) {
     const cfg = data.config;
+    const home = route?.view === 'home';
     return `
       <div class="ob-header-search${state.searchOpen ? ' is-open' : ''}" id="header-search">
-        <button type="button" class="ob-button ob-button--icon" data-action="toggle-search" aria-label="${esc(t('search.label'))}" aria-expanded="${state.searchOpen}" aria-controls="header-search-field">${icon('search', 'xl')}</button>
-        <div id="header-search-field"${state.searchOpen ? '' : ' hidden'}>${views.toolbar({ state })}</div>
+        <button type="button" class="ob-button ob-button--icon" data-action="toggle-search" aria-label="${esc(t('search.label'))}"${home ? ' aria-controls="home-search"' : ` aria-expanded="${state.searchOpen}" aria-controls="header-search-field"`}>${icon('search', 'xl')}</button>
+        ${home ? '' : `<div id="header-search-field"${state.searchOpen ? '' : ' hidden'}>${views.toolbar({ state })}</div>`}
       </div>
       <div class="ob-popover-host" id="help-host">${views.helpHost(state)}</div>
       <div class="ob-menu-host" id="language-host">${views.languageHost(state)}</div>
@@ -28,7 +29,7 @@
     const languages = data.config.app.languages || ['de'];
     const button = `<button type="button" class="ob-button ob-language-select${open ? ' is-active' : ''}" aria-haspopup="menu" aria-expanded="${open}" aria-label="${esc(`${t('header.language')}: ${t('header.languageCurrent')}`)}" data-action="menu" data-menu="language">${esc(state.lang.toUpperCase())} ${icon('chevron_down', 'sm')}</button>`;
     if (!open) return button;
-    const items = languages.map(l => `<button type="button" role="menuitemradio" aria-checked="${l === state.lang}" class="ob-menu-item${l === state.lang ? ' is-active' : ''}" lang="${l}" data-action="set-language" data-lang="${l}">${esc(t('lang.' + l))}</button>`).join('');
+    const items = languages.map(l => `<button type="button" role="menuitemradio" aria-checked="${l === state.lang}" class="ob-menu-item${l === state.lang ? ' is-active' : ''}" lang="${esc(l)}" data-action="set-language" data-lang="${esc(l)}">${esc(t('lang.' + l))}</button>`).join('');
     return button + `<div class="ob-menu ob-menu--narrow" role="menu" aria-label="${esc(t('header.language'))}">${items}<p class="ob-menu-note">${esc(t('header.languageNote'))}</p></div>`;
   };
 
@@ -37,9 +38,7 @@
     const open = state.menu === 'info';
     const btn = `<button type="button" class="ob-button ob-button--icon${open ? ' is-active' : ''}" title="${esc(t('header.help'))}" aria-label="${esc(t('header.help'))}" aria-haspopup="dialog" aria-expanded="${open}" data-action="help-toggle">${icon('question', 'xl')}</button>`;
     if (!open) return btn;
-    const link = l => l.route
-      ? `<a class="ob-popover-link" href="${esc(l.route)}">${esc(l.label)}</a>`
-      : `<a class="ob-popover-link" href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label)} ${icon('link_external', 'sm')}</a>`;
+    const link = l => ui.link(l.route || l.url, `${esc(l.label)}${l.route ? '' : ' ' + icon('link_external', 'sm')}`, { className: 'ob-popover-link', external: !l.route });
     return btn + `
       <div class="ob-popover" role="dialog" aria-label="${esc(t('header.help'))}">
         <div class="ob-popover-arrow"></div>
@@ -55,7 +54,7 @@
           <ul class="ob-popover-list ob-popover-list--contact">
             <li><a class="ob-inline-link" href="mailto:${esc(h.email)}">${icon('mail')}${esc(h.email)}</a></li>
             <li><a class="ob-inline-link" href="tel:${esc(h.phone.replace(/\s/g, ''))}">${icon('phone')}${esc(h.phone)}</a><br>${esc(h.hours)}</li>
-            <li><a class="ob-inline-link" href="${esc(h.formUrl)}" target="_blank" rel="noopener">${esc(h.formLabel)} ${icon('link_external', 'sm')}</a></li>
+            <li>${ui.link(h.formUrl, `${esc(h.formLabel)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true })}</li>
           </ul>
         </section>
       </div>`;
@@ -72,7 +71,7 @@
     const links = cfg.footerLinks.map(l => {
       const href = l.route || l.url;
       const ext = !!l.url && !/^mailto:/.test(l.url);
-      return `<li><a href="${esc(href)}"${ext ? ' target="_blank" rel="noopener"' : ''}>${esc(l.label)}</a></li>`;
+      return `<li>${ui.link(href, esc(l.label), { external: ext })}</li>`;
     }).join('');
     return `<div class="ob-footer-inner"><ul class="ob-footer-links">${links}</ul><span class="ob-footer-meta">${esc(t('footer.version', { v: cfg.app.version }))} · ${esc(cfg.app.footerNote)}</span></div>`;
   };
@@ -88,6 +87,12 @@
 
   /** Shared sidebar, icon rail and mobile drawer; all links use the same route model. */
   views.sidePanel = function (route, state) {
+    // The API reference only needs the global navigation drawer, never a catalog tree.
+    if (route.view === 'api') return `<div class="ob-sidebar-slot ob-sidebar-slot--global"><aside class="ob-tree-panel${state.navDrawerOpen ? ' is-mobile-open' : ''}" id="navigation-panel" aria-label="${esc(t('navigation.title'))}">
+      <div class="ob-drawer-header"><h2>${esc(t('navigation.title'))}</h2><button type="button" class="ob-button ob-button--icon" aria-label="${esc(t('tree.close'))}" data-action="close-navigation">${icon('xmark', 'lg')}</button></div>
+      <nav class="ob-drawer-nav" aria-label="${esc(t('nav.main'))}">${views.mainNav(route)}</nav>
+      <div class="ob-drawer-tools"><div class="ob-menu-host" id="drawer-language-host">${views.languageHost(state)}</div><div class="ob-popover-host" id="drawer-help-host">${views.helpHost(state)}</div><span>${esc(t('header.help'))}</span></div>
+    </aside></div>`;
     const manual = route.view === 'manual';
     const title = t(manual ? 'manual.title' : 'tree.title');
     const tree = manual ? views.chapterTree(state) : views.tree(route, state);
@@ -187,19 +192,19 @@
       return `<div role="option" id="suggest-${i}" class="ob-suggest-option" aria-selected="${state.suggestIdx === i}" data-action="suggest-pick" data-href="${esc(router.entityHref(g.kind, e.identifier))}"><span>${ui.highlight(e.name, q)}</span></div>`;
     }).join('')}</div>`).join('');
     const label = groups.length ? t('search.showAll', { q }) : t('search.noSuggest', { q });
-    return `<div id="search-suggest" class="ob-suggest" role="listbox" aria-label="${esc(t('search.suggestions'))}">${html}<div role="option" id="suggest-${idx}" class="ob-suggest-all" aria-selected="${state.suggestIdx === idx}" data-action="open-results">${esc(label)}</div></div>`;
+    return `<div id="search-suggest" class="ob-suggest" role="listbox" tabindex="-1" aria-label="${esc(t('search.suggestions'))}">${html}<div role="option" id="suggest-${idx}" class="ob-suggest-all" aria-selected="${state.suggestIdx === idx}" data-action="open-results">${esc(label)}</div></div>`;
   };
 
   views.actionsMenu = function (ctx) {
     if (!ctx.actions.length) return '';
     const open = ctx.state.menu === 'actions';
-    const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}">${esc(a.label)}</button>`).join('')}</div>` : '';
+    const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu" aria-label="${esc(t('toolbar.export'))}">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}">${esc(a.label)}</button>`).join('')}</div>` : '';
     return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions"><span class="ob-export-label">${esc(t('toolbar.export'))}</span>${icon('chevron_down', 'sm', 'ob-export-chevron')}${icon('download', 'xl', 'ob-export-icon')}</button>${menu}</div>`;
   };
 
   views.entityHeader = function (ctx) {
     const e = ctx.entity;
-    return `<header class="ob-view-header ob-entity-header"><div class="ob-title-row"><div class="ob-entity-identity"><h1>${esc(e.name)}</h1><div class="ob-entity-badges">${ui.chip(data.kindDef(e.kind).singular, 'outline')}${e.status ? ui.chip(e.status, data.statusTone(e.status)) : ''}</div></div>${views.actionsMenu(ctx)}</div>${e.description ? `<p class="ob-prose ob-detail-description">${esc(e.description)}</p>` : ''}</header>`;
+    return `<header class="ob-view-header ob-entity-header"><div class="ob-title-row"><h1>${esc(e.name)}</h1>${views.actionsMenu(ctx)}</div>${e.description ? `<p class="ob-prose ob-detail-description">${esc(e.description)}</p>` : ''}</header>`;
   };
 
   views.collectionHeader = ctx => `<header class="ob-view-header ob-collection-header"><div class="ob-title-row"><h1>${esc(ctx.title)}</h1>${views.actionsMenu(ctx)}</div><p class="ob-prose ob-view-description">${esc(data.kindDef(ctx.kind).description)}</p></header>`;
@@ -208,7 +213,7 @@
 
   views.groupMenu = function (ctx) {
     const state = ctx.state;
-    const menu = state.menu === 'group' ? `<div class="ob-menu" role="menu">${ctx.groupOptions.map(o => `<button type="button" role="menuitem" class="ob-menu-item${o.active ? ' is-active' : ''}" data-action="set-group" data-group="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : '';
+    const menu = state.menu === 'group' ? `<div class="ob-menu" role="menu" aria-label="${esc(t('toolbar.group'))}">${ctx.groupOptions.map(o => `<button type="button" role="menuitem" class="ob-menu-item${o.active ? ' is-active' : ''}" data-action="set-group" data-group="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : '';
     return `<div class="ob-menu-host ob-collection-group"><button type="button" class="ob-button" aria-haspopup="menu" aria-expanded="${state.menu === 'group'}" data-action="menu" data-menu="group">${esc(t('toolbar.group'))}: ${esc(ctx.groupLabel)} ${icon('chevron_down', 'sm')}</button>${menu}</div>`;
   };
 
@@ -221,20 +226,19 @@
     </div>`;
   };
 
-  views.toolbar = function (ctx) {
-    const state = ctx.state;
+  /** One shared combobox, placed in the home hero or the header on other routes. */
+  views.searchField = function (state, home = false) {
     const q = state.query;
     const open = state.suggest && !!q.trim();
-    return `<div class="ob-toolbar">
-      <div class="ob-search">
+    return `<div class="ob-search"><div class="ob-search-control">
         ${icon('search', 'lg', 'ob-search-icon')}
-        <input type="search" class="ob-search-input" id="search-input" value="${esc(q)}" placeholder="${esc(t('search.placeholder'))}" aria-label="${esc(t('search.label'))}" role="combobox" aria-expanded="${open}" aria-controls="search-suggest" aria-autocomplete="list" autocomplete="off" spellcheck="false">
+        <input type="search" class="ob-search-input" id="search-input" name="q" value="${esc(q)}" placeholder="${esc(t('search.placeholder'))}" aria-label="${esc(t('search.label'))}"${home ? ' aria-describedby="home-search-description"' : ''} role="combobox" aria-expanded="${open}" aria-controls="search-suggest"${open && state.suggestIdx >= 0 ? ` aria-activedescendant="suggest-${state.suggestIdx}"` : ''} aria-autocomplete="list" autocomplete="off" spellcheck="false" enterkeyhint="search">
         <button type="button" class="ob-search-clear" id="search-clear" aria-label="${esc(t('search.clear'))}" data-action="clear-query"${q ? '' : ' hidden'}>${icon('xmark')}</button>
+        </div>
         <div id="search-suggest-host">${views.suggest(state)}</div>
-      </div>
-      <div class="ob-toolbar-spacer"></div>
-    </div>`;
+      </div>`;
   };
+  views.toolbar = ctx => `<div class="ob-toolbar">${views.searchField(ctx.state)}<div class="ob-toolbar-spacer"></div></div>`;
 
   /* ---- catalog tree ------------------------------------------------------------- */
   views.tree = function (route, state, onlySection) {
@@ -294,10 +298,11 @@
     const kpis = data.kpis().map(k => `
       <a class="ob-kpi" href="${router.listHref(k.kind)}">
         <div class="ob-kpi-head">${icon(k.icon, 'xl')}<h3>${esc(k.label)}</h3></div>
-        <span class="ob-kpi-count"><strong>${k.count}</strong>&nbsp;${esc(k.unit)}</span>
+        <span class="ob-kpi-count"><strong>${k.count}</strong><span class="ob-kpi-unit">${esc(k.unit)}</span></span>
       </a>`).join('');
-    const domainColumns = [{ label: t('home.col.domain') }, { label: t('home.col.responsibility') }, { label: t('home.col.objects') }, { label: t('home.col.attributes') }];
+    const domainColumns = [{ label: t('home.col.domain'), width: '32%' }, { label: t('home.col.responsibility') }, { label: t('home.col.objects'), numeric: true, compact: true }, { label: t('home.col.attributes'), numeric: true, compact: true }];
     const domainTable = ui.tableOptions(ctx.state, 'home:domains', { column: 0, direction: 'asc' });
+    domainTable.minWidth = 480;
     const domainValues = d => {
       const objs = data.objectsOfDomain(d);
       return [d.name, d.responsibleOrg, objs.length, objs.reduce((sum, o) => sum + o.attributes.length, 0)];
@@ -307,20 +312,31 @@
       const href = router.entityHref('domains', d.identifier);
       return ui.tr([ui.entityLink(href, d.name), esc(v[1]), v[2], v[3]], href, domainColumns);
     }).join('');
-    const recentColumns = [{ label: t('home.col.name') }, { label: t('home.col.type') }, { label: t('home.col.domain') }, { label: t('home.col.status') }, { label: t('home.col.modified') }];
+    const recentColumns = [{ label: t('home.col.name'), width: '30%' }, { label: t('home.col.type'), width: '20%' }, { label: t('home.col.domain') }, { label: t('home.col.status'), compact: true }, { label: t('home.col.modified'), compact: true }];
     const recentTable = ui.tableOptions(ctx.state, 'home:recent', { column: 4, direction: 'desc' });
+    recentTable.minWidth = 680;
     const recent = ui.sortRows(data.recent(8), recentTable.sort, r => [r.name, r.kindLabel, r.group, r.status, r.modified]);
-    const recentRows = recent.map(r => ui.tr([ui.entityLink(r.href, r.name), esc(r.kindLabel), esc(r.group), ui.chip(r.status, data.statusTone(r.status)), ui.fmtDate(r.modified)], r.href, recentColumns)).join('');
+    const recentRows = recent.map(r => ui.tr([ui.entityLink(r.href, r.name), esc(r.kindLabel), esc(r.group), ui.chip(r.status, data.statusTone(r.status)), { html: ui.fmtDate(r.modified), cls: 'ob-cell-nowrap' }], r.href, recentColumns)).join('');
     return `
+      <section class="ob-home-search" aria-labelledby="home-search-title">
+        <h1 id="home-search-title">${esc(t('home.search.title'))}</h1>
+        <p id="home-search-description">${esc(t('home.search.description'))}</p>
+        <form id="home-search" class="ob-hero-search-form" role="search" aria-label="${esc(t('search.label'))}">
+          ${views.searchField(ctx.state, true)}
+          <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${ctx.state.query.trim() ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
+        </form>
+        <div class="ob-search-examples"><span>${esc(t('home.search.examples'))}</span>${['Gebäude', 'SAP', 'Energie'].map(q => `<a href="${esc(router.searchHref(q))}">${esc(q)}</a>`).join('')}</div>
+      </section>
+      <div class="ob-kpi-grid">${kpis}</div>
+      <div class="ob-home-sections">
       <section class="ob-section ob-home-domains">
-        <div class="ob-kpi-grid">${kpis}</div>
         <h2>${esc(t('home.domains'))}</h2>
         ${ui.table(domainColumns, domainRows, domainTable)}
       </section>
       <section class="ob-section ob-home-recent">
         <h2>${esc(t('home.recent'))}</h2>
         ${ui.table(recentColumns, recentRows, recentTable)}
-      </section>`;
+      </section></div>`;
   };
 
   /* ---- section lists and search results ----------------------------------------- */
@@ -345,12 +361,12 @@
     const { kind, groups, mode, columns, state } = ctx;
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
-      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group" style="--basis:${g.items.length > 8 ? '100%' : 'var(--ob-group-basis)'}">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
+      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {
       const items = ui.sortRows(g.items, options.sort, e => rowValues(kind, e, true));
-      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(e => views.row(kind, e, columns, true)).join(''), options)}</div>` : ''}</div>`;
+      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(e => views.row(kind, e, columns, true)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
     }).join('')}</div>`;
   };
 
@@ -402,7 +418,7 @@
       abrufen: a => `<ul class="ob-list"><li><strong>Export</strong>: ${esc(a.export)}</li><li><strong>API</strong>: ${esc(a.api)} <a href="#/api">${esc(t('manual.toApi'))}</a></li></ul>`,
       faq: f => `<ul class="ob-list ob-list--loose">${li(f.map(x => `<li><strong>${esc(x.q)}</strong><br>${esc(x.a)}</li>`))}</ul>`,
       glossar: g => `<ul class="ob-list">${li(g.map(x => `<li><strong>${esc(x.term)}</strong>: ${esc(x.text)}</li>`))}</ul>`,
-      grundlagen: r => `<ul class="ob-list">${li(r.map(x => `<li><strong>${esc(x.title)}</strong> (${esc(x.source)}): <a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a></li>`))}</ul>`,
+      grundlagen: r => `<ul class="ob-list">${li(r.map(x => `<li><strong>${esc(x.title)}</strong> (${esc(x.source)}): ${ui.link(x.url, esc(x.url), { external: true })}</li>`))}</ul>`,
     };
     const chapters = m.chapters.map((c, i) => {
       const render = body[c.id];
@@ -431,7 +447,7 @@
     else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state);
     else content = views.viewHeader(ctx) + views.notFound();
     const backdrop = state.navDrawerOpen ? `<button type="button" class="ob-drawer-backdrop" tabindex="-1" aria-label="${esc(t('tree.close'))}" data-action="close-navigation"></button>` : '';
-    return { html: `<div class="ob-workspace${state.sidebarCollapsed ? ' is-collapsed' : ''}">${views.sidePanel(route, state)}<section class="ob-content" id="page-content" tabindex="-1">${views.breadcrumb(ctx.crumbs)}${content}</section></div>${backdrop}`, ctx };
+    return { html: `<div class="ob-workspace${route.view === 'api' ? ' ob-workspace--standalone' : ''}${state.sidebarCollapsed ? ' is-collapsed' : ''}">${views.sidePanel(route, state)}<section class="ob-content" id="page-content" tabindex="-1">${views.breadcrumb(ctx.crumbs)}${content}</section></div>${backdrop}`, ctx };
   };
 
   DK.views = views;

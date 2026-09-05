@@ -19,10 +19,10 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 
 ## Features
 
-- Compact 1b sidebar layout: sticky 56 px header, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer.
-- Home page with KPI cards, domain overview and latest changes.
+- Compact 1b sidebar layout: sticky federal branding with a separate desktop navigation row, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer.
+- Home page with a prominent search form, example searches, KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
-- Profile pages with tabs for overview, attributes or fields or values, relationships as a list or a pannable orbit graph, and history.
+- Profile pages with tabs for overview, attributes or fields or values, an interactive relationship diagram with zoom/pan/selection/fullscreen and a table alternative, and history.
 - Relevance-ranked, umlaut-tolerant search with grouped suggestions, keyboard navigation and a results page.
 - Handbook with chapter navigation, an OpenAPI 3.1 reference rendered by Swagger UI, and a help and contact popover.
 - CSV export and print-to-PDF; Excel and DCAT-AP CH exports are placeholders.
@@ -43,11 +43,15 @@ Open <http://localhost:8000/prototype-oblique/>.
 
 ## Documentation
 
+- [Developer review, 5 September](docs/developer-review-2026-09-05.md) — code findings, implemented fixes, verification and remaining limits.
+- [Test setup](tests/README.md) — repeatable core, functional and responsive checks.
+- [Responsive strategy and review](docs/responsive-strategy.md) — current layout decisions, device behavior, evidence and browser checks.
+- [Relationship diagram](docs/relationship-diagram.md) — controls, dense groups, phone behavior and validation.
 - [Architecture](docs/architecture.md) — file structure, rendering model, routing, state, events, how to extend.
 - [Compact layout 1b](docs/compact-layout.md) — implementation plan, mockup mapping, responsive behavior and validation; includes the preserved original prototype.
 - [Design system](docs/design-system.md) — how the tokens map to Oblique, what was taken from the Figma library, known deltas.
 - [Data model](docs/data-model.md) — JSON files and fields.
-- [Code review](docs/code-review.md) — findings of the September 2026 review and what changed.
+- [Earlier code review](docs/code-review.md) — historical findings from 2 September 2026.
 - [Design review](docs/design-review.md) and [responsive review](docs/design-review-responsive.md) — CD conformance, accessibility, contrast, phone and tablet layout.
 - [Wireframes](docs/wireframes/) — the Claude Design mockup this app was built from.
 

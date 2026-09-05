@@ -1,5 +1,5 @@
 /* detail.js – entity pages ("Steckbrief"): tabs Übersicht, rows (Attribute /
-   Felder / Werte / …), Beziehungen (orbit graph) and Verlauf. */
+   Felder / Werte / …), Beziehungen (diagram/table) and Verlauf. */
 (function (DK) {
   'use strict';
 
@@ -26,9 +26,9 @@
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);
     const counts = { rows: detail.rowsData(e).rows.length, relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
-    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div></div></div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div></div>`;
     let panel;
-    if (tab === 'overview') panel = detail.overview(e);
+    if (tab === 'overview') panel = detail.overview(e, state);
     else if (tab === 'rows') panel = detail.rows(e, route, state);
     else if (tab === 'relations') panel = detail.relations(e, state);
     else panel = detail.history(e, state);
@@ -41,7 +41,7 @@
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
     const ext = (label, value, href) => ({ label, value, type: 'link', href });
     const dom = data.domainForEntity(e.kind, e);
-    const primary = [];
+    const primary = [plain(t('fact.type'), data.kindDef(e.kind).singular), { label: t('fact.status'), value: e.status, type: 'chip', tone: data.statusTone(e.status) }];
     if (dom && e.kind !== 'domains') primary.push(internal(t('fact.domain'), dom.name, 'domains', dom.identifier));
     switch (e.kind) {
       case 'systems':
@@ -80,13 +80,13 @@
     return { primary: primary.filter(present), metadata: metadata.filter(present) };
   };
 
-  detail.overview = function (e) {
+  detail.overview = function (e, state = {}) {
     const renderFacts = facts => facts.map(f => {
       let v;
       if (f.type === 'chip') v = ui.chip(f.value, f.tone);
       else if (f.type === 'internal') v = `<a class="ob-fact-link" href="${esc(f.href)}">${esc(f.value)}</a>`;
       else if (f.type === 'link') v = f.href
-        ? `<a class="ob-inline-link" href="${esc(f.href)}" target="_blank" rel="noopener">${esc(f.value)} ${icon('link_external', 'sm')}</a>`
+        ? ui.link(f.href, `${esc(f.value)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true })
         : `<a class="ob-inline-link" href="#" data-action="not-available" data-what="${esc(f.value)}">${esc(f.value)} ${icon('link_external', 'sm')}</a>`;
       else v = `<span>${esc(f.value)}</span>`;
       return `<dt>${esc(f.label)}</dt><dd>${v}</dd>`;
@@ -95,14 +95,14 @@
     const dataCustodian = data.custodianOf(e.kind, e);
     // Persons link to the federal directory. Prototype: the base URL without a person id (config.admindirUrl).
     const person = name => name
-      ? `<a class="ob-inline-link" href="${esc(data.config.admindirUrl)}" target="_blank" rel="noopener" title="${esc(t('detail.openAdmindir', { name }))}">${esc(name)} ${icon('link_external', 'sm')}</a>`
+      ? ui.link(data.config.admindirUrl, `${esc(name)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title: t('detail.openAdmindir', { name }) })
       : '–';
     return `
       <div class="ob-detail-sections">
         <section class="ob-core-facts">
           <h2>${esc(t('detail.facts'))}</h2>
           <dl class="ob-facts">${renderFacts(facts.primary)}</dl>
-          <details class="ob-metadata">
+          <details class="ob-metadata"${state.metadataOpen ? ' open' : ''}>
             <summary>${esc(t('detail.metadata'))}</summary>
             <dl class="ob-facts">${renderFacts(facts.metadata)}</dl>
           </details>
@@ -125,29 +125,30 @@
   /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column (sort, CSV). */
   detail.rowsData = function (e) {
     const c = (label, width) => ({ label: t(label), width });
+    const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
     switch (e.kind) {
       case 'objects': return {
-        columns: [c('col.position', '48px'), c('col.attribute', '240px'), c('col.description'), c('col.valueType', '128px'), c('col.key', '104px'), c('col.mandatory', '80px')],
+        columns: [compact('col.position', true), { ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
         rows: e.attributes.map((a, i) => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), position = a.position || i + 1, mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [position, ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [position, a.name, a.description, a.valueType, keyText(a.keyRole), mandatory] }; }),
       };
       case 'tables': return {
-        columns: [c('col.field', '22%'), c('col.description'), c('col.dataType', '14%'), c('col.key', '12%')],
+        columns: [c('col.field', '26%'), c('col.description'), c('col.dataType', '10rem'), compact('col.key')],
         rows: e.fields.map(f => ({ cells: [{ html: esc(f.name), cls: 'ob-code' }, esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.name, f.description, f.dataType, keyText(f.keyRole)] })),
       };
       case 'refs': return {
-        columns: [c('col.code', '16%'), c('col.label'), c('col.type', '14%')],
+        columns: [c('col.code', '8rem'), c('col.label'), compact('col.type')],
         rows: e.values.map(v => ({ cells: [{ html: esc(v.code), cls: 'ob-code' }, esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
       };
       case 'domains': return {
-        columns: [c('col.object', '22%'), c('col.description'), c('col.attributes', '14%'), c('col.status', '12%')],
+        columns: [c('col.object', '28%'), c('col.description'), compact('col.attributes', true), compact('col.status')],
         rows: data.objectsOfDomain(e).map(o => { const href = router.entityHref('objects', o.identifier); return { href, cells: [ui.entityLink(href, o.name), esc(o.description), o.attributes.length, ui.chip(o.status, data.statusTone(o.status))], text: [o.name, o.description, o.attributes.length, o.status] }; }),
       };
       case 'systems': return {
-        columns: [c('col.table', '26%'), c('col.description'), c('col.fields', '12%'), c('col.status', '14%')],
+        columns: [c('col.table', '28%'), c('col.description'), compact('col.fields', true), compact('col.status')],
         rows: data.tablesOfSystem(e).map(x => { const href = router.entityHref('tables', x.identifier), name = data.displayName('tables', x), st = data.statusOf('tables', x); return { href, cells: [ui.entityLink(href, name), esc(x.description), x.fields.length, ui.chip(st, data.statusTone(st))], text: [name, x.description, x.fields.length, st] }; }),
       };
       case 'products': return {
-        columns: [c('col.attribute', '22%'), c('col.description'), c('col.valueType', '14%')],
+        columns: [c('col.attribute', '26%'), c('col.description'), c('col.valueType', '9rem')],
         rows: e.attributes.map(a => ({ cells: [esc(a.name), esc(a.description), esc(a.valueType)], text: [a.name, a.description, a.valueType] })),
       };
       default: return { columns: [], rows: [] };
@@ -172,83 +173,42 @@
       <label class="ob-page-size">${esc(t('detail.pageSize'))}<select data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${PAGE_SIZES.map(n => `<option value="${n}"${n === pageSize ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
       <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
     </div>`;
-    return `<div class="ob-detail-rows">${ui.table(rd.columns, rows, options)}${pager}</div>`;
+    const topPager = pages > 1 ? `<nav class="ob-pager ob-pager--top" aria-label="${esc(t('detail.pagination'))}">
+      <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
+      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev-top"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
+      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next-top"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
+    </nav>` : '';
+    return `<div class="ob-detail-rows">${topPager}${ui.table(rd.columns, rows, options)}${pager}</div>`;
   };
 
-  /* ---- Beziehungen: orbit graph ------------------------------------------- */
-  const SIZE = 1000, CX = 500, CY = 500, ORBIT = 230, GAP = 16, BADGE_OFF = 18, BADGE_ANG = -Math.PI * 3 / 4;
-
-  detail.layout = function (e) {
-    const rels = data.relations(e.kind, e).filter(r => r.items.length);
-    const sats = rels.map((r, i) => {
-      const outerR = Math.min(150, Math.max(70, 44 + r.items.length * 22));
-      const angle = (2 * Math.PI * i / rels.length) - Math.PI / 2;
-      const x = CX + ORBIT * Math.cos(angle), y = CY + ORBIT * Math.sin(angle);
-      const bd = outerR + BADGE_OFF;
-      return {
-        r, outerR, x, y,
-        badgeLeft: outerR + bd * Math.cos(BADGE_ANG) - 12, badgeTop: outerR + bd * Math.sin(BADGE_ANG) - 12,
-        line: [CX, CY, x, y],
-        badgeLine: [x + bd * Math.cos(BADGE_ANG), y + bd * Math.sin(BADGE_ANG), x + outerR * Math.cos(BADGE_ANG), y + outerR * Math.sin(BADGE_ANG)],
-      };
-    });
-    return { rels, sats };
-  };
-
-  /** Inner canvas (lines, centre and satellites). */
-  detail.graphCanvas = function (e) {
-    const { sats } = detail.layout(e);
-    const line = (cls, l) => `<line class="${cls}" x1="${l[0]}" y1="${l[1]}" x2="${l[2]}" y2="${l[3]}"></line>`;
-    const svg = `<svg class="ob-graph-svg" width="${SIZE}" height="${SIZE}" viewBox="0 0 ${SIZE} ${SIZE}" aria-hidden="true">${sats.map(s => line('ob-graph-line', s.line)).join('')}${sats.map(s => line('ob-graph-line--badge', s.badgeLine)).join('')}</svg>`;
-    const center = `<div class="ob-graph-center" style="left:${CX - 50}px;top:${CY - 50}px"><div class="ob-graph-center-circle">${icon(data.kindDef(e.kind).icon, '3xl')}</div><div class="ob-graph-center-label">${esc(e.name)}</div></div>`;
-    const satsHtml = sats.map(s => {
-      const d = s.outerR * 2, inner = (s.outerR - GAP) * 2;
-      const items = s.r.items.map(it => {
-        const short = it.name.length > 16 ? it.name.slice(0, 15) + '…' : it.name;
-        return `<a class="ob-graph-sat-item" href="${esc(it.href)}"${it.external ? ' target="_blank" rel="noopener"' : ''} title="${esc(it.name + ' · ' + it.sub)}">${icon(s.r.icon, '2xl')}<span class="ob-graph-sat-item-label">${esc(short)}</span></a>`;
-      }).join('');
-      return `<div class="ob-graph-sat" style="left:${s.x - s.outerR}px;top:${s.y - s.outerR}px;width:${d}px;height:${d}px">
-        <div class="ob-graph-sat-outer" style="width:${d}px;height:${d}px"><div class="ob-graph-sat-inner" style="width:${inner}px;height:${inner}px"><div class="ob-graph-sat-items">${items}</div></div></div>
-        <div class="ob-graph-badge" style="left:${s.badgeLeft}px;top:${s.badgeTop}px">${s.r.items.length}</div>
-        <div class="ob-graph-sat-title">${esc(s.r.title)}</div>
-      </div>`;
-    }).join('');
-    return svg + center + satsHtml;
-  };
-
-  detail.graphTransform = g => `translate(${g.x}px,${g.y}px)`;
-
-  detail.graph = function (e, state) {
-    const { rels } = detail.layout(e);
-    return `<div class="ob-graph" id="graph">
-      <div class="ob-graph-canvas" id="graph-canvas" style="transform:${detail.graphTransform(state.graph)}">${detail.graphCanvas(e)}</div>
-      ${rels.length ? '' : `<div class="ob-graph-empty">${esc(t('detail.noRelations'))}</div>`}
-    </div>`;
-  };
-
-  detail.relationList = function (e) {
+  /* ---- Beziehungen: shared table and interactive diagram ------------------ */
+  detail.relationList = function (e, state) {
     const groups = data.relations(e.kind, e).filter(r => r.items.length);
     if (!groups.length) return ui.empty(t('detail.noRelations'));
-    return `<div class="ob-relation-groups">${groups.map(group => `
-      <section class="ob-relation-group">
-        <h2>${icon(group.icon, 'lg')}<span>${esc(group.title)}</span><span class="ob-relation-count">${group.items.length}</span></h2>
-        <ul>${group.items.map(item => `<li><a href="${esc(item.href)}"${item.external ? ' target="_blank" rel="noopener"' : ''}><span class="ob-relation-name">${esc(item.name)}</span>${item.sub ? `<span class="ob-relation-sub">${esc(item.sub)}</span>` : ''}</a></li>`).join('')}</ul>
-      </section>`).join('')}</div>`;
+    const columns = [
+      { label: t('graph.entry'), primary: true, width: '40%' },
+      { label: t('graph.relationship'), width: '28%' },
+      { label: t('graph.context') },
+    ];
+    const options = ui.tableOptions(state, `detail:${e.kind}:relations`);
+    const rows = groups.flatMap(group => group.items.map(item => ({ group, item })));
+    const ordered = ui.sortRows(rows, options.sort, r => [r.item.name, r.group.title, r.item.sub || '']);
+    return ui.table(columns, ordered.map(({ group, item }) => ui.tr([
+      ui.link(item.href, `${icon(group.icon, 'sm')} ${esc(item.name)}${item.external ? ' ' + icon('link_external', 'sm') : ''}`, { className: 'ob-table-entity-link', external: item.external }),
+      esc(group.title), esc(item.sub || '–'),
+    ], null, columns)).join(''), options);
   };
 
   detail.relations = function (e, state) {
     return `<div class="ob-relations-view${state.relationDiagram ? ' is-diagram' : ''}">
-      <div class="ob-relation-view-switch">
-        <button type="button" class="ob-button" data-action="toggle-relation-view">${esc(state.relationDiagram ? t('detail.relations.showList') : t('detail.relations.showDiagram'))}</button>
-      </div>
-      <div class="ob-relations-list">${detail.relationList(e)}</div>
-      <div class="ob-relations-diagram">${detail.graph(e, state)}</div>
+      <div class="ob-relations-list">${detail.relationList(e, state)}</div>
+      <div class="ob-relations-diagram">${DK.graph.render(e, state.graph)}</div>
     </div>`;
   };
 
   /* ---- Verlauf --------------------------------------------------------------- */
   detail.history = function (e, state) {
-    const columns = [{ label: t('col.date'), width: '12%' }, { label: t('col.change'), width: '22%' }, { label: t('col.details') }, { label: t('col.editedBy'), width: '18%' }];
+    const columns = [{ label: t('col.date'), compact: true }, { label: t('col.change'), width: '22%' }, { label: t('col.details') }, { label: t('col.editedBy'), width: '12rem' }];
     const options = ui.tableOptions(state, `detail:${e.kind}:history`, { column: 0, direction: 'desc' });
     const history = ui.sortRows(data.history(e.kind, e.identifier), options.sort, h => [h.date, h.action, h.detail, h.user]);
     const rows = history.map(h => ui.tr([{ html: esc(fmt(h.date)), cls: 'ob-cell-nowrap' }, esc(h.action), { html: esc(h.detail), cls: 'ob-cell-muted' }, esc(h.user)], null, columns)).join('');

@@ -2,6 +2,10 @@
 
 All data is static JSON under `data/`, loaded once at start-up. Field names follow the catalog information model described in the handbook (DCAT-AP CH / I14Y, ArchiMate and DMBOK aligned). Dates are ISO `yyyy-mm-dd`; the UI formats them as `d.m.yyyy`. Content is fictional.
 
+The loader checks a complete snapshot before publishing it. Entity collections must be arrays; entities need non-empty string identifiers and names. Identifiers must be unique within a kind, and object-attribute identifiers within their object. Missing optional embedded lists become empty arrays; lists supplied with invalid shapes are rejected with file/record locations. Relationship ID lists contain non-empty strings. Dangling references are reported separately and remain tolerated by the UI. These runtime guards are not a complete schema validator for every metadata field.
+
+Domain membership is based on the stable domain identifier, including when callers pass a copied profile record. External destinations pass URL-scheme validation before becoming links. CSV exports protect formula-like text by prefixing an apostrophe; see the [developer review](developer-review-2026-09-05.md) for format implications and validation coverage.
+
 ## Files
 
 | File | Content | Entity kind |

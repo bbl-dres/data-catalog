@@ -190,19 +190,20 @@
   --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
 
   /* ---- 3. Component tokens --------------------------------------------- */
-  --ob-content-max-width: 2560px;
+  --ob-content-max-width: 1600px;
+  --ob-header-identity-height: 56px;                    /* includes the header's bottom border; grows with the logo */
+  --ob-header-navigation-height: 45px;                  /* 44px links + top border; zero in drawer mode */
+  --ob-header-height: calc(var(--ob-header-identity-height) + var(--ob-header-navigation-height));
   --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
-  /* Logo lockup: values from the federal design system (css/components/logo.postcss), desktop tier */
+  /* Federal logo: base tier from designsystem/css/components/logo.postcss; breakpoints in main.css. */
   --ob-logo-flag-width: 30px;
   --ob-logo-flag-height: 33px;
-  --ob-logo-name-width: 174px;
-  --ob-logo-name-height: 50px;
-  --ob-logo-separator-height: 56px;                      /* h-14 from md up; 40px below */
-  --ob-logo-separator-gap: var(--ob-space-lg);           /* ml-6 / mr-6 from lg up; 16px from sm, 8px below */
+  --ob-logo-separator-height: 40px;
+  --ob-logo-separator-gap: 8px;
   --ob-logo-separator-color: #d1d5db;                    /* bg-[#D1D5DB]; no Oblique primitive matches exactly */
-  --ob-logo-title-font-size: var(--ob-font-size-md);     /* text-base from xl up */
+  --ob-logo-title-font-size: 14px;
   --ob-logo-title-line-height: 1.375;                    /* leading-snug */
-  --ob-logo-title-trim: 0.16rem;                         /* mt-[-0.160rem]: caps flush with the wordmark text */
+  --ob-logo-title-trim: 0.16rem;                         /* optical title adjustment from the federal logo reference */
   --ob-control-height: 32px;
   --ob-control-height-lg: 32px;
   --ob-touch-target: 44px;
@@ -226,20 +227,16 @@
   --ob-kpi-min-width: 240px;
   --ob-facts-label-min-width: 140px;
   --ob-facts-label-max-width: 200px;
-  --ob-tile-min-width: 180px;
+  --ob-tile-min-width: 220px;
   --ob-tile-min-height: 56px;
-  --ob-group-basis: 400px;                               /* list groups with up to 8 tiles share a row */
   --ob-tabs-min-width: 280px;
   --ob-toast-max-width: 420px;
   --ob-card-label-min-width: 96px;                       /* label column of phone table cards and facts */
   --ob-api-max-width: 1200px;
-  --ob-graph-canvas-size: 1000px;                        /* must match SIZE in detail.js */
-  --ob-graph-center-size: 100px;
-  --ob-graph-center-circle-size: 68px;
-  --ob-graph-item-width: 64px;
   --ob-prose-max-width: 72ch;
+  --ob-manual-max-width: 1120px;
+  --ob-manual-prose-max-width: 100ch;
   --ob-table-row-padding: 6px;
-  --ob-graph-height: 720px;
   --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
   --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */
 }

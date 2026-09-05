@@ -1,5 +1,7 @@
 # Code review: prototype-oblique
 
+Historical review of 2 September 2026. The [5 September developer review](developer-review-2026-09-05.md) supersedes its current-state conclusions, including test availability and the claim that HTML escaping alone covers security. Retained below as implementation history.
+
 Date: 2026-09-02. Scope: the six application scripts under `js/`, `index.html`, the JSON data contract and the documentation that describes them. Reviewed for correctness, race conditions, robustness against imperfect data, accessibility of the render cycle, duplicated code, and drift between code and documentation. Every recommendation below has been implemented; the "Status" column says where.
 
 Verification: a Playwright script (headless Edge, 1366 px and 390 px) visited every route, exercised grouping, view toggle, sorting, tree, tabs, paging, graph drag, search keyboard flow, help popover, handbook chapters, the API page and the container navigation model, before and after the changes. Both runs finished with zero console errors and zero failed requests. After the changes it additionally checked focus restoration, the lazy Swagger UI load and rendering with deliberately broken references.

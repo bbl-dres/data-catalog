@@ -1,5 +1,7 @@
 # Compact sidebar layout — option 1b
 
+The [responsive strategy review](responsive-strategy.md) supersedes the width, typography, header, table and relationship presentation described below. This document records the original 1b implementation and its preserved snapshot.
+
 Implemented 2026-09-05 from [260803_compact design.html](wireframes/260803_compact%20design.html), **1b Seitenspalte – bevorzugt**. This document supersedes the earlier layout recommendations in the design reviews where they differ.
 
 Review the implemented [desktop profile](compact-layout-desktop.png) and [phone profile](compact-layout-mobile.png).
@@ -18,7 +20,7 @@ Review the implemented [desktop profile](compact-layout-desktop.png) and [phone 
 - The original runtime files and supporting documentation are preserved in [before-1b-2026-09-05](wireframes/before-1b-2026-09-05/index.html). Its 70 files were verified byte-for-byte before implementation. The wireframes directory is excluded to avoid recursively copying the archive into itself.
 - The primary header and sidebar stay visible while the document scrolls. The footer remains at the end of the document. Sidebar contents scroll independently when they exceed the available height.
 - The expanded sidebar is the initial default. Its collapsed state is saved as `datenkatalog.sidebarCollapsed` in local storage. On the rail, clicking a section opens its navigation flyout; Escape, its close button, choosing a destination or clicking outside closes it. The top arrow pins the full tree again.
-- Search moves into the header. The magnifier reveals the existing search field, ranked suggestions and keyboard controls; Escape dismisses suggestions first, then the field. On narrow screens the input opens immediately below the header.
+- Home now places the shared search field in a hero above the summary tiles; the header magnifier focuses it. Elsewhere the magnifier reveals the compact search field, ranked suggestions and keyboard controls; Escape dismisses suggestions first, then the field. On narrow screens that header input opens immediately below the header. Escape leaves the home hero visible.
 - The mockup's 2a home and 2b handbook screens belong to the 1b column and are included. Home uses five filled KPI cards, an 800 px domain table and a 928 px recent-changes table. Column headings remain sortable.
 - Profiles display their type and status beside the title. Status is no longer repeated in the facts. Core facts appear on the left, contacts on the right; additional metadata expands within the core-facts column. Tab counts are calculated from the actual data, including relationships and inherited attribute history.
 - The selected 3b attribute-table behavior is included: document scrolling, headers sticky below the application header, and pagination at the bottom. The default page size is 50, with 100 and 200 available through the page-size selector (`size` in the route). Attribute rows expose position and requiredness already present in the data. Sorting precedes pagination; exports include all rows.

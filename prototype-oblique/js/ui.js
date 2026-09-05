@@ -26,18 +26,37 @@
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   };
 
+  /** HTML escaping alone does not make a URL safe. Relative links use the page's HTTP(S) origin. */
+  ui.safeHref = function (value) {
+    if (typeof value !== 'string' || !value.trim() || /[\u0000-\u001f\u007f]/.test(value)) return null;
+    const href = value.trim();
+    try {
+      const url = new URL(href, 'https://catalog.invalid/');
+      return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol) ? href : null;
+    } catch (err) { return null; }
+  };
+
+  /** labelHtml must already be escaped. An invalid destination stays readable as plain text. */
+  ui.link = function (href, labelHtml, options = {}) {
+    const safe = ui.safeHref(href);
+    const attrs = (options.className ? ` class="${ui.esc(options.className)}"` : '') + (options.title ? ` title="${ui.esc(options.title)}"` : '');
+    return safe
+      ? `<a${attrs} href="${ui.esc(safe)}"${options.external ? ' target="_blank" rel="noopener"' : ''}>${labelHtml}</a>`
+      : `<span${attrs}>${labelHtml}</span>`;
+  };
+
   /** SVG icon (CSS mask, coloured by currentColor). size: xs|sm|lg|xl|2xl|3xl */
   ui.icon = function (name, size, cls) {
-    return `<span class="ob-icon ob-icon-${name}${size ? ' ob-icon--' + size : ''}${cls ? ' ' + cls : ''}" aria-hidden="true"></span>`;
+    return `<span class="${ui.esc(`ob-icon ob-icon-${name}${size ? ' ob-icon--' + size : ''}${cls ? ' ' + cls : ''}`)}" aria-hidden="true"></span>`;
   };
 
   /** Pill chip. tone: success|warning|error|info|neutral */
   ui.chip = function (label, tone) {
-    return `<span class="ob-chip ob-chip--${tone || 'neutral'}">${ui.esc(label)}</span>`;
+    return `<span class="ob-chip ob-chip--${ui.esc(tone || 'neutral')}">${ui.esc(label)}</span>`;
   };
 
   /** Link to a catalog entity inside a table cell. `labelHtml` is used verbatim when given (already escaped). */
-  ui.entityLink = (href, label, labelHtml) => `<a class="ob-table-entity-link" href="${ui.esc(href)}">${labelHtml || ui.esc(label)}</a>`;
+  ui.entityLink = (href, label, labelHtml) => ui.link(href, labelHtml || ui.esc(label), { className: 'ob-table-entity-link' });
 
   /** Escaped text with every occurrence of `query` wrapped in <mark>, case- and diacritic-insensitive. */
   ui.highlight = function (text, query) {
@@ -86,7 +105,7 @@
     }).map(item => item.row);
   };
 
-  /** Table shell. Options `{ key, sort }` make column headers sortable. */
+  /** Table shell. Columns declare numeric alignment and compact sizing; options `{ key, sort }` enable sorting. */
   ui.table = function (columns, rowsHtml, options) {
     const opts = options || {};
     const head = columns.map((c, i) => {
@@ -96,11 +115,18 @@
       const ariaSort = direction === 'desc' ? 'descending' : 'ascending';
       const next = active && direction === 'asc' ? 'descending' : 'ascending';
       const content = sortable
-        ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
+        ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}" data-focus="sort-table:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}:${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
         : ui.esc(c.label);
-      return `<th scope="col"${active ? ` aria-sort="${ariaSort}"` : ''}${c.width ? ` style="width:${c.width}"` : ''}>${content}</th>`;
+      const cls = [c.numeric ? 'ob-cell-numeric' : '', c.compact ? 'ob-col-compact' : ''].filter(Boolean).join(' ');
+      return `<th role="columnheader" scope="col"${cls ? ` class="${cls}"` : ''}${active ? ` aria-sort="${ariaSort}"` : ''}${c.width ? ` style="width:${c.width}"` : ''}>${content}${sortable ? `<span class="ob-table-heading-label">${ui.esc(c.label)}</span>` : ''}</th>`;
     }).join('');
-    return `<div class="ob-table-wrap"><table class="ob-table"><thead><tr>${head}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+    const sortChoices = columns.flatMap((c, i) => c.sortable === false ? [] : ['asc', 'desc'].map(direction => {
+      const label = ui.t('sort.' + (direction === 'asc' ? 'ascending' : 'descending'), { column: c.label });
+      return `<option value="${i}:${direction}"${opts.sort?.column === i && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
+    })).join('');
+    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
+    const minWidth = opts.minWidth || (columns.length >= 6 ? 880 : columns.length >= 5 ? 720 : 640);
+    return `<div class="ob-table-region" data-table-min-width="${minWidth}">${cardSort}<div class="ob-table-wrap"><table class="ob-table" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
   };
 
   /** Table row. cells: html string | {html, cls}. Column labels support mobile cards. */
@@ -108,9 +134,11 @@
     const tds = cells.map((c, i) => {
       const o = c && typeof c === 'object' ? c : { html: c };
       const label = o.label || (columns && columns[i] && columns[i].label) || '';
-      return `<td${label ? ` data-label="${ui.esc(label)}"` : ''}${o.cls ? ` class="${o.cls}"` : ''}>${o.html == null ? '' : o.html}</td>`;
+      const primary = columns?.some(c => c.primary) ? columns[i]?.primary : i === 0;
+      const cls = [o.cls, primary ? 'is-primary' : '', columns?.[i]?.numeric ? 'ob-cell-numeric' : ''].filter(Boolean).join(' ');
+      return `<td role="cell"${label ? ` data-label="${ui.esc(label)}"` : ''}${cls ? ` class="${cls}"` : ''}><span class="ob-cell-value">${o.html == null ? '' : o.html}</span></td>`;
     }).join('');
-    return `<tr${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
+    return `<tr role="row"${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
   };
 
   /** Transient status message (bottom right). tone: info|success|warning */
@@ -124,10 +152,18 @@
     setTimeout(() => { if (el.parentNode) el.remove(); }, 6000);
   };
 
-  /** Download rows as a semicolon-separated CSV (UTF-8 with BOM, Excel-friendly). */
+  /** Spreadsheet-oriented text protection. The apostrophe is intentional exported data.
+      CSV cannot preserve explicit cell types across all spreadsheet save/reopen workflows. */
+  ui.csvCell = function (value) {
+    let s = String(value == null ? '' : value);
+    const formula = typeof value === 'string' && (/^[\s]*[=+@\-＝＋－＠]/u.test(s) || /^[\t\r\n]/.test(s));
+    if (formula) s = "'" + s;
+    return formula || /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+
+  /** Download rows as a semicolon-separated CSV (UTF-8 with BOM). */
   ui.downloadCsv = function (filename, header, rows) {
-    const q = v => { const s = String(v == null ? '' : v); return /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
-    const lines = [header].concat(rows).map(r => r.map(q).join(';'));
+    const lines = [header].concat(rows).map(r => r.map(ui.csvCell).join(';'));
     const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

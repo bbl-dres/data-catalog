@@ -25,14 +25,61 @@
     const entries = await Promise.all(Object.entries(FILES).map(async ([key, file]) => {
       const res = await fetch(base + file, { cache: 'no-cache' });
       if (!res.ok) throw new Error(file + ' → HTTP ' + res.status);
-      return [key, await res.json()];
+      try { return [key, await res.json()]; }
+      catch (err) { throw new Error(file + ': invalid JSON (' + err.message + ')'); }
     }));
-    entries.forEach(([k, v]) => { data[k] = v; });
-    KINDS.forEach(kind => {
-      if (!Array.isArray(data[kind])) data[kind] = [];
-      data[kind].forEach(e => (LISTS[kind] || []).forEach(list => { if (!Array.isArray(e[list])) e[list] = []; }));
-      index[kind] = new Map(data[kind].map(e => [e.identifier, e]));
+    // Validate a complete snapshot before publishing it; a failed reload keeps the old catalog usable.
+    const next = Object.fromEntries(entries);
+    const nextIndex = {};
+    const record = (value, at) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(at + ': expected an object');
+    };
+    const array = (value, at) => { if (!Array.isArray(value)) throw new Error(at + ': expected an array'); };
+    const text = (value, at) => { if (typeof value !== 'string' || !value.trim()) throw new Error(at + ': expected a non-empty string'); };
+    const identities = (items, at) => {
+      const seen = new Set();
+      items.forEach((e, i) => {
+        record(e, `${at}[${i}]`);
+        text(e.identifier, `${at}[${i}].identifier`);
+        text(e.name, `${at}[${i}].name`);
+        if (seen.has(e.identifier)) throw new Error(`${at}[${i}]: duplicate identifier ${e.identifier}`);
+        seen.add(e.identifier);
+      });
+    };
+    ['config', 'i18n', 'model', 'manual'].forEach(key => record(next[key], FILES[key]));
+    record(next.config.app, 'config.json.app');
+    array(next.manual.chapters, 'manual.json.chapters');
+    array(next.changelog, 'changelog.json');
+    record(next.model.kinds, 'model.json.kinds');
+    record(next.model.navModels, 'model.json.navModels');
+    [...KINDS, 'attrs'].forEach(kind => record(next.model.kinds[kind], `model.json.kinds.${kind}`));
+    ['entity', 'container'].forEach(model => {
+      const sections = next.model.navModels[model];
+      array(sections, `model.json.navModels.${model}`);
+      sections.forEach(kind => { if (!KINDS.includes(kind)) throw new Error(`model.json.navModels.${model}: unknown kind ${kind}`); });
     });
+    KINDS.forEach(kind => {
+      const items = next[kind], file = FILES[kind];
+      array(items, file);
+      identities(items, file);
+      items.forEach((e, i) => (LISTS[kind] || []).forEach(list => {
+        const at = `${file}[${i}].${list}`;
+        if (e[list] == null) e[list] = [];
+        array(e[list], at);
+        if (kind === 'objects' && list === 'attributes') identities(e[list], at);
+        else e[list].forEach((item, j) => {
+          const entry = `${at}[${j}]`;
+          if (['basedOn', 'sourcedFrom', 'servedBy'].includes(list)) text(item, entry);
+          else {
+            record(item, entry);
+            text(item[list === 'values' ? 'label' : 'name'], entry + (list === 'values' ? '.label' : '.name'));
+          }
+        });
+      }));
+      nextIndex[kind] = new Map(items.map(e => [e.identifier, e]));
+    });
+    Object.assign(data, next);
+    Object.assign(index, nextIndex);
     data.validate();
   };
 
@@ -118,7 +165,9 @@
     return data.domainOf(o ? o.domain : e.domain);
   };
 
-  data.membersOfDomain = (kind, d) => data.list(kind).filter(e => data.domainForEntity(kind, e) === d);
+  data.membersOfDomain = (kind, d) => d?.identifier
+    ? data.list(kind).filter(e => data.domainForEntity(kind, e)?.identifier === d.identifier)
+    : [];
   data.objectsOfDomain = d => data.membersOfDomain('objects', d);
   data.tablesOfDomain = d => data.membersOfDomain('tables', d);
   data.refsOfDomain = d => data.membersOfDomain('refs', d);
@@ -143,7 +192,7 @@
 
   data.navModel = function () {
     const m = data.navModelOverride || (data.config && data.config.navModel) || 'entity';
-    return data.model.navModels[m] ? m : 'entity';
+    return Object.prototype.hasOwnProperty.call(data.model.navModels, m) && Array.isArray(data.model.navModels[m]) ? m : 'entity';
   };
   data.sections = () => data.model.navModels[data.navModel()];
 
@@ -163,20 +212,21 @@
   /** Table columns per section (list view). */
   data.columns = function (kind) {
     const c = (label, width) => ({ label: t(label), width });
+    const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
     switch (kind) {
-      case 'objects': return [c('col.name', '20%'), c('col.responsibility', '25%'), c('col.description'), c('col.attributes', '11%'), c('col.status', '11%')];
-      case 'tables': return [c('col.name', '18%'), c('col.system', '18%'), c('col.description'), c('col.fields', '9%'), c('col.status', '14%')];
-      case 'domains': return [c('col.domain', '18%'), c('col.responsibility', '18%'), c('col.description'), c('col.object', '12%'), c('col.status', '12%')];
-      case 'systems': return [c('col.system', '18%'), c('col.technology', '18%'), c('col.description'), c('col.tables', '12%'), c('col.status', '12%')];
-      case 'products': return [c('col.product', '18%'), c('col.access', '16%'), c('col.description'), c('col.format', '14%'), c('col.status', '12%')];
-      case 'apis': return [c('col.api', '18%'), c('col.systemVersion', '16%'), c('col.description'), c('col.protocol', '16%'), c('col.status', '12%')];
-      default: return [c('col.name', '20%'), c('col.source', '14%'), c('col.description'), c('col.values', '9%'), c('col.status', '12%')];
+      case 'objects': return [c('col.name', '26%'), c('col.responsibility', '20%'), c('col.description'), compact('col.attributes', true), compact('col.status')];
+      case 'tables': return [c('col.name', '26%'), c('col.system', '20%'), c('col.description'), compact('col.fields', true), compact('col.status')];
+      case 'domains': return [c('col.domain', '26%'), c('col.responsibility', '20%'), c('col.description'), compact('col.object', true), compact('col.status')];
+      case 'systems': return [c('col.system', '26%'), c('col.technology', '20%'), c('col.description'), compact('col.tables', true), compact('col.status')];
+      case 'products': return [c('col.product', '26%'), c('col.access', '20%'), c('col.description'), compact('col.format'), compact('col.status')];
+      case 'apis': return [c('col.api', '26%'), c('col.systemVersion', '20%'), c('col.description'), compact('col.protocol'), compact('col.status')];
+      default: return [c('col.name', '26%'), c('col.source', '20%'), c('col.description'), compact('col.values', true), compact('col.status')];
     }
   };
   /** Search result columns: the list columns without the count column. */
   data.searchColumns = function (kind) {
     const cols = data.columns(kind);
-    return [{ label: t('col.name'), width: '24%' }, { label: cols[1].label, width: '22%' }, { label: t('col.description') }, { label: cols[4].label, width: '14%' }];
+    return [{ label: t('col.name'), width: '28%' }, { label: cols[1].label, width: '22%' }, { label: t('col.description') }, { ...cols[4] }];
   };
 
   /* ---- grouping ---------------------------------------------------------- */
