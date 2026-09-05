@@ -152,19 +152,8 @@
     setTimeout(() => { if (el.parentNode) el.remove(); }, 6000);
   };
 
-  /** Spreadsheet-oriented text protection. The apostrophe is intentional exported data.
-      CSV cannot preserve explicit cell types across all spreadsheet save/reopen workflows. */
-  ui.csvCell = function (value) {
-    let s = String(value == null ? '' : value);
-    const formula = typeof value === 'string' && (/^[\s]*[=+@\-＝＋－＠]/u.test(s) || /^[\t\r\n]/.test(s));
-    if (formula) s = "'" + s;
-    return formula || /[";\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
-  };
-
-  /** Download rows as a semicolon-separated CSV (UTF-8 with BOM). */
-  ui.downloadCsv = function (filename, header, rows) {
-    const lines = [header].concat(rows).map(r => r.map(ui.csvCell).join(';'));
-    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  /** Download a generated local artifact; object URLs are released after the click. */
+  ui.downloadBlob = function (filename, blob) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = filename;

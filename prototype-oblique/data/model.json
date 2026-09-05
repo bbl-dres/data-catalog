@@ -5,6 +5,7 @@
     "objects":  { "singular": "Geschäftsobjekt","plural": "Geschäftsobjekte", "description": "Geschäftsobjekte beschreiben fachliche Begriffe und ihre Eigenschaften unabhängig von konkreten IT-Systemen.", "en": "Business Object",                "icon": "stack",     "file": "objects.json",   "rows": "Attribute" },
     "attrs":    { "singular": "Attribut",       "plural": "Attribute",        "description": "Attribute beschreiben fachliche Eigenschaften eines Geschäftsobjekts.", "en": "Attribute",                      "icon": "tag",       "file": null,             "rows": "" },
     "tables":   { "singular": "Datentabelle",   "plural": "Datentabellen",    "description": "Datentabellen zeigen, in welchen Systemen Geschäftsobjekte technisch gespeichert und durch welche Felder sie umgesetzt werden.", "en": "Data Object",                    "icon": "database",  "file": "tables.json",    "rows": "Felder" },
+    "fields":   { "singular": "Feld",           "plural": "Felder",           "description": "Felder beschreiben die einzelnen Spalten einer Datentabelle.", "en": "Data field", "icon": "tag", "file": null, "rows": "" },
     "refs":     { "singular": "Werteliste",     "plural": "Referenzdaten",    "description": "Referenzdaten sind abgestimmte Wertelisten und Codes für die einheitliche Verwendung von Attributwerten.", "en": "Code List / skos:ConceptScheme", "icon": "file_list", "file": "codelists.json", "rows": "Werte" },
     "products": { "singular": "Datenprodukt",   "plural": "Datenprodukte",    "description": "Datenprodukte bündeln dokumentierte Daten für einen definierten fachlichen Zweck, einschliesslich Zugang, Format und Aktualisierung.", "en": "dcat:Dataset",                   "icon": "briefcase", "file": "products.json",  "rows": "Attribute" },
     "apis":     { "singular": "API",            "plural": "API-Verzeichnis",  "description": "Das API-Verzeichnis beschreibt Schnittstellen, über die Datenprodukte und weitere Datenbestände maschinell bereitgestellt werden.", "en": "dcat:DataService",               "icon": "branch",    "file": "apis.json",      "rows": "" }
@@ -23,6 +24,7 @@
     { "field": "created",        "label": "Erstellt",                   "dcat": "dct:issued",                                             "archimate": "—",                     "dmbok": "Created" },
     { "field": "modified",       "label": "Geändert",                   "dcat": "dct:modified",                                           "archimate": "—",                     "dmbok": "Last changed" },
     { "field": "responsibleOrg", "label": "Verantwortung",              "dcat": "dct:publisher (I14Y: Verantwortliche Organisation)",     "archimate": "Business Actor",        "dmbok": "Accountable organisation" },
+    { "field": "contact",        "label": "Organisationskontakt (optional)", "dcat": "dcat:contactPoint",                                   "archimate": "Business Actor",        "dmbok": "Organisation contact" },
     { "field": "dataOwner",      "label": "Dateneigner",                "dcat": "dcat:contactPoint role=owner",                           "archimate": "Business Role",         "dmbok": "Data Owner" },
     { "field": "dataSteward",    "label": "Datenverwalter",             "dcat": "dcat:contactPoint role=steward",                         "archimate": "Business Role",         "dmbok": "Data Steward" },
     { "field": "classification", "label": "Klassifizierung",            "dcat": "dct:accessRights (ISchV: intern · vertraulich · geheim)","archimate": "property",              "dmbok": "Security classification" },
@@ -36,6 +38,7 @@
     "objects":  [["domain", "Domäne"], ["attributes", "Attribute"], ["normReference", "Normreferenz"], ["termdat", "TERMDAT-Begriffe"]],
     "attrs":    [["businessObject", "Geschäftsobjekt"], ["valueType", "Werttyp"], ["keyRole", "Schlüssel (PK · FK)"], ["mandatory", "Pflichtfeld"], ["codeList", "Werteliste"], ["position", "Position"]],
     "tables":   [["system", "System"], ["dataCustodian", "Datenhalter (optional; sonst vom System)"], ["technicalName", "Technischer Name"], ["realizes", "Realisiert Geschäftsobjekt"], ["fields", "Felder"]],
+    "fields":   [["table", "Datentabelle"], ["technicalName", "Feldname"], ["dataType", "Datentyp"], ["keyRole", "Schlüssel (PK · FK)"], ["codeList", "Werteliste"], ["position", "Position"], ["catalogMetadata", "Quelldokumentation"]],
     "refs":     [["sourceAuthority", "Quelle (Normgeber)"], ["businessObject", "Geschäftsobjekt"], ["values", "Werte"], ["sourceDocument", "Quelldokument"]],
     "products": [["domain", "Domäne"], ["accessRights", "Zugang"], ["license", "Lizenz"], ["format", "Format"], ["accrualPeriodicity", "Aktualisierung"], ["attributes", "Attribute (optional)"], ["basedOn", "Basiert auf Geschäftsobjekten"], ["sourcedFrom", "Gespeist aus Datentabellen"], ["servedBy", "Bereitgestellt über API"]],
     "apis":     [["domain", "Domäne"], ["system", "System"], ["protocol", "Protokoll"], ["endpointURL", "Basis-URL"], ["accessRights", "Zugang"], ["documentation", "Dokumentation"], ["serves", "Bereitgestellte Datenprodukte"]]
@@ -47,5 +50,5 @@
   },
   "accessOrder": ["öffentlich", "intern (eIAM)", "eingeschränkt (Rollen)"],
   "sourceAuthorities": ["GWR / eCH", "SIA", "GEAK", "BBL intern"],
-  "responsibilities": ["Immobilienmanagement", "Energiemanagement", "Portfoliomanagement", "Vertragsmanagement", "Liegenschaftsmanagement"]
+  "responsibilities": ["Immobilienmanagement", "Energiemanagement", "Portfoliomanagement", "Vertragsmanagement", "Liegenschaftsmanagement", "Projektmanagement"]
 }

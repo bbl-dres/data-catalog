@@ -11,6 +11,7 @@
   const state = {
     query: '', suggest: false, suggestIdx: -1,
     menu: null,                       // null | 'info' | 'language' | 'group' | 'actions'
+    exporting: false,
     lang: 'de',                       // active UI language (one of config.languages)
     mode: 'tiles',                    // tiles | table (URL ?view= overrides)
     groupBy: {},                      // per section (URL ?group= overrides)
@@ -21,6 +22,7 @@
     graph: DK.graph.createState(),
     relationDiagram: true,
     metadataOpen: false,
+    fieldSections: Object.create(null),
     navDrawerOpen: false,
     sidebarCollapsed: false,
     flyout: null,
@@ -79,7 +81,7 @@
     if (r.view === 'list') return r.kind;
     if (r.view !== 'detail') return null;
     const container = data.navModel() === 'container';
-    const k = r.kind === 'attrs' ? 'objects' : r.kind;
+    const k = r.kind === 'attrs' ? 'objects' : r.kind === 'fields' ? 'tables' : r.kind;
     if (k === 'objects' || k === 'domains') return container ? 'domains' : 'objects';
     if (k === 'tables' || k === 'systems') return container ? 'systems' : 'tables';
     return k;
@@ -134,7 +136,7 @@
     if (section) state.treeOpen[section] = true;
     if (route.view === 'list' && route.params.domain) state.treeOpen[`${route.kind}:domain:${route.params.domain}`] = true;
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
+    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.fieldSections = Object.create(null); state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
     app.render(true);
@@ -150,8 +152,12 @@
 
   /** Re-render nav + main from the current route and state. `navigated`: a new page, focus is not restored. */
   app.render = function (navigated) {
+    DK.sidebar.cancel();
     const mainFocus = !navigated && focusSelector(document.activeElement, $('main'));
-    if (!navigated) state.metadataOpen = document.querySelector('.ob-metadata')?.open ?? state.metadataOpen;
+    if (!navigated) {
+      state.metadataOpen = document.querySelector('.ob-core-facts > .ob-metadata')?.open ?? state.metadataOpen;
+      document.querySelectorAll('[data-field-section]').forEach(el => { state.fieldSections[el.dataset.fieldSection] = el.open; });
+    }
     // Swagger owns a live component tree. Reattach its node on chrome updates instead of remounting it.
     const swaggerHost = !navigated && route?.view === 'api' ? $('swagger-ui') : null;
     const swaggerFocus = swaggerHost?.contains(document.activeElement) ? document.activeElement : null;
@@ -165,6 +171,7 @@
     replaceHtml($('main-nav'), views.mainNav(route));
     replaceHtml($('header-tools'), views.headerTools(state, route));
     if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
+    DK.sidebar.sync();
     DK.graph.restoreFullscreen();
     if (swaggerHost) $('swagger-ui')?.replaceWith(swaggerHost);
     observeTables();
@@ -401,16 +408,22 @@
   }
 
   /* ---- exports --------------------------------------------------------------- */
-  function doExport(id, label) {
-    if (id === 'csv') {
-      if (route.view === 'list') {
-        const header = ctx.columns.map(c => c.label);
-        const rows = [];
-        ctx.groups.forEach(g => g.items.forEach(e => { const c = data.cols(route.kind, e); rows.push([e.name, c[0], c[1], c[2], data.statusOf(route.kind, e)]); }));
-        ui.downloadCsv(`${route.kind}.csv`, header, rows);
-      } else if (route.entity) {
-        const rd = detail.rowsData(route.entity);
-        ui.downloadCsv(`${ui.slug(route.entity.name)}-${ui.slug(detail.rowsLabel(route.entity) || 'export')}.csv`, rd.columns.map(c => c.label), rd.rows.map(r => r.text));
+  async function doExport(id, label) {
+    if (id === 'xlsx') {
+      if (state.exporting) return;
+      try {
+        const plan = DK.excel.plan(route, ctx);
+        state.exporting = true;
+        app.render();
+        ui.toast(t('excel.preparing'));
+        await DK.excel.download(plan);
+        ui.toast(t('excel.ready'));
+      } catch (error) {
+        console.error('Excel export failed:', error);
+        ui.toast(t('excel.failed'), 'error');
+      } finally {
+        state.exporting = false;
+        app.render();
       }
       return;
     }
@@ -575,6 +588,7 @@
   }
 
   function onKeydown(e) {
+    if (DK.sidebar.onKeydown(e)) return;
     if (DK.graph.onKeydown(e)) return;
     if (e.target.matches('[data-action="menu"]') && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
       e.preventDefault(); openMenu(e.target, e.key === 'ArrowUp'); return;
@@ -675,6 +689,7 @@
       return;
     }
     const cfg = data.config;
+    DK.sidebar.init();
     try { state.sidebarCollapsed = localStorage.getItem('datenkatalog.sidebarCollapsed') === 'true'; } catch (err) { /* storage unavailable */ }
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
     $('brand-acronym').textContent = cfg.app.organisationShort || '';
@@ -707,7 +722,9 @@
     document.addEventListener('focusin', onFocusin);
     document.addEventListener('focusout', onFocusout);
     document.addEventListener('toggle', e => {
-      if (e.target.matches('.ob-metadata') && e.target.isConnected) state.metadataOpen = e.target.open;
+      if (!e.target.isConnected) return;
+      if (e.target.matches('.ob-core-facts > .ob-metadata')) state.metadataOpen = e.target.open;
+      if (e.target.matches('[data-field-section]')) state.fieldSections[e.target.dataset.fieldSection] = e.target.open;
     }, true);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
     document.addEventListener('pointerdown', DK.graph.onPointerDown);

@@ -19,17 +19,17 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 
 ## Features
 
-- Compact 1b sidebar layout: sticky federal branding with a separate desktop navigation row, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer.
+- Compact 1b sidebar layout: sticky federal branding with a separate desktop navigation row, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer. The desktop sidebar starts at 320 px; drag its right divider to resize, or double-click to reset. Its width is remembered.
 - Home page with a prominent search form, example searches, KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
 - Profile pages with tabs for overview, attributes or fields or values, an interactive relationship diagram with zoom/pan/selection/fullscreen and a table alternative, and history.
 - Relevance-ranked, umlaut-tolerant search with grouped suggestions, keyboard navigation and a results page.
 - Handbook with chapter navigation, an OpenAPI 3.1 reference rendered by Swagger UI, and a help and contact popover.
-- CSV export and print-to-PDF; Excel and DCAT-AP CH exports are placeholders.
+- Multi-sheet Excel export and print-to-PDF; DCAT-AP CH export remains a placeholder. See [Excel export](docs/excel-export.md) for workbook contents and scope.
 - Deep-linkable hash routes for section, entity, view mode, grouping, search query and handbook chapter.
 - Two navigation models (entity-first or container-first), switched in `data/config.json` or with `?nav=container`.
 - UI in German, French, Italian and English (fr/it/en as drafts); catalog content stays German.
-- Self-hosted Noto Sans and a pinned Swagger UI, no external requests, no build step.
+- Self-hosted Noto Sans, pinned Swagger UI and ExcelJS, no external requests, no build step. ExcelJS loads only when exporting.
 
 ## Run locally
 
@@ -57,4 +57,4 @@ Open <http://localhost:8000/prototype-oblique/>.
 
 ## License
 
-Project code is covered by the [MIT License](../LICENSE). Oblique styles are MIT (Swiss Confederation, FOITT), Noto Sans is under the SIL Open Font License 1.1, and Swagger UI is Apache 2.0. The Swiss federal logo is protected by the Coat of Arms Protection Act and may only be used by federal bodies.
+Project code is covered by the [MIT License](../LICENSE). Oblique styles are MIT (Swiss Confederation, FOITT), Noto Sans is under the SIL Open Font License 1.1, Swagger UI is Apache 2.0, and [ExcelJS](vendor/exceljs/LICENSE) is MIT. The Swiss federal logo is protected by the Coat of Arms Protection Act and may only be used by federal bodies.

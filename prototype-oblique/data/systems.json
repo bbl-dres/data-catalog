@@ -3,7 +3,7 @@
     "identifier": "sap",
     "name": "SAP RE-FX",
     "description": "ERP-System für die Immobilienbewirtschaftung. Enthält Stammdaten zu Gebäuden, Mietobjekten, Mietverträgen, Konditionen und Geschäftspartnern.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2025.12",
     "created": "2022-01-14",
     "modified": "2025-12-01",
@@ -25,7 +25,7 @@
     "identifier": "gis",
     "name": "GIS IMMO",
     "description": "Geoinformationssystem für die Bundesimmobilien. Enthält Geodaten zu Gebäuden, Grundstücken und Energieinfrastruktur.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2025.12",
     "created": "2022-01-14",
     "modified": "2025-12-02",
@@ -42,5 +42,34 @@
       "email": "immobilienmanagement@bbl.admin.ch",
       "phone": "+41 58 465 50 10"
     }
+  },
+  {
+    "status": "Gültig",
+    "version": "5.0.0",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "responsibleOrg": "Bundesamt für Statistik (BFS)",
+    "contact": {
+      "url": "https://www.housing-stat.ch/de/home.html",
+      "email": "housing-stat@bfs.admin.ch",
+      "phone": "0800 866 600"
+    },
+    "source": "GWR",
+    "synced": "2026-09-05",
+    "provenance": {
+      "importId": "gwr-catalog-5.0",
+      "catalogVersion": "5.0.0",
+      "variant": "revised",
+      "captured": "2026-09-05",
+      "files": {
+        "Merkmalskatalog.mhtml": "a731e2c6756c4eb7b255598add4339c96f0600b0a338625d3b018aa9f4111bc4",
+        "gwr codes.xlsx": "04f6860439a68228890152566035a4faed11a2492287964af6f1e48767c2d198"
+      }
+    },
+    "identifier": "gwr",
+    "name": "GWR",
+    "description": "Eidgenössisches Gebäude- und Wohnungsregister des BFS. Der importierte Merkmalskatalog 5.0.0 beschreibt Bauprojekte, Arbeiten, Gebäude, Wärmeerzeugungsanlagen, Gebäudeeingänge, Wohnungen und Strassen.",
+    "informationUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised",
+    "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · Metadatenimport"
   }
 ]

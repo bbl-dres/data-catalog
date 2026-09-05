@@ -110,7 +110,7 @@
       <div class="ob-sidebar-heading"><h2 class="ob-tree-title">${esc(title)}</h2><button type="button" class="ob-button ob-button--icon" data-action="toggle-sidebar" aria-label="${esc(t(state.sidebarCollapsed ? 'navigation.expand' : 'navigation.collapse'))}" title="${esc(t(state.sidebarCollapsed ? 'navigation.expand' : 'navigation.collapse'))}" aria-expanded="${!state.sidebarCollapsed}" aria-controls="sidebar-tree">${icon(state.sidebarCollapsed ? 'chevron_right' : 'chevron_left', 'sm')}</button></div>
       <div class="ob-sidebar-tree" id="sidebar-tree">${tree}</div>${rail}${flyout}
       <div class="ob-drawer-tools"><div class="ob-menu-host" id="drawer-language-host">${views.languageHost(state)}</div><div class="ob-popover-host" id="drawer-help-host">${views.helpHost(state)}</div><span>${esc(t('header.help'))}</span></div>
-    </aside></div>`;
+    </aside>${state.sidebarCollapsed ? '' : `<div id="sidebar-resizer" class="ob-sidebar-resizer" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="navigation-panel page-content" aria-label="${esc(t('navigation.resize'))}" title="${esc(t('navigation.resizeHelp'))}"></div>`}</div>`;
   };
 
   /* ---- context: everything the page composition needs -------------------- */
@@ -156,6 +156,7 @@
       const dom = data.domainForEntity(e.kind, e);
       const sys = data.sysOf(e.system);
       const obj = e.kind === 'attrs' ? data.objOf(e.object) : null;
+      const table = e.kind === 'fields' ? data.get('tables', e.table) : null;
       const domCrumb = dom ? [ent('domains', dom)] : [];
       const scopedDomCrumb = dom ? [{ label: dom.name, href: router.domainListHref(e.kind, dom.identifier, route.params.nav ? { nav: data.navModel() } : undefined) }] : [];
       const sysCrumb = sys ? [ent('systems', sys)] : [];
@@ -165,6 +166,7 @@
         objects: [objectsSec, ...domCrumb],
         attrs: [objectsSec, ...domCrumb, ...(obj ? [ent('objects', obj)] : [])],
         tables: [tablesSec, ...sysCrumb],
+        fields: [tablesSec, ...sysCrumb, ...(table ? [{ label: data.displayName('tables', table), href: router.entityHref('tables', table.identifier, { tab: 'rows', ...(route.params.nav ? { nav: data.navModel() } : {}) }) }] : [])],
         refs: [sec('refs'), ...scopedDomCrumb],
         products: [sec('products'), ...scopedDomCrumb],
         apis: [sec('apis'), ...scopedDomCrumb],
@@ -182,13 +184,13 @@
     // actions menu
     const A = (id, label) => ({ id, label });
     if (route.view === 'detail') {
-      const rowsWord = e.kind === 'apis' ? t('unit.endpoints') : (kinds[e.kind].rows || t('unit.attributes'));
-      if (e.kind === 'attrs' || e.kind === 'apis') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf'))];
+      if (e.kind === 'attrs' || e.kind === 'fields' || e.kind === 'apis') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf'))];
       else if (e.kind === 'products') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf')), A('dcat', t('toolbar.export.dcat'))];
-      else ctx.actions = [A('csv', t('toolbar.export.csv', { what: rowsWord })), A('xlsx', t('toolbar.export.xlsx', { what: rowsWord })), A('profile-pdf', t('toolbar.export.profilePdf')), A('uml', t('toolbar.export.uml'))];
+      else ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf')), A('uml', t('toolbar.export.uml'))];
+      ctx.actions.unshift(A('xlsx', t('toolbar.export.xlsx')));
     } else if (route.view === 'list') {
       const w = t('toolbar.export.list');
-      ctx.actions = [A('csv', t('toolbar.export.csv', { what: w })), A('xlsx', t('toolbar.export.xlsx', { what: w })), A('pdf', t('toolbar.export.pdf', { what: w })), A('uml', t('toolbar.export.uml'))];
+      ctx.actions = [A('xlsx', t('toolbar.export.xlsx')), A('pdf', t('toolbar.export.pdf', { what: w })), A('uml', t('toolbar.export.uml'))];
     }
     return ctx;
   };
@@ -211,7 +213,7 @@
   views.actionsMenu = function (ctx) {
     if (!ctx.actions.length) return '';
     const open = ctx.state.menu === 'actions';
-    const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu" aria-label="${esc(t('toolbar.export'))}">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}">${esc(a.label)}</button>`).join('')}</div>` : '';
+    const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu" aria-label="${esc(t('toolbar.export'))}">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}"${a.id === 'xlsx' && ctx.state.exporting ? ' disabled' : ''}>${esc(a.label)}</button>`).join('')}</div>` : '';
     return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${icon('download', null, 'ob-export-icon')}<span class="ob-export-label">${esc(t('toolbar.export'))}</span>${icon('chevron_down', 'sm', 'ob-export-chevron')}</button>${menu}</div>`;
   };
 
@@ -268,12 +270,11 @@
     const listHref = kind => router.listHref(kind, navParams);
     const entityHref = (kind, id) => router.entityHref(kind, id, navParams);
     const e = route.entity;
-    const treeE = e ? (e.kind === 'attrs' ? { kind: 'objects', id: e.object } : { kind: e.kind, id: e.identifier }) : null;
+    const treeE = e ? (e.kind === 'attrs' ? { kind: 'objects', id: e.object } : e.kind === 'fields' ? { kind: 'tables', id: e.table } : { kind: e.kind, id: e.identifier }) : null;
     const isActive = (kind, id) => !!treeE && treeE.kind === kind && treeE.id === id;
     const contains = (kind, members) => !!treeE && treeE.kind === kind && members.some(m => m.identifier === treeE.id);
     const items = [];
-    const total = data.contentKinds().reduce((a, k) => a + data.list(k).length, 0);
-    if (!onlySection) items.push({ label: t('tree.overview'), count: total, level: 1, icon: 'home', active: route.view === 'home', href: '#/', action: 'open-overview' });
+    if (!onlySection) items.push({ label: t('tree.overview'), level: 1, icon: 'home', active: route.view === 'home', href: '#/', action: 'open-overview' });
 
     data.sections().forEach(sec => {
       if (onlySection && sec !== onlySection) return;
@@ -313,7 +314,7 @@
       const toggle = it.expandable
         ? `<button type="button" class="ob-tree-toggle" aria-label="${esc(t(it.expanded ? 'tree.collapse' : 'tree.expand', { name: it.label }))}" aria-expanded="${!!it.expanded}" data-action="toggle-tree" data-key="${esc(it.key)}">${icon(it.expanded ? 'chevron_down' : 'chevron_right', 'sm')}</button>`
         : '<span class="ob-tree-spacer" aria-hidden="true"></span>';
-      const content = `${it.icon ? icon(it.icon) : ''}<span class="ob-tree-label" title="${esc(it.label)}">${esc(it.label)}</span>${showCounts ? `<span class="ob-tree-count">${it.count}</span>` : ''}`;
+      const content = `${it.icon ? icon(it.icon) : ''}<span class="ob-tree-label" title="${esc(it.label)}">${esc(it.label)}</span>${showCounts && it.count != null ? `<span class="ob-tree-count">${it.count}</span>` : ''}`;
       const target = it.toggleOnly
         ? `<button type="button" class="ob-tree-link" data-action="toggle-tree" data-key="${esc(it.key)}">${content}</button>`
         : `<a class="ob-tree-link" href="${esc(it.href)}"${it.active ? ' aria-current="page"' : ''}${it.action ? ` data-action="${esc(it.action)}"` : it.key ? ` data-action="open-tree" data-key="${esc(it.key)}"` : ''}>${content}</a>`;

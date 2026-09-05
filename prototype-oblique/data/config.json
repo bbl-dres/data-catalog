@@ -5,7 +5,7 @@
     "organisationShort": "BBL",
     "version": "0.4.0",
     "badge": "Prototyp",
-    "footerNote": "Prototyp, fiktive Inhalte – nur zur Demonstration",
+    "footerNote": "Prototyp – Beispieldaten und GWR-Katalogmetadaten, keine Registerdaten",
     "language": "de",
     "languages": ["de", "fr", "it", "en"],
     "user": { "name": "David Reber", "initials": "DR" }

@@ -242,7 +242,7 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 /* Breadcrumb */
 .ob-breadcrumb { margin-bottom: var(--ob-space-default); min-height: var(--ob-line-height-md); }
 .ob-breadcrumb ol { display: flex; flex-wrap: wrap; align-items: center; list-style: none; font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-md); letter-spacing: var(--ob-letter-spacing-wide); }
-.ob-breadcrumb li { display: inline-flex; align-items: center; }
+.ob-breadcrumb li { display: inline-flex; align-items: center; min-width: 0; max-width: 100%; }
 .ob-breadcrumb a {
   display: inline-block; max-width: var(--ob-breadcrumb-item-max-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-decoration: none; cursor: pointer;
@@ -342,7 +342,29 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 /* ---- Sidebar and normal document flow ----------------------------------- */
 .ob-workspace { display: grid; grid-template-columns: var(--ob-sidebar-width) minmax(0, 1fr); width: 100%; }
 .ob-workspace.is-collapsed { grid-template-columns: var(--ob-sidebar-rail-width) minmax(0, 1fr); }
-.ob-sidebar-slot { grid-column: 1; grid-row: 1; min-width: 0; border-right: var(--ob-border-width-xs) solid var(--ob-color-border); contain: inline-size; }
+.ob-sidebar-slot { position: relative; grid-column: 1; grid-row: 1; min-width: 0; border-right: var(--ob-border-width-xs) solid var(--ob-color-border); contain: inline-size; }
+.ob-sidebar-resizer { position: absolute; top: 0; bottom: 0; right: calc(var(--ob-sidebar-resize-hit-width) / -2); width: var(--ob-sidebar-resize-hit-width); z-index: var(--ob-z-controls); cursor: col-resize; touch-action: none; outline: none; }
+/* The center line is the focus indicator. A ring around the wider hit area
+   adds two extra lines when the browser marks the first pointer focus visible. */
+.ob-sidebar-resizer:focus-visible { box-shadow: none; }
+/* Sticky within the full-height divider, so long pages keep the grip in view.
+   Its background masks the center line between the two short grip strokes. */
+.ob-sidebar-resizer::before {
+  content: ''; display: block; position: sticky; z-index: 1;
+  top: calc((100dvh + var(--ob-header-height) - var(--ob-sidebar-resize-grip-height)) / 2);
+  width: var(--ob-sidebar-resize-grip-width); height: var(--ob-sidebar-resize-grip-height); margin-inline: auto;
+  border-inline: var(--ob-border-width-xs) solid var(--ob-color-border-strong); background: var(--ob-color-bg);
+}
+.ob-sidebar-resizer:hover::before, .ob-sidebar-resizer:focus-visible::before, .ob-sidebar-resizing .ob-sidebar-resizer::before { border-color: var(--ob-color-border-input); }
+.ob-sidebar-resizer::after { content: ''; position: absolute; inset: 0; width: var(--ob-border-width-sm); margin: 0 auto; background: transparent; }
+.ob-sidebar-resizer:hover::after { background: var(--ob-color-border-strong); }
+.ob-sidebar-resizer:focus-visible::after, .ob-sidebar-resizing .ob-sidebar-resizer::after { background: var(--ob-color-border-input); }
+@media (forced-colors: active) {
+  .ob-sidebar-resizer::before { border-color: ButtonText; background: Canvas; forced-color-adjust: none; }
+  .ob-sidebar-resizer:hover::before, .ob-sidebar-resizer:focus-visible::before, .ob-sidebar-resizing .ob-sidebar-resizer::before { border-color: Highlight; }
+  .ob-sidebar-resizer:hover::after, .ob-sidebar-resizer:focus-visible::after, .ob-sidebar-resizing .ob-sidebar-resizer::after { background: Highlight; forced-color-adjust: none; }
+}
+.ob-sidebar-resizing, .ob-sidebar-resizing * { cursor: col-resize !important; user-select: none !important; }
 .ob-tree-panel { position: sticky; top: var(--ob-header-height); z-index: var(--ob-z-controls); width: 100%; max-height: calc(100dvh - var(--ob-header-height)); background: var(--ob-color-bg); padding-top: var(--ob-space-xs); display: flex; flex-direction: column; }
 .ob-sidebar-heading { display: flex; flex: none; height: var(--ob-sidebar-heading-height); align-items: center; justify-content: space-between; gap: var(--ob-space-sm); padding: 0 var(--ob-space-xs) 0 var(--ob-space-default); }
 .ob-sidebar-heading h2 { min-width: 0; margin: 0; font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); letter-spacing: var(--ob-letter-spacing-caps); text-transform: uppercase; color: var(--ob-color-text-tertiary); font-weight: var(--ob-font-weight-semibold); }
@@ -483,6 +505,7 @@ button.ob-tree-link { width: 100%; }
 .ob-chip--outline { color: var(--ob-color-text-secondary); background: var(--ob-color-bg); border: var(--ob-border-width-xs) solid var(--ob-color-border-strong); font-weight: var(--ob-font-weight-regular); }
 .ob-prose { max-width: var(--ob-prose-max-width); text-wrap: pretty; }
 .ob-view-description, .ob-detail-description { margin-top: var(--ob-space-sm); font-size: var(--ob-font-size-body-lg); line-height: var(--ob-line-height-lg); color: var(--ob-color-text-secondary); }
+.ob-detail-description { white-space: pre-line; }
 .ob-actions-menu { flex: none; }
 .ob-collection-controls, .ob-detail-controls { display: flex; align-items: flex-end; gap: var(--ob-space-default); margin-bottom: var(--ob-space-lg); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
 .ob-tabs-frame { position: relative; min-width: 0; overflow: hidden; }
@@ -522,6 +545,9 @@ button.ob-tree-link { width: 100%; }
 .ob-metadata[open] summary { margin-bottom: var(--ob-space-sm); }
 .ob-context-note { max-width: var(--ob-prose-max-width); margin-bottom: var(--ob-space-default); padding: var(--ob-space-sm) var(--ob-space-md); background: var(--ob-color-surface); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); }
 .ob-detail-rows { scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
+.ob-field-documentation { max-width: var(--ob-manual-max-width); margin-top: var(--ob-space-lg); }
+.ob-field-documentation .ob-metadata { padding-bottom: var(--ob-space-md); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+.ob-source-text { max-width: var(--ob-manual-prose-max-width); padding-top: var(--ob-space-md); line-height: var(--ob-line-height-lg); white-space: pre-line; overflow-wrap: anywhere; }
 .ob-detail-rows .ob-table-wrap { overflow: visible; }
 .ob-detail-rows th { position: sticky; top: var(--ob-header-height); z-index: 1; background: var(--ob-color-surface); box-shadow: 0 1px var(--ob-color-border-strong); }
 .ob-detail-rows td { overflow-wrap: anywhere; }
@@ -668,6 +694,7 @@ button.ob-tree-link { width: 100%; }
   .ob-header-search .ob-search-clear { height: var(--ob-touch-target); width: var(--ob-touch-target); }
   .ob-workspace, .ob-workspace.is-collapsed { display: block; }
   .ob-sidebar-slot { border: 0; }
+  .ob-sidebar-resizer { display: none; }
   .ob-sidebar-slot--global { display: block; }
   .ob-sidebar-slot--global .ob-drawer-tools { margin-top: auto; }
   .ob-tree-panel { display: none; }

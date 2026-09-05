@@ -1,6 +1,5 @@
 /* Run from any directory. Requires Playwright; see docs/responsive-strategy.md.
    Test data is injected into the browser only. No application data is modified. */
-const fs = require('node:fs');
 const assert = require('node:assert/strict');
 const { createServer, settle, chromium } = require('./browser-helpers.cjs');
 const server = createServer();
@@ -123,10 +122,13 @@ const server = createServer();
     assert.equal(await page.locator('.ob-detail-rows tbody tr').count(), 100);
     await page.locator('.ob-actions-menu > button').click();
     const downloadEvent = page.waitForEvent('download');
-    await page.locator('[data-export="csv"]').click();
+    await page.locator('[data-export="xlsx"]').click();
     const download = await downloadEvent;
-    const csv = fs.readFileSync(await download.path(), 'utf8');
-    assert(csv.includes('Test 001') && csv.includes('Test 123'), 'CSV lost rows outside current page');
+    const workbook = await require('./excel-helpers.cjs').readWorkbook(await download.path());
+    const attrs = workbook.getWorksheet('Attribute');
+    assert.equal(attrs.rowCount, 124, 'Excel lost rows outside current page');
+    assert.equal(attrs.getCell('E2').value, 'Test 123', 'Excel must retain the selected row sort');
+    assert(attrs.getColumn(5).values.includes('Test 001'));
     await page.emulateMedia({ media: 'print' });
     assert.equal(await page.locator('.ob-table thead').evaluate(el => getComputedStyle(el).position), 'static');
     assert.equal(await page.locator('.ob-table-card-sort').evaluate(el => getComputedStyle(el).display), 'none');
@@ -162,7 +164,7 @@ const server = createServer();
     await visit('#/');
     await page.locator('.ob-home-domains [data-sort-column="0"]').click();
     assert.equal(await page.locator('.ob-home-domains th').first().getAttribute('aria-sort'), 'descending');
-    assert.equal(await page.locator('.ob-home-domains tbody td.is-primary').first().innerText(), 'Mieter Management');
+    assert.equal(await page.locator('.ob-home-domains tbody td.is-primary').first().innerText(), 'Projekt Management');
     await visit('#/objects/gebaeude', 'relations');
     assert(await page.locator('.ob-relations-diagram').isVisible());
     const beforePan = await page.evaluate(() => ({ x: DK.app.state.graph.x, y: DK.app.state.graph.y }));
@@ -248,6 +250,6 @@ const server = createServer();
       }
     }
     assert.deepEqual(errors, []);
-    console.log(`PASS: ${layouts} responsive layouts, ${profiles} profile render combinations; sorting, focus, pagination, CSV, print, drawer/orientation, tab keyboard navigation, touch targets and touch scrolling, short-screen search. No browser/resource errors.`);
+    console.log(`PASS: ${layouts} responsive layouts, ${profiles} profile render combinations; sorting, focus, pagination, Excel, print, drawer/orientation, tab keyboard navigation, touch targets and touch scrolling, short-screen search. No browser/resource errors.`);
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); server.close(); process.exitCode = 1; });

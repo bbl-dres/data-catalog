@@ -3,7 +3,7 @@
     "identifier": "bau",
     "name": "Architektonische Sicht",
     "description": "Physische Gebäudehierarchie: Areale, Campusse, Grundstücke, Gebäude, Geschosse, Räume, Nutzungseinheiten und Bemessungen.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2024.1",
     "created": "2021-09-03",
     "modified": "2024-06-01",
@@ -24,7 +24,7 @@
     "identifier": "energie",
     "name": "Energie",
     "description": "Konzepte rund um Energiemanagement, Heizzentralen, Zähler und Betriebsmesswerte.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2024.1",
     "created": "2021-09-03",
     "modified": "2024-06-01",
@@ -45,7 +45,7 @@
     "identifier": "finanzen",
     "name": "Finanzen",
     "description": "Finanzielle Organisationseinheiten und Buchhaltungsstrukturen für das Immobilienmanagement.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2024.1",
     "created": "2021-09-03",
     "modified": "2024-06-01",
@@ -66,7 +66,7 @@
     "identifier": "partner",
     "name": "Geschäftspartner",
     "description": "Personen, Kontakte und Unternehmen im Immobilienmanagement.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2024.1",
     "created": "2021-09-03",
     "modified": "2024-06-01",
@@ -87,7 +87,7 @@
     "identifier": "miete",
     "name": "Mieter Management",
     "description": "Konzepte rund um Mietobjekte, Wohnungen, Mietverträge und vertragliche Konditionen.",
-    "status": "Gültig",
+    "status": "Entwurf",
     "version": "2024.1",
     "created": "2021-09-03",
     "modified": "2024-06-01",
@@ -103,5 +103,17 @@
       "email": "liegenschaften@bbl.admin.ch",
       "phone": "+41 58 465 50 50"
     }
+  },
+  {
+    "identifier": "projekt",
+    "name": "Projekt Management",
+    "description": "Planung, Steuerung und Durchführung von Bauprojekten mit Phasen, Meilensteinen und Bauarbeiten.",
+    "status": "Entwurf",
+    "version": "0.1",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "responsibleOrg": "Projektmanagement",
+    "source": "Prototyp",
+    "sourceDetail": "Fachlicher Entwurf für Projekt Management; Attribute und Pflichtangaben sind Modellierungsbeispiele."
   }
 ]

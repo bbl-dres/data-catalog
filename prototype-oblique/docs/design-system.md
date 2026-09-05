@@ -2,7 +2,7 @@
 
 For current responsive dimensions and deliberate deviations, see the [responsive strategy](responsive-strategy.md): a 1600 px workspace, a separate desktop navigation row, 15/24 reading text and 14/20 data rows. The source mappings below document the Oblique origin and earlier compact scale.
 
-The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body, controls and data rows, 12/16 supporting labels and a 240/56 px sidebar. The header identity follows the federal flag/type dimensions below; the selected mockup determines the remaining density. See the [token consistency review](token-consistency.md) for the current token policy and cleanup.
+The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body, controls and data rows, 12/16 supporting labels and a 320 px default sidebar / 56 px icon rail. Sidebar width is adjustable from 240 to 480 px, constrained by available content space; its default, limits and divider hit area use tokens. The header identity follows the federal flag/type dimensions below; the selected mockup determines the remaining density. See the [token consistency review](token-consistency.md) for the current token policy and cleanup.
 
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) ships as an Angular library. This prototype does not use it directly. Instead `css/tokens.css` reproduces Oblique's tokens as plain CSS custom properties and `css/main.css` hand-writes the components against them.

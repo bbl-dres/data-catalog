@@ -28,6 +28,7 @@ DOMAINS = [
     dict(id='finanzen', name='Finanzen', resp='Portfoliomanagement', owner='Martina Aebischer', steward='Lukas Zbinden', desc='Finanzielle Organisationseinheiten und Buchhaltungsstrukturen für das Immobilienmanagement.'),
     dict(id='partner', name='Geschäftspartner', resp='Vertragsmanagement', owner='Corinne Marti', steward='Pascal Rüegg', desc='Personen, Kontakte und Unternehmen im Immobilienmanagement.'),
     dict(id='miete', name='Mieter Management', resp='Liegenschaftsmanagement', owner='Andrea Kaufmann', steward='Thomas Wyss', desc='Konzepte rund um Mietobjekte, Wohnungen, Mietverträge und vertragliche Konditionen.'),
+    dict(id='projekt', name='Projekt Management', resp='Projektmanagement', localDraft=True, date='2026-09-05', desc='Planung, Steuerung und Durchführung von Bauprojekten mit Phasen, Meilensteinen und Bauarbeiten.'),
 ]
 CONTACT = {
     'Immobilienmanagement': dict(email='immobilienmanagement@bbl.admin.ch', phone='+41 58 465 50 10'),
@@ -67,11 +68,49 @@ OBJECTS = [
     dict(id='wohnung', name='Wohnung', domain='miete', attrs=5, status='Gültig', norm='GWR (EWID), eCH-0071', desc='Wohneinheit innerhalb eines Gebäudes, im GWR durch eine EWID identifiziert; kann als Mietobjekt vermietet werden.'),
     dict(id='mietvertrag', name='Mietvertrag', domain='miete', attrs=4, status='Gültig', norm='OR Art. 253ff', desc='Vertragliche Vereinbarung zwischen Vermieter und Mieter über die Nutzung eines oder mehrerer Mietobjekte.'),
     dict(id='kondition', name='Kondition', domain='miete', attrs=3, status='Entwurf', norm='OR Art. 269ff', desc='Finanzielle Bedingung eines Mietvertrags, z.B. Nettomiete, Nebenkosten oder Kaution.'),
+    dict(id='bauprojekt', name='Bauprojekt', domain='projekt', norm='', desc='Ein Bauprojekt ist ein Objekt, für das ein Baubewilligungsgesuch nach Artikel 22 des Bundesgesetzes vom 22. Juni 1979 über die Raumplanung (SR 700) erforderlich ist, oder ähnliches Objekt, das keiner Baubewilligung bedarf, jedoch der Meldepflicht unterliegt.', sourceUrl='https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-bauprojekt'),
+    dict(id='meilenstein', name='Meilenstein', domain='projekt', norm='', desc='Ein Meilenstein bezeichnet einen festgelegten Zeitpunkt oder ein überprüfbares Ergebnis im Verlauf eines Bauprojekts, etwa eine Freigabe, einen Entscheid oder den Abschluss einer Phase.'),
+    dict(id='phase', name='Phase', domain='projekt', norm='', desc='Eine Phase ist ein zeitlich und fachlich abgegrenzter Abschnitt eines Bauprojekts mit definierten Zielen und Ergebnissen. Ihre Reihenfolge strukturiert den Projektablauf.'),
+    dict(id='bauarbeiten', name='Bauarbeiten', domain='projekt', norm='', desc='Die Art der Arbeiten (Neubau, Umbau oder Abbruch) muss für jedes Gebäude eines Bauprojekts angegeben werden. Neubau bedeutet die vollständige Errichtung eines neuen Gebäudes. Abbruch hingegen den kompletten Abbruch eines bestehenden Gebäudes. Alle übrigen Arbeiten werden als Umbau bezeichnet und umfassen die Vergrösserung oder den Teilabbruch eines bestehenden Gebäudes. Wenn es sich um einen Umbau handelt, muss die Art des Umbaus präzisiert werden.', sourceUrl='https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-arbeiten'),
 ]
 obj_of = {o['id']: o for o in OBJECTS}
 
 # Explicit attribute lists (name, description, valueType, keyRole)
 ATTRS = {
+    # Local business-model examples, not a duplicate or a claimed GWR field schema.
+    'bauprojekt': [
+        ('Projekt-ID', 'Eindeutiger Identifikator des Bauprojekts im Projektmanagement.', 'Text', 'PK'),
+        ('EPROID', 'Eidgenössischer Bauprojektidentifikator zur Zuordnung eines im GWR erfassten Bauprojekts.', 'Ganzzahl', 'optional'),
+        ('Bezeichnung', 'Kurzbezeichnung des Bauprojekts.', 'Text', None),
+        ('Status', 'Aktueller Bearbeitungsstand des Bauprojekts.', 'Code', None),
+        ('Startdatum', 'Geplanter Beginn des Bauprojekts.', 'Datum', 'optional'),
+        ('Enddatum', 'Geplanter Abschluss des Bauprojekts.', 'Datum', 'optional'),
+        ('Projektkosten', 'Geplante Gesamtkosten des Bauprojekts in CHF.', 'Dezimal', 'optional'),
+    ],
+    'meilenstein': [
+        ('Meilenstein-ID', 'Eindeutiger Identifikator des Meilensteins.', 'Text', 'PK'),
+        ('Bauprojekt', 'Projekt-ID des zugehörigen Bauprojekts.', 'Text', 'FK'),
+        ('Phase', 'Phase des Bauprojekts, der der Meilenstein zugeordnet ist.', 'Text', 'optional'),
+        ('Bezeichnung', 'Erwartetes Ergebnis, Entscheid oder Freigabe.', 'Text', None),
+        ('Solltermin', 'Geplanter Termin des Meilensteins.', 'Datum', None),
+        ('Isttermin', 'Datum, an dem der Meilenstein erreicht wurde.', 'Datum', 'optional'),
+    ],
+    'phase': [
+        ('Phase-ID', 'Eindeutiger Identifikator der Projektphase.', 'Text', 'PK'),
+        ('Bauprojekt', 'Projekt-ID des zugehörigen Bauprojekts.', 'Text', 'FK'),
+        ('Bezeichnung', 'Name der Phase im Projektablauf.', 'Text', None),
+        ('Reihenfolge', 'Position der Phase innerhalb des Bauprojekts.', 'Ganzzahl', None),
+        ('Startdatum', 'Geplanter Beginn der Phase.', 'Datum', 'optional'),
+        ('Enddatum', 'Geplanter Abschluss der Phase.', 'Datum', 'optional'),
+        ('Status', 'Aktueller Bearbeitungsstand der Phase.', 'Code', None),
+    ],
+    'bauarbeiten': [
+        ('Bauarbeiten-ID', 'Lokaler Identifikator der Bauarbeiten im Projektmanagement.', 'Text', 'PK'),
+        ('Bauprojekt', 'Projekt-ID des zugehörigen Bauprojekts.', 'Text', 'FK'),
+        ('Gebäude', 'Identifikator des Gebäudes, an dem die Arbeiten durchgeführt werden.', 'Text', 'FK'),
+        ('Art der Arbeiten', 'Einordnung der Arbeiten als Neubau, Umbau oder Abbruch.', 'Code', None),
+        ('Beschreibung', 'Ergänzende Beschreibung des Umfangs der Bauarbeiten.', 'Text', 'optional'),
+    ],
     'wirtschaftseinheit': [
         ('WE-Nummer', 'Eindeutige Nummer der Wirtschaftseinheit in SAP RE-FX.', 'Text', 'PK'),
         ('Bezeichnung', 'Name/Bezeichnung der Wirtschaftseinheit.', 'Text', None),
@@ -149,7 +188,7 @@ TABLES = [
     dict(id='t-mv', name='Mietvertrag', tech='VICNCN', system='sap', obj='mietvertrag', date='2026-03-12', desc='Mietverträge mit Laufzeiten, Partnern und Konditionen.'),
     dict(id='t-geb-gis', name='Gebäude', tech='BUILDING', system='gis', obj='gebaeude', date='2026-04-20', desc='Gebäudegeometrien und GWR-Attribute.'),
     dict(id='t-huelle', name='Gebäudehülle', tech='BUILDING_ENVELOPE', system='gis', obj='gebaeude', date='2026-04-20', desc='Fassaden- und Dachflächen mit Materialisierung.'),
-    dict(id='t-proj', name='Bauprojekt', tech='CONSTRUCTION_PROJECT', system='gis', obj='areal', date='2026-04-20', desc='Laufende und geplante Bauprojekte mit Perimeter.'),
+    dict(id='t-proj', name='Bauprojekt', tech='CONSTRUCTION_PROJECT', system='gis', obj='areal', realizes='bauprojekt', date='2026-04-20', desc='Laufende und geplante Bauprojekte mit Perimeter.'),
     dict(id='t-boden', name='Bodenbedeckung', tech='LAND_COVER', system='gis', obj='bodenbedeckung', date='2026-04-20', desc='Bodenbedeckungsflächen gemäss amtlicher Vermessung.'),
     dict(id='t-parzelle', name='Grundstück', tech='PARCEL', system='gis', obj='grundstueck', date='2026-04-20', desc='Liegenschaften mit EGRID und Grundbuchdaten.'),
 ]
@@ -227,6 +266,10 @@ APIS = [
 def core(kind, e):
     obj = e if kind == 'objects' else obj_of[e['obj']] if kind in ('tables', 'refs') else None
     dom = e if kind == 'domains' else None if kind == 'systems' else domain_of[e['domain']] if kind in ('products', 'apis') else domain_of[obj['domain']]
+    if dom and dom.get('localDraft') and kind in ('domains', 'objects'):
+        return dict(identifier=e['id'], name=e['name'], description=e['desc'], status='Entwurf',
+                    version='0.1', created=dom['date'], modified=dom['date'], responsibleOrg=dom['resp'],
+                    source='Prototyp', sourceDetail='Fachlicher Entwurf für Projekt Management; Attribute und Pflichtangaben sind Modellierungsbeispiele.')
     owner = dom['owner'] if dom else e['owner']
     steward = dom['steward'] if dom else e['steward']
     if obj:
@@ -239,7 +282,7 @@ def core(kind, e):
         classification = 'intern'
     personal = obj['id'] in PERSONAL if obj else any(o in PERSONAL for o in e['objs']) if kind == 'products' else (kind == 'systems' and e['id'] == 'sap')
     technical_asset = kind in ('tables', 'systems')
-    status = 'Gültig' if kind == 'tables' else e.get('status', 'Gültig')
+    status = 'Entwurf'  # All fictional baseline records are drafts; the GWR import sets official records to Gültig.
     return dict(
         identifier=e['id'], name=e['name'], description=e['desc'],
         status=status,
@@ -258,7 +301,8 @@ def core(kind, e):
 domains = []
 for d in DOMAINS:
     c = core('domains', d)
-    c.update(contact=CONTACT[d['resp']])
+    if d['resp'] in CONTACT:
+        c.update(contact=CONTACT[d['resp']])
     domains.append(c)
 dump('domains.json', domains)
 
@@ -275,13 +319,15 @@ for o in OBJECTS:
     c.update(domain=o['domain'], normReference=o['norm'],
              termdat=[dict(name=n, id=i, url='https://www.termdat.bk.admin.ch/entry/%d' % i) for n, i in TERMS.get(o['id'], [])],
              attributes=attrs_of(o))
+    if o.get('sourceUrl'):
+        c.update(sourceUrl=o['sourceUrl'], sourceDetail='Definition wörtlich aus dem GWR-Merkmalskatalog 5.0.0; Attribute und Pflichtangaben sind lokale Modellierungsbeispiele.')
     objects.append(c)
 dump('objects.json', objects)
 
 tables = []
 for t in TABLES:
     c = core('tables', t)
-    c.update(technicalName=t['tech'], system=t['system'], realizes=t['obj'], fields=fields_of(t))
+    c.update(technicalName=t['tech'], system=t['system'], realizes=t.get('realizes', t['obj']), fields=fields_of(t))
     if t.get('dataCustodian'):
         c['dataCustodian'] = t['dataCustodian']
     tables.append(c)
@@ -326,6 +372,9 @@ def rows_count(kind, c):
     return 0
 for kind, lst in [('domains', domains), ('systems', systems), ('objects', objects), ('tables', tables), ('refs', refs), ('products', products), ('apis', apis)]:
     for c in lst:
+        if c['source'] == 'Prototyp':
+            changelog.append(dict(entity=kind + ':' + c['identifier'], date=c['created'], action='Erstellt', detail=KIND_LABEL[kind] + ' als Entwurf für Projekt Management angelegt.', user='Prototyp'))
+            continue
         who = [c['dataSteward'], c['dataOwner'], 'Nadia Ferrari']
         key = kind + ':' + c['identifier']
         n = rows_count(kind, c)

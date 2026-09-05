@@ -1,0 +1,588 @@
+{
+  "provenance": {
+    "importId": "gwr-catalog-5.0",
+    "catalogVersion": "5.0.0",
+    "variant": "revised",
+    "captured": "2026-09-05",
+    "files": {
+      "Merkmalskatalog.mhtml": "a731e2c6756c4eb7b255598add4339c96f0600b0a338625d3b018aa9f4111bc4",
+      "gwr codes.xlsx": "04f6860439a68228890152566035a4faed11a2492287964af6f1e48767c2d198"
+    }
+  },
+  "tables": [
+    {
+      "id": "t-gwr-bauprojekt",
+      "name": "Bauprojekt",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-bauprojekt",
+      "fields": [
+        "EPROID",
+        "PBDNR",
+        "PBDNRSX",
+        "PESTNR",
+        "PBEZ",
+        "PGDENR",
+        "PEGRID",
+        "PGBKR",
+        "PPARZ",
+        "PARTBZ",
+        "PTYPAG",
+        "PAGNAME1",
+        "PAGNAME2",
+        "PAGNAMEZ",
+        "PAGSTR",
+        "PAGEINR",
+        "PAGADRZ",
+        "PAGPLZ4",
+        "PAGPLZZ",
+        "PAGAUSLORT",
+        "PAGLAND",
+        "PARTBW",
+        "PTYPBW",
+        "PKOST",
+        "PDATIN",
+        "PDATOK",
+        "PDATBB",
+        "PDATBE",
+        "PDATSIST",
+        "PDATABL",
+        "PDATANN",
+        "PDATRZG",
+        "PVBD",
+        "PSTAT",
+        "PDOK",
+        "PFREITXT1",
+        "PFREITXT2"
+      ]
+    },
+    {
+      "id": "t-gwr-arbeiten",
+      "name": "Arbeiten",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-arbeiten",
+      "fields": [
+        "PARTAB",
+        "PENSAN",
+        "PHEIZSAN",
+        "PINNUMB",
+        "PUMNUTZ",
+        "PERWMHZ",
+        "PERWOHZ",
+        "PTHERSOL",
+        "PPHOTSOL",
+        "PANDUMB"
+      ]
+    },
+    {
+      "id": "t-gwr-gebaeude",
+      "name": "Gebäude",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-gebaeude",
+      "fields": [
+        "EGID",
+        "GGDENR",
+        "GEBNR",
+        "GBEZ",
+        "GKODE",
+        "GKODN",
+        "GKSCE",
+        "GLOC1",
+        "GLOC2",
+        "GLOC3",
+        "GLOC4",
+        "GQUART",
+        "GEGRID",
+        "GGBKR",
+        "GPARZ",
+        "GSTAT",
+        "GKAT",
+        "GKLAS",
+        "GBAUJ",
+        "GBAUM",
+        "GBAUP",
+        "GABBJ",
+        "GAREA",
+        "GVOL",
+        "GVOLNORM",
+        "GVOLSCE",
+        "GASTW",
+        "GAZZI",
+        "GSCHUTZR",
+        "GEBF",
+        "GEBFBER",
+        "GEBFDAT",
+        "GEBFSCE",
+        "GEBQH",
+        "GEBQHSCE",
+        "GEBQHDAT",
+        "GUSPAT1",
+        "GFREITXT1",
+        "GFREITXT2"
+      ]
+    },
+    {
+      "id": "t-gwr-waermeerzeugungsanlage",
+      "name": "Wärmeerzeugungsanlage",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-waermeerzeugungsanlage",
+      "fields": [
+        "EWAID",
+        "TSTAT",
+        "TONR",
+        "TNHEIZ",
+        "TNWW",
+        "TWAERZ",
+        "TWAERZEGID",
+        "TETNID",
+        "TENT",
+        "TSCE",
+        "TDAT",
+        "TNLEIST",
+        "TNLEISTSCE",
+        "TINBJ",
+        "TAUSJ",
+        "TWAERZGEBROLLE",
+        "TEINDAT"
+      ]
+    },
+    {
+      "id": "t-gwr-gebaeudeeingang",
+      "name": "Gebäudeeingang",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-gebaeudeeingang",
+      "fields": [
+        "EDID",
+        "EGAID",
+        "DEINR",
+        "DKODE",
+        "DKODN",
+        "DOFFADR",
+        "DPLZ4",
+        "DPLZZ",
+        "DPLZNAME"
+      ]
+    },
+    {
+      "id": "t-gwr-wohnung",
+      "name": "Wohnung",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-wohnung",
+      "fields": [
+        "EWID",
+        "WHGNR",
+        "WEINR",
+        "WEGRID",
+        "WSTWK",
+        "WMEHRG",
+        "WBEZ",
+        "WSTAT",
+        "WBAUJ",
+        "WABBJ",
+        "WAZIM",
+        "WAREA",
+        "WKCHE",
+        "WNART",
+        "WNARTSCE",
+        "WNARTDAT",
+        "WNARTKOM",
+        "WPERSHW",
+        "WPERSNW",
+        "WERSTBELEGDAT",
+        "WLETZTBELEGDAT",
+        "WGBANMERKUNG",
+        "WFREITXT1",
+        "WFREITXT2"
+      ]
+    },
+    {
+      "id": "t-gwr-strasse",
+      "name": "Strasse",
+      "definitionSourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-strassen",
+      "fields": [
+        "ESID",
+        "STRNAME",
+        "STRNAMK",
+        "STRINDX",
+        "STRSP",
+        "STROFFIZIEL",
+        "SREAL",
+        "STRART",
+        "STRGEOM",
+        "STRANR"
+      ]
+    }
+  ],
+  "codeLists": [
+    {
+      "feature": "PARTBZ",
+      "id": "r-gwr-partbz",
+      "origin": "catalog-5.0",
+      "count": 26,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PTYPAG",
+      "id": "r-gwr-ptypag",
+      "origin": "catalog-5.0",
+      "count": 25,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PARTBW",
+      "id": "r-gwr-partbw",
+      "origin": "catalog-5.0",
+      "count": 3,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PTYPBW",
+      "id": "r-gwr-ptypbw",
+      "origin": "catalog-5.0",
+      "count": 48,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PSTAT",
+      "id": "r-gwr-pstat",
+      "origin": "catalog-5.0",
+      "count": 8,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PARTAB",
+      "id": "r-gwr-partab",
+      "origin": "catalog-5.0",
+      "count": 3,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PENSAN",
+      "id": "r-gwr-pensan",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PHEIZSAN",
+      "id": "r-gwr-pheizsan",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PINNUMB",
+      "id": "r-gwr-pinnumb",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PUMNUTZ",
+      "id": "r-gwr-pumnutz",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PERWMHZ",
+      "id": "r-gwr-perwmhz",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PERWOHZ",
+      "id": "r-gwr-perwohz",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PTHERSOL",
+      "id": "r-gwr-pthersol",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PPHOTSOL",
+      "id": "r-gwr-pphotsol",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "PANDUMB",
+      "id": "r-gwr-pandumb",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GKSCE",
+      "id": "r-gwr-gksce",
+      "origin": "catalog-5.0",
+      "count": 6,
+      "workbook42CodesNotImported": [
+        "906"
+      ]
+    },
+    {
+      "feature": "GSTAT",
+      "id": "r-gwr-status",
+      "origin": "catalog-5.0",
+      "count": 7,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GKAT",
+      "id": "r-gwr-kat",
+      "origin": "catalog-5.0",
+      "count": 6,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GKLAS",
+      "id": "r-gwr-gklas",
+      "origin": "workbook-4.2-only",
+      "count": 26,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GBAUP",
+      "id": "r-gwr-gbaup",
+      "origin": "catalog-5.0",
+      "count": 13,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GVOLNORM",
+      "id": "r-gwr-gvolnorm",
+      "origin": "catalog-5.0",
+      "count": 3,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GVOLSCE",
+      "id": "r-gwr-gvolsce",
+      "origin": "catalog-5.0",
+      "count": 9,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GSCHUTZR",
+      "id": "r-gwr-gschutzr",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GEBFBER",
+      "id": "r-gwr-gebfber",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GEBFSCE",
+      "id": "r-gwr-gebfsce",
+      "origin": "catalog-5.0",
+      "count": 12,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "GEBQHSCE",
+      "id": "r-gwr-gebqhsce",
+      "origin": "catalog-5.0",
+      "count": 12,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TSTAT",
+      "id": "r-gwr-tstat",
+      "origin": "catalog-5.0",
+      "count": 4,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TNHEIZ",
+      "id": "r-gwr-tnheiz",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TNWW",
+      "id": "r-gwr-tnww",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TWAERZ",
+      "id": "r-gwr-twaerz",
+      "origin": "catalog-5.0",
+      "count": 14,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TENT",
+      "id": "r-gwr-tent",
+      "origin": "catalog-5.0",
+      "count": 19,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TSCE",
+      "id": "r-gwr-tsce",
+      "origin": "catalog-5.0",
+      "count": 13,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TNLEISTSCE",
+      "id": "r-gwr-tnleistsce",
+      "origin": "catalog-5.0",
+      "count": 12,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "TWAERZGEBROLLE",
+      "id": "r-gwr-twaerzgebrolle",
+      "origin": "catalog-5.0",
+      "count": 3,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "DOFFADR",
+      "id": "r-gwr-doffadr",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WSTWK",
+      "id": "r-gwr-wstwk",
+      "origin": "catalog-5.0-ranges-with-workbook-4.2-labels",
+      "count": 119,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WMEHRG",
+      "id": "r-gwr-wmehrg",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WSTAT",
+      "id": "r-gwr-wstat",
+      "origin": "catalog-5.0",
+      "count": 7,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WKCHE",
+      "id": "r-gwr-wkche",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WNART",
+      "id": "r-gwr-wnart",
+      "origin": "catalog-5.0",
+      "count": 12,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WNARTSCE",
+      "id": "r-gwr-wnartsce",
+      "origin": "catalog-5.0",
+      "count": 4,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WPERSHW",
+      "id": "r-gwr-wpershw",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WPERSNW",
+      "id": "r-gwr-wpersnw",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "WGBANMERKUNG",
+      "id": "r-gwr-wgbanmerkung",
+      "origin": "catalog-5.0",
+      "count": 4,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "STRSP",
+      "id": "r-gwr-strsp",
+      "origin": "catalog-5.0",
+      "count": 4,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "STROFFIZIEL",
+      "id": "r-gwr-stroffiziel",
+      "origin": "catalog-5.0",
+      "count": 2,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "SREAL",
+      "id": "r-gwr-sreal",
+      "origin": "catalog-5.0",
+      "count": 4,
+      "workbook42CodesNotImported": []
+    },
+    {
+      "feature": "STRART",
+      "id": "r-gwr-strart",
+      "origin": "catalog-5.0",
+      "count": 3,
+      "workbook42CodesNotImported": []
+    }
+  ],
+  "workbookFeaturesOutsideCatalog": {
+    "BARTAB": 4,
+    "BARTBZ": 25,
+    "BSTAT": 6,
+    "DSTAT": 4,
+    "GENH1": 20,
+    "GENH2": 20,
+    "GENHZ": 10,
+    "GENW1": 20,
+    "GENW2": 20,
+    "GENWW": 10,
+    "GHEIZ": 7,
+    "GRENP": 13,
+    "GWAERSCEH1": 12,
+    "GWAERSCEH2": 12,
+    "GWAERSCEW1": 12,
+    "GWAERSCEW2": 12,
+    "GWAERZH1": 20,
+    "GWAERZH2": 20,
+    "GWAERZW1": 11,
+    "GWAERZW2": 11,
+    "GWWV": 2,
+    "LTYP": 6,
+    "STRFLAG": 2,
+    "STRGEO": 3,
+    "STRNUM": 6,
+    "STRVAL": 2
+  },
+  "workbookRowsByVersion": {
+    "4.2": 453,
+    "3.7": 248,
+    "3.7/4.2": 116
+  },
+  "totals": {
+    "tables": 7,
+    "fields": 146,
+    "codeLists": 48,
+    "values": 467
+  }
+}

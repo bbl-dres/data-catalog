@@ -1,8 +1,8 @@
 # Architecture
 
-No build step and no framework. One HTML page, three stylesheets, seven application JavaScript files, static JSON data, and a pinned self-hosted Swagger UI distribution that is loaded only when the API page is opened.
+No build step and no framework. One HTML page, three stylesheets, nine application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
 
-The current page composition implements [compact layout 1b](compact-layout.md) and the [responsive strategy](responsive-strategy.md): a sticky header with navigation below the identity row above 960 px, shared 240 px sidebar / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
+The current page composition implements [compact layout 1b](compact-layout.md) and the [responsive strategy](responsive-strategy.md): a sticky header with navigation below the identity row above 960 px, shared 320 px default sidebar (resizable from 240 to 480 px) / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
 
 ## File structure
 
@@ -14,12 +14,14 @@ prototype-oblique/
 │   ├── main.css          Fonts, reset, layout and components; responsive and print rules
 │   └── graph.css         Diagram workspace, controls and fullscreen presentation
 ├── js/
-│   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, CSV and small widgets
+│   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, downloads and small widgets
 │   ├── data.js           DK.data   – loads and validates JSON, lookups, grouping, relations, search, KPIs, history
 │   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams()
 │   ├── graph.js          DK.graph  – relationship layout, viewport, input and modal workspace
 │   ├── views.js          DK.views  – header, nav, breadcrumb, toolbar, tree, home, lists, search, manual, API page
 │   ├── detail.js         DK.detail – profile pages: facts, rows, relationship list/graph, history
+│   ├── excel.js          DK.excel  – scoped workbook snapshots, worksheets, lazy ExcelJS loading and downloads
+│   ├── sidebar.js        DK.sidebar – desktop divider input, width constraints and saved preference
 │   └── app.js            DK.app    – bootstrap, transient state, event delegation, exports
 ├── data/                 Static JSON – see data-model.md
 ├── assets/
@@ -28,11 +30,12 @@ prototype-oblique/
 │   ├── icons/*.svg       25 Oblique icons and 3 local diagram controls, used as CSS masks
 │   └── fonts/*.woff2     Noto Sans (latin, latin-ext) and Noto Sans Mono, variable weight
 ├── vendor/swagger-ui/    Swagger UI 5.32.11 browser assets and license notices
-├── tests/               Core, functional, responsive and diagram checks; see tests/README.md
+├── vendor/exceljs/       ExcelJS 4.4.0 browser bundle, license and integrity notice
+├── tests/               Core, functional, responsive, diagram, GWR and field checks; see tests/README.md
 └── docs/
 ```
 
-The seven application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace (`router.js` and `graph.js` read `DK.data`, so `data.js` must come first). Swagger UI is not in `index.html`: `app.js` inserts its stylesheet and bundle on the first visit of `#/api`.
+The nine application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace (`router.js` and `graph.js` read `DK.data`, so `data.js` must come first). Swagger UI is not in `index.html`: `app.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export; failed loads can be retried.
 
 ## JavaScript strategy
 
@@ -40,17 +43,23 @@ Files are split by responsibility:
 
 | File | Owns | Does not |
 |---|---|---|
-| `ui.js` | String helpers, safe link rendering, CSV cells, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
+| `ui.js` | String helpers, safe link rendering, blob downloads, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
 | `data.js` | Snapshot validation and indexed lookups, grouping, domain membership by identifier, relations, search, KPIs and history; `validate()` logs dangling references after loading | Touch the DOM |
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row/relationship tables and diagram composition | Handle events |
 | `graph.js` | Adaptive bubble layout, bounded group paging, zoom/pan/selection, keyboard/touch input, full-window dialog and viewport sizing | Change routes or mutate catalog data |
-| `app.js` | State, rendering cycle with focus restoration, event delegation, lazy Swagger UI, CSV/print exports and handbook scroll spy | Contain HTML templates |
+| `excel.js` | Immutable export plans, typed multi-sheet workbooks, local writer loading and downloads | Mutate catalog data or traverse every relationship recursively |
+| `sidebar.js` | Pointer/keyboard resizing, CSS width and separator accessibility values, persisted preference and responsive limits | Re-render the tree or change mobile drawer behavior |
+| `app.js` | State, rendering cycle with focus restoration, event delegation, lazy Swagger UI, Excel/print export actions and handbook scroll spy | Contain HTML templates |
 
 `views.page(route, state)` returns the application markup as a string. `app.render()` replaces `<main>` while preserving focus, sidebar/flyout scroll offsets and the current profile's metadata disclosure state. `replaceHtml()` identifies focused controls by `data-focus`, `id` or data attributes; disappearing menu items map back to their trigger. Repeated table controls include their group instance in `data-focus`. Route changes skip this control restoration and normally scroll to the top.
 
 Some updates are local: search typing refreshes suggestions, help/language menus refresh their hosts, and graph panning changes a transform. A shared `ResizeObserver` switches each table between columns and cards according to its available width and moves focus between the appropriate sorting controls.
+
+The desktop sidebar divider updates `--ob-sidebar-width` at most once per animation frame and keeps the tree and diagram DOM intact. Width limits come from tokens; the upper bound also reserves 600 px for content. `datenkatalog.sidebarWidth` stores the preferred width independently of collapse state. Narrower windows clamp the visible width without overwriting that preference. The focusable separator supports Left/Right (16 px), Home/End (limits) and Enter (reset); double-click also resets to 320 px. Escape, lost pointer capture, window blur and navigation cancel unfinished drags. The divider is absent when collapsed or on the API reference, and hidden in mobile drawer layouts.
+
+The divider uses one 2 px neutral line: light on hover, darker for dragging or keyboard focus. Its focus style replaces the global box-shadow ring, whose outer edges otherwise produce three lines on the first drag after loading. A small grip with two 16 px vertical strokes stays near the center of the visible area below the header using sticky positioning, including on long pages. The grip is light grey at rest and darker on hover, focus or drag; its dimensions use component tokens. The mouse hit area stays 12 px wide; forced-color mode uses system colors for the grip and line.
 
 The home hero and compact header use the same `views.searchField()` combobox and query state. Home renders it above the summary tiles; its header magnifier scrolls to and focuses that form. Other routes render it in the expandable header. Only one input/listbox exists at a time. The hero adds native form submission; suggestion picks and Enter use the existing routing and ranking. Navigating from search moves focus to destination content. The hero popup sits below the entire form, keeping the submit button accessible when controls stack, and its height follows the visible viewport, including keyboard-induced viewport changes. JavaScript supplies available viewport space through a custom property; CSS applies the shared size and spacing constraints. Page load does not autofocus it.
 
@@ -60,13 +69,17 @@ Swagger owns the contents of its live `#swagger-ui` node. On updates within the 
 
 Every entity lookup tolerates a missing target: `data.nameOf()` falls back to the id, relation builders drop unresolved ids, and breadcrumbs skip missing containers. `data.validate()` reports such references once in the console.
 
-Before publishing a data snapshot, the loader checks collection shapes, record identities, embedded lists and duplicate IDs. Invalid input leaves any previously loaded snapshot intact. See [data-model.md](data-model.md) for the scope of these guards. HTML data is escaped; config/data links additionally use `ui.safeHref()` through `ui.link()`. Its label HTML must already be escaped. CSV uses `ui.csvCell()` and intentionally prefixes formula-like text for spreadsheet import.
+The [GWR import](gwr-import.md) supplies seven logical tables and explicit `fields[].codeList` references. Tables with these links add a Werteliste column; relationship builders resolve them in both directions, including entities without a mapped business object. A direct `domain` supports those unmapped records. The GWR system diagram lists its tables. Imported definitions link directly to the corresponding source paragraphs, and provenance/version details distinguish the 5.0 catalog from the older code workbook. The Übersicht tree link omits the aggregate count.
+
+Field profiles reuse the attribute-page composition and have Übersicht, Beziehungen and Verlauf Datentabelle. `data.field()` derives the profile from its table's embedded field, and `router.entityHref('fields', '<tableId>/<fieldId>')` creates its address. Every field name and row in Felder links to that profile, including mobile cards; code-list links remain separate destinations. Breadcrumbs and the Datentabelle fact return to the parent's Felder tab. Both tree models highlight the parent table. Source-documentation disclosures retain their own open/closed state across menu and tab changes, reset on changing entity, and do not change Weitere Metadaten. They render escaped source text rather than HTML from the saved catalog.
+
+Before publishing a data snapshot, the loader checks collection shapes, record identities, embedded lists and duplicate IDs. Invalid input leaves any previously loaded snapshot intact. See [data-model.md](data-model.md) for the scope of these guards. HTML data is escaped; config/data links additionally use `ui.safeHref()` through `ui.link()`. Its label HTML must already be escaped. Excel export writes catalog strings as literal text cells, including formula-like content, and preserves numeric values separately.
 
 ## Routing
 
 Repeated domain groups within Referenzdaten, Datenprodukte and API-Verzeichnis use section-scoped collection routes. The [side-tree investigation](side-tree-navigation.md) documents their destination, active-state and breadcrumb behaviour.
 
-Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and CSV export all use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
+Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and Excel export all use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
 
 Typing replaces only the collection results and updates a persistent live result count, preserving the input node, caret and IME composition. Escape and the clear button reset the filter. Controls wrap according to content width and use the shared spacing, input and touch-target tokens. The search controls are omitted from print; filtered results remain printable.
 
@@ -78,6 +91,7 @@ The URL is the source of truth for everything that should be bookmarkable:
 | `#/objects`, `#/tables`, `#/refs`, `#/products`, `#/apis`, `#/domains`, `#/systems` | Section list. Params: `view=tiles|table`, `group=<option>`, `filter=<query>`; content collections also accept `domain=<id>` for exact domain membership |
 | `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n`, `size=50|100|200` (50 is the default). The tab is kept in the hash during a session, but a fresh load always opens Übersicht (see design-review-responsive.md, "Tab continuity") |
 | `#/objects/gebaeude/attributes/egid` | Attribute profile |
+| `#/tables/t-gwr-gebaeude/fields/EGID` | Field profile; technical field IDs are case-sensitive. Fields inherit their table's history and keep the parent selected in the tree |
 | `#/search?q=…` | Search results |
 | `#/manual?ch=<chapter>` | Handbook |
 | `#/api` | Swagger UI rendering the OpenAPI contract in `data/swagger.json` |
@@ -111,8 +125,8 @@ Column definitions also control presentation: `numeric: true` right-aligns the h
 - **New grouping option**: extend `GROUP_IDS`, `groupKey` and `groupOrder` in `data.js`; add a `group.<id>` label in `i18n.json`.
 - **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts, list the language in `app.languages` and optionally set it as `app.language`. Missing translations fall back to German; `setLanguage()` in `app.js` swaps the dictionary and re-renders. Data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
 - **Real backend**: replace `data.load()` with API calls that return the same shapes as the JSON files; nothing else depends on the file layout.
-- **Excel / DCAT export**: implement in `doExport()` in `app.js`; the menu entries already exist and show a notice today.
+- **Excel export**: implemented by `DK.excel` (see [excel-export.md](excel-export.md)). DCAT export remains a placeholder in `doExport()`.
 
 ## Testing
 
-Four suites are checked in: `tests/core.test.cjs` runs against real and mutated JSON using Node alone; `tests/functional.cjs` checks browser behavior and failure recovery; `tests/responsive.cjs` checks the responsive matrix; `tests/graph.cjs` covers diagram controls, dense data and fullscreen/touch behavior. See [tests/README.md](../tests/README.md) for reproducible setup. Physical-device and screen-reader checks remain separate from these automated suites.
+Eight suites are checked in: `tests/core.test.cjs` checks real and mutated JSON plus workbook round-trips using Node and the vendored writer; `tests/functional.cjs` checks browser behavior and failure recovery; `tests/responsive.cjs` checks the responsive matrix; `tests/graph.cjs` covers diagram controls, dense data and fullscreen/touch behavior; `tests/gwr.cjs` checks imported GWR data and exports; `tests/fields.cjs` checks field profiles and navigation; `tests/excel.cjs` checks workbook downloads, scope and loading failures; `tests/sidebar.cjs` checks desktop resizing, persistence, cancellation and responsive limits. See [tests/README.md](../tests/README.md) for reproducible setup. Physical-device and screen-reader checks remain separate from these automated suites.

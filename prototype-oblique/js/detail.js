@@ -12,7 +12,7 @@
   detail.rowsLabel = e => data.kindDef(e.kind).rows;
 
   detail.tabs = function (e) {
-    const historyLabel = e.kind === 'attrs' ? t('detail.tab.objectHistory') : t('detail.tab.history');
+    const historyLabel = e.kind === 'attrs' ? t('detail.tab.objectHistory') : e.kind === 'fields' ? t('detail.tab.tableHistory') : t('detail.tab.history');
     return [['overview', t('detail.tab.overview')], ['rows', detail.rowsLabel(e)], ['relations', t('detail.tab.relations')], ['history', historyLabel]].filter(x => x[1]);
   };
 
@@ -60,9 +60,21 @@
         break;
       }
       case 'tables':
-        primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.technicalName'), e.technicalName),
-          internal(t('fact.realizes'), data.nameOf('objects', e.realizes), 'objects', e.realizes));
+        primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.technicalName'), e.technicalName));
+        if (e.realizes) primary.push(internal(t('fact.realizes'), data.nameOf('objects', e.realizes), 'objects', e.realizes));
         break;
+      case 'fields': {
+        const table = data.get('tables', e.table);
+        primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
+        if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
+        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance ? 'fact.undocumented' : 'fact.key.none');
+        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: table.fields.length })));
+        if (typeof e.mandatory === 'boolean') primary.push(plain(t('fact.mandatory'), t(e.mandatory ? 'yes' : 'no')));
+        const ref = data.get('refs', e.codeList);
+        if (ref) primary.push(internal(t('col.codeList'), ref.name, 'refs', ref.identifier));
+        primary.push(plain(t('fact.registerAccess'), e.catalogMetadata?.['Zugriff auf die Daten']), plain(t('fact.masterData'), e.catalogMetadata?.Stammdaten));
+        break;
+      }
       case 'products':
         primary.push(plain(t('fact.access'), e.accessRights), plain(t('fact.license'), e.license), plain(t('fact.format'), e.format), plain(t('fact.refresh'), e.accrualPeriodicity), ext(t('fact.obtain'), t('fact.obtainProduct')));
         break;
@@ -71,10 +83,13 @@
           plain(t('fact.baseUrl'), e.endpointURL), ext(t('fact.documentation'), t('fact.openDocs'), e.documentation));
         break;
       case 'refs':
-        primary.push(plain(t('fact.codeSource'), e.sourceAuthority), internal(t('fact.object'), data.nameOf('objects', e.businessObject), 'objects', e.businessObject), ext(t('fact.sourceDocument'), t('fact.openSourceDocument')));
+        primary.push(plain(t('fact.codeSource'), e.sourceAuthority));
+        if (e.businessObject) primary.push(internal(t('fact.object'), data.nameOf('objects', e.businessObject), 'objects', e.businessObject));
         break;
     }
-    primary.push(plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), e.personalData ? t('yes') : t('no')));
+    if (e.sourceUrl) primary.push(ext(t('fact.sourceDocument'), t('fact.openSourceDocument'), e.sourceUrl));
+    if (e.provenance || e.sourceUrl) primary.push(plain(t('fact.sourceDetail'), e.sourceDetail));
+    primary.push(plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), typeof e.personalData === 'boolean' ? (e.personalData ? t('yes') : t('no')) : null));
     const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.source'), e.source), plain(t('fact.synced'), fmt(e.synced))];
     const present = f => f.value != null && f.value !== '';
     return { primary: primary.filter(present), metadata: metadata.filter(present) };
@@ -92,11 +107,6 @@
       return `<dt>${esc(f.label)}</dt><dd>${v}</dd>`;
     }).join('');
     const facts = detail.facts(e);
-    const dataCustodian = data.custodianOf(e.kind, e);
-    // Persons link to the federal directory. Prototype: the base URL without a person id (config.admindirUrl).
-    const person = name => name
-      ? ui.link(data.config.admindirUrl, `${esc(name)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title: t('detail.openAdmindir', { name }) })
-      : '–';
     return `
       <div class="ob-detail-sections">
         <section class="ob-core-facts">
@@ -107,22 +117,52 @@
             <dl class="ob-facts">${renderFacts(facts.metadata)}</dl>
           </details>
         </section>
-        <section>
-          <h2>${esc(t('detail.contacts'))}</h2>
-          <dl class="ob-facts">
-            <dt>${esc(t('detail.owner'))}</dt><dd>${person(e.dataOwner)}</dd>
-            <dt>${esc(t('detail.steward'))}</dt><dd>${person(e.dataSteward)}</dd>
-            ${dataCustodian ? `<dt>${esc(t('detail.dataCustodian'))}</dt><dd>${person(dataCustodian)}</dd>` : ''}
-          </dl>
-        </section>
-      </div>`;
+        ${detail.responsibility(e)}
+      </div>${detail.fieldDocumentation(e, state)}`;
+  };
+
+  /** Organisation contacts and named roles share the same fact rows; unknown roles are omitted. */
+  detail.responsibility = function (e) {
+    const row = (label, html) => html ? `<dt>${esc(t(label))}</dt><dd>${html}</dd>` : '';
+    const website = (name, url, title) => {
+      const href = ui.safeHref(url);
+      return href ? ui.link(href, `${esc(name)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title }) : esc(name);
+    };
+    // Existing owner/steward strings denote people; custodian strings denote organisational units.
+    // Explicit { type, name, url? } values allow either actor type in every role.
+    const actor = (value, defaultType) => {
+      if (!value) return '';
+      const a = typeof value === 'string' ? { name: value, type: defaultType } : value;
+      if (!a.name) return '';
+      const directory = a.type === 'person' && !a.url;
+      return website(a.name, a.url || (directory ? data.config.admindirUrl : null), directory ? t('detail.openAdmindir', { name: a.name }) : null);
+    };
+    const contact = e.contact || {};
+    const rows = row('detail.organisation', e.responsibleOrg ? website(e.responsibleOrg, contact.url) : '')
+      + row('detail.owner', actor(e.dataOwner, 'person'))
+      + row('detail.steward', actor(e.dataSteward, 'person'))
+      + row('detail.dataCustodian', actor(data.custodianOf(e.kind, e), 'organisation'))
+      + row('detail.email', contact.email ? ui.link('mailto:' + encodeURIComponent(contact.email).replace(/%40/g, '@'), esc(contact.email), { className: 'ob-inline-link' }) : '')
+      + row('detail.phone', contact.phone ? ui.link('tel:' + contact.phone.replace(/[\s().-]/g, ''), esc(contact.phone), { className: 'ob-inline-link' }) : '');
+    return rows ? `<section class="ob-responsibility"><h2>${esc(t('detail.contacts'))}</h2><dl class="ob-facts">${rows}</dl></section>` : '';
+  };
+
+  /** Render imported source text as text, never as executable saved-page HTML. */
+  detail.fieldDocumentation = function (e, state = {}) {
+    if (e.kind !== 'fields' || !e.catalogMetadata) return '';
+    const entries = Object.entries(e.catalogMetadata).filter(([key, value]) => !['Zugriff auf die Daten', 'Stammdaten'].includes(key) && typeof value === 'string' && value.trim());
+    if (!entries.length) return '';
+    return `<section class="ob-field-documentation"><h2>${esc(t('detail.sourceDocumentation'))}</h2>${entries.map(([key, value]) => {
+      const open = Object.hasOwn(state.fieldSections || {}, key) ? state.fieldSections[key] : key === 'Detaillierte Beschreibung';
+      return `<details class="ob-metadata" data-field-section="${esc(key)}"${open ? ' open' : ''}><summary data-focus="${esc('field-doc:' + key)}">${esc(key)}</summary><div class="ob-source-text">${esc(value)}</div></details>`;
+    }).join('')}</section>`;
   };
 
   /* ---- rows (Attribute / Felder / Werte / Geschäftsobjekte / Datentabellen) */
   const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'outline') : '<span class="ob-cell-muted">—</span>';
   const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
 
-  /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column (sort, CSV). */
+  /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column for sorting, including workbook row order. */
   detail.rowsData = function (e) {
     const c = (label, width) => ({ label: t(label), width });
     const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
@@ -131,10 +171,24 @@
         columns: [compact('col.position', true), { ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
         rows: e.attributes.map((a, i) => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), position = a.position || i + 1, mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [position, ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [position, a.name, a.description, a.valueType, keyText(a.keyRole), mandatory] }; }),
       };
-      case 'tables': return {
-        columns: [c('col.field', '26%'), c('col.description'), c('col.dataType', '10rem'), compact('col.key')],
-        rows: e.fields.map(f => ({ cells: [{ html: esc(f.name), cls: 'ob-code' }, esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.name, f.description, f.dataType, keyText(f.keyRole)] })),
-      };
+      case 'tables': {
+        const hasCodes = e.fields.some(f => f.codeList);
+        const columns = [{ ...c('col.field', hasCodes ? '18%' : '26%'), primary: true }, c('col.description'), c('col.dataType', '10rem'), compact('col.key')];
+        if (hasCodes) columns.push(c('col.codeList', '22%'));
+        return {
+          columns,
+          rows: e.fields.map(f => {
+            const href = router.entityHref('fields', `${e.identifier}/${data.fieldId(f)}`);
+            const row = { href, cells: [{ html: ui.entityLink(href, f.name), cls: 'ob-code' }, esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.name, f.description, f.dataType, keyText(f.keyRole)] };
+            if (hasCodes) {
+              const ref = data.get('refs', f.codeList);
+              row.cells.push(ref ? ui.entityLink(router.entityHref('refs', ref.identifier), ref.name) : '—');
+              row.text.push(ref ? ref.name : '');
+            }
+            return row;
+          }),
+        };
+      }
       case 'refs': return {
         columns: [c('col.code', '8rem'), c('col.label'), compact('col.type')],
         rows: e.values.map(v => ({ cells: [{ html: esc(v.code), cls: 'ob-code' }, esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
@@ -212,7 +266,8 @@
     const options = ui.tableOptions(state, `detail:${e.kind}:history`, { column: 0, direction: 'desc' });
     const history = ui.sortRows(data.history(e.kind, e.identifier), options.sort, h => [h.date, h.action, h.detail, h.user]);
     const rows = history.map(h => ui.tr([{ html: esc(fmt(h.date)), cls: 'ob-cell-nowrap' }, esc(h.action), { html: esc(h.detail), cls: 'ob-cell-muted' }, esc(h.user)], null, columns)).join('');
-    const note = e.kind === 'attrs' ? `<p class="ob-context-note">${esc(t('detail.historyInherited'))}</p>` : '';
+    const noteKey = e.kind === 'attrs' ? 'detail.historyInherited' : e.kind === 'fields' ? 'detail.fieldHistoryInherited' : null;
+    const note = noteKey ? `<p class="ob-context-note">${esc(t(noteKey))}</p>` : '';
     return note + ui.table(columns, rows, options);
   };
 

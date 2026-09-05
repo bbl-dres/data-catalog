@@ -1,0 +1,124 @@
+/* Desktop splitter: real mouse capture, keyboard, storage and responsive constraints. */
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { createServer, settle, chromium } = require('./browser-helpers.cjs');
+const server = createServer();
+(async () => {
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  let browser;
+  try {
+    browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || (process.platform === 'win32' ? 'msedge' : undefined), headless: true });
+    const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    const base = `http://127.0.0.1:${server.address().port}/`;
+    const width = () => page.locator('.ob-sidebar-slot').evaluate(el => Math.round(el.getBoundingClientRect().width));
+    const stored = () => page.evaluate(() => localStorage.getItem('datenkatalog.sidebarWidth'));
+    const handle = page.locator('#sidebar-resizer');
+    const dividerPaint = () => handle.evaluate(el => {
+      const css = getComputedStyle(el), line = getComputedStyle(el, '::after');
+      return { shadow: css.boxShadow, outline: css.outlineStyle, color: line.backgroundColor, width: line.width };
+    });
+    const visit = async hash => { await page.goto(base + hash); await page.locator('#page-content h1').waitFor(); await settle(page); };
+    const startDrag = async delta => {
+      const box = await handle.boundingBox();
+      const y = Math.max(150, box.y + 40), x = box.x + box.width / 2;
+      await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + delta, y, { steps: 5 }); await settle(page);
+    };
+    await visit('#/objects/gebaeude');
+    assert.equal(await width(), 320);
+    const idlePaint = await dividerPaint();
+    // A fresh-load drag used to inherit a focus ring around the hit area:
+    // its two outer edges plus the divider made three purple vertical lines.
+    await startDrag(48);
+    const firstDragPaint = await dividerPaint();
+    assert.equal(firstDragPaint.shadow, 'none', 'first drag must not draw a second focus indicator');
+    assert.equal(firstDragPaint.outline, 'none');
+    assert.equal(firstDragPaint.width, '2px');
+    assert.notEqual(firstDragPaint.color, idlePaint.color, 'dragging remains visibly indicated');
+    await page.screenshot({path: path.join(process.env.TEMP || '/tmp', 'oblique-divider-refined.png')});
+    await page.keyboard.press('Escape'); await page.mouse.up();
+    await page.click('#tab-relations');
+    await page.evaluate(() => { window.savedTree = document.querySelector('#sidebar-tree'); window.savedGraph = document.querySelector('#graph'); });
+    await startDrag(96);
+    assert.deepEqual(await dividerPaint(), firstDragPaint, 'first and subsequent drags must have the same single-line appearance');
+    assert.equal(await width(), 416, 'resize happens while dragging');
+    assert.equal(await stored(), null, 'do not persist an unfinished drag');
+    await page.mouse.up(); await settle(page);
+    assert.equal(await stored(), '416');
+    assert.equal(await page.evaluate(() => window.savedTree === document.querySelector('#sidebar-tree') && window.savedGraph === document.querySelector('#graph')), true);
+    assert.equal(await page.evaluate(() => document.documentElement.classList.contains('ob-sidebar-resizing')), false);
+    await page.reload(); await handle.waitFor();
+    assert.equal(await width(), 416);
+    await visit('#/manual');
+    assert.equal(await width(), 416);
+    await page.click('[data-action="toggle-sidebar"]');
+    assert.equal(await width(), 56);
+    assert.equal(await handle.count(), 0);
+    await page.click('[data-action="toggle-sidebar"]');
+    assert.equal(await width(), 416);
+    await handle.focus(); await handle.press('ArrowLeft');
+    assert.equal(await width(), 400);
+    assert.deepEqual(await dividerPaint(), firstDragPaint, 'keyboard focus keeps a visible single-line indicator');
+    await page.emulateMedia({forcedColors: 'active'});
+    assert.notEqual((await dividerPaint()).color, 'rgba(0, 0, 0, 0)', 'focus remains visible with forced colors');
+    await page.emulateMedia({forcedColors: 'none'});
+    await handle.press('Home'); assert.equal(await width(), 240);
+    await handle.press('End'); assert.equal(await width(), 480);
+    assert.equal(await handle.getAttribute('aria-valuenow'), '480');
+    await page.setViewportSize({width: 1024, height: 900}); await settle(page);
+    assert.equal(await width(), 424);
+    assert.equal(await stored(), '480', 'small screens must not overwrite the preferred width');
+    assert.equal(await handle.getAttribute('aria-valuemax'), '424');
+    await page.setViewportSize({width: 390, height: 844}); await settle(page);
+    assert.equal(await handle.isVisible(), false);
+    await page.click('[data-action="open-navigation"]');
+    assert(await page.locator('.ob-tree-panel.is-mobile-open').isVisible());
+    assert.equal(await handle.isVisible(), false);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+    await page.setViewportSize({width: 1600, height: 1000}); await settle(page);
+    assert.equal(await width(), 480);
+    await handle.focus(); await handle.press('Enter');
+    assert.equal(await width(), 320);
+    assert.equal(await stored(), null);
+    console.log('PASS: live mouse resizing, DOM preservation, persistence, collapse, keyboard and responsive bounds');
+
+    await startDrag(50); await page.keyboard.press('Escape'); await page.mouse.up();
+    assert.equal(await width(), 320);
+    assert.equal(await stored(), null);
+    await startDrag(900); await page.mouse.up();
+    assert.equal(await width(), 480);
+    const box = await handle.boundingBox();
+    await page.mouse.dblclick(box.x + box.width / 2, Math.max(150, box.y + 40));
+    assert.equal(await width(), 320);
+    assert.equal(await stored(), null);
+    await startDrag(-900); await page.mouse.up();
+    assert.equal(await width(), 240);
+    await startDrag(50);
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    await page.mouse.up();
+    assert.equal(await width(), 240);
+    await handle.press('Enter');
+    await visit('#/api');
+    assert.equal(await handle.count(), 0);
+    await visit('#/');
+    assert.equal(await width(), 320);
+    await page.evaluate(() => localStorage.setItem('datenkatalog.sidebarWidth', 'invalid'));
+    await page.reload(); await handle.waitFor();
+    assert.equal(await width(), 320);
+    await page.screenshot({path: path.join(process.env.TEMP || '/tmp', 'oblique-sidebar-default.png')});
+    const noStorage = await browser.newPage({viewport: {width: 1440, height: 900}});
+    await noStorage.addInitScript(() => {
+      for (const method of ['getItem', 'setItem', 'removeItem']) Storage.prototype[method] = () => { throw new Error('Storage blocked'); };
+    });
+    noStorage.on('pageerror', e => errors.push(e.message));
+    await noStorage.goto(base); await noStorage.locator('#sidebar-resizer').waitFor();
+    await noStorage.locator('#sidebar-resizer').press('ArrowRight');
+    assert.equal(await noStorage.locator('#sidebar-resizer').getAttribute('aria-valuenow'), '336');
+    assert.deepEqual(errors, []);
+    console.log('PASS: limits, reset, cancellation, invalid/blocked storage and API/mobile exclusions');
+  } finally {
+    if (browser) await browser.close();
+    await new Promise(resolve => server.close(resolve));
+  }
+})().catch(error => { console.error(error); process.exitCode = 1; });

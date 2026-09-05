@@ -2105,5 +2105,432 @@
     "action": "Erstellt",
     "detail": "API im Katalog angelegt",
     "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "systems:gwr",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "GWR-Merkmalskatalog 5.0.0 aus bereitgestellter MHTML-Datei importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-bauprojekt",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "37 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-arbeiten",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "10 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-gebaeude",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "39 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-waermeerzeugungsanlage",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "17 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-gebaeudeeingang",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "9 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-wohnung",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "24 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "tables:t-gwr-strasse",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "10 Merkmale aus GWR-Merkmalskatalog 5.0.0 importiert.",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-partbz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "26 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-ptypag",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "25 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-partbw",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "3 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-ptypbw",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "48 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pstat",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "8 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-partab",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "3 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pensan",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pheizsan",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pinnumb",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pumnutz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-perwmhz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-perwohz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pthersol",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pphotsol",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-pandumb",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gksce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "6 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "7 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "6 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gklas",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "26 Werte importiert. gwr codes.xlsx · Blatt Codeliste · MK 4.2",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gbaup",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "13 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gvolnorm",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "3 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gvolsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "9 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gschutzr",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gebfber",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gebfsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "12 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-gebqhsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "12 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tstat",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "4 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tnheiz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tnww",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-twaerz",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "14 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tent",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "19 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "13 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-tnleistsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "12 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-twaerzgebrolle",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "3 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-doffadr",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wstwk",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "119 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised) · Bereichsauflösung und Bezeichnungen aus gwr codes.xlsx, MK 4.2",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wmehrg",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wstat",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "7 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wkche",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wnart",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "12 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wnartsce",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "4 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wpershw",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wpersnw",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-wgbanmerkung",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "4 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-strsp",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "4 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-stroffiziel",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "2 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-sreal",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "4 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "refs:r-gwr-strart",
+    "date": "2026-09-05",
+    "action": "Importiert",
+    "detail": "3 Werte importiert. Merkmalskatalog.mhtml · 5.0.0 (revised)",
+    "user": "Katalogimport"
+  },
+  {
+    "entity": "domains:projekt",
+    "date": "2026-09-05",
+    "action": "Erstellt",
+    "detail": "Domäne als Entwurf für Projekt Management angelegt.",
+    "user": "Prototyp"
+  },
+  {
+    "entity": "objects:bauprojekt",
+    "date": "2026-09-05",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt als Entwurf für Projekt Management angelegt.",
+    "user": "Prototyp"
+  },
+  {
+    "entity": "objects:meilenstein",
+    "date": "2026-09-05",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt als Entwurf für Projekt Management angelegt.",
+    "user": "Prototyp"
+  },
+  {
+    "entity": "objects:phase",
+    "date": "2026-09-05",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt als Entwurf für Projekt Management angelegt.",
+    "user": "Prototyp"
+  },
+  {
+    "entity": "objects:bauarbeiten",
+    "date": "2026-09-05",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt als Entwurf für Projekt Management angelegt.",
+    "user": "Prototyp"
   }
 ]

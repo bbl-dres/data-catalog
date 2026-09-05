@@ -52,7 +52,7 @@
     array(next.changelog, 'changelog.json');
     record(next.model.kinds, 'model.json.kinds');
     record(next.model.navModels, 'model.json.navModels');
-    [...KINDS, 'attrs'].forEach(kind => record(next.model.kinds[kind], `model.json.kinds.${kind}`));
+    [...KINDS, 'attrs', 'fields'].forEach(kind => record(next.model.kinds[kind], `model.json.kinds.${kind}`));
     ['entity', 'container'].forEach(model => {
       const sections = next.model.navModels[model];
       array(sections, `model.json.navModels.${model}`);
@@ -66,6 +66,17 @@
         const at = `${file}[${i}].${list}`;
         if (e[list] == null) e[list] = [];
         array(e[list], at);
+        if (kind === 'tables' && list === 'fields') {
+          const seen = new Set();
+          e.fields.forEach((f, j) => {
+            record(f, `${at}[${j}]`);
+            text(f.name, `${at}[${j}].name`);
+            if (f.identifier != null) text(f.identifier, `${at}[${j}].identifier`);
+            const id = f.identifier ?? f.name;
+            if (seen.has(id)) throw new Error(`${at}[${j}]: duplicate field identifier ${id}`);
+            seen.add(id);
+          });
+        }
         if (kind === 'objects' && list === 'attributes') identities(e[list], at);
         else e[list].forEach((item, j) => {
           const entry = `${at}[${j}]`;
@@ -88,8 +99,16 @@
     const problems = [];
     const check = (kind, e, field, refKind, id) => { if (id && !index[refKind].has(id)) problems.push(`${kind}:${e.identifier}.${field} → ${refKind}:${id} not found`); };
     data.objects.forEach(o => check('objects', o, 'domain', 'domains', o.domain));
-    data.tables.forEach(x => { check('tables', x, 'realizes', 'objects', x.realizes); check('tables', x, 'system', 'systems', x.system); });
-    data.refs.forEach(r => check('refs', r, 'businessObject', 'objects', r.businessObject));
+    data.tables.forEach(x => {
+      check('tables', x, 'realizes', 'objects', x.realizes);
+      check('tables', x, 'system', 'systems', x.system);
+      check('tables', x, 'domain', 'domains', x.domain);
+      x.fields.forEach(f => check('tables', x, `fields.${f.name}.codeList`, 'refs', f.codeList));
+    });
+    data.refs.forEach(r => {
+      check('refs', r, 'businessObject', 'objects', r.businessObject);
+      check('refs', r, 'domain', 'domains', r.domain);
+    });
     data.products.forEach(p => {
       check('products', p, 'domain', 'domains', p.domain);
       p.basedOn.forEach(id => check('products', p, 'basedOn', 'objects', id));
@@ -108,6 +127,7 @@
   data.contentKinds = () => data.model.navModels.entity;
   data.get = function (kind, id) {
     if (kind === 'attrs') return data.attr(id);
+    if (kind === 'fields') return data.field(id);
     const m = index[kind];
     return (m && m.get(id)) || null;
   };
@@ -132,15 +152,35 @@
     if (!a) return null;
     return Object.assign({}, a, {
       identifier: id, attrId: a.identifier, object: o.identifier, domain: o.domain,
-      status: o.status, normReference: o.normReference, responsibleOrg: o.responsibleOrg,
+      status: o.status, normReference: o.normReference, responsibleOrg: o.responsibleOrg, contact: o.contact,
       dataOwner: o.dataOwner, dataSteward: o.dataSteward, classification: o.classification, personalData: o.personalData,
       version: o.version, created: o.created, modified: o.modified, source: o.source, sourceDetail: o.sourceDetail, synced: o.synced,
     });
   };
   data.domainOf = id => data.get('domains', id);
+  /** Fields are addressed by an explicit stable identifier, falling back to their exact technical name. */
+  data.fieldId = f => f.identifier ?? f.name;
+  data.field = function (id) {
+    if (typeof id !== 'string') return null;
+    const i = id.indexOf('/');
+    if (i < 0) return null;
+    const table = data.get('tables', id.slice(0, i));
+    if (!table) return null;
+    const position = table.fields.findIndex(f => data.fieldId(f) === id.slice(i + 1));
+    if (position < 0) return null;
+    const f = table.fields[position];
+    const inherited = Object.fromEntries(['version', 'created', 'modified', 'responsibleOrg', 'contact', 'dataOwner', 'dataSteward', 'dataCustodian', 'classification', 'personalData', 'source', 'sourceDetail', 'synced', 'provenance'].map(key => [key, table[key]]));
+    return {
+      ...inherited, ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier,
+      name: f.label ? `${f.label} (${f.name})` : f.name, technicalName: f.name,
+      system: table.system, domain: data.domainForEntity('tables', table)?.identifier,
+      status: table.status, position: position + 1,
+    };
+  };
   data.objOf = id => data.get('objects', id);
   data.sysOf = id => data.get('systems', id);
   data.custodianOf = function (kind, e) {
+    if (kind === 'fields') return e.dataCustodian || data.custodianOf('tables', data.get('tables', e.table));
     if (kind === 'systems') return e.dataCustodian || '';
     if (kind === 'tables') {
       const system = data.sysOf(e.system);
@@ -155,6 +195,7 @@
     if (kind === 'tables') return data.objOf(e.realizes);
     if (kind === 'refs') return data.objOf(e.businessObject);
     if (kind === 'attrs') return data.objOf(e.object);
+    if (kind === 'fields') return data.objOf(data.get('tables', e.table)?.realizes);
     return null;
   };
   /** The domain an entity belongs to (null for systems and for dangling references). */
@@ -316,11 +357,13 @@
       ];
     }
     if (kind === 'systems') {
-      const objs = byIds('objects', data.tablesOfSystem(e).map(x => x.realizes)).filter(Boolean);
+      const tables = data.tablesOfSystem(e);
+      const objs = byIds('objects', tables.map(x => x.realizes)).filter(Boolean);
       return [
+        mk('providedTables', 'database', 'tables', tables),
         mk('realizedObjects', 'stack', 'objects', objs),
         mk('providedApis', 'branch', 'apis', data.apisOfSystem(e)),
-        mk('domains', 'folder', 'domains', byIds('domains', objs.map(o => o.domain))),
+        mk('domains', 'folder', 'domains', byIds('domains', tables.map(x => data.domainForEntity('tables', x)?.identifier))),
       ];
     }
     if (kind === 'products') {
@@ -334,6 +377,17 @@
       return [
         mk('serves', 'briefcase', 'products', data.products.filter(p => p.servedBy.includes(e.identifier))),
         mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]),
+      ];
+    }
+    if (kind === 'fields') {
+      const table = data.get('tables', e.table);
+      const tableGroup = mk('table', 'database', 'tables', [table]);
+      tableGroup.items.forEach(item => { item.href = DK.router.entityHref('tables', e.table, { tab: 'rows' }); });
+      return [
+        tableGroup,
+        mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]),
+        mk('usesCodelists', 'file_list', 'refs', [data.get('refs', e.codeList)]),
+        mk('object', 'stack', 'objects', [data.objectForEntity(kind, e)]),
       ];
     }
     if (kind === 'attrs') {
@@ -351,16 +405,18 @@
     }
     // objects, tables, refs
     const o = data.objectForEntity(kind, e);
-    if (!o) return [];
-    const relTables = data.tables.filter(x => x.realizes === o.identifier && !(kind === 'tables' && x.identifier === e.identifier));
-    const relRefs = data.refs.filter(r => r.businessObject === o.identifier && !(kind === 'refs' && r.identifier === e.identifier));
+    const explicitCodes = kind === 'tables' && e.fields.some(f => f.codeList);
+    const usedInTables = kind === 'refs' && data.tables.filter(x => x.fields.some(f => f.codeList === e.identifier));
+    const relTables = usedInTables?.length ? usedInTables : o ? data.tables.filter(x => x.realizes === o.identifier && !(kind === 'tables' && x.identifier === e.identifier)) : [];
+    const relRefs = explicitCodes ? byIds('refs', e.fields.map(f => f.codeList)) : o ? data.refs.filter(r => r.businessObject === o.identifier && !(kind === 'refs' && r.identifier === e.identifier)) : [];
     const rels = [
-      mk('realizedInTables', 'database', 'tables', relTables),
+      mk(usedInTables?.length ? 'usedInTables' : 'realizedInTables', 'database', 'tables', relTables),
       mk('usesCodelists', 'file_list', 'refs', relRefs),
-      mk('usedInProducts', 'briefcase', 'products', data.products.filter(p => p.basedOn.includes(o.identifier))),
-      { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: data.termsOf(o) },
+      mk('usedInProducts', 'briefcase', 'products', data.products.filter(p => (o && p.basedOn.includes(o.identifier)) || (kind === 'tables' && p.sourcedFrom.includes(e.identifier)))),
+      { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: o ? data.termsOf(o) : [] },
     ];
-    if (kind !== 'objects') rels.splice(2, 0, mk('object', 'stack', 'objects', [o]));
+    if (kind !== 'objects' && o) rels.splice(2, 0, mk('object', 'stack', 'objects', [o]));
+    if (kind === 'tables') rels.push(mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]));
     return rels;
   };
 
@@ -438,7 +494,7 @@
 
   /* ---- history ---------------------------------------------------------------- */
   data.history = function (kind, id) {
-    const key = kind === 'attrs' ? 'objects:' + id.split('/')[0] : `${kind}:${id}`;
+    const key = kind === 'attrs' ? 'objects:' + id.split('/')[0] : kind === 'fields' ? 'tables:' + id.split('/')[0] : `${kind}:${id}`;
     return data.changelog.filter(h => h.entity === key).slice().sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));
   };
 

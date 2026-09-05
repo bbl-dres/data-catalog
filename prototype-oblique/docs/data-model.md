@@ -1,10 +1,12 @@
 # Data model
 
-All data is static JSON under `data/`, loaded once at start-up. Field names follow the catalog information model described in the handbook (DCAT-AP CH / I14Y, ArchiMate and DMBOK aligned). Dates are ISO `yyyy-mm-dd`; the UI formats them as `d.m.yyyy`. Content is fictional.
+All data is static JSON under `data/`, loaded once at start-up. Field names follow the catalog information model described in the handbook (DCAT-AP CH / I14Y, ArchiMate and DMBOK aligned). Dates are ISO `yyyy-mm-dd`; the UI formats them as `d.m.yyyy`. Content combines fictional examples with the documented [GWR catalog metadata import](gwr-import.md); it contains no live register records.
+
+The [Projekt Management domain](project-management.md) contains Bauprojekt, Meilenstein, Phase and Bauarbeiten, with local draft attributes and explicit mappings to the GWR and GIS project tables.
 
 The loader checks a complete snapshot before publishing it. Entity collections must be arrays; entities need non-empty string identifiers and names. Identifiers must be unique within a kind, and object-attribute identifiers within their object. Missing optional embedded lists become empty arrays; lists supplied with invalid shapes are rejected with file/record locations. Relationship ID lists contain non-empty strings. Dangling references are reported separately and remain tolerated by the UI. These runtime guards are not a complete schema validator for every metadata field.
 
-Domain membership is based on the stable domain identifier, including when callers pass a copied profile record. External destinations pass URL-scheme validation before becoming links. CSV exports protect formula-like text by prefixing an apostrophe; see the [developer review](developer-review-2026-09-05.md) for format implications and validation coverage.
+Domain membership is based on the stable domain identifier, including when callers pass a copied profile record. External destinations pass URL-scheme validation before becoming links. [Excel exports](excel-export.md) preserve explicit string/number types, including leading-zero codes and formula-like text, without changing their content. CSV export has been replaced.
 
 ## Files
 
@@ -13,7 +15,7 @@ Domain membership is based on the stable domain identifier, including when calle
 | `domains.json` | Domains (Domänen) | `domains` |
 | `systems.json` | Source systems (Systeme) | `systems` |
 | `objects.json` | Business objects with embedded attributes | `objects`, `attrs` |
-| `tables.json` | Data tables with embedded fields | `tables` |
+| `tables.json` | Data tables with embedded fields | `tables`, `fields` |
 | `codelists.json` | Reference data (Wertelisten) with embedded values | `refs` |
 | `products.json` | Data products (dcat:Dataset) | `products` |
 | `apis.json` | API directory (dcat:DataService) | `apis` |
@@ -35,29 +37,44 @@ Domain membership is based on the stable domain identifier, including when calle
 | `version` | string | | `owl:versionInfo` |
 | `created`, `modified` | date | | `dct:issued`, `dct:modified` |
 | `responsibleOrg` | string | Responsible organisational unit | `dct:publisher` |
-| `dataOwner`, `dataSteward` | string | Persons in the NaDB roles | `dcat:contactPoint` |
+| `contact` | object (optional) | Shared organisation contact: `url`, `email`, `phone` (optional strings) | `dcat:contactPoint` |
+| `dataOwner`, `dataSteward` | string or actor object | Persons or organisations in the NaDB roles (see below) | `dcat:contactPoint` |
 | `classification` | `öffentlich` \| `intern` \| `vertraulich` \| `geheim` | | `dct:accessRights` |
 | `personalData` | boolean | Contains personal data | DSG flag |
 | `source`, `sourceDetail` | string | System of record and tool | `prov:wasDerivedFrom` |
 | `synced` | date | Last harvest | `prov:generatedAtTime` |
 
+## Responsibility and contacts
+
+The overview's **Verantwortlich** section shows `responsibleOrg`, documented owner/steward/custodian roles and the organisation's shared email and phone. `contact.url` links the organisation to its website; mail and phone links use `mailto:` and `tel:`. Empty roles are omitted, and the organisation is not repeated in Kerndaten. `responsibleOrg` stays a string so collection grouping and exports remain compatible.
+
+Role values can be `{ "type": "person" | "organisation", "name": "…", "url": "…" }`, with optional `url`. Legacy owner/steward strings denote persons; legacy custodian strings denote organisational units. Only persons without a supplied URL use the configured federal directory; organisations without a website remain plain text. URLs and labels use the existing safe rendering helpers. No owner/steward role is inferred from an organisation's name.
+
+Attributes inherit the object's organisation, roles and shared contact. Fields inherit their table's organisation, roles and shared contact, with explicit field metadata taking precedence. A table's custodian can still fall back to its system. Contact details are not guessed from domain membership or a similarly named organisation.
+
 ## Type-specific fields
 
-**domains**: `contact { email, phone }`.
+**domains**: shared core contact metadata as above.
 
 **systems**: `technology`, `dataCustodian`, optional `informationUrl`, `contact`. The catalogue does not actively scan systems; `modified` records the last known change.
 
 **objects**: `domain` (domain id), `normReference`, `termdat [{ name, id, url }]`, `attributes [{ identifier, name, description, valueType, keyRole, mandatory, position }]`. `valueType` is one of `Text`, `Ganzzahl`, `Dezimal`, `Datum`, `Code`, `Geometrie`; `keyRole` is `PK`, `FK` or `null`. An attribute is addressed as `<objectId>/<attributeId>` (route `#/objects/<objectId>/attributes/<attributeId>`).
 
-**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), `realizes` (object id), `fields [{ name, description, dataType, keyRole }]`. The catalogue does not actively scan or certify tables; `modified` records the last known change.
+**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), optional `realizes` (object id), optional `domain` (fallback when no business object is mapped), `fields [{ name, description, dataType, keyRole, codeList? }]`. `codeList` references a code-list ID and drives the optional Werteliste column and inverse relationships. Imported fields also retain `label`, `sourceUrl` and `catalogMetadata`. The catalogue does not actively scan or certify tables; `modified` records the last known catalog change.
 
-**codelists** (`refs`): `sourceAuthority`, `businessObject` (object id), `values [{ code, label }]`. An empty `values` array means "noch nicht erfasst".
+**fields**: A field is also available as a derived profile at `#/tables/<tableId>/fields/<fieldId>`, with no additional JSON file or top-level collection. `fieldId` is the optional embedded `identifier`, falling back to the exact, case-sensitive technical `name`. It must be unique inside its table; the same field name may occur in different tables. Route segments are encoded separately. An explicit identifier keeps a bookmark stable when a technical column is renamed. GWR's EGID is therefore `#/tables/t-gwr-gebaeude/fields/EGID`.
+
+The profile exposes `table`, `technicalName`, `dataType`, `keyRole`, `codeList`, optional `mandatory`, source-order `position`, and imported `catalogMetadata` where available. It derives system, domain, status, stewardship and history from its parent table, without modifying the stored field or adding to catalog totals. A field's `sourceUrl` remains its own source link; it never silently becomes the parent table's entity-definition link. Imported documentation is escaped text; access category and master-data designation appear in Kerndaten, while detailed description, coding, reporting obligations and other source sections use independent disclosures. Unspecified GWR physical keys and mandatory flags are not inferred from prose.
+
+**codelists** (`refs`): `sourceAuthority`, optional `businessObject` (object id), optional `domain` (fallback), `values [{ code, label }]`. Imported values can retain `labels`/`shortLabels` keyed by language, spreadsheet row and version provenance; German `label` remains the display value. An empty `values` array means "noch nicht erfasst".
+
+Imported records may carry `sourceUrl`, `sourceDetail` and `provenance` with source hashes, capture date and import identifier. Unknown metadata is omitted; an absent `personalData` value is not displayed as "Nein". GWR import dates describe the catalog record rather than the live source system's lifecycle.
 
 **products**: `domain`, `accessRights`, `license`, `format`, `accrualPeriodicity`, `basedOn [object ids]`, `sourcedFrom [table ids]`, `servedBy [api ids]`, `attributes [{ name, description, valueType }]` (optional, may be empty).
 
 **apis**: `version`, `domain`, `system`, `protocol`, `endpointURL`, `documentation`, `accessRights`.
 
-**changelog**: `[{ entity: "<kind>:<identifier>", date, action, detail, user }]`. Attributes show the history of their business object.
+**changelog**: `[{ entity: "<kind>:<identifier>", date, action, detail, user }]`. Attributes show the history of their business object; fields explicitly show the history of their data table.
 
 ## Derived values
 

@@ -19,7 +19,8 @@ const server = createServer();
     assert(await page.locator('.ob-relations-diagram').isVisible());
     assert.equal(await page.locator('.ob-tabs [data-action="toggle-relation-view"]').count(), 1);
     assert.equal(await page.locator('[role="tablist"] [data-action="toggle-relation-view"]').count(), 0);
-    assert.match(await page.locator('#tab-relations').innerText(), /\(24\)/);
+    const relationCount = await page.evaluate(() => DK.data.relations('domains', DK.data.domainOf('bau')).reduce((n, g) => n + g.items.length, 0));
+    assert((await page.locator('#tab-relations').innerText()).includes(`(${relationCount})`));
     assert.equal(await page.locator('.ob-graph-group').count(), 5);
     const bubbles = await page.locator('.ob-graph-bubble-inner').evaluateAll(els => els.map(el => {
       const circle = el.getBoundingClientRect(), cx = circle.x + circle.width / 2, cy = circle.y + circle.height / 2;
@@ -36,7 +37,7 @@ const server = createServer();
 
     await page.click('[data-action="toggle-relation-view"]');
     assert(await page.locator('.ob-relations-list .ob-table').isVisible());
-    assert.equal(await page.locator('.ob-relations-list tbody tr').count(), 24);
+    assert.equal(await page.locator('.ob-relations-list tbody tr').count(), relationCount);
     await page.click('.ob-relations-list [data-sort-column="0"]');
     assert.equal(await page.locator('.ob-relations-list th').first().getAttribute('aria-sort'), 'ascending');
     await page.click('[data-action="toggle-relation-view"]');

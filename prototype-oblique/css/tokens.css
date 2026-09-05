@@ -199,7 +199,14 @@
   /* ---- 3. Component tokens --------------------------------------------- */
   --ob-content-max-width: 1600px;
   --ob-home-max-width: 1120px;                         /* shared by summary cards and both tables */
-  --ob-sidebar-width: 240px;
+  --ob-sidebar-default-width: 320px;
+  --ob-sidebar-width: var(--ob-sidebar-default-width);
+  --ob-sidebar-min-width: 240px;
+  --ob-sidebar-max-width: 480px;
+  --ob-sidebar-content-min-width: 600px;
+  --ob-sidebar-resize-hit-width: var(--ob-space-md);
+  --ob-sidebar-resize-grip-width: var(--ob-space-compact);
+  --ob-sidebar-resize-grip-height: var(--ob-space-default);
   --ob-sidebar-rail-width: 56px;
   --ob-sidebar-flyout-width: 300px;
   --ob-sidebar-heading-height: 36px;

@@ -5,6 +5,7 @@
    #/objects  #/tables  #/refs …       section list      ?view=tiles|table&group=<id>&filter=…&domain=<id>
    #/objects/gebaeude                  detail            ?tab=overview|rows|relations|history&page=n
    #/objects/gebaeude/attributes/egid  attribute detail
+   #/tables/t-gwr-gebaeude/fields/EGID field detail
    #/search?q=…                        search results
    #/manual?ch=<chapter>               handbook
    #/api                               API documentation
@@ -37,6 +38,9 @@
       if (seg.length === 4 && seg[0] === 'objects' && seg[2] === 'attributes') {
         r.view = 'detail'; r.kind = 'attrs'; r.id = seg[1] + '/' + seg[3]; return r;
       }
+      if (seg.length === 4 && seg[0] === 'tables' && seg[2] === 'fields') {
+        r.view = 'detail'; r.kind = 'fields'; r.id = seg[1] + '/' + seg[3]; return r;
+      }
     }
     r.view = 'notfound';
     return r;
@@ -49,9 +53,10 @@
   router.listHref = (kind, params) => router.build('/' + kind, params);
   router.domainListHref = (kind, domain, params) => router.listHref(kind, { domain, group: 'domain', ...params });
   router.entityHref = function (kind, id, params) {
-    if (kind === 'attrs') {
+    if (kind === 'attrs' || kind === 'fields') {
       const i = id.indexOf('/');
-      return router.build('/objects/' + encodeURIComponent(id.slice(0, i)) + '/attributes/' + encodeURIComponent(id.slice(i + 1)), params);
+      const parent = kind === 'attrs' ? 'objects' : 'tables', child = kind === 'attrs' ? 'attributes' : 'fields';
+      return router.build('/' + parent + '/' + encodeURIComponent(id.slice(0, i)) + '/' + child + '/' + encodeURIComponent(id.slice(i + 1)), params);
     }
     return router.build('/' + kind + '/' + encodeURIComponent(id), params);
   };

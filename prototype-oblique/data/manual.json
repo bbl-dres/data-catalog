@@ -62,11 +62,11 @@
       { "title": "Navigieren", "text": "Der Baum gliedert Geschäftsobjekte und Referenzdaten nach Domäne, Datentabellen nach System. Domäne oder System anklicken öffnet den Steckbrief." },
       { "title": "Gruppieren", "text": "Inhalte nach Domäne, Verantwortung, Status oder System ordnen; Kacheln oder Tabelle wählen." },
       { "title": "Steckbrief lesen", "text": "Beschreibung, Kerndaten, Status und Verantwortliche; Register für Attribute, Beziehungen und Verlauf." },
-      { "title": "Exportieren", "text": "Über «Exportieren» als CSV, Excel oder PDF; maschinell über die API." }
+      { "title": "Exportieren", "text": "Über «Exportieren» als Excel-Arbeitsmappe mit mehreren Tabellenblättern oder als PDF; maschinell über die API." }
     ]
   },
   "abrufen": {
-    "export": "Jede Liste und jeder Steckbrief hat ein Menü «Exportieren» für CSV, Excel und PDF. Exporte enthalten die sichtbaren Spalten in der gewählten Gruppierung.",
+    "export": "Jede Liste und jeder Steckbrief hat ein Menü «Exportieren» für Excel und PDF. Excel gliedert die Auswahl in Tabellenblätter für Übersicht, Katalogeinträge, Attribute, Felder, Werte, Metadaten, Quelldokumentation, Beziehungen und Verlauf. Suchfilter werden berücksichtigt; alle passenden Zeilen werden exportiert, auch ausserhalb der aktuellen Seite. Zugehörige Datentabellen und Wertelisten sind enthalten. Domänen und Systeme umfassen ihre Mitglieder.",
     "api": "Eine lesende REST-Schnittstelle (OpenAPI 3.1) liefert Geschäftsobjekte, Attribute, Datentabellen, Felder und Wertelisten als JSON sowie den Katalog als DCAT-AP CH (Turtle, JSON-LD). Authentisierung über eIAM."
   },
   "faq": [
@@ -75,7 +75,7 @@
     { "q": "Warum gibt es «Gebäude» zweimal?", "a": "Einmal als Geschäftsobjekt (fachlicher Begriff) und einmal als Datentabelle in SAP RE-FX und GIS IMMO (technische Umsetzung). Der Steckbrief verknüpft beide." },
     { "q": "An wen wende ich mich bei einer falschen Beschreibung?", "a": "An den im Steckbrief genannten Datenverwalter der Domäne. Fragen zum Katalog selbst an DRES – Digital Solutions über «Hilfe und Kontakt»." },
     { "q": "Wer darf den Katalog nutzen?", "a": "Alle Mitarbeitenden des BBL. Die API ist über eIAM zugänglich; publizierte Datenprodukte erscheinen zusätzlich auf I14Y." },
-    { "q": "Kann ich Daten selbst herunterladen?", "a": "Ja, über «Exportieren» als CSV, Excel oder PDF. Der Katalog enthält Metadaten, keine Fachdaten; diese bleiben in den Quellsystemen." }
+    { "q": "Kann ich Daten selbst herunterladen?", "a": "Ja, über «Exportieren» als Excel-Arbeitsmappe oder PDF. Der Katalog enthält Metadaten, keine Fachdaten; diese bleiben in den Quellsystemen." }
   ],
   "glossar": [
     { "term": "Domäne", "text": "Fachliche Gliederung der Geschäftsobjekte mit einer Datenverantwortung, z.B. Architektonische Sicht, Energie, Finanzen." },

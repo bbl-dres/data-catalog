@@ -89,6 +89,7 @@ const server = createServer();
 
     await check('collection search keeps typing stable and filters tiles, tables, grouping and exports together', async () => {
       await visit('#/objects');
+      const objectCount = await page.evaluate(() => DK.data.objects.length);
       await page.locator('.ob-group-header').first().click();
       const input = page.locator('#collection-filter');
       await input.evaluate(el => { window.collectionInputNode = el; });
@@ -96,8 +97,8 @@ const server = createServer();
       assert(await page.locator('.ob-tile[href="#/objects/gebaeude"]').isVisible(), 'search reveals matching collapsed groups');
       assert(await input.evaluate(el => el === window.collectionInputNode && el === document.activeElement));
       const ids = await page.locator('.ob-tile').evaluateAll(els => els.map(el => el.getAttribute('href')).sort());
-      assert(ids.length > 0 && ids.length < 21);
-      assert.equal(await page.locator('#collection-filter-status').innerText(), `${ids.length} von 21 Einträgen`);
+      assert(ids.length > 0 && ids.length < objectCount);
+      assert.equal(await page.locator('#collection-filter-status').innerText(), `${ids.length} von ${objectCount} Einträgen`);
 
       await input.dispatchEvent('compositionstart');
       await input.evaluate(el => { el.value = 'Stromzaehler'; });
@@ -115,9 +116,9 @@ const server = createServer();
       await page.locator('#collection-view-panel .ob-table-sort').first().click();
       assert.deepEqual(await tableIds(), ids);
       await page.click('[data-menu="actions"]');
-      const download = page.waitForEvent('download'); await page.click('[data-export="csv"]');
-      const csv = require('node:fs').readFileSync(await (await download).path(), 'utf8');
-      assert.equal(csv.trim().split('\r\n').length, ids.length + 1);
+      const download = page.waitForEvent('download'); await page.click('[data-export="xlsx"]');
+      const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await download).path());
+      assert.equal(workbook.getWorksheet('Geschäftsobjekte').rowCount, ids.length + 1);
       await page.reload(); await page.waitForSelector('#collection-filter'); await settle(page);
       assert.equal(await input.inputValue(), 'GeBaEu');
       assert.deepEqual(await tableIds(), ids);
@@ -130,12 +131,12 @@ const server = createServer();
       await page.press('#search-input', 'Escape'); await page.press('#search-input', 'Escape');
       await input.fill('no-such-collection-entry'); await input.press('Enter');
       assert(await page.locator('#collection-view-panel .ob-empty').isVisible());
-      assert.equal(await page.locator('#collection-filter-status').innerText(), '0 von 21 Einträgen');
+      assert.equal(await page.locator('#collection-filter-status').innerText(), `0 von ${objectCount} Einträgen`);
       assert(page.url().includes('#/objects?'));
       await page.locator('#collection-view-panel [data-action="clear-collection-filter"]').click();
       assert.equal(await input.inputValue(), '');
       assert.equal(await page.evaluate(() => document.activeElement.id), 'collection-filter');
-      assert.equal((await tableIds()).length, 21);
+      assert.equal((await tableIds()).length, objectCount);
       assert(!new URLSearchParams(page.url().split('?')[1]).has('filter'));
 
       await page.setViewportSize({ width: 390, height: 844 });
@@ -147,7 +148,7 @@ const server = createServer();
       await page.fill('#collection-filter', 'SAP');
       assert(await page.locator('#collection-view-panel tbody tr').count() > 1);
       await page.press('#collection-filter', 'Escape');
-      assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 10);
+      assert.equal(await page.locator('#collection-view-panel tbody tr').count(), await page.evaluate(() => DK.data.tables.length));
     });
 
     await check('repeated domain branches keep their section, members, breadcrumbs and history', async () => {
@@ -176,9 +177,9 @@ const server = createServer();
         await page.reload(); await page.waitForSelector('#collection-filter');
         assert.equal(await page.locator('#collection-view-panel tbody tr').count(), count);
         await page.click('[data-menu="actions"]');
-        const download = page.waitForEvent('download'); await page.click('[data-export="csv"]');
-        const csv = require('node:fs').readFileSync(await (await download).path(), 'utf8');
-        assert.equal(csv.trim().split('\r\n').length, count + 1);
+        const download = page.waitForEvent('download'); await page.click('[data-export="xlsx"]');
+        const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await download).path());
+        assert.equal(workbook.getWorksheet(await page.evaluate(k => DK.data.kindDef(k).plural, kind)).rowCount, count + 1);
         await page.locator('#sidebar-tree a[data-key="' + kind + '"]').click(); await settle(page);
         assert(!await page.evaluate(() => DK.router.parse().params.domain));
         assert.equal(await page.locator('#collection-view-panel tbody tr').count(), await page.evaluate(k => DK.data.list(k).length, kind));
@@ -211,17 +212,17 @@ const server = createServer();
       await page.click('[data-action="close-navigation"]');
     });
 
-    await check('domain tab, records, relations and CSV agree with the tree', async () => {
+    await check('domain tab, records, relations and Excel agree with the tree', async () => {
       await visit('#/domains/bau');
       assert.match(await page.locator('#tab-rows').innerText(), /\(9\)/);
       await page.click('#tab-rows');
       assert.equal(await page.locator('#panel-rows tbody tr').count(), 9);
       await page.click('[data-menu="actions"]');
       const downloaded = page.waitForEvent('download');
-      await page.click('[data-export="csv"]');
-      const csv = require('node:fs').readFileSync(await (await downloaded).path(), 'utf8');
-      assert.equal(csv.trim().split('\r\n').length, 10);
-      assert.match(csv, /Areal/);
+      await page.click('[data-export="xlsx"]');
+      const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await downloaded).path());
+      assert.equal(workbook.getWorksheet('Geschäftsobjekte').rowCount, 10);
+      assert.equal(workbook.getWorksheet('Geschäftsobjekte').getCell('B2').value, 'Areal');
       await page.click('#tab-relations');
       await page.click('[data-action="toggle-relation-view"]');
       assert.ok(await page.locator('.ob-relations-list a').count() > 0);
