@@ -21,6 +21,15 @@ const server = createServer();
     assert.equal(await page.locator('[role="tablist"] [data-action="toggle-relation-view"]').count(), 0);
     assert.match(await page.locator('#tab-relations').innerText(), /\(24\)/);
     assert.equal(await page.locator('.ob-graph-group').count(), 5);
+    const bubbles = await page.locator('.ob-graph-bubble-inner').evaluateAll(els => els.map(el => {
+      const circle = el.getBoundingClientRect(), cx = circle.x + circle.width / 2, cy = circle.y + circle.height / 2;
+      return { round: Math.abs(circle.width - circle.height) < 1 && getComputedStyle(el).borderRadius === '50%', contained: [...el.querySelectorAll('.ob-graph-node')].every(node => {
+        const r = node.getBoundingClientRect();
+        return [r.left, r.right].every(x => [r.top, r.bottom].every(y => Math.hypot(x - cx, y - cy) <= circle.width / 2 + 1));
+      }) };
+    }));
+    assert(bubbles.every(b => b.round && b.contained), 'bubble nodes must fit within circular groups');
+    assert.equal(await page.locator('.ob-graph-hub-circle').count(), 1);
     const shell = await page.locator('#graph-shell').boundingBox();
     assert(Math.abs(shell.y + shell.height - 1034) <= 2, 'diagram does not use the remaining viewport height');
     await page.screenshot({ path: path.join(process.env.TEMP || '/tmp', 'oblique-relations-desktop.png') });

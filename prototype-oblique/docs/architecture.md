@@ -45,7 +45,7 @@ Files are split by responsibility:
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row/relationship tables and diagram composition | Handle events |
-| `graph.js` | Deterministic panel layout, bounded group paging, zoom/pan/selection, keyboard/touch input, full-window dialog and viewport sizing | Change routes or mutate catalog data |
+| `graph.js` | Adaptive bubble layout, bounded group paging, zoom/pan/selection, keyboard/touch input, full-window dialog and viewport sizing | Change routes or mutate catalog data |
 | `app.js` | State, rendering cycle with focus restoration, event delegation, lazy Swagger UI, CSV/print exports and handbook scroll spy | Contain HTML templates |
 
 `views.page(route, state)` returns the application markup as a string. `app.render()` replaces `<main>` while preserving focus, sidebar/flyout scroll offsets and the current profile's metadata disclosure state. `replaceHtml()` identifies focused controls by `data-focus`, `id` or data attributes; disappearing menu items map back to their trigger. Repeated table controls include their group instance in `data-focus`. Route changes skip this control restoration and normally scroll to the top.
@@ -54,7 +54,7 @@ Some updates are local: search typing refreshes suggestions, help/language menus
 
 The home hero and compact header use the same `views.searchField()` combobox and query state. Home renders it above the summary tiles; its header magnifier scrolls to and focuses that form. Other routes render it in the expandable header. Only one input/listbox exists at a time. The hero adds native form submission; suggestion picks and Enter use the existing routing and ranking. Navigating from search moves focus to destination content. The hero popup sits below the entire form, keeping the submit button accessible when controls stack, and its height follows the visible viewport, including keyboard-induced viewport changes. JavaScript supplies available viewport space through a custom property; CSS applies the shared size and spacing constraints. Page load does not autofocus it.
 
-Relationships default to the diagram. The list toggle sits inside the `.ob-tabs` row, outside the semantic tablist, and switches to a shared sortable table. `graph.js` owns its canvas updates and a separate size observer. Wide layouts balance non-overlapping panels on either side of the entity; narrow layouts stack panels at normal text size. Each panel shows six entries per page. The modal fullscreen workspace moves the existing shell into a native dialog and preserves it through background renders. Route changes close the dialog and restore focus to the destination content. See [relationship-diagram.md](relationship-diagram.md).
+Relationships default to the bubble diagram. The list toggle sits inside the `.ob-tabs` row, outside the semantic tablist, and switches to a shared sortable table. `graph.js` owns its canvas updates and a separate size observer. Wide layouts place circular groups around the central entity; narrow layouts stack readable bubbles. Each bubble shows up to six entries per page, or three on narrow canvases. The orbit accounts for circles, captions and paging controls to avoid overlap. The modal fullscreen workspace moves the existing shell into a native dialog and preserves it through background renders. Route changes close the dialog and restore focus to the destination content. See [relationship-diagram.md](relationship-diagram.md).
 
 Swagger owns the contents of its live `#swagger-ui` node. On updates within the API view, the node is reattached rather than replaced, retaining filter, expansion and input state. A `WeakSet` tracks pending/mounted hosts, the loader is shared, and disconnected hosts are ignored when loading completes. Bundle failure permits a subsequent render to retry. Leaving the API view discards its host; a later visit mounts a fresh view.
 
@@ -64,12 +64,18 @@ Before publishing a data snapshot, the loader checks collection shapes, record i
 
 ## Routing
 
+Repeated domain groups within Referenzdaten, Datenprodukte and API-Verzeichnis use section-scoped collection routes. The [side-tree investigation](side-tree-navigation.md) documents their destination, active-state and breadcrumb behaviour.
+
+Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and CSV export all use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
+
+Typing replaces only the collection results and updates a persistent live result count, preserving the input node, caret and IME composition. Escape and the clear button reset the filter. Controls wrap according to content width and use the shared spacing, input and touch-target tokens. The search controls are omitted from print; filtered results remain printable.
+
 The URL is the source of truth for everything that should be bookmarkable:
 
 | Route | View |
 |---|---|
 | `#/` | Home |
-| `#/objects`, `#/tables`, `#/refs`, `#/products`, `#/apis`, `#/domains`, `#/systems` | Section list. Params: `view=tiles|table`, `group=<option>` |
+| `#/objects`, `#/tables`, `#/refs`, `#/products`, `#/apis`, `#/domains`, `#/systems` | Section list. Params: `view=tiles|table`, `group=<option>`, `filter=<query>`; content collections also accept `domain=<id>` for exact domain membership |
 | `#/objects/gebaeude` | Profile page. Params: `tab=overview|rows|relations|history`, `page=n`, `size=50|100|200` (50 is the default). The tab is kept in the hash during a session, but a fresh load always opens Übersicht (see design-review-responsive.md, "Tab continuity") |
 | `#/objects/gebaeude/attributes/egid` | Attribute profile |
 | `#/search?q=…` | Search results |

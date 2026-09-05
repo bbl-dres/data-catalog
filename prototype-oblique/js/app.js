@@ -15,6 +15,7 @@
     mode: 'tiles',                    // tiles | table (URL ?view= overrides)
     groupBy: {},                      // per section (URL ?group= overrides)
     closed: {},                       // collapsed list groups
+    filteredClosed: {},               // search disclosures do not alter unfiltered groups
     treeOpen: { objects: true },      // expanded tree nodes
     treeSection: 'objects',           // section whose branch is open (others collapse on section change)
     graph: DK.graph.createState(),
@@ -65,6 +66,7 @@
     const r = router.parse();
     data.navModelOverride = r.params.nav || null;
     r.entity = null;
+    if (r.view === 'list' && r.params.domain && (!data.contentKinds().includes(r.kind) || !data.domainOf(r.params.domain))) r.view = 'notfound';
     if (r.view === 'detail') {
       const e = data.get(r.kind, r.id);
       if (e) r.entity = Object.assign({ kind: r.kind }, e); else r.view = 'notfound';
@@ -113,6 +115,7 @@
     state.flyout = null;
     state.searchOpen = false;
     state.menu = null; state.suggest = false; state.suggestIdx = -1;
+    state.filteredClosed = {};
 
     if (route.view === 'detail') {
       // Fresh loads and entries from non-detail views start at Übersicht; between profiles the
@@ -129,6 +132,7 @@
     const section = sectionOf(route);
     if (section && section !== state.treeSection) { state.treeOpen = { [section]: true }; state.treeSection = section; }
     if (section) state.treeOpen[section] = true;
+    if (route.view === 'list' && route.params.domain) state.treeOpen[`${route.kind}:domain:${route.params.domain}`] = true;
     const key = route.entity ? `${route.kind}:${route.id}` : null;
     if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
@@ -348,6 +352,29 @@
   }
 
   /* ---- search ---------------------------------------------------------------- */
+  /** Update only results: keeping the input node preserves focus, selection and IME composition. */
+  function filterCollection(value) {
+    if (route.view !== 'list') return;
+    const q = value.trim();
+    $('collection-filter-clear').hidden = !value;
+    if (q === ctx.filter) return;
+    state.filteredClosed = {};
+    router.replaceParams({ filter: q || null });
+    route = resolveRoute();
+    ctx = views.context(route, state);
+    $('collection-view-panel').innerHTML = views.list(ctx);
+    const status = $('collection-filter-status');
+    status.className = q ? 'ob-collection-status' : 'ob-sr-only';
+    status.textContent = views.collectionStatus(ctx);
+    observeTables();
+  }
+  function clearCollectionFilter() {
+    const input = $('collection-filter');
+    if (!input) return;
+    input.value = '';
+    filterCollection('');
+    input.focus({ preventScroll: true });
+  }
   /** Hrefs of the current suggestions in listbox order; the "all results" row follows at index length. */
   const suggestHrefs = () => data.suggest(state.query).flatMap(g => g.items.map(e => router.entityHref(g.kind, e.identifier)));
   function openResults() {
@@ -478,7 +505,7 @@
         if (state.menu === el.dataset.menu) setMenu(null); else openMenu(el);
         return;
       case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
-      case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
+      case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.filteredClosed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': state.mode = el.dataset.view; router.replaceParams({ view: state.mode }); app.render(); return;
       case 'sort-table': {
         const sortKey = el.dataset.sortKey;
@@ -491,7 +518,10 @@
         app.render();
         return;
       }
-      case 'toggle-group': state.closed[key] = !state.closed[key]; app.render(); return;
+      case 'toggle-group': {
+        const closed = ctx.filter ? state.filteredClosed : state.closed;
+        closed[key] = !closed[key]; app.render(); return;
+      }
       case 'toggle-tree': e.preventDefault(); e.stopPropagation(); state.treeOpen[key] = !state.treeOpen[key]; app.render(); return;
       case 'open-navigation': e.preventDefault(); setNavigation(true); return;
       case 'close-navigation': e.preventDefault(); setNavigation(false); return;
@@ -522,6 +552,7 @@
         const input = $('search-input'); if (input) { input.value = ''; input.focus(); }
         $('search-clear').hidden = true; renderSuggest(); return;
       }
+      case 'clear-collection-filter': clearCollectionFilter(); return;
       case 'suggest-pick': state.suggest = false; state.suggestIdx = -1; router.navigate(el.dataset.href); return;
       case 'open-results': openResults(); return;
       case 'chapter': e.preventDefault(); goChapter(el.dataset.chapter); return;
@@ -532,6 +563,10 @@
   }
 
   function onInput(e) {
+    if (e.target.id === 'collection-filter') {
+      if (!e.isComposing) filterCollection(e.target.value);
+      return;
+    }
     if (e.target.id === 'search-input') {
       state.query = e.target.value; state.suggest = true; state.suggestIdx = -1;
       $('search-clear').hidden = !state.query;
@@ -571,6 +606,12 @@
       else if (!e.shiftKey && (focused === last || !panel.contains(focused))) { e.preventDefault(); first?.focus(); }
     }
     if (e.target.id === 'search-input') { onSearchKey(e); return; }
+    if (e.target.id === 'collection-filter' && !e.isComposing && e.keyCode !== 229 && ['Escape', 'Enter'].includes(e.key)) {
+      e.preventDefault();
+      if (e.key === 'Escape') clearCollectionFilter();
+      else filterCollection(e.target.value);
+      return;
+    }
     if (e.target.matches('.ob-tab') && ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
       const tabs = [...e.target.parentElement.querySelectorAll('.ob-tab')];
       const current = tabs.indexOf(e.target);
@@ -643,6 +684,9 @@
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
+    document.addEventListener('compositionend', e => {
+      if (e.target.id === 'collection-filter') filterCollection(e.target.value);
+    });
     document.addEventListener('submit', e => {
       if (e.target.id !== 'home-search') return;
       e.preventDefault(); openResults();

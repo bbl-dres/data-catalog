@@ -19,7 +19,7 @@ Reviewed 2026-09-05. Scope: the active prototype's `css/tokens.css`, `css/main.c
 
 - Tile gaps increase from 12 to 16 px.
 - Hero description spacing follows the 16 px scale; the next section starts after the standard 24 px gap on all widths.
-- The header has a flag followed by a 16 px gap and the organisation/app text. The wordmark and divider are omitted at the user's request; their unused styles/tokens are removed. Flag and title breakpoints remain intact.
+- The header has a flag followed by a 16 px gap and the organisation/app text. The wordmark and divider are omitted at the user's request; their unused styles/tokens are removed. Flag breakpoints remain intact. Title and subtitle text cap at 16 px from 1280 px onwards, keeping the same compact typography on very large screens instead of growing to 18 px at 1920 px.
 - The example searches under the hero form are removed, including their styles and unused translation key. The input, submit button, suggestions and header shortcut continue to work.
 - Normal typography and row density remain the same. Enabling the existing compact-table option now reduces table row padding as intended.
 
@@ -28,7 +28,7 @@ Reviewed 2026-09-05. Scope: the active prototype's `css/tokens.css`, `css/main.c
 Do not turn every number into a token. Use a token for a shared design decision or configurable component dimension, rather than merely moving a literal elsewhere.
 
 - **Native media/container breakpoints:** CSS custom properties cannot be used as query conditions. Viewport queries govern header/navigation; container queries govern content layouts.
-- **Diagram geometry:** panel/node/pager heights, node grid gap and panel bottom padding are part of `graph.layout()`'s height calculations. These stay explicit and must be changed together with the algorithm. Decorative spacing, controls, type, borders, colours and elevation use shared tokens.
+- **Diagram geometry:** the restored bubble diagram supplies node, halo, caption, grid and pager dimensions from `graph.layout()` to CSS as custom properties. Change these with the algorithm so actual circles and calculated bounds stay aligned. Decorative spacing, controls, type, borders and colours use shared tokens. The original halo colour token is used again by the central bubble.
 - **Data-driven inline values:** tree depth, table column proportions, diagram coordinates/transforms and measured viewport space belong to the data/layout layer.
 - **Structural and optical details:** zero values, fractional widths, circular radii, visually hidden 1 px boxes, border overlaps, icon baseline offsets, compact chip/phone-field padding and flag aspect-ratio dimensions retain their meaning without a generic spacing alias.
 - **Interaction heuristics:** zoom bounds, gesture thresholds and the short-screen search scroll trigger are behaviour, not visual style tokens.

@@ -27,7 +27,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | Suite | Purpose |
 |---|---|
 | `core.test.cjs` | Real fixture data and deliberately invalid inputs; domain integrity, routing, loading, URL/CSV output and sorting |
-| `functional.cjs` | User behavior and state: hero/header search, domain export, metadata, focus, menus, API lifecycle/races/retry and load failures |
+| `functional.cjs` | User behavior and state: hero/header search; collection filtering, IME, export and history; domain export, metadata, focus, menus, API lifecycle/races/retry and load failures |
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |
 | `browser-helpers.cjs` | Shared ephemeral loopback server and browser rendering synchronization |

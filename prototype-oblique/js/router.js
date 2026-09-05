@@ -2,7 +2,7 @@
    tab, page, grouping, view mode and search query.
 
    #/                                  home
-   #/objects  #/tables  #/refs …       section list      ?view=tiles|table&group=<id>
+   #/objects  #/tables  #/refs …       section list      ?view=tiles|table&group=<id>&filter=…&domain=<id>
    #/objects/gebaeude                  detail            ?tab=overview|rows|relations|history&page=n
    #/objects/gebaeude/attributes/egid  attribute detail
    #/search?q=…                        search results
@@ -47,6 +47,7 @@
     return '#' + path + (qs ? '?' + qs : '');
   };
   router.listHref = (kind, params) => router.build('/' + kind, params);
+  router.domainListHref = (kind, domain, params) => router.listHref(kind, { domain, group: 'domain', ...params });
   router.entityHref = function (kind, id, params) {
     if (kind === 'attrs') {
       const i = id.indexOf('/');

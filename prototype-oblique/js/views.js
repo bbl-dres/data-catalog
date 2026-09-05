@@ -120,6 +120,8 @@
       route, state, entity: route.entity, kind: route.kind, mode: state.mode,
       isList: route.view === 'list',
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
+      filter: (route.params.filter || '').trim(), total: 0, matched: 0,
+      domain: route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
     };
     if (ctx.isList) {
       const requestedGroup = state.groupBy[route.kind] || data.defaultGroup(route.kind);
@@ -128,7 +130,14 @@
       ctx.groupBy = g;
       ctx.groupOptions = availableGroups.map(o => Object.assign(o, { active: o.id === g }));
       ctx.groupLabel = (ctx.groupOptions.find(o => o.id === g) || ctx.groupOptions[0] || { label: '' }).label;
-      ctx.groups = data.buildGroups(route.kind, g, ctx.mode === 'table').map(x => Object.assign(x, { open: !state.closed[x.id] }));
+      const closed = ctx.filter ? (state.filteredClosed || {}) : state.closed;
+      const members = ctx.domain ? data.membersOfDomain(route.kind, ctx.domain) : data.list(route.kind);
+      const memberIds = new Set(members.map(e => e.identifier));
+      ctx.total = members.length;
+      ctx.groups = data.buildGroups(route.kind, g, ctx.mode === 'table').map(x => ({
+        ...x, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(route.kind, e, ctx.filter)), open: !closed[x.id],
+      })).filter(x => x.items.length);
+      ctx.matched = ctx.groups.reduce((sum, x) => sum + x.items.length, 0);
       ctx.columns = data.columns(route.kind);
     }
 
@@ -136,6 +145,7 @@
     const e = route.entity;
     const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.name };
     ctx.title = (titles[route.view] || (() => t('notfound.title')))();
+    if (ctx.domain) ctx.title += ' – ' + ctx.domain.name;
 
     // breadcrumbs: Startseite › section › container › entity. The home page is the root itself.
     const crumbs = [{ label: t('nav.home'), href: '#/' }];
@@ -147,6 +157,7 @@
       const sys = data.sysOf(e.system);
       const obj = e.kind === 'attrs' ? data.objOf(e.object) : null;
       const domCrumb = dom ? [ent('domains', dom)] : [];
+      const scopedDomCrumb = dom ? [{ label: dom.name, href: router.domainListHref(e.kind, dom.identifier, route.params.nav ? { nav: data.navModel() } : undefined) }] : [];
       const sysCrumb = sys ? [ent('systems', sys)] : [];
       const objectsSec = sec(container ? 'domains' : 'objects');
       const tablesSec = sec(container ? 'systems' : 'tables');
@@ -154,13 +165,15 @@
         objects: [objectsSec, ...domCrumb],
         attrs: [objectsSec, ...domCrumb, ...(obj ? [ent('objects', obj)] : [])],
         tables: [tablesSec, ...sysCrumb],
-        refs: [sec('refs'), ...domCrumb],
-        products: [sec('products'), ...domCrumb],
-        apis: [sec('apis')],
+        refs: [sec('refs'), ...scopedDomCrumb],
+        products: [sec('products'), ...scopedDomCrumb],
+        apis: [sec('apis'), ...scopedDomCrumb],
         domains: [objectsSec],
         systems: [tablesSec],
       }[e.kind];
       crumbs.push(...path, { label: data.displayName(e.kind, e) });
+    } else if (ctx.domain) {
+      crumbs.push({ label: kinds[route.kind].plural, href: router.listHref(route.kind, route.params.nav ? { nav: data.navModel() } : undefined) }, { label: ctx.domain.name });
     } else if (route.view !== 'home') {
       crumbs.push({ label: ctx.title });
     }
@@ -199,7 +212,7 @@
     if (!ctx.actions.length) return '';
     const open = ctx.state.menu === 'actions';
     const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu" aria-label="${esc(t('toolbar.export'))}">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}">${esc(a.label)}</button>`).join('')}</div>` : '';
-    return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions"><span class="ob-export-label">${esc(t('toolbar.export'))}</span>${icon('chevron_down', 'sm', 'ob-export-chevron')}${icon('download', 'xl', 'ob-export-icon')}</button>${menu}</div>`;
+    return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${icon('download', null, 'ob-export-icon')}<span class="ob-export-label">${esc(t('toolbar.export'))}</span>${icon('chevron_down', 'sm', 'ob-export-chevron')}</button>${menu}</div>`;
   };
 
   views.entityHeader = function (ctx) {
@@ -214,7 +227,7 @@
   views.groupMenu = function (ctx) {
     const state = ctx.state;
     const menu = state.menu === 'group' ? `<div class="ob-menu" role="menu" aria-label="${esc(t('toolbar.group'))}">${ctx.groupOptions.map(o => `<button type="button" role="menuitem" class="ob-menu-item${o.active ? ' is-active' : ''}" data-action="set-group" data-group="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : '';
-    return `<div class="ob-menu-host ob-collection-group"><button type="button" class="ob-button" aria-haspopup="menu" aria-expanded="${state.menu === 'group'}" data-action="menu" data-menu="group">${esc(t('toolbar.group'))}: ${esc(ctx.groupLabel)} ${icon('chevron_down', 'sm')}</button>${menu}</div>`;
+    return `<div class="ob-menu-host ob-collection-group"><button type="button" class="ob-button" aria-haspopup="menu" aria-expanded="${state.menu === 'group'}" data-action="menu" data-menu="group">${icon('grid')}<span>${esc(t('toolbar.group'))}: ${esc(ctx.groupLabel)}</span>${icon('chevron_down', 'sm')}</button>${menu}</div>`;
   };
 
   views.collectionControls = function (ctx) {
@@ -222,9 +235,17 @@
     const tabs = modes.map(([id, label]) => `<button type="button" role="tab" id="view-tab-${id}" class="ob-tab ob-view-tab" aria-selected="${ctx.mode === id}" aria-controls="collection-view-panel" tabindex="${ctx.mode === id ? '0' : '-1'}" data-action="set-view" data-view="${id}">${esc(label)}</button>`).join('');
     return `<div class="ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
-      <div class="ob-local-actions">${views.groupMenu(ctx)}</div>
+      <div class="ob-local-actions">
+        <div class="ob-collection-search" role="search" aria-label="${esc(t('collection.search.label'))}">
+          ${icon('search', 'lg', 'ob-search-icon')}
+          <input type="search" class="ob-search-input" id="collection-filter" value="${esc(ctx.filter)}" placeholder="${esc(t('collection.search.placeholder'))}" aria-label="${esc(t('collection.search.label'))}" aria-controls="collection-view-panel" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <button type="button" class="ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${esc(t('collection.search.clear'))}"${ctx.filter ? '' : ' hidden'}>${icon('xmark')}</button>
+        </div>${views.groupMenu(ctx)}
+      </div>
     </div>`;
   };
+
+  views.collectionStatus = ctx => t('collection.search.count', { n: ctx.matched, total: ctx.total });
 
   /** One shared combobox, placed in the home hero or the header on other routes. */
   views.searchField = function (state, home = false) {
@@ -243,6 +264,9 @@
   /* ---- catalog tree ------------------------------------------------------------- */
   views.tree = function (route, state, onlySection) {
     const kinds = data.model.kinds;
+    const navParams = route.params.nav ? { nav: data.navModel() } : undefined;
+    const listHref = kind => router.listHref(kind, navParams);
+    const entityHref = (kind, id) => router.entityHref(kind, id, navParams);
     const e = route.entity;
     const treeE = e ? (e.kind === 'attrs' ? { kind: 'objects', id: e.object } : { kind: e.kind, id: e.identifier }) : null;
     const isActive = (kind, id) => !!treeE && treeE.kind === kind && treeE.id === id;
@@ -254,7 +278,7 @@
     data.sections().forEach(sec => {
       if (onlySection && sec !== onlySection) return;
       const open = !!state.treeOpen[sec];
-      items.push({ label: kinds[sec].plural, count: data.list(sec).length, level: 1, icon: kinds[sec].icon, expandable: true, expanded: open, active: route.view === 'list' && route.kind === sec, href: router.listHref(sec), key: sec });
+      items.push({ label: kinds[sec].plural, count: data.list(sec).length, level: 1, icon: kinds[sec].icon, expandable: true, expanded: open, active: route.view === 'list' && route.kind === sec && !route.params.domain, href: listHref(sec), key: sec });
       if (!open) return;
       // Level 2: the containers of a container section, else the section's groups. Level 3: their members.
       const childKind = { domains: 'objects', systems: 'tables' }[sec];
@@ -262,14 +286,19 @@
         ? data.list(sec).map(c => ({ key: `${sec}:${c.identifier}`, title: c.name, entityKind: sec, entity: c, itemKind: childKind, items: sec === 'domains' ? data.objectsOfDomain(c) : data.tablesOfSystem(c) }))
         : data.buildGroups(sec, sec === 'tables' ? 'system' : 'domain').map(g => ({ key: g.id, title: g.title, entityKind: g.entityKind, entity: g.entity, itemKind: sec, items: g.items }));
       branches.forEach(b => {
+        // Repeated domains group these collections; their labels must not jump to the business-object domain profile.
+        const scoped = b.entityKind === 'domains' && ['refs', 'products', 'apis'].includes(sec);
+        const active = !!b.entity && (scoped
+          ? route.view === 'list' && route.kind === sec && route.params.domain === b.entity.identifier
+          : isActive(b.entityKind, b.entity.identifier));
         const bOpen = !!state.treeOpen[b.key] || contains(b.itemKind, b.items);
         items.push({
           label: b.title, count: b.items.length, level: 2, icon: b.entityKind ? kinds[b.entityKind].icon : 'folder', expandable: true, expanded: bOpen, key: b.key,
-          active: !!b.entity && isActive(b.entityKind, b.entity.identifier),
-          href: b.entity ? router.entityHref(b.entityKind, b.entity.identifier) : router.listHref(sec), toggleOnly: !b.entity,
+          active,
+          href: b.entity ? (scoped ? router.domainListHref(sec, b.entity.identifier, navParams) : entityHref(b.entityKind, b.entity.identifier)) : listHref(sec), toggleOnly: !b.entity,
         });
         if (!bOpen) return;
-        b.items.forEach(m => items.push({ label: m.name, count: data.sizeOf(b.itemKind, m), level: 3, icon: kinds[b.itemKind].icon, active: isActive(b.itemKind, m.identifier), href: router.entityHref(b.itemKind, m.identifier) }));
+        b.items.forEach(m => items.push({ label: m.name, count: data.sizeOf(b.itemKind, m), level: 3, icon: kinds[b.itemKind].icon, active: isActive(b.itemKind, m.identifier), href: entityHref(b.itemKind, m.identifier) }));
       });
     });
     items.forEach((it, i) => { if (it.level === 1 && i > 0) items[i - 1].divider = true; });
@@ -358,6 +387,7 @@
 
   views.list = function (ctx) {
     const { kind, groups, mode, columns, state } = ctx;
+    if (!groups.length) return ui.empty(t('collection.search.none'), ctx.filter ? `${esc(t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${esc(t('collection.search.clear'))}</button></p>` : '');
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
       return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
@@ -441,7 +471,7 @@
     if (route.view === 'manual') content = views.manual(ctx);
     else if (route.view === 'api') content = views.apiPage();
     else if (route.view === 'home') content = views.home(ctx);
-    else if (route.view === 'list') content = `${views.collectionHeader(ctx)}${views.collectionControls(ctx)}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${views.list(ctx)}</div>`;
+    else if (route.view === 'list') content = `${views.collectionHeader(ctx)}${views.collectionControls(ctx)}<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${esc(views.collectionStatus(ctx))}</p><div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${views.list(ctx)}</div>`;
     else if (route.view === 'search') content = views.viewHeader(ctx) + views.searchResults(ctx);
     else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state);
     else content = views.viewHeader(ctx) + views.notFound();

@@ -2,54 +2,41 @@
 (function (DK) {
   'use strict';
   const ui = DK.ui, data = DK.data, t = ui.t, esc = ui.esc, icon = ui.icon;
-  const graph = {}, PAGE_SIZE = 6, PHONE_PAGE_SIZE = 3, PAD = 24;
-  // Geometry is shared with CSS through canvas custom properties, in unscaled pixels.
-  const NODE_WIDTH = 64, NODE_HEIGHT = 48, NODE_GAP = 8, HALO = 16;
-  const HUB_SIZE = 100, LABEL_WIDTH = 220, LABEL_HEIGHT = 20, LABEL_GAP = 8, PAGER_HEIGHT = 48;
+  const graph = {}, PAGE_SIZE = 6, PANEL = 320, HUB = 216, GAP = 80, PAD = 24;
   let current = null, observer = null, drag = null, fullscreen = null, suppressClick = false, pinch = null;
   const touches = new Map();
   const $ = id => document.getElementById(id);
   graph.createState = () => ({ x: 0, y: 0, zoom: 1, autoFit: true, mode: 'pan', selected: null, pages: {} });
 
-  /** Orbit spacing accounts for whole bubbles, their captions and paging controls. */
-  graph.layout = function (entity, state = {}, narrow = false, availableWidth = 640, availableHeight = 640) {
+  /** Panels have bounded heights; the two columns are balanced without intersecting the hub. */
+  graph.layout = function (entity, state = {}, narrow = false, availableWidth = PANEL + PAD * 2) {
     const groups = data.relations(entity.kind, entity).filter(g => g.items.length);
-    const pageSize = narrow ? PHONE_PAGE_SIZE : PAGE_SIZE;
+    const columns = [[], []], heights = [0, 0];
     const panels = groups.map(group => {
-      const count = Math.min(pageSize, group.items.length), columns = Math.min(2, count), rows = Math.ceil(count / columns);
-      const gridWidth = columns * NODE_WIDTH + (columns - 1) * NODE_GAP;
-      const gridHeight = rows * NODE_HEIGHT + (rows - 1) * NODE_GAP;
-      // The complete grid rectangle fits within the inner circle, including focus rings.
-      const diameter = Math.ceil(Math.hypot(gridWidth, gridHeight) + 2 * HALO + 8);
-      const pages = Math.ceil(group.items.length / pageSize);
+      const rows = Math.ceil(Math.min(PAGE_SIZE, group.items.length) / (narrow ? 1 : 2));
+      const height = 60 + rows * (narrow ? 48 : 60) + (group.items.length > PAGE_SIZE ? (narrow ? 48 : 40) : 0);
+      const side = heights[0] <= heights[1] ? 0 : 1;
+      const pages = Math.ceil(group.items.length / PAGE_SIZE);
       const page = Math.max(0, Math.min(pages - 1, state.pages?.[group.key] || 0));
-      return { group, width: Math.max(LABEL_WIDTH, diameter), height: diameter + LABEL_GAP + LABEL_HEIGHT + (pages > 1 ? PAGER_HEIGHT : 0), diameter, gridWidth, gridHeight, page, pages, pageSize };
+      const panel = { group, width: PANEL, height, side, page, pages, y: heights[side] };
+      columns[side].push(panel); heights[side] += height + 24;
+      return panel;
     });
-    const hub = { x: -LABEL_WIDTH / 2, y: -HUB_SIZE / 2, width: LABEL_WIDTH, height: HUB_SIZE + LABEL_GAP + LABEL_HEIGHT, diameter: HUB_SIZE };
     if (narrow) {
-      // Keep circular groups readable on phones instead of shrinking the entire orbit.
-      const width = Math.max(LABEL_WIDTH, ...panels.map(p => p.width)) + PAD * 2;
-      hub.x = (width - hub.width) / 2; hub.y = PAD;
-      let y = hub.y + hub.height + PAD;
-      panels.forEach(p => { p.x = (width - p.width) / 2; p.y = y; y += p.height + PAD; });
-      return { panels, hub, width, height: y + PAD, narrow: true, availableWidth, availableHeight };
+      const width = Math.max(240, Math.min(PANEL + PAD * 2, availableWidth - 32));
+      const hub = { x: (width - HUB) / 2, y: PAD, width: HUB, height: 116 };
+      let y = hub.y + hub.height + 32;
+      panels.forEach(p => { p.x = 12; p.y = y; p.side = 2; p.width = width - 24; y += p.height + 24; });
+      return { panels, hub, width, height: y + PAD, narrow: true, availableWidth };
     }
-    const overlaps = (a, b) => a.x < b.x + b.width + PAD && b.x < a.x + a.width + PAD && a.y < b.y + b.height + PAD && b.y < a.y + a.height + PAD;
-    const aspect = Math.sqrt(Math.max(1, Math.min(2, availableWidth / Math.max(1, availableHeight))));
-    const position = radius => panels.forEach((p, i) => {
-      const angle = (2 * Math.PI * i / panels.length) + (panels.length === 2 ? Math.PI : -Math.PI / 2);
-      p.x = radius * aspect * Math.cos(angle) - p.width / 2;
-      p.y = radius / aspect * Math.sin(angle) - p.diameter / 2;
-    });
-    let radius = 160;
-    position(radius);
-    while (panels.some((p, i) => overlaps(p, hub) || panels.slice(i + 1).some(other => overlaps(p, other)))) position(radius += 8);
-    const boxes = [hub, ...panels];
-    const left = Math.min(...boxes.map(p => p.x)), top = Math.min(...boxes.map(p => p.y));
-    const width = Math.max(...boxes.map(p => p.x + p.width)) - left + PAD * 2;
-    const height = Math.max(...boxes.map(p => p.y + p.height)) - top + PAD * 2;
-    boxes.forEach(p => { p.x += PAD - left; p.y += PAD - top; });
-    return { panels, hub, width, height, narrow: false, availableWidth, availableHeight };
+    const height = Math.max(240, ...heights.map(h => h ? h - 24 : 0)) + PAD * 2;
+    const width = (columns[0].length ? PANEL + GAP : 0) + (columns[1].length ? PANEL + GAP : 0) + HUB + PAD * 2;
+    const hub = { x: PAD + (panels.length ? PANEL + GAP : 0), y: (height - 116) / 2, width: HUB, height: 116 };
+    columns.forEach((column, side) => column.forEach(panel => {
+      panel.x = side ? hub.x + HUB + GAP : PAD;
+      panel.y += (height - (heights[side] - 24)) / 2;
+    }));
+    return { panels, hub, width, height, narrow: false };
   };
 
   const control = (action, glyph, label, extra = '') => `<button type="button" class="ob-button ob-button--icon" data-action="graph-${action}" aria-label="${esc(t('graph.' + label))}" title="${esc(t('graph.' + label))}"${extra}>${icon(glyph, 'lg')}</button>`;
@@ -73,25 +60,22 @@
 
   function canvasHtml(layout, state) {
     const { hub, panels, width, height } = layout;
-    const cx = hub.x + hub.width / 2, cy = hub.y + hub.diameter / 2;
     const edges = panels.map(p => {
-      const x = p.x + p.width / 2, y = p.y + p.diameter / 2;
-      // On phones each association curves around preceding bubbles to the same hub.
-      const path = layout.narrow ? `M${cx},${cy} C0,${cy} 0,${y} ${x},${y}` : `M${cx},${cy} L${x},${y}`;
-      return `<path class="ob-graph-line${state.selected?.group === p.group.key ? ' is-selected' : ''}" d="${path}"/>`;
+      if (layout.narrow) return `<path class="ob-graph-line${state.selected?.group === p.group.key ? ' is-selected' : ''}" d="M${hub.x},${hub.y + hub.height / 2} H8 V${p.y + p.height / 2} H${p.x}"/>`;
+      const fromX = p.side ? hub.x + hub.width : hub.x;
+      const toX = p.side ? p.x : p.x + p.width;
+      const midX = (fromX + toX) / 2;
+      return `<path class="ob-graph-line${state.selected?.group === p.group.key ? ' is-selected' : ''}" d="M${fromX},${hub.y + hub.height / 2} H${midX} V${p.y + p.height / 2} H${toX}"/>`;
     }).join('');
-    const center = `<div class="ob-graph-hub" title="${esc(current.entity.name)}" style="left:${hub.x}px;top:${hub.y}px;width:${hub.width}px;height:${hub.height}px"><div class="ob-graph-hub-orbit"><div class="ob-graph-hub-circle">${icon(data.kindDef(current.entity.kind).icon, '3xl')}</div></div><strong>${esc(current.entity.name)}</strong></div>`;
+    const center = `<div class="ob-graph-hub" title="${esc(current.entity.name)}" style="left:${hub.x}px;top:${hub.y}px;width:${hub.width}px;height:${hub.height}px">${icon(data.kindDef(current.entity.kind).icon, '2xl')}<strong>${esc(current.entity.name)}</strong><span>${esc(data.kindDef(current.entity.kind).singular)}</span></div>`;
     const cards = panels.map(p => {
-      const from = p.page * p.pageSize;
-      const items = p.group.items.slice(from, from + p.pageSize).map((item, i) => {
+      const from = p.page * PAGE_SIZE;
+      const items = p.group.items.slice(from, from + PAGE_SIZE).map((item, i) => {
         const selected = state.selected?.group === p.group.key && state.selected.index === from + i;
-        return `<button type="button" class="ob-graph-node${selected ? ' is-selected' : ''}" data-action="graph-node" data-group="${esc(p.group.key)}" data-index="${from + i}" aria-pressed="${selected}" title="${esc(item.name + (item.sub ? ' · ' + item.sub : ''))}">${icon(p.group.icon, '2xl')}<span>${esc(item.name)}</span></button>`;
+        return `<button type="button" class="ob-graph-node${selected ? ' is-selected' : ''}" data-action="graph-node" data-group="${esc(p.group.key)}" data-index="${from + i}" aria-pressed="${selected}" title="${esc(item.name + (item.sub ? ' · ' + item.sub : ''))}">${icon(p.group.icon)}<span>${esc(item.name)}</span></button>`;
       }).join('');
-      const pager = p.pages > 1 ? `<div class="ob-graph-group-pager"><span>${esc(t('graph.range', { from: from + 1, to: Math.min(from + p.pageSize, p.group.items.length), total: p.group.items.length }))}</span><button type="button" class="ob-button ob-button--icon" data-action="graph-page" data-group="${esc(p.group.key)}" data-page="${p.page - 1}" aria-label="${esc(t('graph.previous', { group: p.group.title }))}"${p.page === 0 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button><button type="button" class="ob-button ob-button--icon" data-action="graph-page" data-group="${esc(p.group.key)}" data-page="${p.page + 1}" aria-label="${esc(t('graph.next', { group: p.group.title }))}"${p.page === p.pages - 1 ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button></div>` : '';
-      return `<section class="ob-graph-group" data-group="${esc(p.group.key)}" aria-label="${esc(p.group.title)}" style="left:${p.x}px;top:${p.y}px;width:${p.width}px;height:${p.height}px;--ob-graph-bubble-size:${p.diameter}px;--ob-graph-grid-width:${p.gridWidth}px;--ob-graph-grid-height:${p.gridHeight}px">
-        <div class="ob-graph-bubble"><div class="ob-graph-bubble-inner"><div class="ob-graph-nodes">${items}</div></div><span class="ob-graph-count">${p.group.items.length}</span></div>
-        <h3 title="${esc(p.group.title)}">${esc(p.group.title)}</h3>${pager}</section>`;
-
+      const pager = p.pages > 1 ? `<div class="ob-graph-group-pager"><span>${esc(t('graph.range', { from: from + 1, to: Math.min(from + PAGE_SIZE, p.group.items.length), total: p.group.items.length }))}</span><button type="button" class="ob-button ob-button--icon" data-action="graph-page" data-group="${esc(p.group.key)}" data-page="${p.page - 1}" aria-label="${esc(t('graph.previous', { group: p.group.title }))}"${p.page === 0 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button><button type="button" class="ob-button ob-button--icon" data-action="graph-page" data-group="${esc(p.group.key)}" data-page="${p.page + 1}" aria-label="${esc(t('graph.next', { group: p.group.title }))}"${p.page === p.pages - 1 ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button></div>` : '';
+      return `<section class="ob-graph-group" data-group="${esc(p.group.key)}" style="left:${p.x}px;top:${p.y}px;width:${p.width}px;height:${p.height}px"><h3>${icon(p.group.icon)}<span>${esc(p.group.title)}</span><span class="ob-graph-count">${p.group.items.length}</span></h3><div class="ob-graph-nodes">${items}</div>${pager}</section>`;
     }).join('');
     return `<svg class="ob-graph-svg" width="${width}" height="${height}" aria-hidden="true">${edges}</svg>${center}${cards}`;
   }
@@ -99,11 +83,9 @@
   function draw() {
     if (!current || !$('graph-canvas')) return;
     const { state, entity } = current;
-    current.layout = graph.layout(entity, state, $('graph').clientWidth < 640, $('graph').clientWidth, $('graph').clientHeight);
+    current.layout = graph.layout(entity, state, $('graph').clientWidth < 640, $('graph').clientWidth);
     const canvas = $('graph-canvas');
     canvas.dataset.narrow = String(current.layout.narrow);
-    const metrics = { 'node-width': NODE_WIDTH, 'node-height': NODE_HEIGHT, 'node-gap': NODE_GAP, halo: HALO, 'hub-size': HUB_SIZE, 'label-height': LABEL_HEIGHT, 'label-gap': LABEL_GAP, 'pager-height': PAGER_HEIGHT };
-    Object.entries(metrics).forEach(([key, value]) => canvas.style.setProperty('--ob-graph-' + key, value + 'px'));
     canvas.style.width = current.layout.width + 'px'; canvas.style.height = current.layout.height + 'px';
     canvas.innerHTML = canvasHtml(current.layout, state);
     selection();
@@ -130,7 +112,7 @@
   function fit() {
     if (!current || !$('graph')?.clientWidth) return;
     const viewport = $('graph'), g = current.state, layout = current.layout;
-    g.zoom = Math.max(0.15, Math.min(1, (viewport.clientWidth - (layout.narrow ? 0 : 32)) / layout.width, layout.narrow ? 1 : (viewport.clientHeight - 32) / layout.height));
+    g.zoom = Math.max(0.15, Math.min(1, (viewport.clientWidth - 32) / layout.width, layout.narrow ? 1 : (viewport.clientHeight - 32) / layout.height));
     g.x = (viewport.clientWidth - layout.width * g.zoom) / 2;
     g.y = layout.narrow ? 16 : (viewport.clientHeight - layout.height * g.zoom) / 2;
     g.autoFit = true; transform();
@@ -149,7 +131,7 @@
     const shell = $('graph-shell');
     // CSS owns the minimum height and bottom spacing; JS supplies viewport geometry.
     if (!fullscreen) shell.style.height = `calc(${window.innerHeight - Math.max(0, shell.getBoundingClientRect().top)}px - var(--ob-space-default))`;
-    if (current.layout.availableWidth !== $('graph').clientWidth || current.layout.availableHeight !== $('graph').clientHeight) { draw(); current.state.autoFit = true; }
+    if (current.layout.narrow !== ($('graph').clientWidth < 640) || (current.layout.narrow && current.layout.availableWidth !== $('graph').clientWidth)) { draw(); current.state.autoFit = true; }
     if (current.state.autoFit) fit();
   };
   graph.mount = function (entity, state) {

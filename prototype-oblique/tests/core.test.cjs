@@ -158,14 +158,14 @@ test('sorting is stable, numeric-aware and keeps missing values last in both dir
   assert.equal(rows[0].id, 1);
 });
 
-test('relationship panels never overlap and large groups have bounded, paged layouts', async () => {
+test('relationship bubbles and captions never overlap and large groups have bounded, paged layouts', async () => {
   const { data, graph } = await loaded();
   const verify = layout => {
     const boxes = [layout.hub, ...layout.panels];
     for (const a of boxes) {
       assert(a.x >= 0 && a.y >= 0 && a.x + a.width <= layout.width && a.y + a.height <= layout.height);
       for (const b of boxes) if (a !== b) {
-        assert(a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y, 'overlapping diagram panels');
+        assert(a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y, 'overlapping bubbles or captions');
       }
     }
   };
@@ -178,9 +178,16 @@ test('relationship panels never overlap and large groups have bounded, paged lay
   data.relations = () => groups.map(g => ({ ...g, items: Array.from({ length: 1000 }, () => g.items[0]) }));
   const layout = graph.layout(entity, { pages: { [groups[0].key]: 999 } });
   verify(layout);
-  assert(layout.height < 1000, 'graph grew with every individual relationship');
   assert.equal(layout.panels[0].page, 166);
   assert.equal(layout.panels[0].pages, 167);
+  data.relations = () => groups.map(g => ({ ...g, items: Array.from({ length: 10000 }, () => g.items[0]) }));
+  const larger = graph.layout(entity);
+  assert.equal(larger.width, layout.width, 'orbit width must not grow with paged entries');
+  assert.equal(larger.height, layout.height, 'orbit height must not grow with paged entries');
+  const phone = graph.layout(entity, {}, true, 356);
+  verify(phone);
+  assert(phone.width <= 356, 'phone bubbles must fit at readable scale');
+  assert.equal(phone.panels[0].pageSize, 3);
   data.relations = () => [];
   verify(graph.layout(entity));
 });

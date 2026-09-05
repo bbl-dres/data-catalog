@@ -392,6 +392,13 @@
     return 0;
   };
   data.match = (e, q) => data.relevance(e, q) > 0;
+  /** Collection filtering includes visible table metadata and container names, without changing sort order. */
+  data.matchesCollection = function (kind, e, query) {
+    const q = (query || '').trim();
+    if (!q || data.match(e, q)) return true;
+    const values = [e.identifier, ...data.cols(kind, e), data.statusOf(kind, e), data.domainForEntity(kind, e)?.name, data.sysOf(e.system)?.name];
+    return values.some(value => value != null && find(String(value), q));
+  };
   /** One result group: items by relevance, then shorter names first, then alphabetical. */
   const resultGroup = (kind, q, limit) => {
     const ranked = data.list(kind).map(e => ({ e, score: data.relevance(e, q) })).filter(x => x.score > 0)
