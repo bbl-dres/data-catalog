@@ -6,7 +6,7 @@
    #/objects/gebaeude                  detail            ?tab=overview|rows|relations|history&page=n
    #/objects/gebaeude/attributes/egid  attribute detail
    #/tables/t-gwr-gebaeude/fields/EGID field detail
-   #/search?q=…                        search results
+   #/search?q=…&page=2&size=20&sort=name search results (relevance by default)
    #/manual?ch=<chapter>               handbook
    #/api                               API documentation
    Any route accepts ?nav=entity|container to override the tree model. */

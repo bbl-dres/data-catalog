@@ -150,6 +150,11 @@
       ctx.columns = data.columns(ctx.kind);
     }
 
+    if (route.view === 'search') {
+      ctx.searchGroups = DK.search.results((route.params.q || '').trim(), state.searchOptions);
+      ctx.searchPage = DK.search.page(ctx.searchGroups, (route.params.q || '').trim(), route.params);
+    }
+
     // title
     const e = route.entity;
     const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.name };
@@ -454,24 +459,28 @@
     }).join('')}</div>`;
   };
 
-  /** Search results: groups and rows in relevance order (data.search); a column sort chosen by the user overrides the row order. */
+  /** A single globally ordered result table, with the same pager as detail tables. */
   views.searchResults = function (ctx) {
     const q = (ctx.route.params.q || '').trim();
     if (!DK.search.selectedDomains(ctx.state.searchOptions).length) return ui.empty(t('search.domains.none'), `<button type="button" class="ob-button" data-action="search-domains-all">${esc(t('search.domains.selectAll'))}</button>`);
     if (!DK.search.selectedKinds(ctx.state.searchOptions).length) return ui.empty(t('search.scope.none'), `<button type="button" class="ob-button" data-action="search-types-all">${esc(t('search.scope.selectAll'))}</button>`);
-    const groups = DK.search.results(q, ctx.state.searchOptions);
-    const total = groups.reduce((n, g) => n + g.items.length, 0);
-    const summary = `<p class="ob-view-description ob-search-summary" role="status">${esc(t(total === 1 ? 'search.summaryOne' : 'search.summary', { n: total, q }))}</p>` + views.searchAnswer(q, ctx.state.searchOptions, groups);
-    if (!groups.length) return summary + ui.empty(t('search.none'), esc(t('search.noneHint')));
-    return summary + `<div class="ob-search-groups">${groups.map(g => {
-      const columns = data.searchColumns(g.kind);
-      const options = ui.tableOptions(ctx.state, `search:${g.kind}`);
-      const items = ui.sortRows(g.items, options.sort, e => rowValues(g.kind, e, false));
-      return `<div>
-        <div class="ob-search-group-head">${icon(g.icon, 'lg')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></div>
-        ${ui.table(columns, items.map(e => views.row(g.kind, e, columns, false, q, routeNav(ctx.route))).join(''), options)}
-      </div>`;
-    }).join('')}</div>`;
+    const paging = ctx.searchPage, total = paging.total;
+    const answer = views.searchAnswer(q, ctx.state.searchOptions, ctx.searchGroups);
+    if (!total) return answer + ui.empty(t('search.none'), esc(t('search.noneHint')));
+    const columns = data.searchColumns();
+    const rows = paging.items.map(({ kind, e }) => {
+      const name = data.displayName(kind, e), href = router.entityHref(kind, e.identifier, routeNav(ctx.route));
+      const status = data.statusOf(kind, e);
+      return ui.tr([
+        ui.entityLink(href, name, ui.highlight(name, q)),
+        esc(data.kindDef(kind).singular),
+        ui.highlight(data.cols(kind, e)[0] || '–', q),
+        { html: `<span class="ob-clamp-2">${ui.highlight(e.description, q)}</span>`, cls: 'ob-cell-muted' },
+        status ? ui.chip(status, data.statusTone(status)) : '',
+      ], href, columns);
+    }).join('');
+    const sorting = `<label class="ob-search-sort" for="search-sort"><span>${esc(t('sort.label'))}</span><select id="search-sort" class="ob-select ob-select--comfortable" data-action="set-search-sort">${DK.search.sorts.map(sort => `<option value="${sort}"${sort === paging.sort ? ' selected' : ''}>${esc(t('search.sort.' + sort))}</option>`).join('')}</select></label>`;
+    return answer + `<section id="search-page" tabindex="-1" aria-label="${esc(t('search.results'))}"><div class="ob-search-result-controls">${ui.pageRange(paging, true)}${sorting}</div>${ui.table(columns, rows)}${ui.pager(paging, false, { showRange: false })}</section>`;
   };
 
   views.notFound = () => ui.empty(t('notfound.title'), `${esc(t('notfound.text'))}<p class="ob-empty-action"><a href="#/">${esc(t('notfound.link'))}</a></p>`);

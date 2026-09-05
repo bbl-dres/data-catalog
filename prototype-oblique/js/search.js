@@ -67,6 +67,24 @@
   };
   search.suggest = (query, options) => search.results(query, options).map(g => ({ ...g, items: g.items.slice(0, 4) }));
 
+  search.sorts = Object.freeze(['relevance', 'name', 'modified']);
+
+  /** Rank every match together before slicing. Types never partition the result order. */
+  search.page = function (groups, query, params = {}) {
+    const sort = search.sorts.includes(params.sort) ? params.sort : 'relevance';
+    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+    const items = groups.flatMap(g => g.items.map(e => ({ kind: g.kind, e, score: score(e, query) })));
+    items.sort((a, b) => {
+      let primary = 0;
+      if (sort === 'modified') primary = String(b.e.modified || '').localeCompare(String(a.e.modified || ''));
+      else if (sort === 'relevance') primary = b.score - a.score || a.e.name.length - b.e.name.length;
+      return primary || collator.compare(data.displayName(a.kind, a.e), data.displayName(b.kind, b.e))
+        || search.kinds().indexOf(a.kind) - search.kinds().indexOf(b.kind) || a.e.identifier.localeCompare(b.e.identifier);
+    });
+    const paging = DK.ui.pageState(items.length, params, [20, 50, 100]);
+    return { ...paging, sort, items: items.slice(Math.max(0, paging.from - 1), paging.to) };
+  };
+
   /** A few answerable examples for an empty combobox, constrained by its current scope. */
   search.examples = options => [
     { query: DK.ui.t('search.example.gwr'), type: 'question' },

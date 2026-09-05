@@ -180,6 +180,7 @@
     if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
+    normalizeSearchPage();
     // Snapshot resolved defaults in this history entry. Back must restore this
     // page's layout/grouping, even after another collection changes the preference.
     if (navigated && ctx.isList) {
@@ -396,6 +397,28 @@
   }
 
   /* ---- search ---------------------------------------------------------------- */
+  function normalizeSearchPage() {
+    if (!ctx.searchPage) return;
+    const { page, size, sizes, sort } = ctx.searchPage;
+    router.replaceParams({ page: page === 1 ? null : page, size: size === sizes[0] ? null : size, sort: sort === 'relevance' ? null : sort });
+    route = resolveRoute(); ctx.route = route;
+  }
+  function renderSearchResults() {
+    route = resolveRoute();
+    ctx = views.context(route, state);
+    normalizeSearchPage();
+    replaceHtml($('search-results-panel'), views.searchResults(ctx));
+    observeTables();
+  }
+  function setSearchPage(patch) {
+    // A page change is a history entry, while retaining the form's unsubmitted edits.
+    const hash = router.build(route.path, { ...route.params, ...patch });
+    if (hash !== location.hash) history.pushState(null, '', hash);
+    renderSearchResults();
+    const results = $('search-page');
+    results?.focus({ preventScroll: true });
+    results?.scrollIntoView({ block: 'start' });
+  }
   function renderSearchOptions() {
     const host = $('search-options-host');
     if (host) replaceHtml(host, views.searchOptions(state));
@@ -403,15 +426,10 @@
   function updateSearchOptions(patch, focusId) {
     state.searchOptions = { ...state.searchOptions, ...patch };
     state.suggest = false; state.suggestIdx = -1;
-    if (['home', 'search'].includes(route.view)) router.replaceParams(DK.search.params(state.searchOptions));
+    if (['home', 'search'].includes(route.view)) router.replaceParams({ ...DK.search.params(state.searchOptions), ...(patch.kinds || patch.domains ? { page: null } : {}) });
     renderSearchOptions();
     renderSuggest();
-    if (route.view === 'search') {
-      route = resolveRoute();
-      ctx = views.context(route, state);
-      $('search-results-panel').innerHTML = views.searchResults(ctx);
-      observeTables();
-    }
+    if (route.view === 'search') renderSearchResults();
     if (focusId) $(focusId)?.focus({ preventScroll: true });
   }
   /** Update only results: keeping the input node preserves focus, selection and IME composition. */
@@ -445,7 +463,7 @@
     const q = state.query.trim();
     if (!DK.search.canSubmit(q, state.searchOptions)) return;
     state.suggest = false; state.suggestIdx = -1;
-    router.navigate(router.searchHref(q, DK.search.params(state.searchOptions)));
+    router.navigate(router.searchHref(q, { ...DK.search.params(state.searchOptions), ...(route.view === 'search' ? { size: route.params.size, sort: route.params.sort, nav: route.params.nav } : {}) }));
   }
   function pickSuggestion(item) {
     if (item.query) {
@@ -616,7 +634,7 @@
         const current = state.tableSorts[sortKey] || (headerDirection ? { column, direction: headerDirection === 'ascending' ? 'asc' : 'desc' } : null);
         const direction = current && current.column === column && current.direction === 'asc' ? 'desc' : 'asc';
         state.tableSorts[sortKey] = { column, direction };
-        if (route.view === 'detail' && route.params.page) router.replaceParams({ page: null });
+        if (['detail', 'search'].includes(route.view) && route.params.page) router.replaceParams({ page: null });
         app.render();
         return;
       }
@@ -644,6 +662,7 @@
         return;
       }
       case 'set-page':
+        if (route.view === 'search') { setSearchPage({ page: el.dataset.page === '1' ? null : el.dataset.page }); return; }
         router.replaceParams({ page: el.dataset.page === '1' ? null : el.dataset.page }); app.render();
         document.querySelector('.ob-detail-rows')?.scrollIntoView({ block: 'start' }); return;
       case 'toggle-relation-view': state.relationDiagram = !state.relationDiagram; app.render(); return;
@@ -815,14 +834,20 @@
         return;
       }
       if (e.target.id === 'search-ai') { updateSearchOptions({ ai: e.target.checked }); return; }
+      if (e.target.matches('[data-action="set-search-sort"]')) {
+        setSearchPage({ sort: e.target.value === 'relevance' ? null : e.target.value, page: null });
+        $('search-sort')?.focus({ preventScroll: true });
+        return;
+      }
       if (e.target.matches('[data-action="set-page-size"]')) {
+        if (route.view === 'search') { setSearchPage({ size: e.target.value === '20' ? null : e.target.value, page: null }); return; }
         router.replaceParams({ size: e.target.value === '50' ? null : e.target.value, page: null });
         app.render();
       }
       if (e.target.matches('[data-action="sort-cards"]') && e.target.value) {
         const [column, direction] = e.target.value.split(':');
         state.tableSorts[e.target.dataset.sortKey] = { column: Number(column), direction };
-        if (route.view === 'detail') router.replaceParams({ page: null });
+        if (['detail', 'search'].includes(route.view)) router.replaceParams({ page: null });
         app.render();
       }
     });

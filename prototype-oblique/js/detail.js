@@ -6,8 +6,6 @@
   const ui = DK.ui, data = DK.data, router = DK.router;
   const t = ui.t, esc = ui.esc, icon = ui.icon, fmt = ui.fmtDate;
   const detail = {};
-  const PAGE_SIZES = [50, 100, 200];
-  detail.pageSize = route => PAGE_SIZES.includes(Number(route.params.size)) ? Number(route.params.size) : 50;
 
   detail.rowsLabel = e => data.kindDef(e.kind).rows;
 
@@ -202,25 +200,10 @@
     if (!rd.rows.length) return ui.empty(t('detail.noRows', { what: detail.rowsLabel(e) }));
     const options = ui.tableOptions(state, `detail:${e.kind}:rows`);
     const ordered = ui.sortRows(rd.rows, options.sort, row => row.text);
-    const pageSize = detail.pageSize(route);
-    const pages = Math.max(1, Math.ceil(ordered.length / pageSize));
-    const page = Math.min(pages, Math.max(1, parseInt(route.params.page, 10) || 1));
-    const slice = ordered.slice((page - 1) * pageSize, page * pageSize);
+    const paging = ui.pageState(ordered.length, route.params);
+    const slice = ordered.slice(paging.from - 1, paging.to);
     const rows = slice.map(r => ui.tr(r.cells, r.href, rd.columns)).join('');
-    const pager = `<div class="ob-pager">
-      <span class="ob-pager-current" aria-current="page">${page}</span>
-      <span>${esc(pages === 1 ? t('detail.page', { n: pages }) : t('detail.pagePlural', { n: pages }))}</span>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
-      <label class="ob-page-size">${esc(t('detail.pageSize'))}<select class="ob-select" data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${PAGE_SIZES.map(n => `<option value="${n}"${n === pageSize ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
-      <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
-    </div>`;
-    const topPager = pages > 1 ? `<nav class="ob-pager ob-pager--top" aria-label="${esc(t('detail.pagination'))}">
-      <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev-top"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
-      <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next-top"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
-    </nav>` : '';
-    return `<div class="ob-detail-rows">${topPager}${ui.table(rd.columns, rows, options)}${pager}</div>`;
+    return `<div class="ob-detail-rows">${ui.pager(paging, true)}${ui.table(rd.columns, rows, options)}${ui.pager(paging)}</div>`;
   };
 
   /* ---- Beziehungen: shared table and interactive diagram ------------------ */

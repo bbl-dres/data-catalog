@@ -14,6 +14,22 @@ The search disclosure in `service-portal/js/search/search-ui.js` informed this i
 - Home and search results render the same prominent form. Results prefill it from the decoded `q` URL parameter on entry, reload and Back/Forward. Editing or clearing keeps the last submitted results until a new search; submission retains the selected domains, types and AI preference. The header magnifier reveals and focuses the page form instead of opening a duplicate field.
 - The AI-answer box occupies the same available width as the result tables below. The input and filter panel retain their shared hero-form width and responsive controls.
 
+## One result table and global pagination
+
+Search results use one table with **Name, Typ, Kontext, Beschreibung, Status**. Grouping the results by type could place weak matches in the first group above stronger matches in later groups. Type and domain filters already provide that narrowing, so result types now appear together in one ordered list. The context column retains the metadata previously supplied by each type's table (for example, a system, responsibility or access information). Suggestions retain their compact type groups.
+
+**Sortierung** defaults to **Relevanz** across all matching records, regardless of type. **Name A–Z** and **Zuletzt geändert** are explicit alternatives; sorting applies before pagination. Equal-ranked records have deterministic name/type/identifier tie breakers. Records without a modification date appear last when sorting by date. The separate sort control also works when the table adapts into mobile cards; there is no competing per-column sort.
+
+The default is **20 results per page**, with **50** and **100** available. Above the table, the global result range appears beside the sort control, without navigation arrows. The pager below the table displays the current page and previous/next on the left, with page size on the right; it does not repeat the range. Empty results omit pagination; a single page disables previous/next. Search and detail tables share `ui.pageState()` and `ui.pager()`; detail tables retain their existing range display and 50/100/200 options.
+
+The URL owns `page`, `size` and `sort`. Page 1, size 20 and relevance are omitted as defaults. Invalid sizes/sort modes fall back to those defaults; invalid page numbers become page 1, and page numbers beyond the final page are clamped. Pagination, page-size and sort changes create history entries, so reload and Back/Forward restore the same selection. New queries, type/domain changes, sort changes and page-size changes start at page 1; new queries retain the selected size and sort. Changing AI visibility keeps the current result page. Paging preserves unsubmitted search edits and moves focus/scroll to the start of the results, including when using the bottom pager.
+
+The result range is the only count display; there is no separate line repeating the query and total above the AI answer. The total in that range and the AI answer always use the complete filtered matching set. They do not change merely because the user changes the page or sort order. The answer remains aligned with the table width.
+
+This is client-side pagination of the prototype's existing in-memory catalog. It bounds rendered rows; it does not reduce fixture loading or replace retrieval with a server API. A future backend should accept the same query, filters, sort and page settings and return a total plus one ordered result page.
+
+Core checks cover global ranking across types, complete page traversal without missing/duplicate records, both alternative sorts, invalid parameters, empty sets and unchanged input data. Browser checks cover real GWR results at desktop and phone widths, keyboard paging, history/reload, filters, sorting, size changes, empty results, stable answer sources and responsive controls.
+
 ## Learning dropdown
 
 Like `service-portal/js/search/search-suggest.js`, the empty focused search field offers examples. There are four: **Was ist GWR?**, **Gebäude**, **Energieverbrauch**, and **Bauprojekt**. The question demonstrates natural-language input; the other examples demonstrate keyword searches. Examples appear in the shared combobox on home, results and header search, without persistent links below the field or an automatic popup on page load.
@@ -31,13 +47,14 @@ The question and teaching labels follow the UI language. Keyword examples retain
 #/search?q=GWR&types=tables
 #/search?q=Was+ist+ein+Gebäude%3F&types=objects,tables
 #/search?q=Energie&domains=energie,projekt&types=products,tables
+#/search?q=GWR&page=2&size=50&sort=name
 ```
 
 Option changes replace the current URL without adding history entries for each checkbox. Submitting creates a results navigation. Reloading or returning to a results URL restores its options. Opening the plain home URL resets defaults. Result filtering uses the submitted URL query, independently of unfinished edits in the search field.
 
 ## Implementation and limits
 
-`js/search.js` owns option normalization, serialization, scoped retrieval and the answer demo. `data.search()` supplies the existing keyword ranking. `app.js` refreshes the options and results without replacing the input.
+`js/search.js` owns option normalization, serialization, scoped retrieval, global ordering/pagination and the answer demo. `data.search()` supplies keyword matching and grouped suggestions; `search.page()` orders matching records across types before slicing. `app.js` refreshes the options and results without replacing the input.
 
 Simple questions can fall back to significant words when the literal query finds nothing. Every remaining term must match the same record. This is lexical matching, not semantic search. Disabling answers does not change retrieval. Embedded attributes and fields are not new search categories in this change.
 

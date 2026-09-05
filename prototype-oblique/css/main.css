@@ -451,6 +451,7 @@ button.ob-tree-link { width: 100%; }
 }
 .ob-pager .ob-button--pager:first-of-type { margin-left: var(--ob-space-sm); }
 .ob-page-size { display: flex; align-items: center; gap: var(--ob-space-sm); }
+.ob-pager--no-range .ob-page-size { margin-left: auto; }
 .ob-pager-range { margin-left: auto; font-size: var(--ob-font-size-sm); }
 .ob-pager--top { margin: 0 0 var(--ob-space-md); }
 .ob-pager--top .ob-pager-range { margin-right: auto; margin-left: 0; }
@@ -538,11 +539,10 @@ button.ob-tree-link { width: 100%; }
 .ob-relations-view.is-diagram .ob-relations-diagram { display: block; }
 
 /* ---- Search results -------------------------------------------------------- */
-.ob-search-summary { margin: 0 0 var(--ob-space-lg); }
-.ob-search-groups { display: flex; flex-direction: column; gap: var(--ob-space-xl); }
-.ob-search-group-head { display: flex; align-items: center; gap: var(--ob-space-sm); padding-bottom: var(--ob-space-sm); }
-.ob-search-group-head .ob-icon { color: var(--ob-color-text-secondary); }
-.ob-search-group-head .ob-group-title { font-size: var(--ob-font-size-lg); }
+.ob-search-result-controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-md) var(--ob-space-lg); margin-bottom: var(--ob-space-md); }
+.ob-search-result-controls .ob-pager-range { margin: 0; }
+.ob-search-sort { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); margin-left: auto; }
+.ob-search-sort .ob-select { max-width: 100%; }
 
 /* ---- Manual --------------------------------------------------------------- */
 .ob-manual-content { min-width: 0; max-width: var(--ob-manual-max-width); }

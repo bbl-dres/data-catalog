@@ -274,11 +274,11 @@
       default: return [c('col.name', '26%'), c('col.source', '20%'), c('col.description'), compact('col.values', true), compact('col.status')];
     }
   };
-  /** Search result columns: the list columns without the count column. */
-  data.searchColumns = function (kind) {
-    const cols = data.columns(kind);
-    return [{ label: t('col.name'), width: '28%' }, { label: cols[1].label, width: '22%' }, { label: t('col.description') }, { ...cols[4] }];
-  };
+  /** One result schema for every searchable type; context retains its section metadata. */
+  data.searchColumns = () => [
+    { label: t('col.name'), width: '25%' }, { label: t('col.type'), width: '11rem' },
+    { label: t('search.context'), width: '18%' }, { label: t('col.description') }, { label: t('col.status'), compact: true },
+  ];
 
   /* ---- grouping ---------------------------------------------------------- */
   const GROUP_IDS = {

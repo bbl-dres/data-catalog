@@ -29,6 +29,43 @@ async function loaded(change) {
   return dk;
 }
 
+test('search ranks across types before global pagination, with stable ordering and validated URL values', async () => {
+  const { search, ui, data } = await loaded();
+  const groups = ['objects', 'tables', 'refs'].map((kind, k) => ({ kind, items: Array.from({ length: 21 }, (_, n) => ({
+    identifier: `${kind}-${n}`, technicalName: `ROW_${n}`, name: n === 0 ? 'Needle' : `Record ${k * 21 + n}`, description: 'Needle in description',
+    modified: n === 1 ? '2026-09-05' : n === 2 ? undefined : '2024-01-01',
+  })) }));
+  const original = JSON.stringify(groups);
+  const full = search.page(groups, 'Needle', { size: 100 });
+  assert.equal(full.total, 63);
+  assert.equal(full.items.slice(0, 3).map(x => x.kind).sort().join(','), 'objects,refs,tables', 'all exact matches precede weaker hits, regardless of type');
+  assert.ok(full.items.slice(0, 3).every(x => x.score === 100));
+  const key = x => `${x.kind}:${x.e.identifier}`;
+  const visited = [];
+  for (let page = 1; page <= 4; page++) {
+    const result = search.page(groups, 'Needle', { page });
+    assert.equal(result.size, 20);
+    assert.equal(result.items.length, page < 4 ? 20 : 3);
+    visited.push(...result.items.map(key));
+  }
+  assert.equal(visited.join(','), full.items.map(key).join(','), 'pages neither skip nor repeat records');
+  assert.equal(new Set(visited).size, 63);
+  assert.equal(search.page(groups, 'Needle', { page: '999' }).page, 4);
+  for (const page of ['-1', '0', '1.5', '2oops', 'Infinity']) assert.equal(search.page(groups, 'Needle', { page }).page, 1);
+  assert.equal(search.page(groups, 'Needle', { size: '999', sort: 'unknown' }).size, 20);
+  assert.equal(search.page(groups, 'Needle', { sort: 'unknown' }).sort, 'relevance');
+  const names = search.page(groups, 'Needle', { sort: 'name', size: 100 }).items.map(x => data.displayName(x.kind, x.e));
+  assert.equal(names.join(','), names.slice().sort(new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' }).compare).join(','));
+  const dates = search.page(groups, 'Needle', { sort: 'modified', size: 100 }).items.map(x => x.e.modified || '');
+  assert.equal(dates.join(','), dates.slice().sort().reverse().join(','));
+  assert.equal(JSON.stringify(groups), original, 'sorting never mutates retrieval results');
+  const empty = search.page([], 'Needle', { page: 20 });
+  assert.equal(empty.page, 1); assert.equal(empty.from, 0); assert.equal(empty.to, 0);
+  assert.equal(ui.pager(empty), '');
+  assert.equal(ui.pageState(119, {}).size, 50, 'detail table default stays 50');
+  assert.equal(ui.pageState(119, { size: 200 }).size, 200, 'detail table options stay available');
+});
+
 test('domain profiles contain the same members as the tree, including copied records', async () => {
   const { data, detail } = await loaded();
   const domain = { ...data.domainOf('bau'), kind: 'domains' };

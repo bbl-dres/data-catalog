@@ -56,6 +56,30 @@
     return `<span class="${ui.esc(`ob-icon ob-icon-${name}${size ? ' ob-icon--' + size : ''}${cls ? ' ' + cls : ''}`)}" aria-hidden="true"></span>`;
   };
 
+  /** Shared pagination state. Validate URL values before slicing any result set. */
+  ui.pageState = function (total, params = {}, sizes = [50, 100, 200]) {
+    const size = sizes.includes(Number(params.size)) ? Number(params.size) : sizes[0];
+    const pages = Math.max(1, Math.ceil(total / size));
+    const requested = Number(params.page);
+    const page = Math.min(pages, Number.isSafeInteger(requested) && requested > 0 ? requested : 1);
+    return { total, size, sizes, pages, page, from: total ? (page - 1) * size + 1 : 0, to: Math.min(page * size, total) };
+  };
+
+  ui.pageRange = ({ from, to, total }, announce = false) => `<span class="ob-pager-range"${announce ? ' role="status"' : ''}>${ui.esc(ui.t('detail.rowRange', { from, to, total }))}</span>`;
+
+  /** Search can display its range separately above the table. */
+  ui.pager = function (paging, top = false, { showRange = true } = {}) {
+    const { total, size, sizes, pages, page } = paging;
+    if (!total || (top && pages === 1)) return '';
+    const t = ui.t, esc = ui.esc;
+    const range = showRange ? ui.pageRange(paging, top || pages === 1) : '';
+    const buttons = [['prev', page - 1, page <= 1, 'left'], ['next', page + 1, page >= pages, 'right']].map(([key, target, disabled, icon]) =>
+      `<button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.' + key))}" data-action="set-page" data-page="${target}" data-focus="page-${key}${top ? '-top' : ''}"${disabled ? ' disabled' : ''}>${ui.icon('chevron_' + icon, 'sm')}</button>`).join('');
+    return `<nav class="ob-pager${top ? ' ob-pager--top' : ''}${showRange ? '' : ' ob-pager--no-range'}" aria-label="${esc(t('detail.pagination'))}">${top ? range :
+      `<span class="ob-pager-current" aria-current="page">${page}</span><span>${esc(t(pages === 1 ? 'detail.page' : 'detail.pagePlural', { n: pages }))}</span>`}${buttons}${top ? '' :
+      `<label class="ob-page-size">${esc(t('detail.pageSize'))}<select class="ob-select" data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${sizes.map(n => `<option value="${n}"${n === size ? ' selected' : ''}>${n}</option>`).join('')}</select></label>${range}`}</nav>`;
+  };
+
   /** Pill chip. tone: success|warning|error|info|neutral */
   ui.chip = function (label, tone) {
     return `<span class="ob-chip ob-chip--${ui.esc(tone || 'neutral')}">${ui.esc(label)}</span>`;
