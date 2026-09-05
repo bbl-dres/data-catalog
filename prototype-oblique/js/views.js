@@ -1,6 +1,4 @@
-/* views.js – HTML rendering for header, navigation, tree, toolbar, home,
-   section lists, search results, handbook and API page.
-   Pure functions: (route, state) → html string. Detail pages live in detail.js. */
+/* Page context and HTML composition. Events belong to app.js. */
 (function (DK) {
   'use strict';
 
@@ -10,7 +8,7 @@
   const routeNav = route => route.params.nav ? { nav: data.navModel() } : undefined;
   views.hasPageSearch = route => ['home', 'search'].includes(route?.view);
 
-  /* ---- header, nav, footer ------------------------------------------------ */
+  /* header, nav, footer */
   views.headerTools = function (state, route) {
     const cfg = data.config;
     const formId = views.hasPageSearch(route) ? (route.view === 'home' ? 'home-search' : 'results-search') : null;
@@ -80,7 +78,7 @@
     return `<div class="ob-footer-inner"><ul class="ob-footer-links">${links}</ul><span class="ob-footer-meta">${esc(t('footer.version', { v: cfg.app.version }))} · ${esc(cfg.app.footerNote)}</span></div>`;
   };
 
-  /* ---- page chrome --------------------------------------------------------- */
+  /* page chrome */
   views.breadcrumb = function (crumbs) {
     const items = crumbs.map((c, i) => {
       const last = i === crumbs.length - 1;
@@ -99,7 +97,7 @@
     </aside></div>`;
     const manual = route.view === 'manual';
     const title = t(manual ? 'manual.title' : 'tree.title');
-    const tree = manual ? views.chapterTree(state) : views.tree(route, state);
+    const tree = manual ? DK.manual.tree(state) : views.tree(route, state);
     const railItems = manual
       ? [{ key: 'manual', label: title, icon: 'file_list', active: true }]
       : [{ key: 'home', label: t('tree.overview'), icon: 'home', href: '#/', active: route.view === 'home' }, ...data.sections().map(kind => ({ key: kind, label: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, active: state.treeSection === kind && route.view !== 'home' }))];
@@ -117,7 +115,7 @@
     </aside>${state.sidebarCollapsed ? '' : `<div id="sidebar-resizer" class="ob-sidebar-resizer" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="navigation-panel page-content" aria-label="${esc(t('navigation.resize'))}" title="${esc(t('navigation.resizeHelp'))}"></div>`}</div>`;
   };
 
-  /* ---- context: everything the page composition needs -------------------- */
+  /* context: everything the page composition needs */
   views.context = function (route, state) {
     const kinds = data.model.kinds;
     const isDomain = route.view === 'detail' && route.entity?.kind === 'domains';
@@ -155,13 +153,12 @@
       ctx.searchPage = DK.search.page(ctx.searchGroups, (route.params.q || '').trim(), route.params);
     }
 
-    // title
     const e = route.entity;
     const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.name };
     ctx.title = (titles[route.view] || (() => t('notfound.title')))();
     if (ctx.domain && !isDomain) ctx.title += ' – ' + ctx.domain.name;
 
-    // breadcrumbs: Startseite › section › container › entity. The home page is the root itself.
+    // Breadcrumbs follow section, container and entity; home is the root.
     const crumbs = [{ label: t('nav.home'), href: '#/' }];
     if (route.view === 'detail') {
       const container = data.navModel() === 'container';
@@ -196,7 +193,6 @@
     }
     ctx.crumbs = crumbs;
 
-    // actions menu
     const A = (id, label) => ({ id, label });
     if (route.view === 'detail' && !ctx.isList) {
       if (e.kind === 'attrs' || e.kind === 'fields' || e.kind === 'apis') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf'))];
@@ -210,7 +206,7 @@
     return ctx;
   };
 
-  /* ---- toolbar ---------------------------------------------------------------- */
+  /* toolbar */
   /** Suggestion listbox. Options are numbered in listbox order; the "all results" row comes last. */
   views.suggest = function (state) {
     const q = state.query.trim();
@@ -269,7 +265,7 @@
   views.collectionStatus = ctx => t('collection.search.count', { n: ctx.matched, total: ctx.total });
   views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : `<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${esc(views.collectionStatus(ctx))}</p>`}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${ctx.mode === 'overview' ? DK.detail.overview(ctx.entity, ctx.state) : views.list(ctx)}</div>`;
 
-  /** One shared combobox, placed in the home hero or the header on other routes. */
+  /** One combobox for home, results and the expandable header. */
   views.searchField = function (state, home = false) {
     const q = state.query;
     const open = state.suggest && DK.search.canSuggest(q, state.searchOptions);
@@ -323,7 +319,7 @@
     </section>`;
   };
 
-  /* ---- catalog tree ------------------------------------------------------------- */
+  /* catalog tree */
   views.tree = function (route, state, onlySection) {
     const kinds = data.model.kinds;
     const navParams = routeNav(route);
@@ -383,7 +379,7 @@
     return `<ul class="ob-tree">${items.map(li).join('')}</ul>`;
   };
 
-  /* ---- home ---------------------------------------------------------------------- */
+  /* home */
   views.home = function (ctx) {
     const kpis = data.kpis().map(k => `
       <a class="ob-card ob-kpi" href="${router.listHref(k.kind)}">
@@ -426,22 +422,15 @@
       </section></div>`;
   };
 
-  /* ---- section lists and search results ----------------------------------------- */
-  /** Raw column values of a section row (sorting). `withCount` includes the count column of the list view. */
-  const rowValues = (kind, e, withCount) => {
-    const c = data.cols(kind, e);
-    return withCount ? [e.name, c[0], c[1], c[2], data.statusOf(kind, e)] : [e.name, c[0], c[1], data.statusOf(kind, e)];
-  };
-  /** One row of a section list (`withCount`) or of a search result table (`query` highlights the hits). */
-  views.row = function (kind, e, columns, withCount, query, nav) {
-    const c = data.cols(kind, e);
-    const st = data.statusOf(kind, e);
-    const href = router.entityHref(kind, e.identifier, nav);
-    const text = query ? v => ui.highlight(v, query) : esc;
-    const cells = [ui.entityLink(href, e.name, text(e.name)), text(c[0]), { html: `<span class="ob-clamp-2">${text(c[1])}</span>`, cls: 'ob-cell-muted' }];
-    if (withCount) cells.push(esc(c[2]));
-    cells.push(st ? ui.chip(st, data.statusTone(st)) : '');
-    return ui.tr(cells, href, columns);
+  /* section lists and search results */
+  function collectionRow(kind, entity, columns, nav) {
+    const [name, context, description, count, status] = data.collectionValues(kind, entity);
+    const href = router.entityHref(kind, entity.identifier, nav);
+    return ui.tr([
+      ui.entityLink(href, name), esc(context),
+      { html: `<span class="ob-clamp-2">${esc(description)}</span>`, cls: 'ob-cell-muted' },
+      esc(count), status ? ui.chip(status, data.statusTone(status)) : '',
+    ], href, columns);
   };
 
   views.list = function (ctx) {
@@ -454,8 +443,8 @@
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {
-      const items = ui.sortRows(g.items, options.sort, e => rowValues(kind, e, true));
-      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(e => views.row(kind, e, columns, true, undefined, nav)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
+      const items = ui.sortRows(g.items, options.sort, entity => data.collectionValues(kind, entity));
+      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(entity => collectionRow(kind, entity, columns, nav)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
     }).join('')}</div>`;
   };
 
@@ -480,61 +469,23 @@
       ], href, columns);
     }).join('');
     const sorting = `<label class="ob-search-sort" for="search-sort"><span>${esc(t('sort.label'))}</span><select id="search-sort" class="ob-select ob-select--comfortable" data-action="set-search-sort">${DK.search.sorts.map(sort => `<option value="${sort}"${sort === paging.sort ? ' selected' : ''}>${esc(t('search.sort.' + sort))}</option>`).join('')}</select></label>`;
-    return answer + `<section id="search-page" tabindex="-1" aria-label="${esc(t('search.results'))}"><div class="ob-search-result-controls">${ui.pageRange(paging, true)}${sorting}</div>${ui.table(columns, rows)}${ui.pager(paging, false, { showRange: false })}</section>`;
+    return answer + `<section id="search-page" tabindex="-1" aria-label="${esc(t('search.results'))}"><div class="ob-search-result-controls">${ui.pageRange(paging, true)}${sorting}</div>${ui.table(columns, rows)}${ui.pager(paging, { showRange: false })}</section>`;
   };
 
   views.notFound = () => ui.empty(t('notfound.title'), `${esc(t('notfound.text'))}<p class="ob-empty-action"><a href="#/">${esc(t('notfound.link'))}</a></p>`);
 
-  /* ---- handbook -------------------------------------------------------------------------- */
-  views.chapterTree = state => `<ul class="ob-tree">${data.manual.chapters.map((c, i) => `<li><div class="ob-tree-row ob-tree-row--chapter${state.chapter === c.id ? ' is-active' : ''}" style="--level:1"><a class="ob-tree-link" href="${router.build('/manual', { ch: c.id })}"${state.chapter === c.id ? ' aria-current="location"' : ''} data-action="chapter" data-chapter="${esc(c.id)}"><span class="ob-tree-label" title="${esc(c.title)}">${i + 1}. ${esc(c.title)}</span></a></div></li>`).join('')}</ul>`;
-
-  views.manual = function (ctx) {
-    const m = data.manual, model = data.model;
-    const li = arr => arr.join('');
-
-    const roleColumns = [{ label: t('manual.col.inCatalog'), width: '26%' }, { label: t('manual.col.nadb'), width: '28%' }, { label: t('manual.col.task') }];
-    const coreColumns = [{ label: t('manual.col.field') }, { label: t('manual.col.inCatalog') }, { label: t('manual.col.dcat') }, { label: t('manual.col.archimate') }, { label: t('manual.col.dmbok') }];
-    /** Chapter body renderers, keyed by chapter id; each receives manual.<id>. */
-    const body = {
-      einleitung: e => `<div><p>${esc(e.intro)}</p><ul class="ob-list">${li(e.questions.map(q => `<li>${esc(q)}</li>`))}</ul></div>${li(e.sections.map(s => `<div><h3>${esc(s.title)}</h3><p>${esc(s.text)}</p></div>`))}`,
-      gouvernanz: g => {
-        const roles = ui.table(roleColumns, li(g.roles.map(r => ui.tr([{ html: esc(r.label), cls: 'ob-cell-strong' }, esc(r.nadb), esc(r.task)], null, roleColumns))));
-        return `<div><p>${esc(g.intro)}</p>${roles}</div><div><h3>${esc(g.workflowTitle)}</h3><p>${esc(g.workflowIntro)}</p><ol class="ob-list">${li(g.workflow.map(w => `<li><strong>${esc(w.title)}</strong> (${esc(w.who)}): ${esc(w.text)}</li>`))}</ol></div><div><h3>${esc(g.reportTitle)}</h3><p>${esc(g.reportText)}</p></div>`;
-      },
-      modell: mo => {
-        const ext = Object.keys(model.kinds).map(k => ({ type: model.kinds[k].singular, en: model.kinds[k].en, fields: (model.extensions[k] || []).map(([f, l]) => `${f} (${l})`).join(', ') }));
-        const core = ui.table(coreColumns, li(model.core.map(c => ui.tr([{ html: esc(c.field), cls: 'ob-cell-nowrap' }, esc(c.label), esc(c.dcat), esc(c.archimate), esc(c.dmbok)], null, coreColumns))));
-        return `<div><p>${esc(mo.intro)}</p><ul class="ob-list">${li(mo.layers.map(l => `<li><strong>${esc(l.title)}</strong> (${esc(l.layer)}): ${esc(l.text)} ${esc(t('manual.example'))}: ${esc(l.example)}.</li>`))}</ul></div>
-          <div><h3>${esc(mo.coreTitle)}</h3><p>${esc(mo.coreIntro)}</p>${core}</div>
-          <div><h3>${esc(mo.extTitle)}</h3><ul class="ob-list">${li(ext.map(x => `<li><strong>${esc(x.type)}</strong> (${esc(x.en)}): ${esc(x.fields)}</li>`))}</ul></div>
-          <div><h3>${esc(mo.statusTitle)}</h3><ul class="ob-list">${li(Object.entries(model.statuses).map(([k, v]) => `<li><strong>${esc(k)}</strong>: ${esc(v.text)}</li>`))}</ul></div>`;
-      },
-      nutzen: n => `<ol class="ob-list">${li(n.steps.map(s => `<li><strong>${esc(s.title)}</strong>: ${esc(s.text)}</li>`))}</ol>`,
-      abrufen: a => `<ul class="ob-list"><li><strong>Export</strong>: ${esc(a.export)}</li><li><strong>API</strong>: ${esc(a.api)} <a href="#/api">${esc(t('manual.toApi'))}</a></li></ul>`,
-      faq: f => `<ul class="ob-list ob-list--loose">${li(f.map(x => `<li><strong>${esc(x.q)}</strong><br>${esc(x.a)}</li>`))}</ul>`,
-      glossar: g => `<ul class="ob-list">${li(g.map(x => `<li><strong>${esc(x.term)}</strong>: ${esc(x.text)}</li>`))}</ul>`,
-      grundlagen: r => `<ul class="ob-list">${li(r.map(x => `<li><strong>${esc(x.title)}</strong> (${esc(x.source)}): ${ui.link(x.url, esc(x.url), { external: true })}</li>`))}</ul>`,
-    };
-    const chapters = m.chapters.map((c, i) => {
-      const render = body[c.id];
-      if (!render || m[c.id] == null) return '';
-      return `<section id="hb-${esc(c.id)}" class="ob-chapter" data-chapter="${esc(c.id)}"><h2>${i + 1}. ${esc(c.title)}</h2>${render(m[c.id])}</section>`;
-    }).join('');
-    return `<div class="ob-manual-content">${views.viewHeader(ctx)}<div class="ob-manual-chapters">${chapters}</div></div>`;
-  };
-
-  /* ---- API page --------------------------------------------------------------------------- */
+  /* API page */
   views.apiPage = function () {
     return `<div class="ob-api">
       <div id="swagger-ui" class="ob-swagger" aria-live="polite" aria-busy="true"><div class="ob-swagger-loading">${esc(t('api.loading'))}</div></div>
     </div>`;
   };
 
-  /* ---- page composition ----------------------------------------------------------------- */
+  /* page composition */
   views.page = function (route, state) {
     const ctx = views.context(route, state);
     let content;
-    if (route.view === 'manual') content = views.manual(ctx);
+    if (route.view === 'manual') content = DK.manual.render(views.viewHeader(ctx));
     else if (route.view === 'api') content = views.apiPage();
     else if (route.view === 'home') content = views.home(ctx);
     else if (route.view === 'list') content = views.collectionHeader(ctx) + views.collection(ctx);

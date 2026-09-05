@@ -34,8 +34,7 @@
     return (kind, e) => kind === 'systems' ? systems.has(e.identifier) : belongs(kind, e);
   }
 
-  // A small question-to-keywords fallback demonstrates questions without claiming semantic understanding.
-  // All remaining terms must match the same record; unrelated single-word hits are never substituted.
+  // Question fallback requires every significant term to match one record.
   const questionStart = /^(was|wer|wie|wo|welche\w*|womit|woraus|what|who|where|how|which|qu['’]est|quel\w*|comment|où|chi|che|cosa|quale|quali|come|dove)\b/i;
   const stopWords = new Set(('was wer wie wo welche welcher welches welchen ist sind ein eine einer eines einem einen der die das den dem des und oder ich wir man finde finden gibt es zu zum zur im in von für mit sich kann können wird werden ' +
     'what who where how which is are a an the and or i can find do does of for in about ' +
@@ -102,8 +101,7 @@
       .sort((a, b) => score(b.e, query) - score(a.e, query) || Number(!!b.e.provenance) - Number(!!a.e.provenance));
     const seen = new Set(), sources = [];
     for (const { kind, e } of candidates) {
-      // Use the strongest matches only: "What is GWR?" should cite its definition,
-      // not append arbitrary code lists that merely mention the register.
+      // Cite only top-ranked definitions; weaker keyword matches would dilute the answer.
       if (score(e, query) < score(candidates[0].e, query)) break;
       const description = e.description.trim().replace(/\s+/g, ' ');
       if (seen.has(description)) continue;

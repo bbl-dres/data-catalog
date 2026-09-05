@@ -12,7 +12,7 @@
     const collection = ctx.isList ?? route.view === 'list', kind = ctx.kind || route.kind;
     const roots = route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
       const sort = ui.tableOptions(ctx.state, `list:${kind}`, { column: 0, direction: 'asc' }).sort;
-      const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, e => [e.name, ...data.cols(kind, e), data.statusOf(kind, e)]) : g.items;
+      const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, entity => data.collectionValues(kind, entity)) : g.items;
       return items.map(e => ({ ...e, kind }));
     });
     const records = new Map();
@@ -91,8 +91,9 @@
     children.forEach(({ e, parent, kind }) => {
       const mandatory = typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : '';
       if (kind === 'fields') {
+        const source = data.fieldSourceFacts(e);
         fields.rows.push([String(parent.identifier), data.displayName('tables', parent), String(e.fieldId), e.technicalName, e.label, e.description, e.dataType, e.keyRole, mandatory, e.position, e.codeList,
-          e.catalogMetadata?.['Zugriff auf die Daten'], e.catalogMetadata?.Stammdaten, e.status, e.sourceUrl, link('fields', e.identifier)]);
+          source.registerAccess, source.masterData, e.status, e.sourceUrl, link('fields', e.identifier)]);
         Object.entries(e.catalogMetadata || {}).forEach(([section, text]) => documentation.rows.push([String(parent.identifier), e.technicalName, section, text, e.sourceUrl]));
       } else attrs.rows.push([data.kindDef(parent.kind).singular, String(parent.identifier), parent.name, String(e.attrId || e.identifier), e.name, e.description, e.valueType, e.keyRole, mandatory, e.position, e.status, e.codeList, kind === 'attrs' ? link('attrs', e.identifier) : link('products', parent.identifier)]);
       meta(e, data.kindDef(kind === 'productAttrs' ? 'attrs' : kind).singular);

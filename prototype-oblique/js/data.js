@@ -1,5 +1,4 @@
-/* data.js – loads the static JSON files and answers all model questions
-   (lookups, grouping, relations, search). No DOM access. */
+/* Catalog loading, validation, lookups and derived data. No DOM access. */
 (function (DK) {
   'use strict';
 
@@ -20,7 +19,7 @@
   const data = { kinds: KINDS, navModelOverride: null };
   const index = {};
 
-  /* ---- loading ---------------------------------------------------------- */
+  /* loading */
   data.load = async function (base) {
     const entries = await Promise.all(Object.entries(FILES).map(async ([key, file]) => {
       const res = await fetch(base + file, { cache: 'no-cache' });
@@ -126,7 +125,7 @@
     return problems;
   };
 
-  /* ---- lookups ----------------------------------------------------------- */
+  /* lookups */
   data.list = kind => data[kind] || [];
   data.kindDef = kind => data.model.kinds[kind];
   /** Kinds counted as catalog content (everything except the containers domains/systems). */
@@ -247,7 +246,7 @@
   };
   data.sections = () => data.model.navModels[data.navModel()];
 
-  /* ---- list presentation ------------------------------------------------- */
+  /* list presentation */
   /** Table cells [col2, description, col4] of a section row; the status column is added by the view. */
   data.cols = function (kind, e) {
     switch (kind) {
@@ -260,6 +259,15 @@
       default: return [e.sourceAuthority, e.description, e.values.length ? String(e.values.length) : '–'];
     }
   };
+  /** Raw column order shared by collection sorting and Excel export. */
+  data.collectionValues = (kind, entity) => [entity.name, ...data.cols(kind, entity), data.statusOf(kind, entity)];
+
+  // Official source headings remain unchanged in imported JSON and workbook documentation.
+  data.fieldSourceFacts = field => ({
+    registerAccess: field.catalogMetadata?.['Zugriff auf die Daten'],
+    masterData: field.catalogMetadata?.['Stammdaten'],
+  });
+
   /** Table columns per section (list view). */
   data.columns = function (kind) {
     const c = (label, width) => ({ label: t(label), width });
@@ -280,7 +288,7 @@
     { label: t('search.context'), width: '18%' }, { label: t('col.description') }, { label: t('col.status'), compact: true },
   ];
 
-  /* ---- grouping ---------------------------------------------------------- */
+  /* grouping */
   const GROUP_IDS = {
     objects: ['none', 'domain', 'resp', 'status'],
     tables: ['none', 'system', 'domain', 'status'],
@@ -339,7 +347,7 @@
     return groups;
   };
 
-  /* ---- relations ----------------------------------------------------------- */
+  /* relations */
   data.termsOf = o => o.termdat.map(tm => ({ name: tm.name, sub: 'TERMDAT ' + tm.id, href: tm.url, external: true }));
   data.relations = function (kind, e) {
     const href = (k, id) => DK.router.entityHref(k, id);
@@ -413,7 +421,7 @@
         { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: data.termsOf(o).filter(tm => tm.name.toLowerCase().includes(stem)) },
       ];
     }
-    // objects, tables, refs
+    // Content relationships share the resolved business object when available.
     const o = data.objectForEntity(kind, e);
     const explicitCodes = kind === 'tables' && e.fields.some(f => f.codeList);
     const usedInTables = kind === 'refs' && data.tables.filter(x => x.fields.some(f => f.codeList === e.identifier));
@@ -430,7 +438,7 @@
     return rels;
   };
 
-  /* ---- search --------------------------------------------------------------- */
+  /* search */
   /* Matching is case-insensitive and tolerant of umlaut spellings: "Gebäude" is found by
      "gebäu", "gebau" and "gebaeu". Two foldings are tried: diacritics stripped (keeps the
      string length, used for highlighting too) and ä→ae / ö→oe / ü→ue / ß→ss. */
@@ -482,7 +490,7 @@
     if (!q) return [];
     return KINDS.filter(kind => kinds.includes(kind)).map(kind => resultGroup(kind, q)).filter(g => g.items.length).sort(byRelevance);
   };
-  /* ---- home ----------------------------------------------------------------- */
+  /* home */
   data.recent = function (n) {
     const feed = [];
     KINDS.forEach(kind => data.list(kind).forEach(e => {
@@ -496,7 +504,7 @@
     return { kind, count: data.list(kind).length, label: def.plural, icon: def.icon, unit: t('unit.' + kind) };
   });
 
-  /* ---- history ---------------------------------------------------------------- */
+  /* history */
   data.history = function (kind, id) {
     const key = kind === 'attrs' ? 'objects:' + id.split('/')[0] : kind === 'fields' ? 'tables:' + id.split('/')[0] : `${kind}:${id}`;
     return data.changelog.filter(h => h.entity === key).slice().sort((a, b) => (b.date > a.date ? 1 : b.date < a.date ? -1 : 0));

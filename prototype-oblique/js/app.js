@@ -1,6 +1,4 @@
-/* app.js – bootstrap, UI state and event handling.
-   Rendering is "render everything from state": the URL (router) plus the
-   transient state below are turned into HTML by views.js / detail.js. */
+/* Application state, render coordination and delegated events. */
 (function (DK) {
   'use strict';
 
@@ -28,7 +26,7 @@
     sidebarCollapsed: false,
     flyout: null,
     searchOpen: false,
-    chapter: 'einleitung',
+    chapter: 'introduction',
     lastEntity: null,
     detailTab: 'overview',             // carried only between consecutive detail routes
     tableSorts: {},                    // per table key: { column, direction: asc | desc }
@@ -37,10 +35,10 @@
   let route = null;
   let ctx = null;
 
-  /* ---- rendering ---------------------------------------------------------- */
+  /* rendering */
   const $ = id => document.getElementById(id);
 
-  // Tables respond to their own width (also when the sidebar or home columns change).
+  // Table layout follows container width, including sidebar resizing.
   // One observer keeps DOM semantics and keyboard focus in sync with card mode.
   function adaptTable(region) {
     if (!region.isConnected) return;
@@ -128,8 +126,7 @@
       if (state.detailTab !== 'overview') state.mode = state.detailTab;
       router.replaceParams({ tab: state.detailTab, view: null, page: null });
     } else if (route.view === 'detail') {
-      // Fresh loads and entries from non-detail views start at Übersicht; between profiles the
-      // semantic tab is kept when the target has it (docs/design-review-responsive.md, "Tab continuity").
+      // Fresh loads start at overview; profile-to-profile navigation can retain a supported tab.
       const requested = !previous ? 'overview' : route.params.tab || (previous.view === 'detail' ? state.detailTab : 'overview');
       state.detailTab = detail.resolveTab(route.entity, requested);
       const wanted = state.detailTab === 'overview' ? undefined : state.detailTab;
@@ -151,12 +148,15 @@
     const key = route.entity ? `${route.kind}:${route.id}` : null;
     if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
-    if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
+    if (route.view === 'manual') {
+      state.chapter = DK.manual.resolveChapter(route.params.ch || state.chapter);
+      if (route.params.ch) router.replaceParams({ ch: state.chapter });
+    }
     app.render(true);
     if (navigationHadFocus) $('page-content').focus({ preventScroll: true });
     renderHelp();
     if (route.view === 'manual' && route.params.ch) {
-      const el = $('hb-' + route.params.ch);
+      const el = $(DK.manual.anchorId(state.chapter));
       if (el) el.scrollIntoView({ block: 'start' });
     } else if (route.view !== 'manual') {
       window.scrollTo(0, 0);
@@ -205,7 +205,7 @@
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
     requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitSearchSuggestions(); });
     updateBackToTop();
-    if (route.view === 'api') renderSwagger();
+    if (route.view === 'api') DK.api.mount($('swagger-ui'));
   };
 
   function updateBackToTop() {
@@ -220,49 +220,6 @@
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
     requestAnimationFrame(() => $('main').focus({ preventScroll: true }));
-  }
-
-  /* ---- API page: Swagger UI is loaded on first use (1.7 MB that other pages never need) ---- */
-  let swaggerLoader = null;
-  const swaggerMounts = new WeakSet();
-  function loadSwagger() {
-    if (typeof window.SwaggerUIBundle === 'function') return Promise.resolve();
-    if (!swaggerLoader) swaggerLoader = new Promise((resolve, reject) => {
-      const css = document.createElement('link');
-      css.rel = 'stylesheet'; css.href = 'vendor/swagger-ui/swagger-ui.css';
-      document.head.insertBefore(css, $('main-css')); // before main.css so the app's overrides keep winning
-      const script = document.createElement('script');
-      script.src = 'vendor/swagger-ui/swagger-ui-bundle.js';
-      script.onload = resolve;
-      script.onerror = () => { swaggerLoader = null; script.remove(); css.remove(); reject(new Error('swagger-ui-bundle.js could not be loaded')); };
-      document.head.appendChild(script);
-    });
-    return swaggerLoader;
-  }
-  async function renderSwagger() {
-    const host = $('swagger-ui');
-    if (!host || swaggerMounts.has(host)) return;
-    swaggerMounts.add(host); // includes pending mounts while the bundle is loading
-    try { await loadSwagger(); } catch (err) { console.error(err); }
-    if (!host.isConnected) return; // the page was re-rendered or left while the bundle loaded
-    if (typeof window.SwaggerUIBundle !== 'function') {
-      swaggerMounts.delete(host); // a later render can retry a failed load
-      host.setAttribute('aria-busy', 'false');
-      host.innerHTML = ui.empty(t('api.unavailable'));
-      return;
-    }
-    window.SwaggerUIBundle({
-      url: 'data/swagger.json',
-      domNode: host,
-      deepLinking: false,
-      docExpansion: 'list',
-      defaultModelsExpandDepth: 1,
-      filter: true,
-      supportedSubmitMethods: [],
-      validatorUrl: null,
-      presets: [window.SwaggerUIBundle.presets.apis],
-      onComplete: () => host.setAttribute('aria-busy', 'false'),
-    });
   }
 
   function revealActiveTab() {
@@ -318,7 +275,6 @@
     if (restoreFocus) document.querySelector(`[data-action="rail-section"][data-key="${CSS.escape(key)}"]`)?.focus();
   }
 
-  /** Re-render the header widgets that depend on transient state (help popover, language menu). */
   function renderHelp() {
     const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state));
     const l = $('language-host'); if (l) replaceHtml(l, views.languageHost(state));
@@ -367,7 +323,7 @@
     }
     fitSearchSuggestions(revealForm);
   }
-  /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
+  // Update only the hosts affected by opening or closing a menu.
   const HEADER_MENUS = ['info', 'language'];
   function setMenu(next) {
     const prev = state.menu, hadSuggest = state.suggest;
@@ -396,11 +352,11 @@
     renderSuggest();
   }
 
-  /* ---- search ---------------------------------------------------------------- */
+  /* search */
   function normalizeSearchPage() {
     if (!ctx.searchPage) return;
-    const { page, size, sizes, sort } = ctx.searchPage;
-    router.replaceParams({ page: page === 1 ? null : page, size: size === sizes[0] ? null : size, sort: sort === 'relevance' ? null : sort });
+    const { sort } = ctx.searchPage;
+    router.replaceParams({ ...ui.pageParams(ctx.searchPage), sort: sort === 'relevance' ? null : sort });
     route = resolveRoute(); ctx.route = route;
   }
   function renderSearchResults() {
@@ -412,8 +368,7 @@
   }
   function setSearchPage(patch) {
     // A page change is a history entry, while retaining the form's unsubmitted edits.
-    const hash = router.build(route.path, { ...route.params, ...patch });
-    if (hash !== location.hash) history.pushState(null, '', hash);
+    router.pushParams(patch);
     renderSearchResults();
     const results = $('search-page');
     results?.focus({ preventScroll: true });
@@ -493,7 +448,7 @@
     }
   }
 
-  /* ---- exports --------------------------------------------------------------- */
+  /* exports */
   async function doExport(id, label) {
     if (id === 'xlsx') {
       if (state.exporting) return;
@@ -517,18 +472,15 @@
     ui.toast(t('toolbar.notAvailable', { what: label }));
   }
 
-  /* ---- handbook ---------------------------------------------------------------- */
-  let hbLock = null, hbTimer = null;
-  /** Mark the current chapter in the chapter list and the drawer button without re-rendering the page. */
+  /* handbook */
+  let chapterScrollLock = null, chapterScrollTimer = null;
+  // Scroll tracking updates navigation without replacing chapter content.
   function updateChapterNav() {
     document.querySelectorAll('[data-action="chapter"]').forEach(a => {
       const active = a.dataset.chapter === state.chapter;
       if (active) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
       a.closest('.ob-tree-row').classList.toggle('is-active', active);
     });
-    const path = document.querySelector('.ob-mobile-navigation-path');
-    const chapter = data.manual.chapters.find(c => c.id === state.chapter);
-    if (path && chapter) path.textContent = chapter.title;
   }
   function goChapter(id) {
     state.chapter = id;
@@ -536,24 +488,30 @@
     if (state.navDrawerOpen) setNavigation(false);
     else if (state.flyout) closeFlyout(true);
     else updateChapterNav();
-    const el = $('hb-' + id);
+    const el = $(DK.manual.anchorId(id));
     if (el) {
-      hbLock = id;
+      chapterScrollLock = id;
       window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - parseFloat(getComputedStyle(el).scrollMarginTop), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-      clearTimeout(hbTimer); hbTimer = setTimeout(() => { hbLock = null; }, 900);
+      clearTimeout(chapterScrollTimer); chapterScrollTimer = setTimeout(() => { chapterScrollLock = null; }, 900);
     }
   }
   function onScroll() {
     updateBackToTop();
     fitSearchSuggestions();
-    if (!route || route.view !== 'manual' || hbLock) return;
-    let cur = data.manual.chapters[0].id;
-    const chapterThreshold = $('header').getBoundingClientRect().height + 24;
-    data.manual.chapters.forEach(c => { const el = $('hb-' + c.id); if (el && el.getBoundingClientRect().top <= chapterThreshold) cur = c.id; });
-    if (cur !== state.chapter) { state.chapter = cur; updateChapterNav(); }
+    if (!route || route.view !== 'manual' || chapterScrollLock) return;
+    const firstChapter = document.querySelector('.ob-chapter');
+    if (!firstChapter) return;
+    let activeChapter = data.manual.chapters[0].id;
+    // Use the same CSS offset as chapter links, allowing a pixel for scroll rounding.
+    const chapterThreshold = parseFloat(getComputedStyle(firstChapter).scrollMarginTop) + 1;
+    data.manual.chapters.forEach(chapter => {
+      const element = $(DK.manual.anchorId(chapter.id));
+      if (element && element.getBoundingClientRect().top <= chapterThreshold) activeChapter = chapter.id;
+    });
+    if (activeChapter !== state.chapter) { state.chapter = activeChapter; updateChapterNav(); }
   }
 
-  /* ---- events ------------------------------------------------------------------- */
+  /* events */
   function onClick(e) {
     const action = e.target.closest('[data-action]');
     const samePageLink = e.target.closest('a[href^="#/"]');
@@ -598,7 +556,7 @@
       case 'toggle-sidebar':
         state.sidebarCollapsed = !state.sidebarCollapsed;
         state.flyout = null;
-        try { localStorage.setItem('datenkatalog.sidebarCollapsed', String(state.sidebarCollapsed)); } catch (err) { /* storage unavailable */ }
+        DK.preferences.write('sidebarCollapsed', state.sidebarCollapsed);
         app.render(); return;
       case 'rail-section': {
         state.flyout = state.flyout === key ? null : key;
@@ -758,14 +716,12 @@
     if (search && !(e.relatedTarget && search.contains(e.relatedTarget))) closeSuggest();
   }
 
-  /* ---- language ---------------------------------------------------------------------- */
-  const LANG_KEY = 'datenkatalog.lang';
-  /** Install a UI language: dictionary, <html lang>, static chrome, then a full re-render. Remembered per browser. */
+  /* language */
   function setLanguage(lang) {
     const cfg = data.config;
     const languages = cfg.app.languages || [cfg.app.language || 'de'];
     state.lang = languages.includes(lang) ? lang : languages[0];
-    try { localStorage.setItem(LANG_KEY, state.lang); } catch (err) { /* storage unavailable */ }
+    DK.preferences.write('language', state.lang);
     ui.setDictionary(data.i18n, state.lang, 'de');
     document.documentElement.lang = state.lang;
     $('skip-link').textContent = t('skip');
@@ -782,11 +738,8 @@
       if (button) button.focus({ preventScroll: true });
     }
   }
-  function storedLanguage() {
-    try { return localStorage.getItem(LANG_KEY); } catch (err) { return null; }
-  }
 
-  /* ---- init ------------------------------------------------------------------------ */
+  /* init */
   app.init = async function () {
     try {
       await data.load('data/');
@@ -798,12 +751,12 @@
     }
     const cfg = data.config;
     DK.sidebar.init();
-    try { state.sidebarCollapsed = localStorage.getItem('datenkatalog.sidebarCollapsed') === 'true'; } catch (err) { /* storage unavailable */ }
+    state.sidebarCollapsed = DK.preferences.read('sidebarCollapsed') === 'true';
     if (cfg.compactTables) document.documentElement.classList.add('ob-density-compact');
     $('brand-acronym').textContent = cfg.app.organisationShort || '';
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
-    setLanguage(storedLanguage() || cfg.app.language || 'de');
+    setLanguage(DK.preferences.read('language') || cfg.app.language || 'de');
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);
@@ -840,8 +793,8 @@
         return;
       }
       if (e.target.matches('[data-action="set-page-size"]')) {
-        if (route.view === 'search') { setSearchPage({ size: e.target.value === '20' ? null : e.target.value, page: null }); return; }
-        router.replaceParams({ size: e.target.value === '50' ? null : e.target.value, page: null });
+        if (route.view === 'search') { setSearchPage({ size: e.target.value, page: null }); return; }
+        router.replaceParams(ui.pageParams(ui.pageState(0, { size: e.target.value })));
         app.render();
       }
       if (e.target.matches('[data-action="sort-cards"]') && e.target.value) {

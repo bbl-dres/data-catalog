@@ -183,10 +183,10 @@ const server = createServer();
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await visit('#/manual');
     if (await page.locator('.ob-workspace.is-collapsed').count()) await page.locator('[data-action="toggle-sidebar"]').click();
-    await page.locator('[data-chapter="modell"][data-action="chapter"]').click();
+    await page.locator('[data-chapter="model"][data-action="chapter"]').click();
     await settle(page);
     const handbookTop = await page.locator('#header').evaluate(el => el.getBoundingClientRect().bottom + 16);
-    assert.equal(Math.round(await page.locator('#hb-modell').evaluate(el => el.getBoundingClientRect().top)), handbookTop, 'Handbook chapter hidden behind header');
+    assert.equal(Math.round(await page.locator('#manual-model').evaluate(el => el.getBoundingClientRect().top)), handbookTop, 'Handbook chapter hidden behind header');
 
     // Touch emulation at a tablet width; also test a short phone landscape view.
     const touchContext = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true, isMobile: true });

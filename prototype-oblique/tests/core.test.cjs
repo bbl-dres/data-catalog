@@ -6,10 +6,10 @@ const path = require('node:path');
 const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 
-function runtime(change = () => {}) {
+function runtime(change = () => {}, globals = {}) {
   const warnings = [];
   const context = vm.createContext({
-    window: {}, URL, URLSearchParams,
+    window: {}, URL, URLSearchParams, ...globals,
     console: { warn: message => warnings.push(message) },
     fetch: async url => ({ ok: true, json: async () => {
       const name = path.basename(url);
@@ -17,7 +17,7 @@ function runtime(change = () => {}) {
       return change(name, value) ?? value;
     } }),
   });
-  for (const file of ['ui', 'data', 'router', 'search', 'graph', 'views', 'detail', 'excel']) {
+  for (const file of ['ui', 'preferences', 'data', 'router', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context, { filename: file + '.js' });
   }
   return { ...context.window.DK, warnings };
@@ -28,6 +28,38 @@ async function loaded(change) {
   dk.ui.setDictionary(dk.data.i18n, 'de');
   return dk;
 }
+
+test('English handbook chapter identifiers preserve legacy links and render every chapter', async () => {
+  const { data, manual } = await loaded();
+  assert.equal(data.manual.chapters.map(chapter => chapter.id).join(','), 'introduction,governance,model,usage,retrieval,faq,glossary,references');
+  const html = manual.render('<h1>Handbuch</h1>');
+  for (const chapter of data.manual.chapters) {
+    assert.equal(manual.resolveChapter(chapter.id), chapter.id);
+    if (chapter.legacyId) assert.equal(manual.resolveChapter(chapter.legacyId), chapter.id);
+    assert.ok(html.includes(`id="manual-${chapter.id}"`));
+    assert.ok(html.includes(chapter.title));
+    assert.ok(data.manual[chapter.id]);
+  }
+  assert.equal(manual.resolveChapter(undefined), 'introduction');
+  assert.equal(manual.resolveChapter('unknown'), 'introduction');
+});
+
+test('preferences retain existing browser keys and tolerate unavailable storage', () => {
+  const stored = new Map([['datenkatalog.lang', 'fr'], ['datenkatalog.sidebarWidth', '380']]);
+  const localStorage = { getItem: key => stored.get(key) ?? null, setItem: (key, value) => stored.set(key, value), removeItem: key => stored.delete(key) };
+  const { preferences } = runtime(undefined, { localStorage });
+  assert.equal(preferences.read('language'), 'fr');
+  assert.equal(preferences.read('sidebarWidth'), '380');
+  preferences.write('sidebarCollapsed', true);
+  assert.equal(stored.get('datenkatalog.sidebarCollapsed'), 'true');
+  preferences.write('sidebarWidth', null);
+  assert.equal(stored.has('datenkatalog.sidebarWidth'), false);
+  const fail = () => { throw new Error('Storage disabled'); };
+  const blocked = runtime(undefined, { localStorage: { getItem: fail, setItem: fail, removeItem: fail } }).preferences;
+  assert.equal(blocked.read('language'), null);
+  assert.doesNotThrow(() => blocked.write('language', 'en'));
+  assert.doesNotThrow(() => blocked.write('sidebarWidth', null));
+});
 
 test('search ranks across types before global pagination, with stable ordering and validated URL values', async () => {
   const { search, ui, data } = await loaded();

@@ -1,6 +1,6 @@
 # Architecture
 
-No build step and no framework. One HTML page, four stylesheets, ten application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
+No build step and no framework. One HTML page, four stylesheets, thirteen application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
 
 The current page composition implements [compact layout 1b](compact-layout.md) and the [responsive strategy](responsive-strategy.md): a sticky header with navigation below the identity row above 960 px, shared 320 px default sidebar (resizable from 240 to 480 px) / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
 
@@ -16,14 +16,17 @@ prototype-oblique/
 │   └── graph.css         Diagram workspace, controls and fullscreen presentation
 ├── js/
 │   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, downloads and small widgets
+│   ├── preferences.js    DK.preferences – guarded access to existing browser preference keys
 │   ├── data.js           DK.data   – loads and validates JSON, lookups, grouping, relations, search, KPIs, history
-│   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams()
-│   ├── search.js         DK.search – scope, question fallback and cited AI-answer demo
+│   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams(), pushParams()
+│   ├── manual.js         DK.manual – handbook rendering, chapter names and legacy aliases
+│   ├── search.js         DK.search – scope, global ordering/pagination, question fallback and cited AI-answer demo
 │   ├── graph.js          DK.graph  – relationship layout, viewport, input and modal workspace
-│   ├── views.js          DK.views  – header, nav, breadcrumb, toolbar, tree, home, lists, search, manual, API page
+│   ├── views.js          DK.views  – page context, header, navigation, collections, search and composition
 │   ├── detail.js         DK.detail – profile pages: facts, rows, relationship list/graph, history
 │   ├── excel.js          DK.excel  – scoped workbook snapshots, worksheets, lazy ExcelJS loading and downloads
 │   ├── sidebar.js        DK.sidebar – desktop divider input, width constraints and saved preference
+│   ├── api.js            DK.api    – lazy Swagger loading, mounting and retry
 │   └── app.js            DK.app    – bootstrap, transient state, event delegation, exports
 ├── data/                 Static JSON – see data-model.md
 ├── assets/
@@ -37,7 +40,7 @@ prototype-oblique/
 └── docs/
 ```
 
-The ten application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace (`router.js` and `graph.js` read `DK.data`, so `data.js` must come first). Swagger UI is not in `index.html`: `app.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export; failed loads can be retried.
+The application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace. `ui.js` creates the namespace, data precedes its consumers, and `app.js` initializes last. Swagger UI is not in `index.html`: `api.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export; failed loads can be retried.
 
 Styles load in order: tokens, reusable components, application layouts/variants, diagram. `.ob-input` and `.ob-select` share native field styling; `.ob-icon-button` supplies quiet actions in inputs and notices; `.ob-card` supplies the filled surface, safe wrapping and interaction states for KPI cards and tiles. Layout classes retain their distinct padding, grids and content limits. See [the design polish review](design-polish-2026-09-05.md) for ownership and regression checks.
 
@@ -50,13 +53,16 @@ Files are split by responsibility:
 | `ui.js` | String helpers, safe link rendering, blob downloads, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
 | `data.js` | Snapshot validation and indexed lookups, grouping, domain membership by identifier, relations, search, KPIs and history; `validate()` logs dangling references after loading | Touch the DOM |
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
-| `search.js` | Scope options, shared suggestion/result retrieval and deterministic answer excerpts | Touch the DOM or call a model |
+| `preferences.js` | Stable browser keys and storage-failure handling | Choose UI defaults or render |
+| `manual.js` | Handbook chapter rendering, navigation markup, canonical IDs and legacy aliases | Handle scrolling or mutate catalog content |
+| `api.js` | Lazy Swagger loading, mount ownership and retries | Replace app navigation or catalog state |
+| `search.js` | Scope options, retrieval, global sorting/pagination and deterministic answer excerpts | Touch the DOM or call a model |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row/relationship tables and diagram composition | Handle events |
 | `graph.js` | Adaptive bubble layout, bounded group paging, zoom/pan/selection, keyboard/touch input, full-window dialog and viewport sizing | Change routes or mutate catalog data |
 | `excel.js` | Immutable export plans, typed multi-sheet workbooks, local writer loading and downloads | Mutate catalog data or traverse every relationship recursively |
 | `sidebar.js` | Pointer/keyboard resizing, CSS width and separator accessibility values, persisted preference and responsive limits | Re-render the tree or change mobile drawer behavior |
-| `app.js` | State, rendering cycle with focus restoration, event delegation, lazy Swagger UI, Excel/print export actions and handbook scroll spy | Contain HTML templates |
+| `app.js` | State, render coordination with focus restoration, delegated events, export actions and handbook scroll tracking | Own handbook templates or vendor loading |
 
 `views.page(route, state)` returns the application markup as a string. `app.render()` replaces `<main>` while preserving focus, sidebar/flyout scroll offsets and the current profile's metadata disclosure state. `replaceHtml()` identifies focused controls by `data-focus`, `id` or data attributes; disappearing menu items map back to their trigger. Repeated table controls include their group instance in `data-focus`. Route changes skip this control restoration and normally scroll to the top.
 
@@ -88,6 +94,8 @@ Domain profiles use Übersicht/Kacheln/Tabelle. Their browsing tabs reuse `views
 
 Collection entry writes the resolved layout and grouping into the current history entry, so Back/Forward restores that page independently of later preference changes. Domain-scoped groups use independent disclosure keys. Collection links and breadcrumbs preserve an explicit navigation-model override; entering a domain or system profile opens its matching sidebar branch.
 
+Collection rows and Excel plans use `data.collectionValues()` for the same column order and raw sort values. Detail tables and search use `ui.pageState()`, `ui.pageParams()` and the options-based `ui.pager()`; page-size defaults are serialized from the resolved state. `data.fieldSourceFacts()` translates imported source headings into English property names for profile and workbook consumers, while preserving the original metadata.
+
 Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and Excel export all use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
 
 Typing replaces only the collection results and updates a persistent live result count, preserving the input node, caret and IME composition. Escape and the clear button reset the filter. Controls wrap according to content width and use the shared spacing, input and touch-target tokens. The search controls are omitted from print; filtered results remain printable.
@@ -102,12 +110,14 @@ The URL is the source of truth for everything that should be bookmarkable:
 | `#/domains/bau` | Domain overview and business-object collection. Params: `tab=overview|tiles|table`, `group`, `filter`. Defaults to the current collection layout and retains explicit tabs on reload. Legacy `tab=rows` opens Tabelle; `relations`/`history` open Übersicht |
 | `#/objects/gebaeude/attributes/egid` | Attribute profile |
 | `#/tables/t-gwr-gebaeude/fields/EGID` | Field profile; technical field IDs are case-sensitive. Fields inherit their table's history and keep the parent selected in the tree |
-| `#/search?q=…` | Search results; optional `domains=energie,projekt,…` and `types=objects,tables,…` (`none` for an empty group); `ai=0` hides the answer demo |
-| `#/manual?ch=<chapter>` | Handbook |
+| `#/search?q=…` | One result table; optional domain/type filters, `ai=0`, `page`, `size=20|50|100`, and `sort=relevance|name|modified`. Defaults are omitted from the URL |
+| `#/manual?ch=<chapter>` | Handbook; English chapter IDs, with old German IDs accepted as aliases |
 | `#/api` | Swagger UI rendering the OpenAPI contract in `data/swagger.json` |
 | any route `?nav=entity|container` | Overrides the tree model from `config.json` |
 
-`hashchange` calls `app.onRoute()`, which resets transient state (open menus, suggestions) and renders. Controls that change only a query parameter (tab, page, view mode, grouping) call `router.replaceParams()` and re-render without a history entry. Navigation links are plain anchors with hash hrefs; table rows carry `data-href` and become clickable through delegation.
+`hashchange` calls `app.onRoute()`, which resets transient state and renders. `router.replaceParams()` updates the current history entry for tabs, grouping, filters and normalization. `router.pushParams()` creates an entry for search pagination, page size and sorting. Both leave rendering to the caller. Navigation links are plain hash anchors; table rows carry `data-href` and navigate through delegation.
+
+Code identifiers, module names, function names and comments are English. Translated UI content, catalog IDs, official GWR source headings and legacy compatibility strings retain their source spelling. Handbook rendering uses English chapter IDs; optional `legacyId` values in `manual.json` keep old links working. `preferences.js` retains the existing `datenkatalog.*` storage keys behind English preference names. Comments document contracts and non-obvious constraints, such as escaping, source preservation and DOM ownership; detailed behavior belongs in this guide and the feature documents. See [the maintainability review](maintainability-review-2026-09-05.md).
 
 ## Transient state (`app.js`)
 
@@ -119,7 +129,7 @@ A `change` listener handles the detail-row page-size selector. Sidebar/rail/sear
 
 The `change` listener also handles card sorting. Native metadata `toggle` events update disclosure state. Menus support keyboard entry, arrows, Home/End, initial-letter navigation, Tab exit and Escape; drawer focus containment uses the active control after an inner menu closes.
 
-Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Groups are ordered by their best hit, ties by content order (objects, tables, code lists, products, APIs, then domains and systems); rows by score, shorter names first. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`. Result tables start in relevance order; a click on a column header switches that group to the chosen sort.
+Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Suggestions keep compact type groups. Results use one table, ordered across all types before pagination by `search.page()`; the sort selector offers relevance, name and modification date. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`.
 
 Catalog data tables use native buttons in their column headers and expose the active direction through `aria-sort`. Repeated headers in grouped L0 tables share one sort state. Detail rows are sorted before pagination, and changing their sort resets the pager to page 1. Handbook reference tables remain unsorted because their authored row order conveys meaning.
 

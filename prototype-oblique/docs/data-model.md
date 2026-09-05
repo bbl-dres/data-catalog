@@ -98,6 +98,10 @@ Imported records may carry `sourceUrl`, `sourceDetail` and `provenance` with sou
 
 Counts are always derived from the embedded lists (attributes, fields, values) so that the KPIs, tree counts and profile pages stay consistent. Missing embedded lists are treated as empty at load time, and every cross-reference above is checked by `data.validate()`; a dangling id is reported in the browser console and rendered as the id. Relations are computed from the ids above: tables realise objects, code lists type objects, products are based on objects and sourced from tables, APIs serve products and belong to a system. The "Letzte Änderungen" list on the home page sorts all entities by `modified`.
 
+## Handbook chapters
+
+Handbook chapters use English IDs and matching content keys: `introduction`, `governance`, `model`, `usage`, `retrieval`, `faq`, `glossary`, and `references`. Their titles and paragraphs remain German. An optional `chapters[].legacyId` accepts older chapter URLs and resolves them to the canonical ID; it is not a renderer key. `manual.js` owns chapter rendering and alias resolution.
+
 ## Regenerating
 
 The fictional content was ported from the Claude Design wireframe by [generate-data.py](generate-data.py), which writes `domains.json`, `systems.json`, `objects.json`, `tables.json`, `codelists.json`, `products.json`, `apis.json` and `changelog.json`:

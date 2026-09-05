@@ -44,6 +44,7 @@ Open <http://localhost:8000/prototype-oblique/>.
 
 ## Documentation
 
+- [Maintainability review, 5 September](docs/maintainability-review-2026-09-05.md) — English code naming, compact comments, module boundaries and shared contracts.
 - [Design polish review, 5 September](docs/design-polish-2026-09-05.md) — visual bugs, shared components, token refinements and verification.
 - [Developer review, 5 September](docs/developer-review-2026-09-05.md) — code findings, implemented fixes, verification and remaining limits.
 - [Test setup](tests/README.md) — repeatable core, functional and responsive checks.

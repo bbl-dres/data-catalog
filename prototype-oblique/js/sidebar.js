@@ -1,7 +1,6 @@
 /* sidebar.js – desktop splitter; changes geometry without re-rendering the tree. */
 (function (DK) {
   'use strict';
-  const KEY = 'datenkatalog.sidebarWidth';
   const root = document.documentElement;
   let preferred = null, drag = null, frame = null;
   const sidebar = {};
@@ -27,10 +26,7 @@
     }
     return actual;
   };
-  const persist = () => {
-    try { if (preferred == null) localStorage.removeItem(KEY); else localStorage.setItem(KEY, String(preferred)); }
-    catch (err) { /* Keep resizing usable when storage is unavailable. */ }
-  };
+  const persist = () => DK.preferences.write('sidebarWidth', preferred);
   function finish(commit) {
     if (!drag) return;
     const ended = drag;
@@ -61,10 +57,8 @@
     return true;
   };
   sidebar.init = function () {
-    try {
-      const saved = localStorage.getItem(KEY), number = Number(saved);
-      if (saved?.trim() && Number.isFinite(number) && number > 0) preferred = number;
-    } catch (err) { /* Default width still works without storage. */ }
+    const saved = DK.preferences.read('sidebarWidth'), number = Number(saved);
+    if (saved?.trim() && Number.isFinite(number) && number > 0) preferred = number;
     document.addEventListener('pointerdown', event => {
       const handle = event.target.closest('#sidebar-resizer');
       if (!handle || event.button !== 0 || !['mouse', 'pen'].includes(event.pointerType) || !handle.getClientRects().length) return;

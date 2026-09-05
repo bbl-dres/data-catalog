@@ -1,15 +1,4 @@
-/* router.js – hash routing. URL is the source of truth for view, entity,
-   tab, page, grouping, view mode and search query.
-
-   #/                                  home
-   #/objects  #/tables  #/refs …       section list      ?view=tiles|table&group=<id>&filter=…&domain=<id>
-   #/objects/gebaeude                  detail            ?tab=overview|rows|relations|history&page=n
-   #/objects/gebaeude/attributes/egid  attribute detail
-   #/tables/t-gwr-gebaeude/fields/EGID field detail
-   #/search?q=…&page=2&size=20&sort=name search results (relevance by default)
-   #/manual?ch=<chapter>               handbook
-   #/api                               API documentation
-   Any route accepts ?nav=entity|container to override the tree model. */
+/* Hash routes and URL state. Route formats are documented in docs/architecture.md. */
 (function (DK) {
   'use strict';
 
@@ -68,15 +57,17 @@
     else location.hash = hash;
   };
 
-  /** Patch query params of the current route without firing hashchange (caller re-renders). */
-  router.replaceParams = function (patch) {
+  // Both update modes leave rendering to the caller; only push creates a history entry.
+  function writeParams(patch, method) {
     const r = router.parse();
     const params = Object.assign(Object.create(null), r.params, patch);
     Object.keys(params).forEach(k => { if (params[k] == null || params[k] === '') delete params[k]; });
     const h = router.build(r.path, params);
-    history.replaceState(null, '', location.pathname + location.search + h);
+    if (h !== location.hash) history[method](null, '', location.pathname + location.search + h);
     return h;
-  };
+  }
+  router.replaceParams = patch => writeParams(patch, 'replaceState');
+  router.pushParams = patch => writeParams(patch, 'pushState');
 
   DK.router = router;
 })(window.DK);

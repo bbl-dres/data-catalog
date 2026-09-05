@@ -26,6 +26,27 @@ const server = createServer();
       await settle(page);
     };
 
+    await check('handbook legacy links resolve to English chapters and keep desktop/mobile navigation', async () => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      for (const width of [1440, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/manual?ch=modell');
+        assert.equal(await page.evaluate(() => DK.router.parse().params.ch), 'model');
+        assert.equal(await page.locator('.ob-chapter').count(), 8);
+        assert.equal(await page.evaluate(() => DK.app.state.chapter), 'model');
+        const chapter = page.locator('#manual-model');
+        assert(Math.abs(await chapter.evaluate(el => el.getBoundingClientRect().top - parseFloat(getComputedStyle(el).scrollMarginTop))) <= 1);
+        await page.reload(); await page.locator('#manual-model').waitFor(); await settle(page);
+        assert.equal(await page.evaluate(() => DK.router.parse().params.ch), 'model');
+        if (width < 961) await page.click('[data-action="open-navigation"]');
+        await page.locator('[data-action="chapter"][data-chapter="glossary"]').click(); await settle(page);
+        assert.equal(await page.evaluate(() => DK.router.parse().params.ch), 'glossary');
+        assert.equal(await page.evaluate(() => DK.app.state.chapter), 'glossary');
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+    });
+
     await check('home search supports suggestions, submit and the header shortcut at desktop and phone widths', async () => {
       for (const width of [1440, 390]) {
         await page.setViewportSize({ width, height: 900 });

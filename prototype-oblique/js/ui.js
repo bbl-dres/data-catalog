@@ -9,7 +9,7 @@
   /** Resolve a content label without modifying its stored translations. */
   ui.localized = labels => labels?.[language] || labels?.[fallbackLanguage] || labels?.de || '';
 
-  /** Pick one language from the i18n table (key → { de, fr, it, en }); a missing or empty translation falls back to `fallback`. */
+  /** Resolve translations with a fallback language for missing labels. */
   ui.setDictionary = function (table, lang, fallback) {
     language = lang;
     fallbackLanguage = fallback || 'de';
@@ -66,9 +66,11 @@
   };
 
   ui.pageRange = ({ from, to, total }, announce = false) => `<span class="ob-pager-range"${announce ? ' role="status"' : ''}>${ui.esc(ui.t('detail.rowRange', { from, to, total }))}</span>`;
+  ui.pageParams = ({ page, size, sizes }) => ({ page: page === 1 ? null : page, size: size === sizes[0] ? null : size });
 
   /** Search can display its range separately above the table. */
-  ui.pager = function (paging, top = false, { showRange = true } = {}) {
+  ui.pager = function (paging, { position = 'bottom', showRange = true } = {}) {
+    const top = position === 'top';
     const { total, size, sizes, pages, page } = paging;
     if (!total || (top && pages === 1)) return '';
     const t = ui.t, esc = ui.esc;
@@ -80,7 +82,6 @@
       `<label class="ob-page-size">${esc(t('detail.pageSize'))}<select class="ob-select" data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${sizes.map(n => `<option value="${n}"${n === size ? ' selected' : ''}>${n}</option>`).join('')}</select></label>${range}`}</nav>`;
   };
 
-  /** Pill chip. tone: success|warning|error|info|neutral */
   ui.chip = function (label, tone) {
     return `<span class="ob-chip ob-chip--${ui.esc(tone || 'neutral')}">${ui.esc(label)}</span>`;
   };
@@ -103,10 +104,8 @@
     return out + ui.esc(s.slice(pos));
   };
 
-  /** Sort options for `ui.table`: the stored sort of `key`, else the default. */
   ui.tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });
 
-  /** Empty state block with a title and optional hint. */
   ui.empty = (title, hint) => `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}</div>`;
 
   /** ISO date (yyyy-mm-dd) → Swiss short date (d.m.yyyy). */
@@ -196,7 +195,7 @@
     return String(s).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
-  /** Technical field name for an attribute name (Gebäudehöhe → GEBAEUDEHOEHE), same rule as the data generator. */
+  /** Attribute-name transliteration matches the data generator. */
   ui.fieldName = function (s) {
     return String(s).replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/(^_|_$)/g, '');
   };

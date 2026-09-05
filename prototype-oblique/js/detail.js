@@ -1,5 +1,4 @@
-/* detail.js – entity pages ("Steckbrief"): tabs Übersicht, rows (Attribute /
-   Felder / Werte / …), Beziehungen (diagram/table) and Verlauf. */
+/* Entity profiles: metadata, rows, relationships and history. */
 (function (DK) {
   'use strict';
 
@@ -15,7 +14,7 @@
     return [['overview', t('detail.tab.overview')], ['rows', detail.rowsLabel(e)], ['relations', t('detail.tab.relations')], ['history', historyLabel]].filter(x => x[1]);
   };
 
-  /** Resolve a requested semantic tab for an entity, falling back to Übersicht. */
+  /** Resolve supported tabs; legacy domain rows links map to table browsing. */
   detail.resolveTab = function (e, requested) {
     const tab = e.kind === 'domains' ? (requested === 'rows' ? 'table' : requested || 'tiles') : requested || 'overview';
     return detail.tabs(e).some(x => x[0] === tab) ? tab : 'overview';
@@ -35,7 +34,7 @@
     return tabsHtml + `<div id="panel-${tab}" role="tabpanel" aria-labelledby="tab-${tab}" tabindex="0">${panel}</div>`;
   };
 
-  /* ---- Übersicht ---------------------------------------------------------- */
+  /* Overview */
   detail.facts = function (e) {
     const plain = (label, value) => ({ label, value, type: 'plain' });
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
@@ -65,6 +64,7 @@
         break;
       case 'fields': {
         const table = data.get('tables', e.table);
+        const source = data.fieldSourceFacts(e);
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance ? 'fact.undocumented' : 'fact.key.none');
@@ -72,7 +72,7 @@
         if (typeof e.mandatory === 'boolean') primary.push(plain(t('fact.mandatory'), t(e.mandatory ? 'yes' : 'no')));
         const ref = data.get('refs', e.codeList);
         if (ref) primary.push(internal(t('col.codeList'), ref.name, 'refs', ref.identifier));
-        primary.push(plain(t('fact.registerAccess'), e.catalogMetadata?.['Zugriff auf die Daten']), plain(t('fact.masterData'), e.catalogMetadata?.Stammdaten));
+        primary.push(plain(t('fact.registerAccess'), source.registerAccess), plain(t('fact.masterData'), source.masterData));
         break;
       }
       case 'products':
@@ -147,11 +147,11 @@
     return rows ? `<section class="ob-responsibility"><h2>${esc(t('detail.contacts'))}</h2><dl class="ob-facts">${rows}</dl></section>` : '';
   };
 
-  /* ---- rows (Attribute / Felder / Werte / Geschäftsobjekte / Datentabellen) */
+  /* Detail rows */
   const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'outline') : '<span class="ob-cell-muted">—</span>';
   const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
 
-  /** Columns + rows for the entity's list tab. rows: [{cells, text, href}]; `text` is the raw value per column for sorting, including workbook row order. */
+  /** Rows carry escaped cells and raw sort values; exports reuse the same ordering. */
   detail.rowsData = function (e) {
     const c = (label, width) => ({ label: t(label), width });
     const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
@@ -203,10 +203,10 @@
     const paging = ui.pageState(ordered.length, route.params);
     const slice = ordered.slice(paging.from - 1, paging.to);
     const rows = slice.map(r => ui.tr(r.cells, r.href, rd.columns)).join('');
-    return `<div class="ob-detail-rows">${ui.pager(paging, true)}${ui.table(rd.columns, rows, options)}${ui.pager(paging)}</div>`;
+    return `<div class="ob-detail-rows">${ui.pager(paging, { position: 'top' })}${ui.table(rd.columns, rows, options)}${ui.pager(paging)}</div>`;
   };
 
-  /* ---- Beziehungen: shared table and interactive diagram ------------------ */
+  /* Relationships */
   detail.relationList = function (e, state) {
     const groups = data.relations(e.kind, e).filter(r => r.items.length);
     if (!groups.length) return ui.empty(t('detail.noRelations'));
@@ -231,7 +231,7 @@
     </div>`;
   };
 
-  /* ---- Verlauf --------------------------------------------------------------- */
+  /* History */
   detail.history = function (e, state) {
     const columns = [{ label: t('col.date'), compact: true }, { label: t('col.change'), width: '22%' }, { label: t('col.details') }, { label: t('col.editedBy'), width: '12rem' }];
     const options = ui.tableOptions(state, `detail:${e.kind}:history`, { column: 0, direction: 'desc' });
