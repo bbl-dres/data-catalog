@@ -2,6 +2,8 @@
 
 Date: 2026-09-05. Scope: the current root `prototype-oblique`, following the compact 1b implementation. This review supersedes the earlier documents where responsive dimensions or behavior differ. The earlier wireframe snapshots and the separate icon review are unchanged.
 
+Follow-up: [the mobile and responsive refinement](mobile-responsive-review-2026-09-05.md) documents the current keyboard-aware search/dialog sizing, shared touch controls, short-screen overlays and locally scrolling API tables. Measurements and screenshots below describe the earlier layout pass.
+
 ## Recommendation
 
 Use one content model and one navigation model, with a bounded workspace and components that adapt to their available width. A device's name or physical resolution is not a reliable layout signal: a tablet in split view, a zoomed laptop browser and a phone can all offer similar CSS widths.
@@ -52,7 +54,7 @@ This deliberately leaves margins on very large displays. It also works when the 
 
 For viewports wider than **960 px**, `Katalog`, `Handbuch` and `API` appear in a dedicated row below the identity and utility row. Navigation adds **45 px**, including its border; targets are 44 px high. With the [federal logo composition](design-system.md#federal-header-logo), the resulting desktop header is **117 px** high below 1920 px and **131 px** from 1920 px. The sidebar, sticky table headings and handbook anchors use the same derived header-height token or the measured header height.
 
-At **960 px and below**, the extra navigation row disappears and the header exposes the global destinations through the drawer. The identity is **56 px** high below 768 px and **72 px** from 768 px to accommodate the federal logo separator. The additional desktop row costs 45 px of vertical space, gives small laptops more horizontal room for the identity, search and utilities and makes the destination hierarchy clearer.
+At **960 px and below**, the extra navigation row disappears and the header exposes the global destinations through the drawer. The identity is **56 px** high below 768 px and **72 px** from 768 px, following the retained logo sizing breakpoints. The additional desktop row costs 45 px of vertical space, gives small laptops more horizontal room for the identity, search and utilities and makes the destination hierarchy clearer.
 
 The local reference at `C:\Users\david\Documents\GitHub\oblique` was inspected read-only. Its header template ends the identity header before rendering `ob-master-layout-navigation`. The same structure exists in the [official Oblique 15.4.4 header template](https://github.com/oblique-bit/oblique/blob/15.4.4/projects/oblique/src/lib/master-layout/master-layout-header/master-layout-header.component.html). This is evidence for the hierarchy, not a claim that this vanilla-JavaScript prototype is a complete or pixel-identical Oblique implementation. Compact typography, the catalog tree and the responsive table presentation remain deliberate product choices.
 
@@ -65,8 +67,8 @@ The local reference at `C:\Users\david\Documents\GitHub\oblique` was inspected r
 | Content >1100 px | Five summary cards in one row |
 | Content 601–1100 px | Three summary cards per row |
 | Content ≤600 px | Compact summary links |
-| Diagram canvas <640 px | Vertical diagram panels at normal text size; pan controls and fullscreen reveal further groups |
-| Diagram canvas ≥640 px | Balanced panels on either side of the entity, fitted to the available area |
+| Diagram canvas <640 px | Vertical bubble groups at normal text size; pan controls and fullscreen reveal further groups |
+| Diagram canvas ≥640 px | Bubble groups arranged around the central entity and fitted to the available area |
 | Profile content ≤880 px | Facts and contacts stack vertically |
 | Very wide viewport | The working area stops growing at 1600 px |
 
@@ -80,8 +82,8 @@ The same table data and links serve both presentations. No low-priority columns 
 
 | Table | Minimum width for columns |
 |---|---:|
-| Six or more columns, including attributes | 880 px |
-| Five columns | 720 px |
+| Six or more columns | 880 px |
+| Five columns, including attributes | 720 px |
 | Other tables | 640 px |
 | Home domain summary | 480 px |
 | Home recent changes | 680 px |
@@ -90,7 +92,7 @@ Below its threshold, a table presents labelled records. The entity name is the p
 
 Column headings stay on one line without hyphenation. Automatic table layout accommodates the heading and its sort indicator; preferred column widths guide allocation without forcing headings into narrow fixed boxes. Body text can wrap normally. Narrow tables transition to cards before their columns become unusable.
 
-The table/row/header/cell roles remain explicit. Column labels remain available to assistive technology while the hidden desktop sort buttons are replaced by the visible selector. CSV export continues to include all rows, not merely the current page. Print restores a conventional table and removes interactive sorting controls.
+The table/row/header/cell roles remain explicit. Column labels remain available to assistive technology while the hidden desktop sort buttons are replaced by the visible selector. Excel export includes all rows, not merely the current page. Print restores a conventional table and removes interactive sorting controls.
 
 Cards are taller than dense rows; that is an intentional reading trade-off. The existing 50/100/200 page-size choices remain, and multi-page lists now offer navigation before and after the rows. Do not reduce mobile text merely to match desktop row counts.
 
@@ -108,7 +110,7 @@ The [WCAG reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.ht
 
 ### 6. Make homepage search visible
 
-The approved home search proposal is implemented above the summary tiles. A short heading, description, search field, explicit **Suchen** button and example queries provide a visible entry point. The form grows to 880 px within the available content width. At 600 px of content width and below, the button moves below the field; text inputs remain 16 px and controls 48 px high.
+The approved home search proposal is implemented above the summary tiles. A short heading, description, search field and explicit **Suchen** button provide a visible entry point. Example queries were subsequently removed at the user's request. The form grows to 880 px within the available content width. At 600 px of content width and below, the button moves below the field; text inputs remain 16 px and controls 48 px high.
 
 The hero reuses the existing suggestions, keyboard controls and results page. Its popup opens below the entire form so it cannot cover the submit button. It has an internal scroll area sized to the visible viewport. Header search focuses this form on home and retains the compact expandable input on other pages. There is one active combobox, no automatic focus on page load and no second search index. The hero is omitted from print; **Domänen** and **Letzte Änderungen** remain stacked vertically. Checks cover submission by button and Enter, suggestions, empty queries/results, examples, focus restoration, touch taps, short landscape screens and four UI languages.
 

@@ -76,7 +76,8 @@ test('field profiles resolve within their own table and inherit context without 
       assert.equal(parsed.kind, 'fields');
       assert.equal(parsed.id, id);
       const field = { ...data.get('fields', id), kind: 'fields' };
-      assert.equal(field.technicalName, embedded.name);
+      assert.equal(field.technicalName, embedded.technicalName);
+      assert.equal(field.label, embedded.labels.de);
       assert.equal(field.table, table.identifier);
       assert.equal(field.status, table.status);
       assert.equal(data.domainForEntity('fields', field)?.identifier, data.domainForEntity('tables', table)?.identifier);
@@ -96,7 +97,8 @@ test('field profiles resolve within their own table and inherit context without 
   const field = data.field('t-gwr-gebaeude/GKAT');
   assert.equal(field.sourceUrl, 'https://www.housing-stat.ch/catalog/de/5.0/revised#GKAT');
   const html = detail.overview({ ...field, kind: 'fields', catalogMetadata: { 'Detaillierte Beschreibung': '<img src=x onerror=alert(1)> & literal source text' } });
-  assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt; &amp; literal source text'));
+  assert.ok(!html.includes('ob-field-documentation'));
+  assert.ok(!html.includes('literal source text'));
   assert.ok(!html.includes('<img src=x'));
 });
 
@@ -144,7 +146,7 @@ test('responsibility distinguishes organisations and people, and field profiles 
 
 test('field identifiers support encoded names and reject ambiguous duplicates', async () => {
   const { data, router } = await loaded((name, value) => {
-    if (name === 'tables.json') value[0].fields.push({ identifier: 'cost / m²?net#', name: 'RENAMED_COLUMN', description: 'Stable identifier', dataType: 'DECIMAL' });
+    if (name === 'tables.json') value[0].fields.push({ identifier: 'cost / m²?net#', technicalName: 'RENAMED_COLUMN', labels: { de: 'Kosten pro Quadratmeter' }, description: 'Stable identifier', dataType: 'DECIMAL' });
   });
   const href = router.entityHref('fields', 't-we/cost / m²?net#');
   assert.equal(router.parse(href).id, 't-we/cost / m²?net#');
@@ -153,11 +155,38 @@ test('field identifiers support encoded names and reject ambiguous duplicates', 
     const { data: invalid } = runtime((name, value) => {
       if (name === 'tables.json') {
         const f = value[0].fields[0];
-        value[0].fields.push(explicit ? { ...f, identifier: f.name, name: 'another-name' } : { ...f });
+        value[0].fields.push(explicit ? { ...f, identifier: f.technicalName, technicalName: 'another-name' } : { ...f });
       }
     });
     await assert.rejects(invalid.load('data/'), /duplicate field identifier/);
   }
+});
+
+test('field labels follow the selected language with a German fallback and stable technical identity', async () => {
+  const { data, ui, detail, excel } = await loaded((name, value) => {
+    if (name === 'tables.json') value[0].fields[0].labels.fr = 'Mandant FR <test>';
+  });
+  const embedded = data.tables[0].fields[0];
+  const stored = JSON.stringify(embedded);
+  const id = `t-we/${data.fieldId(embedded)}`;
+  for (const [lang, expected] of [['fr', 'Mandant FR <test>'], ['it', 'Mandant'], ['en', 'Mandant'], ['de', 'Mandant']]) {
+    ui.setDictionary(data.i18n, lang);
+    const field = { ...data.field(id), kind: 'fields' };
+    assert.equal(field.label, expected);
+    assert.equal(field.technicalName, 'MANDT');
+    assert.equal(field.identifier, id);
+    assert.equal(field.name, `${expected} (MANDT)`);
+    const html = detail.overview(field);
+    assert.ok(html.includes(ui.esc(expected)));
+    assert.ok(!html.includes('<test>'));
+    const plan = excel.plan({ view: 'detail', kind: 'fields', entity: field }, { title: field.name, state: {} }, 'http://localhost/');
+    const fields = plan.sheets.find(s => s.name === ui.t('col.fields'));
+    assert.equal(fields.rows[0][3], 'MANDT');
+    assert.equal(fields.rows[0][4], expected);
+    const meta = plan.sheets.find(s => s.name === ui.t('excel.metadata'));
+    assert.ok(meta.rows.some(r => r[3] === 'labels.fr' && r[4] === embedded.labels.fr));
+  }
+  assert.equal(JSON.stringify(embedded), stored, 'language selection must not rewrite the source record');
 });
 
 test('the shipped data has no dangling references or missing record identities', async () => {
@@ -197,14 +226,14 @@ test('GWR import preserves source coverage, versions and explicit field-to-code-
     const table = data.get('tables', 't-gwr-' + slug);
     assert.equal(table.fields.length, count);
     assert.ok(table.sourceUrl.includes('#beschreibung-der-entitaet-'));
-    assert.equal(new Set(table.fields.map(f => f.name)).size, count);
+    assert.equal(new Set(table.fields.map(f => f.technicalName)).size, count);
     assert.ok(data.domainForEntity('tables', table));
     const groups = data.relations('tables', table);
     assert.equal(groups.find(g => g.key === 'sourceSystem').items[0].href, '#/systems/gwr');
     const refs = new Set(table.fields.map(f => f.codeList).filter(Boolean));
     assert.equal(groups.find(g => g.key === 'usesCodelists').items.length, refs.size);
     for (const field of table.fields) {
-      assert.ok(field.label && field.description && field.dataType && field.sourceUrl);
+      assert.ok(field.labels.de && field.description && field.dataType && field.sourceUrl);
       assert.ok(!JSON.stringify(field).includes('\uFFFD'), 'UTF-8 must be decoded without replacement characters');
       if (!field.codeList) continue;
       const ref = data.get('refs', field.codeList);
@@ -237,6 +266,13 @@ test('loading rejects broken collection and embedded-list shapes with useful loc
     ['objects.json', v => { v[0].attributes = {}; }, /attributes.*array/i],
     ['objects.json', v => { v[0].attributes[0] = null; }, /attributes\[0\]/],
     ['products.json', v => { v[0].basedOn = [null]; }, /basedOn\[0\]/],
+    ['tables.json', v => { delete v[0].fields[0].technicalName; }, /fields\[0\]\.technicalName/],
+    ['tables.json', v => { v[0].fields[0].technicalName = ' '; }, /fields\[0\]\.technicalName/],
+    ['tables.json', v => { v[0].fields[0].labels = 'Mandant'; }, /fields\[0\]\.labels/],
+    ['tables.json', v => { v[0].fields[0].labels = { fr: 'Mandant' }; }, /fields\[0\]\.labels.de/],
+    ['tables.json', v => { v[0].fields[0].labels.fr = {}; }, /fields\[0\]\.labels.fr/],
+    ['tables.json', v => { v[0].fields[0].labels.it = ''; }, /fields\[0\]\.labels.it/],
+    ['tables.json', v => { v[0].fields[0].labels.xx = 'Invalid language'; }, /unsupported language xx/],
   ];
   for (const [file, edit, error] of cases) {
     const { data } = runtime((name, value) => name === file ? edit(value) : value);

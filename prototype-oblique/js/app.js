@@ -22,7 +22,6 @@
     graph: DK.graph.createState(),
     relationDiagram: true,
     metadataOpen: false,
-    fieldSections: Object.create(null),
     navDrawerOpen: false,
     sidebarCollapsed: false,
     flyout: null,
@@ -136,7 +135,7 @@
     if (section) state.treeOpen[section] = true;
     if (route.view === 'list' && route.params.domain) state.treeOpen[`${route.kind}:domain:${route.params.domain}`] = true;
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.fieldSections = Object.create(null); state.lastEntity = key; }
+    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') state.chapter = route.params.ch || state.chapter;
     app.render(true);
@@ -156,7 +155,6 @@
     const mainFocus = !navigated && focusSelector(document.activeElement, $('main'));
     if (!navigated) {
       state.metadataOpen = document.querySelector('.ob-core-facts > .ob-metadata')?.open ?? state.metadataOpen;
-      document.querySelectorAll('[data-field-section]').forEach(el => { state.fieldSections[el.dataset.fieldSection] = el.open; });
     }
     // Swagger owns a live component tree. Reattach its node on chrome updates instead of remounting it.
     const swaggerHost = !navigated && route?.view === 'api' ? $('swagger-ui') : null;
@@ -184,7 +182,7 @@
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
     syncDrawer();
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
-    requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitHomeSuggestions(); });
+    requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitSearchSuggestions(); });
     updateBackToTop();
     if (route.view === 'api') renderSwagger();
   };
@@ -314,20 +312,36 @@
     if ($('search-submit')) $('search-submit').disabled = !state.query.trim();
     input.setAttribute('aria-expanded', String(open));
     if (open && state.suggestIdx >= 0) input.setAttribute('aria-activedescendant', 'suggest-' + state.suggestIdx); else input.removeAttribute('aria-activedescendant');
-    fitHomeSuggestions();
+    fitSearchSuggestions(true);
     if (open && state.suggestIdx >= 0) $('suggest-' + state.suggestIdx)?.scrollIntoView({ block: 'nearest' });
   }
-  function fitHomeSuggestions() {
-    const list = $('home-search') && $('search-suggest');
+  /** Share visual-viewport fitting between hero and header without replacing the input. */
+  function fitSearchSuggestions(revealHome = false) {
+    const list = $('search-suggest');
     if (!list) return;
     const viewport = window.visualViewport;
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
     let available = bottom - list.getBoundingClientRect().top;
-    if (available < 88 && document.activeElement === $('search-input')) {
-      $('home-search').scrollIntoView({ block: 'start' });
+    const form = $('home-search');
+    const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-touch-target'));
+    if (revealHome === true && form && available < target * 2 && document.activeElement === $('search-input')) {
+      form.scrollIntoView({ block: 'start' });
       available = bottom - list.getBoundingClientRect().top;
     }
     list.style.setProperty('--ob-suggest-available-height', available + 'px');
+  }
+  function syncVisualViewport(revealHome = false) {
+    const viewport = window.visualViewport, style = document.documentElement.style;
+    // Follow keyboard resizing/panning. During browser pinch zoom, retain native
+    // modal geometry so zooming does not continuously shrink the dialog itself.
+    if (viewport && viewport.scale === 1) {
+      style.setProperty('--ob-visual-viewport-height', viewport.height + 'px');
+      style.setProperty('--ob-visual-viewport-top', viewport.offsetTop + 'px');
+    } else {
+      style.removeProperty('--ob-visual-viewport-height');
+      style.removeProperty('--ob-visual-viewport-top');
+    }
+    fitSearchSuggestions(revealHome);
   }
   /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
   const HEADER_MENUS = ['info', 'language'];
@@ -459,6 +473,7 @@
   }
   function onScroll() {
     updateBackToTop();
+    fitSearchSuggestions();
     if (!route || route.view !== 'manual' || hbLock) return;
     let cur = data.manual.chapters[0].id;
     const chapterThreshold = $('header').getBoundingClientRect().height + 24;
@@ -724,7 +739,6 @@
     document.addEventListener('toggle', e => {
       if (!e.target.isConnected) return;
       if (e.target.matches('.ob-core-facts > .ob-metadata')) state.metadataOpen = e.target.open;
-      if (e.target.matches('[data-field-section]')) state.fieldSections[e.target.dataset.fieldSection] = e.target.open;
     }, true);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
     document.addEventListener('pointerdown', DK.graph.onPointerDown);
@@ -733,8 +747,9 @@
     document.addEventListener('pointercancel', DK.graph.onPointerUp);
     document.addEventListener('wheel', DK.graph.onWheel, { passive: false });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', () => { updateBackToTop(); requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitHomeSuggestions(); }); }, { passive: true });
-    window.visualViewport?.addEventListener('resize', fitHomeSuggestions, { passive: true });
+    window.addEventListener('resize', () => { updateBackToTop(); requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); syncVisualViewport(true); }); }, { passive: true });
+    window.visualViewport?.addEventListener('resize', () => syncVisualViewport(true), { passive: true });
+    window.visualViewport?.addEventListener('scroll', () => syncVisualViewport(), { passive: true });
     window.addEventListener('hashchange', app.onRoute);
     window.matchMedia('(max-width: 960px)').addEventListener('change', event => {
       const navigationHadFocus = state.navDrawerOpen || state.flyout || document.activeElement?.closest('#navigation-panel, .ob-navigation-toggle');
@@ -745,6 +760,7 @@
       }
     });
 
+    syncVisualViewport();
     app.onRoute();
   };
 

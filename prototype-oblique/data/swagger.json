@@ -605,13 +605,27 @@
       },
       "Field": {
         "type": "object",
-        "required": ["name", "dataType"],
+        "required": ["technicalName", "labels", "dataType"],
         "properties": {
-          "name": { "type": "string", "example": "SWERK" },
+          "identifier": { "type": "string", "minLength": 1, "description": "Optionaler stabiler Feldidentifikator; ohne Angabe wird technicalName verwendet." },
+          "technicalName": { "type": "string", "minLength": 1, "example": "SWERK", "description": "Technischer Spaltenname; wird nicht übersetzt." },
+          "labels": { "$ref": "#/components/schemas/LocalizedLabel" },
           "description": { "type": "string", "example": "Bewirtschaftungseinheit" },
           "dataType": { "type": "string", "example": "CHAR(4)" },
           "nullable": { "type": "boolean", "example": false },
           "mapsToAttribute": { "type": ["string", "null"], "example": "gebaeude/bewirtschaftungseinheit" }
+        }
+      },
+      "LocalizedLabel": {
+        "type": "object",
+        "required": ["de"],
+        "additionalProperties": false,
+        "description": "Bezeichnung nach Sprache. Deutsch ist erforderlich und dient als Fallback. Fehlende Übersetzungen werden weggelassen.",
+        "properties": {
+          "de": { "type": "string", "minLength": 1, "example": "Bewirtschaftungseinheit" },
+          "fr": { "type": "string", "minLength": 1 },
+          "it": { "type": "string", "minLength": 1 },
+          "en": { "type": "string", "minLength": 1 }
         }
       },
       "CodeList": {

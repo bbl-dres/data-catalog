@@ -24,6 +24,9 @@ node prototype-oblique/tests/gwr.cjs
 node prototype-oblique/tests/fields.cjs
 node prototype-oblique/tests/excel.cjs
 node prototype-oblique/tests/sidebar.cjs
+node prototype-oblique/tests/polish.cjs
+node prototype-oblique/tests/contrast.cjs
+node prototype-oblique/tests/mobile.cjs
 ```
 
 Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGHT_CHANNEL` to use Playwright's bundled Chromium; install it with `node <playwright-directory>/cli.js install chromium`. The module override is optional when Node can resolve `require('playwright')` normally.
@@ -35,12 +38,20 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |
 | `gwr.cjs` | Real GWR field coverage, project-domain/object mappings, system/tree navigation, field/code-list links, 119-value pagination, sorting, complete Excel workbooks, collection search and mobile layouts |
-| `fields.cjs` | Field links/profiles, organisation/person contacts and inheritance, source disclosures and state, breadcrumbs, both tree models, inherited history, code lists, invalid routes, keyboard and mobile navigation |
+| `fields.cjs` | Field links/profiles, localized labels and German fallback, stable technical names and URLs, consistent table fonts, organisation/person contacts and inheritance, breadcrumbs, both tree models, inherited history, code lists, invalid routes, keyboard and mobile navigation |
 | `excel.cjs` | Lazy local writer, actual downloads, retry, mobile profile/empty-list exports, duplicate guard and scope preservation across navigation |
 | `sidebar.cjs` | Live mouse resizing without DOM replacement, saved width, keyboard/reset/cancellation, collapse, responsive bounds, mobile/API exclusions and unavailable storage |
+| `polish.cjs` | Long tile labels and equal widths, disabled hover states, shared selects/reading typography, high-contrast icons/focus/navigation and unscaled touch pager targets |
+| `contrast.cjs` | Computed text/graphic contrast at phone, tablet and desktop widths; hover, API schemas/examples/dialog, input boundaries and keyboard focus |
+| `mobile.cjs` | Short/mobile/touch layouts, API table scrolling, dialog/menu/help access, fullscreen scrolling and simulated keyboard viewport changes without losing state |
+| `contrast-helpers.cjs` | Test-only sRGB relative luminance and alpha-composited foreground/background sampler |
 | `excel-helpers.cjs` | Read actual downloaded XLSX files for content assertions using the pinned writer/reader |
 | `browser-helpers.cjs` | Shared ephemeral loopback server and browser rendering synchronization |
 
 Each browser script owns its server and browser and closes them on completion or failure. Fixture mutations and failed responses are confined to tests. No external server, catalog edits or app build is needed. No CI workflow is added to this repository's unrelated chat-worker deployment.
+
+The contrast suite writes measurements and screenshots to `oblique-contrast-review` in the OS temporary directory. Keep `REPORT_ONLY` unset for verification; setting it to `1` records a baseline without contrast/focus assertions. See [the contrast review](../docs/contrast-review-2026-09-05.md) for thresholds, findings and measurement limitations.
+
+The mobile suite writes to `oblique-mobile-review` in the same temporary directory and also supports `REPORT_ONLY=1` for baseline layout measurements. Its keyboard cases simulate visual-viewport changes; they do not operate an actual OS keyboard. See [the mobile review](../docs/mobile-responsive-review-2026-09-05.md).
 
 See [the developer review](../docs/developer-review-2026-09-05.md) for findings and the limits of these checks, and [the responsive review](../docs/responsive-strategy.md) for the viewport matrix.

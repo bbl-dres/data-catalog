@@ -197,19 +197,20 @@ def fields_of(t):
     o = obj_of[t['obj']]
     fields = []
     if t['system'] == 'sap':
-        fields.append(('MANDT', 'Mandant.', 'CHAR(3)', 'PK'))
+        fields.append(('MANDT', 'Mandant', 'Mandant.', 'CHAR(3)', 'PK'))
     else:
-        fields.append(('OBJECTID', 'Interner Objektidentifikator (ArcGIS).', 'INTEGER', 'PK'))
+        fields.append(('OBJECTID', 'Objektidentifikator', 'Interner Objektidentifikator (ArcGIS).', 'INTEGER', 'PK'))
     for a in attrs_of(o):
         n = re.sub(r'[^A-Z0-9]+', '_', a['name'].replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue').replace('Ä', 'Ae').replace('Ö', 'Oe').replace('Ü', 'Ue').upper()).strip('_')
-        fields.append((n, a['description'], SQL_TYPE[a['valueType']], a['keyRole']))
+        label = {'EGID': 'Eidgenössischer Gebäudeidentifikator', 'EGRID': 'Eidgenössischer Grundstücksidentifikator'}.get(n, a['name'])
+        fields.append((n, label, a['description'], SQL_TYPE[a['valueType']], a['keyRole']))
     if t['system'] == 'sap':
-        fields += [('ERDAT', 'Datum der Anlage.', 'DATE', None), ('ERNAM', 'Anlegender Benutzer.', 'VARCHAR(12)', None),
-                   ('AEDAT', 'Datum der letzten Änderung.', 'DATE', None), ('AENAM', 'Ändernder Benutzer.', 'VARCHAR(12)', None)]
+        fields += [('ERDAT', 'Anlagedatum', 'Datum der Anlage.', 'DATE', None), ('ERNAM', 'Angelegt von', 'Anlegender Benutzer.', 'VARCHAR(12)', None),
+                   ('AEDAT', 'Änderungsdatum', 'Datum der letzten Änderung.', 'DATE', None), ('AENAM', 'Geändert von', 'Ändernder Benutzer.', 'VARCHAR(12)', None)]
     else:
-        fields += [('SHAPE', 'Geometrie (LV95, EPSG:2056).', 'GEOMETRY', None), ('CREATED_DATE', 'Datum der Erfassung.', 'DATE', None),
-                   ('LAST_EDITED_DATE', 'Datum der letzten Bearbeitung.', 'DATE', None), ('LAST_EDITED_USER', 'Letzter Bearbeiter.', 'VARCHAR(50)', None)]
-    return [dict(name=n, description=d, dataType=ty, keyRole=k) for n, d, ty, k in fields]
+        fields += [('SHAPE', 'Geometrie', 'Geometrie (LV95, EPSG:2056).', 'GEOMETRY', None), ('CREATED_DATE', 'Erfassungsdatum', 'Datum der Erfassung.', 'DATE', None),
+                   ('LAST_EDITED_DATE', 'Letzte Bearbeitung', 'Datum der letzten Bearbeitung.', 'DATE', None), ('LAST_EDITED_USER', 'Zuletzt bearbeitet von', 'Letzter Bearbeiter.', 'VARCHAR(50)', None)]
+    return [dict(technicalName=n, labels={'de': label}, description=d, dataType=ty, keyRole=k) for n, label, d, ty, k in fields]
 
 # ---------------------------------------------------------------- reference data (code lists)
 REFS = [

@@ -12,7 +12,6 @@
   "detail.pagination": { "de": "Seitennavigation", "fr": "Pagination", "it": "Paginazione", "en": "Pagination" },
   "detail.pageSize": { "de": "Zeilen pro Seite", "fr": "Lignes par page", "it": "Righe per pagina", "en": "Rows per page" },
   "detail.rowRange": { "de": "{from}–{to} von {total} Einträgen", "fr": "{from}–{to} sur {total} entrées", "it": "{from}–{to} di {total} voci", "en": "{from}–{to} of {total} entries" },
-  "col.position": { "de": "#", "fr": "#", "it": "#", "en": "#" },
   "col.mandatory": { "de": "Pflicht", "fr": "Obligatoire", "it": "Obbligatorio", "en": "Required" },
   "_comment": "UI strings: one entry per key with de/fr/it/en. German is the reference; fr/it/en are machine-drafted for validation by translators. A missing or empty translation falls back to German.",
 

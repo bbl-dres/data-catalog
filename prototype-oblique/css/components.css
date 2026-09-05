@@ -1,0 +1,85 @@
+/* Shared controls and content surfaces. Layout and contextual variants live in main.css. */
+
+:focus-visible { outline: none; box-shadow: var(--ob-focus-ring); }
+a:focus-visible { border-radius: var(--ob-radius-md); }
+/* Controls inside scroll containers use an inset ring so it is never clipped. */
+.ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
+
+/* Buttons */
+.ob-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ob-space-sm);
+  height: var(--ob-control-height); padding: 0 var(--ob-space-md);
+  border: var(--ob-border-width-xs) solid var(--ob-color-border-control); border-radius: var(--ob-radius-sm);
+  background: var(--ob-color-bg); color: var(--ob-color-text);
+  font-size: var(--ob-font-size-md); font-weight: var(--ob-font-weight-medium); letter-spacing: var(--ob-letter-spacing-wide);
+  line-height: var(--ob-line-height-sm); white-space: nowrap; cursor: pointer;
+}
+.ob-button:hover:not(:disabled) { background: var(--ob-color-surface); }
+.ob-button:active:not(:disabled) { background: var(--ob-color-surface-hover); }
+.ob-button:disabled { border-color: var(--ob-color-text-disabled); color: var(--ob-color-text-disabled); cursor: default; }
+.ob-button--ghost { border-color: transparent; background: transparent; font-size: var(--ob-font-size-sm); gap: var(--ob-space-xs); }
+.ob-button--icon { width: var(--ob-control-height); padding: 0; border-color: transparent; background: transparent; }
+.ob-button--icon.is-active { background: var(--ob-color-surface); }
+.ob-button--icon.ob-button--outlined { border-color: var(--ob-color-border-control); background: var(--ob-color-bg); }
+.ob-button--icon.ob-button--outlined:hover:not(:disabled) { background: var(--ob-color-surface); }
+.ob-button--pager { width: var(--ob-touch-target); height: var(--ob-touch-target); padding: 0; }
+.ob-language-select { min-width: var(--ob-language-select-min-width); }
+
+/* Badge / chip */
+.ob-badge, .ob-chip {
+  display: inline-block; padding: var(--ob-space-2xs) var(--ob-space-md); border-radius: var(--ob-radius-pill);
+  color: var(--ob-color-text-inverse); background: var(--ob-color-neutral);
+  font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-medium); line-height: var(--ob-line-height-xs);
+  letter-spacing: var(--ob-letter-spacing-wider); white-space: nowrap;
+}
+.ob-chip--success { background: var(--ob-color-success); }
+.ob-chip--warning { background: var(--ob-color-warning); }
+.ob-chip--error { background: var(--ob-color-error); }
+.ob-chip--info { background: var(--ob-color-info); }
+.ob-chip--neutral { background: var(--ob-color-neutral); }
+
+.ob-chip { padding: 1px var(--ob-space-sm); letter-spacing: var(--ob-letter-spacing-wide); } /* optical vertical inset */
+.ob-chip--outline { color: var(--ob-color-text-secondary); background: var(--ob-color-bg); border: var(--ob-border-width-xs) solid var(--ob-color-border-strong); font-weight: var(--ob-font-weight-regular); }
+
+.ob-metadata { margin-top: var(--ob-space-md); font-size: var(--ob-font-size-sm); }
+.ob-metadata > summary { display: flex; align-items: center; gap: var(--ob-space-sm); width: fit-content; max-width: 100%; padding: var(--ob-space-xs) 0; color: var(--ob-color-link); cursor: pointer; font-weight: var(--ob-font-weight-semibold); line-height: var(--ob-line-height-md); list-style: none; overflow-wrap: anywhere; }
+.ob-metadata > summary::-webkit-details-marker { display: none; }
+.ob-metadata > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: url('../assets/icons/chevron_down.svg') center / contain no-repeat; }
+.ob-metadata[open] > summary::before { transform: rotate(180deg); }
+.ob-metadata[open] > summary { margin-bottom: var(--ob-space-sm); }
+
+/* Shared input/select foundation; search owns its icon clearances. */
+.ob-input, .ob-select {
+  min-width: 0; max-width: 100%; height: var(--ob-control-height);
+  border: var(--ob-border-width-xs) solid var(--ob-color-border-input);
+  background: var(--ob-color-bg); color: var(--ob-color-text);
+  font-family: var(--ob-font-family-body); font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md);
+}
+.ob-input { border-radius: var(--ob-radius-lg); }
+.ob-select { border-radius: var(--ob-radius-sm); padding: 0 var(--ob-space-sm); }
+.ob-select--comfortable { min-height: var(--ob-touch-target); font-size: var(--ob-font-size-input); }
+
+/* Quiet icon actions inside inputs and notices, with one interaction state. */
+.ob-icon-button {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: var(--ob-control-height-sm); height: var(--ob-control-height-sm); padding: 0;
+  border: 0; border-radius: var(--ob-radius-sm); background: transparent;
+  color: var(--ob-color-text-secondary); cursor: pointer;
+}
+.ob-icon-button:hover:not(:disabled) { background: var(--ob-color-surface); }
+.ob-icon-button:disabled { color: var(--ob-color-text-disabled); cursor: default; }
+
+/* Filled navigation cards: shared surface, wrapping and interaction states. */
+.ob-card {
+  display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere;
+  border-radius: var(--ob-radius-sm); background: var(--ob-color-surface);
+  color: var(--ob-color-text); text-decoration: none;
+}
+.ob-card:hover, .ob-card:focus-visible { background: var(--ob-color-surface-hover); color: var(--ob-color-text); }
+
+/* The same input policy applies to tablets, phones and desktop touch screens. */
+@media (any-pointer: coarse), (max-width: 960px) {
+  .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-metadata > summary, .ob-input, .ob-select, .ob-icon-button { min-height: var(--ob-touch-target); }
+  .ob-input, .ob-select { font-size: var(--ob-font-size-input); }
+  .ob-button--icon, .ob-icon-button { min-width: var(--ob-touch-target); }
+}

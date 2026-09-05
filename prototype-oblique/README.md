@@ -20,7 +20,7 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 ## Features
 
 - Compact 1b sidebar layout: sticky federal branding with a separate desktop navigation row, collapsible catalog/handbook navigation with icon flyouts, header search, and a mobile navigation drawer. The desktop sidebar starts at 320 px; drag its right divider to resize, or double-click to reset. Its width is remembered.
-- Home page with a prominent search form, example searches, KPI cards, domain overview and latest changes.
+- Home page with a prominent search form, KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
 - Profile pages with tabs for overview, attributes or fields or values, an interactive relationship diagram with zoom/pan/selection/fullscreen and a table alternative, and history.
 - Relevance-ranked, umlaut-tolerant search with grouped suggestions, keyboard navigation and a results page.
@@ -43,6 +43,7 @@ Open <http://localhost:8000/prototype-oblique/>.
 
 ## Documentation
 
+- [Design polish review, 5 September](docs/design-polish-2026-09-05.md) — visual bugs, shared components, token refinements and verification.
 - [Developer review, 5 September](docs/developer-review-2026-09-05.md) — code findings, implemented fixes, verification and remaining limits.
 - [Test setup](tests/README.md) — repeatable core, functional and responsive checks.
 - [Responsive strategy and review](docs/responsive-strategy.md) — current layout decisions, device behavior, evidence and browser checks.
@@ -50,6 +51,8 @@ Open <http://localhost:8000/prototype-oblique/>.
 - [Architecture](docs/architecture.md) — file structure, rendering model, routing, state, events, how to extend.
 - [Compact layout 1b](docs/compact-layout.md) — implementation plan, mockup mapping, responsive behavior and validation; includes the preserved original prototype.
 - [Design system](docs/design-system.md) — how the tokens map to Oblique, what was taken from the Figma library, known deltas.
+- [Contrast review](docs/contrast-review-2026-09-05.md) — measured text, graphics and focus states; targeted palette fixes and regression checks.
+- [Mobile and responsive refinement](docs/mobile-responsive-review-2026-09-05.md) — keyboard viewports, touch sizing, short-screen overlays and contained API tables.
 - [Data model](docs/data-model.md) — JSON files and fields.
 - [Earlier code review](docs/code-review.md) — historical findings from 2 September 2026.
 - [Design review](docs/design-review.md) and [responsive review](docs/design-review-responsive.md) — CD conformance, accessibility, contrast, phone and tablet layout.

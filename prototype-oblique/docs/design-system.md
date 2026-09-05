@@ -5,7 +5,7 @@ For current responsive dimensions and deliberate deviations, see the [responsive
 The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body, controls and data rows, 12/16 supporting labels and a 320 px default sidebar / 56 px icon rail. Sidebar width is adjustable from 240 to 480 px, constrained by available content space; its default, limits and divider hit area use tokens. The header identity follows the federal flag/type dimensions below; the selected mockup determines the remaining density. See the [token consistency review](token-consistency.md) for the current token policy and cleanup.
 
 
-The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) ships as an Angular library. This prototype does not use it directly. Instead `css/tokens.css` reproduces Oblique's tokens as plain CSS custom properties and `css/main.css` hand-writes the components against them.
+The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) ships as an Angular library. This prototype does not use it directly. Instead `css/tokens.css` reproduces Oblique's tokens as plain CSS custom properties; `css/components.css`, `css/main.css` and `css/graph.css` implement the interface against them.
 
 ## Sources
 
@@ -37,6 +37,8 @@ The source audit established the palette and shadows. The selected 1b mockup now
 | `--ob-color-border` | `#dfe4e9` | `$ob-gray-lighter` | Border/border-default |
 | `--ob-color-border-strong` | `#acb4bd` | `$ob-gray-light` | Border/border-highEmphasis |
 | `--ob-color-border-input` | `#596978` | – | text/select component border |
+| `--ob-color-graphic` | `#828e9a` | secondary-300; app alias for essential graphics | – |
+| `--ob-color-code-bg` | `#131b22` | secondary-900; app alias for API examples | – |
 | `--ob-color-footer-bg` | `#263645` | `$ob-dark` | Background/Secondary/dark-high |
 | `--ob-color-accent` | `#e53940` | `$ob-accent` (red-500) | primary/500 |
 | `--ob-color-accent-strong` | `#d8232a` | red-600 ("Nav color") | primary/600 |
@@ -60,6 +62,10 @@ The source audit established the palette and shadows. The selected 1b mockup now
 | Content margin | 32px desktop, 16px ? 960px, 48px ? 2560px | Compact mockup 1b | ? |
 
 ## Known deltas
+
+The [contrast review](contrast-review-2026-09-05.md) documents current contrast measurements, state-specific corrections and the scoped Swagger palette overrides. Essential graphics use a separate alias from decorative borders; the shared palette primitives are unchanged.
+
+The [mobile refinement](mobile-responsive-review-2026-09-05.md) centralizes the 32/44 px control-height switch, introduces runtime visual-viewport geometry for keyboard-aware API dialogs and keeps API table scrolling inside existing containers.
 
 - **Focus colour**: code uses `#8655f6`, the Figma variable Border/focus is `#8b5cf6`. Code value kept.
 - **Active tab underline**: the compact mockup and application use the `#e53940` accent; Figma uses pure red `#ff0000`.
@@ -87,15 +93,17 @@ The header uses the existing flag SVG followed by a 16 px gap (`--ob-logo-gap`),
 | 768–1023 px | 30 × 33 px | 14 px |
 | 1024–1279 px | 32 × 34 px | 14 px |
 | 1280–1919 px | 32 × 34 px | 16 px |
-| From 1920 px | 40 × 44 px | 18 px |
+| From 1920 px | 40 × 44 px | 16 px |
 
 The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
 
 The flag image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The original logo integration was checked at 21 widths; the simplified composition retains the flag and typography dimensions and has been checked from phone to wide desktop sizes.
 
-## Components written in `main.css`
+## Component ownership
 
-Master layout (header with logo and app title, main navigation, footer), breadcrumb, buttons (default, ghost, icon, pager), badge and chip, popover, dropdown menu, search field with listbox, view toggle, navigation tree, tables (zebra, hover, clickable rows), KPI cards, collapsible groups with tiles, tabs, description lists for facts, orbit graph, pagination, alert toast, empty state, handbook and API layouts, responsive rules at 960px and 600px, with the 2560px wide-monitor band, print stylesheet.
+Catalogue tables use meaningful names, field identifiers or codes to identify entries, without a synthetic row-number column. Attribute tables follow the same rule; source positions remain available as detail metadata and in Excel exports. All table values use the standard body font, including technical field names and code values; monospace is reserved for actual code examples.
+
+`components.css` owns reusable buttons, inputs/selects, quiet icon actions, badges/chips, disclosures and filled cards. `main.css` owns the header, navigation, content layouts, tables, search composition, menus, pagination, notices and contextual variants; its final high-contrast rules preserve system colors and focus visibility. `graph.css` owns the bubble workspace and its controls. The current application band is capped at 1600 px. The [design polish review](design-polish-2026-09-05.md) records the shared component contracts and checks.
 
 Oblique provides general scrolling utilities, but its documentation, source component inventory and bundled Figma 15.1.2 library do not define a back-to-top UI component. The prototype therefore uses an application-specific pattern built from the standard secondary button, spacing, shadow, focus and icon tokens. It appears only after meaningful page scrolling, respects reduced-motion preferences, and uses a compact icon-only presentation on phones.
 

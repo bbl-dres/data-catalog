@@ -1,6 +1,6 @@
 # Architecture
 
-No build step and no framework. One HTML page, three stylesheets, nine application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
+No build step and no framework. One HTML page, four stylesheets, nine application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
 
 The current page composition implements [compact layout 1b](compact-layout.md) and the [responsive strategy](responsive-strategy.md): a sticky header with navigation below the identity row above 960 px, shared 320 px default sidebar (resizable from 240 to 480 px) / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
 
@@ -11,7 +11,8 @@ prototype-oblique/
 ├── index.html            Page shell: identity header and desktop nav row, <main id="main">, footer
 ├── css/
 │   ├── tokens.css        Design tokens (custom properties) – see design-system.md
-│   ├── main.css          Fonts, reset, layout and components; responsive and print rules
+│   ├── components.css    Shared buttons, inputs/selects, icon actions, chips, disclosures and filled cards
+│   ├── main.css          Fonts, reset, layouts and contextual variants; responsive, high-contrast and print rules
 │   └── graph.css         Diagram workspace, controls and fullscreen presentation
 ├── js/
 │   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, downloads and small widgets
@@ -36,6 +37,8 @@ prototype-oblique/
 ```
 
 The nine application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace (`router.js` and `graph.js` read `DK.data`, so `data.js` must come first). Swagger UI is not in `index.html`: `app.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export; failed loads can be retried.
+
+Styles load in order: tokens, reusable components, application layouts/variants, diagram. `.ob-input` and `.ob-select` share native field styling; `.ob-icon-button` supplies quiet actions in inputs and notices; `.ob-card` supplies the filled surface, safe wrapping and interaction states for KPI cards and tiles. Layout classes retain their distinct padding, grids and content limits. See [the design polish review](design-polish-2026-09-05.md) for ownership and regression checks.
 
 ## JavaScript strategy
 
@@ -71,7 +74,7 @@ Every entity lookup tolerates a missing target: `data.nameOf()` falls back to th
 
 The [GWR import](gwr-import.md) supplies seven logical tables and explicit `fields[].codeList` references. Tables with these links add a Werteliste column; relationship builders resolve them in both directions, including entities without a mapped business object. A direct `domain` supports those unmapped records. The GWR system diagram lists its tables. Imported definitions link directly to the corresponding source paragraphs, and provenance/version details distinguish the 5.0 catalog from the older code workbook. The Übersicht tree link omits the aggregate count.
 
-Field profiles reuse the attribute-page composition and have Übersicht, Beziehungen and Verlauf Datentabelle. `data.field()` derives the profile from its table's embedded field, and `router.entityHref('fields', '<tableId>/<fieldId>')` creates its address. Every field name and row in Felder links to that profile, including mobile cards; code-list links remain separate destinations. Breadcrumbs and the Datentabelle fact return to the parent's Felder tab. Both tree models highlight the parent table. Source-documentation disclosures retain their own open/closed state across menu and tab changes, reset on changing entity, and do not change Weitere Metadaten. They render escaped source text rather than HTML from the saved catalog.
+Field profiles reuse the attribute-page composition and have Übersicht, Beziehungen and Verlauf Datentabelle. `data.field()` derives the profile from its table's embedded field, and `router.entityHref('fields', '<tableId>/<fieldId>')` creates its address. Every field name and row in Felder links to that profile, including mobile cards; code-list links remain separate destinations. Breadcrumbs and the Datentabelle fact return to the parent's Felder tab. Both tree models highlight the parent table. Fields store `technicalName` and a `labels` language map; the profile resolves the selected label with `ui.localized()` and shows both in Kerndaten. Imported source documentation remains in JSON and Excel, without a separate section on the profile.
 
 Before publishing a data snapshot, the loader checks collection shapes, record identities, embedded lists and duplicate IDs. Invalid input leaves any previously loaded snapshot intact. See [data-model.md](data-model.md) for the scope of these guards. HTML data is escaped; config/data links additionally use `ui.safeHref()` through `ui.link()`. Its label HTML must already be escaped. Excel export writes catalog strings as literal text cells, including formula-like content, and preserves numeric values separately.
 
@@ -113,7 +116,7 @@ Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90)
 
 Catalog data tables use native buttons in their column headers and expose the active direction through `aria-sort`. Repeated headers in grouped L0 tables share one sort state. Detail rows are sorted before pagination, and changing their sort resets the pager to page 1. Handbook reference tables remain unsorted because their authored row order conveys meaning.
 
-Column definitions also control presentation: `numeric: true` right-aligns the header and values and uses tabular digits; `compact: true` lets short metadata columns size to their content. Text headers and values share left alignment and the same padding. Numeric sort icons appear before the label so its right edge lines up with the numbers. Counts and row positions are numeric; codes, versions and dates remain text. Names use proportional widths, descriptions take the remaining space, and short status/count/date columns avoid expanding with the screen. Mobile cards keep labels left and numeric values right; print preserves the same value alignment.
+Column definitions also control presentation: `numeric: true` right-aligns the header and values and uses tabular digits; `compact: true` lets short metadata columns size to their content. Text headers and values share left alignment and the same padding. Numeric sort icons appear before the label so its right edge lines up with the numbers. Counts are numeric; codes, versions and dates remain text. Tables omit synthetic row numbers and use the standard body font, including technical field names and code values. Source positions remain available in details and Excel. Names use proportional widths, descriptions take the remaining space, and short status/count/date columns avoid expanding with the screen. Mobile cards keep labels left and numeric values right; print preserves the same value alignment.
 
 ## Configuration (`data/config.json`)
 
@@ -123,10 +126,10 @@ Column definitions also control presentation: `numeric: true` right-aligns the h
 
 - **New entity type**: add a JSON file and a `kinds` entry in `model.json`; add it to `FILES`, `KINDS`, `LISTS` and the `cols`/`columns`/`sizeOf`/`relations` switches in `data.js`; add `rowsData` and facts in `detail.js`; add its crumb path in `views.context()`.
 - **New grouping option**: extend `GROUP_IDS`, `groupKey` and `groupOrder` in `data.js`; add a `group.<id>` label in `i18n.json`.
-- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts, list the language in `app.languages` and optionally set it as `app.language`. Missing translations fall back to German; `setLanguage()` in `app.js` swaps the dictionary and re-renders. Data fields are still German strings, so a multilingual data schema (`{de, fr, it, en}`) would be the next step.
+- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts, list the language in `app.languages` and optionally set it as `app.language`. Missing translations fall back to German; `setLanguage()` in `app.js` swaps the dictionary and re-renders. Embedded table fields use the same languages in `labels`; the loader validates this map and `ui.localized()` resolves it. Other catalog names and descriptions remain German strings.
 - **Real backend**: replace `data.load()` with API calls that return the same shapes as the JSON files; nothing else depends on the file layout.
 - **Excel export**: implemented by `DK.excel` (see [excel-export.md](excel-export.md)). DCAT export remains a placeholder in `doExport()`.
 
 ## Testing
 
-Eight suites are checked in: `tests/core.test.cjs` checks real and mutated JSON plus workbook round-trips using Node and the vendored writer; `tests/functional.cjs` checks browser behavior and failure recovery; `tests/responsive.cjs` checks the responsive matrix; `tests/graph.cjs` covers diagram controls, dense data and fullscreen/touch behavior; `tests/gwr.cjs` checks imported GWR data and exports; `tests/fields.cjs` checks field profiles and navigation; `tests/excel.cjs` checks workbook downloads, scope and loading failures; `tests/sidebar.cjs` checks desktop resizing, persistence, cancellation and responsive limits. See [tests/README.md](../tests/README.md) for reproducible setup. Physical-device and screen-reader checks remain separate from these automated suites.
+Eleven suites are checked in: `tests/core.test.cjs` checks real and mutated JSON plus workbook round-trips using Node and the vendored writer; `tests/functional.cjs` checks browser behavior and failure recovery; `tests/responsive.cjs` checks the responsive matrix; `tests/graph.cjs` covers diagram controls, dense data and fullscreen/touch behavior; `tests/gwr.cjs` checks imported GWR data and exports; `tests/fields.cjs` checks field profiles and navigation; `tests/excel.cjs` checks workbook downloads, scope and loading failures; `tests/sidebar.cjs` checks desktop resizing, persistence, cancellation and responsive limits; `tests/polish.cjs` checks long labels, shared controls, disabled states and high-contrast rendering; `tests/contrast.cjs` measures text/graphic contrast and checks visible keyboard focus, including Swagger; `tests/mobile.cjs` covers short-screen overlays, touch controls, API table scrolling and simulated keyboard viewports. See [tests/README.md](../tests/README.md) for reproducible setup. Physical-device and screen-reader checks remain separate from these automated suites.

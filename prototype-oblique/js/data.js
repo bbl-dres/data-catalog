@@ -70,15 +70,21 @@
           const seen = new Set();
           e.fields.forEach((f, j) => {
             record(f, `${at}[${j}]`);
-            text(f.name, `${at}[${j}].name`);
+            text(f.technicalName, `${at}[${j}].technicalName`);
+            record(f.labels, `${at}[${j}].labels`);
+            text(f.labels.de, `${at}[${j}].labels.de`);
+            Object.entries(f.labels).forEach(([lang, label]) => {
+              if (!['de', 'fr', 'it', 'en'].includes(lang)) throw new Error(`${at}[${j}].labels: unsupported language ${lang}`);
+              text(label, `${at}[${j}].labels.${lang}`);
+            });
             if (f.identifier != null) text(f.identifier, `${at}[${j}].identifier`);
-            const id = f.identifier ?? f.name;
+            const id = data.fieldId(f);
             if (seen.has(id)) throw new Error(`${at}[${j}]: duplicate field identifier ${id}`);
             seen.add(id);
           });
         }
         if (kind === 'objects' && list === 'attributes') identities(e[list], at);
-        else e[list].forEach((item, j) => {
+        else if (list !== 'fields') e[list].forEach((item, j) => {
           const entry = `${at}[${j}]`;
           if (['basedOn', 'sourcedFrom', 'servedBy'].includes(list)) text(item, entry);
           else {
@@ -103,7 +109,7 @@
       check('tables', x, 'realizes', 'objects', x.realizes);
       check('tables', x, 'system', 'systems', x.system);
       check('tables', x, 'domain', 'domains', x.domain);
-      x.fields.forEach(f => check('tables', x, `fields.${f.name}.codeList`, 'refs', f.codeList));
+      x.fields.forEach(f => check('tables', x, `fields.${f.technicalName}.codeList`, 'refs', f.codeList));
     });
     data.refs.forEach(r => {
       check('refs', r, 'businessObject', 'objects', r.businessObject);
@@ -159,7 +165,7 @@
   };
   data.domainOf = id => data.get('domains', id);
   /** Fields are addressed by an explicit stable identifier, falling back to their exact technical name. */
-  data.fieldId = f => f.identifier ?? f.name;
+  data.fieldId = f => f.identifier ?? f.technicalName;
   data.field = function (id) {
     if (typeof id !== 'string') return null;
     const i = id.indexOf('/');
@@ -169,10 +175,11 @@
     const position = table.fields.findIndex(f => data.fieldId(f) === id.slice(i + 1));
     if (position < 0) return null;
     const f = table.fields[position];
+    const label = ui.localized(f.labels);
     const inherited = Object.fromEntries(['version', 'created', 'modified', 'responsibleOrg', 'contact', 'dataOwner', 'dataSteward', 'dataCustodian', 'classification', 'personalData', 'source', 'sourceDetail', 'synced', 'provenance'].map(key => [key, table[key]]));
     return {
       ...inherited, ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier,
-      name: f.label ? `${f.label} (${f.name})` : f.name, technicalName: f.name,
+      label, name: label && label !== f.technicalName ? `${label} (${f.technicalName})` : f.technicalName,
       system: table.system, domain: data.domainForEntity('tables', table)?.identifier,
       status: table.status, position: position + 1,
     };
@@ -393,7 +400,7 @@
     if (kind === 'attrs') {
       const o = data.objOf(e.object);
       const fieldName = ui.fieldName(e.name);
-      const relTables = data.tables.filter(x => x.realizes === o.identifier && x.fields.some(f => f.name === fieldName));
+      const relTables = data.tables.filter(x => x.realizes === o.identifier && x.fields.some(f => f.technicalName === fieldName));
       const relRefs = e.valueType === 'Code' ? data.refs.filter(r => r.businessObject === o.identifier) : [];
       const stem = e.name.toLowerCase().split(/[ -]/)[0];
       return [

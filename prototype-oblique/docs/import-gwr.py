@@ -112,7 +112,7 @@ def field_info(heading):
     if not values and re.search(r'1\s*=\s*ja\s*,\s*0\s*=\s*nein', metadata['Codierung'], re.I):
         values = [{'code': '0', 'label': 'Nein'}, {'code': '1', 'label': 'Ja'}]
     field = {
-        'name': code, 'label': label, 'description': f'{label}: {summary}',
+        'technicalName': code, 'labels': {'de': label}, 'description': f'{label}: {summary}',
         'dataType': '', 'keyRole': None,
         'sourceUrl': f'{URL}#{code}',
         'catalogMetadata': metadata,
@@ -215,7 +215,7 @@ def main():
             raise ValueError(f'{name}: expected {expected} features, found {len(headings)}')
         for heading in headings:
             field, coding, values = field_info(heading)
-            code = field['name']
+            code = field['technicalName']
             candidates = [r for r in workbook.get(code, []) if '4.2' in r['sourceVersion'].split('/')]
             if len({r['code'] for r in candidates}) != len(candidates):
                 raise ValueError(f'Duplicate 4.2 code in {code}')
@@ -247,8 +247,8 @@ def main():
                 ref_id = EXISTING_REFS.get(code, 'r-gwr-' + code.lower())
                 field['codeList'] = ref_id
                 ref = {
-                    **base, 'identifier': ref_id, 'name': f'GWR {field["label"]} ({code})',
-                    'description': f'Werteliste für {field["label"]} ({code}) in der GWR-Entität {name}.',
+                    **base, 'identifier': ref_id, 'name': f'GWR {field["labels"]["de"]} ({code})',
+                    'description': f'Werteliste für {field["labels"]["de"]} ({code}) in der GWR-Entität {name}.',
                     'sourceAuthority': 'GWR / eCH', 'domain': domain,
                     'sourceField': code, 'codeListOrigin': origin,
                     'classification': 'öffentlich', 'personalData': False, 'values': values,
@@ -270,7 +270,7 @@ def main():
             field['dataType'] = data_type(coding, bool(values))
             table['fields'].append(field)
         tables.append(table)
-        report['tables'].append({'id': table['identifier'], 'name': name, 'definitionSourceUrl': definition_url, 'fields': [f['name'] for f in table['fields']]})
+        report['tables'].append({'id': table['identifier'], 'name': name, 'definitionSourceUrl': definition_url, 'fields': [f['technicalName'] for f in table['fields']]})
     system = {
         **base, 'identifier': 'gwr', 'name': 'GWR',
         'description': 'Eidgenössisches Gebäude- und Wohnungsregister des BFS. Der importierte Merkmalskatalog 5.0.0 beschreibt Bauprojekte, Arbeiten, Gebäude, Wärmeerzeugungsanlagen, Gebäudeeingänge, Wohnungen und Strassen.',
@@ -295,7 +295,7 @@ def main():
             merged = [new.pop(r['identifier'], r) for r in current]
             merged.extend(new.values())
         path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-    used = {f['name'] for table in tables for f in table['fields']}
+    used = {f['technicalName'] for table in tables for f in table['fields']}
     report['workbookFeaturesOutsideCatalog'] = {k: len(v) for k, v in sorted(workbook.items()) if k not in used}
     report['workbookRowsByVersion'] = dict(Counter(r['sourceVersion'] for group in workbook.values() for r in group))
     report['totals'] = {'tables': len(tables), 'fields': sum(len(t['fields']) for t in tables), 'codeLists': len(refs), 'values': sum(len(r['values']) for r in refs)}

@@ -38,7 +38,7 @@ The workbook contains **817 rows**, covering 63 feature names and versions 3.7, 
 
 The [Projekt Management domain](project-management.md) adds draft business objects for Bauprojekt and Bauarbeiten. The latter maps to the source entity named **Arbeiten**; the imported table's name, field IDs and source definition remain unchanged. Their 15 code lists follow the new domain and business-object assignments. These are local catalog mappings, not changes to GWR's official metadata or release status.
 
-Field names and rows now open individual profiles, for example `#/tables/t-gwr-gebaeude/fields/EGID`. The overview exposes the imported source documentation and field-level source link, and coded fields link to their code lists. Parent-table breadcrumbs, relationships and inherited table history follow the same patterns as business-object attribute profiles. See [data-model.md](data-model.md) for identifiers and inheritance.
+Field names and rows now open individual profiles, for example `#/tables/t-gwr-gebaeude/fields/EGID`. Fields store the source code in `technicalName` and the exact German label in `labels.de`; the profile displays both in Kerndaten. Supplied translations follow the selected language, with German as the fallback. The field-level source link and code-list links remain available. Full source documentation stays in JSON and Excel without a separate section on the page. Parent-table breadcrumbs, relationships and inherited table history follow the same patterns as business-object attribute profiles. See [data-model.md](data-model.md) for identifiers and inheritance.
 
 ## Provenance and limits
 

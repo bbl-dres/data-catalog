@@ -4,14 +4,20 @@
 
   const ui = {};
   let dict = {};
+  let language = 'de', fallbackLanguage = 'de';
+
+  /** Resolve a content label without modifying its stored translations. */
+  ui.localized = labels => labels?.[language] || labels?.[fallbackLanguage] || labels?.de || '';
 
   /** Pick one language from the i18n table (key → { de, fr, it, en }); a missing or empty translation falls back to `fallback`. */
   ui.setDictionary = function (table, lang, fallback) {
+    language = lang;
+    fallbackLanguage = fallback || 'de';
     dict = {};
     Object.keys(table || {}).forEach(key => {
       const v = table[key];
       if (!v || typeof v !== 'object') return;
-      dict[key] = v[lang] || v[fallback || 'de'] || key;
+      dict[key] = ui.localized(v) || key;
     });
   };
 
@@ -124,7 +130,7 @@
       const label = ui.t('sort.' + (direction === 'asc' ? 'ascending' : 'descending'), { column: c.label });
       return `<option value="${i}:${direction}"${opts.sort?.column === i && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
     })).join('');
-    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
+    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select class="ob-select ob-select--comfortable" data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
     const minWidth = opts.minWidth || (columns.length >= 6 ? 880 : columns.length >= 5 ? 720 : 640);
     return `<div class="ob-table-region" data-table-min-width="${minWidth}">${cardSort}<div class="ob-table-wrap"><table class="ob-table" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
   };
@@ -147,7 +153,7 @@
     if (!region) return;
     const el = document.createElement('div');
     el.className = 'ob-alert' + (tone ? ' ob-alert--' + tone : '');
-    el.innerHTML = `<span>${ui.esc(message)}</span><button type="button" class="ob-alert-close" aria-label="${ui.esc(ui.t('toast.close'))}" data-action="toast-close">${ui.icon('xmark', 'sm')}</button>`;
+    el.innerHTML = `<span>${ui.esc(message)}</span><button type="button" class="ob-icon-button ob-alert-close" aria-label="${ui.esc(ui.t('toast.close'))}" data-action="toast-close">${ui.icon('xmark', 'sm')}</button>`;
     region.appendChild(el);
     setTimeout(() => { if (el.parentNode) el.remove(); }, 6000);
   };

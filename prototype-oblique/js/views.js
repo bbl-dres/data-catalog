@@ -23,7 +23,7 @@
       <button type="button" class="ob-button ob-button--icon ob-navigation-toggle" data-action="open-navigation" aria-label="${esc(t('navigation.open'))}" aria-controls="navigation-panel" aria-expanded="${state.navDrawerOpen}">${icon('list', 'xl')}</button>`;
   };
 
-  /** Language switch: a menu with the languages offered in config.json (app.languages); the UI dictionary changes, the catalog content stays German. */
+  /** Language switch for UI text and localized field labels; other catalog content stays German. */
   views.languageHost = function (state) {
     const open = state.menu === 'language';
     const languages = data.config.app.languages || ['de'];
@@ -42,6 +42,7 @@
     return btn + `
       <div class="ob-popover" role="dialog" aria-label="${esc(t('header.help'))}">
         <div class="ob-popover-arrow"></div>
+        <div class="ob-popover-content">
         <p>${esc(h.intro)}</p>
         <section class="ob-popover-section">
           <h4>${esc(t('help.title'))}</h4>
@@ -57,6 +58,7 @@
             <li>${ui.link(h.formUrl, `${esc(h.formLabel)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true })}</li>
           </ul>
         </section>
+        </div>
       </div>`;
   };
 
@@ -240,8 +242,8 @@
       <div class="ob-local-actions">
         <div class="ob-collection-search" role="search" aria-label="${esc(t('collection.search.label'))}">
           ${icon('search', 'lg', 'ob-search-icon')}
-          <input type="search" class="ob-search-input" id="collection-filter" value="${esc(ctx.filter)}" placeholder="${esc(t('collection.search.placeholder'))}" aria-label="${esc(t('collection.search.label'))}" aria-controls="collection-view-panel" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
-          <button type="button" class="ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${esc(t('collection.search.clear'))}"${ctx.filter ? '' : ' hidden'}>${icon('xmark')}</button>
+          <input type="search" class="ob-input ob-search-input" id="collection-filter" value="${esc(ctx.filter)}" placeholder="${esc(t('collection.search.placeholder'))}" aria-label="${esc(t('collection.search.label'))}" aria-controls="collection-view-panel" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <button type="button" class="ob-icon-button ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${esc(t('collection.search.clear'))}"${ctx.filter ? '' : ' hidden'}>${icon('xmark')}</button>
         </div>${views.groupMenu(ctx)}
       </div>
     </div>`;
@@ -255,8 +257,8 @@
     const open = state.suggest && !!q.trim();
     return `<div class="ob-search"><div class="ob-search-control">
         ${icon('search', 'lg', 'ob-search-icon')}
-        <input type="search" class="ob-search-input" id="search-input" name="q" value="${esc(q)}" placeholder="${esc(t('search.placeholder'))}" aria-label="${esc(t('search.label'))}"${home ? ' aria-describedby="home-search-description"' : ''} role="combobox" aria-expanded="${open}" aria-controls="search-suggest"${open && state.suggestIdx >= 0 ? ` aria-activedescendant="suggest-${state.suggestIdx}"` : ''} aria-autocomplete="list" autocomplete="off" spellcheck="false" enterkeyhint="search">
-        <button type="button" class="ob-search-clear" id="search-clear" aria-label="${esc(t('search.clear'))}" data-action="clear-query"${q ? '' : ' hidden'}>${icon('xmark')}</button>
+        <input type="search" class="ob-input ob-search-input" id="search-input" name="q" value="${esc(q)}" placeholder="${esc(t('search.placeholder'))}" aria-label="${esc(t('search.label'))}"${home ? ' aria-describedby="home-search-description"' : ''} role="combobox" aria-expanded="${open}" aria-controls="search-suggest"${open && state.suggestIdx >= 0 ? ` aria-activedescendant="suggest-${state.suggestIdx}"` : ''} aria-autocomplete="list" autocomplete="off" spellcheck="false" enterkeyhint="search">
+        <button type="button" class="ob-icon-button ob-search-clear" id="search-clear" aria-label="${esc(t('search.clear'))}" data-action="clear-query"${q ? '' : ' hidden'}>${icon('xmark')}</button>
         </div>
         <div id="search-suggest-host">${views.suggest(state)}</div>
       </div>`;
@@ -326,7 +328,7 @@
   /* ---- home ---------------------------------------------------------------------- */
   views.home = function (ctx) {
     const kpis = data.kpis().map(k => `
-      <a class="ob-kpi" href="${router.listHref(k.kind)}">
+      <a class="ob-card ob-kpi" href="${router.listHref(k.kind)}">
         <div class="ob-kpi-head">${icon(k.icon, 'xl')}<h3>${esc(k.label)}</h3></div>
         <span class="ob-kpi-count"><strong>${k.count}</strong><span class="ob-kpi-unit">${esc(k.unit)}</span></span>
       </a>`).join('');
@@ -391,7 +393,7 @@
     if (!groups.length) return ui.empty(t('collection.search.none'), ctx.filter ? `${esc(t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${esc(t('collection.search.clear'))}</button></p>` : '');
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
-      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
+      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-card ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {

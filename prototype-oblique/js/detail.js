@@ -68,7 +68,7 @@
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance ? 'fact.undocumented' : 'fact.key.none');
-        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: table.fields.length })));
+        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: table.fields.length })));
         if (typeof e.mandatory === 'boolean') primary.push(plain(t('fact.mandatory'), t(e.mandatory ? 'yes' : 'no')));
         const ref = data.get('refs', e.codeList);
         if (ref) primary.push(internal(t('col.codeList'), ref.name, 'refs', ref.identifier));
@@ -118,7 +118,7 @@
           </details>
         </section>
         ${detail.responsibility(e)}
-      </div>${detail.fieldDocumentation(e, state)}`;
+      </div>`;
   };
 
   /** Organisation contacts and named roles share the same fact rows; unknown roles are omitted. */
@@ -147,17 +147,6 @@
     return rows ? `<section class="ob-responsibility"><h2>${esc(t('detail.contacts'))}</h2><dl class="ob-facts">${rows}</dl></section>` : '';
   };
 
-  /** Render imported source text as text, never as executable saved-page HTML. */
-  detail.fieldDocumentation = function (e, state = {}) {
-    if (e.kind !== 'fields' || !e.catalogMetadata) return '';
-    const entries = Object.entries(e.catalogMetadata).filter(([key, value]) => !['Zugriff auf die Daten', 'Stammdaten'].includes(key) && typeof value === 'string' && value.trim());
-    if (!entries.length) return '';
-    return `<section class="ob-field-documentation"><h2>${esc(t('detail.sourceDocumentation'))}</h2>${entries.map(([key, value]) => {
-      const open = Object.hasOwn(state.fieldSections || {}, key) ? state.fieldSections[key] : key === 'Detaillierte Beschreibung';
-      return `<details class="ob-metadata" data-field-section="${esc(key)}"${open ? ' open' : ''}><summary data-focus="${esc('field-doc:' + key)}">${esc(key)}</summary><div class="ob-source-text">${esc(value)}</div></details>`;
-    }).join('')}</section>`;
-  };
-
   /* ---- rows (Attribute / Felder / Werte / Geschäftsobjekte / Datentabellen) */
   const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'outline') : '<span class="ob-cell-muted">—</span>';
   const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
@@ -168,8 +157,8 @@
     const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
     switch (e.kind) {
       case 'objects': return {
-        columns: [compact('col.position', true), { ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
-        rows: e.attributes.map((a, i) => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), position = a.position || i + 1, mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [position, ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [position, a.name, a.description, a.valueType, keyText(a.keyRole), mandatory] }; }),
+        columns: [{ ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
+        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [a.name, a.description, a.valueType, keyText(a.keyRole), mandatory] }; }),
       };
       case 'tables': {
         const hasCodes = e.fields.some(f => f.codeList);
@@ -179,7 +168,7 @@
           columns,
           rows: e.fields.map(f => {
             const href = router.entityHref('fields', `${e.identifier}/${data.fieldId(f)}`);
-            const row = { href, cells: [{ html: ui.entityLink(href, f.name), cls: 'ob-code' }, esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.name, f.description, f.dataType, keyText(f.keyRole)] };
+            const row = { href, cells: [ui.entityLink(href, f.technicalName), esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.technicalName, f.description, f.dataType, keyText(f.keyRole)] };
             if (hasCodes) {
               const ref = data.get('refs', f.codeList);
               row.cells.push(ref ? ui.entityLink(router.entityHref('refs', ref.identifier), ref.name) : '—');
@@ -191,7 +180,7 @@
       }
       case 'refs': return {
         columns: [c('col.code', '8rem'), c('col.label'), compact('col.type')],
-        rows: e.values.map(v => ({ cells: [{ html: esc(v.code), cls: 'ob-code' }, esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
+        rows: e.values.map(v => ({ cells: [esc(v.code), esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
       };
       case 'domains': return {
         columns: [c('col.object', '28%'), c('col.description'), compact('col.attributes', true), compact('col.status')],
@@ -224,7 +213,7 @@
       <span>${esc(pages === 1 ? t('detail.page', { n: pages }) : t('detail.pagePlural', { n: pages }))}</span>
       <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.prev'))}" data-action="set-page" data-page="${page - 1}" data-focus="page-prev"${page <= 1 ? ' disabled' : ''}>${icon('chevron_left', 'sm')}</button>
       <button type="button" class="ob-button ob-button--pager" aria-label="${esc(t('detail.next'))}" data-action="set-page" data-page="${page + 1}" data-focus="page-next"${page >= pages ? ' disabled' : ''}>${icon('chevron_right', 'sm')}</button>
-      <label class="ob-page-size">${esc(t('detail.pageSize'))}<select data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${PAGE_SIZES.map(n => `<option value="${n}"${n === pageSize ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
+      <label class="ob-page-size">${esc(t('detail.pageSize'))}<select class="ob-select" data-action="set-page-size" aria-label="${esc(t('detail.pageSize'))}">${PAGE_SIZES.map(n => `<option value="${n}"${n === pageSize ? ' selected' : ''}>${n}</option>`).join('')}</select></label>
       <span class="ob-pager-range">${esc(t('detail.rowRange', { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, ordered.length), total: ordered.length }))}</span>
     </div>`;
     const topPager = pages > 1 ? `<nav class="ob-pager ob-pager--top" aria-label="${esc(t('detail.pagination'))}">

@@ -60,11 +60,27 @@ Attributes inherit the object's organisation, roles and shared contact. Fields i
 
 **objects**: `domain` (domain id), `normReference`, `termdat [{ name, id, url }]`, `attributes [{ identifier, name, description, valueType, keyRole, mandatory, position }]`. `valueType` is one of `Text`, `Ganzzahl`, `Dezimal`, `Datum`, `Code`, `Geometrie`; `keyRole` is `PK`, `FK` or `null`. An attribute is addressed as `<objectId>/<attributeId>` (route `#/objects/<objectId>/attributes/<attributeId>`).
 
-**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), optional `realizes` (object id), optional `domain` (fallback when no business object is mapped), `fields [{ name, description, dataType, keyRole, codeList? }]`. `codeList` references a code-list ID and drives the optional Werteliste column and inverse relationships. Imported fields also retain `label`, `sourceUrl` and `catalogMetadata`. The catalogue does not actively scan or certify tables; `modified` records the last known catalog change.
+**tables**: `technicalName`, `system` (system id), optional `dataCustodian` (otherwise inherited from the system), optional `realizes` (object id), optional `domain` (fallback when no business object is mapped), `fields [{ technicalName, labels, description, dataType, keyRole, codeList? }]`. `codeList` references a code-list ID and drives the optional Werteliste column and inverse relationships. Imported fields also retain `sourceUrl` and `catalogMetadata`. The catalogue does not actively scan or certify tables; `modified` records the last known catalog change.
 
-**fields**: A field is also available as a derived profile at `#/tables/<tableId>/fields/<fieldId>`, with no additional JSON file or top-level collection. `fieldId` is the optional embedded `identifier`, falling back to the exact, case-sensitive technical `name`. It must be unique inside its table; the same field name may occur in different tables. Route segments are encoded separately. An explicit identifier keeps a bookmark stable when a technical column is renamed. GWR's EGID is therefore `#/tables/t-gwr-gebaeude/fields/EGID`.
+**fields**: Every embedded field has a non-empty `technicalName` and a `labels` language map. German (`de`) is required; French (`fr`), Italian (`it`) and English (`en`) are optional non-empty strings. Omit translations that are not available. For example:
 
-The profile exposes `table`, `technicalName`, `dataType`, `keyRole`, `codeList`, optional `mandatory`, source-order `position`, and imported `catalogMetadata` where available. It derives system, domain, status, stewardship and history from its parent table, without modifying the stored field or adding to catalog totals. A field's `sourceUrl` remains its own source link; it never silently becomes the parent table's entity-definition link. Imported documentation is escaped text; access category and master-data designation appear in Kerndaten, while detailed description, coding, reporting obligations and other source sections use independent disclosures. Unspecified GWR physical keys and mandatory flags are not inferred from prose.
+```json
+{
+  "technicalName": "EGID",
+  "labels": { "de": "Eidgenössischer Gebäudeidentifikator" },
+  "description": "Eidgenössischer Gebäudeidentifikator: Gebäudeidentifikationsnummer im eidg. GWR.",
+  "dataType": "Ganzzahl (9)",
+  "keyRole": null
+}
+```
+
+A field is also available as a derived profile at `#/tables/<tableId>/fields/<fieldId>`, with no additional JSON file or top-level collection. `fieldId` is the optional embedded `identifier`, falling back to the exact, case-sensitive `technicalName`. It must be unique inside its table; the same technical name may occur in different tables. Route segments are encoded separately. An explicit identifier keeps a bookmark stable when a technical column is renamed. GWR's EGID is therefore `#/tables/t-gwr-gebaeude/fields/EGID`.
+
+The profile resolves `label` from `labels` using the selected UI language, falling back to German, and derives its display `name` as `label (technicalName)` (without repeating an identical label). Both **Technischer Name** and **Bezeichnung** appear in Kerndaten. Language changes leave technical names, stored translations and URLs unchanged. Excel's Felder sheet uses the selected label; its Metadaten sheet retains all supplied translations. The OpenAPI `Field` / `LocalizedLabel` schemas describe the same stored shape.
+
+The September 2026 migration converted all 248 existing fields from `name` / optional string `label` to `technicalName` / `labels`. GWR labels were copied verbatim; fictional fields use the existing business-attribute names and descriptive German labels for system columns. No foreign-language translations were invented. Existing URLs, descriptions, field order and source metadata were preserved. Both data generators write the new shape; the loader rejects missing or malformed technical names and labels before publishing a snapshot.
+
+The profile exposes `table`, `technicalName`, `labels`, resolved `label`, `dataType`, `keyRole`, `codeList`, optional `mandatory`, source-order `position`, and imported `catalogMetadata` where available. It derives system, domain, status, stewardship and history from its parent table, without modifying the stored field or adding to catalog totals. A field's `sourceUrl` remains its own source link; it never silently becomes the parent table's entity-definition link. Access category and master-data designation appear in Kerndaten. The source-documentation section is omitted from the page; complete imported `catalogMetadata` remains in the data and Excel export. Unspecified GWR physical keys and mandatory flags are not inferred from prose.
 
 **codelists** (`refs`): `sourceAuthority`, optional `businessObject` (object id), optional `domain` (fallback), `values [{ code, label }]`. Imported values can retain `labels`/`shortLabels` keyed by language, spreadsheet row and version provenance; German `label` remains the display value. An empty `values` array means "noch nicht erfasst".
 

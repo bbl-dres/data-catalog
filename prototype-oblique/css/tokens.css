@@ -170,7 +170,9 @@
   --ob-color-border-strong: var(--ob-secondary-200);
   --ob-color-border-input: var(--ob-secondary-400);      /* Figma text/select: 1px #596978 */
   --ob-color-border-control: var(--ob-secondary-600);
+  --ob-color-graphic: var(--ob-secondary-300);          /* essential neutral graphics: >= 3:1 on bg/surface */
   --ob-color-footer-bg: var(--ob-secondary-700);
+  --ob-color-code-bg: var(--ob-secondary-900);         /* contrast for the API's syntax-highlighted examples */
 
   --ob-color-accent: var(--ob-red-500);                /* active markers      */
   --ob-color-accent-strong: var(--ob-red-600);         /* tab underline       */
@@ -197,6 +199,8 @@
   --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
 
   /* ---- 3. Component tokens --------------------------------------------- */
+  --ob-visual-viewport-height: 100dvh;                  /* app.js updates these while the keyboard resizes the visible area */
+  --ob-visual-viewport-top: 0px;
   --ob-content-max-width: 1600px;
   --ob-home-max-width: 1120px;                         /* shared by summary cards and both tables */
   --ob-sidebar-default-width: 320px;
@@ -211,6 +215,7 @@
   --ob-sidebar-flyout-width: 300px;
   --ob-sidebar-heading-height: 36px;
   --ob-tree-indent: var(--ob-space-default);
+  --ob-tree-padding-inline: var(--ob-space-default);
   --ob-tree-toggle-width: 24px;
   --ob-header-identity-height: 56px;                    /* includes the header's bottom border; grows with the logo */
   --ob-header-navigation-height: calc(var(--ob-touch-target) + var(--ob-border-width-xs)); /* zero in drawer mode */
@@ -233,6 +238,7 @@
   --ob-drawer-header-height: 56px;
   --ob-search-min-width: 260px;
   --ob-search-max-width: 480px;
+  --ob-header-search-width: 400px;
   --ob-collection-search-width: 280px;
   --ob-hero-search-max-width: 880px;
   --ob-hero-control-height: 48px;
@@ -245,6 +251,12 @@
   --ob-breadcrumb-item-max-width: 240px;
   --ob-breadcrumb-current-max-width: 320px;
   --ob-kpi-count-font-size-small: 1.375rem;               /* 22px, stacked summary cards */
+  --ob-kpi-compact-min-height: calc(var(--ob-touch-target) + var(--ob-space-sm));
+  --ob-tab-min-height: var(--ob-space-2xl);
+  --ob-graph-min-height: 380px;
+  --ob-graph-viewport-min-height: 160px;
+  --ob-graph-control-size: 36px;
+  --ob-graph-zoom-min-width: 54px;
   --ob-facts-label-width: 160px;
   --ob-facts-row-min-height: 36px;
   --ob-facts-row-padding: var(--ob-space-sm);
@@ -255,13 +267,15 @@
   --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
   --ob-table-card-min-width: 300px;
   --ob-api-max-width: 1200px;
+  --ob-api-table-min-width: 600px;                      /* local scrolling preserves API parameter/response columns */
   --ob-prose-max-width: 72ch;
   --ob-manual-max-width: 1120px;
   --ob-manual-prose-max-width: 100ch;
   --ob-table-row-padding: var(--ob-space-sm);
   --ob-table-row-min-height: 36px;
-  --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
-  --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */
+  --ob-focus-width: var(--ob-border-width-md);
+  --ob-focus-ring: 0 0 0 var(--ob-focus-width) var(--ob-color-focus);
+  --ob-focus-ring-inset: inset 0 0 0 var(--ob-focus-width) var(--ob-color-focus); /* controls inside overflow containers */
 }
 
 /* Compact tables (config.compactTables) */
@@ -295,8 +309,12 @@
   :root { --ob-facts-label-width: 128px; }
 }
 @media (max-width: 960px) {
-  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; }
+  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; --ob-tree-padding-inline: var(--ob-space-sm); }
 }
 @media (max-width: 600px) {
   :root { --ob-facts-row-min-height: 32px; }
+}
+/* Shared control geometry, including search clearances on touch laptops. */
+@media (any-pointer: coarse), (max-width: 960px) {
+  :root { --ob-control-height: var(--ob-touch-target); }
 }

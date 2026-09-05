@@ -20,55 +20,82 @@
     "realizes": "wirtschaftseinheit",
     "fields": [
       {
-        "name": "MANDT",
+        "technicalName": "MANDT",
+        "labels": {
+          "de": "Mandant"
+        },
         "description": "Mandant.",
         "dataType": "CHAR(3)",
         "keyRole": "PK"
       },
       {
-        "name": "WE_NUMMER",
+        "technicalName": "WE_NUMMER",
+        "labels": {
+          "de": "WE-Nummer"
+        },
         "description": "Eindeutige Nummer der Wirtschaftseinheit in SAP RE-FX.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Name/Bezeichnung der Wirtschaftseinheit.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "BUCHUNGSKREIS",
+        "technicalName": "BUCHUNGSKREIS",
+        "labels": {
+          "de": "Buchungskreis"
+        },
         "description": "Zugeordneter Buchungskreis der Wirtschaftseinheit.",
         "dataType": "VARCHAR(40)",
         "keyRole": "FK"
       },
       {
-        "name": "PROFIT_CENTER",
+        "technicalName": "PROFIT_CENTER",
+        "labels": {
+          "de": "Profit Center"
+        },
         "description": "Zugeordnetes Profit Center für die Ergebnisrechnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "ERDAT",
+        "technicalName": "ERDAT",
+        "labels": {
+          "de": "Anlagedatum"
+        },
         "description": "Datum der Anlage.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERNAM",
+        "technicalName": "ERNAM",
+        "labels": {
+          "de": "Angelegt von"
+        },
         "description": "Anlegender Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
       },
       {
-        "name": "AEDAT",
+        "technicalName": "AEDAT",
+        "labels": {
+          "de": "Änderungsdatum"
+        },
         "description": "Datum der letzten Änderung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "AENAM",
+        "technicalName": "AENAM",
+        "labels": {
+          "de": "Geändert von"
+        },
         "description": "Ändernder Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
@@ -96,73 +123,109 @@
     "realizes": "gebaeude",
     "fields": [
       {
-        "name": "MANDT",
+        "technicalName": "MANDT",
+        "labels": {
+          "de": "Mandant"
+        },
         "description": "Mandant.",
         "dataType": "CHAR(3)",
         "keyRole": "PK"
       },
       {
-        "name": "EGID",
+        "technicalName": "EGID",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
         "description": "Eidgenössischer Gebäudeidentifikator gemäss GWR.",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Gebäudename oder Kurzbezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "GEBAEUDEKATEGORIE",
+        "technicalName": "GEBAEUDEKATEGORIE",
+        "labels": {
+          "de": "Gebäudekategorie"
+        },
         "description": "Kategorie gemäss GWR Merkmalskatalog.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "BAUJAHR",
+        "technicalName": "BAUJAHR",
+        "labels": {
+          "de": "Baujahr"
+        },
         "description": "Jahr der Fertigstellung.",
         "dataType": "INTEGER",
         "keyRole": null
       },
       {
-        "name": "GRUNDSTUECK",
+        "technicalName": "GRUNDSTUECK",
+        "labels": {
+          "de": "Grundstück"
+        },
         "description": "Zugehöriges Grundstück (EGRID).",
         "dataType": "VARCHAR(40)",
         "keyRole": "FK"
       },
       {
-        "name": "GEBAEUDESTATUS",
+        "technicalName": "GEBAEUDESTATUS",
+        "labels": {
+          "de": "Gebäudestatus"
+        },
         "description": "Status gemäss GWR (bestehend, projektiert, abgebrochen).",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "ENERGIETRAEGER",
+        "technicalName": "ENERGIETRAEGER",
+        "labels": {
+          "de": "Energieträger"
+        },
         "description": "Hauptenergieträger der Heizung.",
         "dataType": "CHAR(4)",
         "keyRole": null
       },
       {
-        "name": "ERDAT",
+        "technicalName": "ERDAT",
+        "labels": {
+          "de": "Anlagedatum"
+        },
         "description": "Datum der Anlage.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERNAM",
+        "technicalName": "ERNAM",
+        "labels": {
+          "de": "Angelegt von"
+        },
         "description": "Anlegender Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
       },
       {
-        "name": "AEDAT",
+        "technicalName": "AEDAT",
+        "labels": {
+          "de": "Änderungsdatum"
+        },
         "description": "Datum der letzten Änderung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "AENAM",
+        "technicalName": "AENAM",
+        "labels": {
+          "de": "Geändert von"
+        },
         "description": "Ändernder Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
@@ -190,55 +253,82 @@
     "realizes": "bemessung",
     "fields": [
       {
-        "name": "MANDT",
+        "technicalName": "MANDT",
+        "labels": {
+          "de": "Mandant"
+        },
         "description": "Mandant.",
         "dataType": "CHAR(3)",
         "keyRole": "PK"
       },
       {
-        "name": "BEMESSUNG_ID",
+        "technicalName": "BEMESSUNG_ID",
+        "labels": {
+          "de": "Bemessung-ID"
+        },
         "description": "Eindeutiger Identifikator des Geschäftsobjekts Bemessung.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Name/Bezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "STATUS",
+        "technicalName": "STATUS",
+        "labels": {
+          "de": "Status"
+        },
         "description": "Lebenszyklusstatus des Objekts.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "GUELTIG_AB",
+        "technicalName": "GUELTIG_AB",
+        "labels": {
+          "de": "Gültig ab"
+        },
         "description": "Beginn der Gültigkeit.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERDAT",
+        "technicalName": "ERDAT",
+        "labels": {
+          "de": "Anlagedatum"
+        },
         "description": "Datum der Anlage.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERNAM",
+        "technicalName": "ERNAM",
+        "labels": {
+          "de": "Angelegt von"
+        },
         "description": "Anlegender Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
       },
       {
-        "name": "AEDAT",
+        "technicalName": "AEDAT",
+        "labels": {
+          "de": "Änderungsdatum"
+        },
         "description": "Datum der letzten Änderung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "AENAM",
+        "technicalName": "AENAM",
+        "labels": {
+          "de": "Geändert von"
+        },
         "description": "Ändernder Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
@@ -266,61 +356,91 @@
     "realizes": "mietobjekt",
     "fields": [
       {
-        "name": "MANDT",
+        "technicalName": "MANDT",
+        "labels": {
+          "de": "Mandant"
+        },
         "description": "Mandant.",
         "dataType": "CHAR(3)",
         "keyRole": "PK"
       },
       {
-        "name": "MIETOBJEKT_NUMMER",
+        "technicalName": "MIETOBJEKT_NUMMER",
+        "labels": {
+          "de": "Mietobjekt-Nummer"
+        },
         "description": "Eindeutige Nummer des Mietobjekts in SAP RE-FX.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Bezeichnung des Mietobjekts.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "WIRTSCHAFTSEINHEIT",
+        "technicalName": "WIRTSCHAFTSEINHEIT",
+        "labels": {
+          "de": "Wirtschaftseinheit"
+        },
         "description": "Übergeordnete Wirtschaftseinheit.",
         "dataType": "VARCHAR(40)",
         "keyRole": "FK"
       },
       {
-        "name": "NUTZUNGSART",
+        "technicalName": "NUTZUNGSART",
+        "labels": {
+          "de": "Nutzungsart"
+        },
         "description": "Nutzungsart gemäss SIA 416.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "FLAECHE",
+        "technicalName": "FLAECHE",
+        "labels": {
+          "de": "Fläche"
+        },
         "description": "Vermietbare Fläche in m².",
         "dataType": "DECIMAL(15,2)",
         "keyRole": null
       },
       {
-        "name": "ERDAT",
+        "technicalName": "ERDAT",
+        "labels": {
+          "de": "Anlagedatum"
+        },
         "description": "Datum der Anlage.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERNAM",
+        "technicalName": "ERNAM",
+        "labels": {
+          "de": "Angelegt von"
+        },
         "description": "Anlegender Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
       },
       {
-        "name": "AEDAT",
+        "technicalName": "AEDAT",
+        "labels": {
+          "de": "Änderungsdatum"
+        },
         "description": "Datum der letzten Änderung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "AENAM",
+        "technicalName": "AENAM",
+        "labels": {
+          "de": "Geändert von"
+        },
         "description": "Ändernder Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
@@ -348,55 +468,82 @@
     "realizes": "mietvertrag",
     "fields": [
       {
-        "name": "MANDT",
+        "technicalName": "MANDT",
+        "labels": {
+          "de": "Mandant"
+        },
         "description": "Mandant.",
         "dataType": "CHAR(3)",
         "keyRole": "PK"
       },
       {
-        "name": "MIETVERTRAG_ID",
+        "technicalName": "MIETVERTRAG_ID",
+        "labels": {
+          "de": "Mietvertrag-ID"
+        },
         "description": "Eindeutiger Identifikator des Geschäftsobjekts Mietvertrag.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Name/Bezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "STATUS",
+        "technicalName": "STATUS",
+        "labels": {
+          "de": "Status"
+        },
         "description": "Lebenszyklusstatus des Objekts.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "GUELTIG_AB",
+        "technicalName": "GUELTIG_AB",
+        "labels": {
+          "de": "Gültig ab"
+        },
         "description": "Beginn der Gültigkeit.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERDAT",
+        "technicalName": "ERDAT",
+        "labels": {
+          "de": "Anlagedatum"
+        },
         "description": "Datum der Anlage.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "ERNAM",
+        "technicalName": "ERNAM",
+        "labels": {
+          "de": "Angelegt von"
+        },
         "description": "Anlegender Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
       },
       {
-        "name": "AEDAT",
+        "technicalName": "AEDAT",
+        "labels": {
+          "de": "Änderungsdatum"
+        },
         "description": "Datum der letzten Änderung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "AENAM",
+        "technicalName": "AENAM",
+        "labels": {
+          "de": "Geändert von"
+        },
         "description": "Ändernder Benutzer.",
         "dataType": "VARCHAR(12)",
         "keyRole": null
@@ -424,73 +571,109 @@
     "realizes": "gebaeude",
     "fields": [
       {
-        "name": "OBJECTID",
+        "technicalName": "OBJECTID",
+        "labels": {
+          "de": "Objektidentifikator"
+        },
         "description": "Interner Objektidentifikator (ArcGIS).",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "EGID",
+        "technicalName": "EGID",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
         "description": "Eidgenössischer Gebäudeidentifikator gemäss GWR.",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Gebäudename oder Kurzbezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "GEBAEUDEKATEGORIE",
+        "technicalName": "GEBAEUDEKATEGORIE",
+        "labels": {
+          "de": "Gebäudekategorie"
+        },
         "description": "Kategorie gemäss GWR Merkmalskatalog.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "BAUJAHR",
+        "technicalName": "BAUJAHR",
+        "labels": {
+          "de": "Baujahr"
+        },
         "description": "Jahr der Fertigstellung.",
         "dataType": "INTEGER",
         "keyRole": null
       },
       {
-        "name": "GRUNDSTUECK",
+        "technicalName": "GRUNDSTUECK",
+        "labels": {
+          "de": "Grundstück"
+        },
         "description": "Zugehöriges Grundstück (EGRID).",
         "dataType": "VARCHAR(40)",
         "keyRole": "FK"
       },
       {
-        "name": "GEBAEUDESTATUS",
+        "technicalName": "GEBAEUDESTATUS",
+        "labels": {
+          "de": "Gebäudestatus"
+        },
         "description": "Status gemäss GWR (bestehend, projektiert, abgebrochen).",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "ENERGIETRAEGER",
+        "technicalName": "ENERGIETRAEGER",
+        "labels": {
+          "de": "Energieträger"
+        },
         "description": "Hauptenergieträger der Heizung.",
         "dataType": "CHAR(4)",
         "keyRole": null
       },
       {
-        "name": "SHAPE",
+        "technicalName": "SHAPE",
+        "labels": {
+          "de": "Geometrie"
+        },
         "description": "Geometrie (LV95, EPSG:2056).",
         "dataType": "GEOMETRY",
         "keyRole": null
       },
       {
-        "name": "CREATED_DATE",
+        "technicalName": "CREATED_DATE",
+        "labels": {
+          "de": "Erfassungsdatum"
+        },
         "description": "Datum der Erfassung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_DATE",
+        "technicalName": "LAST_EDITED_DATE",
+        "labels": {
+          "de": "Letzte Bearbeitung"
+        },
         "description": "Datum der letzten Bearbeitung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_USER",
+        "technicalName": "LAST_EDITED_USER",
+        "labels": {
+          "de": "Zuletzt bearbeitet von"
+        },
         "description": "Letzter Bearbeiter.",
         "dataType": "VARCHAR(50)",
         "keyRole": null
@@ -518,73 +701,109 @@
     "realizes": "gebaeude",
     "fields": [
       {
-        "name": "OBJECTID",
+        "technicalName": "OBJECTID",
+        "labels": {
+          "de": "Objektidentifikator"
+        },
         "description": "Interner Objektidentifikator (ArcGIS).",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "EGID",
+        "technicalName": "EGID",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
         "description": "Eidgenössischer Gebäudeidentifikator gemäss GWR.",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Gebäudename oder Kurzbezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "GEBAEUDEKATEGORIE",
+        "technicalName": "GEBAEUDEKATEGORIE",
+        "labels": {
+          "de": "Gebäudekategorie"
+        },
         "description": "Kategorie gemäss GWR Merkmalskatalog.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "BAUJAHR",
+        "technicalName": "BAUJAHR",
+        "labels": {
+          "de": "Baujahr"
+        },
         "description": "Jahr der Fertigstellung.",
         "dataType": "INTEGER",
         "keyRole": null
       },
       {
-        "name": "GRUNDSTUECK",
+        "technicalName": "GRUNDSTUECK",
+        "labels": {
+          "de": "Grundstück"
+        },
         "description": "Zugehöriges Grundstück (EGRID).",
         "dataType": "VARCHAR(40)",
         "keyRole": "FK"
       },
       {
-        "name": "GEBAEUDESTATUS",
+        "technicalName": "GEBAEUDESTATUS",
+        "labels": {
+          "de": "Gebäudestatus"
+        },
         "description": "Status gemäss GWR (bestehend, projektiert, abgebrochen).",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "ENERGIETRAEGER",
+        "technicalName": "ENERGIETRAEGER",
+        "labels": {
+          "de": "Energieträger"
+        },
         "description": "Hauptenergieträger der Heizung.",
         "dataType": "CHAR(4)",
         "keyRole": null
       },
       {
-        "name": "SHAPE",
+        "technicalName": "SHAPE",
+        "labels": {
+          "de": "Geometrie"
+        },
         "description": "Geometrie (LV95, EPSG:2056).",
         "dataType": "GEOMETRY",
         "keyRole": null
       },
       {
-        "name": "CREATED_DATE",
+        "technicalName": "CREATED_DATE",
+        "labels": {
+          "de": "Erfassungsdatum"
+        },
         "description": "Datum der Erfassung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_DATE",
+        "technicalName": "LAST_EDITED_DATE",
+        "labels": {
+          "de": "Letzte Bearbeitung"
+        },
         "description": "Datum der letzten Bearbeitung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_USER",
+        "technicalName": "LAST_EDITED_USER",
+        "labels": {
+          "de": "Zuletzt bearbeitet von"
+        },
         "description": "Letzter Bearbeiter.",
         "dataType": "VARCHAR(50)",
         "keyRole": null
@@ -612,61 +831,91 @@
     "realizes": "bauprojekt",
     "fields": [
       {
-        "name": "OBJECTID",
+        "technicalName": "OBJECTID",
+        "labels": {
+          "de": "Objektidentifikator"
+        },
         "description": "Interner Objektidentifikator (ArcGIS).",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "AREAL_ID",
+        "technicalName": "AREAL_ID",
+        "labels": {
+          "de": "Areal-ID"
+        },
         "description": "Eindeutiger Identifikator des Geschäftsobjekts Areal.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Name/Bezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "STATUS",
+        "technicalName": "STATUS",
+        "labels": {
+          "de": "Status"
+        },
         "description": "Lebenszyklusstatus des Objekts.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "GUELTIG_AB",
+        "technicalName": "GUELTIG_AB",
+        "labels": {
+          "de": "Gültig ab"
+        },
         "description": "Beginn der Gültigkeit.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "GUELTIG_BIS",
+        "technicalName": "GUELTIG_BIS",
+        "labels": {
+          "de": "Gültig bis"
+        },
         "description": "Ende der Gültigkeit.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "SHAPE",
+        "technicalName": "SHAPE",
+        "labels": {
+          "de": "Geometrie"
+        },
         "description": "Geometrie (LV95, EPSG:2056).",
         "dataType": "GEOMETRY",
         "keyRole": null
       },
       {
-        "name": "CREATED_DATE",
+        "technicalName": "CREATED_DATE",
+        "labels": {
+          "de": "Erfassungsdatum"
+        },
         "description": "Datum der Erfassung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_DATE",
+        "technicalName": "LAST_EDITED_DATE",
+        "labels": {
+          "de": "Letzte Bearbeitung"
+        },
         "description": "Datum der letzten Bearbeitung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_USER",
+        "technicalName": "LAST_EDITED_USER",
+        "labels": {
+          "de": "Zuletzt bearbeitet von"
+        },
         "description": "Letzter Bearbeiter.",
         "dataType": "VARCHAR(50)",
         "keyRole": null
@@ -694,55 +943,82 @@
     "realizes": "bodenbedeckung",
     "fields": [
       {
-        "name": "OBJECTID",
+        "technicalName": "OBJECTID",
+        "labels": {
+          "de": "Objektidentifikator"
+        },
         "description": "Interner Objektidentifikator (ArcGIS).",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "BODENBEDECKUNG_ID",
+        "technicalName": "BODENBEDECKUNG_ID",
+        "labels": {
+          "de": "Bodenbedeckung-ID"
+        },
         "description": "Eindeutiger Identifikator des Geschäftsobjekts Bodenbedeckung.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "BEZEICHNUNG",
+        "technicalName": "BEZEICHNUNG",
+        "labels": {
+          "de": "Bezeichnung"
+        },
         "description": "Name/Bezeichnung.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "STATUS",
+        "technicalName": "STATUS",
+        "labels": {
+          "de": "Status"
+        },
         "description": "Lebenszyklusstatus des Objekts.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "GUELTIG_AB",
+        "technicalName": "GUELTIG_AB",
+        "labels": {
+          "de": "Gültig ab"
+        },
         "description": "Beginn der Gültigkeit.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "SHAPE",
+        "technicalName": "SHAPE",
+        "labels": {
+          "de": "Geometrie"
+        },
         "description": "Geometrie (LV95, EPSG:2056).",
         "dataType": "GEOMETRY",
         "keyRole": null
       },
       {
-        "name": "CREATED_DATE",
+        "technicalName": "CREATED_DATE",
+        "labels": {
+          "de": "Erfassungsdatum"
+        },
         "description": "Datum der Erfassung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_DATE",
+        "technicalName": "LAST_EDITED_DATE",
+        "labels": {
+          "de": "Letzte Bearbeitung"
+        },
         "description": "Datum der letzten Bearbeitung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_USER",
+        "technicalName": "LAST_EDITED_USER",
+        "labels": {
+          "de": "Zuletzt bearbeitet von"
+        },
         "description": "Letzter Bearbeiter.",
         "dataType": "VARCHAR(50)",
         "keyRole": null
@@ -770,61 +1046,91 @@
     "realizes": "grundstueck",
     "fields": [
       {
-        "name": "OBJECTID",
+        "technicalName": "OBJECTID",
+        "labels": {
+          "de": "Objektidentifikator"
+        },
         "description": "Interner Objektidentifikator (ArcGIS).",
         "dataType": "INTEGER",
         "keyRole": "PK"
       },
       {
-        "name": "EGRID",
+        "technicalName": "EGRID",
+        "labels": {
+          "de": "Eidgenössischer Grundstücksidentifikator"
+        },
         "description": "Eidgenössischer Grundstücksidentifikator gemäss amtlicher Vermessung.",
         "dataType": "VARCHAR(40)",
         "keyRole": "PK"
       },
       {
-        "name": "PARZELLENNUMMER",
+        "technicalName": "PARZELLENNUMMER",
+        "labels": {
+          "de": "Parzellennummer"
+        },
         "description": "Nummer der Parzelle im Grundbuch der Gemeinde.",
         "dataType": "VARCHAR(40)",
         "keyRole": null
       },
       {
-        "name": "GEMEINDE",
+        "technicalName": "GEMEINDE",
+        "labels": {
+          "de": "Gemeinde"
+        },
         "description": "BFS-Gemeindenummer der Standortgemeinde.",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "FLAECHE",
+        "technicalName": "FLAECHE",
+        "labels": {
+          "de": "Fläche"
+        },
         "description": "Grundstücksfläche in m² gemäss Grundbuch.",
         "dataType": "DECIMAL(15,2)",
         "keyRole": null
       },
       {
-        "name": "EIGENTUMSFORM",
+        "technicalName": "EIGENTUMSFORM",
+        "labels": {
+          "de": "Eigentumsform"
+        },
         "description": "Eigentumsverhältnis (Alleineigentum, Baurecht, Miteigentum).",
         "dataType": "CHAR(4)",
         "keyRole": "FK"
       },
       {
-        "name": "SHAPE",
+        "technicalName": "SHAPE",
+        "labels": {
+          "de": "Geometrie"
+        },
         "description": "Geometrie (LV95, EPSG:2056).",
         "dataType": "GEOMETRY",
         "keyRole": null
       },
       {
-        "name": "CREATED_DATE",
+        "technicalName": "CREATED_DATE",
+        "labels": {
+          "de": "Erfassungsdatum"
+        },
         "description": "Datum der Erfassung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_DATE",
+        "technicalName": "LAST_EDITED_DATE",
+        "labels": {
+          "de": "Letzte Bearbeitung"
+        },
         "description": "Datum der letzten Bearbeitung.",
         "dataType": "DATE",
         "keyRole": null
       },
       {
-        "name": "LAST_EDITED_USER",
+        "technicalName": "LAST_EDITED_USER",
+        "labels": {
+          "de": "Zuletzt bearbeitet von"
+        },
         "description": "Letzter Bearbeiter.",
         "dataType": "VARCHAR(50)",
         "keyRole": null
@@ -865,8 +1171,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 37 Merkmale",
     "fields": [
       {
-        "name": "EPROID",
-        "label": "Eidgenössischer Bauprojektidentifikator",
+        "technicalName": "EPROID",
+        "labels": {
+          "de": "Eidgenössischer Bauprojektidentifikator"
+        },
         "description": "Eidgenössischer Bauprojektidentifikator: Identifikationsnummer des Bauprojekts im eidg. GWR.",
         "dataType": "Ganzzahl (9)",
         "keyRole": null,
@@ -885,8 +1193,10 @@
         }
       },
       {
-        "name": "PBDNR",
-        "label": "Amtliche Baudossiernummer",
+        "technicalName": "PBDNR",
+        "labels": {
+          "de": "Amtliche Baudossiernummer"
+        },
         "description": "Amtliche Baudossiernummer: Von den Baubehörden verwendete Dossiernummer des Bauprojekts.",
         "dataType": "Text (15)",
         "keyRole": null,
@@ -905,8 +1215,10 @@
         }
       },
       {
-        "name": "PBDNRSX",
-        "label": "Amtliche Baudossiernummer Zusatz",
+        "technicalName": "PBDNRSX",
+        "labels": {
+          "de": "Amtliche Baudossiernummer Zusatz"
+        },
         "description": "Amtliche Baudossiernummer Zusatz: Von den Baubehörden verwendete Dossiernummer des Bauprojekts.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -925,8 +1237,10 @@
         }
       },
       {
-        "name": "PESTNR",
-        "label": "Erhebungsstellennummer",
+        "technicalName": "PESTNR",
+        "labels": {
+          "de": "Erhebungsstellennummer"
+        },
         "description": "Erhebungsstellennummer: Vom BFS vergebene Erhebungsstellennummer.",
         "dataType": "Ganzzahl (6)",
         "keyRole": null,
@@ -945,8 +1259,10 @@
         }
       },
       {
-        "name": "PBEZ",
-        "label": "Umschreibung Bauprojekt",
+        "technicalName": "PBEZ",
+        "labels": {
+          "de": "Umschreibung Bauprojekt"
+        },
         "description": "Umschreibung Bauprojekt: Kurzbeschrieb des Bauprojekts (in Worten).",
         "dataType": "Text (1000)",
         "keyRole": null,
@@ -965,8 +1281,10 @@
         }
       },
       {
-        "name": "PGDENR",
-        "label": "Bauort",
+        "technicalName": "PGDENR",
+        "labels": {
+          "de": "Bauort"
+        },
         "description": "Bauort: BFS-Nummer der Gemeinde (oder des Kantons), in der das Bauprojekt realisiert wird.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -985,8 +1303,10 @@
         }
       },
       {
-        "name": "PEGRID",
-        "label": "PEGRID",
+        "technicalName": "PEGRID",
+        "labels": {
+          "de": "PEGRID"
+        },
         "description": "PEGRID: Das Grundstück auf dem das Bauprojekt realisiert ist.",
         "dataType": "Text (14)",
         "keyRole": null,
@@ -1005,8 +1325,10 @@
         }
       },
       {
-        "name": "PGBKR",
-        "label": "PGBKR",
+        "technicalName": "PGBKR",
+        "labels": {
+          "de": "PGBKR"
+        },
         "description": "PGBKR: Grundbuchkreis des Grundstücks, auf dem das Bauprojekt realisiert ist.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -1026,8 +1348,10 @@
         }
       },
       {
-        "name": "PPARZ",
-        "label": "PPARZ",
+        "technicalName": "PPARZ",
+        "labels": {
+          "de": "PPARZ"
+        },
         "description": "PPARZ: Nummer des Grundstücks, auf dem das Bauprojekt realisiert ist.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -1046,8 +1370,10 @@
         }
       },
       {
-        "name": "PARTBZ",
-        "label": "Bewilligungsgrund",
+        "technicalName": "PARTBZ",
+        "labels": {
+          "de": "Bewilligungsgrund"
+        },
         "description": "Bewilligungsgrund: Rechtsgrundlage für bewilligtes Baugesuch ausserhalb der Bauzone.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1067,8 +1393,10 @@
         "codeList": "r-gwr-partbz"
       },
       {
-        "name": "PTYPAG",
-        "label": "Typ der Auftraggeber",
+        "technicalName": "PTYPAG",
+        "labels": {
+          "de": "Typ der Auftraggeber"
+        },
         "description": "Typ der Auftraggeber: Angabe zur Klassierung der Auftraggeber.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1088,8 +1416,10 @@
         "codeList": "r-gwr-ptypag"
       },
       {
-        "name": "PAGNAME1",
-        "label": "Name der Auftraggeber 1",
+        "technicalName": "PAGNAME1",
+        "labels": {
+          "de": "Name der Auftraggeber 1"
+        },
         "description": "Name der Auftraggeber 1: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1108,8 +1438,10 @@
         }
       },
       {
-        "name": "PAGNAME2",
-        "label": "Name der Auftraggeber 2",
+        "technicalName": "PAGNAME2",
+        "labels": {
+          "de": "Name der Auftraggeber 2"
+        },
         "description": "Name der Auftraggeber 2: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1128,8 +1460,10 @@
         }
       },
       {
-        "name": "PAGNAMEZ",
-        "label": "Name der Auftraggeber Zusatz Unternehmen",
+        "technicalName": "PAGNAMEZ",
+        "labels": {
+          "de": "Name der Auftraggeber Zusatz Unternehmen"
+        },
         "description": "Name der Auftraggeber Zusatz Unternehmen: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1148,8 +1482,10 @@
         }
       },
       {
-        "name": "PAGSTR",
-        "label": "Strasse der Auftraggeber",
+        "technicalName": "PAGSTR",
+        "labels": {
+          "de": "Strasse der Auftraggeber"
+        },
         "description": "Strasse der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1168,8 +1504,10 @@
         }
       },
       {
-        "name": "PAGEINR",
-        "label": "Eingangsnummer der Auftraggeber",
+        "technicalName": "PAGEINR",
+        "labels": {
+          "de": "Eingangsnummer der Auftraggeber"
+        },
         "description": "Eingangsnummer der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -1188,8 +1526,10 @@
         }
       },
       {
-        "name": "PAGADRZ",
-        "label": "Zus. Adresse der Auftraggeber",
+        "technicalName": "PAGADRZ",
+        "labels": {
+          "de": "Zus. Adresse der Auftraggeber"
+        },
         "description": "Zus. Adresse der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1208,8 +1548,10 @@
         }
       },
       {
-        "name": "PAGPLZ4",
-        "label": "Postleitzahl der Auftraggeber",
+        "technicalName": "PAGPLZ4",
+        "labels": {
+          "de": "Postleitzahl der Auftraggeber"
+        },
         "description": "Postleitzahl der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -1228,8 +1570,10 @@
         }
       },
       {
-        "name": "PAGPLZZ",
-        "label": "Zusatzziffer PLZ der Auftraggeber",
+        "technicalName": "PAGPLZZ",
+        "labels": {
+          "de": "Zusatzziffer PLZ der Auftraggeber"
+        },
         "description": "Zusatzziffer PLZ der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -1248,8 +1592,10 @@
         }
       },
       {
-        "name": "PAGAUSLORT",
-        "label": "Ausländische Ortschaft der Auftraggeber",
+        "technicalName": "PAGAUSLORT",
+        "labels": {
+          "de": "Ausländische Ortschaft der Auftraggeber"
+        },
         "description": "Ausländische Ortschaft der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -1268,8 +1614,10 @@
         }
       },
       {
-        "name": "PAGLAND",
-        "label": "Wohnsitzland der Auftraggeber",
+        "technicalName": "PAGLAND",
+        "labels": {
+          "de": "Wohnsitzland der Auftraggeber"
+        },
         "description": "Wohnsitzland der Auftraggeber: Name und Adresse der Auftraggeber.",
         "dataType": "Ländercode (2)",
         "keyRole": null,
@@ -1288,8 +1636,10 @@
         }
       },
       {
-        "name": "PARTBW",
-        "label": "Art der Bauwerke",
+        "technicalName": "PARTBW",
+        "labels": {
+          "de": "Art der Bauwerke"
+        },
         "description": "Art der Bauwerke: Klassifikation zwischen Hochbauprojekte, Tiefbauprojekten und Sonderbauten.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1309,8 +1659,10 @@
         "codeList": "r-gwr-partbw"
       },
       {
-        "name": "PTYPBW",
-        "label": "Typ der Bauwerke",
+        "technicalName": "PTYPBW",
+        "labels": {
+          "de": "Typ der Bauwerke"
+        },
         "description": "Typ der Bauwerke: Klassierung des Bauprojekts nach dem Typ der Bauwerke.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1330,8 +1682,10 @@
         "codeList": "r-gwr-ptypbw"
       },
       {
-        "name": "PKOST",
-        "label": "Projektkosten total",
+        "technicalName": "PKOST",
+        "labels": {
+          "de": "Projektkosten total"
+        },
         "description": "Projektkosten total: Gesamtkosten des Bauprojekts, in Schweizer Franken (CHF).",
         "dataType": "Ganzzahl (12)",
         "keyRole": null,
@@ -1350,8 +1704,10 @@
         }
       },
       {
-        "name": "PDATIN",
-        "label": "Datum Baueingabe",
+        "technicalName": "PDATIN",
+        "labels": {
+          "de": "Datum Baueingabe"
+        },
         "description": "Datum Baueingabe: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1370,8 +1726,10 @@
         }
       },
       {
-        "name": "PDATOK",
-        "label": "Datum Baubewilligung",
+        "technicalName": "PDATOK",
+        "labels": {
+          "de": "Datum Baubewilligung"
+        },
         "description": "Datum Baubewilligung: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1390,8 +1748,10 @@
         }
       },
       {
-        "name": "PDATBB",
-        "label": "Datum Baubeginn",
+        "technicalName": "PDATBB",
+        "labels": {
+          "de": "Datum Baubeginn"
+        },
         "description": "Datum Baubeginn: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1410,8 +1770,10 @@
         }
       },
       {
-        "name": "PDATBE",
-        "label": "Datum Bauende",
+        "technicalName": "PDATBE",
+        "labels": {
+          "de": "Datum Bauende"
+        },
         "description": "Datum Bauende: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1430,8 +1792,10 @@
         }
       },
       {
-        "name": "PDATSIST",
-        "label": "Datum Sistierung",
+        "technicalName": "PDATSIST",
+        "labels": {
+          "de": "Datum Sistierung"
+        },
         "description": "Datum Sistierung: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1450,8 +1814,10 @@
         }
       },
       {
-        "name": "PDATABL",
-        "label": "Datum Ablehnung des Baugesuchs",
+        "technicalName": "PDATABL",
+        "labels": {
+          "de": "Datum Ablehnung des Baugesuchs"
+        },
         "description": "Datum Ablehnung des Baugesuchs: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1469,8 +1835,10 @@
         }
       },
       {
-        "name": "PDATANN",
-        "label": "Datum Nichtrealisierung",
+        "technicalName": "PDATANN",
+        "labels": {
+          "de": "Datum Nichtrealisierung"
+        },
         "description": "Datum Nichtrealisierung: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1489,8 +1857,10 @@
         }
       },
       {
-        "name": "PDATRZG",
-        "label": "Datum Rückzug des Baugesuchs",
+        "technicalName": "PDATRZG",
+        "labels": {
+          "de": "Datum Rückzug des Baugesuchs"
+        },
         "description": "Datum Rückzug des Baugesuchs: Wichtige Daten zum Verlauf der Baubewilligung.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -1509,8 +1879,10 @@
         }
       },
       {
-        "name": "PVBD",
-        "label": "Voraussichtliche Baudauer",
+        "technicalName": "PVBD",
+        "labels": {
+          "de": "Voraussichtliche Baudauer"
+        },
         "description": "Voraussichtliche Baudauer: Angabe der voraussichtlichen Dauer der Arbeiten.",
         "dataType": "Ganzzahl (3)",
         "keyRole": null,
@@ -1530,8 +1902,10 @@
         }
       },
       {
-        "name": "PSTAT",
-        "label": "Status Bauprojekt",
+        "technicalName": "PSTAT",
+        "labels": {
+          "de": "Status Bauprojekt"
+        },
         "description": "Status Bauprojekt: Angabe zum aktuellen Stand des Bauprojekts.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1552,8 +1926,10 @@
         "codeList": "r-gwr-pstat"
       },
       {
-        "name": "PDOK",
-        "label": "Beilage zum Bauprojekt",
+        "technicalName": "PDOK",
+        "labels": {
+          "de": "Beilage zum Bauprojekt"
+        },
         "description": "Beilage zum Bauprojekt: Dem Bauprojekt angefügtes elektronisches Dokument zur Erfassung eines Lageplans.",
         "dataType": "Datei (PDF/JPG/DXF)",
         "keyRole": null,
@@ -1572,8 +1948,10 @@
         }
       },
       {
-        "name": "PFREITXT1",
-        "label": "Freitextfeld Projekt 1",
+        "technicalName": "PFREITXT1",
+        "labels": {
+          "de": "Freitextfeld Projekt 1"
+        },
         "description": "Freitextfeld Projekt 1: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen.",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -1592,8 +1970,10 @@
         }
       },
       {
-        "name": "PFREITXT2",
-        "label": "Freitextfeld Projekt 2",
+        "technicalName": "PFREITXT2",
+        "labels": {
+          "de": "Freitextfeld Projekt 2"
+        },
         "description": "Freitextfeld Projekt 2: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen.",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -1648,8 +2028,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 10 Merkmale",
     "fields": [
       {
-        "name": "PARTAB",
-        "label": "Art der Arbeiten",
+        "technicalName": "PARTAB",
+        "labels": {
+          "de": "Art der Arbeiten"
+        },
         "description": "Art der Arbeiten: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -1669,8 +2051,10 @@
         "codeList": "r-gwr-partab"
       },
       {
-        "name": "PENSAN",
-        "label": "Energetische Sanierung",
+        "technicalName": "PENSAN",
+        "labels": {
+          "de": "Energetische Sanierung"
+        },
         "description": "Energetische Sanierung: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1690,8 +2074,10 @@
         "codeList": "r-gwr-pensan"
       },
       {
-        "name": "PHEIZSAN",
-        "label": "Sanierung des Heizsystems",
+        "technicalName": "PHEIZSAN",
+        "labels": {
+          "de": "Sanierung des Heizsystems"
+        },
         "description": "Sanierung des Heizsystems: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1711,8 +2097,10 @@
         "codeList": "r-gwr-pheizsan"
       },
       {
-        "name": "PINNUMB",
-        "label": "Umbauten / Renovationen im Innenbereich",
+        "technicalName": "PINNUMB",
+        "labels": {
+          "de": "Umbauten / Renovationen im Innenbereich"
+        },
         "description": "Umbauten / Renovationen im Innenbereich: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1732,8 +2120,10 @@
         "codeList": "r-gwr-pinnumb"
       },
       {
-        "name": "PUMNUTZ",
-        "label": "Umnutzung",
+        "technicalName": "PUMNUTZ",
+        "labels": {
+          "de": "Umnutzung"
+        },
         "description": "Umnutzung: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1753,8 +2143,10 @@
         "codeList": "r-gwr-pumnutz"
       },
       {
-        "name": "PERWMHZ",
-        "label": "Beheizte Erweiterung",
+        "technicalName": "PERWMHZ",
+        "labels": {
+          "de": "Beheizte Erweiterung"
+        },
         "description": "Beheizte Erweiterung: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1774,8 +2166,10 @@
         "codeList": "r-gwr-perwmhz"
       },
       {
-        "name": "PERWOHZ",
-        "label": "Nicht beheizte Erweiterung",
+        "technicalName": "PERWOHZ",
+        "labels": {
+          "de": "Nicht beheizte Erweiterung"
+        },
         "description": "Nicht beheizte Erweiterung: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1795,8 +2189,10 @@
         "codeList": "r-gwr-perwohz"
       },
       {
-        "name": "PTHERSOL",
-        "label": "Thermische Solaranlage",
+        "technicalName": "PTHERSOL",
+        "labels": {
+          "de": "Thermische Solaranlage"
+        },
         "description": "Thermische Solaranlage: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1816,8 +2212,10 @@
         "codeList": "r-gwr-pthersol"
       },
       {
-        "name": "PPHOTSOL",
-        "label": "Photovoltaische Solaranlage",
+        "technicalName": "PPHOTSOL",
+        "labels": {
+          "de": "Photovoltaische Solaranlage"
+        },
         "description": "Photovoltaische Solaranlage: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1837,8 +2235,10 @@
         "codeList": "r-gwr-pphotsol"
       },
       {
-        "name": "PANDUMB",
-        "label": "Andere Umbauten",
+        "technicalName": "PANDUMB",
+        "labels": {
+          "de": "Andere Umbauten"
+        },
         "description": "Andere Umbauten: Gibt die Art der durchgeführten Arbeiten an.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -1894,8 +2294,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 39 Merkmale",
     "fields": [
       {
-        "name": "EGID",
-        "label": "Eidgenössischer Gebäudeidentifikator",
+        "technicalName": "EGID",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
         "description": "Eidgenössischer Gebäudeidentifikator: Gebäudeidentifikationsnummer im eidg. GWR.",
         "dataType": "Ganzzahl (9)",
         "keyRole": null,
@@ -1914,8 +2316,10 @@
         }
       },
       {
-        "name": "GGDENR",
-        "label": "BFS-Gemeindenummer",
+        "technicalName": "GGDENR",
+        "labels": {
+          "de": "BFS-Gemeindenummer"
+        },
         "description": "BFS-Gemeindenummer: Nummer der politischen Gemeinde gemäss amtlichem Gemeindeverzeichnis der Schweiz.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -1934,8 +2338,10 @@
         }
       },
       {
-        "name": "GEBNR",
-        "label": "Amtliche Gebäudenummer",
+        "technicalName": "GEBNR",
+        "labels": {
+          "de": "Amtliche Gebäudenummer"
+        },
         "description": "Amtliche Gebäudenummer: Von der kommunalen oder kantonalen Behörde vergebene Gebäudenummer.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -1954,8 +2360,10 @@
         }
       },
       {
-        "name": "GBEZ",
-        "label": "Name des Gebäudes",
+        "technicalName": "GBEZ",
+        "labels": {
+          "de": "Name des Gebäudes"
+        },
         "description": "Name des Gebäudes: Kommentar zur Gebäudebezeichnung.",
         "dataType": "Text (40)",
         "keyRole": null,
@@ -1974,8 +2382,10 @@
         }
       },
       {
-        "name": "GKODE",
-        "label": "E-Gebäudekoordinate",
+        "technicalName": "GKODE",
+        "labels": {
+          "de": "E-Gebäudekoordinate"
+        },
         "description": "E-Gebäudekoordinate: Lokalisierung des Gebäudes im Landeskoordinatennetz (LV95).",
         "dataType": "Dezimal (10,3)",
         "keyRole": null,
@@ -1994,8 +2404,10 @@
         }
       },
       {
-        "name": "GKODN",
-        "label": "N-Gebäudekoordinate",
+        "technicalName": "GKODN",
+        "labels": {
+          "de": "N-Gebäudekoordinate"
+        },
         "description": "N-Gebäudekoordinate: Lokalisierung des Gebäudes im Landeskoordinatennetz (LV95).",
         "dataType": "Dezimal (10,3)",
         "keyRole": null,
@@ -2014,8 +2426,10 @@
         }
       },
       {
-        "name": "GKSCE",
-        "label": "Koordinatenherkunft",
+        "technicalName": "GKSCE",
+        "labels": {
+          "de": "Koordinatenherkunft"
+        },
         "description": "Koordinatenherkunft: Lokalisierung des Gebäudes im Landeskoordinatennetz (LV95).",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2035,8 +2449,10 @@
         "codeList": "r-gwr-gksce"
       },
       {
-        "name": "GLOC1",
-        "label": "Lokalcodes 1",
+        "technicalName": "GLOC1",
+        "labels": {
+          "de": "Lokalcodes 1"
+        },
         "description": "Lokalcodes 1: Lokalisierung des Gebäudes in infrakommunalen Gebietseinheiten (GLOC) und/oder im Quartier.",
         "dataType": "Text (8)",
         "keyRole": null,
@@ -2055,8 +2471,10 @@
         }
       },
       {
-        "name": "GLOC2",
-        "label": "Lokalcodes 2",
+        "technicalName": "GLOC2",
+        "labels": {
+          "de": "Lokalcodes 2"
+        },
         "description": "Lokalcodes 2: Lokalisierung des Gebäudes in infrakommunalen Gebietseinheiten (GLOC) und/oder im Quartier.",
         "dataType": "Text (8)",
         "keyRole": null,
@@ -2075,8 +2493,10 @@
         }
       },
       {
-        "name": "GLOC3",
-        "label": "Lokalcodes 3",
+        "technicalName": "GLOC3",
+        "labels": {
+          "de": "Lokalcodes 3"
+        },
         "description": "Lokalcodes 3: Lokalisierung des Gebäudes in infrakommunalen Gebietseinheiten (GLOC) und/oder im Quartier.",
         "dataType": "Text (8)",
         "keyRole": null,
@@ -2095,8 +2515,10 @@
         }
       },
       {
-        "name": "GLOC4",
-        "label": "Lokalcodes 4",
+        "technicalName": "GLOC4",
+        "labels": {
+          "de": "Lokalcodes 4"
+        },
         "description": "Lokalcodes 4: Lokalisierung des Gebäudes in infrakommunalen Gebietseinheiten (GLOC) und/oder im Quartier.",
         "dataType": "Text (8)",
         "keyRole": null,
@@ -2115,8 +2537,10 @@
         }
       },
       {
-        "name": "GQUART",
-        "label": "Quartier",
+        "technicalName": "GQUART",
+        "labels": {
+          "de": "Quartier"
+        },
         "description": "Quartier: Lokalisierung des Gebäudes in infrakommunalen Gebietseinheiten (GLOC) und/oder im Quartier.",
         "dataType": "Ganzzahl (7)",
         "keyRole": null,
@@ -2135,8 +2559,10 @@
         }
       },
       {
-        "name": "GEGRID",
-        "label": "GEGRID",
+        "technicalName": "GEGRID",
+        "labels": {
+          "de": "GEGRID"
+        },
         "description": "GEGRID: Grundstücke sind Objekte des Grundeigentums, deren Grenzen festgelegt und deren Rechte im Grundbuch eingetragen sind. Sie ermöglichen die Lokalisierung von Gebäuden.",
         "dataType": "Text (14)",
         "keyRole": null,
@@ -2155,8 +2581,10 @@
         }
       },
       {
-        "name": "GGBKR",
-        "label": "GGBKR",
+        "technicalName": "GGBKR",
+        "labels": {
+          "de": "GGBKR"
+        },
         "description": "GGBKR: Grundbuchkreis des Grundstücks, auf dem das Gebäude gebaut ist.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -2176,8 +2604,10 @@
         }
       },
       {
-        "name": "GPARZ",
-        "label": "GPARZ",
+        "technicalName": "GPARZ",
+        "labels": {
+          "de": "GPARZ"
+        },
         "description": "GPARZ: Nummer des Grundstücks, auf dem das Gebäude gebaut ist.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -2196,8 +2626,10 @@
         }
       },
       {
-        "name": "GSTAT",
-        "label": "Gebäudestatus",
+        "technicalName": "GSTAT",
+        "labels": {
+          "de": "Gebäudestatus"
+        },
         "description": "Gebäudestatus: Angabe zum aktuellen Zustand des Gebäudes.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2217,8 +2649,10 @@
         "codeList": "r-gwr-status"
       },
       {
-        "name": "GKAT",
-        "label": "Gebäudekategorie",
+        "technicalName": "GKAT",
+        "labels": {
+          "de": "Gebäudekategorie"
+        },
         "description": "Gebäudekategorie: Einteilung der Gebäude entsprechend ihrer Zweckbestimmung.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2238,8 +2672,10 @@
         "codeList": "r-gwr-kat"
       },
       {
-        "name": "GKLAS",
-        "label": "Gebäudeklasse",
+        "technicalName": "GKLAS",
+        "labels": {
+          "de": "Gebäudeklasse"
+        },
         "description": "Gebäudeklasse: Einteilung der Gebäude nach Eurostat-Klassifikation+ .",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2260,8 +2696,10 @@
         "codeList": "r-gwr-gklas"
       },
       {
-        "name": "GBAUJ",
-        "label": "Baujahr des Gebäudes",
+        "technicalName": "GBAUJ",
+        "labels": {
+          "de": "Baujahr des Gebäudes"
+        },
         "description": "Baujahr des Gebäudes: Angabe zu Jahr der Fertigstellung des Gebäudes.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -2279,8 +2717,10 @@
         }
       },
       {
-        "name": "GBAUM",
-        "label": "Baumonat des Gebäudes",
+        "technicalName": "GBAUM",
+        "labels": {
+          "de": "Baumonat des Gebäudes"
+        },
         "description": "Baumonat des Gebäudes: Angabe zu Monat der Fertigstellung des Gebäudes.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -2298,8 +2738,10 @@
         }
       },
       {
-        "name": "GBAUP",
-        "label": "Bauperiode",
+        "technicalName": "GBAUP",
+        "labels": {
+          "de": "Bauperiode"
+        },
         "description": "Bauperiode: Angabe zu Periode der Fertigstellung des Gebäudes.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2320,8 +2762,10 @@
         "codeList": "r-gwr-gbaup"
       },
       {
-        "name": "GABBJ",
-        "label": "Abbruchjahr des Gebäudes",
+        "technicalName": "GABBJ",
+        "labels": {
+          "de": "Abbruchjahr des Gebäudes"
+        },
         "description": "Abbruchjahr des Gebäudes: Jahr, in dem das Gebäude abgebrochen wurde.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -2340,8 +2784,10 @@
         }
       },
       {
-        "name": "GAREA",
-        "label": "Gebäudefläche",
+        "technicalName": "GAREA",
+        "labels": {
+          "de": "Gebäudefläche"
+        },
         "description": "Gebäudefläche: Gebäudefläche in Quadratmetern.",
         "dataType": "Ganzzahl (5)",
         "keyRole": null,
@@ -2360,8 +2806,10 @@
         }
       },
       {
-        "name": "GVOL",
-        "label": "Gebäudevolumen",
+        "technicalName": "GVOL",
+        "labels": {
+          "de": "Gebäudevolumen"
+        },
         "description": "Gebäudevolumen: Angabe zum Volumen des Gebäudes.",
         "dataType": "Ganzzahl (7)",
         "keyRole": null,
@@ -2380,8 +2828,10 @@
         }
       },
       {
-        "name": "GVOLNORM",
-        "label": "Gebäudevolumen: Norm",
+        "technicalName": "GVOLNORM",
+        "labels": {
+          "de": "Gebäudevolumen: Norm"
+        },
         "description": "Gebäudevolumen: Norm: Angabe zum Volumen des Gebäudes.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2401,8 +2851,10 @@
         "codeList": "r-gwr-gvolnorm"
       },
       {
-        "name": "GVOLSCE",
-        "label": "Informationsquelle zum Gebäudevolumen",
+        "technicalName": "GVOLSCE",
+        "labels": {
+          "de": "Informationsquelle zum Gebäudevolumen"
+        },
         "description": "Informationsquelle zum Gebäudevolumen: Angabe zum Volumen des Gebäudes.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2422,8 +2874,10 @@
         "codeList": "r-gwr-gvolsce"
       },
       {
-        "name": "GASTW",
-        "label": "Anzahl Geschosse",
+        "technicalName": "GASTW",
+        "labels": {
+          "de": "Anzahl Geschosse"
+        },
         "description": "Anzahl Geschosse: Anzahl Geschosse und Untergeschosse, einschliesslich Erdgeschoss.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -2442,8 +2896,10 @@
         }
       },
       {
-        "name": "GAZZI",
-        "label": "Anzahl separate Wohnräume",
+        "technicalName": "GAZZI",
+        "labels": {
+          "de": "Anzahl separate Wohnräume"
+        },
         "description": "Anzahl separate Wohnräume: Anzahl Wohnräume, die nicht Teil einer Wohnung sind.",
         "dataType": "Ganzzahl (3)",
         "keyRole": null,
@@ -2462,8 +2918,10 @@
         }
       },
       {
-        "name": "GSCHUTZR",
-        "label": "Zivilschutzraum",
+        "technicalName": "GSCHUTZR",
+        "labels": {
+          "de": "Zivilschutzraum"
+        },
         "description": "Zivilschutzraum: Gibt an, ob das Gebäude über einen Zivilschutzraum verfügt.",
         "dataType": "Code",
         "keyRole": null,
@@ -2483,8 +2941,10 @@
         "codeList": "r-gwr-gschutzr"
       },
       {
-        "name": "GEBF",
-        "label": "Energiebezugsfläche",
+        "technicalName": "GEBF",
+        "labels": {
+          "de": "Energiebezugsfläche"
+        },
         "description": "Energiebezugsfläche: Energiebezugsfläche nach SIA-Norm 416/1:2007.",
         "dataType": "Ganzzahl (6)",
         "keyRole": null,
@@ -2503,8 +2963,10 @@
         }
       },
       {
-        "name": "GEBFBER",
-        "label": "Berechnungsart der Energiebezugsfläche",
+        "technicalName": "GEBFBER",
+        "labels": {
+          "de": "Berechnungsart der Energiebezugsfläche"
+        },
         "description": "Berechnungsart der Energiebezugsfläche: Gibt die Methode zur Berechnung der Energiebezugsfläche an.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2524,8 +2986,10 @@
         "codeList": "r-gwr-gebfber"
       },
       {
-        "name": "GEBFDAT",
-        "label": "Aktualisierungsdatum der Energiebezugsfläche",
+        "technicalName": "GEBFDAT",
+        "labels": {
+          "de": "Aktualisierungsdatum der Energiebezugsfläche"
+        },
         "description": "Aktualisierungsdatum der Energiebezugsfläche: Datum der Erfassung oder der letzten Aktualisierung der Angaben zur Energiebezugsfläche.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -2544,8 +3008,10 @@
         }
       },
       {
-        "name": "GEBFSCE",
-        "label": "Informationsquelle der Energiebezugsfläche",
+        "technicalName": "GEBFSCE",
+        "labels": {
+          "de": "Informationsquelle der Energiebezugsfläche"
+        },
         "description": "Informationsquelle der Energiebezugsfläche: Angabe zur Datenquelle der Energiebezugsfläche.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2565,8 +3031,10 @@
         "codeList": "r-gwr-gebfsce"
       },
       {
-        "name": "GEBQH",
-        "label": "Heizwärmebedarf des Gebäudes QH",
+        "technicalName": "GEBQH",
+        "labels": {
+          "de": "Heizwärmebedarf des Gebäudes QH"
+        },
         "description": "Heizwärmebedarf des Gebäudes QH: Wärmebedarf des Gebäudes in kWh/m 2 pro Jahr.",
         "dataType": "Ganzzahl (6)",
         "keyRole": null,
@@ -2585,8 +3053,10 @@
         }
       },
       {
-        "name": "GEBQHSCE",
-        "label": "Informationsquelle zum Heizwärmebedarf des Gebäudes",
+        "technicalName": "GEBQHSCE",
+        "labels": {
+          "de": "Informationsquelle zum Heizwärmebedarf des Gebäudes"
+        },
         "description": "Informationsquelle zum Heizwärmebedarf des Gebäudes: Angabe zur Datenquelle des Heizwärmebedarfs des Gebäudes.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2606,8 +3076,10 @@
         "codeList": "r-gwr-gebqhsce"
       },
       {
-        "name": "GEBQHDAT",
-        "label": "Aktualisierungsdatum des Heizwärmebedarfs des Gebäudes",
+        "technicalName": "GEBQHDAT",
+        "labels": {
+          "de": "Aktualisierungsdatum des Heizwärmebedarfs des Gebäudes"
+        },
         "description": "Aktualisierungsdatum des Heizwärmebedarfs des Gebäudes: Aktualisierungsdatum des Heizwärmebedarfs des Gebäudes.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -2626,8 +3098,10 @@
         }
       },
       {
-        "name": "GUSPAT1",
-        "label": "Raumbezogene statistische Grundeinheiten der ersten Stufe (USPAT1)",
+        "technicalName": "GUSPAT1",
+        "labels": {
+          "de": "Raumbezogene statistische Grundeinheiten der ersten Stufe (USPAT1)"
+        },
         "description": "Raumbezogene statistische Grundeinheiten der ersten Stufe (USPAT1): Gibt die raumbezogene statistische Grundeinheit der ersten Stufe an.",
         "dataType": "Ganzzahl (7)",
         "keyRole": null,
@@ -2646,8 +3120,10 @@
         }
       },
       {
-        "name": "GFREITXT1",
-        "label": "Freitextfeld Gebäude 1",
+        "technicalName": "GFREITXT1",
+        "labels": {
+          "de": "Freitextfeld Gebäude 1"
+        },
         "description": "Freitextfeld Gebäude 1: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -2666,8 +3142,10 @@
         }
       },
       {
-        "name": "GFREITXT2",
-        "label": "Freitextfeld Gebäude 2",
+        "technicalName": "GFREITXT2",
+        "labels": {
+          "de": "Freitextfeld Gebäude 2"
+        },
         "description": "Freitextfeld Gebäude 2: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -2722,8 +3200,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 17 Merkmale",
     "fields": [
       {
-        "name": "EWAID",
-        "label": "Eidgenössischer Wärmeerzeugungsanlagenidentifikator",
+        "technicalName": "EWAID",
+        "labels": {
+          "de": "Eidgenössischer Wärmeerzeugungsanlagenidentifikator"
+        },
         "description": "Eidgenössischer Wärmeerzeugungsanlagenidentifikator: Identifikationsnummer der Wärmeerzeugungsanlage im eidg. GWR.",
         "dataType": "Ganzzahl (9)",
         "keyRole": null,
@@ -2742,8 +3222,10 @@
         }
       },
       {
-        "name": "TSTAT",
-        "label": "Status Wärmeerzeugungsanlage",
+        "technicalName": "TSTAT",
+        "labels": {
+          "de": "Status Wärmeerzeugungsanlage"
+        },
         "description": "Status Wärmeerzeugungsanlage: Angabe zum aktuellen Zustand der Wärmeerzeugungsanlage.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2763,8 +3245,10 @@
         "codeList": "r-gwr-tstat"
       },
       {
-        "name": "TONR",
-        "label": "Offizielle Nummer der Wärmeerzeugungsanlage",
+        "technicalName": "TONR",
+        "labels": {
+          "de": "Offizielle Nummer der Wärmeerzeugungsanlage"
+        },
         "description": "Offizielle Nummer der Wärmeerzeugungsanlage: Eine von der Gemeinde- oder Kantonsverwaltung zugewiesene Installationsnummer für die Wärmeerzeugung.",
         "dataType": "Text (40)",
         "keyRole": null,
@@ -2783,8 +3267,10 @@
         }
       },
       {
-        "name": "TNHEIZ",
-        "label": "Wärmenutzung für Heizung",
+        "technicalName": "TNHEIZ",
+        "labels": {
+          "de": "Wärmenutzung für Heizung"
+        },
         "description": "Wärmenutzung für Heizung: Gibt an, ob die Wärmeerzeugungsanlage zur Beheizung des Gebäudes genutzt wird.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -2804,8 +3290,10 @@
         "codeList": "r-gwr-tnheiz"
       },
       {
-        "name": "TNWW",
-        "label": "Wärmenutzung für Warmwasser",
+        "technicalName": "TNWW",
+        "labels": {
+          "de": "Wärmenutzung für Warmwasser"
+        },
         "description": "Wärmenutzung für Warmwasser: Gibt an, ob die Wärmeerzeugungsanlage zur Brauchwarmwasserbereitung im Gebäude genutzt wird.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -2825,8 +3313,10 @@
         "codeList": "r-gwr-tnww"
       },
       {
-        "name": "TWAERZ",
-        "label": "Wärmeerzeugungsanlage",
+        "technicalName": "TWAERZ",
+        "labels": {
+          "de": "Wärmeerzeugungsanlage"
+        },
         "description": "Wärmeerzeugungsanlage: Gibt die Art der Wärmeerzeugungsanlage an.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2846,8 +3336,10 @@
         "codeList": "r-gwr-twaerz"
       },
       {
-        "name": "TWAERZEGID",
-        "label": "EGID des Versorgergebäudes",
+        "technicalName": "TWAERZEGID",
+        "labels": {
+          "de": "EGID des Versorgergebäudes"
+        },
         "description": "EGID des Versorgergebäudes: Gibt den eidg. Gebäudeidentifikator (EGID) des Gebäudes an, das im Rahmen einer Anlage für mehrere Gebäude Wärme liefert.",
         "dataType": "Ganzzahl (9)",
         "keyRole": null,
@@ -2866,8 +3358,10 @@
         }
       },
       {
-        "name": "TETNID",
-        "label": "Eidgenössischer Identifikator des thermischen Netzes",
+        "technicalName": "TETNID",
+        "labels": {
+          "de": "Eidgenössischer Identifikator des thermischen Netzes"
+        },
         "description": "Eidgenössischer Identifikator des thermischen Netzes: Gibt an, an welches thermisches Netz die Wärmeerzeugungsanlage angeschlossen ist.",
         "dataType": "Text (7)",
         "keyRole": null,
@@ -2886,8 +3380,10 @@
         }
       },
       {
-        "name": "TENT",
-        "label": "Energieträger der Wärmeerzeugungsanlage",
+        "technicalName": "TENT",
+        "labels": {
+          "de": "Energieträger der Wärmeerzeugungsanlage"
+        },
         "description": "Energieträger der Wärmeerzeugungsanlage: Gibt den Energieträger der Wärmeerzeugungsanlage an.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -2907,8 +3403,10 @@
         "codeList": "r-gwr-tent"
       },
       {
-        "name": "TSCE",
-        "label": "Informationsquelle der Wärmeerzeugungsanlage",
+        "technicalName": "TSCE",
+        "labels": {
+          "de": "Informationsquelle der Wärmeerzeugungsanlage"
+        },
         "description": "Informationsquelle der Wärmeerzeugungsanlage: Angabe zur Datenquelle der Wärmeerzeugungsanlage",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2928,8 +3426,10 @@
         "codeList": "r-gwr-tsce"
       },
       {
-        "name": "TDAT",
-        "label": "Aktualisierungsdatum der Wärmeerzeugungsanlage",
+        "technicalName": "TDAT",
+        "labels": {
+          "de": "Aktualisierungsdatum der Wärmeerzeugungsanlage"
+        },
         "description": "Aktualisierungsdatum der Wärmeerzeugungsanlage: Gibt das Aktualisierungsdatum der Daten zur Wärmeerzeugungsanlage an.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -2948,8 +3448,10 @@
         }
       },
       {
-        "name": "TNLEIST",
-        "label": "Nennleistung der Wärmeerzeugungsanlage",
+        "technicalName": "TNLEIST",
+        "labels": {
+          "de": "Nennleistung der Wärmeerzeugungsanlage"
+        },
         "description": "Nennleistung der Wärmeerzeugungsanlage: Gibt die Nennleistung der Wärmeerzeugungsanlage an.",
         "dataType": "Ganzzahl (7)",
         "keyRole": null,
@@ -2968,8 +3470,10 @@
         }
       },
       {
-        "name": "TNLEISTSCE",
-        "label": "Informationsquelle der Nennleistung der Wärmeerzeugungsanlage",
+        "technicalName": "TNLEISTSCE",
+        "labels": {
+          "de": "Informationsquelle der Nennleistung der Wärmeerzeugungsanlage"
+        },
         "description": "Informationsquelle der Nennleistung der Wärmeerzeugungsanlage: Angabe zur Datenquelle der Nennleistung der Wärmeerzeugungsanlage.",
         "dataType": "Code (3)",
         "keyRole": null,
@@ -2989,8 +3493,10 @@
         "codeList": "r-gwr-tnleistsce"
       },
       {
-        "name": "TINBJ",
-        "label": "Inbetriebnahmejahr der Wärmeerzeugungsanlage",
+        "technicalName": "TINBJ",
+        "labels": {
+          "de": "Inbetriebnahmejahr der Wärmeerzeugungsanlage"
+        },
         "description": "Inbetriebnahmejahr der Wärmeerzeugungsanlage: Gibt das Jahr der Inbetriebnahme der Wärmeerzeugungsanlage an.",
         "dataType": "Jahr (yyyy)",
         "keyRole": null,
@@ -3009,8 +3515,10 @@
         }
       },
       {
-        "name": "TAUSJ",
-        "label": "Ausserbetriebnahmejahr der Wärmeerzeugungsanlage",
+        "technicalName": "TAUSJ",
+        "labels": {
+          "de": "Ausserbetriebnahmejahr der Wärmeerzeugungsanlage"
+        },
         "description": "Ausserbetriebnahmejahr der Wärmeerzeugungsanlage: Gibt das Jahr an, in dem die Wärmeerzeugungsanlage ausser Betrieb genommen wurde.",
         "dataType": "Jahr (yyyy)",
         "keyRole": null,
@@ -3029,8 +3537,10 @@
         }
       },
       {
-        "name": "TWAERZGEBROLLE",
-        "label": "Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude",
+        "technicalName": "TWAERZGEBROLLE",
+        "labels": {
+          "de": "Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude"
+        },
         "description": "Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude: Gibt an, welche Rolle das Gebäude im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude hat.",
         "dataType": "Code",
         "keyRole": null,
@@ -3050,8 +3560,10 @@
         "codeList": "r-gwr-twaerzgebrolle"
       },
       {
-        "name": "TEINDAT",
-        "label": "Eintragungsdatum im GWR",
+        "technicalName": "TEINDAT",
+        "labels": {
+          "de": "Eintragungsdatum im GWR"
+        },
         "description": "Eintragungsdatum im GWR: Datum der (ersten) Erfassung der Wärmeerzeugungsanlage.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -3104,8 +3616,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 9 Merkmale",
     "fields": [
       {
-        "name": "EDID",
-        "label": "Eidgenössischer Eingangsidentifikator",
+        "technicalName": "EDID",
+        "labels": {
+          "de": "Eidgenössischer Eingangsidentifikator"
+        },
         "description": "Eidgenössischer Eingangsidentifikator: Identifikationsnummer des Gebäudeeingangs im eidg. GWR.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -3124,8 +3638,10 @@
         }
       },
       {
-        "name": "EGAID",
-        "label": "Eidgenössischer Gebäudeadressidentifikator",
+        "technicalName": "EGAID",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeadressidentifikator"
+        },
         "description": "Eidgenössischer Gebäudeadressidentifikator: Identifikationsnummer der Gebäudeadresse.",
         "dataType": "Ganzzahl (9)",
         "keyRole": null,
@@ -3144,8 +3660,10 @@
         }
       },
       {
-        "name": "DEINR",
-        "label": "Eingangsnummer Gebäude",
+        "technicalName": "DEINR",
+        "labels": {
+          "de": "Eingangsnummer Gebäude"
+        },
         "description": "Eingangsnummer Gebäude: Hausnummer als Teil der Gebäudeadresse.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -3164,8 +3682,10 @@
         }
       },
       {
-        "name": "DKODE",
-        "label": "E-Eingangskoordinate",
+        "technicalName": "DKODE",
+        "labels": {
+          "de": "E-Eingangskoordinate"
+        },
         "description": "E-Eingangskoordinate: Lokalisierung des Gebäudeeingangs mittels Landeskoordinatennetz (LV95).",
         "dataType": "Dezimal (10,3)",
         "keyRole": null,
@@ -3184,8 +3704,10 @@
         }
       },
       {
-        "name": "DKODN",
-        "label": "N-Eingangskoordinate",
+        "technicalName": "DKODN",
+        "labels": {
+          "de": "N-Eingangskoordinate"
+        },
         "description": "N-Eingangskoordinate: Lokalisierung des Gebäudeeingangs mittels Landeskoordinatennetz (LV95).",
         "dataType": "Dezimal (10,3)",
         "keyRole": null,
@@ -3204,8 +3726,10 @@
         }
       },
       {
-        "name": "DOFFADR",
-        "label": "Offizielle Adresse",
+        "technicalName": "DOFFADR",
+        "labels": {
+          "de": "Offizielle Adresse"
+        },
         "description": "Offizielle Adresse: Gibt an, ob die Adresse offiziell ist.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3225,8 +3749,10 @@
         "codeList": "r-gwr-doffadr"
       },
       {
-        "name": "DPLZ4",
-        "label": "Postleitzahl",
+        "technicalName": "DPLZ4",
+        "labels": {
+          "de": "Postleitzahl"
+        },
         "description": "Postleitzahl: Die Kombination von DPLZ4 + DPLZZ ergibt eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -3245,8 +3771,10 @@
         }
       },
       {
-        "name": "DPLZZ",
-        "label": "Postleitzahl-Zusatzziffer",
+        "technicalName": "DPLZZ",
+        "labels": {
+          "de": "Postleitzahl-Zusatzziffer"
+        },
         "description": "Postleitzahl-Zusatzziffer: Die Kombination von DPLZ4 + DPLZZ ergibt eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -3265,8 +3793,10 @@
         }
       },
       {
-        "name": "DPLZNAME",
-        "label": "Ortschaftsname",
+        "technicalName": "DPLZNAME",
+        "labels": {
+          "de": "Ortschaftsname"
+        },
         "description": "Ortschaftsname: Name der Ortschaft gemäss der Kombination DPLZ4 + DPLZZ aus dem amtlichen Ortschaftenverzeichnis.",
         "dataType": "Text (40)",
         "keyRole": null,
@@ -3320,8 +3850,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 24 Merkmale",
     "fields": [
       {
-        "name": "EWID",
-        "label": "Eidgenössischer Wohnungsidentifikator",
+        "technicalName": "EWID",
+        "labels": {
+          "de": "Eidgenössischer Wohnungsidentifikator"
+        },
         "description": "Eidgenössischer Wohnungsidentifikator: Identifikationsnummer der Wohnung im eidg. GWR.",
         "dataType": "Ganzzahl (3)",
         "keyRole": null,
@@ -3340,8 +3872,10 @@
         }
       },
       {
-        "name": "WHGNR",
-        "label": "Administrative Wohnungsnummer",
+        "technicalName": "WHGNR",
+        "labels": {
+          "de": "Administrative Wohnungsnummer"
+        },
         "description": "Administrative Wohnungsnummer: Angabe zur Wohnungsnummerierung.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -3360,8 +3894,10 @@
         }
       },
       {
-        "name": "WEINR",
-        "label": "Physische Wohnungsnummer",
+        "technicalName": "WEINR",
+        "labels": {
+          "de": "Physische Wohnungsnummer"
+        },
         "description": "Physische Wohnungsnummer: Angabe zur Wohnungsnummerierung.",
         "dataType": "Text (12)",
         "keyRole": null,
@@ -3380,8 +3916,10 @@
         }
       },
       {
-        "name": "WEGRID",
-        "label": "Eidgenössischer Grundstücksidentifikator der Wohnung",
+        "technicalName": "WEGRID",
+        "labels": {
+          "de": "Eidgenössischer Grundstücksidentifikator der Wohnung"
+        },
         "description": "Eidgenössischer Grundstücksidentifikator der Wohnung: Referenz zu den Grundstücken für Wohnungen im Stockwerkeigentum",
         "dataType": "Text (14)",
         "keyRole": null,
@@ -3400,8 +3938,10 @@
         }
       },
       {
-        "name": "WSTWK",
-        "label": "Stockwerk",
+        "technicalName": "WSTWK",
+        "labels": {
+          "de": "Stockwerk"
+        },
         "description": "Stockwerk: Angabe des Stockwerkes, auf welchem sich die Wohnung befindet.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3421,8 +3961,10 @@
         "codeList": "r-gwr-wstwk"
       },
       {
-        "name": "WMEHRG",
-        "label": "Mehrgeschossige Wohnung",
+        "technicalName": "WMEHRG",
+        "labels": {
+          "de": "Mehrgeschossige Wohnung"
+        },
         "description": "Mehrgeschossige Wohnung: Angabe des Stockwerkes, auf welchem sich die Wohnung befindet.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3442,8 +3984,10 @@
         "codeList": "r-gwr-wmehrg"
       },
       {
-        "name": "WBEZ",
-        "label": "Lage auf dem Stockwerk",
+        "technicalName": "WBEZ",
+        "labels": {
+          "de": "Lage auf dem Stockwerk"
+        },
         "description": "Lage auf dem Stockwerk: Kommentar zur Lokalisierung der Wohnung auf dem Stockwerk.",
         "dataType": "Text (40)",
         "keyRole": null,
@@ -3462,8 +4006,10 @@
         }
       },
       {
-        "name": "WSTAT",
-        "label": "Wohnungsstatus",
+        "technicalName": "WSTAT",
+        "labels": {
+          "de": "Wohnungsstatus"
+        },
         "description": "Wohnungsstatus: Angabe zum aktuellen Zustand der Wohnung.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3483,8 +4029,10 @@
         "codeList": "r-gwr-wstat"
       },
       {
-        "name": "WBAUJ",
-        "label": "Baujahr der Wohnung",
+        "technicalName": "WBAUJ",
+        "labels": {
+          "de": "Baujahr der Wohnung"
+        },
         "description": "Baujahr der Wohnung: Entspricht dem Jahr der Fertigstellung der Wohnung.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -3503,8 +4051,10 @@
         }
       },
       {
-        "name": "WABBJ",
-        "label": "Abbruchjahr der Wohnung",
+        "technicalName": "WABBJ",
+        "labels": {
+          "de": "Abbruchjahr der Wohnung"
+        },
         "description": "Abbruchjahr der Wohnung: Entspricht dem Jahr der Aufhebung der Wohnung.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -3523,8 +4073,10 @@
         }
       },
       {
-        "name": "WAZIM",
-        "label": "Anzahl Zimmer",
+        "technicalName": "WAZIM",
+        "labels": {
+          "de": "Anzahl Zimmer"
+        },
         "description": "Anzahl Zimmer: Anzahl Zimmer innerhalb der Wohnung.",
         "dataType": "Ganzzahl (2)",
         "keyRole": null,
@@ -3543,8 +4095,10 @@
         }
       },
       {
-        "name": "WAREA",
-        "label": "Wohnungsfläche",
+        "technicalName": "WAREA",
+        "labels": {
+          "de": "Wohnungsfläche"
+        },
         "description": "Wohnungsfläche: Bewohnbare Fläche der Wohnung in Quadratmetern.",
         "dataType": "Ganzzahl (4)",
         "keyRole": null,
@@ -3563,8 +4117,10 @@
         }
       },
       {
-        "name": "WKCHE",
-        "label": "Kocheinrichtung",
+        "technicalName": "WKCHE",
+        "labels": {
+          "de": "Kocheinrichtung"
+        },
         "description": "Kocheinrichtung: Angabe zur verfügbaren Kocheinrichtung.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3584,8 +4140,10 @@
         "codeList": "r-gwr-wkche"
       },
       {
-        "name": "WNART",
-        "label": "Nutzungsart der Wohnung",
+        "technicalName": "WNART",
+        "labels": {
+          "de": "Nutzungsart der Wohnung"
+        },
         "description": "Nutzungsart der Wohnung: Angabe zur aktuellen Nutzung der Wohnung, die für die Umsetzung der Gesetzgebung über die Zweitwohnungen genutzt werden.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3605,8 +4163,10 @@
         "codeList": "r-gwr-wnart"
       },
       {
-        "name": "WNARTSCE",
-        "label": "Informationsquelle zur Nutzungsart",
+        "technicalName": "WNARTSCE",
+        "labels": {
+          "de": "Informationsquelle zur Nutzungsart"
+        },
         "description": "Informationsquelle zur Nutzungsart: Angabe zur aktuellen Nutzung der Wohnung, die für die Umsetzung der Gesetzgebung über die Zweitwohnungen genutzt werden.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3626,8 +4186,10 @@
         "codeList": "r-gwr-wnartsce"
       },
       {
-        "name": "WNARTDAT",
-        "label": "Aktualisierungsdatum der Nutzungsart",
+        "technicalName": "WNARTDAT",
+        "labels": {
+          "de": "Aktualisierungsdatum der Nutzungsart"
+        },
         "description": "Aktualisierungsdatum der Nutzungsart: Angabe zur aktuellen Nutzung der Wohnung, die für die Umsetzung der Gesetzgebung über die Zweitwohnungen genutzt werden.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -3646,8 +4208,10 @@
         }
       },
       {
-        "name": "WNARTKOM",
-        "label": "Kommentar zur Nutzungsart der Wohnung",
+        "technicalName": "WNARTKOM",
+        "labels": {
+          "de": "Kommentar zur Nutzungsart der Wohnung"
+        },
         "description": "Kommentar zur Nutzungsart der Wohnung: Angabe zur aktuellen Nutzung der Wohnung, die für die Umsetzung der Gesetzgebung über die Zweitwohnungen genutzt werden.",
         "dataType": "Text (512)",
         "keyRole": null,
@@ -3666,8 +4230,10 @@
         }
       },
       {
-        "name": "WPERSHW",
-        "label": "Person(en) mit Hauptwohnsitz",
+        "technicalName": "WPERSHW",
+        "labels": {
+          "de": "Person(en) mit Hauptwohnsitz"
+        },
         "description": "Person(en) mit Hauptwohnsitz: Angabe zur Wohnungsbelegung gemäss den Daten des Einwohnerregisters.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3687,8 +4253,10 @@
         "codeList": "r-gwr-wpershw"
       },
       {
-        "name": "WPERSNW",
-        "label": "Person(en) mit Nebenwohnsitz",
+        "technicalName": "WPERSNW",
+        "labels": {
+          "de": "Person(en) mit Nebenwohnsitz"
+        },
         "description": "Person(en) mit Nebenwohnsitz: Angabe zur Wohnungsbelegung gemäss den Daten des Einwohnerregisters.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3708,8 +4276,10 @@
         "codeList": "r-gwr-wpersnw"
       },
       {
-        "name": "WERSTBELEGDAT",
-        "label": "Datum der ersten Belegung",
+        "technicalName": "WERSTBELEGDAT",
+        "labels": {
+          "de": "Datum der ersten Belegung"
+        },
         "description": "Datum der ersten Belegung: Angabe des Datums (Quartalsende), an dem die Wohnung erstmals belegt war.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -3728,8 +4298,10 @@
         }
       },
       {
-        "name": "WLETZTBELEGDAT",
-        "label": "Datum der letzten Belegung",
+        "technicalName": "WLETZTBELEGDAT",
+        "labels": {
+          "de": "Datum der letzten Belegung"
+        },
         "description": "Datum der letzten Belegung: Angabe des Datums (Quartalsende), an dem die Wohnung letztmals belegt war.",
         "dataType": "Datum (dd.mm.yyyy)",
         "keyRole": null,
@@ -3748,8 +4320,10 @@
         }
       },
       {
-        "name": "WGBANMERKUNG",
-        "label": "Nutzungsbeschränkung gemäss ZWG",
+        "technicalName": "WGBANMERKUNG",
+        "labels": {
+          "de": "Nutzungsbeschränkung gemäss ZWG"
+        },
         "description": "Nutzungsbeschränkung gemäss ZWG: Dieses Merkmal erlaubt, allfällige durch das Zweitwohnungsgesetz (ZWG) vom 20. März 2015 vorgesehene Nutzungsbeschränkungen zu erfassen.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3769,8 +4343,10 @@
         "codeList": "r-gwr-wgbanmerkung"
       },
       {
-        "name": "WFREITXT1",
-        "label": "Freitextfeld Wohnung 1",
+        "technicalName": "WFREITXT1",
+        "labels": {
+          "de": "Freitextfeld Wohnung 1"
+        },
         "description": "Freitextfeld Wohnung 1: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen.",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -3789,8 +4365,10 @@
         }
       },
       {
-        "name": "WFREITXT2",
-        "label": "Freitextfeld Wohnung 2",
+        "technicalName": "WFREITXT2",
+        "labels": {
+          "de": "Freitextfeld Wohnung 2"
+        },
         "description": "Freitextfeld Wohnung 2: Freitextfelder für die Verwaltung der kantonalen und kommunalen Spezifikationen.",
         "dataType": "Text (32)",
         "keyRole": null,
@@ -3845,8 +4423,10 @@
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · 10 Merkmale",
     "fields": [
       {
-        "name": "ESID",
-        "label": "Eidgenössischer Strassenidentifikator",
+        "technicalName": "ESID",
+        "labels": {
+          "de": "Eidgenössischer Strassenidentifikator"
+        },
         "description": "Eidgenössischer Strassenidentifikator: Identifikationsnummer der Strasse.",
         "dataType": "Ganzzahl (8)",
         "keyRole": null,
@@ -3865,8 +4445,10 @@
         }
       },
       {
-        "name": "STRNAME",
-        "label": "Strassenbezeichnung",
+        "technicalName": "STRNAME",
+        "labels": {
+          "de": "Strassenbezeichnung"
+        },
         "description": "Strassenbezeichnung: Strassenbezeichnung.",
         "dataType": "Text (60)",
         "keyRole": null,
@@ -3885,8 +4467,10 @@
         }
       },
       {
-        "name": "STRNAMK",
-        "label": "Strassenbezeichnung kurz",
+        "technicalName": "STRNAMK",
+        "labels": {
+          "de": "Strassenbezeichnung kurz"
+        },
         "description": "Strassenbezeichnung kurz: Strassenbezeichnung.",
         "dataType": "Text (24)",
         "keyRole": null,
@@ -3905,8 +4489,10 @@
         }
       },
       {
-        "name": "STRINDX",
-        "label": "Strassenbezeichnung Index",
+        "technicalName": "STRINDX",
+        "labels": {
+          "de": "Strassenbezeichnung Index"
+        },
         "description": "Strassenbezeichnung Index: Strassenbezeichnung.",
         "dataType": "Text (3)",
         "keyRole": null,
@@ -3925,8 +4511,10 @@
         }
       },
       {
-        "name": "STRSP",
-        "label": "Strassenbezeichnung Sprache",
+        "technicalName": "STRSP",
+        "labels": {
+          "de": "Strassenbezeichnung Sprache"
+        },
         "description": "Strassenbezeichnung Sprache: Strassenbezeichnung.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3946,8 +4534,10 @@
         "codeList": "r-gwr-strsp"
       },
       {
-        "name": "STROFFIZIEL",
-        "label": "Strassenbezeichnung offiziell",
+        "technicalName": "STROFFIZIEL",
+        "labels": {
+          "de": "Strassenbezeichnung offiziell"
+        },
         "description": "Strassenbezeichnung offiziell: Strassenbezeichnung.",
         "dataType": "Code (1)",
         "keyRole": null,
@@ -3967,8 +4557,10 @@
         "codeList": "r-gwr-stroffiziel"
       },
       {
-        "name": "SREAL",
-        "label": "Realisierungsstand der Strasse",
+        "technicalName": "SREAL",
+        "labels": {
+          "de": "Realisierungsstand der Strasse"
+        },
         "description": "Realisierungsstand der Strasse: Angabe zum Realisierungsstand der Strasse.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -3988,8 +4580,10 @@
         "codeList": "r-gwr-sreal"
       },
       {
-        "name": "STRART",
-        "label": "Art der Strasse",
+        "technicalName": "STRART",
+        "labels": {
+          "de": "Art der Strasse"
+        },
         "description": "Art der Strasse: Art des betreffenden Strassenobjektes.",
         "dataType": "Code (4)",
         "keyRole": null,
@@ -4009,8 +4603,10 @@
         "codeList": "r-gwr-strart"
       },
       {
-        "name": "STRGEOM",
-        "label": "Strassengeometrie",
+        "technicalName": "STRGEOM",
+        "labels": {
+          "de": "Strassengeometrie"
+        },
         "description": "Strassengeometrie: Geometrie des Objekts Strasse.",
         "dataType": "GeoJSON (LV95)",
         "keyRole": null,
@@ -4029,8 +4625,10 @@
         }
       },
       {
-        "name": "STRANR",
-        "label": "Amtliche Strassennummer",
+        "technicalName": "STRANR",
+        "labels": {
+          "de": "Amtliche Strassennummer"
+        },
         "description": "Amtliche Strassennummer: Amtliche Strassennummer.",
         "dataType": "Ganzzahl (12)",
         "keyRole": null,
