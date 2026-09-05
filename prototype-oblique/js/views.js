@@ -7,15 +7,17 @@
   const ui = DK.ui, data = DK.data, router = DK.router;
   const t = ui.t, esc = ui.esc, icon = ui.icon;
   const views = {};
+  const routeNav = route => route.params.nav ? { nav: data.navModel() } : undefined;
+  views.hasPageSearch = route => ['home', 'search'].includes(route?.view);
 
   /* ---- header, nav, footer ------------------------------------------------ */
   views.headerTools = function (state, route) {
     const cfg = data.config;
-    const home = route?.view === 'home';
+    const formId = views.hasPageSearch(route) ? (route.view === 'home' ? 'home-search' : 'results-search') : null;
     return `
       <div class="ob-header-search${state.searchOpen ? ' is-open' : ''}" id="header-search">
-        <button type="button" class="ob-button ob-button--icon" data-action="toggle-search" aria-label="${esc(t('search.label'))}"${home ? ' aria-controls="home-search"' : ` aria-expanded="${state.searchOpen}" aria-controls="header-search-field"`}>${icon('search', 'xl')}</button>
-        ${home ? '' : `<div id="header-search-field"${state.searchOpen ? '' : ' hidden'}>${views.toolbar({ state })}</div>`}
+        <button type="button" class="ob-button ob-button--icon" data-action="toggle-search" aria-label="${esc(t('search.label'))}"${formId ? ` aria-controls="${formId}"` : ` aria-expanded="${state.searchOpen}" aria-controls="header-search-field"`}>${icon('search', 'xl')}</button>
+        ${formId ? '' : `<div id="header-search-field"${state.searchOpen ? '' : ' hidden'}>${views.toolbar({ state })}</div>`}
       </div>
       <div class="ob-popover-host" id="help-host">${views.helpHost(state)}</div>
       <div class="ob-menu-host" id="language-host">${views.languageHost(state)}</div>
@@ -139,9 +141,11 @@
       const members = ctx.domain ? data.membersOfDomain(ctx.kind, ctx.domain) : data.list(ctx.kind);
       const memberIds = new Set(members.map(e => e.identifier));
       ctx.total = members.length;
-      ctx.groups = data.buildGroups(ctx.kind, g, ctx.mode === 'table').map(x => ({
-        ...x, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(ctx.kind, e, ctx.filter)), open: !closed[x.id],
-      })).filter(x => x.items.length);
+      ctx.groups = data.buildGroups(ctx.kind, g, ctx.mode === 'table').map(x => {
+        // Identically named groups in different domain scopes are independent disclosures.
+        const id = ctx.domain ? `${ctx.domain.identifier}:${x.id}` : x.id;
+        return { ...x, id, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(ctx.kind, e, ctx.filter)), open: !closed[id] };
+      }).filter(x => x.items.length);
       ctx.matched = ctx.groups.reduce((sum, x) => sum + x.items.length, 0);
       ctx.columns = data.columns(ctx.kind);
     }
@@ -156,8 +160,9 @@
     const crumbs = [{ label: t('nav.home'), href: '#/' }];
     if (route.view === 'detail') {
       const container = data.navModel() === 'container';
-      const sec = k => ({ label: kinds[k].plural, href: router.listHref(k) });
-      const ent = (k, x) => ({ label: x.name, href: router.entityHref(k, x.identifier) });
+      const nav = routeNav(route);
+      const sec = k => ({ label: kinds[k].plural, href: router.listHref(k, nav) });
+      const ent = (k, x) => ({ label: x.name, href: router.entityHref(k, x.identifier, nav) });
       const dom = data.domainForEntity(e.kind, e);
       const sys = data.sysOf(e.system);
       const obj = e.kind === 'attrs' ? data.objOf(e.object) : null;
@@ -272,6 +277,10 @@
       </div>`;
   };
   views.toolbar = ctx => `<div class="ob-toolbar">${views.searchField(ctx.state)}<div class="ob-toolbar-spacer"></div></div>`;
+  views.searchForm = (state, home = false) => `<form id="${home ? 'home-search' : 'results-search'}" class="ob-hero-search-form" role="search" aria-label="${esc(t('search.label'))}">
+    ${views.searchField(state, home)}
+    <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${DK.search.canSubmit(state.query, state.searchOptions) ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
+  </form>`;
 
   /** Same disclosure on home and results; native checkboxes keep keyboard/touch behavior. */
   views.searchOptions = function (state) {
@@ -312,7 +321,7 @@
   /* ---- catalog tree ------------------------------------------------------------- */
   views.tree = function (route, state, onlySection) {
     const kinds = data.model.kinds;
-    const navParams = route.params.nav ? { nav: data.navModel() } : undefined;
+    const navParams = routeNav(route);
     const listHref = kind => router.listHref(kind, navParams);
     const entityHref = (kind, id) => router.entityHref(kind, id, navParams);
     const e = route.entity;
@@ -394,13 +403,10 @@
     const recent = ui.sortRows(data.recent(8), recentTable.sort, r => [r.name, r.kindLabel, r.group, r.status, r.modified]);
     const recentRows = recent.map(r => ui.tr([ui.entityLink(r.href, r.name), esc(r.kindLabel), esc(r.group), ui.chip(r.status, data.statusTone(r.status)), { html: ui.fmtDate(r.modified), cls: 'ob-cell-nowrap' }], r.href, recentColumns)).join('');
     return `
-      <section class="ob-home-search" aria-labelledby="home-search-title">
+      <section class="ob-home-search ob-page-search" aria-labelledby="home-search-title">
         <h1 id="home-search-title">${esc(t('home.search.title'))}</h1>
         <p id="home-search-description">${esc(t('home.search.description'))}</p>
-        <form id="home-search" class="ob-hero-search-form" role="search" aria-label="${esc(t('search.label'))}">
-          ${views.searchField(ctx.state, true)}
-          <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${DK.search.canSubmit(ctx.state.query, ctx.state.searchOptions) ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
-        </form>
+        ${views.searchForm(ctx.state, true)}
         <div id="search-options-host">${views.searchOptions(ctx.state)}</div>
       </section>
       <div class="ob-kpi-grid">${kpis}</div>
@@ -422,10 +428,10 @@
     return withCount ? [e.name, c[0], c[1], c[2], data.statusOf(kind, e)] : [e.name, c[0], c[1], data.statusOf(kind, e)];
   };
   /** One row of a section list (`withCount`) or of a search result table (`query` highlights the hits). */
-  views.row = function (kind, e, columns, withCount, query) {
+  views.row = function (kind, e, columns, withCount, query, nav) {
     const c = data.cols(kind, e);
     const st = data.statusOf(kind, e);
-    const href = router.entityHref(kind, e.identifier);
+    const href = router.entityHref(kind, e.identifier, nav);
     const text = query ? v => ui.highlight(v, query) : esc;
     const cells = [ui.entityLink(href, e.name, text(e.name)), text(c[0]), { html: `<span class="ob-clamp-2">${text(c[1])}</span>`, cls: 'ob-cell-muted' }];
     if (withCount) cells.push(esc(c[2]));
@@ -435,15 +441,16 @@
 
   views.list = function (ctx) {
     const { kind, groups, mode, columns, state } = ctx;
+    const nav = routeNav(ctx.route);
     if (!groups.length) return ui.empty(t('collection.search.none'), ctx.filter ? `${esc(t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${esc(t('collection.search.clear'))}</button></p>` : '');
     const header = g => `<button type="button" class="ob-group-header" aria-expanded="${g.open}" data-action="toggle-group" data-key="${esc(g.id)}">${icon(g.open ? 'chevron_down' : 'chevron_right', 'sm')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></button>`;
     if (mode === 'tiles') {
-      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-card ob-tile" href="${router.entityHref(kind, e.identifier)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
+      return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => `<a class="ob-card ob-tile" href="${router.entityHref(kind, e.identifier, nav)}"><span class="ob-tile-name">${esc(e.name)}</span><span class="ob-tile-sub ob-clamp-2">${esc(e.description)}</span></a>`).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
     const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {
       const items = ui.sortRows(g.items, options.sort, e => rowValues(kind, e, true));
-      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(e => views.row(kind, e, columns, true)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
+      return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(e => views.row(kind, e, columns, true, undefined, nav)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
     }).join('')}</div>`;
   };
 
@@ -462,7 +469,7 @@
       const items = ui.sortRows(g.items, options.sort, e => rowValues(g.kind, e, false));
       return `<div>
         <div class="ob-search-group-head">${icon(g.icon, 'lg')}<span class="ob-group-title">${esc(g.title)}</span><span class="ob-group-count">(${g.items.length})</span></div>
-        ${ui.table(columns, items.map(e => views.row(g.kind, e, columns, false, q)).join(''), options)}
+        ${ui.table(columns, items.map(e => views.row(g.kind, e, columns, false, q, routeNav(ctx.route))).join(''), options)}
       </div>`;
     }).join('')}</div>`;
   };
@@ -522,7 +529,7 @@
     else if (route.view === 'api') content = views.apiPage();
     else if (route.view === 'home') content = views.home(ctx);
     else if (route.view === 'list') content = views.collectionHeader(ctx) + views.collection(ctx);
-    else if (route.view === 'search') content = views.viewHeader(ctx) + `<div id="search-options-host" class="ob-search-results-options">${views.searchOptions(state)}</div><div id="search-results-panel">${views.searchResults(ctx)}</div>`;
+    else if (route.view === 'search') content = views.viewHeader(ctx) + `<div class="ob-page-search">${views.searchForm(state)}<div id="search-options-host" class="ob-search-results-options">${views.searchOptions(state)}</div></div><div id="search-results-panel">${views.searchResults(ctx)}</div>`;
     else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state, ctx);
     else content = views.viewHeader(ctx) + views.notFound();
     const backdrop = state.navDrawerOpen ? `<button type="button" class="ob-drawer-backdrop" tabindex="-1" aria-label="${esc(t('tree.close'))}" data-action="close-navigation"></button>` : '';

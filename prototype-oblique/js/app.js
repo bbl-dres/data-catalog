@@ -112,7 +112,7 @@
     const diagramHadFocus = DK.graph.closeFullscreen(false);
     DK.graph.onPointerUp();
     const previous = route;
-    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, #home-search');
+    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, .ob-hero-search-form');
     route = resolveRoute();
     state.navDrawerOpen = false;
     state.flyout = null;
@@ -126,7 +126,7 @@
       // Domain browsing follows the collection layout preference, never an entity's relations/history tab.
       state.detailTab = detail.resolveTab(route.entity, route.params.tab || route.params.view || state.mode);
       if (state.detailTab !== 'overview') state.mode = state.detailTab;
-      router.replaceParams({ tab: state.detailTab === 'tiles' ? null : state.detailTab, view: null, page: null });
+      router.replaceParams({ tab: state.detailTab, view: null, page: null });
     } else if (route.view === 'detail') {
       // Fresh loads and entries from non-detail views start at Übersicht; between profiles the
       // semantic tab is kept when the target has it (docs/design-review-responsive.md, "Tab continuity").
@@ -143,6 +143,11 @@
     if (section && section !== state.treeSection) { state.treeOpen = { [section]: true }; state.treeSection = section; }
     if (section) state.treeOpen[section] = true;
     if (route.view === 'list' && route.params.domain) state.treeOpen[`${route.kind}:domain:${route.params.domain}`] = true;
+    if (route.view === 'detail' && ['domains', 'systems'].includes(route.kind)) {
+      const branch = data.navModel() === 'container' ? `${route.kind}:${route.id}`
+        : `${section}:${route.kind === 'domains' ? 'domain' : 'system'}:${route.id}`;
+      state.treeOpen[branch] = true;
+    }
     const key = route.entity ? `${route.kind}:${route.id}` : null;
     if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
@@ -175,6 +180,12 @@
     if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
+    // Snapshot resolved defaults in this history entry. Back must restore this
+    // page's layout/grouping, even after another collection changes the preference.
+    if (navigated && ctx.isList) {
+      router.replaceParams({ ...(ctx.isDomain ? { tab: ctx.mode } : { view: ctx.mode }), group: ctx.groupBy });
+      route = resolveRoute(); ctx.route = route;
+    }
     replaceHtml($('main-nav'), views.mainNav(route));
     replaceHtml($('header-tools'), views.headerTools(state, route));
     if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
@@ -285,7 +296,7 @@
   }
 
   function setSearch(open, restoreFocus = true) {
-    state.searchOpen = open && route.view !== 'home';
+    state.searchOpen = open && !views.hasPageSearch(route);
     state.flyout = null;
     state.suggest = open;
     state.suggestIdx = -1;
@@ -293,7 +304,7 @@
     app.render();
     if (restoreFocus) {
       const target = open ? $('search-input') : document.querySelector('[data-action="toggle-search"]');
-      if (open && route.view === 'home') $('home-search').scrollIntoView({ block: 'start' });
+      if (open && views.hasPageSearch(route)) document.querySelector('.ob-hero-search-form').scrollIntoView({ block: 'start' });
       target.focus({ preventScroll: true });
     }
   }
@@ -328,21 +339,21 @@
     if (open && state.suggestIdx >= 0) $('suggest-' + state.suggestIdx)?.scrollIntoView({ block: 'nearest' });
   }
   /** Share visual-viewport fitting between hero and header without replacing the input. */
-  function fitSearchSuggestions(revealHome = false) {
+  function fitSearchSuggestions(revealForm = false) {
     const list = $('search-suggest');
     if (!list) return;
     const viewport = window.visualViewport;
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
     let available = bottom - list.getBoundingClientRect().top;
-    const form = $('home-search');
+    const form = document.querySelector('.ob-hero-search-form');
     const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-touch-target'));
-    if (revealHome === true && form && available < target * 2 && document.activeElement === $('search-input')) {
+    if (revealForm === true && form && available < target * 2 && document.activeElement === $('search-input')) {
       form.scrollIntoView({ block: 'start' });
       available = bottom - list.getBoundingClientRect().top;
     }
     list.style.setProperty('--ob-suggest-available-height', available + 'px');
   }
-  function syncVisualViewport(revealHome = false) {
+  function syncVisualViewport(revealForm = false) {
     const viewport = window.visualViewport, style = document.documentElement.style;
     // Follow keyboard resizing/panning. During browser pinch zoom, retain native
     // modal geometry so zooming does not continuously shrink the dialog itself.
@@ -353,7 +364,7 @@
       style.removeProperty('--ob-visual-viewport-height');
       style.removeProperty('--ob-visual-viewport-top');
     }
-    fitSearchSuggestions(revealHome);
+    fitSearchSuggestions(revealForm);
   }
   /** Open a menu (`info` and `language` live in the header, the others in main) or close all; re-renders only what changed. */
   const HEADER_MENUS = ['info', 'language'];
@@ -460,7 +471,7 @@
     }
     if (e.key === 'Escape') {
       if (state.suggest) { e.preventDefault(); closeSuggest(); }
-      else if (route.view !== 'home') { e.preventDefault(); setSearch(false); }
+      else if (!views.hasPageSearch(route)) { e.preventDefault(); setSearch(false); }
     }
   }
 
@@ -591,7 +602,7 @@
         if (ctx.isDomain) {
           state.detailTab = detail.resolveTab(route.entity, el.dataset.view);
           if (state.detailTab !== 'overview') state.mode = state.detailTab;
-          router.replaceParams({ tab: state.detailTab === 'tiles' ? null : state.detailTab, view: null, page: null });
+          router.replaceParams({ tab: state.detailTab, view: null, page: null });
         } else {
           state.mode = el.dataset.view;
           router.replaceParams({ view: state.mode });
@@ -639,7 +650,6 @@
       case 'export': { const id = el.dataset.export, label = el.dataset.label; state.menu = null; app.render(); doExport(id, label); return; }
       case 'clear-query': {
         state.query = ''; state.suggest = true; state.suggestIdx = -1;
-        if (route.view === 'search') { router.navigate(router.build('/', DK.search.params(state.searchOptions))); return; }
         const input = $('search-input'); if (input) { input.value = ''; input.focus(); }
         $('search-clear').hidden = true; renderSuggest(); return;
       }
@@ -782,7 +792,7 @@
       if (e.target.id === 'collection-filter') filterCollection(e.target.value);
     });
     document.addEventListener('submit', e => {
-      if (e.target.id !== 'home-search') return;
+      if (!e.target.matches('.ob-hero-search-form')) return;
       e.preventDefault(); openResults();
     });
     document.addEventListener('change', e => {

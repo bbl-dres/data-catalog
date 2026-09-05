@@ -269,16 +269,17 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 
 /* Home search: same combobox, with a visible submit action and room for discovery. */
 /* Share the page gutter; the hero needs only the standard gap to the summary tiles. */
-.ob-home-search { position: relative; z-index: 1; margin-bottom: var(--ob-space-lg); }
+.ob-page-search { position: relative; z-index: 1; }
+.ob-home-search { margin-bottom: var(--ob-space-lg); }
 .ob-home-search h1 { margin: 0 0 var(--ob-space-sm); }
 .ob-home-search > p { margin: 0 0 var(--ob-space-default); max-width: var(--ob-prose-max-width); color: var(--ob-color-text-secondary); }
 .ob-hero-search-form { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--ob-space-md); max-width: var(--ob-hero-search-max-width); scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
-.ob-home-search .ob-search { position: static; min-width: 0; }
-.ob-home-search .ob-search-input { height: var(--ob-hero-control-height); font-size: var(--ob-font-size-input); }
-.ob-home-search .ob-search-clear { width: var(--ob-touch-target); height: var(--ob-touch-target); right: var(--ob-space-2xs); }
+.ob-hero-search-form .ob-search { position: static; min-width: 0; }
+.ob-hero-search-form .ob-search-input { height: var(--ob-hero-control-height); font-size: var(--ob-font-size-input); }
+.ob-hero-search-form .ob-search-clear { width: var(--ob-touch-target); height: var(--ob-touch-target); right: var(--ob-space-2xs); }
 .ob-hero-search-submit { height: var(--ob-hero-control-height); padding-inline: var(--ob-space-lg); font-size: var(--ob-font-size-input); }
-.ob-home-search .ob-suggest { --ob-suggest-max-height: var(--ob-hero-suggest-max-height); }
-.ob-home-search .ob-suggest-option, .ob-home-search .ob-suggest-all { min-height: var(--ob-touch-target); }
+.ob-hero-search-form .ob-suggest { --ob-suggest-max-height: var(--ob-hero-suggest-max-height); }
+.ob-hero-search-form .ob-suggest-option, .ob-hero-search-form .ob-suggest-all { min-height: var(--ob-touch-target); }
 .ob-search-options { max-width: var(--ob-hero-search-max-width); margin-top: var(--ob-space-sm); }
 .ob-search-scope { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--ob-space-sm); color: var(--ob-color-text-secondary); }
 .ob-search-scope [aria-expanded="true"] .ob-icon { transform: rotate(180deg); }
@@ -289,7 +290,7 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-search-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--ob-space-lg); }
 .ob-search-options-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--ob-space-sm) var(--ob-space-lg); margin-top: var(--ob-space-md); }
 .ob-search-results-options { margin-bottom: var(--ob-space-lg); }
-.ob-search-answer { max-width: var(--ob-hero-search-max-width); padding: var(--ob-space-lg); margin-bottom: var(--ob-space-lg); border: var(--ob-border-width-xs) solid var(--ob-color-border); border-radius: var(--ob-radius-lg); background: var(--ob-color-surface); overflow-wrap: anywhere; }
+.ob-search-answer { padding: var(--ob-space-lg); margin-bottom: var(--ob-space-lg); border: var(--ob-border-width-xs) solid var(--ob-color-border); border-radius: var(--ob-radius-lg); background: var(--ob-color-surface); overflow-wrap: anywhere; }
 .ob-search-answer-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); margin-bottom: var(--ob-space-sm); }
 .ob-search-answer .ob-search-answer-head h2 { margin-bottom: 0; }
 .ob-search-answer-note, .ob-search-answer-type { color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); }
@@ -760,7 +761,7 @@ button.ob-tree-link { width: 100%; }
 
 /* ---- Print ------------------------------------------------------------------- */
 @media print {
-  .ob-home-search { display: none; }
+  .ob-page-search { display: none; }
   #search-options-host, .ob-search-answer > button { display: none; }
   .ob-collection-controls { display: none; }
   body { background: var(--ob-white); color: var(--ob-black); font-size: 11pt; }

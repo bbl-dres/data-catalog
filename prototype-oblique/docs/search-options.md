@@ -11,10 +11,12 @@ The search disclosure in `service-portal/js/search/search-ui.js` informed this i
 - **KI-Antworten anzeigen** is enabled initially, matching the reference. Answers carry a **Demo** badge, can be hidden, and link to their catalog sources with source statuses.
 - Desktop has two checkbox columns; narrow content uses one. Native checkboxes have clickable labels, shared focus styling and at least 44 px label height on touch/mobile. The panel expands in document flow.
 - Changing options preserves the input node, query, checkbox focus and open panel. Escape closes suggestions without also clearing the search input.
+- Home and search results render the same prominent form. Results prefill it from the decoded `q` URL parameter on entry, reload and Back/Forward. Editing or clearing keeps the last submitted results until a new search; submission retains the selected domains, types and AI preference. The header magnifier reveals and focuses the page form instead of opening a duplicate field.
+- The AI-answer box occupies the same available width as the result tables below. The input and filter panel retain their shared hero-form width and responsive controls.
 
 ## Learning dropdown
 
-Like `service-portal/js/search/search-suggest.js`, the empty focused search field offers examples. There are four: **Was ist GWR?**, **Gebäude**, **Energieverbrauch**, and **Bauprojekt**. The question demonstrates natural-language input; the other examples demonstrate keyword searches. Examples appear in the existing combobox on both home and header search, without persistent links below the field or an automatic popup on page load.
+Like `service-portal/js/search/search-suggest.js`, the empty focused search field offers examples. There are four: **Was ist GWR?**, **Gebäude**, **Energieverbrauch**, and **Bauprojekt**. The question demonstrates natural-language input; the other examples demonstrate keyword searches. Examples appear in the shared combobox on home, results and header search, without persistent links below the field or an automatic popup on page load.
 
 Only examples with matches in the selected domains and content types appear. Selecting an example fills and submits that query with the current filters and AI preference. Typing replaces examples with matching records; clearing restores examples. Arrow keys and Enter select an example, Escape dismisses the popup, and Tab or an outside click closes it. Enter on an empty field without a selected example does nothing. The shared viewport limits keep the dropdown scrollable above a mobile keyboard; example text may wrap.
 
@@ -31,7 +33,7 @@ The question and teaching labels follow the UI language. Keyword examples retain
 #/search?q=Energie&domains=energie,projekt&types=products,tables
 ```
 
-Option changes replace the current URL without adding history entries for each checkbox. Submitting creates a results navigation. Reloading or returning to a results URL restores its options. Opening the plain home URL resets defaults. Result filtering uses the submitted URL query, independently of an unfinished header query.
+Option changes replace the current URL without adding history entries for each checkbox. Submitting creates a results navigation. Reloading or returning to a results URL restores its options. Opening the plain home URL resets defaults. Result filtering uses the submitted URL query, independently of unfinished edits in the search field.
 
 ## Implementation and limits
 
