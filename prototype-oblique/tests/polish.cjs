@@ -87,7 +87,7 @@ const server = createServer();
     await page.emulateMedia({ forcedColors: 'none' });
     const touch = await browser.newPage({ viewport: { width: 1280, height: 900 }, hasTouch: true });
     touch.on('pageerror', error => errors.push(error.message));
-    await touch.goto(base + '#/domains/bau'); await touch.locator('#tab-relations').click(); await settle(touch);
+    await touch.goto(base + '#/systems/gwr'); await touch.locator('#tab-relations').click(); await settle(touch);
     const targets = await touch.locator('.ob-graph-group-pager button').evaluateAll(els => els.map(el => {
       const css = getComputedStyle(el); return [parseFloat(css.minWidth), parseFloat(css.minHeight)];
     }));

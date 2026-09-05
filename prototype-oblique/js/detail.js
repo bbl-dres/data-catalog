@@ -12,17 +12,19 @@
   detail.rowsLabel = e => data.kindDef(e.kind).rows;
 
   detail.tabs = function (e) {
+    if (e.kind === 'domains') return [['overview', t('detail.tab.overview')], ['tiles', t('toolbar.tiles')], ['table', t('toolbar.table')]];
     const historyLabel = e.kind === 'attrs' ? t('detail.tab.objectHistory') : e.kind === 'fields' ? t('detail.tab.tableHistory') : t('detail.tab.history');
     return [['overview', t('detail.tab.overview')], ['rows', detail.rowsLabel(e)], ['relations', t('detail.tab.relations')], ['history', historyLabel]].filter(x => x[1]);
   };
 
   /** Resolve a requested semantic tab for an entity, falling back to Übersicht. */
   detail.resolveTab = function (e, requested) {
-    const tab = requested || 'overview';
+    const tab = e.kind === 'domains' ? (requested === 'rows' ? 'table' : requested || 'tiles') : requested || 'overview';
     return detail.tabs(e).some(x => x[0] === tab) ? tab : 'overview';
   };
 
-  detail.render = function (e, route, state) {
+  detail.render = function (e, route, state, ctx) {
+    if (e.kind === 'domains') return DK.views.collection(ctx || DK.views.context({ ...route, view: 'detail', kind: 'domains', entity: e }, state));
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);
     const counts = { rows: detail.rowsData(e).rows.length, relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
@@ -162,13 +164,14 @@
       };
       case 'tables': {
         const hasCodes = e.fields.some(f => f.codeList);
-        const columns = [{ ...c('col.field', hasCodes ? '18%' : '26%'), primary: true }, c('col.description'), c('col.dataType', '10rem'), compact('col.key')];
+        const columns = [{ ...c('col.field', '26%'), primary: true }, c('col.description'), c('col.dataType', '10rem'), compact('col.key')];
         if (hasCodes) columns.push(c('col.codeList', '22%'));
         return {
           columns,
           rows: e.fields.map(f => {
             const href = router.entityHref('fields', `${e.identifier}/${data.fieldId(f)}`);
-            const row = { href, cells: [ui.entityLink(href, f.technicalName), esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [f.technicalName, f.description, f.dataType, keyText(f.keyRole)] };
+            const name = data.displayName('fields', f);
+            const row = { href, cells: [ui.entityLink(href, name), esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [name, f.description, f.dataType, keyText(f.keyRole)] };
             if (hasCodes) {
               const ref = data.get('refs', f.codeList);
               row.cells.push(ref ? ui.entityLink(router.entityHref('refs', ref.identifier), ref.name) : '—');
@@ -181,10 +184,6 @@
       case 'refs': return {
         columns: [c('col.code', '8rem'), c('col.label'), compact('col.type')],
         rows: e.values.map(v => ({ cells: [esc(v.code), esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
-      };
-      case 'domains': return {
-        columns: [c('col.object', '28%'), c('col.description'), compact('col.attributes', true), compact('col.status')],
-        rows: data.objectsOfDomain(e).map(o => { const href = router.entityHref('objects', o.identifier); return { href, cells: [ui.entityLink(href, o.name), esc(o.description), o.attributes.length, ui.chip(o.status, data.statusTone(o.status))], text: [o.name, o.description, o.attributes.length, o.status] }; }),
       };
       case 'systems': return {
         columns: [c('col.table', '28%'), c('col.description'), compact('col.fields', true), compact('col.status')],

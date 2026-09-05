@@ -10,6 +10,8 @@
   /** Transient UI state that is not part of the URL. */
   const state = {
     query: '', suggest: false, suggestIdx: -1,
+    searchOptions: DK.search.options(),
+    searchFiltersOpen: false,
     menu: null,                       // null | 'info' | 'language' | 'group' | 'actions'
     exporting: false,
     lang: 'de',                       // active UI language (one of config.languages)
@@ -116,9 +118,16 @@
     state.flyout = null;
     state.searchOpen = false;
     state.menu = null; state.suggest = false; state.suggestIdx = -1;
+    state.searchFiltersOpen = false;
+    if (['home', 'search'].includes(route.view)) state.searchOptions = DK.search.options(route.params);
     state.filteredClosed = {};
 
-    if (route.view === 'detail') {
+    if (route.view === 'detail' && route.kind === 'domains') {
+      // Domain browsing follows the collection layout preference, never an entity's relations/history tab.
+      state.detailTab = detail.resolveTab(route.entity, route.params.tab || route.params.view || state.mode);
+      if (state.detailTab !== 'overview') state.mode = state.detailTab;
+      router.replaceParams({ tab: state.detailTab === 'tiles' ? null : state.detailTab, view: null, page: null });
+    } else if (route.view === 'detail') {
       // Fresh loads and entries from non-detail views start at Übersicht; between profiles the
       // semantic tab is kept when the target has it (docs/design-review-responsive.md, "Tab continuity").
       const requested = !previous ? 'overview' : route.params.tab || (previous.view === 'detail' ? state.detailTab : 'overview');
@@ -163,7 +172,7 @@
     const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     if (route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
-    if (route.view === 'list' && route.params.group) state.groupBy[route.kind] = route.params.group;
+    if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
     replaceHtml($('main-nav'), views.mainNav(route));
@@ -278,7 +287,7 @@
   function setSearch(open, restoreFocus = true) {
     state.searchOpen = open && route.view !== 'home';
     state.flyout = null;
-    state.suggest = open && !!state.query.trim();
+    state.suggest = open;
     state.suggestIdx = -1;
     state.menu = null;
     app.render();
@@ -308,11 +317,14 @@
     const host = $('search-suggest-host'); if (!host) return;
     host.innerHTML = views.suggest(state);
     const input = $('search-input');
-    const open = state.suggest && !!state.query.trim();
-    if ($('search-submit')) $('search-submit').disabled = !state.query.trim();
+    const open = state.suggest && DK.search.canSuggest(state.query, state.searchOptions);
+    if ($('search-submit')) $('search-submit').disabled = !DK.search.canSubmit(state.query, state.searchOptions);
     input.setAttribute('aria-expanded', String(open));
     if (open && state.suggestIdx >= 0) input.setAttribute('aria-activedescendant', 'suggest-' + state.suggestIdx); else input.removeAttribute('aria-activedescendant');
-    fitSearchSuggestions(true);
+    fitSearchSuggestions();
+    // Finish the focus/click sequence before moving the field. Scrolling during
+    // focus can retarget a tap's mouseup outside the input and close this popup.
+    requestAnimationFrame(() => fitSearchSuggestions(true));
     if (open && state.suggestIdx >= 0) $('suggest-' + state.suggestIdx)?.scrollIntoView({ block: 'nearest' });
   }
   /** Share visual-viewport fitting between hero and header without replacing the input. */
@@ -373,9 +385,27 @@
   }
 
   /* ---- search ---------------------------------------------------------------- */
+  function renderSearchOptions() {
+    const host = $('search-options-host');
+    if (host) replaceHtml(host, views.searchOptions(state));
+  }
+  function updateSearchOptions(patch, focusId) {
+    state.searchOptions = { ...state.searchOptions, ...patch };
+    state.suggest = false; state.suggestIdx = -1;
+    if (['home', 'search'].includes(route.view)) router.replaceParams(DK.search.params(state.searchOptions));
+    renderSearchOptions();
+    renderSuggest();
+    if (route.view === 'search') {
+      route = resolveRoute();
+      ctx = views.context(route, state);
+      $('search-results-panel').innerHTML = views.searchResults(ctx);
+      observeTables();
+    }
+    if (focusId) $(focusId)?.focus({ preventScroll: true });
+  }
   /** Update only results: keeping the input node preserves focus, selection and IME composition. */
   function filterCollection(value) {
-    if (route.view !== 'list') return;
+    if (!ctx.isList) return;
     const q = value.trim();
     $('collection-filter-clear').hidden = !value;
     if (q === ctx.filter) return;
@@ -396,28 +426,41 @@
     filterCollection('');
     input.focus({ preventScroll: true });
   }
-  /** Hrefs of the current suggestions in listbox order; the "all results" row follows at index length. */
-  const suggestHrefs = () => data.suggest(state.query).flatMap(g => g.items.map(e => router.entityHref(g.kind, e.identifier)));
+  /** Match the listbox order, including its final all-results row for a typed query. */
+  const suggestItems = () => state.query.trim()
+    ? [...DK.search.suggest(state.query, state.searchOptions).flatMap(g => g.items.map(e => ({ href: router.entityHref(g.kind, e.identifier) }))), { query: state.query.trim() }]
+    : DK.search.examples(state.searchOptions);
   function openResults() {
     const q = state.query.trim();
+    if (!DK.search.canSubmit(q, state.searchOptions)) return;
     state.suggest = false; state.suggestIdx = -1;
-    if (!q) return;
-    router.navigate(router.searchHref(q));
+    router.navigate(router.searchHref(q, DK.search.params(state.searchOptions)));
+  }
+  function pickSuggestion(item) {
+    if (item.query) {
+      state.query = item.query;
+      $('search-input').value = item.query;
+      openResults();
+    } else if (item.href) {
+      state.suggest = false; state.suggestIdx = -1;
+      router.navigate(item.href);
+    }
   }
   function onSearchKey(e) {
     if (e.isComposing) return;
-    const open = state.suggest && !!state.query.trim();
-    if (e.key === 'ArrowDown' && open) { e.preventDefault(); state.suggestIdx = Math.min(state.suggestIdx + 1, suggestHrefs().length); renderSuggest(); return; }
+    if (e.key === 'ArrowDown' && !state.suggest && DK.search.canSuggest(state.query, state.searchOptions)) state.suggest = true;
+    const open = state.suggest && DK.search.canSuggest(state.query, state.searchOptions);
+    if (e.key === 'ArrowDown' && open) { e.preventDefault(); state.suggestIdx = Math.min(state.suggestIdx + 1, suggestItems().length - 1); renderSuggest(); return; }
     if (e.key === 'ArrowUp' && open) { e.preventDefault(); state.suggestIdx = Math.max(state.suggestIdx - 1, -1); renderSuggest(); return; }
     if (e.key === 'Enter') {
       e.preventDefault();
-      const href = open && state.suggestIdx >= 0 ? suggestHrefs()[state.suggestIdx] : null;
-      if (href) { state.suggest = false; state.suggestIdx = -1; router.navigate(href); return; }
+      const item = open && state.suggestIdx >= 0 ? suggestItems()[state.suggestIdx] : null;
+      if (item) { pickSuggestion(item); return; }
       openResults(); return;
     }
     if (e.key === 'Escape') {
-      if (state.suggest) closeSuggest();
-      else if (route.view !== 'home') setSearch(false);
+      if (state.suggest) { e.preventDefault(); closeSuggest(); }
+      else if (route.view !== 'home') { e.preventDefault(); setSearch(false); }
     }
   }
 
@@ -496,7 +539,8 @@
     }
     const el = action;
     if (!el) {
-      if (e.target.id === 'search-input') { if (!state.suggest && state.query.trim()) { state.suggest = true; renderSuggest(); } return; }
+      if (e.target.closest('.ob-search-options')) return;
+      if (e.target.id === 'search-input') { if (!state.suggest) { state.suggest = true; renderSuggest(); } return; }
       if (e.target.closest('.ob-popover, .ob-menu, #search-suggest')) return;
       const tr = e.target.closest('tr.is-clickable[data-href]');
       if (tr && !e.target.closest('a, button')) { router.navigate(tr.dataset.href); return; }
@@ -513,6 +557,15 @@
       case 'skip': e.preventDefault(); $('main').focus(); return;
       case 'back-to-top': e.preventDefault(); backToTop(); return;
       case 'toggle-search': setSearch(!state.searchOpen); return;
+      case 'toggle-search-options':
+        closeSuggest();
+        state.searchFiltersOpen = !state.searchFiltersOpen;
+        renderSearchOptions(); return;
+      case 'search-types-none': updateSearchOptions({ kinds: [] }, 'search-type-' + DK.search.kinds()[0]); return;
+      case 'search-types-all': updateSearchOptions({ kinds: DK.search.kinds() }, 'search-options-toggle'); return;
+      case 'search-domains-none': updateSearchOptions({ domains: [] }, 'search-domain-' + DK.search.domains()[0]); return;
+      case 'search-domains-all': updateSearchOptions({ domains: null }, 'search-options-toggle'); return;
+      case 'hide-search-ai': updateSearchOptions({ ai: false }, 'search-options-toggle'); return;
       case 'toggle-sidebar':
         state.sidebarCollapsed = !state.sidebarCollapsed;
         state.flyout = null;
@@ -534,7 +587,17 @@
         return;
       case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.filteredClosed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
-      case 'set-view': state.mode = el.dataset.view; router.replaceParams({ view: state.mode }); app.render(); return;
+      case 'set-view': {
+        if (ctx.isDomain) {
+          state.detailTab = detail.resolveTab(route.entity, el.dataset.view);
+          if (state.detailTab !== 'overview') state.mode = state.detailTab;
+          router.replaceParams({ tab: state.detailTab === 'tiles' ? null : state.detailTab, view: null, page: null });
+        } else {
+          state.mode = el.dataset.view;
+          router.replaceParams({ view: state.mode });
+        }
+        app.render(); return;
+      }
       case 'sort-table': {
         const sortKey = el.dataset.sortKey;
         const column = parseInt(el.dataset.sortColumn, 10);
@@ -575,12 +638,13 @@
       case 'toggle-relation-view': state.relationDiagram = !state.relationDiagram; app.render(); return;
       case 'export': { const id = el.dataset.export, label = el.dataset.label; state.menu = null; app.render(); doExport(id, label); return; }
       case 'clear-query': {
-        state.query = ''; state.suggest = false; state.suggestIdx = -1;
-        if (route.view === 'search') { router.navigate('#/'); return; }
+        state.query = ''; state.suggest = true; state.suggestIdx = -1;
+        if (route.view === 'search') { router.navigate(router.build('/', DK.search.params(state.searchOptions))); return; }
         const input = $('search-input'); if (input) { input.value = ''; input.focus(); }
         $('search-clear').hidden = true; renderSuggest(); return;
       }
       case 'clear-collection-filter': clearCollectionFilter(); return;
+      case 'suggest-example': pickSuggestion({ query: el.dataset.query }); return;
       case 'suggest-pick': state.suggest = false; state.suggestIdx = -1; router.navigate(el.dataset.href); return;
       case 'open-results': openResults(); return;
       case 'chapter': e.preventDefault(); goChapter(el.dataset.chapter); return;
@@ -658,7 +722,7 @@
 
   function onFocusin(e) {
     DK.graph.onFocusin(e);
-    if (e.target.id === 'search-input' && state.query.trim() && !state.suggest) { state.suggest = true; renderSuggest(); }
+    if (e.target.id === 'search-input' && !state.suggest) { state.suggest = true; renderSuggest(); }
   }
   function onFocusout(e) {
     const search = state.suggest && e.target.closest('.ob-search');
@@ -722,6 +786,25 @@
       e.preventDefault(); openResults();
     });
     document.addEventListener('change', e => {
+      if (e.target.matches('[data-search-domain]')) {
+        const id = e.target.dataset.searchDomain;
+        if (DK.search.domains().includes(id)) {
+          const selected = new Set(DK.search.selectedDomains(state.searchOptions));
+          if (e.target.checked) selected.add(id); else selected.delete(id);
+          updateSearchOptions({ domains: DK.search.domains().filter(d => selected.has(d)) });
+        }
+        return;
+      }
+      if (e.target.matches('[data-search-kind]')) {
+        const kind = e.target.dataset.searchKind;
+        if (DK.search.kinds().includes(kind)) {
+          const selected = new Set(DK.search.selectedKinds(state.searchOptions));
+          if (e.target.checked) selected.add(kind); else selected.delete(kind);
+          updateSearchOptions({ kinds: DK.search.kinds().filter(k => selected.has(k)) });
+        }
+        return;
+      }
+      if (e.target.id === 'search-ai') { updateSearchOptions({ ai: e.target.checked }); return; }
       if (e.target.matches('[data-action="set-page-size"]')) {
         router.replaceParams({ size: e.target.value === '50' ? null : e.target.value, page: null });
         app.render();

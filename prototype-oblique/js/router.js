@@ -60,7 +60,7 @@
     }
     return router.build('/' + kind + '/' + encodeURIComponent(id), params);
   };
-  router.searchHref = q => router.build('/search', { q });
+  router.searchHref = (q, params = {}) => router.build('/search', { q, ...params });
 
   /** Go to a hash; re-renders even when the hash is unchanged. */
   router.navigate = function (hash) {

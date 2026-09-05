@@ -118,36 +118,39 @@
   /* ---- context: everything the page composition needs -------------------- */
   views.context = function (route, state) {
     const kinds = data.model.kinds;
+    const isDomain = route.view === 'detail' && route.entity?.kind === 'domains';
+    const mode = isDomain ? DK.detail.resolveTab(route.entity, route.params.tab || route.params.view || state.mode) : state.mode;
     const ctx = {
-      route, state, entity: route.entity, kind: route.kind, mode: state.mode,
-      isList: route.view === 'list',
+      route, state, entity: route.entity, kind: isDomain ? 'objects' : route.kind, mode, isDomain,
+      isList: route.view === 'list' || (isDomain && mode !== 'overview'),
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
-      filter: (route.params.filter || '').trim(), total: 0, matched: 0,
-      domain: route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
+      filter: isDomain && mode === 'overview' ? '' : (route.params.filter || '').trim(), total: 0, matched: 0,
+      domain: isDomain ? route.entity : route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
     };
     if (ctx.isList) {
-      const requestedGroup = state.groupBy[route.kind] || data.defaultGroup(route.kind);
-      const availableGroups = data.groupOptions(route.kind);
-      const g = availableGroups.some(o => o.id === requestedGroup) ? requestedGroup : data.defaultGroup(route.kind);
+      const defaultGroup = isDomain ? 'none' : data.defaultGroup(ctx.kind);
+      const requestedGroup = route.params.group || state.groupBy[route.kind] || defaultGroup;
+      const availableGroups = data.groupOptions(ctx.kind);
+      const g = availableGroups.some(o => o.id === requestedGroup) ? requestedGroup : defaultGroup;
       ctx.groupBy = g;
       ctx.groupOptions = availableGroups.map(o => Object.assign(o, { active: o.id === g }));
       ctx.groupLabel = (ctx.groupOptions.find(o => o.id === g) || ctx.groupOptions[0] || { label: '' }).label;
       const closed = ctx.filter ? (state.filteredClosed || {}) : state.closed;
-      const members = ctx.domain ? data.membersOfDomain(route.kind, ctx.domain) : data.list(route.kind);
+      const members = ctx.domain ? data.membersOfDomain(ctx.kind, ctx.domain) : data.list(ctx.kind);
       const memberIds = new Set(members.map(e => e.identifier));
       ctx.total = members.length;
-      ctx.groups = data.buildGroups(route.kind, g, ctx.mode === 'table').map(x => ({
-        ...x, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(route.kind, e, ctx.filter)), open: !closed[x.id],
+      ctx.groups = data.buildGroups(ctx.kind, g, ctx.mode === 'table').map(x => ({
+        ...x, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(ctx.kind, e, ctx.filter)), open: !closed[x.id],
       })).filter(x => x.items.length);
       ctx.matched = ctx.groups.reduce((sum, x) => sum + x.items.length, 0);
-      ctx.columns = data.columns(route.kind);
+      ctx.columns = data.columns(ctx.kind);
     }
 
     // title
     const e = route.entity;
     const titles = { home: () => t('home.title'), list: () => kinds[route.kind].plural, search: () => t('search.title'), manual: () => t('manual.title'), api: () => t('api.title'), detail: () => e.name };
     ctx.title = (titles[route.view] || (() => t('notfound.title')))();
-    if (ctx.domain) ctx.title += ' – ' + ctx.domain.name;
+    if (ctx.domain && !isDomain) ctx.title += ' – ' + ctx.domain.name;
 
     // breadcrumbs: Startseite › section › container › entity. The home page is the root itself.
     const crumbs = [{ label: t('nav.home'), href: '#/' }];
@@ -185,12 +188,12 @@
 
     // actions menu
     const A = (id, label) => ({ id, label });
-    if (route.view === 'detail') {
+    if (route.view === 'detail' && !ctx.isList) {
       if (e.kind === 'attrs' || e.kind === 'fields' || e.kind === 'apis') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf'))];
       else if (e.kind === 'products') ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf')), A('dcat', t('toolbar.export.dcat'))];
       else ctx.actions = [A('profile-pdf', t('toolbar.export.profilePdf')), A('uml', t('toolbar.export.uml'))];
       ctx.actions.unshift(A('xlsx', t('toolbar.export.xlsx')));
-    } else if (route.view === 'list') {
+    } else if (ctx.isList) {
       const w = t('toolbar.export.list');
       ctx.actions = [A('xlsx', t('toolbar.export.xlsx')), A('pdf', t('toolbar.export.pdf', { what: w })), A('uml', t('toolbar.export.uml'))];
     }
@@ -201,8 +204,12 @@
   /** Suggestion listbox. Options are numbered in listbox order; the "all results" row comes last. */
   views.suggest = function (state) {
     const q = state.query.trim();
-    if (!state.suggest || !q) return '';
-    const groups = data.suggest(q);
+    if (!state.suggest || !DK.search.canSuggest(q, state.searchOptions)) return '';
+    if (!q) return `<div id="search-suggest" class="ob-suggest" role="listbox" tabindex="-1" aria-label="${esc(t('search.suggestions'))}">
+      <div role="group" aria-label="${esc(t('search.examples'))}"><div class="ob-suggest-group-title" aria-hidden="true">${esc(t('search.examples'))}</div>
+        ${DK.search.examples(state.searchOptions).map((example, i) => `<div role="option" id="suggest-${i}" class="ob-suggest-option ob-suggest-example" aria-selected="${state.suggestIdx === i}" data-action="suggest-example" data-query="${esc(example.query)}"><span>${esc(example.query)}</span><span class="ob-suggest-meta">${esc(t('search.example.' + example.type))}</span></div>`).join('')}
+      </div></div>`;
+    const groups = DK.search.suggest(q, state.searchOptions);
     let idx = 0;
     const html = groups.map(g => `<div role="group" aria-label="${esc(g.title)}"><div class="ob-suggest-group-title">${icon(g.icon, 'sm')}${esc(g.title)}</div>${g.items.map(e => {
       const i = idx++;
@@ -235,26 +242,27 @@
   };
 
   views.collectionControls = function (ctx) {
-    const modes = [['tiles', t('toolbar.tiles')], ['table', t('toolbar.table')]];
+    const modes = ctx.isDomain ? DK.detail.tabs(ctx.entity) : [['tiles', t('toolbar.tiles')], ['table', t('toolbar.table')]];
     const tabs = modes.map(([id, label]) => `<button type="button" role="tab" id="view-tab-${id}" class="ob-tab ob-view-tab" aria-selected="${ctx.mode === id}" aria-controls="collection-view-panel" tabindex="${ctx.mode === id ? '0' : '-1'}" data-action="set-view" data-view="${id}">${esc(label)}</button>`).join('');
     return `<div class="ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
-      <div class="ob-local-actions">
+      ${ctx.mode === 'overview' ? '' : `<div class="ob-local-actions">
         <div class="ob-collection-search" role="search" aria-label="${esc(t('collection.search.label'))}">
           ${icon('search', 'lg', 'ob-search-icon')}
           <input type="search" class="ob-input ob-search-input" id="collection-filter" value="${esc(ctx.filter)}" placeholder="${esc(t('collection.search.placeholder'))}" aria-label="${esc(t('collection.search.label'))}" aria-controls="collection-view-panel" aria-describedby="collection-filter-status" autocomplete="off" spellcheck="false" enterkeyhint="search">
           <button type="button" class="ob-icon-button ob-search-clear" id="collection-filter-clear" data-action="clear-collection-filter" aria-label="${esc(t('collection.search.clear'))}"${ctx.filter ? '' : ' hidden'}>${icon('xmark')}</button>
         </div>${views.groupMenu(ctx)}
-      </div>
+      </div>`}
     </div>`;
   };
 
   views.collectionStatus = ctx => t('collection.search.count', { n: ctx.matched, total: ctx.total });
+  views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : `<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${esc(views.collectionStatus(ctx))}</p>`}<div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${ctx.mode === 'overview' ? DK.detail.overview(ctx.entity, ctx.state) : views.list(ctx)}</div>`;
 
   /** One shared combobox, placed in the home hero or the header on other routes. */
   views.searchField = function (state, home = false) {
     const q = state.query;
-    const open = state.suggest && !!q.trim();
+    const open = state.suggest && DK.search.canSuggest(q, state.searchOptions);
     return `<div class="ob-search"><div class="ob-search-control">
         ${icon('search', 'lg', 'ob-search-icon')}
         <input type="search" class="ob-input ob-search-input" id="search-input" name="q" value="${esc(q)}" placeholder="${esc(t('search.placeholder'))}" aria-label="${esc(t('search.label'))}"${home ? ' aria-describedby="home-search-description"' : ''} role="combobox" aria-expanded="${open}" aria-controls="search-suggest"${open && state.suggestIdx >= 0 ? ` aria-activedescendant="suggest-${state.suggestIdx}"` : ''} aria-autocomplete="list" autocomplete="off" spellcheck="false" enterkeyhint="search">
@@ -264,6 +272,42 @@
       </div>`;
   };
   views.toolbar = ctx => `<div class="ob-toolbar">${views.searchField(ctx.state)}<div class="ob-toolbar-spacer"></div></div>`;
+
+  /** Same disclosure on home and results; native checkboxes keep keyboard/touch behavior. */
+  views.searchOptions = function (state) {
+    const kinds = DK.search.kinds(), selected = DK.search.selectedKinds(state.searchOptions);
+    const all = selected.length === kinds.length, none = !selected.length;
+    const domains = DK.search.domains(), selectedDomains = DK.search.selectedDomains(state.searchOptions);
+    const allDomains = selectedDomains.length === domains.length, noDomains = !selectedDomains.length;
+    const ai = state.searchOptions?.ai !== false;
+    const summary = t(none ? 'search.scope.none' : all ? 'search.scope.all' : 'search.scope.some', { n: selected.length, total: kinds.length });
+    const domainSummary = t(noDomains ? 'search.domains.none' : allDomains ? 'search.domains.all' : selectedDomains.length === 1 ? 'search.domains.one' : 'search.domains.some', { n: selectedDomains.length, total: domains.length, name: data.domainOf(selectedDomains[0])?.name || '' });
+    const choices = (facet, title, items, selection) => `<fieldset class="ob-search-option-group"><legend>${esc(title)}</legend>
+      <div class="ob-search-choice-grid">${items.map(({ id, label }) => `<label class="ob-check"><input type="checkbox" id="search-${facet}-${esc(id)}" data-search-${facet === 'type' ? 'kind' : facet}="${esc(id)}"${selection.includes(id) ? ' checked' : ''}><span>${esc(label)}</span></label>`).join('')}</div>
+      <div class="ob-search-options-actions"><button type="button" class="ob-button ob-button--link" data-action="search-${facet}s-none"${selection.length ? '' : ' disabled'}>${esc(t('search.scope.clear'))}</button><button type="button" class="ob-button ob-button--link" data-action="search-${facet}s-all"${selection.length === items.length ? ' disabled' : ''}>${esc(t('search.scope.selectAll'))}</button></div>
+      </fieldset>`;
+    return `<div class="ob-search-options">
+      <div class="ob-search-scope"><p id="search-scope-summary" role="status">${esc(domainSummary)} ${esc(summary)}${ai ? '' : ` ${esc(t('search.scope.noAI'))}`}</p>
+        <button type="button" class="ob-button ob-button--link" id="search-options-toggle" data-action="toggle-search-options" aria-expanded="${!!state.searchFiltersOpen}" aria-controls="search-options-panel">${esc(t(all && allDomains && ai ? 'search.scope.choose' : 'search.scope.change'))}${icon('chevron_down', 'sm')}</button>
+      </div>
+      <div class="ob-search-options-panel" id="search-options-panel"${state.searchFiltersOpen ? '' : ' hidden'}>
+        ${choices('domain', t('search.domains.legend'), data.list('domains').map(d => ({ id: d.identifier, label: d.name })), selectedDomains)}
+        ${choices('type', t('search.scope.legend'), kinds.map(kind => ({ id: kind, label: t('search.type.' + kind) })), selected)}
+        <fieldset class="ob-search-option-group"><legend>${esc(t('search.scope.extra'))}</legend><label class="ob-check"><input type="checkbox" id="search-ai"${ai ? ' checked' : ''}><span>${esc(t('search.ai.enable'))} ${ui.chip(t('search.ai.demo'), 'outline')}</span></label></fieldset>
+      </div></div>`;
+  };
+
+  views.searchAnswer = function (query, options, groups) {
+    const answer = DK.search.answer(query, options, groups);
+    if (!answer) return '';
+    return `<section class="ob-search-answer" aria-labelledby="search-answer-title">
+      <div class="ob-search-answer-head"><h2 id="search-answer-title">${esc(t('search.ai.title'))}</h2>${ui.chip(t('search.ai.demo'), 'outline')}</div>
+      <p class="ob-search-answer-note">${esc(t(answer.sources.length ? 'search.ai.note' : 'search.ai.empty'))}</p>
+      ${answer.sources.map((source, i) => `<p class="ob-search-answer-excerpt">${esc(source.excerpt)} <a href="${esc(router.entityHref(source.kind, source.id))}" aria-label="${esc(t('search.ai.source', { n: i + 1, name: source.title }))}">[${i + 1}]</a></p>`).join('')}
+      ${answer.sources.length ? `<h3>${esc(t('search.ai.sources'))}</h3><ol class="ob-search-answer-sources">${answer.sources.map(source => `<li>${ui.entityLink(router.entityHref(source.kind, source.id), source.title)} <span class="ob-search-answer-type">${esc(t('search.type.' + source.kind))}</span> ${ui.chip(source.status, data.statusTone(source.status))}</li>`).join('')}</ol>` : ''}
+      <button type="button" class="ob-button ob-button--link" data-action="hide-search-ai">${esc(t('search.ai.hide'))}</button>
+    </section>`;
+  };
 
   /* ---- catalog tree ------------------------------------------------------------- */
   views.tree = function (route, state, onlySection) {
@@ -355,8 +399,9 @@
         <p id="home-search-description">${esc(t('home.search.description'))}</p>
         <form id="home-search" class="ob-hero-search-form" role="search" aria-label="${esc(t('search.label'))}">
           ${views.searchField(ctx.state, true)}
-          <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${ctx.state.query.trim() ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
+          <button type="submit" class="ob-button ob-hero-search-submit" id="search-submit"${DK.search.canSubmit(ctx.state.query, ctx.state.searchOptions) ? '' : ' disabled'}>${esc(t('search.submit'))}</button>
         </form>
+        <div id="search-options-host">${views.searchOptions(ctx.state)}</div>
       </section>
       <div class="ob-kpi-grid">${kpis}</div>
       <div class="ob-home-sections">
@@ -404,10 +449,12 @@
 
   /** Search results: groups and rows in relevance order (data.search); a column sort chosen by the user overrides the row order. */
   views.searchResults = function (ctx) {
-    const q = ctx.state.query.trim();
-    const groups = data.search(q);
+    const q = (ctx.route.params.q || '').trim();
+    if (!DK.search.selectedDomains(ctx.state.searchOptions).length) return ui.empty(t('search.domains.none'), `<button type="button" class="ob-button" data-action="search-domains-all">${esc(t('search.domains.selectAll'))}</button>`);
+    if (!DK.search.selectedKinds(ctx.state.searchOptions).length) return ui.empty(t('search.scope.none'), `<button type="button" class="ob-button" data-action="search-types-all">${esc(t('search.scope.selectAll'))}</button>`);
+    const groups = DK.search.results(q, ctx.state.searchOptions);
     const total = groups.reduce((n, g) => n + g.items.length, 0);
-    const summary = `<p class="ob-view-description ob-search-summary">${esc(t(total === 1 ? 'search.summaryOne' : 'search.summary', { n: total, q }))}</p>`;
+    const summary = `<p class="ob-view-description ob-search-summary" role="status">${esc(t(total === 1 ? 'search.summaryOne' : 'search.summary', { n: total, q }))}</p>` + views.searchAnswer(q, ctx.state.searchOptions, groups);
     if (!groups.length) return summary + ui.empty(t('search.none'), esc(t('search.noneHint')));
     return summary + `<div class="ob-search-groups">${groups.map(g => {
       const columns = data.searchColumns(g.kind);
@@ -474,9 +521,9 @@
     if (route.view === 'manual') content = views.manual(ctx);
     else if (route.view === 'api') content = views.apiPage();
     else if (route.view === 'home') content = views.home(ctx);
-    else if (route.view === 'list') content = `${views.collectionHeader(ctx)}${views.collectionControls(ctx)}<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${esc(views.collectionStatus(ctx))}</p><div id="collection-view-panel" role="tabpanel" aria-labelledby="view-tab-${ctx.mode}" tabindex="0">${views.list(ctx)}</div>`;
-    else if (route.view === 'search') content = views.viewHeader(ctx) + views.searchResults(ctx);
-    else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state);
+    else if (route.view === 'list') content = views.collectionHeader(ctx) + views.collection(ctx);
+    else if (route.view === 'search') content = views.viewHeader(ctx) + `<div id="search-options-host" class="ob-search-results-options">${views.searchOptions(state)}</div><div id="search-results-panel">${views.searchResults(ctx)}</div>`;
+    else if (route.view === 'detail') content = views.entityHeader(ctx) + DK.detail.render(route.entity, route, state, ctx);
     else content = views.viewHeader(ctx) + views.notFound();
     const backdrop = state.navDrawerOpen ? `<button type="button" class="ob-drawer-backdrop" tabindex="-1" aria-label="${esc(t('tree.close'))}" data-action="close-navigation"></button>` : '';
     return { html: `<div class="ob-workspace${route.view === 'api' ? ' ob-workspace--standalone' : ''}${state.sidebarCollapsed ? ' is-collapsed' : ''}">${views.sidePanel(route, state)}<section class="ob-content" id="page-content" tabindex="-1">${views.breadcrumb(ctx.crumbs)}${content}</section></div>${backdrop}`, ctx };

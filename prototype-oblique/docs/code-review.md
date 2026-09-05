@@ -66,7 +66,7 @@ A click on an in-page link while a menu was open ran `closeTransient()` → `app
 
 ### 2.4 `views.suggest()` wrote to state (low)
 
-A "pure" view filled `state.suggestFlat` and `state.suggestAllIdx` as a side effect of rendering; keyboard handling depended on the last render. Status: the view is pure; `app.js` derives the suggestion hrefs from `data.suggest()` when a key is pressed.
+A "pure" view filled `state.suggestFlat` and `state.suggestAllIdx` as a side effect of rendering; keyboard handling depended on the last render. Status: the view is pure; `app.js` derives record targets or example queries from `search.suggest()` / `search.examples()` when a key is pressed.
 
 ## 3. Accessibility of the render cycle
 

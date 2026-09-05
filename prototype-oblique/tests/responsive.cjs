@@ -71,6 +71,7 @@ const server = createServer();
     // Width changes must preserve sort order and focus, including sidebar collapse.
     await page.setViewportSize({ width: 1440, height: 900 });
     await visit('#/domains/bau');
+    await page.click('#view-tab-overview');
     assert.equal(await page.locator('.ob-entity-header .ob-chip').count(), 0, 'Type/status must be in Kerndaten, not the title');
     assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Klassifizierung', 'Personendaten']);
     await page.locator('.ob-metadata summary').click();

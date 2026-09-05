@@ -142,9 +142,13 @@
     const e = data.get(kind, id);
     return e ? e.name : (id || '–');
   };
-  /** Name as shown in lists, crumbs and links (tables carry the technical name, APIs the version). */
+  /** Name as shown in lists, crumbs and links (tables/fields carry the technical name, APIs the version). */
   data.displayName = function (kind, e) {
     if (kind === 'tables') return `${e.name} (${e.technicalName})`;
+    if (kind === 'fields') {
+      const label = ui.localized(e.labels);
+      return label && label !== e.technicalName ? `${label} (${e.technicalName})` : e.technicalName;
+    }
     if (kind === 'apis') return `${e.name} ${e.version}`;
     return e.name;
   };
@@ -175,11 +179,10 @@
     const position = table.fields.findIndex(f => data.fieldId(f) === id.slice(i + 1));
     if (position < 0) return null;
     const f = table.fields[position];
-    const label = ui.localized(f.labels);
     const inherited = Object.fromEntries(['version', 'created', 'modified', 'responsibleOrg', 'contact', 'dataOwner', 'dataSteward', 'dataCustodian', 'classification', 'personalData', 'source', 'sourceDetail', 'synced', 'provenance'].map(key => [key, table[key]]));
     return {
       ...inherited, ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier,
-      label, name: label && label !== f.technicalName ? `${label} (${f.technicalName})` : f.technicalName,
+      label: ui.localized(f.labels), name: data.displayName('fields', f),
       system: table.system, domain: data.domainForEntity('tables', table)?.identifier,
       status: table.status, position: position + 1,
     };
@@ -463,28 +466,22 @@
     return values.some(value => value != null && find(String(value), q));
   };
   /** One result group: items by relevance, then shorter names first, then alphabetical. */
-  const resultGroup = (kind, q, limit) => {
+  const resultGroup = (kind, q) => {
     const ranked = data.list(kind).map(e => ({ e, score: data.relevance(e, q) })).filter(x => x.score > 0)
       .sort((a, b) => b.score - a.score || a.e.name.length - b.e.name.length || a.e.name.localeCompare(b.e.name, 'de'));
-    const items = (limit ? ranked.slice(0, limit) : ranked).map(x => x.e);
+    const items = ranked.map(x => x.e);
     return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: ranked.length, best: ranked.length ? ranked[0].score : 0 };
   };
   /** Groups with the best hit first; ties follow the content order (business objects before the tables that realise them), containers last. */
   const SEARCH_ORDER = ['objects', 'tables', 'refs', 'products', 'apis', 'domains', 'systems'];
+  data.searchKinds = Object.freeze(SEARCH_ORDER);
   const byRelevance = (a, b) => b.best - a.best || SEARCH_ORDER.indexOf(a.kind) - SEARCH_ORDER.indexOf(b.kind);
   /** Full result groups for the search page. */
-  data.search = function (query) {
+  data.search = function (query, kinds = KINDS) {
     const q = (query || '').trim();
     if (!q) return [];
-    return KINDS.map(kind => resultGroup(kind, q)).filter(g => g.items.length).sort(byRelevance);
+    return KINDS.filter(kind => kinds.includes(kind)).map(kind => resultGroup(kind, q)).filter(g => g.items.length).sort(byRelevance);
   };
-  /** Suggestion groups: same ranking, at most 4 per kind. */
-  data.suggest = function (query) {
-    const q = (query || '').trim();
-    if (!q) return [];
-    return KINDS.map(kind => resultGroup(kind, q, 4)).filter(g => g.items.length).sort(byRelevance);
-  };
-
   /* ---- home ----------------------------------------------------------------- */
   data.recent = function (n) {
     const feed = [];

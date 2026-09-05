@@ -72,7 +72,7 @@ const server = createServer();
     await page.locator('#back-to-top').waitFor({state:'visible'});
     await focus('Back to top', '#back-to-top');
     await page.screenshot({ path: path.join(dir, phase + '-home-focus.png') });
-    await visit('#/domains/bau', 'relations');
+    await visit('#/systems/gwr', 'relations');
     await sample('Relationship connector', '.ob-graph-line', 'stroke', 3);
     await sample('Relationship count', '.ob-graph-count');
     await focus('Selected graph tool', '[data-action="graph-pan"]');

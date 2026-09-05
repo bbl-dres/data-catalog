@@ -17,7 +17,7 @@ function runtime(change = () => {}) {
       return change(name, value) ?? value;
     } }),
   });
-  for (const file of ['ui', 'data', 'router', 'graph', 'views', 'detail', 'excel']) {
+  for (const file of ['ui', 'data', 'router', 'search', 'graph', 'views', 'detail', 'excel']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context, { filename: file + '.js' });
   }
   return { ...context.window.DK, warnings };
@@ -32,7 +32,10 @@ async function loaded(change) {
 test('domain profiles contain the same members as the tree, including copied records', async () => {
   const { data, detail } = await loaded();
   const domain = { ...data.domainOf('bau'), kind: 'domains' };
-  assert.equal(detail.rowsData(domain).rows.length, 9);
+  assert.equal(detail.tabs(domain).map(([id]) => id).join(','), 'overview,tiles,table');
+  assert.equal(detail.resolveTab(domain, 'rows'), 'table');
+  assert.equal(detail.resolveTab(domain, 'relations'), 'overview');
+  assert.equal(detail.resolveTab(domain, 'history'), 'overview');
   for (const d of data.domains) {
     for (const kind of data.kinds) {
       const canonical = data.membersOfDomain(kind, d).map(e => e.identifier).join(',');
@@ -41,6 +44,35 @@ test('domain profiles contain the same members as the tree, including copied rec
     assert.equal(JSON.stringify(data.relations('domains', { ...d })), JSON.stringify(data.relations('domains', d)));
   }
   assert.equal(data.membersOfDomain('systems', null).length, 0);
+});
+
+test('domain browsing reuses collection rows, filtering and export scope while keeping its overview', async () => {
+  const { data, detail, views, excel } = await loaded();
+  const entity = { ...data.domainOf('bau'), kind: 'domains' };
+  const state = { mode: 'tiles', groupBy: {}, closed: {}, tableSorts: {} };
+  const route = { view: 'detail', kind: 'domains', id: 'bau', entity, params: {} };
+  const tiles = views.context(route, state);
+  assert.equal(tiles.mode, 'tiles');
+  assert.equal(tiles.kind, 'objects');
+  assert.equal(tiles.title, entity.name);
+  assert.equal(tiles.matched, 9);
+  assert.equal(JSON.stringify(tiles.columns), JSON.stringify(data.columns('objects')));
+  assert.ok(tiles.groups.every(g => g.items.every(e => e.domain === 'bau')));
+  assert.ok(detail.render(entity, route, state).includes('ob-tile'));
+  const filteredRoute = { ...route, params: { tab: 'table', filter: 'Gebäude', group: 'status' } };
+  const filtered = views.context(filteredRoute, state);
+  assert.ok(filtered.matched > 0 && filtered.matched < 9);
+  const plan = excel.plan(filteredRoute, filtered, 'http://localhost/#/domains/bau');
+  const rows = plan.sheets.find(s => s.name === 'Geschäftsobjekte').rows;
+  assert.equal(rows.length, filtered.matched);
+  assert.ok(rows.every(r => filtered.groups.some(g => g.items.some(e => e.identifier === r[0]))));
+  const overview = views.context({ ...route, params: { tab: 'overview', filter: 'Gebäude' } }, state);
+  assert.equal(overview.isList, false);
+  assert.equal(overview.filter, '');
+  assert.ok(views.collection(overview).includes('ob-core-facts'));
+  assert.ok(!views.collection(overview).includes('id="collection-filter"'));
+  const empty = views.context({ ...route, params: { tab: 'table', filter: 'unfindable-fixture' } }, state);
+  assert.equal(excel.plan(route, empty, 'http://localhost/#/domains/bau').sheets.find(s => s.name === 'Geschäftsobjekte').rows.length, 0);
 });
 
 test('unknown navigation models, including inherited property names, fall back to the entity tree', async () => {
@@ -187,6 +219,126 @@ test('field labels follow the selected language with a German fallback and stabl
     assert.ok(meta.rows.some(r => r[3] === 'labels.fr' && r[4] === embedded.labels.fr));
   }
   assert.equal(JSON.stringify(embedded), stored, 'language selection must not rewrite the source record');
+});
+
+test('search scope is shared by suggestions, results and demo sources and survives URL round trips', async () => {
+  const { data, search, router } = await loaded();
+  assert.equal(JSON.stringify(search.results('Gebäude')), JSON.stringify(data.search('Gebäude')));
+  for (const kind of search.kinds()) {
+    const options = search.options({ types: `${kind},${kind},unknown,__proto__` });
+    assert.equal(JSON.stringify(options.kinds), JSON.stringify([kind]));
+    const groups = search.results('Gebäude', options);
+    assert.ok(groups.every(g => g.kind === kind));
+    assert.ok(search.suggest('Gebäude', options).every(g => g.kind === kind && g.items.length <= 4));
+    assert.ok(search.answer('Gebäude', options, groups).sources.every(s => s.kind === kind && groups.some(g => g.items.some(e => e.identifier === s.id))));
+  }
+  for (const types of ['none', '', 'constructor,unknown']) {
+    const options = search.options({ types });
+    assert.equal(search.results('Gebäude', options).length, 0);
+    assert.equal(search.suggest('Gebäude', options).length, 0);
+    assert.equal(search.answer('Gebäude', options), null);
+    assert.equal(search.canSubmit('Gebäude', options), false);
+  }
+  const options = search.options({ types: 'tables,objects', ai: '0' });
+  const parsed = router.parse(router.searchHref('Gebäude & GWR', search.params(options)));
+  assert.equal(parsed.params.q, 'Gebäude & GWR');
+  assert.equal(JSON.stringify(search.options(parsed.params)), JSON.stringify(options));
+  assert.equal(search.answer('Gebäude', options), null);
+  assert.equal(search.canSubmit('  ', options), false);
+});
+
+test('domain facets intersect content types and constrain suggestions and cited answers', async () => {
+  const { data, search, router } = runtime();
+  const initial = search.options(); // app initializes this before loading JSON
+  await data.load('data/');
+  assert.equal(search.selectedDomains(initial).length, data.domains.length);
+  const options = search.options({ domains: 'energie,projekt,energie,unknown', types: 'products,tables' });
+  assert.equal(search.selectedDomains(options).join(','), 'energie,projekt');
+  const roundTrip = search.options(router.parse(router.searchHref('Gebäude', search.params(options))).params);
+  assert.equal(JSON.stringify(roundTrip), JSON.stringify(options));
+  for (const query of ['Gebäude', 'Was ist ein Gebäude?', 'Energie', 'GWR']) {
+    const groups = search.results(query, options);
+    for (const g of [...groups, ...search.suggest(query, options)]) {
+      assert.ok(['products', 'tables'].includes(g.kind));
+      assert.ok(g.items.every(e => ['energie', 'projekt'].includes(data.domainForEntity(g.kind, e)?.identifier)));
+    }
+    // Even a caller supplying unfiltered groups cannot leak excluded domains into citations.
+    for (const source of search.answer(query, options, search.results(query)).sources) {
+      assert.ok(['products', 'tables'].includes(source.kind));
+      assert.ok(['energie', 'projekt'].includes(data.domainForEntity(source.kind, data.get(source.kind, source.id))?.identifier));
+    }
+  }
+  const energy = search.options({ domains: 'energie', types: 'products' });
+  assert.equal(search.results('Energie', energy)[0].items[0].identifier, 'p-energie');
+  assert.equal(search.results('Gebäudebestand', energy).length, 0);
+  assert.equal(search.answer('Energie', energy).sources[0].id, 'p-energie');
+  assert.equal(search.results('Energie', search.options({ domains: 'energie', types: 'domains' }))[0].items[0].identifier, 'energie');
+  assert.equal(search.results('GWR', search.options({ domains: 'projekt', types: 'systems' }))[0].items[0].identifier, 'gwr');
+  assert.equal(search.results('GWR', search.options({ domains: 'finanzen', types: 'systems' })).length, 0);
+  // Also include systems connected only through an API, and keep unassigned records in all-domains searches.
+  data.systems.push({ identifier: 'api-only', name: 'Fixture-only system' });
+  data.apis.push({ identifier: 'test-api', name: 'Fixture-only API', domain: 'energie', system: 'api-only' });
+  assert.equal(search.results('Fixture-only', search.options({ domains: 'energie', types: 'systems' }))[0].items[0].identifier, 'api-only');
+  data.products.push({ identifier: 'unassigned', name: 'Unassigned fixture', description: 'Without a domain.' });
+  assert.equal(search.results('Unassigned')[0].items[0].identifier, 'unassigned');
+  assert.equal(search.results('Unassigned', energy).length, 0);
+  for (const domains of ['none', '', 'constructor,unknown']) {
+    const empty = search.options({ domains });
+    assert.equal(search.canSubmit('Gebäude', empty), false);
+    assert.equal(search.results('Gebäude', empty).length, 0);
+    assert.equal(search.suggest('Gebäude', empty).length, 0);
+    assert.equal(search.answer('Gebäude', empty), null);
+    assert.equal(search.params(empty).domains, 'none');
+  }
+});
+
+test('learning examples are few, answerable, translated and constrained by the search scope', async () => {
+  const { data, search, ui, views } = await loaded();
+  for (const lang of ['de', 'fr', 'it', 'en']) {
+    ui.setDictionary(data.i18n, lang);
+    const examples = search.examples();
+    assert.equal(examples.length, 4);
+    assert.equal(examples[0].query, data.i18n['search.example.gwr'][lang]);
+    assert.equal(search.answer(examples[0].query).sources[0].id, 'gwr');
+    assert.ok(examples.every(example => search.results(example.query).length));
+  }
+  ui.setDictionary(data.i18n, 'de');
+  const scope = search.options({ domains: 'energie', types: 'products', ai: '0' });
+  assert.equal(search.examples(scope).map(e => e.query).join(','), 'Gebäude,Energieverbrauch');
+  for (const options of [search.options({ domains: 'none' }), search.options({ types: 'none' })]) {
+    assert.equal(search.examples(options).length, 0);
+    assert.equal(search.canSuggest('', options), false);
+    assert.equal(views.suggest({ query: '', suggest: true, searchOptions: options }), '');
+  }
+  assert.equal(search.canSuggest(''), true);
+  assert.equal(search.canSubmit(''), false);
+  assert.equal(views.suggest({ query: '', suggest: false }), '');
+  assert.match(views.suggest({ query: '', suggest: true }), /data-action="suggest-example"/);
+  assert.doesNotMatch(views.suggest({ query: 'Gebäude', suggest: true }), /suggest-example/);
+});
+
+test('mock answers handle simple questions conservatively and escape source excerpts and titles', async () => {
+  const { data, search, views } = await loaded();
+  const options = search.options({ types: 'tables' });
+  assert.ok(search.results('Was ist ein Gebäude?', options).some(g => g.items.some(e => e.identifier === 't-gwr-gebaeude')));
+  assert.ok(search.results('What is GWR?', options).length);
+  const gwr = search.answer('Was ist GWR?', search.options());
+  assert.equal(gwr.sources.length, 1);
+  assert.equal(gwr.sources[0].id, 'gwr');
+  assert.equal(search.results('Welche Gebäude enthalten verschwundeneMarsdaten?', options).length, 0);
+  assert.equal(search.answer('unfindable-query', options).sources.length, 0);
+  const answer = search.answer('Gebäude', options);
+  assert.equal(answer.sources[0].id, 't-gwr-gebaeude');
+  for (const source of answer.sources) {
+    const description = data.get(source.kind, source.id).description.trim().replace(/\s+/g, ' ');
+    assert.ok(description.startsWith(source.excerpt.replace(/…$/, '')));
+  }
+  data.tables[0].name = '<svg onload=alert(1)>search-fixture';
+  data.tables[0].description = '<img src=x onerror=alert(1)> & literal excerpt';
+  const html = views.searchAnswer('search-fixture', options);
+  assert.ok(!html.includes('<svg') && !html.includes('<img'));
+  assert.ok(html.includes('&lt;img') && html.includes('&lt;svg') && html.includes('&amp; literal excerpt'));
+  assert.ok(html.includes('Demo') && html.includes('#/tables/t-we'));
 });
 
 test('the shipped data has no dangling references or missing record identities', async () => {

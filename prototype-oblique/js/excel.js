@@ -9,10 +9,11 @@
 
   /** Build a plain-data snapshot before any asynchronous work or route/language change. */
   excel.plan = function (route, ctx, baseUrl = window.location.href) {
-    const roots = route.entity ? [route.entity] : ctx.groups.flatMap(g => {
-      const sort = ui.tableOptions(ctx.state, `list:${route.kind}`, { column: 0, direction: 'asc' }).sort;
-      const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, e => [e.name, ...data.cols(route.kind, e), data.statusOf(route.kind, e)]) : g.items;
-      return items.map(e => ({ ...e, kind: route.kind }));
+    const collection = ctx.isList ?? route.view === 'list', kind = ctx.kind || route.kind;
+    const roots = route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
+      const sort = ui.tableOptions(ctx.state, `list:${kind}`, { column: 0, direction: 'asc' }).sort;
+      const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, e => [e.name, ...data.cols(kind, e), data.statusOf(kind, e)]) : g.items;
+      return items.map(e => ({ ...e, kind }));
     });
     const records = new Map();
     const add = (kind, e) => { if (e) records.set(`${kind}:${e.identifier}`, { ...e, kind }); };
@@ -55,7 +56,7 @@
     const kinds = [...new Set([...roots.map(e => e.kind), ...data.kinds])].filter(k => !['attrs', 'fields'].includes(k));
     kinds.forEach(kind => {
       const items = [...records.values()].filter(e => e.kind === kind);
-      if (!items.length && !(route.view === 'list' && route.kind === kind)) return;
+      if (!items.length && !(collection && (ctx.kind || route.kind) === kind)) return;
       const s = sheet(data.kindDef(kind).plural, [col('fact.identifier', 34), col('col.name', 40), col('col.description', 85), col('col.status', 20), col('fact.version', 18), col('col.domain', 30), col('col.system', 25), col('col.responsibility', 40), col('excel.selection', 20), col('excel.link', 60, 'link')]);
       items.forEach(e => {
         s.rows.push([String(e.identifier), data.displayName(kind, e), e.description, e.status, e.version, data.domainForEntity(kind, e)?.name,

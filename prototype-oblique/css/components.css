@@ -18,6 +18,8 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-button:active:not(:disabled) { background: var(--ob-color-surface-hover); }
 .ob-button:disabled { border-color: var(--ob-color-text-disabled); color: var(--ob-color-text-disabled); cursor: default; }
 .ob-button--ghost { border-color: transparent; background: transparent; font-size: var(--ob-font-size-sm); gap: var(--ob-space-xs); }
+.ob-button--link { height: auto; min-height: var(--ob-control-height); padding: var(--ob-space-xs) 0; border: 0; background: transparent; color: var(--ob-color-link); text-decoration: underline; white-space: normal; text-align: left; }
+.ob-button--link:hover:not(:disabled) { background: transparent; color: var(--ob-color-link-hover); }
 .ob-button--icon { width: var(--ob-control-height); padding: 0; border-color: transparent; background: transparent; }
 .ob-button--icon.is-active { background: var(--ob-color-surface); }
 .ob-button--icon.ob-button--outlined { border-color: var(--ob-color-border-control); background: var(--ob-color-bg); }
@@ -59,6 +61,11 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-select { border-radius: var(--ob-radius-sm); padding: 0 var(--ob-space-sm); }
 .ob-select--comfortable { min-height: var(--ob-touch-target); font-size: var(--ob-font-size-input); }
 
+/* Native checkboxes share spacing and touch sizing across filter groups. */
+.ob-check { display: flex; align-items: center; gap: var(--ob-space-sm); min-height: var(--ob-control-height); padding-block: var(--ob-space-xs); cursor: pointer; }
+.ob-check input { flex: none; width: var(--ob-icon-size-lg); height: var(--ob-icon-size-lg); margin: 0; accent-color: var(--ob-color-neutral); }
+.ob-check > span { min-width: 0; overflow-wrap: anywhere; }
+
 /* Quiet icon actions inside inputs and notices, with one interaction state. */
 .ob-icon-button {
   display: inline-flex; align-items: center; justify-content: center; flex: none;
@@ -79,7 +86,7 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 
 /* The same input policy applies to tablets, phones and desktop touch screens. */
 @media (any-pointer: coarse), (max-width: 960px) {
-  .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-metadata > summary, .ob-input, .ob-select, .ob-icon-button { min-height: var(--ob-touch-target); }
+  .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-metadata > summary, .ob-input, .ob-select, .ob-icon-button, .ob-check { min-height: var(--ob-touch-target); }
   .ob-input, .ob-select { font-size: var(--ob-font-size-input); }
   .ob-button--icon, .ob-icon-button { min-width: var(--ob-touch-target); }
 }

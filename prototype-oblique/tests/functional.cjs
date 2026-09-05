@@ -87,6 +87,164 @@ const server = createServer();
       await page.waitForURL(url => url.hash === '#/search?q=Energie');
     });
 
+    await check('empty search teaches with examples and supports keyboard, dismissal and scoped searches', async () => {
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/');
+        const input = page.locator('#search-input');
+        assert.equal(await page.locator('#search-suggest').count(), 0, 'no examples before focus');
+        await input.focus();
+        assert.equal(await input.getAttribute('aria-expanded'), 'true');
+        assert.equal(await page.locator('.ob-suggest-example').count(), 4);
+        assert(await page.locator('#search-submit').isDisabled());
+        await input.press('Enter'); assert(page.url().endsWith('#/'), 'an empty Enter does not pick an example');
+        for (let i = 0; i < 6; i++) await input.press('ArrowDown');
+        assert.equal(await input.getAttribute('aria-activedescendant'), 'suggest-3');
+        await input.press('Escape');
+        assert.equal(await input.getAttribute('aria-expanded'), 'false');
+        assert.equal(await input.getAttribute('aria-activedescendant'), null);
+        await input.press('ArrowDown');
+        assert.equal(await input.getAttribute('aria-activedescendant'), 'suggest-0');
+        await input.press('ArrowUp'); assert.equal(await input.getAttribute('aria-activedescendant'), null);
+        await input.press('ArrowDown'); await input.press('Enter');
+        await page.waitForURL(url => url.hash.includes('/search?'));
+        assert.equal(await page.evaluate(() => DK.router.parse(location.hash).params.q), 'Was ist GWR?');
+        assert.equal(await page.locator('.ob-search-answer-sources a').first().getAttribute('href'), '#/systems/gwr');
+        await visit('#/');
+        await input.fill('Gebäude'); assert.equal(await page.locator('.ob-suggest-example').count(), 0);
+        await page.click('#search-clear'); assert.equal(await page.locator('.ob-suggest-example').count(), 4);
+        await input.press('Tab'); assert.equal(await input.getAttribute('aria-expanded'), 'false');
+        await input.click(); assert.equal(await page.locator('.ob-suggest-example').count(), 4);
+        await page.click('#home-search-title'); assert.equal(await input.getAttribute('aria-expanded'), 'false');
+        await visit('#/?domains=energie&types=products&ai=0');
+        await input.focus();
+        assert.equal(await page.locator('.ob-suggest-example').count(), 2);
+        await page.locator('.ob-suggest-example[data-query="Energieverbrauch"]').click();
+        await page.waitForURL(url => url.hash.includes('/search?'));
+        assert.equal(await page.evaluate(() => DK.router.parse(location.hash).params.q), 'Energieverbrauch');
+        assert(page.url().includes('domains=energie') && page.url().includes('types=products') && page.url().includes('ai=0'));
+        assert.equal(await page.locator('.ob-search-answer').count(), 0);
+        assert.equal(await page.locator('#search-results-panel tbody tr').count(), 1);
+        await visit('#/objects'); await page.click('[data-action="toggle-search"]');
+        assert.equal(await page.locator('.ob-suggest-example').count(), 4, 'compact header uses the same examples');
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+        await input.press('Escape'); assert.equal(await page.locator('#search-suggest').count(), 0);
+      }
+    });
+
+    await check('example dropdown survives a tap and scrolls on a short touch viewport', async () => {
+      const touch = await browser.newPage({ viewport: { width: 390, height: 280 }, hasTouch: true, isMobile: true });
+      touch.on('pageerror', e => errors.push(e.message));
+      try {
+        await touch.goto(base + '#/'); await touch.locator('#search-input').waitFor();
+        await touch.locator('#search-input').tap(); await settle(touch);
+        assert.equal(await touch.locator('#search-input').getAttribute('aria-expanded'), 'true');
+        assert.equal(await touch.locator('.ob-suggest-example').count(), 4);
+        const box = await touch.locator('#search-suggest').boundingBox();
+        assert(box.height >= 44 && box.y + box.height <= 280);
+        await touch.locator('.ob-suggest-example').last().scrollIntoViewIfNeeded();
+        assert(await touch.locator('#search-suggest').evaluate(el => el.scrollTop > 0));
+        await touch.locator('.ob-suggest-example').last().tap();
+        await touch.waitForURL(url => url.hash.includes('/search?'));
+        assert.equal(await touch.evaluate(() => DK.router.parse(location.hash).params.q), 'Bauprojekt');
+      } finally { await touch.close(); }
+    });
+
+    await check('search scope, mock answers and URLs agree on desktop and mobile', async () => {
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/');
+        const input = page.locator('#search-input');
+        await input.fill('Was ist ein Gebäude?'); await input.press('Escape');
+        await page.click('#search-options-toggle');
+        await page.evaluate(() => { window.originalSearchInput = document.getElementById('search-input'); });
+        await page.click('[data-action="search-types-none"]');
+        assert(await page.locator('#search-submit').isDisabled());
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 0);
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'search-type-objects');
+        assert(await page.locator('#search-ai').isChecked());
+        await page.locator('#search-type-tables').focus(); await page.keyboard.press('Space');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'search-type-tables');
+        assert.equal(await page.evaluate(() => originalSearchInput === document.getElementById('search-input')), true);
+        assert.equal(await input.inputValue(), 'Was ist ein Gebäude?');
+        assert.equal(await page.locator('#search-options-toggle').getAttribute('aria-expanded'), 'true');
+        await input.focus(); await input.press('ArrowDown');
+        assert.match(await page.locator('#' + await input.getAttribute('aria-activedescendant')).getAttribute('data-href'), /^#\/tables\//);
+        await input.press('Escape'); await page.click('#search-submit');
+        await page.waitForURL(url => url.hash.includes('/search?'));
+        assert(page.url().includes('types=tables'));
+        assert.equal(await page.locator('#search-results-panel .ob-search-group-head').count(), 1);
+        assert((await page.locator('#search-results-panel .ob-search-group-head').innerText()).includes('Datentabellen'));
+        const sources = await page.locator('.ob-search-answer-sources a').evaluateAll(els => els.map(el => el.getAttribute('href')));
+        assert(sources.length > 0 && sources.every(href => href.startsWith('#/tables/')));
+        const resultUrl = page.url();
+        await page.locator('.ob-search-answer-sources a').first().click(); await page.locator('.ob-entity-header').waitFor();
+        await page.goBack(); await settle(page); assert.equal(page.url(), resultUrl);
+        await page.click('#search-options-toggle'); await page.locator('#search-ai').uncheck();
+        assert.equal(await page.locator('.ob-search-answer').count(), 0);
+        assert(page.url().includes('ai=0'));
+        await page.reload(); await page.locator('#search-options-toggle').waitFor();
+        assert.equal(await page.locator('.ob-search-answer').count(), 0);
+        await page.click('#search-options-toggle');
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 1);
+        assert(await page.locator('#search-type-tables').isChecked());
+        await page.click('[data-action="search-types-all"]');
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 7);
+        assert.equal(await page.locator('.ob-search-answer').count(), 0);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+      await visit('#/search?q=Gebäude&types=none');
+      assert.equal(await page.locator('.ob-search-answer').count(), 0);
+      assert.equal(await page.locator('.ob-search-groups').count(), 0);
+      await page.locator('#search-results-panel [data-action="search-types-all"]').click();
+      assert(await page.locator('.ob-search-groups').isVisible());
+      await page.click('[data-action="hide-search-ai"]');
+      assert.equal(await page.evaluate(() => document.activeElement.id), 'search-options-toggle');
+    });
+
+    await check('domain choices appear first and intersect types on desktop and mobile', async () => {
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/');
+        const input = page.locator('#search-input');
+        await input.fill('Energie'); await input.press('Escape');
+        await page.click('#search-options-toggle');
+        assert.match(await page.locator('#search-options-panel legend').first().innerText(), /Domänen/);
+        await page.click('[data-action="search-domains-none"]');
+        assert(await page.locator('#search-submit').isDisabled());
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 7);
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'search-domain-bau');
+        await page.locator('#search-domain-energie').focus(); await page.keyboard.press('Space');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'search-domain-energie');
+        await page.click('[data-action="search-types-none"]');
+        await page.locator('#search-type-products').check();
+        assert.equal(await input.inputValue(), 'Energie');
+        await input.focus(); await input.press('ArrowDown');
+        assert.equal(await page.locator('#' + await input.getAttribute('aria-activedescendant')).getAttribute('data-href'), '#/products/p-energie');
+        await input.press('Escape'); await page.click('#search-submit');
+        await page.waitForURL(url => url.hash.includes('/search?'));
+        assert(page.url().includes('domains=energie') && page.url().includes('types=products'));
+        assert.equal(await page.locator('#search-results-panel tbody tr').count(), 1);
+        assert.equal(await page.locator('.ob-search-answer-sources a').first().getAttribute('href'), '#/products/p-energie');
+        await page.reload(); await page.locator('#search-options-toggle').waitFor();
+        await page.click('#search-options-toggle');
+        assert.equal(await page.locator('[data-search-domain]:checked').count(), 1);
+        assert(await page.locator('#search-domain-energie').isChecked());
+        await page.locator('#search-domain-projekt').check();
+        assert(page.url().includes('domains=energie%2Cprojekt'));
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 1);
+        await page.click('[data-action="search-domains-all"]');
+        assert(!page.url().includes('domains='));
+        assert.equal(await page.locator('[data-search-kind]:checked').count(), 1);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+      await visit('#/search?q=Energie&types=products&domains=none');
+      assert.equal(await page.locator('.ob-search-answer').count(), 0);
+      assert.equal(await page.locator('.ob-search-groups').count(), 0);
+      await page.locator('#search-results-panel [data-action="search-domains-all"]').click();
+      assert.equal(await page.locator('#search-results-panel tbody tr').count(), 1);
+    });
+
     await check('collection search keeps typing stable and filters tiles, tables, grouping and exports together', async () => {
       await visit('#/objects');
       const objectCount = await page.evaluate(() => DK.data.objects.length);
@@ -212,20 +370,55 @@ const server = createServer();
       await page.click('[data-action="close-navigation"]');
     });
 
-    await check('domain tab, records, relations and Excel agree with the tree', async () => {
-      await visit('#/domains/bau');
-      assert.match(await page.locator('#tab-rows').innerText(), /\(9\)/);
-      await page.click('#tab-rows');
-      assert.equal(await page.locator('#panel-rows tbody tr').count(), 9);
+    await check('domain tabs share collection layouts, filters, links and Excel scope', async () => {
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/domains/bau');
+        assert.deepEqual(await page.locator('.ob-collection-controls [role="tab"]').allTextContents(), ['Übersicht', 'Kacheln', 'Tabelle']);
+        assert.equal(await page.locator('.ob-tile').count(), 9);
+        assert.equal(await page.locator('#tab-relations, #tab-history, #tab-rows').count(), 0);
+        await page.locator('#view-tab-tiles').focus(); await page.keyboard.press('ArrowRight');
+        assert.equal(await page.locator('#view-tab-table').getAttribute('aria-selected'), 'true');
+        assert.equal(await page.evaluate(() => document.activeElement.id), 'view-tab-table');
+        assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 9);
+        assert.deepEqual(await page.locator('#collection-view-panel th .ob-table-sort').allTextContents(), ['Name', 'Verantwortung', 'Beschreibung', 'Attribute', 'Status']);
+        await page.locator('#collection-filter').fill('Areal');
+        assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 1);
+        await page.click('#view-tab-tiles');
+        assert.equal(await page.locator('.ob-tile').count(), 1);
+        await page.click('#view-tab-overview');
+        assert(await page.locator('.ob-core-facts').isVisible());
+        assert.equal(await page.locator('#collection-filter').count(), 0);
+        await page.click('#view-tab-table');
+        assert.equal(await page.locator('#collection-filter').inputValue(), 'Areal');
+        await page.reload(); await page.locator('#collection-filter').waitFor();
+        assert.equal(await page.locator('#view-tab-table').getAttribute('aria-selected'), 'true');
+        assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 1);
+        await page.locator('#collection-view-panel a[href="#/objects/areal"]').click(); await settle(page);
+        assert.equal(await page.locator('#tab-overview').getAttribute('aria-selected'), 'true');
+        assert.equal(await page.locator('#tab-relations').count(), 1);
+        await page.goBack(); await settle(page);
+        assert.equal(await page.locator('#collection-filter').inputValue(), 'Areal');
+        await page.click('#collection-filter-clear');
+        assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 9);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await visit('#/domains/bau?tab=rows');
+      assert.equal(await page.locator('#view-tab-table').getAttribute('aria-selected'), 'true');
+      assert(page.url().includes('tab=table'));
+      await page.locator('#collection-filter').fill('Areal');
       await page.click('[data-menu="actions"]');
       const downloaded = page.waitForEvent('download');
       await page.click('[data-export="xlsx"]');
       const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await downloaded).path());
-      assert.equal(workbook.getWorksheet('Geschäftsobjekte').rowCount, 10);
+      assert.equal(workbook.getWorksheet('Geschäftsobjekte').rowCount, 2);
       assert.equal(workbook.getWorksheet('Geschäftsobjekte').getCell('B2').value, 'Areal');
-      await page.click('#tab-relations');
-      await page.click('[data-action="toggle-relation-view"]');
-      assert.ok(await page.locator('.ob-relations-list a').count() > 0);
+      for (const tab of ['overview', 'relations', 'history']) {
+        await visit('#/domains/bau?tab=' + tab);
+        assert(await page.locator('.ob-core-facts').isVisible());
+        assert.equal(await page.locator('#view-tab-overview').getAttribute('aria-selected'), 'true');
+      }
     });
 
     await check('open metadata survives search, export menu and sidebar changes', async () => {

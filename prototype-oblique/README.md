@@ -6,7 +6,7 @@
 > [!CAUTION]
 > Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
 
-Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that follows the [Oblique](https://oblique.bit.admin.ch) design system of the federal administration. Browse domains, systems, business objects, attributes, data tables, code lists, data products and APIs; every entry has a profile page with core metadata, rows, relationships and a change history. In-app branding: *Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
+Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that follows the [Oblique](https://oblique.bit.admin.ch) design system of the federal administration. Browse domains, systems, business objects, attributes, data tables, code lists, data products and APIs. Domains combine an overview with tile/table browsing; other entries have profile pages with core metadata, applicable rows, relationships and a change history. In-app branding: *Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
 
 ## Demo
 
@@ -23,7 +23,8 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 - Home page with a prominent search form, KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
 - Profile pages with tabs for overview, attributes or fields or values, an interactive relationship diagram with zoom/pan/selection/fullscreen and a table alternative, and history.
-- Relevance-ranked, umlaut-tolerant search with grouped suggestions, keyboard navigation and a results page.
+- Domain pages with Übersicht, Kacheln and Tabelle, sharing collection search, grouping, sorting and filtered export. See [domain browsing](docs/domain-browsing.md).
+- Relevance-ranked, umlaut-tolerant search with grouped suggestions, content-type filters and an optional, cited AI-answer demo. See [search options](docs/search-options.md).
 - Handbook with chapter navigation, an OpenAPI 3.1 reference rendered by Swagger UI, and a help and contact popover.
 - Multi-sheet Excel export and print-to-PDF; DCAT-AP CH export remains a placeholder. See [Excel export](docs/excel-export.md) for workbook contents and scope.
 - Deep-linkable hash routes for section, entity, view mode, grouping, search query and handbook chapter.

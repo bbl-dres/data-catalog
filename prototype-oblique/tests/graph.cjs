@@ -12,16 +12,16 @@ const server = createServer();
     page.setDefaultTimeout(10000);
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    await page.goto(`http://127.0.0.1:${server.address().port}/#/domains/bau`);
+    await page.goto(`http://127.0.0.1:${server.address().port}/#/systems/gwr`);
     await page.click('#tab-relations');
     await page.evaluate(() => document.fonts.ready);
     await settle(page);
     assert(await page.locator('.ob-relations-diagram').isVisible());
     assert.equal(await page.locator('.ob-tabs [data-action="toggle-relation-view"]').count(), 1);
     assert.equal(await page.locator('[role="tablist"] [data-action="toggle-relation-view"]').count(), 0);
-    const relationCount = await page.evaluate(() => DK.data.relations('domains', DK.data.domainOf('bau')).reduce((n, g) => n + g.items.length, 0));
+    const relationCount = await page.evaluate(() => DK.data.relations('systems', DK.data.sysOf('gwr')).reduce((n, g) => n + g.items.length, 0));
     assert((await page.locator('#tab-relations').innerText()).includes(`(${relationCount})`));
-    assert.equal(await page.locator('.ob-graph-group').count(), 5);
+    assert.equal(await page.locator('.ob-graph-group').count(), await page.evaluate(() => DK.data.relations('systems', DK.data.sysOf('gwr')).filter(g => g.items.length).length));
     const bubbles = await page.locator('.ob-graph-bubble-inner').evaluateAll(els => els.map(el => {
       const circle = el.getBoundingClientRect(), cx = circle.x + circle.width / 2, cy = circle.y + circle.height / 2;
       return { round: Math.abs(circle.width - circle.height) < 1 && getComputedStyle(el).borderRadius === '50%', contained: [...el.querySelectorAll('.ob-graph-node')].every(node => {
@@ -68,7 +68,7 @@ const server = createServer();
     await node.click();
     assert((await page.locator('#graph-selection').innerText()).includes(name));
     assert.equal(await page.locator('#graph-selection a').count(), 1);
-    assert(page.url().includes('/domains/bau'));
+    assert(page.url().includes('/systems/gwr'));
 
     const paged = page.locator('.ob-graph-group').filter({ has: page.locator('.ob-graph-group-pager') }).first();
     const groupKey = await paged.getAttribute('data-group');
@@ -131,7 +131,7 @@ const server = createServer();
     const touchContext = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
     const touch = await touchContext.newPage();
     touch.on('pageerror', e => errors.push(e.message));
-    await touch.goto(`http://127.0.0.1:${server.address().port}/#/domains/bau`);
+    await touch.goto(`http://127.0.0.1:${server.address().port}/#/systems/gwr`);
     await touch.click('#tab-relations'); await settle(touch);
     assert.equal(await touch.evaluate(() => DK.app.state.graph.zoom), 1, 'phone labels should retain their normal size');
     await touch.click('[data-action="graph-fullscreen"]');
