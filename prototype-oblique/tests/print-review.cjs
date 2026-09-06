@@ -116,11 +116,12 @@ const { workspace } = require('./print-test-helpers.cjs');
       const example = structuredClone(catalogs.de.objects);
       example.entities = [{ ...example.entities[0], rows: [{ id: 'review-id', display: { name: '<script>bad()</script>', type: 'Text', key: 'ID', required: 'Ja', codeList: 'Example codes' } }] }];
       const exampleSettings = { ...DK.diagram.defaults(example), columns: ['name', 'type', 'key', 'required', 'codeList'], groupBy: 'none', selected: [example.entities[0].id] };
-      // Two entities exercise Grid; one entity intentionally becomes a full-width profile.
+      // Source text must remain literal on detail pages after the contents and summary.
       example.entities.push({ ...example.entities[0], id: 'review-copy' }); exampleSettings.selected.push('review-copy');
       const exampleLayout = DK.diagram.layout(example, exampleSettings, measure);
-      const svg = new DOMParser().parseFromString(DK.diagram.pageSvg(example, exampleSettings, exampleLayout, 0, DK.pdf.palette(), ''), 'image/svg+xml');
-      if (svg.querySelector('script, parsererror') || !['<script>bad()</script>', 'ID', 'Ja', 'Example codes'].every(value => svg.documentElement.textContent.includes(value))) problems.push('Grid lost values or failed to escape source text');
+      const svgs = exampleLayout.pages.map((_, index) => new DOMParser().parseFromString(DK.diagram.pageSvg(example, exampleSettings, exampleLayout, index, DK.pdf.palette(), ''), 'image/svg+xml'));
+      const text = svgs.map(svg => svg.documentElement.textContent).join(' ').replace(/\s/g, '');
+      if (svgs.some(svg => svg.querySelector('script, parsererror')) || !['<script>bad()</script>', 'ID', 'Ja', 'Example codes'].every(value => text.includes(value.replace(/\s/g, '')))) problems.push('List lost values or failed to escape source text');
       let combinations = 0;
       for (const language of ['de', 'fr', 'it', 'en']) for (const kind of ['objects', 'refs', 'products', 'apis']) for (const paper of ['A4', 'A3']) for (const mode of ['grid', 'list']) {
         const snapshot = catalogs[language][kind], settings = { ...DK.diagram.defaults(snapshot), entityColumns: ['name'], columns: ['name', 'code', 'type'], paper, layout: mode };
