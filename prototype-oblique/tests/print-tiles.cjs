@@ -8,10 +8,10 @@ const { workspace } = require('./print-test-helpers.cjs');
   try {
     await visit('#/objects'); await open();
     await choose('[data-diagram-setting="layout"]', 'tiles');
-    assert(await page.locator('#diagram-columns-host').isHidden());
+    assert(await page.locator('#diagram-columns-host').isVisible());
     assert.equal(await page.locator('#diagram-sheets [data-row-id]').count(), 0);
     assert((await page.locator('#diagram-selection-hint').innerText()).includes('nicht aufgelistet'));
-    for (const key of ['paper', 'orientation', 'layout', 'groupBy']) {
+    for (const key of ['groupBy']) {
       assert(await page.locator(`[data-diagram-setting="${key}"]`).locator('..').locator('.ob-icon').first().isVisible());
     }
     for (const action of ['document', 'filters']) {
@@ -24,17 +24,23 @@ const { workspace } = require('./print-test-helpers.cjs');
     for (const width of [1600, 1024, 768, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 }); await settle(page);
       await page.locator('.ob-export-tools-panel').evaluate(el => { el.open = true; });
-      const geometry = await page.locator('[data-diagram-setting="layout"]').evaluate(el => {
-        const button = el.nextElementSibling, r = button.getBoundingClientRect(), icon = button.querySelector('.ob-icon').getBoundingClientRect();
-        const label = button.querySelector('.ob-button-label').getBoundingClientRect();
-        return { contained: r.x >= 0 && r.right <= innerWidth, iconPadding: label.left >= icon.right + 4, left: r.left, right: r.right };
+      const geometry = await page.locator('.ob-export-layout').evaluate(el => {
+        const elements = [...el.querySelectorAll('button')], buttons = elements.map(button => button.getBoundingClientRect());
+        return {
+          contained: buttons.every(r => r.x >= 0 && r.right <= innerWidth),
+          horizontal: buttons.every(r => r.top === buttons[0].top), count: buttons.length,
+          joined: buttons.every((r, i) => !i || Math.abs(r.left - buttons[i - 1].right) <= 1),
+          icons: elements.every(button => button.querySelectorAll('.ob-icon[aria-hidden="true"]').length === 1),
+          activeShadow: getComputedStyle(el.querySelector('[aria-pressed="true"]')).boxShadow
+        };
       });
       if (!geometry.contained) await page.screenshot({ path: path.join(output, 'print-menu-overflow.png') });
-      assert(geometry.contained && geometry.iconPadding, JSON.stringify({ width, geometry }));
+      assert(geometry.contained && geometry.horizontal && geometry.count === 3, JSON.stringify({ width, geometry }));
+      assert(geometry.joined && geometry.icons && geometry.activeShadow === 'none', JSON.stringify({ width, geometry }));
     }
     await page.setViewportSize({ width: 1600, height: 1000 }); await settle(page);
     await choose('#diagram-language', 'fr'); await settle(page);
-    assert.equal(await page.locator('[data-diagram-setting="layout"]').inputValue(), 'tiles');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'tiles');
     assert((await page.locator('#diagram-selection-hint').innerText()).includes('Tuiles'));
     await choose('#diagram-language', 'de'); await settle(page);
     await download('objects-tiles');
@@ -48,7 +54,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     await leaf.locator('xpath=ancestor::div[contains(@class,"ob-tree-row")]').locator('.ob-tree-link').click();
     assert.equal(await page.evaluate(() => printTest.layout.pages.flat().length), 1);
     assert.equal(await page.locator('#diagram-sheets [data-row-id]').count(), 0, 'Single-entity scope stays a tile');
-    assert(await page.locator('#diagram-columns-host').isHidden());
+    assert(await page.locator('#diagram-columns-host').isVisible());
     await choose('[data-diagram-setting="layout"]', 'grid');
     assert(await page.locator('#diagram-columns-host').isVisible());
     assert((await page.locator('#diagram-sheets [data-row-id]').count()) > 0, 'Switching back restores attributes');
@@ -67,7 +73,9 @@ const { workspace } = require('./print-test-helpers.cjs');
           if (cards.length !== snapshot.entities.length || new Set(cards.map(c => c.entity.id)).size !== cards.length) problems.push('Entity lost/duplicated');
           if (new Set(cards.map(c => c.width)).size !== 1) problems.push('Inconsistent tile widths');
           for (const page of layout.pages) for (const card of page) {
-            if (card.rows.length || card.facts.length) problems.push('Unexpected detail rows');
+            if (card.rows.length) problems.push('Unexpected detail rows');
+            const selected = DK.diagram.selectedFields(snapshot, settings, true).filter(f => !['name', 'description', 'status'].includes(f.id) && f.type !== 'number');
+            if (card.facts.length !== selected.length) problems.push('Missing selected metadata');
             if (card.description.join('').replace(/\s/g, '') !== (card.entity.description || '—').replace(/\s/g, '')) problems.push('Description lost');
             if (card.y < layout.bodyTop || card.y + card.height > layout.bodyBottom + .1 || card.x + card.width > layout.width - layout.margin + .1) problems.push('Out of bounds');
             for (const other of page) if (card !== other && card.x < other.x + other.width - 1 && card.x + card.width > other.x + 1 && card.y < other.y + other.height - 1 && card.y + card.height > other.y + 1) problems.push('Overlapping cards');

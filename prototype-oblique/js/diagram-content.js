@@ -2,16 +2,14 @@
 (function (DK) {
   'use strict';
   const { ui, data } = DK;
-  const diagram = { templateVersion: '2.2', papers: { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] } };
+  const diagram = { templateVersion: '3.1', papers: { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] } };
   diagram.kinds = ['objects', 'tables', 'refs', 'products', 'apis'];
-  diagram.columnKeys = ['name', 'code', 'type', 'required', 'key', 'codeList', 'description', 'unit', 'source', 'modified'];
-  diagram.defaultColumns = diagram.columnKeys.slice(0, 7);
   diagram.classifications = ['public', 'internal', 'confidential', 'secret'];
   diagram.classification = value => ({ öffentlich: 'public', intern: 'internal', vertraulich: 'confidential', geheim: 'secret' }[value] || value || '');
   diagram.classificationLabel = (snapshot, value) => diagram.classifications.includes(diagram.classification(value))
     ? diagram.t(snapshot, 'print.classification.' + diagram.classification(value)) : value || '—';
   diagram.defaultLayout = kind => ['refs', 'apis'].includes(kind) ? 'list' : 'grid';
-  diagram.gridKeys = kind => ({ objects: ['name', 'type', 'codeList'], refs: ['code', 'name'], apis: ['name', 'type', 'description'], products: ['name', 'type', 'description'] }[kind] || ['name', 'type', 'key']);
+  diagram.usesRows = settings => settings.layout === 'grid' || settings.layout === 'list' && settings.listRows !== false;
   const clone = value => JSON.parse(JSON.stringify(value));
   const translate = (dictionary, key, params = {}) => Object.entries(params).reduce((value, [name, replacement]) => value.split('{' + name + '}').join(replacement), dictionary[key] || key);
   diagram.t = (snapshot, key, params) => translate(snapshot.dictionary, key, params);
@@ -30,6 +28,7 @@
       required: typeof row.mandatory === 'boolean' ? row.mandatory : null,
       codeList: row.codeList ? data.nameOf('refs', row.codeList) : '', unit: [row.length, row.unit].filter(value => value !== undefined && value !== null && value !== '').join(' / '),
       source: row.source || '', modified: row.modified || '',
+      display: DK.presentation.display(DK.presentation.childOf[kind], row),
     };
   }
   function entityContent(kind, entity) {
@@ -44,15 +43,17 @@
     let rows = kind === 'tables' ? entity.fields : kind === 'refs' ? entity.values : entity.attributes;
     if (kind === 'apis') rows = entity.endpoints?.length ? entity.endpoints : (entity.endpointURL ? [{ identifier: 'primary', url: entity.endpointURL, protocol: entity.protocol,
       operation_name: entity.operationName || entity.operation, http_method: entity.httpMethod, relative_path: entity.relativePath || entity.documentedPath }] : []);
-    rows = (rows || []).map((row, index) => rowContent(kind, row, index));
+    rows = (rows || []).map((row, index) => rowContent(kind, kind === 'tables' ? data.field(`${entity.identifier}/${data.fieldId(row)}`)
+      : kind === 'objects' ? data.attr(`${entity.identifier}/${row.identifier}`) : row, index));
     if (kind === 'products') for (const [relation, targetKind] of [['basedOn', 'objects'], ['sourcedFrom', 'tables'], ['servedBy', 'apis']]) {
       for (const id of new Set(entity[relation] || [])) {
         const target = data.get(targetKind, id), name = target ? data.displayName(targetKind, target) : id;
         rows.push({ id: `${relation}:${targetKind}:${id}`, label: name, name, code: target?.technicalName || '', type: ui.t('print.component.' + relation),
-          description: target?.description || '', source: name, key: '', required: null, codeList: '', unit: '', modified: target?.modified || '' });
+          description: target?.description || '', source: name, key: '', required: null, codeList: '', unit: '', modified: target?.modified || '',
+          display: { ...DK.presentation.display('productAttrs', { name, description: target?.description, valueType: ui.t('print.component.' + relation), technicalName: target?.technicalName, modified: target?.modified }), source: name } });
       }
     }
-    return { ...identity(entity), name: data.displayName(kind, entity), label: ui.localized(entity.labels) || entity.name,
+    return { ...identity(entity), display: DK.presentation.display(kind, entity), name: data.displayName(kind, entity), label: ui.localized(entity.labels) || entity.name,
       tileSummary: data.tileSummary(kind, entity), statusTone: data.statusTone(entity.status),
       technicalName: entity.technicalName || '', description: entity.description || '', version: entity.version || '',
       versionDate: entity.versionDate || '', modified: entity.modified || '', status: entity.status || '', classification: diagram.classification(entity.classification),
@@ -84,7 +85,11 @@
       type: ui.t(kind === 'tables' ? 'col.dataType' : kind === 'apis' ? 'print.protocol' : kind === 'products' ? 'col.type' : 'col.valueType'),
       key: ui.t('col.key'), code: ui.t('print.column.code'), codeList: ui.t('print.column.codeList'), description: ui.t('col.description') });
     return clone({ templateVersion: diagram.templateVersion, createdAt: new Date().toISOString(), language, dictionary,
-      kind, title, scope: ui.t('print.kind.' + kind), filter, sourceUrl: window.location.href, creator: data.config.app.user?.name || data.config.app.user?.initials || '',
+      kind, title, scope: ui.t('print.kind.' + kind), entityLabel: data.kindDef(kind).singular,
+      rowKind: DK.presentation.childOf[kind],
+      entityFields: DK.presentation.choices(kind).map(f => ({ id: f.id, sharedId: f.sharedId, order: f.order, sizing: f.sizing, labelText: ui.t(f.label), type: f.type, required: f.required, defaultVisible: f.defaultVisible })),
+      rowFields: DK.presentation.choices(DK.presentation.childOf[kind]).map(f => ({ id: f.id, sharedId: f.sharedId, order: f.order, sizing: f.sizing, labelText: ui.t(f.label), type: f.type, required: f.required, defaultVisible: f.defaultVisible })),
+      filter, sourceUrl: window.location.href, creator: data.config.app.user?.name || data.config.app.user?.initials || '',
       organisation: data.config.app.organisation, application: data.config.app.name, labels, entities, groupings, facets: facetIds.map(grouping), defaultGroupBy: groupBy });
   }
   diagram.snapshot = (route, ctx, language) => ui.withLanguage(data.i18n, language, () => {
@@ -107,6 +112,7 @@
     })));
     const entity = route.entity;
     const scope = { kind: initial.kind, facet: '', value: '', entityId: '', initialIds: initial.entities.map(e => e.id), query: initial.filter };
+    if (ctx.isList) scope.order = ctx.groups.flatMap(group => group.items.map(entity => entity.identifier));
     if (entity?.kind === 'systems') Object.assign(scope, { facet: 'system', value: entity.identifier });
     else if (entity?.kind === 'domains' || ctx.isList && route.params?.domain) Object.assign(scope, { facet: 'domain', value: entity?.identifier || route.params.domain });
     else if (entity && diagram.kinds.includes(entity.kind)) {
@@ -120,6 +126,7 @@
     const original = catalogs[language][scope.kind];
     const entities = original.entities.filter(e => (!scope.entityId || e.id === scope.entityId) && (!scope.facet || e.facetValues[scope.facet]?.id === scope.value)
       && (!scope.initialIds || scope.initialIds.includes(e.id)));
+    if (scope.order) { const order = new Map(scope.order.map((id, index) => [id, index])); entities.sort((a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity)); }
     const group = scope.facet ? original.facets.find(f => f.id === scope.facet)?.groups.find(g => g.value === scope.value) : null;
     const title = scope.entityId ? original.entities.find(e => e.id === scope.entityId)?.name : [original.scope, group?.title].filter(Boolean).join(' · ');
     const path = [original.scope, group?.title, scope.entityId ? original.entities.find(e => e.id === scope.entityId)?.name : ''].filter(Boolean);
@@ -128,8 +135,18 @@
   diagram.parentScope = scope => scope.entityId ? { kind: scope.kind, facet: scope.facet, value: scope.value, entityId: '' }
     : scope.facet ? { kind: scope.kind, facet: '', value: '', entityId: '' } : null;
   diagram.defaults = snapshot => ({ paper: 'A3', orientation: diagram.defaultLayout(snapshot.kind) === 'list' ? 'portrait' : 'landscape', scale: 100, layout: diagram.defaultLayout(snapshot.kind), title: snapshot.title, documentId: '', version: '',
-    documentStatus: 'draft', classification: '', overview: 'auto', columns: [...diagram.defaultColumns], groupBy: snapshot.defaultGroupBy,
+    documentStatus: 'draft', classification: '', overview: 'auto', listRows: true, columns: DK.presentation.selected(snapshot.rowKind), entityColumns: DK.presentation.selected(snapshot.kind), groupBy: snapshot.defaultGroupBy,
     filters: Object.fromEntries(snapshot.facets.map(facet => [facet.id, []])), selected: snapshot.entities.map(e => e.id) });
+  diagram.selectedFields = (snapshot, settings, parent = false) => (parent ? snapshot.entityFields : snapshot.rowFields)
+    .filter(f => f.required || (parent ? settings.entityColumns : settings.columns).includes(f.id));
+  diagram.visibilityChoices = (snapshot, settings) => DK.presentation.mergeFields([
+    { key: 'entityColumns', fields: snapshot.entityFields, selected: settings.entityColumns, nameId: 'entity.name', nameLabel: diagram.usesRows(settings) ? snapshot.entityLabel : undefined },
+    ...(diagram.usesRows(settings) ? [{ key: 'columns', fields: snapshot.rowFields, selected: settings.columns, nameId: 'name' }] : []),
+  ]);
+  diagram.visibilityCount = (snapshot, settings) => {
+    const choices = diagram.visibilityChoices(snapshot, settings);
+    return { selected: choices.filter(choice => choice.checked || choice.mixed).length };
+  };
   diagram.filterValues = value => Array.isArray(value) ? value : value ? [value] : [];
   diagram.filteredEntities = (snapshot, settings) => {
     const filters = snapshot.facets.filter(facet => diagram.filterValues(settings.filters[facet.id]).length).map(facet => {

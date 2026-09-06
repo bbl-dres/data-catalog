@@ -1,6 +1,6 @@
 # Supabase catalog database
 
-The prototype now reads public catalog metadata from Supabase without a login. UI configuration, translations, the handbook and the demonstration OpenAPI specification remain local. **The hosted import and browser connection were verified on 6 September 2026:** all 2,003 normalized rows match the tested import, and the browser reads the live project anonymously.
+The prototype now reads public catalog metadata from Supabase without a login. UI configuration, translations, the handbook and the generated OpenAPI contract remain local. **The hosted import and browser connection were verified on 6 September 2026:** all 2,003 normalized rows match the tested import, and the browser reads the live project anonymously.
 
 ## Apply to the existing project
 
@@ -78,7 +78,7 @@ Browser INSERT, UPDATE, DELETE and TRUNCATE remain denied. The service role reta
 
 `js/catalog.js` projects that response for the existing routes, collections, search, diagrams and Excel export. Canonical records and relationship verification details remain in workbook metadata. Attribute-to-field links now require explicit `represents` assertions; the database mode does not infer physical mappings from similar names. Labels follow the selected language, then German, English, French and Italian. Errors never silently fall back to legacy JSON; failed reloads preserve the last validated in-memory snapshot.
 
-The prototype retains client-side search, sorting and pagination. Server-side search/pagination and incremental loading are future scaling work. Reloading fetches current database data; there is no realtime subscription. `#/api` remains a demonstration specification, not documentation of the Supabase REST API.
+The prototype retains client-side search, sorting and pagination. Using server-side search/pagination and incremental loading in the app is future scaling work. Reloading fetches current database data; there is no realtime subscription. `#/api` documents the real Supabase REST reads, including table queries and `read_snapshot()`. Swagger supplies the public key automatically. See the [API guide](../docs/api.md) for access, contract generation and live verification; no Edge Function or hosted schema change is needed.
 
 For an explicit offline fixture run, set `provider: 'json'` in catalog-config.js and restore `supabase` before deploying. Existing regression tests make that override only inside their local server.
 

@@ -14,8 +14,8 @@
     const collection = ctx.isList ?? route.view === 'list', kind = ctx.kind || route.kind;
     const roots = catalog ? data.kinds.flatMap(kind => ui.sortRows(data.list(kind), { column: 0, direction: 'asc' }, e => [data.displayName(kind, e)]).map(e => ({ ...e, kind })))
       : route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
-      const sort = ui.tableOptions(ctx.state, `list:${kind}`, { column: 0, direction: 'asc' }).sort;
-      const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, entity => data.collectionValues(kind, entity)) : g.items;
+      const sort = DK.presentation.sortOptions(ctx.state, `list:${kind}`, kind).sort;
+      const items = DK.presentation.sort(kind, g.items, sort);
       return items.map(e => ({ ...e, kind }));
     });
     const records = new Map();
@@ -75,8 +75,9 @@
     const addChild = (e, parent, kind) => children.set(`${kind}:${parent.identifier}:${e.identifier}`, { e, parent, kind });
     const orderedChildren = (e, items) => {
       if (catalog || route.entity?.kind !== e.kind || route.entity.identifier !== e.identifier) return items;
-      const rows = DK.detail.rowsData(e).rows;
+      const rowData = DK.detail.rowsData(e), rows = rowData.rows;
       const sort = ui.tableOptions(ctx.state, `detail:${e.kind}:rows`).sort;
+      if (sort?.field) return DK.presentation.sort(rowData.kind, items.map((item, i) => ({ item, entity: rows[i]?.entity || item })), sort, row => row.entity).map(row => row.item);
       return ui.sortRows(items.map((item, i) => ({ item, text: rows[i]?.text || [] })), sort, r => r.text).map(r => r.item);
     };
     [...records.values()].forEach(e => {

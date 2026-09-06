@@ -184,25 +184,28 @@
   /** Table shell. Columns declare numeric alignment and compact sizing; options `{ key, sort }` enable sorting. */
   ui.table = function (columns, rowsHtml, options) {
     const opts = options || {};
+    const sized = columns.length && columns.every(c => c.sizing);
+    const minima = sized ? columns.map(c => Math.max(c.sizing.minEm, c.label.length * .45 + 2.5)) : [];
+    const minimumEm = minima.reduce((sum, width) => sum + width, 0);
     const head = columns.map((c, i) => {
       const sortable = !!opts.key && c.sortable !== false;
-      const active = sortable && opts.sort && opts.sort.column === i;
+      const active = sortable && opts.sort && (opts.sort.field ? opts.sort.field === c.id : opts.sort.column === i);
       const direction = active ? opts.sort.direction : null;
       const ariaSort = direction === 'desc' ? 'descending' : 'ascending';
       const next = active && direction === 'asc' ? 'descending' : 'ascending';
       const content = sortable
-        ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}" data-focus="sort-table:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}:${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
+        ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}"${c.id ? ` data-sort-field="${ui.esc(c.id)}"` : ''} data-focus="sort-table:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}:${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
         : ui.esc(c.label);
       const cls = [c.numeric ? 'ob-cell-numeric' : '', c.compact ? 'ob-col-compact' : ''].filter(Boolean).join(' ');
-      return `<th role="columnheader" scope="col"${cls ? ` class="${cls}"` : ''}${active ? ` aria-sort="${ariaSort}"` : ''}${c.width ? ` style="width:${c.width}"` : ''}>${content}${sortable ? `<span class="ob-table-heading-label">${ui.esc(c.label)}</span>` : ''}</th>`;
+      return `<th role="columnheader" scope="col"${cls ? ` class="${cls}"` : ''}${active ? ` aria-sort="${ariaSort}"` : ''}${sized ? ` data-column-min-em="${minima[i]}" data-column-weight="${c.sizing.weight}"` : c.width ? ` style="width:${c.width}"` : ''}>${content}${sortable ? `<span class="ob-table-heading-label">${ui.esc(c.label)}</span>` : ''}</th>`;
     }).join('');
     const sortChoices = columns.flatMap((c, i) => c.sortable === false ? [] : ['asc', 'desc'].map(direction => {
       const label = ui.t('sort.' + (direction === 'asc' ? 'ascending' : 'descending'), { column: c.label });
-      return `<option value="${i}:${direction}"${opts.sort?.column === i && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
+      return `<option value="${c.id || i}:${direction}"${(opts.sort?.field ? opts.sort.field === c.id : opts.sort?.column === i) && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
     })).join('');
     const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select class="ob-select ob-select--comfortable" data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
     const minWidth = opts.minWidth || (columns.length >= 6 ? 880 : columns.length >= 5 ? 720 : 640);
-    return `<div class="ob-table-region" data-table-min-width="${minWidth}">${cardSort}<div class="ob-table-wrap"><table class="ob-table" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
+    return `<div class="ob-table-region" data-table-min-width="${minWidth}"${sized ? ` data-table-min-em="${Math.max(36, minimumEm)}"` : ''}>${cardSort}<div class="ob-table-wrap"><table class="ob-table${sized ? ' ob-table--fields' : ''}" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
   };
 
   /** Table row. cells: html string | {html, cls}. Column labels support mobile cards. */
@@ -212,7 +215,7 @@
       const label = o.label || (columns && columns[i] && columns[i].label) || '';
       const primary = columns?.some(c => c.primary) ? columns[i]?.primary : i === 0;
       const cls = [o.cls, primary ? 'is-primary' : '', columns?.[i]?.numeric ? 'ob-cell-numeric' : ''].filter(Boolean).join(' ');
-      return `<td role="cell"${label ? ` data-label="${ui.esc(label)}"` : ''}${cls ? ` class="${cls}"` : ''}><span class="ob-cell-value">${o.html == null ? '' : o.html}</span></td>`;
+      return `<td role="cell"${columns?.[i]?.id ? ` data-field="${ui.esc(columns[i].id)}"` : ''}${label ? ` data-label="${ui.esc(label)}"` : ''}${cls ? ` class="${cls}"` : ''}><span class="ob-cell-value">${o.html == null ? '' : o.html}</span></td>`;
     }).join('');
     return `<tr role="row"${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
   };

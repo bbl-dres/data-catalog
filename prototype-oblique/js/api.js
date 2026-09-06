@@ -37,6 +37,37 @@
     } finally { clearTimeout(timer); }
   }
 
+  function connection(spec) {
+    const config = DK.catalogConfig;
+    if (config?.provider !== 'supabase') return null;
+    if (!config.publishableKey?.startsWith('sb_publishable_')) throw new Error('API documentation requires a publishable key');
+    const base = new URL('/rest/v1/', config.url);
+    spec.servers = [{ url: base.href.replace(/\/$/, ''), description: 'Supabase catalog Data API' }];
+    return { base, key: config.publishableKey };
+  }
+
+  function prepareRequest(request, spec, target) {
+    if (!target) throw new Error('Live API requests are disabled in offline fixture mode');
+    const url = new URL(request.url), method = request.method.toLowerCase();
+    const path = '/' + url.pathname.slice(target.base.pathname.length);
+    if (url.origin !== target.base.origin || !url.pathname.startsWith(target.base.pathname)
+      || !(method === 'get' && spec.paths[path]?.get || method === 'post' && path === '/rpc/read_snapshot' && spec.paths[path]?.post)) {
+      throw new Error('Only documented catalog reads are allowed');
+    }
+    const headers = new Headers(request.headers);
+    const key = headers.get('apikey') || target.key;
+    if (!key.startsWith('sb_publishable_')) throw new Error('Use a publishable key for public catalog reads');
+    headers.set('apikey', key);
+    headers.delete('Authorization');
+    headers.delete('Accept-Profile'); headers.delete('Content-Profile');
+    headers.set(method === 'get' ? 'Accept-Profile' : 'Content-Profile', 'catalog');
+    headers.set('Accept', 'application/json');
+    if (method === 'post') headers.set('Content-Type', 'application/json');
+    request.headers = Object.fromEntries(headers);
+    request.credentials = 'omit';
+    return request;
+  }
+
   DK.api = {
     async mount(host) {
       if (!host) return;
@@ -55,16 +86,21 @@
       try {
         const [, spec] = await Promise.all([load(), loadSpec()]);
         if (!host.isConnected) return;
-        window.SwaggerUIBundle({
+        const target = connection(spec);
+        const swagger = window.SwaggerUIBundle({
           spec, domNode: content, deepLinking: false,
           docExpansion: 'list', defaultModelsExpandDepth: 1, filter: true,
-          supportedSubmitMethods: [], validatorUrl: null,
+          supportedSubmitMethods: target ? ['get', 'post'] : [], validatorUrl: null,
+          requestInterceptor: request => prepareRequest(request, spec, target),
+          persistAuthorization: false,
           presets: [window.SwaggerUIBundle.presets.apis],
-          onComplete: () => {
+          onComplete: () => queueMicrotask(() => {
+            if (!host.isConnected) return;
+            if (target) swagger.preauthorizeApiKey('PublishableKey', target.key);
             host.querySelector('.ob-loading')?.remove();
             content.setAttribute('aria-busy', 'false');
             content.hidden = false;
-          },
+          }),
         });
       } catch (error) {
         console.error(error);
@@ -73,4 +109,5 @@
       }
     },
   };
+  DK.api.prepareRequest = prepareRequest;
 })(window.DK);

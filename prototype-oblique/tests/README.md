@@ -1,8 +1,8 @@
 # Prototype checks
 
-The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response. These checks do not need a hosted administrator credential.
+The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response, including both Excel export scopes, complete workbook row counts, mobile menu layout and navigation/duplicate guards during export. These checks do not need a hosted administrator credential.
 
-The runtime still has no build step or package installation requirement. The core checks need Node; browser checks additionally need Playwright and a browser. Verified with Node 24.16.0, Playwright 1.62.1 and Microsoft Edge on Windows.
+The runtime still has no build step or package installation requirement. The core checks need Node; browser checks additionally need Playwright and a browser. Verified with Node 24.16.0, Playwright 1.62.1 and Microsoft Edge on Windows. The [API guide](../docs/api.md#verification) covers PGlite/JSON Schema contract checks and optional hosted read verification.
 
 From the repository root:
 
@@ -22,6 +22,7 @@ $env:PLAYWRIGHT_MODULE = Join-Path $testTools 'node_modules/playwright'
 $env:PLAYWRIGHT_CHANNEL = 'msedge'
 node prototype-oblique/tests/functional.cjs
 node prototype-oblique/tests/list-search.cjs
+node prototype-oblique/tests/visibility.cjs
 node prototype-oblique/tests/responsive.cjs
 node prototype-oblique/tests/graph.cjs
 node prototype-oblique/tests/gwr.cjs
@@ -49,6 +50,8 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 
 | Suite | Purpose |
 |---|---|
+| `api-contract.cjs` / `api-schema.py` | Generated OpenAPI freshness, executed SQL columns/keys/nullability, local refs, read-only request guards and full response JSON Schema validation; optional `API_LIVE_READ=1` verifies public hosted reads |
+| `api.cjs` | Real Swagger contract and automatic publishable-key headers, table filters/projection/pagination, snapshot POST, retry, state retention and mobile widths using intercepted read responses |
 | `performance.cjs` | Local SQL startup, 12 views, search, 10× projection fixture, PDF layouts, idle-scroll work and modal cleanup; JSON measurements in the OS temporary directory |
 | `pdf-metrics.cjs` | Word/identifier/Unicode wrapping, text-width cache isolation, font/size keys and eviction; no browser required |
 | `design-consistency.cjs` | Whole-app visual inventory of 21 routes/tab states; shared action states/contrast, panel alignment, disclosure markers, checkbox dimensions and mobile empty recovery |
@@ -57,7 +60,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `functional.cjs` | Handbook legacy links and navigation; hero/header search examples, domain/type filters, one result table, global pagination/sorting, mock answers and URLs; collection filtering, IME, export and history; shared domain tabs, legacy links, scoped export, metadata, focus, menus, API lifecycle/races/retry and load failures |
 | `loading.cjs` | Centered startup/API loading states, mobile widths, reduced motion, high contrast, failure cleanup and retry; writes screenshots to the OS temporary directory |
 | `diagram.cjs` | Tile sizing, complete PDF rows, Grid/List/column controls, document metadata/language, 320 physical layout combinations, scrolling/zoom, mobile controls, cancellation and asset retry |
-| `diagram-filters.cjs` | Catalog scope tree, multi-value facets, applied/cancelled filters, selection memory, empty recovery, cross-type scope changes and frozen data |
+| `diagram-filters.cjs` | Catalog scope tree, immediate multi-value facets, retained keyboard focus and scroll, dismissal persistence, selection memory, empty recovery, cross-type scope changes and frozen data |
 | `print-review.cjs` | Queued scroll/language and close/reopen races, late export cancellation, source product/API coverage, escaped SVGs, classification, recovery, fixed columns and 64 additional section layouts |
 | `print-tree.cjs` | Expanded object/table tree label widths and row alignment at 320–1600 px; independent mouse/keyboard selection and scope navigation |
 | `print-tiles.cjs` | 200 summary-tile layouts across kinds/languages/paper sizes; complete descriptions, equal widths, row geometry, no detail rows, responsive icons, language/scope selection and actual PDFs (`python prototype-oblique/tests/diagram-pdf.py objects-tiles gwr-tiles`) |
@@ -65,6 +68,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `diagram-pdf.py` | Inspects generated PDFs with PyMuPDF: all GWR field names, page dimensions/bounds, embedded fonts, vector graphics, group headings, page numbering and the internal manifest hash |
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
 | `list-search.cjs` | Shared collection/detail search: complete row coverage, technical names/descriptions, pagination, IME/focus, empty states, URL restoration, responsive controls and full entity export |
+| `visibility.cjs` | Seven entity kinds, immediate checkbox/reset interactions, retained focus/scroll, shared ordering, URL restoration, measured column widths, inherited web/print layouts, collection and detail List rows, mixed choices, parent/child synchronization, default counts, classification-label removal and 320–1600 px picker geometry; `python prototype-oblique/tests/diagram-pdf.py visibility-list visibility-entries` validates the downloaded PDFs |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |
 | `gwr.cjs` | Real GWR field coverage, project-domain/object mappings, system/tree navigation, field/code-list links, 119-value pagination, sorting, complete Excel workbooks, collection search and mobile layouts |
 | `sap.cjs` | Curated SAP scope, source inventories, alphabetical tree, retired entries, architectural types, field search, documentation/comments, responsive layouts and complete Excel metadata |

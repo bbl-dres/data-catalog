@@ -37,28 +37,30 @@ const { workspace } = require('./print-test-helpers.cjs');
 
     await visit('#/systems/gwr'); await open();
     await choose('[data-diagram-setting="layout"]', 'list');
+    const countLabel = await page.locator('[data-diagram-action="columns"]').innerText();
+    const [selectedCount] = countLabel.match(/\d+/g).map(Number);
     await page.locator('[data-diagram-action="columns"]').click();
     await page.locator('[name="column"][value="description"]').uncheck();
-    assert.equal(await page.locator('#diagram-column-count').innerText(), '6 von 10');
+    assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), `(${selectedCount - 1})`);
     await page.locator('[data-diagram-action="reset-columns"]').click();
-    assert.equal(await page.locator('#diagram-column-count').innerText(), '7 von 10');
-    await page.locator('#diagram-settings-form [type="submit"]').click();
-    assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), '7 von 10');
+    assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), countLabel);
+    await page.locator('[data-diagram-action="dismiss"]').click();
+    assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), countLabel);
     assert(await page.evaluate(() => window.printTest.layout.pages.every((cards, index) => !cards.length || window.printTest.layout.listHeadings[index].length === 1)));
     await choose('[data-diagram-setting="orientation"]', 'landscape');
     await scope('Referenzdaten');
     assert.equal(await page.locator('[data-diagram-setting="orientation"]').inputValue(), 'landscape', 'Explicit paper orientation survives scope changes');
-    assert.equal(await page.locator('[data-diagram-setting="layout"]').inputValue(), 'list');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'list');
     await close();
 
     await visit('#/tables'); await open();
     await scope('Referenzdaten');
-    assert.equal(await page.locator('[data-diagram-setting="layout"]').inputValue(), 'list');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'tiles', 'The originating collection layout survives scope changes');
     await scope('API-Verzeichnis');
-    assert.equal(await page.locator('[data-diagram-setting="layout"]').inputValue(), 'list');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'tiles');
     await choose('[data-diagram-setting="layout"]', 'grid');
     await scope('Referenzdaten');
-    assert.equal(await page.locator('[data-diagram-setting="layout"]').inputValue(), 'grid', 'Explicit layout overrides section defaults');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'grid', 'Explicit layout overrides section defaults');
     await close();
     console.log('PASS: continuous List headers, column reset/count and section defaults preserve explicit choices');
 
@@ -69,8 +71,8 @@ const { workspace } = require('./print-test-helpers.cjs');
     await page.locator('#diagram-filter-find').fill('Status');
     assert(await page.locator('[data-diagram-facet="status"]').isVisible(), 'Filter search matches facet headings');
     await page.locator('#diagram-filter-find').fill('');
-    await page.locator('#diagram-settings-form [type="submit"]').click();
-    assert.equal(await page.evaluate(() => window.printTest.layout.entityCount), 0, 'Opening/applying a filter must not silently drop an unmatched selection');
+    await page.locator('[data-diagram-action="dismiss"]').click();
+    assert.equal(await page.evaluate(() => window.printTest.layout.entityCount), 0, 'Opening/closing a filter must not silently drop an unmatched selection');
     assert(await page.locator('[data-diagram-action="download"]').isDisabled());
     await page.locator('[data-diagram-action="parent-scope"]').click();
     assert.equal(await page.evaluate(() => window.printTest.layout.entityCount), 0, 'Broadening scope preserves filters');
@@ -112,23 +114,23 @@ const { workspace } = require('./print-test-helpers.cjs');
       const scoped = DK.diagram.scoped(profile.catalogs, 'de', profile.scope);
       if (scoped.entities.length !== 1 || scoped.entities[0].id !== table.identifier) problems.push('Detail domain parameter changed export scope');
       const example = structuredClone(catalogs.de.objects);
-      example.entities = [{ ...example.entities[0], rows: [{ id: 'review-id', name: '<script>bad()</script>', label: '<script>bad()</script>', type: 'Text', key: 'ID', required: true, codeList: 'Example codes' }] }];
-      const exampleSettings = { ...DK.diagram.defaults(example), groupBy: 'none', selected: [example.entities[0].id] };
+      example.entities = [{ ...example.entities[0], rows: [{ id: 'review-id', display: { name: '<script>bad()</script>', type: 'Text', key: 'ID', required: 'Ja', codeList: 'Example codes' } }] }];
+      const exampleSettings = { ...DK.diagram.defaults(example), columns: ['name', 'type', 'key', 'required', 'codeList'], groupBy: 'none', selected: [example.entities[0].id] };
       // Two entities exercise Grid; one entity intentionally becomes a full-width profile.
       example.entities.push({ ...example.entities[0], id: 'review-copy' }); exampleSettings.selected.push('review-copy');
       const exampleLayout = DK.diagram.layout(example, exampleSettings, measure);
       const svg = new DOMParser().parseFromString(DK.diagram.pageSvg(example, exampleSettings, exampleLayout, 0, DK.pdf.palette(), ''), 'image/svg+xml');
-      if (svg.querySelector('script, parsererror') || !svg.documentElement.textContent.includes('[ID] *') || !svg.documentElement.textContent.includes('Example codes')) problems.push('Grid lost markers or failed to escape source text');
+      if (svg.querySelector('script, parsererror') || !['<script>bad()</script>', 'ID', 'Ja', 'Example codes'].every(value => svg.documentElement.textContent.includes(value))) problems.push('Grid lost values or failed to escape source text');
       let combinations = 0;
       for (const language of ['de', 'fr', 'it', 'en']) for (const kind of ['objects', 'refs', 'products', 'apis']) for (const paper of ['A4', 'A3']) for (const mode of ['grid', 'list']) {
-        const snapshot = catalogs[language][kind], settings = { ...DK.diagram.defaults(snapshot), paper, layout: mode };
+        const snapshot = catalogs[language][kind], settings = { ...DK.diagram.defaults(snapshot), entityColumns: ['name'], columns: ['name', 'code', 'type'], paper, layout: mode };
         const result = DK.diagram.layout(snapshot, settings, measure), pages = result.pages;
         for (const cards of pages) for (const card of cards) {
           if (card.y < result.bodyTop || card.y + card.height > result.bodyBottom + .1 || card.x + card.width > result.width - result.margin + .1) problems.push('Out-of-bounds section card');
           if (cards.some(other => other !== card && card.x < other.x + other.width - 1 && card.x + card.width > other.x + 1 && card.y < other.y + other.height - 1 && card.y + card.height > other.y + 1)) problems.push('Overlapping section cards');
         }
         for (const entity of snapshot.entities) {
-          const rows = pages.flat().filter(card => card.entity.id === entity.id).flatMap(card => card.rows.map(row => row.id));
+          const rows = pages.flat().filter(card => card.entity.id === entity.id).flatMap(card => card.rows.filter(row => !row.empty).map(row => row.id));
           if (JSON.stringify(rows) !== JSON.stringify(entity.rows.map(row => row.id))) problems.push('Missing rows: ' + entity.name);
         }
         combinations++;

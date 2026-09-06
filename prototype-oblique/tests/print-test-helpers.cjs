@@ -49,6 +49,7 @@ async function workspace(options = {}) {
   };
   const close = async () => { await browser.close(); await new Promise(resolve => server.close(resolve)); };
   const choose = async (selector, value) => {
+    if (selector === '[data-diagram-setting="layout"]') { await page.locator(`[data-diagram-layout="${value}"]`).click(); return; }
     const select = typeof selector === 'string' ? page.locator(selector) : selector;
     const index = await select.evaluate((el, value) => [...el.options].findIndex(option => option.value === String(value)), value);
     if (index < 0) throw new Error(`Missing select option: ${value}`);

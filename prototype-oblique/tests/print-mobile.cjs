@@ -30,7 +30,7 @@ const { workspace } = require('./print-test-helpers.cjs');
       assert(result.footer.top >= result.canvas.bottom - 1, `${name}: footer overlaps preview`);
       if (result.popover) {
         assert(result.popover.top >= result.visibleTop && result.popover.bottom <= result.visibleTop + result.visibleHeight, `${name}: popover outside viewport`);
-        assert(result.actions.top >= result.popover.top && result.actions.bottom <= result.popover.bottom, `${name}: unreachable Apply/Cancel`);
+        assert(result.actions.top >= result.popover.top && result.actions.bottom <= result.popover.bottom, `${name}: unreachable menu actions`);
       }
     }
     return result;
@@ -77,7 +77,7 @@ const { workspace } = require('./print-test-helpers.cjs');
       assert(await page.evaluate(() => document.activeElement === window.reviewFilter && window.reviewFilter.isConnected), 'Keyboard fitting preserves the focused input');
       await page.locator('#diagram-filter-find').fill('Status');
       await page.locator('[data-diagram-facet="status"] input').first().check();
-      await page.locator('#diagram-settings-form [type="submit"]').tap();
+      await page.locator('[data-diagram-action="dismiss"]').tap();
       assert.equal(await page.locator('#diagram-popover:popover-open').count(), 0);
       await page.evaluate(() => { delete visualViewport.height; delete visualViewport.offsetTop; visualViewport.dispatchEvent(new Event('resize')); });
       await settle(page);
@@ -94,7 +94,7 @@ const { workspace } = require('./print-test-helpers.cjs');
       assert((await page.evaluate(() => Object.values(printTest.settings.filters).flat().length)) > 0, 'Rotation/language changes preserve filters');
     }
     assert.deepEqual(test.errors, []);
-    console.log(check ? `PASS: 18 catalog layouts and ${report.length} responsive print states; touch targets, scrolling, keyboard viewport, Apply/Cancel and retained language/filters` : JSON.stringify(report.map(({ name, canvas, footer, small, popover }) => ({ name, canvas: canvas?.height, bottom: footer?.bottom, small: small.map(r => r.name), popoverBottom: popover?.bottom }))));
+    console.log(check ? `PASS: 18 catalog layouts and ${report.length} responsive print states; touch targets, scrolling, keyboard viewport, menu actions and retained language/filters` : JSON.stringify(report.map(({ name, canvas, footer, small, popover }) => ({ name, canvas: canvas?.height, bottom: footer?.bottom, small: small.map(r => r.name), popoverBottom: popover?.bottom }))));
   } finally {
     fs.writeFileSync(path.join(output, `print-mobile-${check ? 'after' : 'before'}.json`), JSON.stringify(report, null, 2));
     await test.close();

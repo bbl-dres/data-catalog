@@ -87,7 +87,7 @@ const { installContrast } = require('./contrast-helpers.cjs');
       await page.setViewportSize({ width: 1600, height: 1000 }); await settle(page);
       const checkSize = await page.locator('.ob-export-tree-check input').first().evaluate(el => [el.offsetWidth, el.offsetHeight]);
       await page.locator('[data-diagram-action="filters"]').click();
-      await page.locator('[data-diagram-action="all-facets"]').click();
+      assert.equal(await page.locator('[data-diagram-facet][hidden]').count(), 0);
       assert.deepEqual(await page.locator('.ob-export-facet-list input[type="checkbox"]:visible').first().evaluate(el => [el.offsetWidth, el.offsetHeight]), checkSize);
       await page.keyboard.press('Escape');
     }

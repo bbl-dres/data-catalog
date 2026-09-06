@@ -7,6 +7,7 @@
     language: 'datenkatalog.lang',
     sidebarCollapsed: 'datenkatalog.sidebarCollapsed',
     sidebarWidth: 'datenkatalog.sidebarWidth',
+    visibleFields: 'datenkatalog.visibleFields',
   });
   DK.preferences = {
     read(name) {

@@ -146,7 +146,10 @@
         return { ...x, id, items: x.items.filter(e => memberIds.has(e.identifier) && data.matchesCollection(ctx.kind, e, ctx.filter)), open: !closed[id] };
       }).filter(x => x.items.length);
       ctx.matched = ctx.groups.reduce((sum, x) => sum + x.items.length, 0);
-      ctx.columns = data.columns(ctx.kind);
+      ctx.fields = DK.presentation.fields(ctx.kind);
+      ctx.columns = ctx.fields.map(DK.presentation.column);
+      ctx.tableOptions = DK.presentation.sortOptions(state, `list:${ctx.kind}`, ctx.kind);
+      ctx.groups.forEach(group => { group.items = DK.presentation.sort(ctx.kind, group.items, ctx.tableOptions.sort); });
     }
 
     if (ctx.isRows) {
@@ -257,7 +260,7 @@
     return `<div class="ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
       ${ctx.mode === 'overview' ? '' : `<div class="ob-local-actions">
-        ${ui.collectionSearch(ctx.filter, 'collection-view-panel')}${views.groupMenu(ctx)}
+        ${ui.collectionSearch(ctx.filter, 'collection-view-panel')}${DK.fieldPicker.button(ctx.kind)}${views.groupMenu(ctx)}
       </div>`}
     </div>`;
   };
@@ -426,25 +429,24 @@
 
   /* section lists and search results */
   function collectionRow(kind, entity, columns, nav) {
-    const [name, context, description, count, status] = data.collectionValues(kind, entity);
     const href = router.entityHref(kind, entity.identifier, nav);
-    return ui.tr([
-      ui.entityLink(href, name), esc(context),
-      { html: `<span class="ob-clamp-2">${esc(description)}</span>`, cls: 'ob-cell-muted' },
-      esc(count), status ? ui.chip(status, data.statusTone(status)) : '',
-    ], href, columns);
+    const fields = DK.presentation.fields(kind);
+    return ui.tr(fields.map(f => f.primary ? ui.entityLink(href, DK.presentation.format(f, f.read(entity, kind)))
+      : { html: DK.presentation.cell(f, f.read(entity, kind)), cls: f.type === 'long' ? 'ob-cell-summary' : '' }), href, columns);
   };
 
   views.tile = function (kind, entity, nav) {
-    const name = ui.localized(entity.labels) || entity.name;
-    const technical = entity.technicalName && entity.technicalName !== name ? entity.technicalName : '';
-    const count = data.tileSummary(kind, entity);
-    const status = data.statusOf(kind, entity);
-    return `<a class="ob-card ob-tile" href="${router.entityHref(kind, entity.identifier, nav)}" title="${esc(data.displayName(kind, entity))}">
-      <span class="ob-tile-heading"><span class="ob-tile-name">${esc(name)}</span>${technical ? `<span class="ob-tile-technical">${esc(technical)}</span>` : ''}</span>
-      <span class="ob-tile-sub">${esc(entity.description)}</span>
-      <span class="ob-tile-footer"><span>${esc(count)}</span>${status ? ui.chip(status, data.statusTone(status)) : ''}</span>
-    </a>`;
+    const fields = DK.presentation.fields(kind), href = router.entityHref(kind, entity.identifier, nav);
+    const name = fields.find(f => f.id === 'name').read(entity, kind);
+    const description = fields.find(f => f.id === 'description');
+    const footer = fields.filter(f => f.type === 'number' || f.id === 'status');
+    const facts = fields.filter(f => f.id !== 'name' && f.id !== 'description' && !footer.includes(f));
+    return `<article class="ob-card ob-tile${fields.length < 3 ? ' is-compact' : ''}" data-href="${href}">
+      <span class="ob-tile-heading"><a class="ob-tile-name" href="${href}" data-field="name">${esc(name)}</a></span>
+      ${description ? `<span class="ob-tile-sub" data-field="description">${DK.presentation.cell(description, description.read(entity, kind))}</span>` : ''}
+      ${facts.length ? `<dl class="ob-tile-facts">${facts.map(f => `<div data-field="${f.id}"><dt>${esc(t(f.label))}</dt><dd>${DK.presentation.cell(f, f.read(entity, kind))}</dd></div>`).join('')}</dl>` : ''}
+      ${footer.length ? `<div class="ob-tile-footer">${footer.map(f => `<span data-field="${f.id}">${DK.presentation.cell(f, f.read(entity, kind))}${f.type === 'number' ? ` ${esc(t(f.label))}` : ''}</span>`).join('')}</div>` : ''}
+    </article>`;
   };
 
   views.list = function (ctx) {
@@ -455,9 +457,9 @@
     if (mode === 'tiles') {
       return `<div class="ob-groups">${groups.map(g => `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body"><div class="ob-tiles">${g.items.map(e => views.tile(kind, e, nav)).join('')}</div></div>` : ''}</div>`).join('')}</div>`;
     }
-    const options = ui.tableOptions(state, `list:${kind}`, { column: 0, direction: 'asc' });
+    const options = ctx.tableOptions;
     return `<div class="ob-groups ob-groups--table">${groups.map(g => {
-      const items = ui.sortRows(g.items, options.sort, entity => data.collectionValues(kind, entity));
+      const items = g.items;
       return `<div class="ob-group">${header(g)}${g.open ? `<div class="ob-group-body">${ui.table(columns, items.map(entity => collectionRow(kind, entity, columns, nav)).join(''), { ...options, instance: g.id })}</div>` : ''}</div>`;
     }).join('')}</div>`;
   };

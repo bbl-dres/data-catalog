@@ -1,6 +1,6 @@
 # Data files
 
-Catalog metadata is now read from Supabase. This folder contains both deprecated catalog snapshots and active application files. Its name remains `data` because the application and mock Swagger API still reference it.
+Catalog metadata is now read from Supabase. This folder contains both deprecated catalog snapshots and active application files. Its name remains `data` because application configuration and the API reference still use it.
 
 ## Deprecated catalog JSON
 
@@ -29,7 +29,7 @@ These files are **not deprecated**:
 | [i18n.json](i18n.json) | UI translations for German, French, Italian and English. |
 | [manual.json](manual.json) | Handbook content and navigation. |
 | [model.json](model.json) | UI entity definitions and presentation configuration. |
-| [swagger.json](swagger.json) | Mock OpenAPI specification rendered at `#/api`; separate from the Supabase API. |
+| [swagger.json](swagger.json) | Generated OpenAPI contract for the real Supabase catalog reads, rendered at `#/api`. Regenerate from SQL using the [API guide](../docs/api.md). |
 
 Keep these files at their current paths so application startup and Swagger continue to work.
 

@@ -23,6 +23,8 @@ prototype-oblique/
 │   ├── catalog.js        DK.catalog – REST transport and normalized SQL snapshot projection
 │   ├── data.js           DK.data   – validates snapshots, lookups, grouping, relations, search, KPIs, history
 │   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams(), pushParams()
+│   ├── presentation.js   DK.presentation – shared field definitions, value formatting, visibility and stable sorting
+│   ├── field-picker.js   DK.fieldPicker – reusable checkbox choices and collection visibility popover
 │   ├── manual.js         DK.manual – handbook rendering, chapter names and legacy aliases
 │   ├── search.js         DK.search – scope, global ordering/pagination, question fallback and cited AI-answer demo
 │   ├── graph.js          DK.graph  – relationship layout, viewport, input and modal workspace
@@ -36,10 +38,10 @@ prototype-oblique/
 │   ├── pdf.js            DK.pdf – lazy PDF/font loading, text measurement and vector PDF generation
 │   ├── diagram-export.js DK.diagramExport – modal selection, document settings, preview and download lifecycle
 │   ├── sidebar.js        DK.sidebar – desktop divider input, width constraints and saved preference
-│   ├── api.js            DK.api    – lazy Swagger loading, mounting and retry
+│   ├── api.js            DK.api    – lazy Swagger loading, mounting, public read requests and retry
 │   └── app.js            DK.app    – bootstrap, transient state, event delegation, exports
-├── data/                 Local UI configuration and frozen legacy catalog import inputs / test fixtures
-├── supabase/             SQL migrations, SQL Editor seed, importer, identity manifest and setup guide
+├── data/                 UI configuration, generated OpenAPI and frozen catalog import inputs / fixtures
+├── supabase/             SQL migrations, seed/importer, isolated database, OpenAPI generator and setup guide
 ├── assets/
 │   ├── swiss-logo-flag.svg  Swiss coat of arms and browser-tab icon
 │   ├── swiss-logo-name.svg  Multilingual Confederation wordmark (reference asset; not rendered)
@@ -73,7 +75,7 @@ Files are split by responsibility:
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `preferences.js` | Stable browser keys and storage-failure handling | Choose UI defaults or render |
 | `manual.js` | Handbook chapter rendering, navigation markup, canonical IDs and legacy aliases | Handle scrolling or mutate catalog content |
-| `api.js` | Lazy Swagger loading, mount ownership and retries | Replace app navigation or catalog state |
+| `api.js` | Lazy Swagger loading, mount ownership, public read request guards and retries | Replace app navigation, grant database access or write catalog records |
 | `search.js` | Scope options, retrieval, global sorting/pagination and deterministic answer excerpts | Touch the DOM or call a model |
 | `views.js` | HTML for everything except the profile page body; `views.context()` derives titles, breadcrumbs, group options and actions from a route | Handle events |
 | `detail.js` | Profile page tabs, facts, sortable row/relationship tables and diagram composition | Handle events |
@@ -108,6 +110,8 @@ Relationships default to the bubble diagram. The list toggle sits inside the `.o
 
 Swagger owns the contents of its live `#swagger-ui` node. On updates within the API view, the node is reattached rather than replaced, retaining filter, expansion and input state. A `WeakSet` tracks pending/mounted hosts, the loader is shared, and disconnected hosts are ignored when loading completes. Bundle failure permits a subsequent render to retry. Leaving the API view discards its host; a later visit mounts a fresh view.
 
+`supabase/generate-openapi.cjs` generates `data/swagger.json` from SQL migrations in the shared isolated database helper. The API page uses the configured Supabase endpoint/public key and supplies `Accept-Profile` or `Content-Profile: catalog`. Only documented GETs and the read-only snapshot POST can execute; bearer tokens and cookies are omitted. Offline JSON tests disable live requests. No hosted schema discovery, Edge Function or administrator key is involved. See the [API guide](api.md) for regeneration, schema limits and verification.
+
 Every entity lookup tolerates a missing target: `data.nameOf()` falls back to the id, relation builders drop unresolved ids, and breadcrumbs skip missing containers. `data.validate()` reports such references once in the console.
 
 The [GWR import](imports/gwr-import.md) supplies seven logical tables and explicit field-to-code-list references. Tables with these links add a Werteliste column; relationship builders resolve them in both directions, including entities without a mapped business object. An explicit domain supports those unmapped records. The GWR system diagram lists its tables. Curated documentation links retain the definition references; the frozen import evidence distinguishes the 5.0 catalog from the older code workbook. The Übersicht tree link omits the aggregate count.
@@ -126,9 +130,9 @@ Domain profiles use Übersicht/Kacheln/Tabelle. Their browsing tabs reuse `views
 
 Collection entry writes the resolved layout and grouping into the current history entry, so Back/Forward restores that page independently of later preference changes. Domain-scoped groups use independent disclosure keys. Collection links and breadcrumbs preserve an explicit navigation-model override; entering a domain or system profile opens its matching sidebar branch.
 
-Collection rows and Excel plans use `data.collectionValues()` for the same column order and raw sort values. Detail tables and search use `ui.pageState()`, `ui.pageParams()` and the options-based `ui.pager()`; page-size defaults are serialized from the resolved state. `data.fieldSourceFacts()` translates imported source headings into English property names for profile and workbook consumers, while preserving the original metadata.
+Collection rows and scoped Excel plans use `data.collectionValues()` for the same column order and raw sort values. `excel.plan(route, ctx, baseUrl, { scope })` supports `selection` (default) and `catalog`. Catalog scope enumerates all seven entity kinds directly, orders each by display name and bypasses view filters and detail sorting; both scopes share worksheet construction and snapshot capture. Detail tables and search use `ui.pageState()`, `ui.pageParams()` and the options-based `ui.pager()`; page-size defaults are serialized from the resolved state. `data.fieldSourceFacts()` translates imported source headings into English property names for profile and workbook consumers, while preserving the original metadata.
 
-Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and Excel export all use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
+Collection pages have a local search in `.ob-collection-controls`, immediately before the grouping button. `?filter=…` scopes it to the current kind and survives view/group changes, reloads and browser history; the global search keeps its separate `q` state. Matching covers names, technical names, descriptions, identifiers, visible table metadata and domain/system names, with the same case/umlaut folding as global search. Filtering preserves canonical group order and the selected table sort. Counts, tiles, rows and the current-selection Excel export use the filtered context. Empty groups disappear, and matching groups start expanded without changing unfiltered disclosure state.
 
 Typing replaces only the collection results and updates a persistent live result count, preserving the input node, caret and IME composition. Escape and the clear button reset the filter. Controls wrap according to content width and use the shared spacing, input and touch-target tokens. The search controls are omitted from print; filtered results remain printable.
 
@@ -153,7 +157,7 @@ Code identifiers, module names, function names and comments are English. Transla
 
 ## Transient state (`app.js`)
 
-Held in memory, not in the URL: the UI language (also in `localStorage`), search query and suggestion index, open menu (`info`, `language`, `group`, `actions`), default view mode and grouping per section, table sort column/direction, collapsed list groups, expanded tree nodes, graph offset/zoom/tool/selection/group pages, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles, header-search expansion, sidebar expansion (also in local storage), and the currently open rail flyout. URL params override `mode` and `groupBy` when present.
+Held in memory, not in the URL: the UI language (also in `localStorage`), search query and suggestion index, open menu (`info`, `language`, `group`, `actions`), default view mode and grouping per section, table sort field/direction, collapsed list groups, expanded tree nodes, graph offset/zoom/tool/selection/group pages, relation list/diagram switch, active handbook chapter, the semantic tab carried between profiles, header-search expansion, sidebar expansion (also in local storage), and the currently open rail flyout. URL params override `mode` and `groupBy` when present. Visibility preferences use the versioned `datenkatalog.visibleFields` browser key, scoped by the displayed entity kind.
 
 ## Events
 
@@ -164,6 +168,14 @@ The `change` listener also handles card sorting. Menus support keyboard entry, a
 Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Suggestions keep compact type groups. Results use one table, ordered across all types before pagination by `search.page()`; the sort selector offers relevance, name and modification date. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`.
 
 Catalog data tables use native buttons in their column headers and expose the active direction through `aria-sort`. Repeated headers in grouped L0 tables share one sort state. Detail rows are sorted before pagination, and changing their sort resets the pager to page 1. Handbook reference tables remain unsorted because their authored row order conveys meaning.
+
+`presentation.js` defines metadata once: stable English ID, translated label, value getter, data type, mandatory/default visibility and optional link target. Its `choices()` exposes a compact per-type subset to web and print; full definitions remain available to detail search and frozen source values. Both collection layouts use the same ordering; hiding the active sort field returns to name order. Unrelated fixed tables retain index-based sorting. Detail search reads all values, but only the visible page's selected fields produce HTML cells. Definitions are cached without caching translated values. `field-picker.js` shares native checkbox markup with print and owns collection popover positioning, immediate changes, reset and cleanup. Collection updates replace only results, keeping controls, checkbox focus and scroll position intact.
+
+`presentation.mergeFields()` combines choices by semantic ID (`sharedId` handles explicit aliases), never by translated label. Identity fields retain separate choices. Each combined choice retains its original selection targets and exposes checked/mixed state. Print immediately applies changed choices and resets to the shared preferences while preserving untouched mixed selections. Visibility and filter updates retain their popover DOM. Print filters update session settings and preview immediately; document settings alone use a draft with Apply/Cancel.
+
+Field order and relative sizing are shared by web and print: name/description, context, ownership, type-specific facts, version, counts and status. Code-value tables retain code first. Counts are optional and enabled by default. Web tables reserve minimum readable widths, then give spare space mainly to descriptions and names. Their existing container observer switches to labeled cards when the selected columns cannot fit, including sidebar resizing and text scaling. Tiles and mobile table cards share label-width and summary-length tokens. PDF columns use the same width priorities with physical font/header measurements and complete text.
+
+`fields` and `sort` URL parameters restore browser presentation state before rendering. Immediate changes replace the current history entry; they do not create a history entry per checkbox. Print captures the current collection layout, field preferences, grouping, filter scope and sorted entry IDs. `listRows` distinguishes a collection's one-row-per-entry List from detailed Lists opened from attribute/field views; Grid always includes child rows. `diagram.usesRows()` drives the matching visibility choices, reset behavior and PDF layout.
 
 Column definitions also control presentation: `numeric: true` right-aligns the header and values and uses tabular digits; `compact: true` lets short metadata columns size to their content. Text headers and values share left alignment and the same padding. Numeric sort icons appear before the label so its right edge lines up with the numbers. Counts are numeric; codes, versions and dates remain text. Tables omit synthetic row numbers and use the standard body font, including technical field names and code values. Source positions remain in source metadata and Excel, outside profile overviews. Names use proportional widths, descriptions take the remaining space, and short status/count/date columns avoid expanding with the screen. Mobile cards keep labels left and numeric values right; print preserves the same value alignment.
 

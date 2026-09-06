@@ -26,7 +26,7 @@
     const tab = detail.resolveTab(e, route.params.tab);
     const rowList = tab === 'rows' ? ctx?.rowList || detail.rowsContext(e, route, state) : null;
     const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
-    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}</div>` : ''}</div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}${DK.fieldPicker.button(rowList.kind)}</div>` : ''}</div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state, rowList);
@@ -163,62 +163,38 @@
   };
 
   /* Detail rows */
-  const keyCell = k => (k === 'PK' || k === 'FK') ? ui.chip(k, 'outline') : '<span class="ob-cell-muted">—</span>';
-  const keyText = k => (k === 'PK' || k === 'FK') ? k : '';
-
-  /** Rows carry escaped cells and raw sort values; exports reuse the same ordering. */
+  /** Search and exports use the complete values; only the visible page needs HTML cells. */
   detail.rowsData = function (e) {
-    const c = (label, width) => ({ label: t(label), width });
-    const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
-    switch (e.kind) {
-      case 'objects': return {
-        columns: [{ ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
-        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), mandatory = typeof a.mandatory === 'boolean' ? t(a.mandatory ? 'yes' : 'no') : '—'; return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [a.name, a.description, a.valueType, keyText(a.keyRole), mandatory], search: [a.identifier, a.technicalName] }; }),
-      };
-      case 'tables': {
-        const hasCodes = e.fields.some(f => f.codeList);
-        const columns = [{ ...c('col.field', '26%'), primary: true }, c('col.description'), c('col.dataType', '10rem'), compact('col.key')];
-        if (hasCodes) columns.push(c('col.codeList', '22%'));
-        return {
-          columns,
-          rows: e.fields.map(f => {
-            const href = router.entityHref('fields', `${e.identifier}/${data.fieldId(f)}`);
-            const name = data.displayName('fields', f);
-            const row = { href, cells: [ui.entityLink(href, name), esc(f.description), esc(f.dataType), keyCell(f.keyRole)], text: [name, f.description, f.dataType, keyText(f.keyRole)] };
-            if (hasCodes) {
-              const ref = data.get('refs', f.codeList);
-              row.cells.push(ref ? ui.entityLink(router.entityHref('refs', ref.identifier), ref.name) : '—');
-              row.text.push(ref ? ref.name : '');
-            }
-            return row;
-          }),
-        };
-      }
-      case 'refs': return {
-        columns: [c('col.code', '8rem'), c('col.label'), compact('col.type')],
-        rows: e.values.map(v => ({ cells: [esc(v.code), esc(v.label), 'Code'], text: [v.code, v.label, 'Code'] })),
-      };
-      case 'systems': return {
-        columns: [c('col.table', '28%'), c('col.description'), compact('col.fields', true), compact('col.status')],
-        rows: data.tablesOfSystem(e).map(x => { const href = router.entityHref('tables', x.identifier), name = data.displayName('tables', x), st = data.statusOf('tables', x); return { href, cells: [ui.entityLink(href, name), esc(x.description), x.fields.length, ui.chip(st, data.statusTone(st))], text: [name, x.description, x.fields.length, st] }; }),
-      };
-      case 'products': return {
-        columns: [c('col.attribute', '26%'), c('col.description'), c('col.valueType', '9rem')],
-        rows: e.attributes.map(a => ({ cells: [esc(a.name), esc(a.description), esc(a.valueType)], text: [a.name, a.description, a.valueType] })),
-      };
-      default: return { columns: [], rows: [] };
-    }
+    const kind = DK.presentation.childOf[e.kind];
+    if (!kind) return { columns: [], rows: [] };
+    const fields = DK.presentation.definitions(kind);
+    const items = e.kind === 'systems' ? data.tablesOfSystem(e) : e.kind === 'tables' ? e.fields : e.kind === 'refs' ? e.values : e.attributes || [];
+    const rows = items.map(item => {
+      const href = e.kind === 'objects' ? router.entityHref('attrs', `${e.identifier}/${item.identifier}`)
+        : e.kind === 'tables' ? router.entityHref('fields', `${e.identifier}/${data.fieldId(item)}`)
+        : e.kind === 'systems' ? router.entityHref('tables', item.identifier) : null;
+      const entity = kind === 'fields' ? data.field(`${e.identifier}/${data.fieldId(item)}`)
+        : kind === 'attrs' ? data.attr(`${e.identifier}/${item.identifier}`) : item;
+      const values = DK.presentation.values(kind, entity);
+      return { entity, href, values,
+        text: fields.map(f => DK.presentation.format(f, values[f.id])), search: [item.identifier, item.technicalName] };
+    });
+    return { kind, fields, columns: fields.map(DK.presentation.column), rows };
   };
 
   /** Filter the complete row set before sorting and pagination. */
   detail.rowsContext = function (e, route, state) {
     const rd = detail.rowsData(e);
     const filter = (route.params.filter || '').trim();
-    const options = ui.tableOptions(state, `detail:${e.kind}:rows`);
+    const key = `detail:${e.kind}:rows`;
+    const options = state.tableSorts[key] ? DK.presentation.sortOptions(state, key, rd.kind) : { key, sort: null };
     const matches = rd.rows.filter(row => data.matchesValues([...row.text, ...(row.search || [])], filter));
-    const ordered = ui.sortRows(matches, options.sort, row => row.text);
+    const ordered = options.sort ? DK.presentation.sort(rd.kind, matches, options.sort, row => row.entity) : matches;
+    const fields = DK.presentation.fields(rd.kind);
     const paging = ui.pageState(ordered.length, route.params);
-    return { filter, total: rd.rows.length, matched: matches.length, columns: rd.columns, options, paging, rows: ordered.slice(paging.from - 1, paging.to) };
+    return { filter, total: rd.rows.length, matched: matches.length, kind: rd.kind, columns: fields.map(DK.presentation.column), options, paging,
+      rows: ordered.slice(paging.from - 1, paging.to).map(row => ({ href: row.href, cells: fields.map(f => f.primary && row.href
+        ? ui.entityLink(row.href, DK.presentation.format(f, row.values[f.id])) : DK.presentation.cell(f, row.values[f.id], row.entity)) })) };
   };
 
   detail.rows = function (e, route, state, list = detail.rowsContext(e, route, state)) {

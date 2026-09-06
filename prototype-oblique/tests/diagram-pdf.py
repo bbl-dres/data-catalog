@@ -31,16 +31,15 @@ for name in sys.argv[1:] or ['gwr-grid', 'gwr-list', 'gwr-fr', 'gis-building', '
                         assert bounds.x0 >= 30 and bounds.x1 <= page.rect.width - 30, (name, span)
                         assert bounds.y0 >= 25 and bounds.y1 <= page.rect.height - 20, (name, span)
         content = normalize(' '.join(page.get_text() for page in document))
-        for entity in manifest['snapshot']['entities']:
-            assert normalize(entity['label']) in content, (name, entity['label'])
-            if entity['technicalName']:
-                assert normalize(entity['technicalName']) in content
-            if manifest['settings']['layout'] == 'tiles':
-                assert normalize(entity['description']) in content, (name, entity['id'])
-            for row in ([] if manifest['settings']['layout'] == 'tiles' else entity['rows']):
-                assert normalize(row['label']) in content, (name, row['label'])
-                if row['code']:
-                    assert normalize(row['code']) in content, (name, row['code'])
+        settings, snapshot = manifest['settings'], manifest['snapshot']
+        parent_fields = [f['id'] for f in snapshot['entityFields'] if f['required'] or f['id'] in settings['entityColumns']]
+        row_fields = [f['id'] for f in snapshot['rowFields'] if f['required'] or f['id'] in settings['columns']]
+        for entity in snapshot['entities']:
+            for field in parent_fields:
+                assert normalize(entity['display'][field]) in content, (name, entity['id'], field)
+            for row in ([] if settings['layout'] == 'tiles' or settings['layout'] == 'list' and settings.get('listRows') is False else entity['rows']):
+                for field in row_fields:
+                    assert normalize(row['display'].get(field, '—')) in content, (name, row['id'], field)
         document[0].get_pixmap(matrix=fitz.Matrix(1.2, 1.2)).save(root / (name + '.pdf.png'))
         if len(document) > 1:
             document[1].get_pixmap(matrix=fitz.Matrix(1.2, 1.2)).save(root / (name + '-page2.pdf.png'))

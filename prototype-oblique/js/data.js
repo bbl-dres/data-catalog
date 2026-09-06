@@ -284,7 +284,6 @@
     }
   };
   /** Raw column order shared by collection sorting and Excel export. */
-  data.collectionValues = (kind, entity) => [kind === 'tables' ? data.displayName(kind, entity) : entity.name, ...data.cols(kind, entity), data.statusOf(kind, entity)];
 
   // Official source headings remain unchanged in imported JSON and workbook documentation.
   data.fieldSourceFacts = field => ({
@@ -292,20 +291,7 @@
     masterData: field.catalogMetadata?.['Stammdaten'],
   });
 
-  /** Table columns per section (list view). */
-  data.columns = function (kind) {
-    const c = (label, width) => ({ label: t(label), width });
-    const compact = (label, numeric = false) => ({ label: t(label), compact: true, numeric });
-    switch (kind) {
-      case 'objects': return [c('col.name', '26%'), c('col.responsibility', '20%'), c('col.description'), compact('col.attributes', true), compact('col.status')];
-      case 'tables': return [c('col.name', '26%'), c('col.system', '20%'), c('col.description'), compact('col.fields', true), compact('col.status')];
-      case 'domains': return [c('col.domain', '26%'), c('col.responsibility', '20%'), c('col.description'), compact('col.object', true), compact('col.status')];
-      case 'systems': return [c('col.system', '26%'), c('col.technology', '20%'), c('col.description'), compact('col.tables', true), compact('col.status')];
-      case 'products': return [c('col.product', '26%'), c('col.access', '20%'), c('col.description'), compact('col.format'), compact('col.status')];
-      case 'apis': return [c('col.api', '26%'), c('col.systemVersion', '20%'), c('col.description'), compact('col.protocol'), compact('col.status')];
-      default: return [c('col.name', '26%'), c('fact.normReference', '20%'), c('col.description'), compact('col.values', true), compact('col.status')];
-    }
-  };
+  data.columns = kind => DK.presentation.fields(kind).map(DK.presentation.column);
   /** One result schema for every searchable type; context retains its section metadata. */
   data.searchColumns = () => [
     { label: t('col.name'), width: '25%' }, { label: t('col.type'), width: '11rem' },

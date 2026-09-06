@@ -49,6 +49,47 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     await page.locator('#collection-filter').fill('EGID');
     assert.equal(await page.locator('#panel-rows tbody tr').count(), 1);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No mobile page overflow');
+    await visit('#/objects?filter=NoMatchingEntryForExcel');
+    await page.click('[data-menu="actions"]');
+    assert.equal(await page.locator('[data-export="xlsx"]').innerText(), 'Excel: Aktuelle Auswahl');
+    assert.equal(await page.locator('[data-export="xlsx-all"]').innerText(), 'Excel: Gesamter Katalog');
+    assert.ok(await page.locator('.ob-menu').evaluate(el => el.getBoundingClientRect().right <= innerWidth));
+    let downloaded = page.waitForEvent('download'); await page.click('[data-export="xlsx"]');
+    const selectedWorkbook = await require('./excel-helpers.cjs').readWorkbook(await (await downloaded).path());
+    assert.equal(selectedWorkbook.getWorksheet('Geschäftsobjekte').rowCount, 1, 'Empty current selection stays empty');
+    await page.waitForFunction(() => !DK.app.state.exporting);
+    const expected = await page.evaluate(() => ({
+      sections: DK.data.kinds.map(kind => [DK.data.kindDef(kind).plural, DK.data.list(kind).length]),
+      fields: DK.data.tables.reduce((sum, e) => sum + e.fields.length, 0),
+      attributes: [...DK.data.objects, ...DK.data.products].reduce((sum, e) => sum + e.attributes.length, 0),
+      values: DK.data.refs.reduce((sum, e) => sum + e.values.length, 0)
+    }));
+    await page.evaluate(() => {
+      const download = DK.excel.download; window.excelDownloads = 0;
+      DK.excel.download = async plan => {
+        window.excelDownloads++;
+        await new Promise(resolve => { window.resumeExcel = resolve; });
+        return download(plan);
+      };
+    });
+    await page.click('[data-menu="actions"]');
+    downloaded = page.waitForEvent('download'); await page.click('[data-export="xlsx-all"]');
+    await page.waitForFunction(() => !!window.resumeExcel);
+    await page.evaluate(() => { DK.app.state.menu = 'actions'; DK.app.render(); });
+    assert(await page.locator('[data-export="xlsx"]').isDisabled());
+    assert(await page.locator('[data-export="xlsx-all"]').isDisabled());
+    await page.locator('[data-export="xlsx"]').dispatchEvent('click');
+    assert.equal(await page.evaluate(() => window.excelDownloads), 1, 'A pending catalog export blocks both modes');
+    await page.evaluate(() => { location.hash = '#/objects/gebaeude'; window.resumeExcel(); });
+    const allDownload = await downloaded;
+    assert.equal(allDownload.suggestedFilename(), 'gesamter-katalog.xlsx');
+    const catalogWorkbook = await require('./excel-helpers.cjs').readWorkbook(await allDownload.path());
+    for (const [name, count] of expected.sections) assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 1, name);
+    for (const [name, count] of [['Felder', expected.fields], ['Attribute', expected.attributes], ['Werte', expected.values]]) {
+      assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 1, name);
+    }
+    await page.waitForFunction(() => !DK.app.state.exporting);
+    console.log('PASS: both Excel scopes on mobile, complete SQL catalog workbook, duplicate-export guard and navigation during export.');
     assert.deepEqual(errors, []);
     assert.deepEqual(catalogJsonRequests, [], 'Supabase mode never fetches the legacy catalog files');
     await Promise.all(liveChecks);
@@ -57,7 +98,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     await page.reload();
     await page.getByText('Datenkatalog konnte nicht geladen werden', { exact: true }).waitFor();
     assert.equal(await page.locator('#page-content').count(), 0, 'No silent fallback to stale JSON data');
-    console.log('Supabase browser checks passed: navigation, field search, responsibility, bubbles, global search, mobile and failed-load handling.');
+    console.log('Supabase browser checks passed: navigation, field search, responsibility, bubbles, global search, mobile, Excel scopes and failed-load handling.');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

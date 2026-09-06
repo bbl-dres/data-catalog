@@ -17,7 +17,7 @@ function runtime(change = () => {}, globals = {}) {
       return change(name, value) ?? value;
     } }),
   });
-  for (const file of ['ui', 'preferences', 'data', 'router', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
+  for (const file of ['ui', 'preferences', 'data', 'router', 'presentation', 'field-picker', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context, { filename: file + '.js' });
   }
   return { ...context.window.DK, warnings };
@@ -41,6 +41,81 @@ test('localized SQL columns preserve language fallback without constructing labe
   assert.equal(ui.localized(record, 'name_'), 'Updated');
   assert.equal(ui.localized({ en: 'Plain label' }), 'Plain label');
   assert.equal(ui.localized(null, 'name_'), '');
+});
+
+test('visibility preferences tolerate invalid storage, enforce identity and stay scoped by kind', () => {
+  for (const stored of ['broken', '{"version":2,"kinds":{"objects":[]}}', '{"version":1,"kinds":[]}']) {
+    const { presentation: p } = runtime(() => {}, { localStorage: { getItem: () => stored } });
+    assert.deepEqual([...p.selected('objects')], [...p.defaults('objects')]);
+  }
+  const saved = new Map(), localStorage = { getItem: key => saved.get(key), setItem: (key, value) => saved.set(key, value) };
+  const { presentation: p } = runtime(() => {}, { localStorage });
+  p.save('objects', ['version', 'unknown', 'version']);
+  assert.deepEqual([...p.selected('objects')], ['name', 'version']);
+  assert.deepEqual([...p.selected('tables')], [...p.defaults('tables')]);
+  p.save('values', []);
+  assert.deepEqual([...p.selected('values')], ['code', 'name']);
+  const reloaded = runtime(() => {}, { localStorage }).presentation;
+  assert.deepEqual([...reloaded.selected('objects')], ['name', 'version']);
+});
+
+test('visibility preserves empty, false and zero values and localizes endpoint records', async () => {
+  const { presentation: p, ui, data } = await loaded();
+  assert.equal(p.format({ type: 'number' }, 0), '0');
+  assert.equal(p.format({ type: 'boolean' }, false), 'Nein');
+  for (const value of [null, undefined, '', []]) assert.equal(p.format({}, value), '—');
+  assert.equal(p.cell({ type: 'text' }, '<script>'), '&lt;script&gt;');
+  for (const kind of ['domains', 'refs']) assert(!p.definitions(kind).some(f => ['classification', 'personalData'].includes(f.id)));
+  assert(!p.definitions('refs').some(f => ['dataOwner', 'dataSteward', 'dataCustodian'].includes(f.id)));
+  for (const language of ['de', 'fr', 'it', 'en']) {
+    ui.setDictionary(data.i18n, language);
+    const endpoint = { ['name_' + language]: 'Endpoint ' + language, ['description_' + language]: 'Description ' + language, protocol: 'REST' };
+    assert.equal(p.display('endpoints', endpoint).name, endpoint['name_' + language]);
+    assert.equal(p.display('endpoints', endpoint).description, endpoint['description_' + language]);
+    for (const kind of [...data.contentKinds(), 'domains', 'systems', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
+      for (const field of p.definitions(kind)) assert.notEqual(ui.t(field.label), field.label, `${language}:${kind}:${field.id}`);
+    }
+  }
+});
+
+test('web and print visibility choices exclude detailed metadata without removing searchable values', async () => {
+  const { presentation: p } = await loaded();
+  for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
+    const ids = [...p.choices(kind)].map(field => field.id);
+    assert(ids.length <= 14, kind + ': bounded browsing choices');
+    for (const id of ['identifier', 'comment', 'created', 'modified', 'versionDate', 'informationUrls', 'classification', 'personalData', 'sourcePath', 'semanticName']) assert(!ids.includes(id), kind + ': omit ' + id);
+    assert(p.defaults(kind).every(id => ids.includes(id)), 'Defaults are selectable');
+  }
+  p.save('objects', ['name', 'version', 'comment', 'identifier']);
+  assert.deepEqual([...p.selected('objects')], ['name', 'version'], 'Old preferences discard retired choices');
+  assert.equal(p.values('objects', { attributes: [], comment: 'Still searchable' }).comment, 'Still searchable');
+  for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis']) {
+    const fields = p.choices(kind), counts = fields.filter(field => field.type === 'number');
+    assert(counts.length && counts.every(field => field.defaultVisible && !field.required), kind + ': counts are optional and on by default');
+    assert.deepEqual([...fields].slice(0, 2).map(field => field.id), ['name', 'description']);
+    assert(fields.find(field => field.id === 'description').sizing.weight > fields.find(field => field.id === 'name').sizing.weight);
+    assert(counts.every(field => field.sizing.weight < fields.find(field => field.id === 'name').sizing.weight));
+  }
+});
+
+test('shared visibility merges semantic fields while preserving names and mixed preferences', async () => {
+  const { presentation: p } = await loaded();
+  for (const [kind, child] of Object.entries(p.childOf).filter(([kind]) => kind !== 'systems')) {
+    const groups = [{ key: 'entry', nameId: 'entry.name', fields: p.definitions(kind), selected: p.defaults(kind) },
+      { key: 'row', nameId: 'name', fields: p.definitions(child), selected: p.defaults(child) }];
+    const choices = p.mergeFields(groups), targets = choices.flatMap(choice => choice.targets.map(target => `${target.key}:${target.id}`));
+    assert.equal(targets.length, new Set(targets).size, kind + ': no duplicated targets');
+    assert.equal(targets.length, groups.reduce((n, group) => n + group.fields.length, 0), kind + ': no lost targets');
+    assert.equal(choices.filter(choice => choice.id === 'description').length, 1);
+    assert.equal(choices.find(choice => choice.id === 'description').targets.length, 2);
+    assert(choices.filter(choice => ['entry.name', 'name'].includes(choice.id)).every(choice => choice.required && choice.checked));
+    if (kind === 'objects') assert(choices.find(choice => choice.id === 'responsibleOrg').mixed);
+    if (kind === 'apis') {
+      assert.equal(choices.find(choice => choice.id === 'protocol').targets.length, 2, 'Protocol aliases share one control');
+      assert.equal(choices.find(choice => choice.id === 'endpointURL').targets.length, 2, 'Endpoint URL aliases share one control');
+    }
+    assert.deepEqual([...p.selected(kind)], [...p.defaults(kind)], 'Merging never changes saved preferences');
+  }
 });
 
 test('profile tab counts do not render child rows, and row tabs build them only once', async () => {
@@ -523,7 +598,7 @@ test('information links are safe, optional and preserved in Excel metadata acros
       assert.ok(!facts.some(fact => [ui.t('fact.sourceDocument'), ui.t('fact.sourceDetail')].includes(fact.label)));
       if (table.sourceUrl) assert.ok(table.informationUrls.includes(table.sourceUrl));
     }
-    assert.equal(data.columns('refs')[1].label, ui.t('fact.normReference'));
+    assert.equal(data.columns('refs').find(column => column.id === 'normReference').label, ui.t('fact.normReference'));
     for (const ref of data.refs) {
       const facts = detail.facts({ ...ref, kind: 'refs' }).primary;
       assert.equal(facts.find(fact => fact.label === ui.t('fact.normReference')).value, ref.normReference);
@@ -802,7 +877,7 @@ test('GWR import preserves source coverage, versions and explicit field-to-code-
       assert.ok(ref);
       assert.equal(new Set(ref.values.map(v => v.code)).size, ref.values.length);
       assert.ok(data.relations('refs', ref).find(g => g.key === 'usedInTables').items.some(i => i.href.endsWith(table.identifier)));
-      assert.ok(detail.rowsData({ ...table, kind: 'tables' }).rows.some(r => r.cells.some(c => typeof c === 'string' && c.includes('#/refs/' + ref.identifier))));
+      assert.ok(detail.rowsContext({ ...table, kind: 'tables' }, { params: {} }, { tableSorts: {} }).rows.some(r => r.cells.some(c => typeof c === 'string' && c.includes('#/refs/' + ref.identifier))));
     }
   }
   const kat = data.get('refs', 'r-gwr-kat');
@@ -926,6 +1001,41 @@ test('Excel workbooks contain complete scoped GWR data and retain explicit cell 
   assert.equal(project.sheets.find(s => s.name === 'Attribute').rows.length, 25);
   // Also leave a real artifact for an independent openpyxl compatibility check.
   fs.writeFileSync(path.join(require('node:os').tmpdir(), 'oblique-gwr.xlsx'), buffer);
+});
+
+test('Excel catalog scope ignores view filters and includes all sections and parent-scoped children', async () => {
+  const { data, excel, views, ui } = await loaded();
+  data.products.slice(0, 2).forEach(product => product.attributes.push({ identifier: 'shared-id', name: 'Shared attribute', description: product.name }));
+  const route = { view: 'list', kind: 'objects', params: { page: '2' } };
+  const ctx = { isList: true, kind: 'objects', title: 'Filtered objects', groups: [], filter: 'No match', state: { tableSorts: {} } };
+  const url = 'http://localhost/prototype/#/objects?filter=No%20match&page=2';
+  const selected = excel.plan(route, ctx, url);
+  assert.equal(selected.sheets.find(s => s.name === 'Geschäftsobjekte').rows.length, 0);
+  assert.equal(selected.sheets.some(s => s.name === 'Systeme'), false);
+  const plan = excel.plan(route, ctx, url, { scope: 'catalog' });
+  const rows = name => plan.sheets.find(s => s.name === name).rows;
+  for (const kind of data.kinds) {
+    const actual = rows(data.kindDef(kind).plural);
+    assert.equal(actual.length, data.list(kind).length, kind);
+    assert.equal(new Set(actual.map(row => row[0])).size, actual.length, kind + ' unique IDs');
+    assert(actual.every(row => row[8] === 'Ausgewählt'));
+  }
+  assert.equal(rows('Felder').length, data.tables.reduce((sum, e) => sum + e.fields.length, 0));
+  assert.equal(rows('Attribute').length, [...data.objects, ...data.products].reduce((sum, e) => sum + e.attributes.length, 0));
+  assert.equal(rows('Attribute').filter(row => row[3] === 'shared-id').length, 2);
+  assert.equal(rows('Werte').length, data.refs.reduce((sum, e) => sum + e.values.length, 0));
+  assert.equal(rows('Übersicht').find(row => row[0] === 'Suchfilter')[1], '');
+  assert.equal(rows('Übersicht').find(row => row[0] === 'Ausgewählte Einträge')[1], data.kinds.reduce((sum, kind) => sum + data.list(kind).length, 0));
+  assert.equal(plan.filename, 'gesamter-katalog.xlsx');
+  const profile = excel.plan({ view: 'detail', entity: { ...data.objects[0], kind: 'objects' } }, ctx, url, { scope: 'catalog' });
+  assert.equal(JSON.stringify(profile.sheets.slice(1)), JSON.stringify(plan.sheets.slice(1)), 'Originating route does not change catalog export');
+  const before = JSON.stringify(plan);
+  data.objects[0].name = 'Changed after capture'; data.tables[0].fields[0].description = 'Changed after capture';
+  ui.setDictionary(data.i18n, 'fr');
+  assert.equal(JSON.stringify(plan), before, 'Plan is independent of later data and language changes');
+  const menu = views.actionsMenu({ actions: [{ id: 'xlsx', label: 'Selection' }, { id: 'xlsx-all', label: 'Catalog' }], state: { menu: 'actions', exporting: true } });
+  assert.equal((menu.match(/ disabled/g) || []).length, 2, 'Both modes are disabled during an export');
+  assert.throws(() => excel.plan(route, ctx, url, { scope: 'unknown' }), /Unknown Excel export scope/);
 });
 
 test('Excel preserves formula-like strings, zero-prefixed codes, Unicode and oversized source text', async () => {

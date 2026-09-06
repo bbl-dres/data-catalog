@@ -13,10 +13,9 @@
     dialog.querySelector('#diagram-chips').innerHTML = view.chips(session);
     dialog.querySelector('#diagram-grouping').innerHTML = view.select('groupBy', t(session, 'toolbar.group'), snapshot.groupings.map(g => [g.id, g.label]), settings.groupBy, 'grid');
     dialog.querySelectorAll('.ob-export-toolbar [data-diagram-setting]').forEach(select => { select.value = settings[select.dataset.diagramSetting]; });
-    dialog.querySelector('#diagram-columns-host').hidden = settings.layout === 'tiles' || settings.layout !== 'list' && diagram.exportEntities(snapshot, settings).length !== 1;
     dialog.querySelector('#diagram-document-button .ob-button-label').textContent = settings.title || snapshot.title;
-    dialog.querySelector('[data-diagram-action="columns"] .ob-button-label').textContent = t(session, 'print.columnCount', { selected: settings.columns.length, total: diagram.columnKeys.length });
-    dialog.querySelector('[data-diagram-setting="layout"]').parentElement.dataset.selectIcon = settings.layout === 'list' ? 'list' : 'grid';
+    dialog.querySelector('[data-diagram-action="columns"] .ob-button-label').textContent = t(session, 'print.columnCount', diagram.visibilityCount(snapshot, settings));
+    dialog.querySelectorAll('[data-diagram-layout]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.diagramLayout === settings.layout)));
     dialog.querySelector('#diagram-selection-hint').textContent = t(session, settings.layout === 'tiles' ? 'print.tilesHint' : 'print.selectionHint');
     dialog.querySelector('#diagram-filter-status').textContent = t(session, 'diagram.filterCount', { matched: diagram.filteredEntities(snapshot, settings).length,
       total: session.catalogs[session.language][snapshot.kind].entities.length, selected: diagram.exportEntities(snapshot, settings).length });
@@ -51,16 +50,19 @@
     popover.innerHTML = view.popover(session, mode); popover.showPopover();
     session.selectMenus.refresh();
     trigger.setAttribute('aria-expanded', 'true');
-    popover.querySelector('input:not(:disabled), select, button')?.focus();
     if (mode === 'filters') previewFilters(session);
-    if (mode === 'columns') columnCount(session);
+    if (mode === 'columns') restoreColumnChecks(session);
+    popover.querySelector('input:not(:disabled), select, button')?.focus();
     positionPopover(session);
   }
-  function columnCount(session) {
-    session.dialog.querySelector('#diagram-column-count').textContent = t(session, 'print.columnCount', {
-      selected: session.dialog.querySelectorAll('[name="column"]:checked').length, total: diagram.columnKeys.length });
+  function restoreColumnChecks(session) {
+    const choices = diagram.visibilityChoices(session.snapshot, session.settings);
+    session.dialog.querySelectorAll('[name="column"]').forEach(input => {
+      const choice = choices.find(choice => choice.id === input.value);
+      input.checked = choice.checked; input.indeterminate = choice.mixed;
+    });
   }
-  function filterDraft(session) {
+  function selectedFilters(session) {
     const filters = structuredClone(session.settings.filters);
     session.snapshot.facets.filter(f => f.id !== session.scope.facet).forEach(f => { filters[f.id] = []; });
     session.dialog.querySelectorAll('[data-diagram-filter]:checked').forEach(input => {
@@ -70,18 +72,40 @@
     return filters;
   }
   function previewFilters(session) {
-    const matching = diagram.filteredEntities(session.snapshot, { ...session.settings, filters: filterDraft(session) }).length;
+    const matching = diagram.filteredEntities(session.snapshot, session.settings).length;
     session.dialog.querySelector('#diagram-filter-preview').textContent = t(session, 'diagram.filterCount', { matched: matching, total: session.snapshot.entities.length,
-      selected: diagram.exportEntities(session.snapshot, { ...session.settings, filters: filterDraft(session) }).length });
+      selected: diagram.exportEntities(session.snapshot, session.settings).length });
   }
   function applyPopover(session, form) {
     if (session.popoverMode === 'document') {
       for (const input of form.querySelectorAll('input[name]')) session.settings[input.name] = input.value;
       for (const select of form.querySelectorAll('select')) session.settings[select.dataset.diagramSetting] = select.value;
       session.customTitle = session.settings.title !== session.snapshot.title;
-    } else if (session.popoverMode === 'columns') session.settings.columns = ['name', ...Array.from(form.querySelectorAll('[name="column"]:checked:not(:disabled)'), input => input.value)];
-    else if (session.popoverMode === 'filters') session.settings.filters = filterDraft(session);
+    }
     dismiss(session); session.page = 0; update(session);
+  }
+  function updateVisibility(session) {
+    const { snapshot, settings } = session;
+    settings.entityColumns = DK.presentation.normalize(snapshot.kind, settings.entityColumns);
+    DK.presentation.save(snapshot.kind, settings.entityColumns);
+    if (diagram.usesRows(settings)) {
+      settings.columns = DK.presentation.normalize(snapshot.rowKind, settings.columns);
+      DK.presentation.save(snapshot.rowKind, settings.columns);
+    }
+    DK.app.refreshVisibility();
+    update(session);
+    restoreColumnChecks(session);
+    positionPopover(session);
+  }
+  function changeColumn(session, input) {
+    const choice = diagram.visibilityChoices(session.snapshot, session.settings).find(choice => choice.id === input.value);
+    if (!choice || choice.required) return;
+    for (const target of choice.targets) {
+      const selected = new Set(session.settings[target.key]);
+      if (input.checked) selected.add(target.id); else selected.delete(target.id);
+      session.settings[target.key] = [...selected];
+    }
+    updateVisibility(session);
   }
   function changeScope(session, scope) {
     if (current !== session || session.busy) return;
@@ -89,6 +113,10 @@
     session.selections[session.scope.kind] = [...session.settings.selected];
     session.scope = scope;
     session.snapshot = diagram.scoped(session.catalogs, session.language, scope);
+    if (previous.kind !== scope.kind) {
+      session.settings.entityColumns = DK.presentation.selected(scope.kind);
+      session.settings.columns = DK.presentation.selected(session.snapshot.rowKind);
+    }
     session.settings.selected = session.selections[scope.kind] || session.catalogs[session.language][scope.kind].entities.map(e => e.id);
     Object.keys(session.settings.filters).forEach(id => { if (!session.snapshot.facets.some(facet => facet.id === id)) delete session.settings.filters[id]; });
     for (const facet of session.snapshot.facets) session.settings.filters[facet.id] = diagram.filterValues(session.settings.filters[facet.id]).map(id => {
@@ -270,10 +298,11 @@
     if (name === 'dismiss') { dismiss(session); return; }
     if (name === 'reset-title') { session.dialog.querySelector('input[name="title"]').value = session.snapshot.title; return; }
     if (name === 'reset-columns') {
-      session.dialog.querySelectorAll('[name="column"]').forEach(input => { input.checked = diagram.defaultColumns.includes(input.value); }); columnCount(session); return;
+      session.settings.entityColumns = DK.presentation.defaults(session.snapshot.kind);
+      if (diagram.usesRows(session.settings)) session.settings.columns = DK.presentation.defaults(session.snapshot.rowKind);
+      updateVisibility(session); return;
     }
     if (name === 'parent-scope') { const parent = diagram.parentScope(session.scope); if (parent) changeScope(session, parent); return; }
-    if (name === 'all-facets') { session.dialog.querySelectorAll('[data-single]').forEach(el => { el.hidden = false; }); trigger.hidden = true; return; }
     if (name === 'retry') { prepare(session); return; }
     if (name === 'download') { download(session); return; }
     if (name === 'reset-filters' || name === 'clear-query') {
@@ -288,6 +317,15 @@
     }
     if (name === 'zoom-in' || name === 'zoom-out') session.zoom = Math.max(10, Math.min(200, Math.round(session.ratio / (96 / 72) * 100) + (name === 'zoom-in' ? 10 : -10)));
     zoom(session);
+  }
+  function changeSetting(session, name, value) {
+    session.settings[name] = value;
+    if (name === 'layout') {
+      session.customLayout = true;
+      if (!session.customOrientation) session.settings.orientation = value === 'list' ? 'portrait' : 'landscape';
+    }
+    if (name === 'orientation') session.customOrientation = true;
+    session.page = 0; update(session);
   }
   function wire(session) {
     const { dialog } = session;
@@ -327,6 +365,7 @@
       event.stopPropagation();
       const target = event.target.closest('button'); if (current !== session || !target || target.disabled || session.busy && target.dataset.diagramAction !== 'close') return;
       if (target.dataset.diagramAction) action(session, target.dataset.diagramAction, target);
+      else if (target.dataset.diagramLayout) changeSetting(session, 'layout', target.dataset.diagramLayout);
       else if (target.dataset.diagramScope !== undefined) changeScope(session, { ...session.treeScopes[Number(target.dataset.diagramScope)] });
       else if (target.dataset.diagramToggle) {
         const key = target.dataset.diagramToggle;
@@ -352,7 +391,7 @@
         dialog.querySelectorAll('[data-diagram-facet]').forEach(group => {
           const facetMatch = group.querySelector('legend').textContent.toLocaleLowerCase(session.language).includes(query);
           const visible = [...group.querySelectorAll('.ob-check')].map(label => { label.hidden = !facetMatch && !label.textContent.toLocaleLowerCase(session.language).includes(query); return !label.hidden; });
-          group.hidden = !visible.some(Boolean) || !query && group.dataset.single === 'true' && !dialog.querySelector('[data-diagram-action="all-facets"]').hidden;
+          group.hidden = !visible.some(Boolean);
         });
       }
     });
@@ -360,8 +399,10 @@
       event.stopPropagation(); if (current !== session || session.busy || !session.assets) return;
       const target = event.target;
       if (target.closest('#diagram-popover')) {
-        if (target.dataset.diagramFilter !== undefined) previewFilters(session);
-        if (target.name === 'column') columnCount(session);
+        if (target.dataset.diagramFilter !== undefined) {
+          session.settings.filters = selectedFilters(session); session.page = 0; update(session); previewFilters(session); positionPopover(session);
+        }
+        if (target.name === 'column') changeColumn(session, target);
         return;
       }
       if (target.dataset.diagramEntity !== undefined) {
@@ -386,16 +427,10 @@
         ['#diagram-scope-panel', '.ob-export-tools-panel'].forEach((selector, index) => { replacement.querySelector(selector).open = expanded[index]; });
         renderControls(session);
       } else if (target.dataset.diagramSetting) {
-        session.settings[target.dataset.diagramSetting] = target.value;
-        if (target.dataset.diagramSetting === 'layout') {
-          session.customLayout = true;
-          if (!session.customOrientation) session.settings.orientation = target.value === 'list' ? 'portrait' : 'landscape';
-        }
-        if (target.dataset.diagramSetting === 'orientation') session.customOrientation = true;
-        session.page = 0; update(session);
+        changeSetting(session, target.dataset.diagramSetting, target.value);
       }
     });
-    listen(dialog, 'submit', event => { event.preventDefault(); event.stopPropagation(); if (current === session && session.assets && !session.busy && session.popoverMode) applyPopover(session, event.target); });
+    listen(dialog, 'submit', event => { event.preventDefault(); event.stopPropagation(); if (current === session && session.assets && !session.busy && session.popoverMode === 'document') applyPopover(session, event.target); });
     listen(dialog.querySelector('#diagram-popover'), 'toggle', event => {
       if (event.newState === 'closed' && !event.target.matches(':popover-open')) { session.popoverTrigger?.setAttribute('aria-expanded', 'false'); session.popoverMode = null; }
     });
@@ -407,11 +442,16 @@
     try { captured = diagram.capture(route, ctx, DK.app.state.lang); }
     catch (failure) { ui.toast(failure.message, 'error'); return; }
     const language = DK.app.state.lang, snapshot = diagram.scoped(captured.catalogs, language, captured.scope), settings = diagram.defaults(snapshot);
+    if (ctx.isList) settings.layout = ctx.mode === 'table' ? 'list' : 'tiles';
+    else if (ctx.isRows) settings.layout = 'list';
+    settings.listRows = !ctx.isList && !['systems', 'domains'].includes(route.entity?.kind);
+    settings.orientation = settings.layout === 'list' ? 'portrait' : 'landscape';
     settings.selected = captured.catalogs[language][snapshot.kind].entities.map(e => e.id);
     if (snapshot.groupings.some(group => group.id === ctx.groupBy)) settings.groupBy = ctx.groupBy;
+    else if (route.entity) settings.groupBy = 'none';
     const dialog = document.createElement('dialog'); dialog.className = 'ob-export-dialog'; dialog.setAttribute('aria-labelledby', 'diagram-export-title');
     const session = { ...captured, snapshot, settings, language, dialog, opener, page: 0, zoom: 'fit', ratio: 1, busy: false, assets: null, layout: null,
-      palette: pdf.palette(), selections: {}, expanded: new Set([captured.scope.kind]), mountedPages: new Set() };
+      palette: pdf.palette(), selections: {}, expanded: new Set([captured.scope.kind]), mountedPages: new Set(), customLayout: ctx.isList || ctx.isRows };
     if (session.scope.facet) session.expanded.add(`${session.scope.kind}:${session.scope.facet}:${session.scope.value}`);
     current = session; dialog.innerHTML = view.shell(session); document.body.appendChild(dialog);
     document.documentElement.classList.add('ob-export-open'); dialog.showModal(); wire(session); dialog.querySelector('[data-diagram-action="close"]').focus(); prepare(session);

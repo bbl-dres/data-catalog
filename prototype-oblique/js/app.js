@@ -28,7 +28,7 @@
     chapter: 'introduction',
     lastEntity: null,
     detailTab: 'overview',             // carried only between consecutive detail routes
-    tableSorts: {},                    // per table key: { column, direction: asc | desc }
+    tableSorts: {},                    // Stable field IDs; fixed tables use column indices.
   };
   const app = { state };
   let route = null;
@@ -41,17 +41,25 @@
   // One observer keeps DOM semantics and keyboard focus in sync with card mode.
   function adaptTable(region) {
     if (!region.isConnected) return;
-    const cards = region.clientWidth < Number(region.dataset.tableMinWidth);
+    const minWidth = region.dataset.tableMinEm ? Number(region.dataset.tableMinEm) * parseFloat(getComputedStyle(region.querySelector('table')).fontSize) : Number(region.dataset.tableMinWidth);
+    const cards = region.clientWidth < minWidth;
     const wasCards = region.classList.contains('is-cards');
     const focused = region.contains(document.activeElement) ? document.activeElement : null;
     region.classList.toggle('is-cards', cards);
+    if (!cards && region.dataset.tableMinEm) {
+      const headers = [...region.querySelectorAll('[data-column-min-em]')], fontSize = parseFloat(getComputedStyle(region.querySelector('table')).fontSize);
+      const minima = headers.map(header => Number(header.dataset.columnMinEm) * fontSize);
+      const remaining = Math.max(0, region.clientWidth - minima.reduce((sum, width) => sum + width, 0));
+      const weight = headers.reduce((sum, header) => sum + Number(header.dataset.columnWeight), 0);
+      headers.forEach((header, index) => { header.style.width = `${minima[index] + remaining * Number(header.dataset.columnWeight) / weight}px`; });
+    }
     const select = region.querySelector('[data-action="sort-cards"]');
     if (select) select.closest('label').hidden = !cards;
     if (cards !== wasCards && focused) {
       if (cards && focused.matches('.ob-table-sort')) select?.focus({ preventScroll: true });
       else if (!cards && focused === select) {
-        const column = Number(select.value.split(':')[0]);
-        region.querySelector(`[data-sort-column="${column}"]`)?.focus({ preventScroll: true });
+        const column = select.value.split(':')[0];
+        region.querySelector(`[data-sort-field="${column}"], [data-sort-column="${column}"]`)?.focus({ preventScroll: true });
       }
     }
   }
@@ -127,7 +135,7 @@
       router.replaceParams({ tab: state.detailTab, view: null, page: null });
     } else if (route.view === 'detail') {
       // A bookmarked row search must reopen its table; other fresh loads start at overview.
-      const rowSearch = route.params.tab === 'rows' && route.params.filter;
+      const rowSearch = route.params.tab === 'rows' && (route.params.filter || Object.hasOwn(route.params, 'fields'));
       const requested = !previous && !rowSearch ? 'overview' : route.params.tab || (previous?.view === 'detail' ? state.detailTab : 'overview');
       state.detailTab = detail.resolveTab(route.entity, requested);
       const wanted = state.detailTab === 'overview' ? undefined : state.detailTab;
@@ -166,6 +174,7 @@
 
   /** Re-render nav + main from the current route and state. `navigated`: a new page, focus is not restored. */
   app.render = function (navigated) {
+    DK.fieldPicker.close();
     DK.sidebar.cancel();
     const mainFocus = !navigated && focusSelector(document.activeElement, $('main'));
     // Swagger owns a live component tree. Reattach its node on chrome updates instead of remounting it.
@@ -174,11 +183,21 @@
     const treeScroll = document.querySelector('.ob-sidebar-tree')?.scrollTop || 0;
     const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
+    const visibleKind = DK.presentation.routeKind(route);
+    if (visibleKind && Object.hasOwn(route.params, 'fields')) DK.presentation.save(visibleKind, route.params.fields.split(','));
+    if (visibleKind && route.params.sort) {
+      const [field, direction] = route.params.sort.split(':');
+      if (DK.presentation.selected(visibleKind).includes(field) && ['asc', 'desc'].includes(direction)) {
+        const key = route.view === 'list' || route.kind === 'domains' ? `list:${visibleKind}` : `detail:${route.kind}:rows`;
+        state.tableSorts[key] = { field, direction };
+      }
+    }
     if (route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
     if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
     normalizeSearchPage();
+    if (ctx.isList || ctx.isRows) syncVisibilityUrl();
     // Snapshot resolved defaults in this history entry. Back must restore this
     // page's layout/grouping, even after another collection changes the preference.
     if (navigated && ctx.isList) {
@@ -386,6 +405,23 @@
     if (route.view === 'search') renderSearchResults();
     if (focusId) $(focusId)?.focus({ preventScroll: true });
   }
+  /** Keep collection controls mounted while their results change. */
+  function renderCollectionResults() {
+    route = resolveRoute();
+    ctx = views.context(route, state);
+    syncVisibilityUrl();
+    if (ctx.isRows) $('panel-rows').innerHTML = detail.rows(route.entity, route, state, ctx.rowList);
+    else if (ctx.isList) $('collection-view-panel').innerHTML = views.list(ctx);
+    observeTables();
+  }
+  function syncVisibilityUrl() {
+    const kind = DK.presentation.routeKind(resolveRoute());
+    if (kind) {
+      const sort = ctx?.isList ? ctx.tableOptions?.sort : ctx?.isRows ? ctx.rowList?.options.sort : null;
+      router.replaceParams({ fields: DK.presentation.selected(kind).join(','), sort: sort?.field ? `${sort.field}:${sort.direction}` : null });
+    }
+  }
+  app.refreshVisibility = () => { syncVisibilityUrl(); app.render(); };
   /** Update only results: keeping the input node preserves focus, selection and IME composition. */
   function filterCollection(value) {
     if (!ctx.isList && !ctx.isRows) return;
@@ -394,14 +430,10 @@
     if (q === ctx.filter) return;
     state.filteredClosed = {};
     router.replaceParams({ filter: q || null, ...(ctx.isRows ? { page: null } : {}) });
-    route = resolveRoute();
-    ctx = views.context(route, state);
-    if (ctx.isRows) $('panel-rows').innerHTML = detail.rows(route.entity, route, state, ctx.rowList);
-    else $('collection-view-panel').innerHTML = views.list(ctx);
+    renderCollectionResults();
     const status = $('collection-filter-status');
     status.className = q ? 'ob-collection-status' : 'ob-sr-only';
     status.textContent = ui.collectionCount(ctx);
-    observeTables();
   }
   function clearCollectionFilter() {
     const input = $('collection-filter');
@@ -530,7 +562,7 @@
       if (e.target.closest('.ob-search-options')) return;
       if (e.target.id === 'search-input') { if (!state.suggest) { state.suggest = true; renderSuggest(); } return; }
       if (e.target.closest('.ob-popover, .ob-menu, #search-suggest')) return;
-      const tr = e.target.closest('tr.is-clickable[data-href]');
+      const tr = e.target.closest('tr.is-clickable[data-href], .ob-tile[data-href]');
       if (tr && !e.target.closest('a, button')) { router.navigate(tr.dataset.href); return; }
       // A link to another route re-renders through hashchange; do not pull the link out of the DOM before it is followed.
       const link = e.target.closest('a[href^="#"]');
@@ -574,6 +606,9 @@
         if (state.menu === el.dataset.menu) setMenu(null); else openMenu(el);
         return;
       case 'set-language': state.menu = null; setLanguage(el.dataset.lang); return;
+      case 'field-picker':
+        e.stopPropagation();
+        DK.fieldPicker.open(el, el.dataset.fieldPicker, () => { syncVisibilityUrl(); renderCollectionResults(); }); return;
       case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.filteredClosed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': {
         if (ctx.isDomain) {
@@ -590,9 +625,11 @@
         const sortKey = el.dataset.sortKey;
         const column = parseInt(el.dataset.sortColumn, 10);
         const headerDirection = el.closest('th')?.getAttribute('aria-sort');
-        const current = state.tableSorts[sortKey] || (headerDirection ? { column, direction: headerDirection === 'ascending' ? 'asc' : 'desc' } : null);
-        const direction = current && current.column === column && current.direction === 'asc' ? 'desc' : 'asc';
-        state.tableSorts[sortKey] = { column, direction };
+        const field = el.dataset.sortField;
+        const current = state.tableSorts[sortKey] || (headerDirection ? { column, field, direction: headerDirection === 'ascending' ? 'asc' : 'desc' } : null);
+        const direction = current && (field ? current.field === field : current.column === column) && current.direction === 'asc' ? 'desc' : 'asc';
+        state.tableSorts[sortKey] = field ? { field, direction } : { column, direction };
+        if ((ctx.isList || ctx.isRows) && field) router.replaceParams({ sort: `${field}:${direction}` });
         if (['detail', 'search'].includes(route.view) && route.params.page) router.replaceParams({ page: null });
         app.render();
         return;
@@ -793,7 +830,8 @@
       }
       if (e.target.matches('[data-action="sort-cards"]') && e.target.value) {
         const [column, direction] = e.target.value.split(':');
-        state.tableSorts[e.target.dataset.sortKey] = { column: Number(column), direction };
+        state.tableSorts[e.target.dataset.sortKey] = /^\d+$/.test(column) ? { column: Number(column), direction } : { field: column, direction };
+        if ((ctx.isList || ctx.isRows) && !/^\d+$/.test(column)) router.replaceParams({ sort: `${column}:${direction}` });
         if (['detail', 'search'].includes(route.view)) router.replaceParams({ page: null });
         app.render();
       }

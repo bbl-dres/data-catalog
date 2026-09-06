@@ -6,10 +6,10 @@ const { workspace } = require('./print-test-helpers.cjs');
   const test = await workspace(), { page, choose, visit, open, download, settle, output, scrollToPage } = test;
   try {
     await visit('#/tables');
-    const tiles = await page.locator('.ob-tile').evaluateAll(nodes => nodes.map(node => ({ width: node.getBoundingClientRect().width, technical: node.querySelector('.ob-tile-technical')?.textContent, footer: node.querySelector('.ob-tile-footer')?.textContent })));
+    const tiles = await page.locator('.ob-tile').evaluateAll(nodes => nodes.map(node => ({ width: node.getBoundingClientRect().width, name: node.querySelector('.ob-tile-name')?.textContent, footer: node.querySelector('.ob-tile-footer')?.textContent })));
     assert(tiles.length > 20 && tiles.every(tile => tile.footer));
     assert(Math.max(...tiles.map(t => t.width)) - Math.min(...tiles.map(t => t.width)) < 1);
-    assert(tiles.some(tile => tile.technical === 'VIBDBU'));
+    assert(tiles.some(tile => tile.name === 'Gebäude (VIBDBU)'));
     await page.screenshot({ path: path.join(output, 'tiles-desktop.png') });
     await visit('#/systems/gwr?tab=rows'); await open();
     assert.equal(await page.locator('#diagram-error-message').innerText(), '');
@@ -22,7 +22,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     await scrollToPage(count - 1);
     assert((await page.locator('#diagram-summary').innerText()).includes(`Seite ${count} von ${count}`));
     assert(await page.locator('.ob-export-page-svg svg').count() <= 4);
-    await page.locator('#diagram-canvas').hover(); await page.mouse.wheel(0, -5000); await settle(page);
+    await page.locator('#diagram-canvas').hover(); await page.mouse.wheel(0, -100000); await settle(page);
     assert((await page.locator('#diagram-summary').innerText()).includes(`Seite 1 von ${count}`));
     await choose('#diagram-zoom-mode', 'width');
     const zoom = await page.locator('#diagram-zoom').innerText();
@@ -35,16 +35,16 @@ const { workspace } = require('./print-test-helpers.cjs');
     await download('gwr-list');
     await page.locator('[data-diagram-action="columns"]').click();
     await page.locator('[name="column"][value="description"]').uncheck();
-    assert(await page.locator('[name="column"][value="name"]').isDisabled());
-    await page.locator('#diagram-settings-form [type="submit"]').click();
-    assert(!(await page.evaluate(() => window.printTest.layout.keys)).includes('description'));
+    assert(await page.locator('[name="column"][value="entity.name"]').isDisabled());
+    await page.locator('[data-diagram-action="dismiss"]').click();
+    assert(!(await page.evaluate(() => window.printTest.layout.keys)).includes('entity.description'));
     await page.locator('[data-diagram-action="document"]').click();
     await page.locator('[name="title"]').fill('Reviewed inventory');
     await page.locator('[name="documentId"]').fill('BBL-2026-001');
     await page.locator('[name="version"]').fill('1.0');
     await choose('[data-diagram-setting="classification"]', 'confidential');
     await page.locator('#diagram-settings-form [type="submit"]').click();
-    assert((await page.locator('[data-diagram-page="0"]').innerText()).includes('vertraulich'));
+    assert(!(await page.locator('[data-diagram-page="0"]').innerText()).includes('vertraulich'), 'Classification is retained in settings, not printed as a label');
     await choose('#diagram-language', 'fr'); await settle(page);
     assert.equal(await page.locator('#diagram-error-message').innerText(), '');
     assert.equal(await page.evaluate(() => document.documentElement.lang), 'de');
@@ -58,18 +58,59 @@ const { workspace } = require('./print-test-helpers.cjs');
     await page.locator('.ob-export-header [data-diagram-action="close"]').first().click();
     await visit('#/objects'); await open(); await download('objects-overview');
     assert((await page.evaluate(() => window.printTest.layout.overview.length)) > 0);
+    const contents = page.locator('[data-diagram-page="0"]');
+    assert((await contents.innerText()).includes('Inhaltsverzeichnis'));
+    assert(!(await contents.locator('[data-contents-group]').allTextContents()).join(' ').includes('Immobilienmanagement'));
+    await page.screenshot({ path: path.join(output, 'print-contents.png') });
     console.log('PASS: tiles, scopes, real PDFs, zoom, virtual scrolling, document metadata and language isolation');
+
+    const contentsReview = await page.evaluate(async () => {
+      const measure = DK.pdf.measure(await DK.pdf.load()), problems = []; let count = 0;
+      for (const language of ['de', 'fr', 'it', 'en']) {
+        const snapshot = DK.diagram.snapshot({ kind: 'objects' }, { kind: 'objects', isList: true, title: 'Contents review', groups: [{ items: DK.data.objects }] }, language);
+        snapshot.entities = Array.from({ length: 40 }, (_, index) => ({ ...snapshot.entities[0], id: `entity-${index}`, responsibility: 'OWNERSHIP MUST NOT APPEAR HERE' }));
+        snapshot.groupings = [{ id: 'domain', label: 'Domain', groups: snapshot.entities.map((entity, index) => ({ id: `group-${index}`,
+          title: `${index + 1}. ${'A long section name with accents Gebäude & Grundstück '.repeat(3)}`, entityIds: [entity.id] })) }];
+        for (const mode of ['tiles', 'grid', 'list']) {
+          const settings = { ...DK.diagram.defaults(snapshot), paper: 'A4', orientation: 'portrait', layout: mode, groupBy: 'domain', overview: 'yes',
+            listRows: false, entityColumns: ['name'], columns: ['name'], filters: {} };
+          const layout = DK.diagram.layout(snapshot, settings, measure), rows = layout.overview.flat(); count++;
+          if (layout.overview.length < 2 || rows.length !== snapshot.entities.length) problems.push('Contents pagination lost sections');
+          for (const [index, pageRows] of layout.overview.entries()) {
+            const svg = new DOMParser().parseFromString(DK.diagram.pageSvg(snapshot, settings, layout, index, DK.pdf.palette(), ''), 'image/svg+xml');
+            let y = layout.bodyTop + layout.overviewHeading.height;
+            for (const row of pageRows) {
+              const references = layout.pages.flatMap((cards, pageIndex) => cards.some(card => card.groupId === row.id) ? [pageIndex + 1] : []);
+              const texts = [...svg.querySelector(`[data-contents-group="${row.id}"]`).querySelectorAll('text')];
+              const expected = `${references[0]}${references.length > 1 ? '–' + references.at(-1) : ''}`;
+              if (texts.at(-1).textContent !== expected) problems.push('Wrong page reference after contents pagination');
+              if (row.details.join(' ').includes('OWNERSHIP')) problems.push('Ownership mixed with counts');
+              if ((mode === 'grid') !== row.summary.includes(DK.diagram.t(snapshot, 'col.attributes'))) problems.push('Counts do not match printed detail level');
+              if (texts.some(node => Number(node.getAttribute('y')) > y + row.height)) problems.push('Contents row text overlaps next row');
+              const textWidth = layout.width - layout.margin * 2 - layout.overviewHeading.pageWidth - layout.gap - layout.pad * 2;
+              if (row.lines.some(text => measure(text, 11, true) > textWidth + .1)) problems.push('Section title overlaps page reference');
+              y += row.height;
+            }
+            if (y > layout.bodyBottom + .1) problems.push('Contents crosses footer');
+          }
+          if (DK.diagram.layout(snapshot, { ...settings, overview: 'no' }, measure).overview.length) problems.push('Contents cannot be disabled');
+        }
+      }
+      return { count, problems: [...new Set(problems)] };
+    });
+    assert.deepEqual(contentsReview.problems, []); assert.equal(contentsReview.count, 12);
+    console.log('PASS: contents in three layouts and four languages; long headings, multiple contents pages, correct page references and counts');
 
     const matrix = await page.evaluate(async () => {
       const assets = await DK.pdf.load(), measure = DK.pdf.measure(assets), problems = []; let count = 0;
       for (const language of ['de', 'fr', 'it', 'en']) {
         const snapshot = DK.diagram.snapshot({ kind: 'tables' }, { kind: 'tables', isList: true, title: 'All tables', groups: [{ items: DK.data.tables }] }, language);
         for (const paper of Object.keys(DK.diagram.papers)) for (const orientation of ['portrait', 'landscape']) for (const mode of ['grid', 'list']) for (const groupBy of snapshot.groupings.map(g => g.id)) {
-          const settings = { ...DK.diagram.defaults(snapshot), paper, orientation, layout: mode, groupBy };
+          const settings = { ...DK.diagram.defaults(snapshot), entityColumns: ['name'], columns: ['name', 'type', 'key'], paper, orientation, layout: mode, groupBy };
           const layout = DK.diagram.layout(snapshot, settings, measure), cards = layout.pages.flat();
           count++;
           for (const entity of snapshot.entities) {
-            const actual = cards.filter(c => c.entity.id === entity.id).flatMap(c => c.rows.map(r => r.id));
+            const actual = cards.filter(c => c.entity.id === entity.id).flatMap(c => c.rows.filter(r => !r.empty).map(r => r.id));
             if (JSON.stringify(actual) !== JSON.stringify(entity.rows.map(r => r.id))) problems.push('Lost/duplicated rows: ' + entity.id);
           }
           layout.pages.forEach((cards, index) => {

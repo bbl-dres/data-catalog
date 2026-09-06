@@ -2,6 +2,8 @@
 
 Implementation record and gap review for the [6 September design study](wireframes/2026-09-06-tiles-and-print-layout.html).
 
+The current [behavior guide](behavior.md#visible-information) includes subsequent changes: shared field visibility, flat List columns and the revised print toolbar. It takes precedence over the original decisions recorded below.
+
 ## Agreed direction
 
 Implemented tile option **1a** and the print workspace **2c**, with the inline filter menu **2e** and **Grid / List** layouts. Landscape and the entire UML view are deferred, as agreed. The wireframe is a visual reference; its sample field codes, inferred keys, relationships, counts and dates are not catalog data.

@@ -978,7 +978,7 @@ Use this section for the transition from static JSON to the target model. The de
 | `data/i18n.json` | UI messages, separate from localized catalog content. |
 | `data/config.json` | Deployment/UI configuration, including supported languages and fallback policy. |
 | `data/manual.json` | Handbook content and navigation, outside the catalog entity model. |
-| `data/swagger.json` | Current API contract, to be aligned and validated during migration. |
+| `data/swagger.json` | Generated public-read contract for the implemented Supabase schema; regeneration and validation are in the [API guide](api.md). |
 
 ### Source inventory
 
@@ -1007,7 +1007,7 @@ The 6 September 2026 snapshot contains 244 distinct immediate properties across 
 | Domain resolution | The renderer currently prefers a linked business object's domain over a table/code-list domain and ignores System.domain. Apply the target explicit-domain precedence deliberately. |
 | Visibility | CodeValue/ProductAttribute have no independent profiles. Source extensions and translations may be exported without appearing in detail tables. Keep the documented exclusions; schema presence alone does not require a UI row. |
 | Source context | Keep sourceDetail in the import archive. Promote useful human context to an existing comment or link title only after review; do not invent a source version. |
-| Configuration/schema drift | model.json and swagger.json lag some rendering decisions. Their old position/source fields and standards claims do not establish runtime behavior. |
+| Configuration/schema drift | model.json can lag rendering decisions; legacy position/source fields and standards claims do not establish runtime behavior. swagger.json now reflects the SQL schema and is checked by the API contract tests. |
 
 ### Runtime adapters and export coverage
 
@@ -1339,7 +1339,7 @@ CodeList is intentionally minimal. Shared classification/personal-data fields an
 | Runtime `kind`, `attrId`, `fieldId`, `object`, `table`, composed child `identifier` | Kind and typed ownership/identity; preserve route aliases. Do not store both composed and local IDs as competing identities. | Type in Key facts; IDs in Further metadata; parent in Key facts |
 | Derived field `label`, `name`, `system`, `domain`, `status`, `position` | Resolve suffixed names and parent references; retain provenance for inherited status. Position stays ordering/export context. | Header / Key facts; position Excel only |
 | Inherited attribute `normReference`, responsibility, classification, dates/source context | Use the parent record as the source of inherited context; separate direct child assertions. | Key facts / Responsible / Further metadata |
-| `swagger.json` Field `nullable`, `mapsToAttribute` | DataField.isNullable and reviewed Relationship respectively; declared schema properties, absent from current field JSON. | Planned |
+| Legacy mock API Field `nullable`, `mapsToAttribute` | Historical declarations, absent from frozen field JSON; target concepts are DataField.isNullable and reviewed Relationship respectively. The current generated contract uses SQL names. | Planned |
 | Schema `responsible`, `attributeCount`, `fieldCount`, `tableCount`, `valueCount` | Responsibility presentation and derived counts; no parallel writable properties. | Lists / row counts; not new detail attributes |
 | Schema Relation `type`, `targetKind`, `targetId`, `targetName` | Typed derived association view; targetName resolves from the target. A read projection over structural references, Relationship assertions and external links; this shape alone does not establish confirmation. | Relationships |
 | Schema collection `items`, `limit`, `offset`, `total`; SearchHit `href`; Error `code`, `message`, `traceId` | Transport/UI values, outside catalog entities. | Search / pagination / error UI |

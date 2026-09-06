@@ -16,15 +16,17 @@
       ${controls.choice(t('header.language'), `<select class="ob-select ob-language-select" id="diagram-language">${Object.keys(session.catalogs).map(lang => `<option value="${lang}"${lang === session.language ? ' selected' : ''}>${lang.toUpperCase()}</option>`).join('')}</select>`)}
       ${button('close', t('diagram.cancel'))}${button('download', t('diagram.download'), null, '', 'primary')}
       </div></header>
-      <details class="ob-disclosure ob-export-tools-panel"${controls.compact() ? '' : ' open'}><summary>${esc(t('toolbar.view'))}</summary><div class="ob-export-toolbar">
+      <details class="ob-disclosure ob-export-tools-panel"${controls.compact() ? '' : ' open'}><summary>${esc(t('toolbar.view'))}</summary><div class="ob-export-toolbar"><div class="ob-export-toolbar-start">
         <div class="ob-export-control ob-export-document-control"><span>${esc(t('print.document'))}</span>${controls.menu('document', settings.title, '', 'id="diagram-document-button"')}</div>
         ${select('paper', t('diagram.paper'), Object.keys(diagram.papers).map(p => [p, p]), settings.paper)}
-        ${select('orientation', t('diagram.orientation'), ['landscape', 'portrait'].map(p => [p, t('diagram.' + p)]), settings.orientation)}
-        ${select('layout', t('print.layout'), ['tiles', 'grid', 'list'].map(p => [p, t('print.' + p)]), settings.layout, settings.layout === 'list' ? 'list' : 'grid')}
+        <div class="ob-export-toolbar-divider">${select('orientation', t('diagram.orientation'), ['portrait', 'landscape'].map(p => [p, t('diagram.' + p)]), settings.orientation)}</div>
+        <div class="ob-export-preview-tools">${controls.choice(t('diagram.preview'), `<select class="ob-select" id="diagram-zoom-mode"><option value="fit">${esc(t('print.fitPage'))}</option><option value="width">${esc(t('print.fitWidth'))}</option>${[50, 75, 100, 150, 200].map(n => `<option value="${n}">${n}%</option>`).join('')}<option value="custom" hidden></option></select>`)}
+          ${button('zoom-out', t('diagram.zoomOut'), 'zoom_out')}<output id="diagram-zoom">—</output>${button('zoom-in', t('diagram.zoomIn'), 'zoom_in')}</div>
+      </div><div class="ob-export-toolbar-end">
+        <div class="ob-export-control ob-export-toolbar-divider"><span id="diagram-layout-label">${esc(t('print.layout'))}</span><div class="ob-export-layout" role="group" aria-labelledby="diagram-layout-label">${[['tiles', 'grid'], ['grid', 'grid_rows'], ['list', 'list']].map(([layout, icon]) => `<button type="button" class="ob-button" data-diagram-layout="${layout}" aria-pressed="${settings.layout === layout}">${ui.buttonContent(t('print.' + layout), { icon })}</button>`).join('')}</div></div>
+        <div class="ob-export-control" id="diagram-columns-host"><span>${esc(t('visibility.label'))}</span>${controls.menu('columns', t('print.columnCount', diagram.visibilityCount(session.snapshot, settings)))}</div>
         <div id="diagram-grouping"></div>
-        <div class="ob-export-control" id="diagram-columns-host"><span>${esc(t('print.columns'))}</span>${controls.menu('columns', t('print.columnCount', { selected: settings.columns.length, total: diagram.columnKeys.length }))}</div>
-        <div class="ob-export-preview-tools">${button('zoom-out', t('diagram.zoomOut'), 'zoom_out')}<output id="diagram-zoom">—</output>${button('zoom-in', t('diagram.zoomIn'), 'zoom_in')}
-          ${controls.choice(t('diagram.preview'), `<select class="ob-select" id="diagram-zoom-mode"><option value="fit">${esc(t('print.fitPage'))}</option><option value="width">${esc(t('print.fitWidth'))}</option>${[50, 75, 100, 150, 200].map(n => `<option value="${n}">${n}%</option>`).join('')}<option value="custom" hidden></option></select>`)}</div>
+      </div>
       </div></details>
       <div class="ob-export-filterbar"><div id="diagram-chips" class="ob-export-chips"></div>${controls.menu('filters', t('print.addFilter'))}
         <p id="diagram-filter-status" class="ob-export-hint" role="status" aria-live="polite"></p>${button('reset-filters', t('diagram.resetFilters'))}</div>
@@ -84,22 +86,29 @@
       ${select('classification', t('fact.classification'), [['', t('print.fromScope')], ...diagram.classifications.map(value => [value, t('print.classification.' + value)])], session.settings.classification)}
       ${select('overview', t('print.overview'), ['auto', 'yes', 'no'].map(p => [p, t('print.' + p)]), session.settings.overview)}
       <p class="ob-export-hint">${esc(t('diagram.externalApproval'))}</p>${button('reset-title', t('print.resetTitle'))}`;
-    if (mode === 'columns') body = `<p class="ob-export-hint">${esc(t('print.columnsHint'))}</p>${diagram.columnKeys.map(key => `<label class="ob-check"><input type="checkbox" name="column" value="${key}"${key === 'name' || session.settings.columns.includes(key) ? ' checked' : ''}${key === 'name' ? ' data-fixed disabled' : ''}><span>${esc(t('print.column.' + key))}</span></label>`).join('')}<p class="ob-export-hint" id="diagram-column-count" role="status"></p>${button('reset-columns', t('print.resetColumns'))}`;
+    if (mode === 'columns') {
+      const choices = diagram.visibilityChoices(session.snapshot, session.settings);
+      body = `<p class="ob-export-hint">${esc(t('print.columnsHint'))}</p>
+        ${diagram.usesRows(session.settings) ? `<p class="ob-export-hint">${esc(t('visibility.sharedHint'))}</p>` : ''}
+        <div class="ob-field-group">${DK.fieldPicker.checklist(choices, choices.filter(choice => choice.checked).map(choice => choice.id), { name: 'column', translate: t })}</div>`;
+    }
     if (mode === 'filters') {
       session.filterChoices = [];
       const ids = new Set(session.snapshot.entities.map(e => e.id));
       body = `${field(t('print.filterSearch'), '<input type="search" class="ob-input" id="diagram-filter-find">')}<div class="ob-export-facet-list">${session.snapshot.facets.map(facet => {
         const missing = diagram.filterValues(session.settings.filters[facet.id]).filter(id => !facet.groups.some(group => group.id === id));
         const groups = [...facet.groups, ...missing.map(id => ({ id, title: t('diagram.unspecified'), entityIds: [] }))].map(group => ({ ...group, count: group.entityIds.filter(id => ids.has(id)).length }));
-        const single = groups.filter(group => group.count).length <= 1 && !diagram.filterValues(session.settings.filters[facet.id]).length;
         if (facet.id === session.scope.facet) return '';
-        return `<fieldset data-diagram-facet="${facet.id}"${single ? ' data-single="true" hidden' : ''}><legend>${esc(facet.label)}</legend>${groups.map(group => {
+        return `<fieldset data-diagram-facet="${facet.id}"><legend>${esc(facet.label)}</legend>${groups.map(group => {
           const index = session.filterChoices.push({ facet: facet.id, id: group.id }) - 1;
           return `<label class="ob-check"><input type="checkbox" data-diagram-filter="${index}"${diagram.filterValues(session.settings.filters[facet.id]).includes(group.id) ? ' checked' : ''}><span>${esc(group.title)}</span><span class="ob-tree-count">${group.count}</span></label>`;
         }).join('')}</fieldset>`;
-      }).join('')}</div>${button('all-facets', t('print.allFacets'))}<p id="diagram-filter-preview" class="ob-export-hint" role="status"></p>`;
+      }).join('')}</div><p id="diagram-filter-preview" class="ob-export-hint" role="status"></p>`;
     }
-    return `<h3 id="diagram-popover-title">${esc(t('print.' + (mode === 'filters' ? 'addFilter' : mode)))}</h3><form id="diagram-settings-form"><div class="ob-export-popover-body">${body}</div><div class="ob-export-popover-actions">${button('dismiss', t('diagram.cancel'))}<button type="submit" class="ob-button">${esc(t('print.apply'))}</button></div></form>`;
+    const actions = mode === 'columns' ? `${button('reset-columns', t('visibility.reset'))}${button('dismiss', t('visibility.close'))}`
+      : mode === 'filters' ? button('dismiss', t('visibility.close'))
+      : `${button('dismiss', t('diagram.cancel'))}<button type="submit" class="ob-button">${esc(t('print.apply'))}</button>`;
+    return `<h3 id="diagram-popover-title">${esc(t(mode === 'columns' ? 'visibility.title' : 'print.' + (mode === 'filters' ? 'addFilter' : mode)))}</h3><form id="diagram-settings-form"><div class="ob-export-popover-body">${body}</div><div class="ob-export-popover-actions">${actions}</div></form>`;
   };
   DK.diagramControls = controls;
 })(window.DK);
