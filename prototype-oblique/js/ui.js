@@ -7,7 +7,7 @@
   let language = 'de', fallbackLanguage = 'de';
 
   /** Resolve a content label without modifying its stored translations. */
-  ui.localized = labels => labels?.[language] || labels?.[fallbackLanguage] || labels?.de || '';
+  ui.localized = labels => labels?.[language] || labels?.[fallbackLanguage] || labels?.de || labels?.en || labels?.fr || labels?.it || '';
 
   /** Resolve translations with a fallback language for missing labels. */
   ui.setDictionary = function (table, lang, fallback) {

@@ -744,6 +744,7 @@
   /* init */
   app.init = async function () {
     try {
+      if (!DK.catalogConfig) throw new Error('Missing catalog connection configuration');
       await data.load('data/');
     } catch (err) {
       // The dictionary is part of the failed load, so this bootstrap fallback must stand on its own.

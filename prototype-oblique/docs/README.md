@@ -9,6 +9,7 @@ Maintain these guides alongside changes to the prototype. The app's [README](../
 | [Behavior](behavior.md) | Navigation, local/global search, relationship diagrams and export contracts. |
 | [Catalog data model](data-model.md) | Stable conceptual target: entities, complete attribute dictionaries, relationships, cardinalities, DE/IT/FR/EN content and standards alignment. |
 | [Model implementation and migration](data-model-implementation.md) | PostgreSQL design and physical ER diagram, write/read contracts, current JSON and UI mappings, migration, validation and publication guidance. |
+| [Supabase SQL setup](../supabase/README.md) | SQL Editor seed file, public read-only access, JSON migration, frontend connection and database checks. |
 | [Business-object attribute proposal](business-object-attribute-proposal.md) | Pending conceptual Building, Parcel, EconomicUnit and Measurement content decisions. |
 | [Imports and source evidence](imports/README.md) | Source-specific instructions, curation decisions, provenance and unresolved gaps. |
 

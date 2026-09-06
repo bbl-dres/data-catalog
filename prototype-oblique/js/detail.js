@@ -41,7 +41,7 @@
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
     const ext = (label, value, href) => ({ label, value, type: 'link', href });
     const dom = data.domainForEntity(e.kind, e);
-    const hasInformationLinks = ['objects', 'tables', 'refs'].includes(e.kind);
+    const hasInformationLinks = Boolean(e._record) || ['objects', 'tables', 'refs'].includes(e.kind);
     const informationUrls = hasInformationLinks && Array.isArray(e.informationUrls)
       ? [...new Set(e.informationUrls.filter(url => typeof url === 'string' && /^https?:\/\//i.test(url) && ui.safeHref(url)))] : [];
     const primary = [plain(t('fact.type'), data.kindDef(e.kind).singular), { label: t('fact.status'), value: e.status, type: 'chip', tone: data.statusTone(e.status) }];
@@ -49,16 +49,16 @@
     switch (e.kind) {
       case 'systems':
         primary.push(plain(t('fact.technology'), e.technology));
-        primary.push(ext(t('fact.moreInformation'), e.informationUrl ? t('fact.openInformation') : null, e.informationUrl));
+        if (!e._record) primary.push(ext(t('fact.moreInformation'), e.informationUrl ? t('fact.openInformation') : null, e.informationUrl));
         break;
       case 'objects':
         primary.push(plain(t('fact.normReference'), e.normReference));
         break;
       case 'attrs': {
         const o = data.objOf(e.object);
-        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t('fact.key.none');
+        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : e._record ? t('fact.undocumented') : t('fact.key.none');
         primary.push(internal(t('fact.object'), o.name, 'objects', o.identifier));
-        primary.push(plain(t('fact.valueType'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), e.mandatory ? t('yes') : t('no')),
+        primary.push(plain(t('fact.valueType'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
           plain(t('fact.normReference'), e.normReference));
         break;
       }
@@ -70,7 +70,7 @@
         const table = data.get('tables', e.table);
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
-        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance ? 'fact.undocumented' : 'fact.key.none');
+        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance || (e._record && e.keyRoles == null) ? 'fact.undocumented' : 'fact.key.none');
         primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key));
         primary.push(plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null));
         const ref = data.get('refs', e.codeList);
@@ -90,6 +90,8 @@
         break;
     }
     if (hasInformationLinks) primary.push({ label: t('fact.moreInformation'), value: informationUrls, type: 'links', labels: informationUrls.map(url => {
+      const title = e.documentationLinks?.find(link => link.url === url);
+      if (title) return ui.localized(Object.fromEntries(['de', 'it', 'fr', 'en'].map(lang => [lang, title[`title_${lang}`]]))) || url;
       if (url === e.descriptionSource?.url) return `${t('fact.definitionSource')}: ${e.descriptionSource.title}`;
       if (url === e.sourceUrl && e.source) return [e.source, e.dataSource || e.apiStructure].filter(Boolean).join(' · ');
       if (url === e.technicalNameSource && e.technicalName) return `${t('fact.technicalName')}: ${e.technicalName}`;
@@ -173,7 +175,7 @@
     switch (e.kind) {
       case 'objects': return {
         columns: [{ ...c('col.attribute', '26%'), primary: true }, c('col.description'), c('col.valueType', '9rem'), compact('col.key'), compact('col.mandatory')],
-        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), mandatory = a.mandatory ? t('yes') : t('no'); return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [a.name, a.description, a.valueType, keyText(a.keyRole), mandatory], search: [a.identifier, a.technicalName] }; }),
+        rows: e.attributes.map(a => { const href = router.entityHref('attrs', `${e.identifier}/${a.identifier}`), mandatory = typeof a.mandatory === 'boolean' ? t(a.mandatory ? 'yes' : 'no') : '—'; return { href, cells: [ui.entityLink(href, a.name), esc(a.description), esc(a.valueType), keyCell(a.keyRole), esc(mandatory)], text: [a.name, a.description, a.valueType, keyText(a.keyRole), mandatory], search: [a.identifier, a.technicalName] }; }),
       };
       case 'tables': {
         const hasCodes = e.fields.some(f => f.codeList);

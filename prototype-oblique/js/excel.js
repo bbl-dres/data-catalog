@@ -76,7 +76,7 @@
     };
     [...records.values()].forEach(e => {
       if (e.kind === 'objects') orderedChildren(e, e.attributes).forEach(a => addChild(data.attr(`${e.identifier}/${a.identifier}`), e, 'attrs'));
-      if (e.kind === 'products') orderedChildren(e, e.attributes).forEach(a => addChild({ ...a, identifier: `${e.identifier}/${e.attributes.indexOf(a) + 1}`, position: e.attributes.indexOf(a) + 1, status: e.status }, e, 'productAttrs'));
+      if (e.kind === 'products') orderedChildren(e, e.attributes).forEach(a => addChild({ ...a, identifier: a.identifier || `${e.identifier}/${e.attributes.indexOf(a) + 1}`, position: e.attributes.indexOf(a) + 1, status: e.status }, e, 'productAttrs'));
       if (e.kind === 'tables') orderedChildren(e, e.fields).forEach(f => addChild(data.field(`${e.identifier}/${data.fieldId(f)}`), e, 'fields'));
       if (e.kind === 'attrs') addChild(e, { ...data.objOf(e.object), kind: 'objects' }, 'attrs');
       if (e.kind === 'fields') addChild(e, { ...data.get('tables', e.table), kind: 'tables' }, 'fields');

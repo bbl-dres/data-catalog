@@ -5,11 +5,16 @@ const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = path.resolve(__dirname, '..');
 const mime = { '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml', '.woff2': 'font/woff2' };
 
-function createServer() {
+function createServer({ catalogProvider = 'json' } = {}) {
   return http.createServer((req, res) => {
     let pathname;
     try { pathname = decodeURIComponent(req.url.split('?')[0]); }
     catch { res.writeHead(400); res.end('Bad path'); return; }
+    if (pathname === '/js/catalog-config.js' && catalogProvider === 'json') {
+      res.writeHead(200, { 'Content-Type': 'application/javascript' });
+      res.end("window.DK.catalogConfig = { provider: 'json' };");
+      return;
+    }
     const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
     if (!file.startsWith(root + path.sep)) { res.writeHead(403); res.end(); return; }
     fs.readFile(file, (err, data) => {

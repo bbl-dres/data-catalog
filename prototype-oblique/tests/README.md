@@ -1,5 +1,7 @@
 # Prototype checks
 
+The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response. These checks do not need a hosted administrator credential.
+
 The runtime still has no build step or package installation requirement. The core checks need Node; browser checks additionally need Playwright and a browser. Verified with Node 24.16.0, Playwright 1.62.1 and Microsoft Edge on Windows.
 
 From the repository root:
@@ -57,6 +59,8 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `browser-helpers.cjs` | Shared ephemeral loopback server and browser rendering synchronization |
 
 Each browser script owns its server and browser and closes them on completion or failure. Fixture mutations and failed responses are confined to tests. No external server, catalog edits or app build is needed. No CI workflow is added to this repository's unrelated chat-worker deployment.
+
+Existing browser suites explicitly serve `provider: 'json'` from the local test server to retain their source-fixture checks. `catalog-browser.cjs` uses the shipped Supabase configuration and rejects any request for the legacy catalog JSON files. Neither path changes the production configuration.
 
 The contrast suite writes measurements and screenshots to `oblique-contrast-review` in the OS temporary directory. Keep `REPORT_ONLY` unset for verification; setting it to `1` records a baseline without contrast/focus assertions. See [contrast guidance](../docs/design-system.md#contrast-and-accessibility) for thresholds and measurement limitations.
 

@@ -1,6 +1,6 @@
 # Architecture
 
-No build step and no framework. One HTML page, four stylesheets, thirteen application JavaScript files, static JSON data, and pinned self-hosted Swagger UI and ExcelJS distributions loaded only when needed.
+No build step and no framework. One HTML page, four stylesheets, application JavaScript modules, a public Supabase catalog and local UI configuration. Pinned self-hosted Swagger UI and ExcelJS load only when needed. See [database setup](../supabase/README.md) for the applied SQL Editor import and hosted verification.
 
 The current page composition follows the [responsive layout](design-system.md#responsive-layout): a sticky header with navigation below the identity row above 960 px, shared 320 px default sidebar (resizable from 240 to 480 px) / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
 
@@ -17,7 +17,9 @@ prototype-oblique/
 ├── js/
 │   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, downloads and small widgets
 │   ├── preferences.js    DK.preferences – guarded access to existing browser preference keys
-│   ├── data.js           DK.data   – loads and validates JSON, lookups, grouping, relations, search, KPIs, history
+│   ├── catalog-config.js Public Supabase connection settings; explicit JSON mode for offline fixtures
+│   ├── catalog.js        DK.catalog – REST transport and normalized SQL snapshot projection
+│   ├── data.js           DK.data   – validates snapshots, lookups, grouping, relations, search, KPIs, history
 │   ├── router.js         DK.router – hash parsing/building, navigate(), replaceParams(), pushParams()
 │   ├── manual.js         DK.manual – handbook rendering, chapter names and legacy aliases
 │   ├── search.js         DK.search – scope, global ordering/pagination, question fallback and cited AI-answer demo
@@ -28,7 +30,8 @@ prototype-oblique/
 │   ├── sidebar.js        DK.sidebar – desktop divider input, width constraints and saved preference
 │   ├── api.js            DK.api    – lazy Swagger loading, mounting and retry
 │   └── app.js            DK.app    – bootstrap, transient state, event delegation, exports
-├── data/                 Current static JSON; data-model.md describes a future target
+├── data/                 Local UI configuration and frozen legacy catalog import inputs / test fixtures
+├── supabase/             SQL migrations, SQL Editor seed, importer, identity manifest and setup guide
 ├── assets/
 │   ├── swiss-logo-flag.svg  Swiss coat of arms and browser-tab icon
 │   ├── swiss-logo-name.svg  Multilingual Confederation wordmark (reference asset; not rendered)
@@ -52,6 +55,7 @@ Files are split by responsibility:
 | File | Owns | Does not |
 |---|---|---|
 | `ui.js` | String helpers, safe link rendering, blob downloads, tiny widgets, table headers and locale-aware stable sorting, the i18n dictionary | Read app state |
+| `catalog.js` | Public Supabase snapshot request, schema/reference validation, localized SQL-to-UI projection | Write catalog data or silently fall back to JSON |
 | `data.js` | Snapshot validation and indexed lookups, grouping, domain membership by identifier, relations, search, KPIs and history; `validate()` logs dangling references after loading | Touch the DOM |
 | `router.js` | URL ↔ route object, hrefs for entities and lists | Render |
 | `preferences.js` | Stable browser keys and storage-failure handling | Choose UI defaults or render |
@@ -81,11 +85,13 @@ Swagger owns the contents of its live `#swagger-ui` node. On updates within the 
 
 Every entity lookup tolerates a missing target: `data.nameOf()` falls back to the id, relation builders drop unresolved ids, and breadcrumbs skip missing containers. `data.validate()` reports such references once in the console.
 
-The [GWR import](imports/gwr-import.md) supplies seven logical tables and explicit `fields[].codeList` references. Tables with these links add a Werteliste column; relationship builders resolve them in both directions, including entities without a mapped business object. A direct `domain` supports those unmapped records. The GWR system diagram lists its tables. Imported definitions link directly to the corresponding source paragraphs, and provenance/version details distinguish the 5.0 catalog from the older code workbook. The Übersicht tree link omits the aggregate count.
+The [GWR import](imports/gwr-import.md) supplies seven logical tables and explicit field-to-code-list references. Tables with these links add a Werteliste column; relationship builders resolve them in both directions, including entities without a mapped business object. An explicit domain supports those unmapped records. The GWR system diagram lists its tables. Curated documentation links retain the definition references; the frozen import evidence distinguishes the 5.0 catalog from the older code workbook. The Übersicht tree link omits the aggregate count.
 
-Field profiles reuse the attribute-page composition and have Übersicht, Beziehungen and Verlauf Datentabelle. `data.field()` derives the profile from its table's embedded field, and `router.entityHref('fields', '<tableId>/<fieldId>')` creates its address. Every field name and row in Felder links to that profile, including mobile cards; code-list links remain separate destinations. Breadcrumbs and the Datentabelle fact return to the parent's Felder tab. Both tree models highlight the parent table. Fields store `technicalName` and a `labels` language map; the profile resolves the selected label with `ui.localized()` and shows both in Kerndaten. Imported source documentation remains in JSON and Excel, without a separate section on the profile.
+Field profiles reuse the attribute-page composition and have Übersicht, Beziehungen and Verlauf Datentabelle. `data.field()` derives the profile from the projected field and parent context; `router.entityHref('fields', '<tableId>/<fieldId>')` preserves its address. Every field name and row in Felder links to that profile, including mobile cards; code-list links remain separate destinations. Breadcrumbs and the Datentabelle fact return to the parent's Felder tab. Both tree models highlight the parent table. SQL names project into `technicalName` and a localized `labels` map; the profile shows both in Kerndaten. Curated documentation links appear under Weitere Informationen. Raw source payloads stay in the frozen import evidence.
 
-Before publishing a data snapshot, the loader checks collection shapes, record identities, embedded lists and duplicate IDs. Invalid input leaves any previously loaded snapshot intact. The [core tests](../tests/core.test.cjs) exercise these runtime guards; [data-model.md](data-model.md) specifies a future target, not the currently implemented schema. HTML data is escaped; config/data links additionally use `ui.safeHref()` through `ui.link()`. Its label HTML must already be escaped. Excel export writes catalog strings as literal text cells, including formula-like content, and preserves numeric values separately.
+The loader fetches local UI configuration alongside one Supabase `catalog.read_snapshot()` request. The invoker-rights SQL function reads normalized records in one statement; it stores no JSON mirror and is not subject to collection row truncation. `catalog.js` projects records and direct references into the existing view shapes. Parent-scoped child identifiers preserve existing URLs. Catalog names/descriptions are resolved from stored language columns; display fallback never changes stored translations. Search, sorting and pagination remain in memory.
+
+Before publishing a snapshot, the loader checks shapes, identities, embedded lists and duplicate IDs. Invalid input leaves a previously loaded snapshot intact and never silently switches to the archived JSON. The [core tests](../tests/core.test.cjs) and [migration/browser checks](../supabase/README.md#validation) cover these boundaries. HTML data is escaped; config/data links additionally use `ui.safeHref()` through `ui.link()`. Its label HTML must already be escaped. Excel writes literal text cells, including formula-like strings, and retains canonical SQL metadata and relationship verification details. Source-only payloads excluded from the target remain in the frozen import files and source captures.
 
 ## Routing
 
@@ -142,10 +148,10 @@ Column definitions also control presentation: `numeric: true` right-aligns the h
 
 ## How to extend
 
-- **New entity type**: add a JSON file and a `kinds` entry in `model.json`; add it to `FILES`, `KINDS`, `LISTS` and the `cols`/`columns`/`sizeOf`/`relations` switches in `data.js`; add `rowsData` and facts in `detail.js`; add its crumb path in `views.context()`.
+- **New entity type**: update the conceptual model, add a SQL migration with explicit grants/RLS and extend the snapshot/projection. Add its `kinds` entry in `model.json`, collection/detail presentation, relationship groups and breadcrumbs. Add legacy fixtures only when needed for tests.
 - **New grouping option**: extend `GROUP_IDS`, `groupKey` and `groupOrder` in `data.js`; add a `group.<id>` label in `i18n.json`.
-- **New language**: `i18n.json` holds one entry per key with `de`, `fr`, `it`, `en`; validate the drafts, list the language in `app.languages` and optionally set it as `app.language`. Missing translations fall back to German; `setLanguage()` in `app.js` swaps the dictionary and re-renders. Embedded table fields use the same languages in `labels`; the loader validates this map and `ui.localized()` resolves it. Other catalog names and descriptions remain German strings.
-- **Real backend**: replace `data.load()` with API calls that return the same shapes as the JSON files; nothing else depends on the file layout.
+- **Languages**: `i18n.json` contains UI keys for DE/FR/IT/EN; PostgreSQL has explicit suffixed catalog text columns. `setLanguage()` swaps the dictionary and re-renders. Missing translations fall back to German, English, French and Italian, without storing fallback copies. Languages beyond these four require a schema and UI contract change.
+- **Backend evolution**: extend the normalized schema, snapshot contract and adapter together. Server-side search and an audited edit API are separate future work; do not reintroduce JSON as a second live writer.
 - **Excel export**: implemented by `DK.excel` (see [excel-export.md](behavior.md#excel-export)). DCAT export remains a placeholder in `doExport()`.
 
 ## Testing

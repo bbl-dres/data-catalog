@@ -21,14 +21,17 @@
 
   /* loading */
   data.load = async function (base) {
-    const entries = await Promise.all(Object.entries(FILES).map(async ([key, file]) => {
+    const provider = DK.catalogConfig?.provider || 'json';
+    if (!['json', 'supabase'].includes(provider)) throw new Error('Unknown catalog provider: ' + provider);
+    const files = Object.entries(FILES).filter(([key]) => provider === 'json' || ['config', 'i18n', 'model', 'manual'].includes(key));
+    const [entries, catalog] = await Promise.all([Promise.all(files.map(async ([key, file]) => {
       const res = await fetch(base + file, { cache: 'no-cache' });
       if (!res.ok) throw new Error(file + ' → HTTP ' + res.status);
       try { return [key, await res.json()]; }
       catch (err) { throw new Error(file + ': invalid JSON (' + err.message + ')'); }
-    }));
+    })), provider === 'supabase' ? DK.catalog.load(DK.catalogConfig) : null]);
     // Validate a complete snapshot before publishing it; a failed reload keeps the old catalog usable.
-    const next = Object.fromEntries(entries);
+    const next = { ...Object.fromEntries(entries), ...catalog, catalogSnapshot: catalog?.catalogSnapshot || null };
     const nextIndex = {};
     const record = (value, at) => {
       if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(at + ': expected an object');
@@ -71,7 +74,7 @@
             record(f, `${at}[${j}]`);
             text(f.technicalName, `${at}[${j}].technicalName`);
             record(f.labels, `${at}[${j}].labels`);
-            text(f.labels.de, `${at}[${j}].labels.de`);
+            text(provider === 'supabase' ? ui.localized(f.labels) : f.labels.de, `${at}[${j}].labels${provider === 'json' ? '.de' : ''}`);
             Object.entries(f.labels).forEach(([lang, label]) => {
               if (!['de', 'fr', 'it', 'en'].includes(lang)) throw new Error(`${at}[${j}].labels: unsupported language ${lang}`);
               text(label, `${at}[${j}].labels.${lang}`);
@@ -162,6 +165,12 @@
     if (!o) return null;
     const a = o.attributes.find(x => x.identifier === id.slice(i + 1));
     if (!a) return null;
+    if (a._record) return {
+      ...a, identifier: id, attrId: a.identifier, object: o.identifier, domain: o.domain, normReference: o.normReference,
+      responsibleOrg: a.responsibleOrg || o.responsibleOrg, contact: a.responsibleOrg ? a.contact : o.contact,
+      dataOwner: a.dataOwner || o.dataOwner, dataSteward: a.dataSteward || o.dataSteward,
+      classification: a.classification ?? o.classification, personalData: a.personalData ?? o.personalData,
+    };
     return Object.assign({}, a, {
       identifier: id, attrId: a.identifier, object: o.identifier, domain: o.domain,
       status: o.status, normReference: o.normReference, responsibleOrg: o.responsibleOrg, contact: o.contact,
@@ -181,6 +190,13 @@
     const position = table.fields.findIndex(f => data.fieldId(f) === id.slice(i + 1));
     if (position < 0) return null;
     const f = table.fields[position];
+    if (f._record) return {
+      ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier, position: position + 1,
+      label: ui.localized(f.labels), name: data.displayName('fields', f), system: table.system, domain: data.domainForEntity('tables', table)?.identifier,
+      responsibleOrg: f.responsibleOrg || table.responsibleOrg, contact: f.responsibleOrg ? f.contact : table.contact,
+      dataOwner: f.dataOwner || table.dataOwner, dataSteward: f.dataSteward || table.dataSteward,
+      dataCustodian: f.dataCustodian || table.dataCustodian, classification: f.classification ?? table.classification, personalData: f.personalData ?? table.personalData,
+    };
     const inherited = Object.fromEntries(['version', 'created', 'modified', 'responsibleOrg', 'contact', 'dataOwner', 'dataSteward', 'dataCustodian', 'classification', 'personalData', 'source', 'sourceDetail', 'synced', 'provenance'].map(key => [key, table[key]]));
     return {
       ...inherited, ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier,
@@ -216,7 +232,7 @@
     if (kind === 'domains') return e;
     if (kind === 'systems') return null;
     const o = data.objectForEntity(kind, e);
-    return data.domainOf(o ? o.domain : e.domain);
+    return data.domainOf(e.domain || o?.domain);
   };
 
   data.membersOfDomain = (kind, d) => d?.identifier
@@ -414,6 +430,15 @@
     }
     if (kind === 'attrs') {
       const o = data.objOf(e.object);
+      if (e._record) {
+        const assertions = (e._relationships || []).filter(r => r.relationship_type === 'represents' && r.target_business_attribute_id === e._record.id && ['candidate', 'confirmed'].includes(r.verification_status));
+        const fields = data.tables.filter(table => table.status !== 'Archiviert').flatMap(table => table.fields.filter(f => f.status !== 'Archiviert' && assertions.some(r => r.source_data_field_id === f._record.id)).map(f => ({
+          name: data.displayName('fields', f), sub: data.displayName('tables', table), href: href('fields', `${table.identifier}/${data.fieldId(f)}`),
+        })));
+        return [mk('object', 'stack', 'objects', [o]),
+          { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: e.status === 'Archiviert' ? [] : fields },
+          mk('typedBy', 'file_list', 'refs', [data.get('refs', e.codeList)])];
+      }
       const fieldName = ui.fieldName(e.name);
       const relTables = data.tables.filter(x => x.realizes === o.identifier && x.fields.some(f => f.technicalName === fieldName));
       const relRefs = e.valueType === 'Code' ? data.refs.filter(r => r.businessObject === o.identifier) : [];

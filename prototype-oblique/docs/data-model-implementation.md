@@ -1,6 +1,8 @@
 # Catalog model implementation guide
 
-**Proposed implementation and migration · 6 September 2026.** The [conceptual data model](data-model.md) is authoritative for entities, attributes and semantics. This guide maps that target to PostgreSQL and the current static-JSON prototype; it does not claim the target backend is implemented.
+**Implementation contract and migration · 6 September 2026.** The [conceptual data model](data-model.md) is authoritative for entities, attributes and semantics. This guide maps that target to PostgreSQL and the legacy JSON shapes. The complete target contract extends the current read-only implementation described below.
+
+The [Supabase implementation](../supabase/README.md) now includes the storage schema, integrity guards, public SELECT policies, deterministic JSON import, consistent snapshot RPC and frontend adapter. The initial SQL Editor import is applied; anonymous hosted reads and browser navigation were verified against all imported records on 6 September 2026. The existing JSON files remain frozen import inputs and test fixtures. Their source-only properties are preserved there instead of being added back to the target model. The audited write API, server-side search and future quality/lineage editing remain to be implemented. The private Auth access list is operational configuration, separate from catalog Actor records. Subsequent sections describe the complete target contract; the SQL setup identifies the implemented boundary and migration decisions.
 
 ## Purpose and reading guide
 

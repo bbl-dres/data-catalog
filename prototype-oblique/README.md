@@ -29,12 +29,12 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 - Multi-sheet Excel export and print-to-PDF; DCAT-AP CH export remains a placeholder. See [Excel export](docs/behavior.md#excel-export) for workbook contents and scope.
 - Deep-linkable hash routes for section, entity, view mode, grouping, search query and handbook chapter.
 - Two navigation models (entity-first or container-first), switched in `data/config.json` or with `?nav=container`.
-- UI in German, French, Italian and English (fr/it/en as drafts); catalog content stays German.
-- Self-hosted Noto Sans, pinned Swagger UI and ExcelJS, no external requests, no build step. ExcelJS loads only when exporting.
+- UI in German, French, Italian and English (fr/it/en as drafts); catalog labels use recorded translations with fallback.
+- Public, read-only catalog data from Supabase. Self-hosted Noto Sans, pinned Swagger UI and ExcelJS, no build step. ExcelJS loads only when exporting.
 
 ## Run locally
 
-Static vanilla JavaScript with JSON data loaded by `fetch()`, so serve it over HTTP from the repository root:
+Apply the [Supabase SQL Editor seed and Data API setup](supabase/README.md#apply-to-the-existing-project) first. Then serve the vanilla JavaScript application over HTTP from the repository root:
 
 ```bash
 python -m http.server 8000
