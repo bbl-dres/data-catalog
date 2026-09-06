@@ -26,11 +26,11 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 - Domain pages with Übersicht, Kacheln and Tabelle, sharing collection search, grouping, sorting and filtered export. See [domain browsing](docs/behavior.md#navigation-and-collections).
 - Relevance-ranked, umlaut-tolerant search with grouped suggestions, domain/type filters, one sortable result table with global pagination, and an optional, cited AI-answer demo. See [search options](docs/behavior.md#global-search).
 - Handbook with chapter navigation, an OpenAPI 3.1 reference rendered by Swagger UI, and a help and contact popover.
-- Multi-sheet Excel export and print-to-PDF; DCAT-AP CH export remains a placeholder. See [Excel export](docs/behavior.md#excel-export) for workbook contents and scope.
+- [Data model PDF export](docs/behavior.md#data-model-pdf-export) with a catalog scope tree, filter chips, Grid/List layouts, configurable columns, DE/FR/IT/EN documents, scrolling SVG preview, A4–A0 pages, continuation and federal branding. Multi-sheet [Excel export](docs/behavior.md#excel-export) and profile/list printing remain available; DCAT-AP CH export is a placeholder.
 - Deep-linkable hash routes for section, entity, view mode, grouping, search query and handbook chapter.
 - Two navigation models (entity-first or container-first), switched in `data/config.json` or with `?nav=container`.
 - UI in German, French, Italian and English (fr/it/en as drafts); catalog labels use recorded translations with fallback.
-- Public, read-only catalog data from Supabase. Self-hosted Noto Sans, pinned Swagger UI and ExcelJS, no build step. ExcelJS loads only when exporting.
+- Public, read-only catalog data from Supabase. Self-hosted Noto Sans and pinned Swagger UI, ExcelJS, jsPDF and svg2pdf.js, with no build step. Export libraries load only when needed.
 
 ## Run locally
 
@@ -54,4 +54,4 @@ Start with the [documentation index](docs/README.md).
 
 ## License
 
-Project code is covered by the [MIT License](../LICENSE). Oblique styles are MIT (Swiss Confederation, FOITT), Noto Sans is under the SIL Open Font License 1.1, Swagger UI is Apache 2.0, and [ExcelJS](vendor/exceljs/LICENSE) is MIT. The Swiss federal logo is protected by the Coat of Arms Protection Act and may only be used by federal bodies.
+Project code is covered by the [MIT License](../LICENSE). Oblique styles are MIT (Swiss Confederation, FOITT), Noto Sans is under the SIL Open Font License 1.1, Swagger UI is Apache 2.0, and [ExcelJS](vendor/exceljs/LICENSE), [jsPDF](vendor/jspdf/LICENSE) and [svg2pdf.js](vendor/svg2pdf.js/LICENSE) are MIT. The Swiss federal logo is protected by the Coat of Arms Protection Act and may only be used by federal bodies.

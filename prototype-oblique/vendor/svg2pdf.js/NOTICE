@@ -1,0 +1,16 @@
+{
+  "package": "svg2pdf.js",
+  "version": "2.8.1",
+  "source": "https://registry.npmjs.org/svg2pdf.js/-/svg2pdf.js-2.8.1.tgz",
+  "integrity": "sha512-AzXfPHjHnFt9dpdRPhWWBOKipnMSWQZRKiV3FTTPdY6wwRgT3labbA4s0HIQaskNhwAhrcI2u2rDhD8j8udfNQ==",
+  "files": [
+    {
+      "file": "svg2pdf.umd.min.js",
+      "sha256": "2f10c0d16959e9a0c4cfd8605cfce0830ddc384337f74fa0351a6eff1c1efb8b"
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "04db7fb792d065c8c9a0e3a7a8255cd36e32b263ca023cbea10daee4a45132b8"
+    }
+  ]
+}

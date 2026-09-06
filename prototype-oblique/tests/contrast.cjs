@@ -81,6 +81,12 @@ const server = createServer();
     await page.locator('[data-menu="actions"]').click(); await scan('Export menu');
     await page.locator('[data-menu="actions"]').click();
     await page.locator('[data-action="help-toggle"]').first().click(); await scan('Help popover');
+    // The current spec has no info link; exercise that optional vendor style with a local fixture.
+    await page.route('**/data/swagger.json', route => {
+      const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '../data/swagger.json'), 'utf8'));
+      spec.info.contact = { name: 'Documentation', url: 'https://catalog.example/documentation' };
+      return route.fulfill({ json: spec });
+    });
     await visit('#/api');
     await sample('API version badge', '.info .title small pre');
     await sample('API specification badge', '.info .title small.version-stamp pre');

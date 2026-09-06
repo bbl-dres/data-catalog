@@ -194,11 +194,15 @@
   --ob-color-info: var(--ob-blue-800);
   --ob-color-info-bg: var(--ob-blue-100);
   --ob-color-neutral: var(--ob-secondary-600);
+  --ob-color-action: var(--ob-secondary-600);
+  --ob-color-action-hover: var(--ob-secondary-700);
+  --ob-color-action-active: var(--ob-secondary-800);
 
   --ob-color-avatar-bg: var(--ob-secondary-600);
   --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
 
   /* ---- 3. Component tokens --------------------------------------------- */
+  --ob-panel-padding: var(--ob-space-lg);
   --ob-visual-viewport-height: 100dvh;                  /* app.js updates these while the keyboard resizes the visible area */
   --ob-visual-viewport-top: 0px;
   --ob-content-max-width: 1600px;
@@ -260,12 +264,16 @@
   --ob-facts-label-width: 160px;
   --ob-facts-row-min-height: 36px;
   --ob-facts-row-padding: var(--ob-space-sm);
-  --ob-tile-min-width: 220px;
-  --ob-tile-min-height: 74px;
+  --ob-tile-min-width: 300px;
+  --ob-tile-min-height: 180px;
   --ob-tile-gap: var(--ob-space-default);
   --ob-toast-max-width: 420px;
   --ob-spinner-size: var(--ob-space-2xl);
   --ob-spinner-duration: 800ms;
+  --ob-export-settings-width: 320px;
+  --ob-export-popover-width: 380px;
+  --ob-export-facets-height: 320px;
+  --ob-export-preview-min-height: 280px;
   --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
   --ob-table-card-min-width: 300px;
   --ob-api-max-width: 1200px;
@@ -288,7 +296,7 @@
 
 /* Centralised responsive token values. Native @media/@container conditions
    cannot reference custom properties; component layout queries stay literal.
-   Flag breakpoints follow the federal logo reference; app title text caps at 16px. */
+   The compact app caps the flag at 32px wide and title text at 16px. */
 @media (min-width: 480px) {
   :root { --ob-logo-title-font-size: var(--ob-font-size-xs); }
 }
@@ -299,13 +307,13 @@
   :root { --ob-header-identity-height: 72px; }
 }
 @media (min-width: 1024px) {
-  :root { --ob-logo-flag-width: 32px; --ob-logo-flag-height: 34px; }
+  :root { --ob-logo-flag-width: 32px; --ob-logo-flag-height: 35.2px; }
 }
 @media (min-width: 1280px) {
   :root { --ob-logo-title-font-size: var(--ob-font-size-input); }
 }
 @media (min-width: 1920px) {
-  :root { --ob-logo-flag-width: 40px; --ob-logo-flag-height: 44px; --ob-header-identity-height: 86px; }
+  :root { --ob-header-identity-height: 86px; }
 }
 @media (max-width: 1200px) {
   :root { --ob-facts-label-width: 128px; }
@@ -319,4 +327,7 @@
 /* Shared control geometry, including search clearances on touch laptops. */
 @media (any-pointer: coarse), (max-width: 960px) {
   :root { --ob-control-height: var(--ob-touch-target); }
+}
+@container workspace (max-width: 600px) {
+  .ob-panel { --ob-panel-padding: var(--ob-space-default); }
 }

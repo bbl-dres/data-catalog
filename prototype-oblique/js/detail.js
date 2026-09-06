@@ -24,11 +24,11 @@
     if (e.kind === 'domains') return DK.views.collection(ctx || DK.views.context({ ...route, view: 'detail', kind: 'domains', entity: e }, state));
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);
-    const counts = { rows: detail.rowsData(e).rows.length, relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
     const rowList = tab === 'rows' ? ctx?.rowList || detail.rowsContext(e, route, state) : null;
+    const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
     const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}</div>` : ''}</div>`;
     let panel;
-    if (tab === 'overview') panel = detail.overview(e, state);
+    if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state, rowList);
     else if (tab === 'relations') panel = detail.relations(e, state);
     else panel = detail.history(e, state);
@@ -104,13 +104,13 @@
       primary.push(informationUrls.includes(e.descriptionSource.url)
         ? plain(t('fact.definitionSource'), label) : ext(t('fact.definitionSource'), label, e.descriptionSource.url));
     }
-    primary.push(plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), typeof e.personalData === 'boolean' ? (e.personalData ? t('yes') : t('no')) : null));
+    const protection = [plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), typeof e.personalData === 'boolean' ? (e.personalData ? t('yes') : t('no')) : null)];
     primary.push({ label: t('fact.comment'), value: e.comment, type: 'comment' });
     const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.source'), e.source), plain(t('fact.synced'), fmt(e.synced))];
-    return { primary, metadata };
+    return { primary, protection, metadata };
   };
 
-  detail.overview = function (e, state = {}) {
+  detail.overview = function (e) {
     const renderFacts = facts => facts.map(f => {
       let v;
       const empty = f.value == null || (typeof f.value === 'string' && !f.value.trim()) || (Array.isArray(f.value) && !f.value.length);
@@ -126,16 +126,14 @@
       return `<dt>${esc(f.label)}</dt><dd>${v}</dd>`;
     }).join('');
     const facts = detail.facts(e);
+    const section = (className, heading, rows) => `<section class="${className}"><h2>${esc(t(heading))}</h2><dl class="ob-facts">${renderFacts(rows)}</dl></section>`;
     return `
       <div class="ob-detail-sections">
-        <section class="ob-core-facts">
-          <h2>${esc(t('detail.facts'))}</h2>
-          <dl class="ob-facts">${renderFacts(facts.primary)}</dl>
-          <details class="ob-metadata"${state.metadataOpen ? ' open' : ''}>
-            <summary>${esc(t('detail.metadata'))}</summary>
-            <dl class="ob-facts">${renderFacts(facts.metadata)}</dl>
-          </details>
-        </section>
+        <div class="ob-detail-facts">
+          ${section('ob-core-facts', 'detail.facts', facts.primary)}
+          ${section('ob-protection-facts', 'detail.protection', facts.protection)}
+          ${section('ob-system-facts', 'detail.system', facts.metadata)}
+        </div>
         ${detail.responsibility(e)}
       </div>`;
   };

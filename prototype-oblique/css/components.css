@@ -3,7 +3,7 @@
 :focus-visible { outline: none; box-shadow: var(--ob-focus-ring); }
 a:focus-visible { border-radius: var(--ob-radius-md); }
 /* Controls inside scroll containers use an inset ring so it is never clipped. */
-.ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
+.ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible, .ob-menu-item:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 
 /* Buttons */
 .ob-button {
@@ -17,6 +17,14 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-button:hover:not(:disabled) { background: var(--ob-color-surface); }
 .ob-button:active:not(:disabled) { background: var(--ob-color-surface-hover); }
 .ob-button:disabled { border-color: var(--ob-color-text-disabled); color: var(--ob-color-text-disabled); cursor: default; }
+.ob-button > .ob-icon { flex: none; }
+.ob-button-label { min-width: 0; }
+.ob-button--menu { text-align: left; }
+.ob-button--menu .ob-button-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ob-button--primary { background: var(--ob-color-action); border-color: var(--ob-color-action); color: var(--ob-color-text-inverse); }
+.ob-button--primary:hover:not(:disabled) { background: var(--ob-color-action-hover); border-color: var(--ob-color-action-hover); }
+.ob-button--primary:active:not(:disabled) { background: var(--ob-color-action-active); border-color: var(--ob-color-action-active); }
+.ob-button--primary:disabled { background: var(--ob-color-surface); }
 .ob-button--ghost { border-color: transparent; background: transparent; font-size: var(--ob-font-size-sm); gap: var(--ob-space-xs); }
 .ob-button--link { height: auto; min-height: var(--ob-control-height); padding: var(--ob-space-xs) 0; border: 0; background: transparent; color: var(--ob-color-link); text-decoration: underline; white-space: normal; text-align: left; }
 .ob-button--link:hover:not(:disabled) { background: transparent; color: var(--ob-color-link-hover); }
@@ -43,12 +51,11 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-chip { padding: 1px var(--ob-space-sm); letter-spacing: var(--ob-letter-spacing-wide); } /* optical vertical inset */
 .ob-chip--outline { color: var(--ob-color-text-secondary); background: var(--ob-color-bg); border: var(--ob-border-width-xs) solid var(--ob-color-border-strong); font-weight: var(--ob-font-weight-regular); }
 
-.ob-metadata { margin-top: var(--ob-space-md); font-size: var(--ob-font-size-sm); }
-.ob-metadata > summary { display: flex; align-items: center; gap: var(--ob-space-sm); width: fit-content; max-width: 100%; padding: var(--ob-space-xs) 0; color: var(--ob-color-link); cursor: pointer; font-weight: var(--ob-font-weight-semibold); line-height: var(--ob-line-height-md); list-style: none; overflow-wrap: anywhere; }
-.ob-metadata > summary::-webkit-details-marker { display: none; }
-.ob-metadata > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: url('../assets/icons/chevron_down.svg') center / contain no-repeat; }
-.ob-metadata[open] > summary::before { transform: rotate(180deg); }
-.ob-metadata[open] > summary { margin-bottom: var(--ob-space-sm); }
+.ob-disclosure > summary { display: flex; align-items: center; gap: var(--ob-space-sm); max-width: 100%; cursor: pointer; font-weight: var(--ob-font-weight-semibold); line-height: var(--ob-line-height-md); list-style: none; overflow-wrap: anywhere; }
+.ob-disclosure > summary::-webkit-details-marker { display: none; }
+.ob-disclosure > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: url('../assets/icons/chevron_down.svg') center / contain no-repeat; }
+.ob-disclosure[open] > summary::before { transform: rotate(180deg); }
+.ob-disclosure > summary:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 
 /* Shared input/select foundation; search owns its icon clearances. */
 .ob-input, .ob-select {
@@ -60,10 +67,14 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 .ob-input { border-radius: var(--ob-radius-lg); }
 .ob-select { border-radius: var(--ob-radius-sm); padding: 0 var(--ob-space-sm); }
 .ob-select--comfortable { min-height: var(--ob-touch-target); font-size: var(--ob-font-size-input); }
+.ob-select-menu { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.ob-select-menu > * { box-sizing: border-box; grid-area: 1 / 1; min-width: 0; width: 100%; }
+/* The native control sizes the field by its options and remains the single value store. */
+.ob-select-menu > select[aria-hidden] { visibility: hidden; pointer-events: none; }
 
 /* Native checkboxes share spacing and touch sizing across filter groups. */
 .ob-check { display: flex; align-items: center; gap: var(--ob-space-sm); min-height: var(--ob-control-height); padding-block: var(--ob-space-xs); cursor: pointer; }
-.ob-check input { flex: none; width: var(--ob-icon-size-lg); height: var(--ob-icon-size-lg); margin: 0; accent-color: var(--ob-color-neutral); }
+.ob-check input, .ob-check-input { flex: none; width: var(--ob-icon-size-lg); height: var(--ob-icon-size-lg); margin: 0; accent-color: var(--ob-color-neutral); }
 .ob-check > span { min-width: 0; overflow-wrap: anywhere; }
 
 /* Quiet icon actions inside inputs and notices, with one interaction state. */
@@ -83,6 +94,15 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
   color: var(--ob-color-text); text-decoration: none;
 }
 .ob-card:hover, .ob-card:focus-visible { background: var(--ob-color-surface-hover); color: var(--ob-color-text); }
+
+.ob-panel { padding: var(--ob-panel-padding); background: var(--ob-color-surface); border: var(--ob-border-width-xs) solid var(--ob-color-border); border-radius: var(--ob-radius-lg); }
+
+/* Empty states retain local recovery actions and share text hierarchy. */
+.ob-empty { padding: var(--ob-space-3xl) var(--ob-space-lg); text-align: center; color: var(--ob-color-text-secondary); border: var(--ob-border-width-xs) solid var(--ob-color-border-strong); overflow-wrap: anywhere; }
+.ob-empty-title { font-size: var(--ob-font-size-lg); font-weight: var(--ob-font-weight-bold); letter-spacing: 0; color: var(--ob-color-text); margin-bottom: var(--ob-space-sm); }
+.ob-empty-action { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--ob-space-sm); margin-top: var(--ob-space-md); }
+.ob-empty-action .ob-button { height: auto; min-height: var(--ob-control-height); max-width: 100%; padding-block: var(--ob-space-xs); white-space: normal; }
+.ob-empty--plain { padding: var(--ob-space-default); border: 0; }
 
 /* Shared loading status; the overlay leaves navigation usable during exports. */
 .ob-loading {
@@ -116,7 +136,7 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 
 /* The same input policy applies to tablets, phones and desktop touch screens. */
 @media (any-pointer: coarse), (max-width: 960px) {
-  .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-metadata > summary, .ob-input, .ob-select, .ob-icon-button, .ob-check { min-height: var(--ob-touch-target); }
+  .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-disclosure > summary, .ob-input, .ob-select, .ob-icon-button, .ob-check { min-height: var(--ob-touch-target); }
   .ob-input, .ob-select { font-size: var(--ob-font-size-input); }
   .ob-button--icon, .ob-icon-button { min-width: var(--ob-touch-target); }
 }

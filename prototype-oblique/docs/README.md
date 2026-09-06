@@ -12,6 +12,9 @@ Maintain these guides alongside changes to the prototype. The app's [README](../
 | [Supabase SQL setup](../supabase/README.md) | SQL Editor seed file, public read-only access, JSON migration, frontend connection and database checks. |
 | [Business-object attribute proposal](business-object-attribute-proposal.md) | Pending conceptual Building, Parcel, EconomicUnit and Measurement content decisions. |
 | [Imports and source evidence](imports/README.md) | Source-specific instructions, curation decisions, provenance and unresolved gaps. |
+| [Tiles and print layout](tiles-and-print-layout.md) | Agreed design-study implementation plan and validation. |
+| [Design and code reviews](review/README.md) | Findings, implemented fixes, validation and explicit remaining limitations. |
+| [Wireframes and design archive](wireframes/README.md) | Preserved design studies and earlier prototype snapshots. |
 
 ## Keeping this folder useful
 
@@ -19,6 +22,6 @@ Maintain these guides alongside changes to the prototype. The app's [README](../
 - Keep model meaning and attributes in data-model.md; maintain storage, prototype coverage and migration decisions in data-model-implementation.md.
 - Keep source evidence in `sources/` and executable import tools in `../scripts/`. Generated import reports belong beside their source evidence because they preserve mappings and retired records.
 - Keep temporary screenshots and test output outside the repository. Current preview images live in `../assets/`.
-- Use Git history for completed reviews, experiments and old prototype copies. Their lasting decisions are consolidated in the guides above; they do not need separate archives here.
+- Consolidate completed review decisions in the maintained guides. Preserve `wireframes/` and its supporting assets; delete archived designs only on explicit user request.
 
-The cleanup retained the catalog-model and business-object proposals, import evidence and outstanding source questions. It removed superseded reviews, old wireframes, duplicate assets and the obsolete fictional-data generator. To inspect the removed material, use `git log --all -- prototype-oblique/docs` and `git show <commit>:<path>` from the repository root.
+Superseded reviews remain available in Git history. Restored wireframes are indexed in the design archive above.

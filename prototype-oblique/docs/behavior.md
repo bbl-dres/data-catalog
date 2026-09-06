@@ -23,6 +23,8 @@ Collection controls place search before grouping/actions. Detail row tabs use th
 
 ## Key facts
 
+Detail overviews stack **Key facts**, **Protection and privacy** (*Schutz und Datenschutz*) and **System** in that order. Classification and personal-data handling belong to Protection and privacy. System shows identifiers, version, creation/modification dates and the existing source/synchronization metadata. All three sections remain expanded, with dashes for unknown values. Responsibility stays alongside on wide screens and follows them on narrow screens. This grouping does not change the catalog records or export contents.
+
 Business objects, data tables and reference data share a **More information** list backed by `informationUrls`. Keep the row visible when empty; deduplicate links and accept only safe HTTP(S) URLs. Existing source links remain available in this list. Data-table and reference-data profiles omit separate source-document, source-context and definition-source rows; their provenance remains in the data and Excel metadata.
 
 Reference-data profiles and collection tables use **Standard reference**, backed by `normReference`, matching business objects. Existing citation text is preserved without inferring an organisation record or a more precise standard identifier.
@@ -74,9 +76,44 @@ Inline touch input retains native page scrolling and browser zoom. Fullscreen mo
 
 The graph suite checks overlap, paging, selection, keyboard/touch input, print and a 1,000-relationship fixture; bounded geometry is also checked at 10,000 entries. This does not establish unlimited catalog performance.
 
+## Data model PDF export
+
+**Print** beside **Export** opens the output-only PDF workspace. The Export dropdown has no PDF options. The workspace supports business objects, data tables, reference data, products and APIs. Domain/system entry points select their business objects/tables. Grid and List include every documented child row, independent of a profile's field filter or pagination. APIs print documented endpoints and operation details; products include attributes, business-object members, source tables and serving APIs. Tiles provide an entity summary without child rows.
+
+### Scope and filters
+
+The independent catalog tree changes the export scope without navigating the application. Opening captures all supported sections in DE/FR/IT/EN; every later scope or document-language change uses that frozen content. The initial scope includes the current collection search. The scope chip, selection count and document summary make that boundary visible.
+
+**+ Filter** opens a searchable checkbox menu. Choices within a facet combine with OR; different facets combine with AND. Available facets depend on the entity type and include domain, system, business object, status, responsibility, classification, origin and access where applicable. Counts refer to the tree scope. Facets with only one populated value are initially hidden, with **Show all facets** to reveal them. The tree's current grouping facet is represented by the scope instead of duplicated in the menu. Apply commits pending choices; Cancel/Escape discards them. Individual chips remove applied choices.
+
+Tree checkboxes remember exclusions when changing scope; there are no persistent bulk-selection buttons. The finder changes visibility only. Reset filters appears when filters or an initial collection search are active and clears them while retaining the current tree scope and exclusions. A deliberate tree click or parent-scope action can broaden scope. Unmatched selected filters remain restrictive until removed. Empty filters offer Reset/parent scope; empty selection offers Select all for the filtered scope, including entries hidden by the tree finder. Neither produces blank pages or an enabled download.
+
+### Document and layout
+
+| Control | Behavior |
+| --- | --- |
+| Document | Title, optional document ID/version, document status, classification and optional overview. Apply changes the output settings only. The title follows scope until customized; reset restores the scope title. Document approval remains external. |
+| Paper/orientation | A4–A0, default A3. Tiles/Grid start landscape; List starts portrait. Explicit orientation choices are retained. Physical text size is fixed; there is no print-scale control. |
+| Tiles | Equal-width summary cards: alias, optional technical name, complete description, the same count/protocol summary and status as collection tiles. No attribute/field rows or profile facts. Cards flow left to right with equal height within each row; groups start new pages. A single selected entry remains a tile. |
+| Grid | Default for objects, tables and products. Equal-width cards with section-specific columns flow down columns. Each group starts a new page and repeats its band on continuation pages. |
+| List | Default for reference data/APIs. One continuous full-width table per content page, with an entity separator and one column header per page. An explicit layout choice survives scope changes. |
+| Columns | Available in List and detailed single-entry profiles; hidden in Tiles. Name is always present. Code, type/format, required, key, code list and description are initially included. Length/unit, origin and modified date are optional. The menu shows a count and restores defaults without applying until confirmed. Missing values remain dashes. |
+| Single entry | In Grid/List, uses full available page width, shows labeled facts on the first fragment and includes the complete row list. Table facts include business object, system, domain, responsibility and classification; empty values remain visible. |
+| Overview | A group index with page references; automatic from three groups, or explicitly enabled/disabled. |
+| Language | DE/FR/IT/EN for document labels and available catalog translations, using the existing fallback. Does not change application language or stored translations. |
+| Preview | Whole page, page width or numerical zoom. Fit modes recompute when resized. Pages scroll vertically without a page picker or navigation arrows. Page numbers remain on the document and in screen-reader feedback. Only visible pages and neighbours mount SVGs. |
+
+Cards repeat headings and row ranges on continuation; Grid/profile cards also repeat column labels. Splits occur between complete rows; a new fragment reserves at least five rows where the page can accommodate them. Zebra stripes restart in each fragment. A cell/header too large for the selected paper raises an actionable error and clears obsolete preview controls instead of clipping or dropping content. Business identifiers use ID, physical keys use PK/FK, and required markers reflect recorded data. Without a Grid key column, recorded markers appear beside the name. No relationship lines or inferred key metadata are added.
+
+Pages share a two-part branded header and a three-part footer: document identity/status, creation/source/classification and page numbering. The source date is the latest recorded version date (or modification date) among selected entries; undocumented dates/classification remain dashes. Confidential/secret classification repeats in the header. The creator comes from app configuration, not authenticated approval evidence. PDFs contain vectors, embedded Noto Sans and selectable text; no PDF/A or PDF/UA conformance is asserted.
+
+The workspace reuses the main application's footer component and language; it has no separate export footer. The toolbar keeps zoom, layout and grouping icons, plus dropdown chevrons. Document, paper, orientation, columns and filter menus use text labels without leading icons. Cancel is the single visible close action. Selection instructions and page feedback remain available to screen readers without repeating them visually. The PDF's own branded header/footer are independent of this workspace chrome.
+
+The local PDF writer/fonts load on demand. Download shows page progress; Cancel, Escape or application navigation prevents a pending download. Asset-load failures show retry beside the error message. PDF metadata includes a SHA-256 digest of the frozen content/settings manifest. The workflow does not write catalog data, save document settings or manage approvals. On narrow or short screens, display controls and the scope tree use disclosures. Expanded controls scroll with the workspace; the preview retains a minimum usable height. Settings dialogs fit the visible area above the software keyboard and keep Apply/Cancel accessible while their contents scroll.
+
 ## Excel export
 
-Excel is the structured export; print-to-PDF is also available. CSV is removed and DCAT export remains a placeholder. Export scope is captured in an immutable plan before the writer loads, so navigation during export cannot change its content. Duplicate actions are guarded and failed lazy loads can be retried.
+Excel is the structured export; the separate Print button opens PDF generation. CSV and PDF options are absent from the Export dropdown; DCAT export remains a placeholder. Export scope is captured in an immutable plan before the writer loads, so navigation during export cannot change its content. Duplicate actions are guarded and failed lazy loads can be retried.
 
 Workbooks separate overview, entity kinds, attributes, fields, code values, metadata, source documentation, relationships and history into applicable sheets. Collection exports include all matching records, not only the visible page. Domain collection exports use its filtered business objects; domain Overview exports the domain context. Entity exports include the full schema. Related records are expanded only within the defined scope, not through an unbounded graph traversal.
 

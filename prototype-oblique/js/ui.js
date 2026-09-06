@@ -6,8 +6,9 @@
   let dict = {};
   let language = 'de', fallbackLanguage = 'de';
 
-  /** Resolve a content label without modifying its stored translations. */
-  ui.localized = labels => labels?.[language] || labels?.[fallbackLanguage] || labels?.de || labels?.en || labels?.fr || labels?.it || '';
+  /** Resolve labels or prefixed SQL columns without copying their translations. */
+  ui.localized = (labels, prefix = '') => labels?.[prefix + language] || labels?.[prefix + fallbackLanguage]
+    || labels?.[prefix + 'de'] || labels?.[prefix + 'en'] || labels?.[prefix + 'fr'] || labels?.[prefix + 'it'] || '';
 
   /** Resolve translations with a fallback language for missing labels. */
   ui.setDictionary = function (table, lang, fallback) {
@@ -19,6 +20,13 @@
       if (!v || typeof v !== 'object') return;
       dict[key] = ui.localized(v) || key;
     });
+  };
+
+  /** Capture translated content synchronously without changing the application language. */
+  ui.withLanguage = function (table, lang, callback) {
+    const previous = { dict, language, fallbackLanguage };
+    try { ui.setDictionary(table, lang, fallbackLanguage); return callback(); }
+    finally { ({ dict, language, fallbackLanguage } = previous); }
   };
 
   /** Translate a UI key; `{name}` placeholders are replaced from params. Unknown keys return the key itself. */
@@ -54,6 +62,22 @@
   /** SVG icon (CSS mask, coloured by currentColor). size: xs|sm|lg|xl|2xl|3xl */
   ui.icon = function (name, size, cls) {
     return `<span class="${ui.esc(`ob-icon ob-icon-${name}${size ? ' ob-icon--' + size : ''}${cls ? ' ' + cls : ''}`)}" aria-hidden="true"></span>`;
+  };
+
+  /** Shared label/icon composition; callers retain their button semantics and actions. */
+  ui.buttonContent = (label, options = {}) => `${options.icon ? ui.icon(options.icon, null, options.iconClass) : ''}<span class="ob-button-label${options.labelClass ? ' ' + ui.esc(options.labelClass) : ''}">${ui.esc(label)}</span>${options.menu ? ui.icon('chevron_down', 'sm', options.chevronClass) : ''}`;
+
+  ui.menuKeydown = (event, menu) => {
+    const items = [...menu.querySelectorAll('.ob-menu-item:not(:disabled)')], current = items.indexOf(event.target);
+    let next;
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+      const index = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : (current + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
+      next = items[index];
+    } else if (event.key.length === 1 && event.key !== ' ' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      next = items.slice(current + 1).concat(items.slice(0, current + 1)).find(item => item.textContent.trim().toLocaleLowerCase().startsWith(event.key.toLocaleLowerCase()));
+    }
+    if (!next) return false;
+    event.preventDefault(); next.focus(); return true;
   };
 
   /** Shared pagination state. Validate URL values before slicing any result set. */
@@ -106,7 +130,8 @@
 
   ui.tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });
 
-  ui.empty = (title, hint) => `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}</div>`;
+  /** Hint and actions are already escaped markup, just like table cell content. */
+  ui.empty = (title, hint, options = {}) => `<div class="ob-empty${options.className ? ' ' + ui.esc(options.className) : ''}"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}${options.actions ? `<div class="ob-empty-action">${options.actions}</div>` : ''}</div>`;
 
   ui.loading = label => `<div class="ob-loading" role="status" aria-live="polite" aria-atomic="true"><div class="ob-loading-content"><span class="ob-spinner" aria-hidden="true"></span><span class="ob-loading-label">${ui.esc(label)}</span></div></div>`;
 
@@ -125,7 +150,9 @@
   </div>`;
   ui.collectionCount = ({ matched, total }) => ui.t('collection.search.count', { n: matched, total });
   ui.collectionStatus = ctx => `<p id="collection-filter-status" class="${ctx.filter ? 'ob-collection-status' : 'ob-sr-only'}" role="status" aria-atomic="true">${ui.esc(ui.collectionCount(ctx))}</p>`;
-  ui.collectionEmpty = filter => ui.empty(ui.t('collection.search.none'), filter ? `${ui.esc(ui.t('collection.search.hint'))}<p class="ob-empty-action"><button type="button" class="ob-button" data-action="clear-collection-filter">${ui.esc(ui.t('collection.search.clear'))}</button></p>` : '');
+  ui.collectionEmpty = filter => ui.empty(ui.t('collection.search.none'), filter ? ui.esc(ui.t('collection.search.hint')) : '', {
+    actions: filter ? `<button type="button" class="ob-button" data-action="clear-collection-filter">${ui.esc(ui.t('collection.search.clear'))}</button>` : ''
+  });
 
   /** ISO date (yyyy-mm-dd) → Swiss short date (d.m.yyyy). */
   ui.fmtDate = function (iso) {
@@ -139,16 +166,17 @@
     if (!sort || !Number.isInteger(sort.column)) return rows.slice();
     const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
     const direction = sort.direction === 'desc' ? -1 : 1;
-    const value = row => (getValues(row) || [])[sort.column];
-    const empty = v => v == null || String(v).trim() === '' || String(v).trim() === '–';
-    return rows.map((row, index) => ({ row, index })).sort((a, b) => {
-      const av = value(a.row), bv = value(b.row);
-      if (empty(av) && empty(bv)) return a.index - b.index;
-      if (empty(av)) return 1;
-      if (empty(bv)) return -1;
+    return rows.map((row, index) => {
+      const value = (getValues(row) || [])[sort.column], text = String(value ?? '').trim();
+      return { row, index, value, text, empty: !text || text === '–' };
+    }).sort((a, b) => {
+      const av = a.value, bv = b.value;
+      if (a.empty && b.empty) return a.index - b.index;
+      if (a.empty) return 1;
+      if (b.empty) return -1;
       const result = typeof av === 'number' && typeof bv === 'number'
         ? av - bv
-        : collator.compare(String(av).trim(), String(bv).trim());
+        : collator.compare(a.text, b.text);
       return result ? result * direction : a.index - b.index;
     }).map(item => item.row);
   };

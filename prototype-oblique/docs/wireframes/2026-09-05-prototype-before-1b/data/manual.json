@@ -1,0 +1,100 @@
+{
+  "chapters": [
+    { "id": "einleitung", "title": "Einleitung" },
+    { "id": "gouvernanz", "title": "Gouvernanz und Rollen" },
+    { "id": "modell", "title": "Informationsmodell" },
+    { "id": "nutzen", "title": "Katalog nutzen" },
+    { "id": "abrufen", "title": "Metadaten abrufen" },
+    { "id": "faq", "title": "Oft gestellte Fragen" },
+    { "id": "glossar", "title": "Glossar" },
+    { "id": "grundlagen", "title": "Quellen und Verweise" }
+  ],
+  "einleitung": {
+    "intro": "Der Datenkatalog zeigt, welche Daten das BBL im Immobilienmanagement führt, was sie bedeuten, wo sie liegen und wer dafür verantwortlich ist. Er richtet sich an Fachpersonen, Datenverantwortliche und Entwicklerinnen. Er beantwortet:",
+    "questions": [
+      "Was bedeutet ein Begriff wie «Mietobjekt», unabhängig vom System?",
+      "In welcher Tabelle liegen die Daten, und wer ist dafür Datenhalter?",
+      "Wer verantwortet eine Domäne?",
+      "Welche Wertelisten gelten, und woher stammen sie?"
+    ],
+    "sections": [
+      { "title": "Lesesicht, kein führendes System", "text": "Alle Inhalte stammen aus dem Architektur-Repository des BBL (Innovator / smartfacts, IKT-Vorgabe A736) und werden täglich abgeglichen. Im Katalog wird nichts erfasst oder geändert; das Datum des letzten Abgleichs steht in jedem Steckbrief. Korrekturen melden Sie dem Datenverwalter der Domäne." },
+      { "title": "Einordnung", "text": "Das Repository beschreibt die Unternehmensarchitektur in ArchiMate. Der Katalog übernimmt daraus Geschäftsobjekte, Anwendungen und Datenobjekte und ordnet sie nach Domäne, Verantwortung, Status und Herkunft. Sein Informationsmodell folgt DCAT-AP CH (eCH-0200) und SKOS, so dass Datenprodukte ohne Umformung an I14Y und opendata.swiss übergeben werden können. I14Y ist das bundesweite Verzeichnis; der Katalog das interne Verzeichnis des BBL für die Domäne Immobilien." }
+    ]
+  },
+  "gouvernanz": {
+    "intro": "Die Rollen folgen dem Rollenmodell der Nationalen Datenbewirtschaftung (NaDB, BFS). Jede Domäne und jedes System nennt die verantwortliche Organisationseinheit und die Personen in diesen Rollen. Datentabellen übernehmen den Datenhalter ihres Systems, sofern kein eigener Datenhalter angegeben ist.",
+    "roles": [
+      { "label": "Datenverantwortung", "nadb": "Verantwortliche Organisationseinheit", "en": "Bereich / Kreis", "task": "Erste Anlaufstelle bei fachlichen Fragen zu einer Domäne." },
+      { "label": "Dateneigner", "nadb": "Dateninhaber", "en": "Data Owner", "task": "Entscheidet über Zweck, Qualität, Zugriff und Schutz; genehmigt Definitionen und Statuswechsel." },
+      { "label": "Datenverwalter", "nadb": "Lokaler Datenverwalter", "en": "Local Data Steward", "task": "Pflegt Geschäftsobjekte, Attribute und Wertelisten im Repository." },
+      { "label": "Datenhalter", "nadb": "Lokaler Datenhalter", "en": "Local Data Custodian", "task": "Betreut das Quellsystem oder die Datentabelle und stellt die Daten bereit." },
+      { "label": "Nutzende", "nadb": "Datennutzer / Datenbearbeiter", "en": "Data Consumer / Producer", "task": "Lesen im Katalog nach; arbeiten in den Quellsystemen." }
+    ],
+    "workflowTitle": "Arbeitsablauf",
+    "workflowIntro": "Metadaten entstehen im Architektur-Repository, nicht im Katalog:",
+    "workflow": [
+      { "title": "Melden", "who": "Fachbereich", "text": "Neues Geschäftsobjekt, Korrektur oder geänderte Verantwortung an den Datenverwalter der Domäne." },
+      { "title": "Modellieren", "who": "Datenverwalter", "text": "Erfassung im Repository nach Modellierungsmethode Bund: Definition, Attribute, Normreferenz, Tabellen, Wertelisten." },
+      { "title": "Freigeben", "who": "Dateneigner", "text": "Prüfung und Statuswechsel von «Entwurf» auf «Gültig»." },
+      { "title": "Abgleichen", "who": "automatisch, täglich", "text": "Der Katalog übernimmt den freigegebenen Stand und vermerkt das Datum unter «Letzter Abgleich»." }
+    ],
+    "reportTitle": "Änderungen melden",
+    "reportText": "Fehlt ein Geschäftsobjekt oder stimmt eine Angabe nicht, wenden Sie sich an den im Steckbrief genannten Datenverwalter. Fragen zum Katalog selbst beantwortet DRES – Digital Solutions über «Hilfe und Kontakt»."
+  },
+  "modell": {
+    "intro": "Das Modell folgt DCAT-AP CH und SKOS und ist auf ArchiMate abgestimmt. Die drei Bereiche entsprechen den Schichten des Referenzmodells RIAB (R001); Fachbegriffe sind von ihrer technischen Umsetzung getrennt, verbunden durch die Beziehung «realisiert».",
+    "layers": [
+      { "layer": "ArchiMate Business Object, skos:Concept", "title": "Geschäftsobjekte", "text": "Systemneutrale Fachbegriffe mit Definition, Attributen und Normreferenz, gegliedert nach Domänen.", "example": "Gebäude, Mietvertrag" },
+      { "layer": "ArchiMate Data Object, dcat:Dataset", "title": "Datentabellen", "text": "Physische Tabellen und Felder der Quellsysteme. Jede Tabelle realisiert ein Geschäftsobjekt.", "example": "VIBDBE in SAP RE-FX" },
+      { "layer": "skos:ConceptScheme", "title": "Referenzdaten", "text": "Wertelisten und Codes, die Attribute typisieren; Quelle und Version ausgewiesen.", "example": "GWR Gebäudekategorie" },
+      { "layer": "dcat:Dataset (I14Y Datensammlung)", "title": "Datenprodukte", "text": "Auffindbare, verantwortete Datenangebote mit Zugang, Lizenz, Format und Aktualisierung. Basieren auf Geschäftsobjekten, werden aus Datentabellen gespeist und über APIs bereitgestellt; Attribute optional.", "example": "Gebäudebestand Bund" },
+      { "layer": "dcat:DataService (I14Y Schnittstelle)", "title": "API-Verzeichnis", "text": "Schnittstellen mit Protokoll, Version, Zugang und Link zur Dokumentation. Attribute werden nicht dokumentiert.", "example": "Immobilien-API v2" }
+    ],
+    "coreTitle": "Gemeinsame Kernattribute",
+    "coreIntro": "Jeder Eintrag – Domäne, System, Geschäftsobjekt, Attribut, Datentabelle, Werteliste – trägt denselben Kern. Die Feldnamen sind englisch; die Spalten zeigen die Entsprechung in DCAT-AP CH / I14Y, ArchiMate und DMBOK.",
+    "extTitle": "Typspezifische Attribute",
+    "statusTitle": "Status"
+  },
+  "nutzen": {
+    "steps": [
+      { "title": "Suchen", "text": "Begriff eingeben, Enter. Gefunden wird nach Name, Beschreibung und technischem Namen." },
+      { "title": "Navigieren", "text": "Der Baum gliedert Geschäftsobjekte und Referenzdaten nach Domäne, Datentabellen nach System. Domäne oder System anklicken öffnet den Steckbrief." },
+      { "title": "Gruppieren", "text": "Inhalte nach Domäne, Verantwortung, Status oder System ordnen; Kacheln oder Tabelle wählen." },
+      { "title": "Steckbrief lesen", "text": "Beschreibung, Kerndaten, Status und Verantwortliche; Register für Attribute, Beziehungen und Verlauf." },
+      { "title": "Exportieren", "text": "Über «Exportieren» als CSV, Excel oder PDF; maschinell über die API." }
+    ]
+  },
+  "abrufen": {
+    "export": "Jede Liste und jeder Steckbrief hat ein Menü «Exportieren» für CSV, Excel und PDF. Exporte enthalten die sichtbaren Spalten in der gewählten Gruppierung.",
+    "api": "Eine lesende REST-Schnittstelle (OpenAPI 3.1) liefert Geschäftsobjekte, Attribute, Datentabellen, Felder und Wertelisten als JSON sowie den Katalog als DCAT-AP CH (Turtle, JSON-LD). Authentisierung über eIAM."
+  },
+  "faq": [
+    { "q": "Kann ich im Katalog etwas ändern?", "a": "Nein. Der Katalog ist eine Lesesicht. Änderungen erfasst der Datenverwalter im Architektur-Repository; sie erscheinen mit dem nächsten Abgleich." },
+    { "q": "Wie aktuell sind die Inhalte?", "a": "Der Abgleich läuft täglich. Das Datum steht in jedem Steckbrief unter «Abgeglichen»." },
+    { "q": "Warum gibt es «Gebäude» zweimal?", "a": "Einmal als Geschäftsobjekt (fachlicher Begriff) und einmal als Datentabelle in SAP RE-FX und GIS IMMO (technische Umsetzung). Der Steckbrief verknüpft beide." },
+    { "q": "An wen wende ich mich bei einer falschen Beschreibung?", "a": "An den im Steckbrief genannten Datenverwalter der Domäne. Fragen zum Katalog selbst an DRES – Digital Solutions über «Hilfe und Kontakt»." },
+    { "q": "Wer darf den Katalog nutzen?", "a": "Alle Mitarbeitenden des BBL. Die API ist über eIAM zugänglich; publizierte Datenprodukte erscheinen zusätzlich auf I14Y." },
+    { "q": "Kann ich Daten selbst herunterladen?", "a": "Ja, über «Exportieren» als CSV, Excel oder PDF. Der Katalog enthält Metadaten, keine Fachdaten; diese bleiben in den Quellsystemen." }
+  ],
+  "glossar": [
+    { "term": "Domäne", "text": "Fachliche Gliederung der Geschäftsobjekte mit einer Datenverantwortung, z.B. Architektonische Sicht, Energie, Finanzen." },
+    { "term": "Geschäftsobjekt", "text": "Systemneutraler Fachbegriff mit Definition und Attributen (Business Object gemäss ArchiMate, skos:Concept)." },
+    { "term": "Attribut", "text": "Fachliche Eigenschaft eines Geschäftsobjekts mit Werttyp und Schlüsselrolle (PK, FK)." },
+    { "term": "Datentabelle", "text": "Physische Tabelle in einem Quellsystem, die ein Geschäftsobjekt realisiert." },
+    { "term": "Referenzdaten", "text": "Wertelisten und Codes mit endlichem Wertevorrat (z.B. GWR Gebäudekategorie)." },
+    { "term": "Führendes System", "text": "System, in dem eine Information erfasst wird; für den Katalog das Architektur-Repository." },
+    { "term": "DCAT-AP CH", "text": "Schweizer Anwendungsprofil des Data Catalog Vocabulary (eCH-0200); Grundlage von Modell und Export." },
+    { "term": "ArchiMate", "text": "Modellierungssprache für Unternehmensarchitektur; Quelle der Elemente und Beziehungen im Katalog." },
+    { "term": "Modellierungsmethode Bund", "text": "Vorgabe für die Modellierung von Prozessen und Architekturen mit Innovator." },
+    { "term": "Abgeglichen", "text": "Datum, an dem der Katalog zuletzt mit dem führenden System synchronisiert wurde." }
+  ],
+  "grundlagen": [
+    { "title": "Fähigkeitskonzept Daten- und Informationsmanagement", "source": "Bundeskanzlei, Bereich DTI", "url": "https://www.bk.admin.ch/de/daten-und-informationsmanagement" },
+    { "title": "R001 – Referenzmodell für die Informatikarchitektur Bund (RIAB)", "source": "Bundeskanzlei, IKT-Standard", "url": "https://www.bk.admin.ch/de/r001-referenzmodell-fuer-die-informatikarchitektur-bund-riab" },
+    { "title": "Nationale Datenbewirtschaftung (NaDB): Prozesse, Rollen und Verantwortlichkeiten", "source": "Bundesamt für Statistik", "url": "https://www.bfs.admin.ch/bfs/de/home/nadb/nadb.html" },
+    { "title": "A736 – Prozess- und Architekturmodellierungswerkzeuge", "source": "Bundeskanzlei, IKT-Vorgabe", "url": "https://www.bk.admin.ch/de/a736-prozess-und-architekturmodellierungswerkzeuge" },
+    { "title": "DCAT-AP CH – Swiss Application Profile for Data Portals and Catalogues (eCH-0200)", "source": "eCH", "url": "https://www.dcat-ap.ch/" },
+    { "title": "Handbuch Interoperabilitätsplattform I14Y", "source": "Bundesamt für Statistik", "url": "https://metadata-swiss.github.io/handbook/de/" }
+  ]
+}

@@ -36,6 +36,30 @@ const { build, parseJson, files } = require('../supabase/import-catalog.cjs');
     check(request.options.headers['Content-Profile'], 'catalog');
     check(request.options.headers.Authorization, undefined, 'Publishable key is not a JWT');
     check(DK.data.validate().length, 0, 'No broken cross references');
+    const projected = DK.catalog.project(snapshot);
+    const records = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'].flatMap(kind => projected[kind])
+      .flatMap(entity => [entity, ...(entity.attributes || []), ...(entity.fields || []), ...(entity.values || [])]);
+    for (const entity of records) {
+      const expected = snapshot.relationship.filter(link => Object.entries(link).some(([key, value]) => /^(source|target)_.+_id$/.test(key) && value === entity._record.id));
+      check(JSON.stringify(entity._relationships), JSON.stringify(expected), 'Indexed links preserve order and unverified source evidence');
+    }
+    const revised = structuredClone(snapshot), table = revised.data_table.find(t => t.identifier === 't-sap-building');
+    const object = revised.business_object.find(o => o.identifier === 'gebaeude');
+    revised.relationship = [
+      { id: 'rejected', source_data_table_id: table.id, target_business_object_id: object.id, relationship_type: 'realizes', verification_status: 'rejected' },
+      { id: 'confirmed', source_data_table_id: table.id, target_business_object_id: object.id, relationship_type: 'realizes', verification_status: 'confirmed' },
+      { id: 'self', source_business_object_id: object.id, target_business_object_id: object.id, verification_status: 'candidate' },
+    ];
+    let indexed = DK.catalog.project(revised);
+    check(indexed.tables.find(e => e.identifier === table.identifier).realizes, object.identifier, 'Rejected links do not become active mappings');
+    check(indexed.objects.find(e => e.identifier === object.identifier)._relationships.length, 3, 'Self relationships appear once');
+    object.status = 'retired';
+    indexed = DK.catalog.project(revised);
+    check(indexed.tables.find(e => e.identifier === table.identifier).realizes, undefined, 'Retired targets are excluded on a fresh snapshot');
+    revised.relationship = [];
+    check(DK.catalog.project(revised).tables.find(e => e.identifier === table.identifier)._relationships.length, 0, 'Indexes do not retain links across snapshots');
+    revised.relationship = [{ source_data_table_id: 'missing', verification_status: 'candidate' }];
+    assert.throws(() => DK.catalog.project(revised), /Broken data_table reference/); checks++;
     for (const kind of Object.keys(files).filter(kind => kind !== 'changelog')) {
       check(DK.data[kind].length, source[kind].length, kind);
       for (const original of source[kind]) {

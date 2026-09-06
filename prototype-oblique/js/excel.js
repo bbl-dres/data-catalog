@@ -8,9 +8,12 @@
   let loading;
 
   /** Build a plain-data snapshot before any asynchronous work or route/language change. */
-  excel.plan = function (route, ctx, baseUrl = window.location.href) {
+  excel.plan = function (route, ctx, baseUrl = window.location.href, { scope = 'selection' } = {}) {
+    if (!['selection', 'catalog'].includes(scope)) throw new Error('Unknown Excel export scope: ' + scope);
+    const catalog = scope === 'catalog', title = catalog ? t('excel.catalog') : ctx.title;
     const collection = ctx.isList ?? route.view === 'list', kind = ctx.kind || route.kind;
-    const roots = route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
+    const roots = catalog ? data.kinds.flatMap(kind => ui.sortRows(data.list(kind), { column: 0, direction: 'asc' }, e => [data.displayName(kind, e)]).map(e => ({ ...e, kind })))
+      : route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
       const sort = ui.tableOptions(ctx.state, `list:${kind}`, { column: 0, direction: 'asc' }).sort;
       const items = ctx.mode === 'table' ? ui.sortRows(g.items, sort, entity => data.collectionValues(kind, entity)) : g.items;
       return items.map(e => ({ ...e, kind }));
@@ -19,29 +22,31 @@
     const add = (kind, e) => { if (e) records.set(`${kind}:${e.identifier}`, { ...e, kind }); };
     roots.forEach(e => add(e.kind, e));
     // Expand owned content, not every neighbour in the relationship graph.
-    roots.forEach(e => {
-      if (e.kind === 'domains') ['objects', 'tables', 'refs', 'products', 'apis'].forEach(kind => data.membersOfDomain(kind, e).forEach(x => add(kind, x)));
-      if (e.kind === 'systems') {
-        data.tablesOfSystem(e).forEach(x => add('tables', x));
-        data.apisOfSystem(e).forEach(x => add('apis', x));
-      }
-    });
-    [...records.values()].filter(e => e.kind === 'objects').forEach(e => {
-      data.tables.filter(x => x.realizes === e.identifier).forEach(x => add('tables', x));
-      data.refs.filter(x => x.businessObject === e.identifier).forEach(x => add('refs', x));
-    });
-    [...records.values()].forEach(e => {
-      const fields = e.kind === 'tables' ? e.fields : ['fields', 'attrs'].includes(e.kind) ? [e] : [];
-      fields.forEach(f => add('refs', data.get('refs', f.codeList)));
-    });
+    if (!catalog) {
+      roots.forEach(e => {
+        if (e.kind === 'domains') ['objects', 'tables', 'refs', 'products', 'apis'].forEach(kind => data.membersOfDomain(kind, e).forEach(x => add(kind, x)));
+        if (e.kind === 'systems') {
+          data.tablesOfSystem(e).forEach(x => add('tables', x));
+          data.apisOfSystem(e).forEach(x => add('apis', x));
+        }
+      });
+      [...records.values()].filter(e => e.kind === 'objects').forEach(e => {
+        data.tables.filter(x => x.realizes === e.identifier).forEach(x => add('tables', x));
+        data.refs.filter(x => x.businessObject === e.identifier).forEach(x => add('refs', x));
+      });
+      [...records.values()].forEach(e => {
+        const fields = e.kind === 'tables' ? e.fields : ['fields', 'attrs'].includes(e.kind) ? [e] : [];
+        fields.forEach(f => add('refs', data.get('refs', f.codeList)));
+      });
+    }
     const rootKeys = new Set(roots.map(e => `${e.kind}:${e.identifier}`));
     const link = (kind, id) => new URL(router.entityHref(kind, id), baseUrl).href;
     const sheets = [];
     const col = (key, width = 24, type) => ({ label: t(key), width, type });
     const sheet = (name, columns) => { const s = { name, columns, rows: [] }; sheets.push(s); return s; };
     const overview = sheet(t('detail.tab.overview'), [col('excel.property', 30), col('excel.value', 100)]);
-    overview.rows.push([t('excel.selection'), ctx.title], [t('excel.exported'), new Date().toISOString()], [t('excel.view'), baseUrl],
-      [t('excel.filter'), ctx.filter || ''], [t('excel.selectedCount'), roots.length], [t('excel.scope'), t('excel.scopeNote')]);
+    overview.rows.push([t('excel.selection'), title], [t('excel.exported'), new Date().toISOString()], [t('excel.view'), baseUrl],
+      [t('excel.filter'), catalog ? '' : ctx.filter || ''], [t('excel.selectedCount'), roots.length], [t('excel.scope'), t(catalog ? 'excel.catalogScopeNote' : 'excel.scopeNote')]);
     const metadata = { name: t('excel.metadata'), columns: [col('col.type'), col('fact.identifier', 36), col('col.name', 36), col('excel.property', 40), col('excel.value', 90)], rows: [] };
     const documentation = { name: t('detail.sourceDocumentation'), columns: [col('fact.table', 36), col('col.field'), col('excel.section', 38), col('excel.value', 100), col('fact.sourceDocument', 60, 'link')], rows: [] };
     const relationships = { name: t('detail.tab.relations'), columns: [col('col.type'), col('fact.identifier', 36), col('col.name', 36), col('excel.relationship', 36), col('excel.target', 45), col('col.details', 45), col('excel.link', 60, 'link')], rows: [] };
@@ -56,7 +61,7 @@
     const kinds = [...new Set([...roots.map(e => e.kind), ...data.kinds])].filter(k => !['attrs', 'fields'].includes(k));
     kinds.forEach(kind => {
       const items = [...records.values()].filter(e => e.kind === kind);
-      if (!items.length && !(collection && (ctx.kind || route.kind) === kind)) return;
+      if (!items.length && !catalog && !(collection && (ctx.kind || route.kind) === kind)) return;
       const s = sheet(data.kindDef(kind).plural, [col('fact.identifier', 34), col('col.name', 40), col('col.description', 85), col('col.status', 20), col('fact.version', 18), col('col.domain', 30), col('col.system', 25), col('col.responsibility', 40), col('excel.selection', 20), col('excel.link', 60, 'link')]);
       items.forEach(e => {
         s.rows.push([String(e.identifier), data.displayName(kind, e), e.description, e.status, e.version, data.domainForEntity(kind, e)?.name,
@@ -67,9 +72,9 @@
     const fields = { name: t('col.fields'), columns: [col('excel.parentId', 32), col('fact.table', 38), col('fact.identifier', 32), col('fact.technicalName', 25), col('col.label', 45), col('col.description', 80), col('col.dataType'), col('col.key'), col('col.mandatory'), col('fact.position', 20, 'number'), col('col.codeList', 32), col('fact.registerAccess', 28), col('fact.masterData', 25), col('col.status'), col('fact.sourceDocument', 60, 'link'), col('excel.link', 60, 'link')], rows: [] };
     const values = { name: t('col.values'), columns: [col('excel.parentId', 32), col('col.codeList', 44), col('col.code', 20), col('col.label', 65), ...['fr', 'it', 'en'].map(lang => ({ label: `${t('col.label')} (${lang})`, width: 50 })), col('col.details', 75), col('fact.version'), col('excel.sourceRow', 20, 'number')], rows: [] };
     const children = new Map();
-    const addChild = (e, parent, kind) => children.set(`${kind}:${e.identifier}`, { e, parent, kind });
+    const addChild = (e, parent, kind) => children.set(`${kind}:${parent.identifier}:${e.identifier}`, { e, parent, kind });
     const orderedChildren = (e, items) => {
-      if (route.entity?.kind !== e.kind || route.entity.identifier !== e.identifier) return items;
+      if (catalog || route.entity?.kind !== e.kind || route.entity.identifier !== e.identifier) return items;
       const rows = DK.detail.rowsData(e).rows;
       const sort = ui.tableOptions(ctx.state, `detail:${e.kind}:rows`).sort;
       return ui.sortRows(items.map((item, i) => ({ item, text: rows[i]?.text || [] })), sort, r => r.text).map(r => r.item);
@@ -100,7 +105,7 @@
     });
     [attrs, fields, values, metadata, documentation, relationships, history].forEach(s => { if (s.rows.length) sheets.push(s); });
     sheets.slice(1).forEach(s => overview.rows.push([s.name, s.rows.length]));
-    return { filename: `${ui.slug(ctx.title) || 'katalog'}.xlsx`, title: ctx.title, sheets, longTextName: t('excel.longTexts'), continuation: t('excel.continuation'),
+    return { filename: `${ui.slug(title) || 'catalog'}.xlsx`, title, sheets, longTextName: t('excel.longTexts'), continuation: t('excel.continuation'),
       longColumns: [col('fact.identifier'), col('excel.sheet'), col('excel.row', 20, 'number'), col('excel.column'), col('excel.part', 20, 'number'), col('excel.value', 100)] };
   };
 

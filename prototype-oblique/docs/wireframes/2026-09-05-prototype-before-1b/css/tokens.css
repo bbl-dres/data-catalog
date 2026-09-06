@@ -1,0 +1,259 @@
+/* ==========================================================================
+   Datenkatalog BBL – design tokens
+   --------------------------------------------------------------------------
+   Hand-written CSS custom properties derived from the Oblique design system
+   (FOITT, MIT): palette from projects/oblique/src/styles/scss/core/_palette.scss,
+   type/spacing/radius/shadow/z-index from projects/design-system tokens.css and
+   the legacy _variables.scss. Only the values this app uses are kept.
+
+   Tiers
+     1. Primitives   --ob-<hue>-<step>, --ob-font-*, --ob-space-*, …
+     2. Semantic     --ob-color-*, --ob-shadow-*, --ob-z-*
+     3. Component    --ob-header-*, --ob-control-*, …
+   Use tier 2 and 3 in main.css; tier 1 only to define them.
+   ========================================================================== */
+
+:root {
+  /* ---- 1. Primitives: colour ------------------------------------------- */
+  --ob-white: #ffffff;
+  --ob-black: #000000;
+
+  /* Federal red (accent) */
+  --ob-red-50: #ffedee;
+  --ob-red-100: #fae1e2;
+  --ob-red-200: #ffccce;
+  --ob-red-300: #fa9da1;
+  --ob-red-400: #fc656b;
+  --ob-red-500: #e53940;
+  --ob-red-600: #d8232a;
+  --ob-red-700: #bf1f25;
+  --ob-red-800: #99191e;
+  --ob-red-900: #801519;
+
+  /* Blue-grey neutral ramp ("secondary") */
+  --ob-secondary-50: #f0f4f7;
+  --ob-secondary-100: #dfe4e9;
+  --ob-secondary-200: #acb4bd;
+  --ob-secondary-300: #828e9a;
+  --ob-secondary-400: #596978;
+  --ob-secondary-500: #46596b;
+  --ob-secondary-600: #2f4356;
+  --ob-secondary-700: #263645;
+  --ob-secondary-800: #1c2834;
+  --ob-secondary-900: #131b22;
+
+  /* Green */
+  --ob-green-50: #ecfdf5;
+  --ob-green-100: #d1fae5;
+  --ob-green-700: #047857;
+  --ob-green-800: #065f46;
+
+  /* Orange */
+  --ob-orange-50: #fff7ed;
+  --ob-orange-100: #ffedd5;
+  --ob-orange-600: #ea580c;
+  --ob-orange-700: #c2410c;
+
+  /* Blue */
+  --ob-blue-50: #eff6ff;
+  --ob-blue-100: #dbeafe;
+  --ob-blue-700: #1d4ed8;
+  --ob-blue-800: #1e40af;
+  --ob-blue-900: #1e3a8a;
+
+  /* Purple (focus ring, visited links) */
+  --ob-purple-500: #8655f6;
+  --ob-purple-700: #6d28d9;
+
+  /* ---- 1. Primitives: typography --------------------------------------- */
+  --ob-font-family-body: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ob-font-family-code: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+
+  --ob-font-size-xs: 0.75rem;     /* 12px */
+  --ob-font-size-sm: 0.875rem;    /* 14px */
+  --ob-font-size-md: 1rem;        /* 16px */
+  --ob-font-size-lg: 1.0625rem;   /* 17px – legacy h3 */
+  --ob-font-size-xl: 1.4375rem;   /* 23px – h2 */
+  --ob-font-size-2xl: 1.75rem;    /* 28px – h1 */
+
+  --ob-line-height-xs: 1rem;
+  --ob-line-height-sm: 1.25rem;
+  --ob-line-height-md: 1.5rem;
+  --ob-line-height-lg: 1.75rem;
+  --ob-line-height-xl: 2rem;
+  --ob-line-height-body: 1.5;
+  --ob-line-height-table: 1.42857;
+  /* Icon sizes: xs 12, sm 14, md 16, lg 18, xl 20, 2xl 22, 3xl 28 */
+  --ob-icon-size-xs: 12px;
+  --ob-icon-size-sm: 14px;
+  --ob-icon-size-md: 16px;
+  --ob-icon-size-lg: 18px;
+  --ob-icon-size-xl: 20px;
+  --ob-icon-size-2xl: 22px;
+  --ob-icon-size-3xl: 28px;
+
+  --ob-font-weight-light: 300;
+  --ob-font-weight-regular: 400;
+  --ob-font-weight-medium: 500;
+  --ob-font-weight-semibold: 600;
+  --ob-font-weight-bold: 700;
+
+  --ob-letter-spacing-narrow: -0.5px;
+  --ob-letter-spacing-normal: 0;
+  --ob-letter-spacing-wide: 0.25px;
+  --ob-letter-spacing-wider: 0.5px;
+  --ob-letter-spacing-caps: 2px;
+
+  /* ---- 1. Primitives: spacing (legacy $ob-spacing-*) -------------------- */
+  --ob-space-2xs: 2px;
+  --ob-space-xs: 4px;
+  --ob-space-sm: 8px;
+  --ob-space-md: 12px;
+  --ob-space-default: 16px;
+  --ob-space-lg: 24px;
+  --ob-space-xl: 32px;
+  --ob-space-2xl: 40px;
+  --ob-space-3xl: 48px;
+
+  /* ---- 1. Primitives: radius & borders --------------------------------- */
+  --ob-radius-none: 0;
+  --ob-radius-sm: 2px;    /* buttons, controls */
+  --ob-radius-md: 3px;    /* focus ring on links */
+  --ob-radius-lg: 4px;    /* inputs */
+  --ob-radius-pill: 999px;
+
+  --ob-border-width-xs: 1px;
+  --ob-border-width-sm: 2px;
+  --ob-border-width-md: 3px;
+  --ob-border-width-lg: 4px;
+
+  /* ---- 1. Primitives: shadows (legacy _shadow.scss, valid CSS) --------- */
+  --ob-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ob-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 5px rgba(0, 0, 0, 0.08);
+  --ob-shadow-default: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.08);
+  --ob-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.05), 0 5px 20px rgba(0, 0, 0, 0.08);
+  --ob-shadow-menu: 0 3px 4px 1px var(--ob-secondary-300);
+  --ob-shadow-popover: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+
+  /* ---- 1. Primitives: z-index (legacy) --------------------------------- */
+  --ob-z-controls: 10;
+  --ob-z-layout: 101;
+  --ob-z-widget: 200;
+  --ob-z-overlay: 1005;
+  --ob-z-toast: 1400;
+
+  /* ---- 1. Primitives: motion ------------------------------------------- */
+  --ob-duration-micro: 100ms;
+  --ob-duration-smooth: 200ms;
+  --ob-duration-fast: 250ms;
+  --ob-easing-standard: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---- 2. Semantic colours --------------------------------------------- */
+  --ob-color-text: var(--ob-secondary-800);            /* body text          */
+  --ob-color-text-secondary: var(--ob-secondary-600);  /* labels, subtitles  */
+  --ob-color-text-tertiary: var(--ob-secondary-400);   /* hints, counts      */
+  --ob-color-text-disabled: var(--ob-secondary-300);
+  --ob-color-text-inverse: var(--ob-white);
+
+  --ob-color-bg: var(--ob-white);
+  --ob-color-surface: var(--ob-secondary-50);          /* panels, zebra rows */
+  --ob-color-surface-hover: var(--ob-secondary-100);
+  --ob-color-border: var(--ob-secondary-100);
+  --ob-color-border-strong: var(--ob-secondary-200);
+  --ob-color-border-input: var(--ob-secondary-400);      /* Figma text/select: 1px #596978 */
+  --ob-color-border-control: var(--ob-secondary-600);
+  --ob-color-footer-bg: var(--ob-secondary-700);
+
+  --ob-color-accent: var(--ob-red-500);                /* active markers      */
+  --ob-color-accent-strong: var(--ob-red-600);         /* tab underline       */
+  --ob-color-link: var(--ob-blue-700);
+  --ob-color-link-hover: var(--ob-blue-800);
+  --ob-color-link-active: var(--ob-blue-900);
+  --ob-color-link-visited: var(--ob-purple-700);      /* prose links only (core/_type.scss) */
+  --ob-color-focus: var(--ob-purple-500);
+  --ob-color-placeholder: var(--ob-color-text-tertiary); /* 5.65:1 on white, distinct from typed text */
+  --ob-color-tab-text: var(--ob-black);                  /* material/mixins/_mat-tab.scss */
+  --ob-color-backdrop: rgba(19, 27, 34, 0.42);           /* secondary-900 at 42 % behind the drawer */
+
+  --ob-color-success: var(--ob-green-700);
+  --ob-color-success-bg: var(--ob-green-100);
+  --ob-color-warning: var(--ob-orange-700);
+  --ob-color-warning-bg: var(--ob-orange-100);
+  --ob-color-error: var(--ob-red-800);
+  --ob-color-error-bg: var(--ob-red-100);
+  --ob-color-info: var(--ob-blue-800);
+  --ob-color-info-bg: var(--ob-blue-100);
+  --ob-color-neutral: var(--ob-secondary-600);
+
+  --ob-color-avatar-bg: var(--ob-secondary-600);
+  --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
+
+  /* ---- 3. Component tokens --------------------------------------------- */
+  --ob-content-max-width: 1440px;
+  --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
+  /* Logo lockup: values from the federal design system (css/components/logo.postcss), desktop tier */
+  --ob-logo-flag-width: 30px;
+  --ob-logo-flag-height: 33px;
+  --ob-logo-name-width: 174px;
+  --ob-logo-name-height: 50px;
+  --ob-logo-separator-height: 56px;                      /* h-14 from md up; 40px below */
+  --ob-logo-separator-gap: var(--ob-space-lg);           /* ml-6 / mr-6 from lg up; 16px from sm, 8px below */
+  --ob-logo-separator-color: #d1d5db;                    /* bg-[#D1D5DB]; no Oblique primitive matches exactly */
+  --ob-logo-title-font-size: var(--ob-font-size-md);     /* text-base from xl up */
+  --ob-logo-title-line-height: 1.375;                    /* leading-snug */
+  --ob-logo-title-trim: 0.16rem;                         /* mt-[-0.160rem]: caps flush with the wordmark text */
+  --ob-control-height: 36px;
+  --ob-control-height-lg: 40px;
+  --ob-touch-target: 44px;
+  --ob-control-height-sm: 32px;                          /* icon buttons inside controls, avatar, tree toggles */
+  --ob-avatar-size: var(--ob-control-height-sm);
+  --ob-badge-size: 24px;                                 /* count badges (graph, relation groups) */
+  --ob-language-select-min-width: 64px;
+  --ob-tree-panel-min-width: 220px;
+  --ob-tree-panel-max-width: 260px;
+  --ob-drawer-width: 360px;
+  --ob-drawer-header-height: 56px;
+  --ob-search-min-width: 260px;
+  --ob-search-max-width: 480px;
+  --ob-suggest-max-height: 420px;
+  --ob-menu-min-width: 240px;
+  --ob-menu-min-width-wide: 260px;
+  --ob-menu-min-width-narrow: 200px;
+  --ob-popover-width: 395px;                             /* Oblique service navigation popover (empiric) */
+  --ob-breadcrumb-item-max-width: 240px;
+  --ob-breadcrumb-current-max-width: 320px;
+  --ob-kpi-min-width: 240px;
+  --ob-facts-label-min-width: 140px;
+  --ob-facts-label-max-width: 200px;
+  --ob-tile-min-width: 180px;
+  --ob-tile-min-height: 56px;
+  --ob-group-basis: 400px;                               /* list groups with up to 8 tiles share a row */
+  --ob-tabs-min-width: 280px;
+  --ob-toast-max-width: 420px;
+  --ob-card-label-min-width: 96px;                       /* label column of phone table cards and facts */
+  --ob-api-max-width: 1200px;
+  --ob-graph-canvas-size: 1000px;                        /* must match SIZE in detail.js */
+  --ob-graph-center-size: 100px;
+  --ob-graph-center-circle-size: 68px;
+  --ob-graph-item-width: 64px;
+  --ob-prose-max-width: 72ch;
+  --ob-table-row-padding: var(--ob-space-sm);
+  --ob-graph-height: 720px;
+  --ob-focus-ring: 0 0 0 3px var(--ob-color-focus);
+  --ob-focus-ring-inset: inset 0 0 0 3px var(--ob-color-focus); /* controls inside overflow containers */
+}
+
+/* Compact tables (config.compactTables) */
+.ob-density-compact {
+  --ob-table-row-padding: var(--ob-space-xs);
+}
+
+/* Breakpoints (Oblique legacy grid plus a content-led 960px catalog breakpoint).
+   Custom properties cannot be used in @media, so these are documented here
+   and repeated literally in main.css:
+     @media (max-width: 360px)   – smallest phones
+     @media (max-width: 600px)   – down(sm)
+     @media (max-width: 960px)   – catalog drawer
+     @media (max-width: 1100px)  – narrow tree column, compact tables
+     @media (prefers-reduced-motion: reduce) – no transitions
+*/

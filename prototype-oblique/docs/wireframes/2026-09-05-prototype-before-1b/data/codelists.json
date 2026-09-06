@@ -1,0 +1,738 @@
+[
+  {
+    "identifier": "r-gwr-kat",
+    "name": "GWR Gebäudekategorie",
+    "description": "Kategorie eines Gebäudes gemäss GWR Merkmalskatalog 2023.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "GWR / eCH",
+    "businessObject": "gebaeude",
+    "values": [
+      {
+        "code": "1010",
+        "label": "Einfamilienhaus"
+      },
+      {
+        "code": "1020",
+        "label": "Zweifamilienhaus"
+      },
+      {
+        "code": "1030",
+        "label": "Mehrfamilienhaus"
+      },
+      {
+        "code": "1060",
+        "label": "Gebäude mit teilw. Wohnnutzung"
+      },
+      {
+        "code": "1110",
+        "label": "Bürogebäude"
+      },
+      {
+        "code": "1230",
+        "label": "Gebäude für Bildung und Forschung"
+      }
+    ]
+  },
+  {
+    "identifier": "r-gwr-status",
+    "name": "GWR Gebäudestatus",
+    "description": "Lebenszyklusstatus eines Gebäudes im GWR.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "GWR / eCH",
+    "businessObject": "gebaeude",
+    "values": [
+      {
+        "code": "1001",
+        "label": "Projektiert"
+      },
+      {
+        "code": "1002",
+        "label": "Bewilligt"
+      },
+      {
+        "code": "1003",
+        "label": "Im Bau"
+      },
+      {
+        "code": "1004",
+        "label": "Bestehend"
+      },
+      {
+        "code": "1005",
+        "label": "Nicht nutzbar"
+      },
+      {
+        "code": "1007",
+        "label": "Abgebrochen"
+      },
+      {
+        "code": "1008",
+        "label": "Nicht realisiert"
+      }
+    ]
+  },
+  {
+    "identifier": "r-gwr-heiz",
+    "name": "GWR Heizungsart",
+    "description": "Art der Wärmeerzeugung gemäss GWR.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "GWR / eCH",
+    "businessObject": "heizzentrale",
+    "values": [
+      {
+        "code": "7400",
+        "label": "Kein Wärmeerzeuger"
+      },
+      {
+        "code": "7410",
+        "label": "Wärmepumpe für ein Gebäude"
+      },
+      {
+        "code": "7411",
+        "label": "Wärmepumpe für mehrere Gebäude"
+      },
+      {
+        "code": "7420",
+        "label": "Thermische Solaranlage für ein Gebäude"
+      },
+      {
+        "code": "7430",
+        "label": "Heizkessel (generisch) für ein Gebäude"
+      },
+      {
+        "code": "7431",
+        "label": "Heizkessel nicht kondensierend"
+      },
+      {
+        "code": "7432",
+        "label": "Heizkessel kondensierend"
+      },
+      {
+        "code": "7433",
+        "label": "Heizkessel für mehrere Gebäude"
+      },
+      {
+        "code": "7436",
+        "label": "Ofen"
+      },
+      {
+        "code": "7440",
+        "label": "Wärmekraftkopplungsanlage"
+      },
+      {
+        "code": "7450",
+        "label": "Elektrospeicher-Zentralheizung"
+      },
+      {
+        "code": "7460",
+        "label": "Wärmetauscher (inkl. Fernwärme)"
+      }
+    ]
+  },
+  {
+    "identifier": "r-kanton",
+    "name": "Kanton",
+    "description": "Kantonskürzel gemäss eCH-0007.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "GWR / eCH",
+    "businessObject": "grundstueck",
+    "values": [
+      {
+        "code": "ZH",
+        "label": "Zürich"
+      },
+      {
+        "code": "BE",
+        "label": "Bern"
+      },
+      {
+        "code": "LU",
+        "label": "Luzern"
+      },
+      {
+        "code": "UR",
+        "label": "Uri"
+      },
+      {
+        "code": "SZ",
+        "label": "Schwyz"
+      },
+      {
+        "code": "OW",
+        "label": "Obwalden"
+      },
+      {
+        "code": "NW",
+        "label": "Nidwalden"
+      },
+      {
+        "code": "GL",
+        "label": "Glarus"
+      },
+      {
+        "code": "ZG",
+        "label": "Zug"
+      },
+      {
+        "code": "FR",
+        "label": "Freiburg"
+      },
+      {
+        "code": "SO",
+        "label": "Solothurn"
+      },
+      {
+        "code": "BS",
+        "label": "Basel-Stadt"
+      },
+      {
+        "code": "BL",
+        "label": "Basel-Landschaft"
+      },
+      {
+        "code": "SH",
+        "label": "Schaffhausen"
+      },
+      {
+        "code": "AR",
+        "label": "Appenzell Ausserrhoden"
+      },
+      {
+        "code": "AI",
+        "label": "Appenzell Innerrhoden"
+      },
+      {
+        "code": "SG",
+        "label": "St. Gallen"
+      },
+      {
+        "code": "GR",
+        "label": "Graubünden"
+      },
+      {
+        "code": "AG",
+        "label": "Aargau"
+      },
+      {
+        "code": "TG",
+        "label": "Thurgau"
+      },
+      {
+        "code": "TI",
+        "label": "Tessin"
+      },
+      {
+        "code": "VD",
+        "label": "Waadt"
+      },
+      {
+        "code": "VS",
+        "label": "Wallis"
+      },
+      {
+        "code": "NE",
+        "label": "Neuenburg"
+      },
+      {
+        "code": "GE",
+        "label": "Genf"
+      },
+      {
+        "code": "JU",
+        "label": "Jura"
+      }
+    ]
+  },
+  {
+    "identifier": "r-sia-nutz",
+    "name": "SIA Nutzungsart",
+    "description": "Nutzungsart einer Fläche gemäss SIA 416.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "SIA",
+    "businessObject": "nutzungseinheit",
+    "values": [
+      {
+        "code": "BU",
+        "label": "Büro"
+      },
+      {
+        "code": "WO",
+        "label": "Wohnen"
+      },
+      {
+        "code": "VK",
+        "label": "Verkauf"
+      },
+      {
+        "code": "LA",
+        "label": "Lager"
+      },
+      {
+        "code": "PR",
+        "label": "Produktion"
+      },
+      {
+        "code": "SC",
+        "label": "Schule"
+      },
+      {
+        "code": "LB",
+        "label": "Labor"
+      },
+      {
+        "code": "PK",
+        "label": "Parkierung"
+      },
+      {
+        "code": "SO",
+        "label": "Sonstiges"
+      }
+    ]
+  },
+  {
+    "identifier": "r-sia-flaeche",
+    "name": "SIA 416 Flächenart",
+    "description": "Flächenarten (GF, NF, HNF, …) gemäss SIA 416.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "SIA",
+    "businessObject": "bemessung",
+    "values": [
+      {
+        "code": "GF",
+        "label": "Geschossfläche"
+      },
+      {
+        "code": "KF",
+        "label": "Konstruktionsfläche"
+      },
+      {
+        "code": "NGF",
+        "label": "Nettogeschossfläche"
+      },
+      {
+        "code": "NF",
+        "label": "Nutzfläche"
+      },
+      {
+        "code": "HNF",
+        "label": "Hauptnutzfläche"
+      },
+      {
+        "code": "NNF",
+        "label": "Nebennutzfläche"
+      },
+      {
+        "code": "VF",
+        "label": "Verkehrsfläche"
+      },
+      {
+        "code": "FF",
+        "label": "Funktionsfläche"
+      }
+    ]
+  },
+  {
+    "identifier": "r-geak",
+    "name": "GEAK Effizienzklasse",
+    "description": "Energieeffizienzklasse A–G gemäss GEAK.",
+    "status": "Entwurf",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "GEAK",
+    "businessObject": "gebaeude",
+    "values": [
+      {
+        "code": "A",
+        "label": "Sehr effizient"
+      },
+      {
+        "code": "B",
+        "label": "Effizient"
+      },
+      {
+        "code": "C",
+        "label": "Gut"
+      },
+      {
+        "code": "D",
+        "label": "Mittel"
+      },
+      {
+        "code": "E",
+        "label": "Unterdurchschnittlich"
+      },
+      {
+        "code": "F",
+        "label": "Schlecht"
+      },
+      {
+        "code": "G",
+        "label": "Sehr schlecht"
+      }
+    ]
+  },
+  {
+    "identifier": "r-kond",
+    "name": "Konditionsart",
+    "description": "Art einer Mietkondition (Nettomiete, Nebenkosten, …).",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "vertraulich",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "kondition",
+    "values": [
+      {
+        "code": "NM",
+        "label": "Nettomiete"
+      },
+      {
+        "code": "NK",
+        "label": "Nebenkosten akonto"
+      },
+      {
+        "code": "NP",
+        "label": "Nebenkosten pauschal"
+      },
+      {
+        "code": "KA",
+        "label": "Kaution"
+      },
+      {
+        "code": "RB",
+        "label": "Rabatt"
+      }
+    ]
+  },
+  {
+    "identifier": "r-vertrag",
+    "name": "Vertragsart",
+    "description": "Typ eines Mietvertrags.",
+    "status": "Entwurf",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "vertraulich",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "mietvertrag",
+    "values": []
+  },
+  {
+    "identifier": "r-zaehler",
+    "name": "Zählertyp",
+    "description": "Typ eines Energiezählers.",
+    "status": "Entwurf",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "stromzaehler",
+    "values": []
+  },
+  {
+    "identifier": "r-geschoss",
+    "name": "Geschosstyp",
+    "description": "Typ eines Geschosses (UG, EG, OG, DG, …).",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "geschoss",
+    "values": [
+      {
+        "code": "UG",
+        "label": "Untergeschoss"
+      },
+      {
+        "code": "EG",
+        "label": "Erdgeschoss"
+      },
+      {
+        "code": "ZG",
+        "label": "Zwischengeschoss"
+      },
+      {
+        "code": "OG",
+        "label": "Obergeschoss"
+      },
+      {
+        "code": "DG",
+        "label": "Dachgeschoss"
+      },
+      {
+        "code": "AG",
+        "label": "Attikageschoss"
+      }
+    ]
+  },
+  {
+    "identifier": "r-raum",
+    "name": "Raumtyp",
+    "description": "Funktionaler Raumtyp.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "raum",
+    "values": [
+      {
+        "code": "BUE",
+        "label": "Büro"
+      },
+      {
+        "code": "SIZ",
+        "label": "Sitzungszimmer"
+      },
+      {
+        "code": "ARC",
+        "label": "Archiv"
+      },
+      {
+        "code": "LAG",
+        "label": "Lager"
+      },
+      {
+        "code": "TEC",
+        "label": "Technikraum"
+      },
+      {
+        "code": "SAN",
+        "label": "Sanitärraum"
+      },
+      {
+        "code": "KOR",
+        "label": "Korridor"
+      },
+      {
+        "code": "KUE",
+        "label": "Küche"
+      },
+      {
+        "code": "LAB",
+        "label": "Labor"
+      },
+      {
+        "code": "WER",
+        "label": "Werkstatt"
+      },
+      {
+        "code": "GAR",
+        "label": "Garage"
+      }
+    ]
+  },
+  {
+    "identifier": "r-eigentum",
+    "name": "Eigentumsform",
+    "description": "Eigentumsverhältnis eines Grundstücks.",
+    "status": "Entwurf",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "grundstueck",
+    "values": []
+  },
+  {
+    "identifier": "r-energie",
+    "name": "Energieträger",
+    "description": "Hauptenergieträger einer Heizzentrale.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "heizzentrale",
+    "values": [
+      {
+        "code": "OEL",
+        "label": "Heizöl"
+      },
+      {
+        "code": "GAS",
+        "label": "Erdgas"
+      },
+      {
+        "code": "FW",
+        "label": "Fernwärme"
+      },
+      {
+        "code": "HOLZ",
+        "label": "Holz"
+      },
+      {
+        "code": "WP",
+        "label": "Wärmepumpe"
+      },
+      {
+        "code": "EL",
+        "label": "Elektrisch"
+      }
+    ]
+  },
+  {
+    "identifier": "r-waehrung",
+    "name": "Währung",
+    "description": "ISO-4217 Währungscode.",
+    "status": "Gültig",
+    "version": "2023.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "vertraulich",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "sourceAuthority": "BBL intern",
+    "businessObject": "kondition",
+    "values": [
+      {
+        "code": "CHF",
+        "label": "Schweizer Franken"
+      },
+      {
+        "code": "EUR",
+        "label": "Euro"
+      },
+      {
+        "code": "USD",
+        "label": "US-Dollar"
+      }
+    ]
+  }
+]

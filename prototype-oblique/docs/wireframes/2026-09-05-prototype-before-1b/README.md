@@ -1,0 +1,54 @@
+# Oblique Data Catalog
+
+[![Demo](https://img.shields.io/badge/demo-GitHub%20Pages-2ea44f?logo=github&logoColor=white)](https://bbl-dres.github.io/data-catalog/prototype-oblique/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
+
+> [!CAUTION]
+> Unofficial prototype with fictional data. Features may be incomplete, and it is not intended for production use.
+
+Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that follows the [Oblique](https://oblique.bit.admin.ch) design system of the federal administration. Browse domains, systems, business objects, attributes, data tables, code lists, data products and APIs; every entry has a profile page with core metadata, rows, relationships and a change history. In-app branding: *Datenkatalog*. Part of the [BBL Data Catalog prototypes](../README.md).
+
+## Demo
+
+**Live demo:** https://bbl-dres.github.io/data-catalog/prototype-oblique/
+
+<p align="center">
+  <img src="assets/preview-1.jpg" alt="Datenkatalog home page with KPI cards, domain table and latest changes" width="49%" align="top"/>
+  <img src="assets/preview-2.jpg" alt="Profile page of a business object with contacts, facts and metadata" width="49%" align="top"/>
+</p>
+
+## Features
+
+- Home page with KPI cards, domain overview and latest changes.
+- Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
+- Profile pages with tabs for overview, attributes or fields or values, relationships as a list or a pannable orbit graph, and history.
+- Relevance-ranked, umlaut-tolerant search with grouped suggestions, keyboard navigation and a results page.
+- Handbook with chapter navigation, an OpenAPI 3.1 reference rendered by Swagger UI, and a help and contact popover.
+- CSV export and print-to-PDF; Excel and DCAT-AP CH exports are placeholders.
+- Deep-linkable hash routes for section, entity, view mode, grouping, search query and handbook chapter.
+- Two navigation models (entity-first or container-first), switched in `data/config.json` or with `?nav=container`.
+- UI in German, French, Italian and English (fr/it/en as drafts); catalog content stays German.
+- Self-hosted Noto Sans and a pinned Swagger UI, no external requests, no build step.
+
+## Run locally
+
+Static vanilla JavaScript with JSON data loaded by `fetch()`, so serve it over HTTP from the repository root:
+
+```bash
+python -m http.server 8000
+```
+
+Open <http://localhost:8000/prototype-oblique/>.
+
+## Documentation
+
+- [Architecture](docs/architecture.md) — file structure, rendering model, routing, state, events, how to extend.
+- [Design system](docs/design-system.md) — how the tokens map to Oblique, what was taken from the Figma library, known deltas.
+- [Data model](docs/data-model.md) — JSON files and fields.
+- [Code review](docs/code-review.md) — findings of the September 2026 review and what changed.
+- [Design review](docs/design-review.md) and [responsive review](docs/design-review-responsive.md) — CD conformance, accessibility, contrast, phone and tablet layout.
+- [Wireframes](docs/wireframes/) — the Claude Design mockup this app was built from.
+
+## License
+
+Project code is covered by the [MIT License](../LICENSE). Oblique styles are MIT (Swiss Confederation, FOITT), Noto Sans is under the SIL Open Font License 1.1, and Swagger UI is Apache 2.0. The Swiss federal logo is protected by the Coat of Arms Protection Act and may only be used by federal bodies.

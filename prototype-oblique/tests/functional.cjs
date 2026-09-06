@@ -630,15 +630,15 @@ const server = createServer();
       assert.equal(await page.locator('#sidebar-tree [data-action="toggle-tree"][data-key="tables:system:gwr"]').getAttribute('aria-expanded'), 'true');
     });
 
-    await check('open metadata survives search, export menu and sidebar changes', async () => {
+    await check('System metadata stays visible through search, export and sidebar changes', async () => {
       await visit('#/objects/areal');
-      await page.click('.ob-metadata summary');
       for (const selector of ['[data-action="toggle-search"]', '[data-menu="actions"]', '[data-action="toggle-sidebar"]']) {
         await page.click(selector);
-        assert.equal(await page.locator('.ob-metadata').evaluate(el => el.open), true, selector);
+        assert(await page.locator('.ob-system-facts dl').isVisible(), selector);
       }
       await visit('#/objects/gebaeude');
-      assert.equal(await page.locator('.ob-metadata').evaluate(el => el.open), false);
+      assert(await page.locator('.ob-system-facts dl').isVisible());
+      assert.equal(await page.locator('.ob-detail-facts details').count(), 0);
     });
 
     await check('sorting a later desktop group keeps focus in that group', async () => {

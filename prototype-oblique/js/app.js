@@ -21,7 +21,6 @@
     treeSection: 'objects',           // section whose branch is open (others collapse on section change)
     graph: DK.graph.createState(),
     relationDiagram: true,
-    metadataOpen: false,
     navDrawerOpen: false,
     sidebarCollapsed: false,
     flyout: null,
@@ -107,6 +106,7 @@
 
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
+    DK.diagramExport?.close(false);
     const diagramHadFocus = DK.graph.closeFullscreen(false);
     DK.graph.onPointerUp();
     const previous = route;
@@ -147,7 +147,7 @@
       state.treeOpen[branch] = true;
     }
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.metadataOpen = false; state.lastEntity = key; }
+    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') {
       state.chapter = DK.manual.resolveChapter(route.params.ch || state.chapter);
@@ -168,9 +168,6 @@
   app.render = function (navigated) {
     DK.sidebar.cancel();
     const mainFocus = !navigated && focusSelector(document.activeElement, $('main'));
-    if (!navigated) {
-      state.metadataOpen = document.querySelector('.ob-core-facts > .ob-metadata')?.open ?? state.metadataOpen;
-    }
     // Swagger owns a live component tree. Reattach its node on chrome updates instead of remounting it.
     const swaggerHost = !navigated && route?.view === 'api' ? $('swagger-ui') : null;
     const swaggerFocus = swaggerHost?.contains(document.activeElement) ? document.activeElement : null;
@@ -453,10 +450,11 @@
 
   /* exports */
   async function doExport(id, label) {
-    if (id === 'xlsx') {
+    if (id === 'diagram-pdf') { DK.diagramExport.open(route, ctx); return; }
+    if (id === 'xlsx' || id === 'xlsx-all') {
       if (state.exporting) return;
       try {
-        const plan = DK.excel.plan(route, ctx);
+        const plan = DK.excel.plan(route, ctx, window.location.href, { scope: id === 'xlsx-all' ? 'catalog' : 'selection' });
         state.exporting = true;
         app.render();
         // Paint the status before synchronous workbook preparation starts.
@@ -472,7 +470,6 @@
       }
       return;
     }
-    if (id === 'pdf' || id === 'profile-pdf') { setTimeout(() => window.print(), 50); return; }
     ui.toast(t('toolbar.notAvailable', { what: label }));
   }
 
@@ -665,20 +662,10 @@
     }
     const menu = e.target.closest('[role="menu"]');
     if (menu) {
-      const items = [...menu.querySelectorAll('.ob-menu-item:not(:disabled)')];
-      const current = items.indexOf(e.target);
-      if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
-        e.preventDefault();
-        const next = e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : (current + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length;
-        items[next]?.focus(); return;
-      }
+      if (ui.menuKeydown(e, menu)) return;
       if (e.key === 'Tab') {
         // Restore the trigger synchronously; the native Tab action then leaves the closed menu.
         closeTransient();
-      } else if (e.key.length === 1 && e.key !== ' ' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const next = items.slice(current + 1).concat(items.slice(0, current + 1)).find(item => item.textContent.trim().toLocaleLowerCase().startsWith(e.key.toLocaleLowerCase()));
-        if (next) { e.preventDefault(); next.focus(); }
-        return;
       }
     }
     if (e.key === 'Tab' && state.navDrawerOpen) {
@@ -814,10 +801,6 @@
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
     document.addEventListener('focusout', onFocusout);
-    document.addEventListener('toggle', e => {
-      if (!e.target.isConnected) return;
-      if (e.target.matches('.ob-core-facts > .ob-metadata')) state.metadataOpen = e.target.open;
-    }, true);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
     document.addEventListener('pointerdown', DK.graph.onPointerDown);
     document.addEventListener('pointermove', DK.graph.onPointerMove);

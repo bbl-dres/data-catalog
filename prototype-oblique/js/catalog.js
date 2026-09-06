@@ -4,7 +4,7 @@
   const tables = ['actor', 'domain', 'system', 'business_object', 'business_attribute', 'data_table', 'data_field', 'code_list', 'code_value', 'data_product', 'product_attribute', 'data_service', 'service_endpoint', 'quality_requirement', 'business_attribute_quality_requirement', 'data_field_quality_requirement', 'relationship', 'lineage_relation', 'change_event'];
   const kinds = { domains: 'domain', systems: 'system', objects: 'business_object', tables: 'data_table', refs: 'code_list', products: 'data_product', apis: 'data_service' };
   const labels = (record, base = 'name') => Object.fromEntries(['de', 'it', 'fr', 'en'].filter(lang => record[`${base}_${lang}`]).map(lang => [lang, record[`${base}_${lang}`]]));
-  const text = (record, base) => DK.ui.localized(labels(record, base));
+  const text = (record, base) => DK.ui.localized(record, base + '_');
   const status = { draft: 'Entwurf', valid: 'Gültig', retired: 'Archiviert' };
   const classification = { internal: 'intern', public: 'öffentlich', confidential: 'vertraulich', secret: 'geheim' };
   const valueTypes = { text: 'Text', identifier: 'Text', integer: 'Ganzzahl', decimal: 'Dezimal', date: 'Datum', dateTime: 'Datum / Zeit', year: 'Jahr', code: 'Code', geometry: 'Geometrie', boolean: 'Boolean', structured: 'Strukturiert' };
@@ -32,12 +32,25 @@
       return record;
     };
     const ref = (table, id) => resolve(table, id)?.identifier;
+    // Snapshot-local indexes keep projection linear as fields and relationships grow.
+    const index = (records, keys) => {
+      const grouped = new Map();
+      for (const record of records) for (const key of new Set(keys(record).filter(Boolean))) {
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(record);
+      }
+      return grouped;
+    };
+    const relationshipIndex = index(snapshot.relationship, link => Object.entries(link)
+      .filter(([key]) => /^(source|target)_.+_id$/.test(key)).map(([, value]) => value));
+    const requirementIndex = index(snapshot.business_attribute_quality_requirement, r => [r.business_attribute_id]);
+    const endpointIndex = index(snapshot.service_endpoint, r => [r.data_service_id]);
     const actor = id => {
       const a = resolve('actor', id);
       return a ? { name: text(a, 'name'), type: a.actor_type, url: a.website_url } : undefined;
     };
     const base = r => localized({ identifier: r.identifier, labels: labels(r), _record: r,
-      _relationships: snapshot.relationship.filter(link => Object.entries(link).some(([key, value]) => /^(source|target)_.+_id$/.test(key) && value === r.id)),
+      _relationships: (relationshipIndex.get(r.id) || []).slice(),
       status: status[r.status], version: r.version, versionDate: r.version_date, created: r.created_on, modified: r.modified_on,
       comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
       informationUrls: (r.documentation_links || []).filter(l => l.purpose !== 'terminology').map(l => l.url),
@@ -55,8 +68,8 @@
       }
       return true;
     };
-    const relationships = snapshot.relationship.filter(active);
-    const linked = (r, type, targetTable) => relationships.filter(link => link.relationship_type === type && [link.source_data_product_id, link.source_data_table_id].includes(r.id)).map(link => ref(targetTable, link[`target_${targetTable}_id`])).filter(Boolean);
+    const sourceIndex = index(snapshot.relationship.filter(active), link => [link.source_data_product_id, link.source_data_table_id]);
+    const linked = (r, type, targetTable) => (sourceIndex.get(r.id) || []).filter(link => link.relationship_type === type).map(link => ref(targetTable, link[`target_${targetTable}_id`])).filter(Boolean);
     const result = { catalogSnapshot: snapshot };
     for (const [kind, table] of Object.entries(kinds)) result[kind] = snapshot[table].map(base);
     const byId = Object.fromEntries(Object.entries(kinds).map(([kind, table]) => [table, new Map(result[kind].map(e => [e._record.id, e]))]));
@@ -73,7 +86,7 @@
       accessRights: e._record.access_notes || e._record.access_mode, license: e._record.license_notes || e._record.license_uri, format: e._record.formats.join(', '), accrualPeriodicity: frequencies[e._record.update_frequency] }));
     for (const r of snapshot.business_attribute) {
       const parent = owner('business_object', r.business_object_id), e = base(r);
-      const requirements = snapshot.business_attribute_quality_requirement.filter(a => a.business_attribute_id === r.id).map(a => resolve('quality_requirement', a.quality_requirement_id));
+      const requirements = (requirementIndex.get(r.id) || []).map(a => resolve('quality_requirement', a.quality_requirement_id));
       Object.assign(e, { identifier: childId(r, parent), valueType: valueTypes[r.value_specification?.valueType], keyRole: r.is_identifier ? 'PK' : null,
         mandatory: requirements.some(q => q.rule_type === 'required' && q.status !== 'retired') ? true : null, qualityRequirements: requirements, codeList: ref('code_list', r.code_list_id) });
       parent.attributes.push(e);
@@ -96,7 +109,7 @@
       parent.attributes.push(e);
     }
     result.apis.forEach(e => {
-      const endpoints = snapshot.service_endpoint.filter(endpoint => endpoint.data_service_id === e._record.id);
+      const endpoints = (endpointIndex.get(e._record.id) || []).slice();
       const endpoint = endpoints.find(x => x.identifier === 'primary') || endpoints[0];
       Object.assign(e, { endpoints, version: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
     });

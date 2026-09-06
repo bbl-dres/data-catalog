@@ -1,6 +1,6 @@
 # Architecture
 
-No build step and no framework. One HTML page, four stylesheets, application JavaScript modules, a public Supabase catalog and local UI configuration. Pinned self-hosted Swagger UI and ExcelJS load only when needed. See [database setup](../supabase/README.md) for the applied SQL Editor import and hosted verification.
+No build step and no framework. One HTML page, five stylesheets, application JavaScript modules, a public Supabase catalog and local UI configuration. Pinned self-hosted Swagger UI, ExcelJS and PDF libraries load only when needed. See [database setup](../supabase/README.md) for the applied SQL Editor import and hosted verification.
 
 The current page composition follows the [responsive layout](design-system.md#responsive-layout): a sticky header with navigation below the identity row above 960 px, shared 320 px default sidebar (resizable from 240 to 480 px) / 56 px icon rail, header search, and a mobile modal drawer. The [federal logo](design-system.md#federal-header-logo) sets the identity height to 56, 72 or 86 px; desktop navigation adds 45 px. The API reference uses only global navigation. The document scrolls normally; the footer remains at the page end.
 
@@ -11,11 +11,13 @@ prototype-oblique/
 ├── index.html            Page shell: identity header and desktop nav row, <main id="main">, footer
 ├── css/
 │   ├── tokens.css        Design tokens (custom properties) – see design-system.md
-│   ├── components.css    Shared buttons, inputs/selects, icon actions, chips, disclosures and filled cards
+│   ├── components.css    Shared controls, chips, disclosures, cards, panels, empty states and loading
 │   ├── main.css          Fonts, reset, layouts and contextual variants; responsive, high-contrast and print rules
-│   └── graph.css         Diagram workspace, controls and fullscreen presentation
+│   ├── graph.css         Relationship workspace, controls and fullscreen presentation
+│   └── export.css        PDF export dialog, settings and responsive page preview
 ├── js/
 │   ├── ui.js             DK.ui     – translation, escaped markup, safe links, tables, sorting, downloads and small widgets
+│   ├── select-menu.js    DK.ui.selectMenus – native choice values presented with the catalog menu component
 │   ├── preferences.js    DK.preferences – guarded access to existing browser preference keys
 │   ├── catalog-config.js Public Supabase connection settings; explicit JSON mode for offline fixtures
 │   ├── catalog.js        DK.catalog – REST transport and normalized SQL snapshot projection
@@ -27,6 +29,12 @@ prototype-oblique/
 │   ├── views.js          DK.views  – page context, header, navigation, collections, search and composition
 │   ├── detail.js         DK.detail – profile pages: facts, rows, relationship list/graph, history
 │   ├── excel.js          DK.excel  – scoped workbook snapshots, worksheets, lazy ExcelJS loading and downloads
+│   ├── diagram-content.js DK.diagram – frozen multilingual content, catalog scopes, facets and selection
+│   ├── diagram.js        DK.diagram – text wrapping and export manifest
+│   ├── diagram-layout.js DK.diagram – physical Grid/List pagination and shared SVG template
+│   ├── diagram-controls.js DK.diagramControls – print toolbar, tree, filter chips and settings forms
+│   ├── pdf.js            DK.pdf – lazy PDF/font loading, text measurement and vector PDF generation
+│   ├── diagram-export.js DK.diagramExport – modal selection, document settings, preview and download lifecycle
 │   ├── sidebar.js        DK.sidebar – desktop divider input, width constraints and saved preference
 │   ├── api.js            DK.api    – lazy Swagger loading, mounting and retry
 │   └── app.js            DK.app    – bootstrap, transient state, event delegation, exports
@@ -36,17 +44,22 @@ prototype-oblique/
 │   ├── swiss-logo-flag.svg  Swiss coat of arms and browser-tab icon
 │   ├── swiss-logo-name.svg  Multilingual Confederation wordmark (reference asset; not rendered)
 │   ├── icons/*.svg       25 Oblique icons and 3 local diagram controls, used as CSS masks
-│   └── fonts/*.woff2     Noto Sans (latin, latin-ext) and Noto Sans Mono, variable weight
+│   ├── fonts/*.woff2     Noto Sans (latin, latin-ext) and Noto Sans Mono, variable weight
+│   └── fonts/pdf/        Pinned static Noto Sans TTFs for matching preview/PDF text metrics
 ├── vendor/swagger-ui/    Swagger UI 5.32.11 browser assets and license notices
 ├── vendor/exceljs/       ExcelJS 4.4.0 browser bundle, license and integrity notice
+├── vendor/jspdf/         jsPDF 4.2.1 browser bundle, license and integrity notice
+├── vendor/svg2pdf.js/    svg2pdf.js 2.8.1 browser bundle, license and integrity notice
 ├── tests/               Core, functional, responsive, diagram, GWR and field checks; see tests/README.md
 ├── scripts/             Scoped Python import and source-check tools
 └── docs/                Maintained guides, import instructions and source evidence
 ```
 
-The application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace. `ui.js` creates the namespace, data precedes its consumers, and `app.js` initializes last. Swagger UI is not in `index.html`: `api.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export; failed loads can be retried.
+The application scripts load in the order above; each is an IIFE that adds one object to the `window.DK` namespace. `ui.js` creates the namespace, data precedes its consumers, and `app.js` initializes last. Swagger UI is not in `index.html`: `api.js` inserts its stylesheet and bundle on the first visit of `#/api`. Likewise, `excel.js` loads the local ExcelJS bundle only on the first Excel export. `pdf.js` loads jsPDF, svg2pdf.js and matching static fonts when opening the first model export. Failed loads can be retried.
 
-Styles load in order: tokens, reusable components, application layouts/variants, diagram. `.ob-input` and `.ob-select` share native field styling; `.ob-icon-button` supplies quiet actions in inputs and notices; `.ob-card` supplies the filled surface, safe wrapping and interaction states for KPI cards and tiles. Layout classes retain their distinct padding, grids and content limits. See [the shared component guide](design-system.md#component-ownership) for ownership and regression checks.
+Styles load in order: tokens, reusable components, application layouts/variants, relationship diagram, export workspace. `.ob-input` and `.ob-select` share native field styling; `.ob-icon-button` supplies quiet actions in inputs and notices; `.ob-card` supplies the filled surface, safe wrapping and interaction states for KPI cards and tiles. Layout classes retain their distinct padding, grids and content limits. See [the shared component guide](design-system.md#component-ownership) for ownership and regression checks.
+
+`ui.buttonContent()`, `ui.menuKeydown()` and `ui.empty()` share rendering and interaction patterns across the app and print workspace. `select-menu.js` presents native choice values with catalog menu controls, using explicit refresh and session-scoped cleanup. `data.tileSummary()` supplies the same count/unit to live cards and localized PDF snapshots. Disclosure, panel, checkbox and primary-button styles belong to `components.css`; print and app controllers retain separate state, semantics and cleanup.
 
 ## JavaScript strategy
 
@@ -66,12 +79,24 @@ Files are split by responsibility:
 | `detail.js` | Profile page tabs, facts, sortable row/relationship tables and diagram composition | Handle events |
 | `graph.js` | Adaptive bubble layout, bounded group paging, zoom/pan/selection, keyboard/touch input, full-window dialog and viewport sizing | Change routes or mutate catalog data |
 | `excel.js` | Immutable export plans, typed multi-sheet workbooks, local writer loading and downloads | Mutate catalog data or traverse every relationship recursively |
+| `diagram-content.js` | Frozen multilingual catalog content, scopes, facet identities, selection and grouping | DOM state or live reads after opening |
+| `diagram.js` | Measured text wrapping and traceability manifest | Scope or view state |
+| `diagram-layout.js` | Tiles/Grid/List pagination, continuation, overview index and shared vector template | DOM events or inferred relationship metadata |
+| `diagram-controls.js` | Toolbar, scope tree, chips and document/filter/column forms using shared catalog styles | Catalog writes or PDF pagination |
+| `pdf.js` | Pinned fonts and libraries, shared font metrics, vector conversion and PDF metadata | Select content, manage approvals or invoke browser printing |
+| `diagram-export.js` | Modal lifecycle, scope/filter/selection state, document language/settings, scrolling preview, zoom, downloads and cancellation | Change source records or make preview zoom affect printed geometry |
 | `sidebar.js` | Pointer/keyboard resizing, CSS width and separator accessibility values, persisted preference and responsive limits | Re-render the tree or change mobile drawer behavior |
 | `app.js` | State, render coordination with focus restoration, delegated events, export actions and handbook scroll tracking | Own handbook templates or vendor loading |
 
-`views.page(route, state)` returns the application markup as a string. `app.render()` replaces `<main>` while preserving focus, sidebar/flyout scroll offsets and the current profile's metadata disclosure state. `replaceHtml()` identifies focused controls by `data-focus`, `id` or data attributes; disappearing menu items map back to their trigger. Repeated table controls include their group instance in `data-focus`. Route changes skip this control restoration and normally scroll to the top.
+The print workspace owns a disposable event lifetime. Closing or rebuilding its language UI aborts listeners, disconnects observers and clears queued scroll work, including visual-viewport events and popover size observation. The compact-mode decision is shared by initial rendering and resizing; CSS consumes the app's visible-viewport tokens. Asynchronous asset/PDF completions check their owning session before publishing results. Print content is captured once, including documented product members and endpoint operations; paper layout and preview zoom remain independent.
+
+`views.page(route, state)` returns the application markup as a string. `app.render()` replaces `<main>` while preserving focus and sidebar/flyout scroll offsets. Detail metadata uses three always-visible sections: Key facts, Protection and privacy, and System. `replaceHtml()` identifies focused controls by `data-focus`, `id` or data attributes; disappearing menu items map back to their trigger. Repeated table controls include their group instance in `data-focus`. Route changes skip this control restoration and normally scroll to the top.
 
 Some updates are local: search typing refreshes suggestions, help/language menus refresh their hosts, and graph panning changes a transform. A shared `ResizeObserver` switches each table between columns and cards according to its available width and moves focus between the appropriate sorting controls.
+
+Catalog projection indexes relationships, quality assignments and endpoints once per snapshot. Localized SQL values resolve directly from their language columns; language changes still take effect without reloading. Table sorting reads each row's sort value once, and profile tab counts use child counts without generating hidden row markup. Search scores are reused within each ranking operation, with no cache surviving a query or language change.
+
+PDF text widths use a 5,000-entry cache owned by the workspace's font measurer. The key includes text, size and weight; old entries are evicted, and closing releases the measurer. Text wrapping only splits oversized words character by character. Preview scrolling keeps nearby SVG pages mounted and updates accessible page feedback only when the page changes. See the [performance review](review/2026-09-06-performance-review.md) for measurements and limits.
 
 The desktop sidebar divider updates `--ob-sidebar-width` at most once per animation frame and keeps the tree and diagram DOM intact. Width limits come from tokens; the upper bound also reserves 600 px for content. `datenkatalog.sidebarWidth` stores the preferred width independently of collapse state. Narrower windows clamp the visible width without overwriting that preference. The focusable separator supports Left/Right (16 px), Home/End (limits) and Enter (reset); double-click also resets to 320 px. Escape, lost pointer capture, window blur and navigation cancel unfinished drags. The divider is absent when collapsed or on the API reference, and hidden in mobile drawer layouts.
 
@@ -134,7 +159,7 @@ Held in memory, not in the URL: the UI language (also in `localStorage`), search
 
 A `change` listener handles the detail-row page-size selector. Sidebar/rail/search controls dispatch `toggle-sidebar`, `rail-section`, `close-flyout` and `toggle-search`; the mobile drawer keeps focus inside and makes the background inert. One `click` listener on `document` dispatches on `data-action` attributes (`skip`, `back-to-top`, `help-toggle`, `menu`, `set-language`, `set-group`, `set-view`, `sort-table`, `toggle-group`, `toggle-tree`, `open-navigation`, `close-navigation`, `open-overview`, `open-tree`, `set-tab`, `set-page`, `toggle-relation-view`, `export`, `clear-query`, `suggest-pick`, `open-results`, `chapter`, `not-available`, `toast-close`). Clicks with no action close open menus, except clicks on links to another route, which leave the close to the `hashchange` render. `input`, `keydown`, `focusin`, `focusout`, pointer and `scroll` listeners cover the search box, graph and handbook.
 
-The `change` listener also handles card sorting. Native metadata `toggle` events update disclosure state. Menus support keyboard entry, arrows, Home/End, initial-letter navigation, Tab exit and Escape; drawer focus containment uses the active control after an inner menu closes.
+The `change` listener also handles card sorting. Menus support keyboard entry, arrows, Home/End, initial-letter navigation, Tab exit and Escape; drawer focus containment uses the active control after an inner menu closes.
 
 Search ranks by `data.relevance()`: an exact name (100) beats a name prefix (90), a word prefix inside the name (80), any name substring (70), technical-name hits (50/40) and description hits (20/10). Suggestions keep compact type groups. Results use one table, ordered across all types before pagination by `search.page()`; the sort selector offers relevance, name and modification date. Matching tolerates umlaut spellings ("gebau", "gebaeu" both find "Gebäude") and hits are highlighted with `ui.highlight()`.
 

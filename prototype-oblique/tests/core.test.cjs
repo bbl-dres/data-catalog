@@ -29,6 +29,49 @@ async function loaded(change) {
   return dk;
 }
 
+test('localized SQL columns preserve language fallback without constructing label maps', () => {
+  const { ui } = runtime(), record = { name_de: 'Gebäude', name_fr: 'Bâtiment', name_it: 'Edificio', name_en: 'Building' };
+  for (const lang of ['de', 'fr', 'it', 'en']) {
+    ui.setDictionary({}, lang);
+    assert.equal(ui.localized(record, 'name_'), record['name_' + lang]);
+  }
+  delete record.name_en;
+  assert.equal(ui.localized(record, 'name_'), 'Gebäude');
+  record.name_de = 'Updated';
+  assert.equal(ui.localized(record, 'name_'), 'Updated');
+  assert.equal(ui.localized({ en: 'Plain label' }), 'Plain label');
+  assert.equal(ui.localized(null, 'name_'), '');
+});
+
+test('profile tab counts do not render child rows, and row tabs build them only once', async () => {
+  const { detail, views, data } = await loaded();
+  const state = { mode: 'tiles', groupBy: {}, closed: {}, tableSorts: {} }, original = detail.rowsData;
+  let calls = 0;
+  detail.rowsData = entity => { calls++; return original(entity); };
+  for (const kind of ['objects', 'tables', 'refs', 'products', 'systems']) {
+    const entity = { ...data.list(kind)[0], kind };
+    for (const tab of ['overview', 'rows']) {
+      calls = 0;
+      const route = { view: 'detail', kind, id: entity.identifier, entity, params: { tab } };
+      const ctx = views.context(route, state), html = detail.render(entity, route, state, ctx);
+      assert.equal(calls, tab === 'rows' ? 1 : 0, `${kind}/${tab}`);
+      assert(html.includes(`data-tab="rows">${detail.rowsLabel(entity)} (${data.sizeOf(kind, entity)})`));
+      assert.equal(ctx.actions.some(action => action.id.includes('pdf')), false);
+      assert.equal(ctx.canPrint, true);
+    }
+  }
+});
+
+test('sorting reads values once per row and keeps equal or missing rows stable', () => {
+  const { ui } = runtime();
+  const rows = [null, 10, 2, 2, undefined, 1].map((value, id) => ({ value, id }));
+  let calls = 0;
+  const sorted = ui.sortRows(rows, { column: 0, direction: 'asc' }, row => { calls++; return [row.value]; });
+  assert.equal(calls, rows.length);
+  assert.equal(sorted.map(row => row.id).join(','), '5,2,3,1,0,4');
+  assert.equal(rows.map(row => row.id).join(','), '0,1,2,3,4,5');
+});
+
 test('English handbook chapter identifiers preserve legacy links and render every chapter', async () => {
   const { data, manual } = await loaded();
   assert.equal(data.manual.chapters.map(chapter => chapter.id).join(','), 'introduction,governance,model,usage,retrieval,faq,glossary,references');
@@ -774,7 +817,7 @@ test('GWR import preserves source coverage, versions and explicit field-to-code-
   assert.ok(!floors.some(v => v.code === '3301'), 'old attic codes are outside the revised floor ranges');
   const unmapped = { ...data.get('tables', 't-gwr-arbeiten'), kind: 'tables' };
   assert.ok(!detail.overview(unmapped).includes('#/objects/undefined'));
-  assert.equal(detail.facts(unmapped).primary.find(f => f.label === 'Personendaten').value, null, 'unknown register data classification must not become No');
+  assert.equal(detail.facts(unmapped).protection.find(f => f.label === 'Personendaten').value, null, 'unknown register data classification must not become No');
   assert.ok(detail.overview(unmapped).includes('<dt>Personendaten</dt><dd><span>—</span></dd>'));
 });
 

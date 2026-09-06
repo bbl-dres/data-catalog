@@ -258,6 +258,10 @@
     }
   };
   data.statusOf = (kind, e) => e.status || '';
+  data.tileSummary = (kind, entity) => {
+    const unit = { objects: 'attributes', tables: 'fields', refs: 'values', products: 'attributes', systems: 'tables', domains: 'objects' }[kind];
+    return unit ? `${data.sizeOf(kind, entity)} ${DK.ui.t('unit.' + unit)}` : entity.protocol || '';
+  };
   data.statusTone = st => ((data.model.statuses || {})[st] || {}).tone || 'neutral';
 
   data.navModel = function () {

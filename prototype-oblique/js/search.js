@@ -44,24 +44,30 @@
     if (!questionStart.test(query) && !/[?？]$/.test(query)) return [];
     return [...new Set((query.toLowerCase().match(/[\p{L}\p{N}_-]+/gu) || []).filter(word => word.length > 1 && !stopWords.has(word)))];
   };
-  const score = (e, query) => data.relevance(e, query) || terms(query).reduce((sum, term) => sum + data.relevance(e, term), 0);
+  const ranker = query => {
+    const words = terms(query), scores = new WeakMap();
+    return entity => {
+      if (!scores.has(entity)) scores.set(entity, data.relevance(entity, query) || words.reduce((sum, term) => sum + data.relevance(entity, term), 0));
+      return scores.get(entity);
+    };
+  };
 
   search.results = function (query, options) {
     const q = query.trim(), kinds = search.selectedKinds(options);
     if (!search.canSubmit(q, options)) return [];
-    const inDomain = domainFilter(options);
+    const inDomain = domainFilter(options), score = ranker(q);
     const rankGroups = groups => groups.filter(g => g.items.length).sort((a, b) => b.best - a.best || kinds.indexOf(a.kind) - kinds.indexOf(b.kind));
     const exact = rankGroups(data.search(q, kinds).map(g => {
       const items = g.items.filter(e => inDomain(g.kind, e));
-      return { ...g, items, total: items.length, best: items.length ? score(items[0], q) : 0 };
+      return { ...g, items, total: items.length, best: items.length ? score(items[0]) : 0 };
     }));
     if (exact.length) return exact;
     const words = terms(q);
     if (!words.length) return [];
     return rankGroups(kinds.map(kind => {
       const items = data.list(kind).filter(e => inDomain(kind, e) && words.every(word => data.match(e, word)))
-        .sort((a, b) => score(b, q) - score(a, q) || a.name.localeCompare(b.name, 'de'));
-      return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: items.length, best: items.length ? score(items[0], q) : 0 };
+        .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, 'de'));
+      return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: items.length, best: items.length ? score(items[0]) : 0 };
     }));
   };
   search.suggest = (query, options) => search.results(query, options).map(g => ({ ...g, items: g.items.slice(0, 4) }));
@@ -71,8 +77,9 @@
   /** Rank every match together before slicing. Types never partition the result order. */
   search.page = function (groups, query, params = {}) {
     const sort = search.sorts.includes(params.sort) ? params.sort : 'relevance';
+    const score = ranker(query);
     const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
-    const items = groups.flatMap(g => g.items.map(e => ({ kind: g.kind, e, score: score(e, query) })));
+    const items = groups.flatMap(g => g.items.map(e => ({ kind: g.kind, e, score: score(e) })));
     items.sort((a, b) => {
       let primary = 0;
       if (sort === 'modified') primary = String(b.e.modified || '').localeCompare(String(a.e.modified || ''));
@@ -95,14 +102,14 @@
   /** Short, verbatim excerpts from actual matches, with explicit catalog citations. */
   search.answer = function (query, options, groups = search.results(query, options)) {
     if (options?.ai === false || !search.canSubmit(query, options)) return null;
-    const allowed = new Set(search.selectedKinds(options)), inDomain = domainFilter(options);
+    const allowed = new Set(search.selectedKinds(options)), inDomain = domainFilter(options), score = ranker(query);
     const candidates = groups.filter(g => allowed.has(g.kind)).flatMap(g => g.items.map(e => ({ kind: g.kind, e })))
       .filter(({ kind, e }) => inDomain(kind, e) && typeof e.description === 'string' && e.description.trim())
-      .sort((a, b) => score(b.e, query) - score(a.e, query) || Number(!!b.e.provenance) - Number(!!a.e.provenance));
+      .sort((a, b) => score(b.e) - score(a.e) || Number(!!b.e.provenance) - Number(!!a.e.provenance));
     const seen = new Set(), sources = [];
     for (const { kind, e } of candidates) {
       // Cite only top-ranked definitions; weaker keyword matches would dilute the answer.
-      if (score(e, query) < score(candidates[0].e, query)) break;
+      if (score(e) < score(candidates[0].e)) break;
       const description = e.description.trim().replace(/\s+/g, ' ');
       if (seen.has(description)) continue;
       seen.add(description);
