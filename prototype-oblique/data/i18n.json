@@ -429,6 +429,7 @@
   "print.apply": {"de": "Anwenden", "fr": "Appliquer", "it": "Applica", "en": "Apply"},
   "print.resetTitle": {"de": "Titel auf Vorgabe zurücksetzen", "fr": "Rétablir le titre par défaut", "it": "Ripristina titolo predefinito", "en": "Reset title to default"},
   "print.overview": {"de": "Inhaltsverzeichnis", "fr": "Table des matières", "it": "Indice", "en": "Table of contents"},
+  "print.descriptionSummary": {"de": "Einträge und Kontext", "fr": "Entrées et contexte", "it": "Voci e contesto", "en": "Entries and context"},
   "print.auto": {"de": "Automatisch (ab 3 Gruppen)", "fr": "Automatique (dès 3 groupes)", "it": "Automatico (da 3 gruppi)", "en": "Automatic (3 or more groups)"},
   "print.yes": {"de": "Ja", "fr": "Oui", "it": "Sì", "en": "Yes"},
   "print.no": {"de": "Nein", "fr": "Non", "it": "No", "en": "No"},

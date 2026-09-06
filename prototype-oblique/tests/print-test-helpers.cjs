@@ -40,7 +40,8 @@ async function workspace(options = {}) {
         const svg = new DOMParser().parseFromString(DK.diagram.pageSvg(snapshot, settings, layout, index, DK.pdf.palette(), ''), 'image/svg+xml');
         return [...svg.querySelectorAll('text')].map(node => node.textContent);
       });
-      return { manifest: DK.diagram.manifest(snapshot, settings), width: layout.width, height: layout.height, texts };
+      return { manifest: DK.diagram.manifest(snapshot, settings), width: layout.width, height: layout.height, texts,
+        links: layout.pages.map((_, index) => DK.diagram.pageLinks(layout, index)) };
     });
     const pending = page.waitForEvent('download'); await page.locator('[data-diagram-action="download"]').click();
     await (await pending).saveAs(path.join(output, name + '.pdf'));

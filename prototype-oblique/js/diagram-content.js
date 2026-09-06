@@ -2,25 +2,30 @@
 (function (DK) {
   'use strict';
   const { ui, data } = DK;
-  const diagram = { templateVersion: '3.1', papers: { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] } };
+  const diagram = { templateVersion: '3.2', papers: { A4: [210, 297], A3: [297, 420], A2: [420, 594], A1: [594, 841], A0: [841, 1189] } };
   diagram.kinds = ['objects', 'tables', 'refs', 'products', 'apis'];
   diagram.classifications = ['public', 'internal', 'confidential', 'secret'];
   diagram.classification = value => ({ öffentlich: 'public', intern: 'internal', vertraulich: 'confidential', geheim: 'secret' }[value] || value || '');
   diagram.classificationLabel = (snapshot, value) => diagram.classifications.includes(diagram.classification(value))
     ? diagram.t(snapshot, 'print.classification.' + diagram.classification(value)) : value || '—';
-  diagram.defaultLayout = kind => ['refs', 'apis'].includes(kind) ? 'list' : 'grid';
-  diagram.usesRows = settings => settings.layout === 'grid' || settings.layout === 'list' && settings.listRows !== false;
+  diagram.defaultLayout = () => 'list';
+  diagram.usesRows = settings => settings.layout === 'grid' || settings.layout === 'list';
   const clone = value => JSON.parse(JSON.stringify(value));
   const translate = (dictionary, key, params = {}) => Object.entries(params).reduce((value, [name, replacement]) => value.split('{' + name + '}').join(replacement), dictionary[key] || key);
   diagram.t = (snapshot, key, params) => translate(snapshot.dictionary, key, params);
   const identity = entity => ({ id: entity.identifier, uuid: entity._record?.id || entity.id || null, revision: entity._record?.row_version ?? entity.row_version ?? null });
+  const rowId = (row, index) => row.identifier || row.technicalName || row.code || String(index);
+  const orderByIds = (items, ids) => {
+    const order = new Map(ids.map((id, index) => [id, index]));
+    return [...items].sort((a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity));
+  };
   const ref = (kind, id) => { const entity = data.get(kind, id); return entity ? { id, title: entity.name } : { id: '', title: ui.t('diagram.unspecified') }; };
 
   function rowContent(kind, row, index) {
     const name = ui.localized(row.labels) || row.name || row.label || (kind === 'apis' ? row.url : '') || row.identifier || row.code || row.technicalName || '';
     const code = row.technicalName ?? row.code ?? (kind === 'apis' ? row.operation_name : '') ?? '';
     const operation = kind === 'apis' ? [row.operation_name, row.http_method, row.relative_path].filter(Boolean).join(' · ') : '';
-    return { ...identity(row), id: row.identifier || row.technicalName || row.code || String(index),
+    return { ...identity(row), id: rowId(row, index),
       name: kind === 'tables' ? data.displayName('fields', row) : kind === 'refs' && code && code !== name ? `${name} (${code})` : name, label: name, code,
       type: row.dataType || row.valueType || row.protocol || '', description: [row.description || row.note || '', operation].filter(Boolean).join(' · '),
       key: kind === 'objects' ? (row.keyRole === 'PK' ? 'ID' : '') : row.keyRoles?.length
@@ -60,6 +65,9 @@
       personalData: typeof entity.personalData === 'boolean' ? entity.personalData : null,
       businessObject: entity.realizes || entity.businessObject ? data.nameOf('objects', entity.realizes || entity.businessObject) : '',
       responsibility: entity.responsibleOrg || '', domain: domain?.name || '', system: system?.name || '',
+      contexts: [['domains', domain], ['systems', system]].filter(([, entry]) => entry).map(([kind, entry]) => ({
+        id: `${kind}:${entry.identifier}`, name: entry.name, type: data.kindDef(kind).singular, description: entry.description || '—',
+      })),
       context: kind === 'tables' ? system?.name || '' : domain?.name || '', facetValues,
       rows,
     };
@@ -77,7 +85,7 @@
         groups.get(key).entityIds.push(entity.id);
       }
       const key = { classification: 'fact.classification', businessObject: 'col.object' }[id] || 'group.' + id;
-      return { id, label: ui.t(key), groups: [...groups.values()].sort((a, b) => a.title.localeCompare(b.title, language, { numeric: true })) };
+      return { id, label: ui.t(key), groups: [...groups.values()].sort((a, b) => data.compareGroupTitles(a.title, b.title, language)) };
     };
     const groupings = data.groupOptions(kind).map(option => ({ ...grouping(option.id), label: option.label }));
     const labels = Object.fromEntries(['continued', 'emptyFields', 'page', 'documentId', 'version', 'created', 'selection', 'legend', 'tooLong', 'noSelection', 'noFilterMatches', 'filters', 'scope', 'fieldCount'].map(key => [key, ui.t('diagram.' + key)]));
@@ -113,6 +121,12 @@
     const entity = route.entity;
     const scope = { kind: initial.kind, facet: '', value: '', entityId: '', initialIds: initial.entities.map(e => e.id), query: initial.filter };
     if (ctx.isList) scope.order = ctx.groups.flatMap(group => group.items.map(entity => entity.identifier));
+    if (ctx.isRows) {
+      // Export every source row, while retaining the web order independently of its filter/page.
+      const source = DK.detail.rowsData(entity), rows = source.rows.map((row, index) => ({ ...row, id: rowId(row.entity, index) }));
+      const sorted = ctx.rowList.options.sort ? DK.presentation.sort(source.kind, rows, ctx.rowList.options.sort, row => row.entity) : rows;
+      scope[entity.kind === 'systems' ? 'order' : 'rowOrder'] = sorted.map(row => row.id);
+    }
     if (entity?.kind === 'systems') Object.assign(scope, { facet: 'system', value: entity.identifier });
     else if (entity?.kind === 'domains' || ctx.isList && route.params?.domain) Object.assign(scope, { facet: 'domain', value: entity?.identifier || route.params.domain });
     else if (entity && diagram.kinds.includes(entity.kind)) {
@@ -124,9 +138,10 @@
   };
   diagram.scoped = (catalogs, language, scope) => {
     const original = catalogs[language][scope.kind];
-    const entities = original.entities.filter(e => (!scope.entityId || e.id === scope.entityId) && (!scope.facet || e.facetValues[scope.facet]?.id === scope.value)
+    let entities = original.entities.filter(e => (!scope.entityId || e.id === scope.entityId) && (!scope.facet || e.facetValues[scope.facet]?.id === scope.value)
       && (!scope.initialIds || scope.initialIds.includes(e.id)));
-    if (scope.order) { const order = new Map(scope.order.map((id, index) => [id, index])); entities.sort((a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity)); }
+    if (scope.order) entities = orderByIds(entities, scope.order);
+    if (scope.rowOrder) entities = entities.map(entity => ({ ...entity, rows: orderByIds(entity.rows, scope.rowOrder) }));
     const group = scope.facet ? original.facets.find(f => f.id === scope.facet)?.groups.find(g => g.value === scope.value) : null;
     const title = scope.entityId ? original.entities.find(e => e.id === scope.entityId)?.name : [original.scope, group?.title].filter(Boolean).join(' · ');
     const path = [original.scope, group?.title, scope.entityId ? original.entities.find(e => e.id === scope.entityId)?.name : ''].filter(Boolean);
@@ -135,7 +150,7 @@
   diagram.parentScope = scope => scope.entityId ? { kind: scope.kind, facet: scope.facet, value: scope.value, entityId: '' }
     : scope.facet ? { kind: scope.kind, facet: '', value: '', entityId: '' } : null;
   diagram.defaults = snapshot => ({ paper: 'A3', orientation: diagram.defaultLayout(snapshot.kind) === 'list' ? 'portrait' : 'landscape', scale: 100, layout: diagram.defaultLayout(snapshot.kind), title: snapshot.title, documentId: '', version: '',
-    documentStatus: 'draft', classification: '', overview: 'auto', listRows: true, columns: DK.presentation.selected(snapshot.rowKind), entityColumns: DK.presentation.selected(snapshot.kind), groupBy: snapshot.defaultGroupBy,
+    documentStatus: 'draft', classification: '', overview: 'auto', columns: DK.presentation.selected(snapshot.rowKind), entityColumns: DK.presentation.selected(snapshot.kind), groupBy: snapshot.defaultGroupBy,
     filters: Object.fromEntries(snapshot.facets.map(facet => [facet.id, []])), selected: snapshot.entities.map(e => e.id) });
   diagram.selectedFields = (snapshot, settings, parent = false) => (parent ? snapshot.entityFields : snapshot.rowFields)
     .filter(f => f.required || (parent ? settings.entityColumns : settings.columns).includes(f.id));

@@ -58,9 +58,9 @@ const { workspace } = require('./print-test-helpers.cjs');
     assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'tiles', 'The originating collection layout survives scope changes');
     await scope('API-Verzeichnis');
     assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'tiles');
-    await choose('[data-diagram-setting="layout"]', 'grid');
+    await choose('[data-diagram-setting="layout"]', 'list');
     await scope('Referenzdaten');
-    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'grid', 'Explicit layout overrides section defaults');
+    assert.equal(await page.locator('[data-diagram-layout][aria-pressed="true"]').getAttribute('data-diagram-layout'), 'list', 'Explicit layout overrides section defaults');
     await close();
     console.log('PASS: continuous List headers, column reset/count and section defaults preserve explicit choices');
 

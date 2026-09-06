@@ -67,7 +67,7 @@ const server = createServer();
         const option = page.locator('#' + await input.getAttribute('aria-activedescendant'));
         const target = await option.getAttribute('data-href');
         await input.press('Enter');
-        await page.waitForURL(url => url.hash === target);
+        await page.waitForURL(url => url.hash.split('?')[0] === target.split('?')[0]);
         await settle(page);
         assert.equal(await page.evaluate(() => document.activeElement.id), 'page-content');
 
@@ -534,7 +534,7 @@ const server = createServer();
         assert.equal(await page.locator('#view-tab-table').getAttribute('aria-selected'), 'true');
         assert.equal(await page.evaluate(() => document.activeElement.id), 'view-tab-table');
         assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 9);
-        assert.deepEqual(await page.locator('#collection-view-panel th .ob-table-sort').allTextContents(), ['Name', 'Verantwortung', 'Beschreibung', 'Attribute', 'Status']);
+        assert.deepEqual(await page.locator('#collection-view-panel th .ob-table-sort').allTextContents(), ['Name', 'Beschreibung', 'Verantwortung', 'Attribute', 'Status']);
         await page.locator('#collection-filter').fill('Areal');
         assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 1);
         await page.click('#view-tab-tiles');

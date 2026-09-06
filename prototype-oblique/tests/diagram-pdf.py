@@ -17,6 +17,13 @@ for name in sys.argv[1:] or ['gwr-grid', 'gwr-list', 'gwr-fr', 'gis-building', '
         assert len(document) == len(expected['texts'])
         assert f'snapshot-sha256={digest}' in document.metadata['keywords']
         for page, texts in zip(document, expected['texts']):
+            if 'links' in expected:
+                links = page.get_links()
+                targets = expected['links'][page.number]
+                assert len(links) == len(targets), (name, page.number, 'Missing or duplicate PDF links')
+                for link, target in zip(links, targets):
+                    assert link['kind'] == fitz.LINK_GOTO and link['page'] == target['targetPage'], (name, link, target)
+                    assert abs(link['from'].x0 - target['x']) < .02 and abs(link['from'].y0 - target['y']) < .02
             assert abs(page.rect.width - expected['width']) < .02
             assert abs(page.rect.height - expected['height']) < .02
             assert not page.get_images(), 'Branding and content must remain vector graphics'
@@ -37,7 +44,7 @@ for name in sys.argv[1:] or ['gwr-grid', 'gwr-list', 'gwr-fr', 'gis-building', '
         for entity in snapshot['entities']:
             for field in parent_fields:
                 assert normalize(entity['display'][field]) in content, (name, entity['id'], field)
-            for row in ([] if settings['layout'] == 'tiles' or settings['layout'] == 'list' and settings.get('listRows') is False else entity['rows']):
+            for row in ([] if settings['layout'] == 'tiles' else entity['rows']):
                 for field in row_fields:
                     assert normalize(row['display'].get(field, '—')) in content, (name, row['id'], field)
         document[0].get_pixmap(matrix=fitz.Matrix(1.2, 1.2)).save(root / (name + '.pdf.png'))

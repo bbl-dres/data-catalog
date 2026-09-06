@@ -224,7 +224,7 @@
     const hasMatches = diagram.filteredEntities(session.snapshot, session.settings).length > 0;
     session.page = Math.max(0, Math.min(session.page, pages.length - 1));
     session.pagesHost.classList.toggle('is-empty', !pages.length);
-    session.pagesHost.innerHTML = pages.length ? pages.map((_, index) => `<section class="ob-export-page" data-diagram-page="${index}" aria-labelledby="diagram-page-title-${index}"><h3 class="ob-sr-only" id="diagram-page-title-${index}">${esc(t(session, 'print.pageCount', { page: index + 1, total: pages.length }))}</h3><div class="ob-export-page-svg"></div></section>`).join('')
+    session.pagesHost.innerHTML = pages.length ? pages.map((_, index) => `<section class="ob-export-page" id="diagram-page-${index}" data-diagram-page="${index}" tabindex="-1" aria-labelledby="diagram-page-title-${index}"><h3 class="ob-sr-only" id="diagram-page-title-${index}">${esc(t(session, 'print.pageCount', { page: index + 1, total: pages.length }))}</h3><div class="ob-export-page-svg"></div></section>`).join('')
       : ui.empty(session.layout.emptyMessage, esc(t(session, hasMatches ? 'print.noSelectionHint' : 'print.emptyHint')), {
         className: 'ob-empty--plain ob-export-empty',
         actions: view.button(hasMatches ? 'all' : 'reset-filters', t(session, hasMatches ? 'diagram.all' : 'diagram.resetFilters'))
@@ -363,6 +363,15 @@
     listen(dialog, 'cancel', event => { event.preventDefault(); if (session.popoverMode) dismiss(session); else close(); });
     listen(dialog, 'click', event => {
       event.stopPropagation();
+      const link = event.target.closest('[data-diagram-target-page]');
+      if (link) {
+        event.preventDefault();
+        const index = Number(link.dataset.diagramTargetPage);
+        if (current === session && !session.busy && Number.isInteger(index) && index >= 0 && index < session.layout.pages.length) {
+          jumpToPage(session, index); session.pagesHost.children[index].focus({ preventScroll: true });
+        }
+        return;
+      }
       const target = event.target.closest('button'); if (current !== session || !target || target.disabled || session.busy && target.dataset.diagramAction !== 'close') return;
       if (target.dataset.diagramAction) action(session, target.dataset.diagramAction, target);
       else if (target.dataset.diagramLayout) changeSetting(session, 'layout', target.dataset.diagramLayout);
@@ -444,7 +453,6 @@
     const language = DK.app.state.lang, snapshot = diagram.scoped(captured.catalogs, language, captured.scope), settings = diagram.defaults(snapshot);
     if (ctx.isList) settings.layout = ctx.mode === 'table' ? 'list' : 'tiles';
     else if (ctx.isRows) settings.layout = 'list';
-    settings.listRows = !ctx.isList && !['systems', 'domains'].includes(route.entity?.kind);
     settings.orientation = settings.layout === 'list' ? 'portrait' : 'landscape';
     settings.selected = captured.catalogs[language][snapshot.kind].entities.map(e => e.id);
     if (snapshot.groupings.some(group => group.id === ctx.groupBy)) settings.groupBy = ctx.groupBy;

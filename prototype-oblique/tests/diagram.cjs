@@ -73,19 +73,20 @@ const { workspace } = require('./print-test-helpers.cjs');
           title: `${index + 1}. ${'A long section name with accents Gebäude & Grundstück '.repeat(3)}`, entityIds: [entity.id] })) }];
         for (const mode of ['tiles', 'grid', 'list']) {
           const settings = { ...DK.diagram.defaults(snapshot), paper: 'A4', orientation: 'portrait', layout: mode, groupBy: 'domain', overview: 'yes',
-            listRows: false, entityColumns: ['name'], columns: ['name'], filters: {} };
+            entityColumns: ['name'], columns: ['name'], filters: {} };
           const layout = DK.diagram.layout(snapshot, settings, measure), rows = layout.overview.flat(); count++;
-          if (layout.overview.length < 2 || rows.length !== snapshot.entities.length) problems.push('Contents pagination lost sections');
+          if (layout.overview.length < 2 || rows.filter(row => row.indent).length !== snapshot.entities.length) problems.push('Contents pagination lost entries');
           for (const [index, pageRows] of layout.overview.entries()) {
             const svg = new DOMParser().parseFromString(DK.diagram.pageSvg(snapshot, settings, layout, index, DK.pdf.palette(), ''), 'image/svg+xml');
             let y = layout.bodyTop + layout.overviewHeading.height;
             for (const row of pageRows) {
-              const references = layout.pages.flatMap((cards, pageIndex) => cards.some(card => card.groupId === row.id) ? [pageIndex + 1] : []);
+              const references = row.id === 'summary' ? layout.summaries.map((_, index) => layout.overview.length + index + 1)
+                : layout.pages.flatMap((cards, pageIndex) => cards.some(card => row.id === 'details' || (row.indent ? `entity:${card.entity.id}` === row.id : card.groupId === row.id)) ? [pageIndex + 1] : []);
               const texts = [...svg.querySelector(`[data-contents-group="${row.id}"]`).querySelectorAll('text')];
               const expected = `${references[0]}${references.length > 1 ? '–' + references.at(-1) : ''}`;
               if (texts.at(-1).textContent !== expected) problems.push('Wrong page reference after contents pagination');
               if (row.details.join(' ').includes('OWNERSHIP')) problems.push('Ownership mixed with counts');
-              if ((mode === 'grid') !== row.summary.includes(DK.diagram.t(snapshot, 'col.attributes'))) problems.push('Counts do not match printed detail level');
+              if (row.id !== 'summary' && !row.indent && (mode !== 'tiles') !== row.summary.includes(DK.diagram.t(snapshot, 'col.attributes'))) problems.push('Counts do not match printed detail level');
               if (texts.some(node => Number(node.getAttribute('y')) > y + row.height)) problems.push('Contents row text overlaps next row');
               const textWidth = layout.width - layout.margin * 2 - layout.overviewHeading.pageWidth - layout.gap - layout.pad * 2;
               if (row.lines.some(text => measure(text, 11, true) > textWidth + .1)) problems.push('Section title overlaps page reference');
@@ -125,8 +126,8 @@ const { workspace } = require('./print-test-helpers.cjs');
       }
       return { count, problems: [...new Set(problems)] };
     });
-    assert.deepEqual(matrix.problems, []); assert.equal(matrix.count, 320);
-    console.log('PASS: 320 page/language/layout/grouping combinations preserve every field once, without overlap');
+    assert.deepEqual(matrix.problems, []); assert.equal(matrix.count, 400);
+    console.log('PASS: 400 page/language/layout/grouping combinations preserve every field once, without overlap');
     for (const viewport of [{ width: 320, height: 740 }, { width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1024, height: 768 }, { width: 844, height: 390 }]) {
       await page.setViewportSize(viewport); await settle(page);
       const bounds = await page.evaluate(() => ({ width: document.querySelector('.ob-export-dialog').scrollWidth, viewport: innerWidth, canvas: document.querySelector('#diagram-canvas').getBoundingClientRect().height }));

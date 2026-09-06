@@ -51,6 +51,9 @@ button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
 .ob-export-pages { display: flex; flex-direction: column; gap: var(--ob-space-lg); width: var(--ob-export-page-width, 100%); min-height: 100%; margin-inline: auto; }
 .ob-export-page { position: relative; flex: none; height: var(--ob-export-page-height); background: var(--ob-color-bg); box-shadow: var(--ob-shadow-lg); }
 .ob-export-page-svg, .ob-export-page-svg > svg { display: block; width: 100%; height: 100%; max-width: none; }
+.ob-export-page-svg [data-diagram-target-page] { cursor: pointer; }
+.ob-export-page-svg [data-diagram-target-page]:hover text { text-decoration: underline; }
+.ob-export-page-svg [data-diagram-target-page]:focus-visible { outline: var(--ob-focus-width) solid var(--ob-color-focus); }
 .ob-export-pages:is(.is-loading, .is-empty) { width: 100%; height: 100%; }
 .ob-export-pages.is-loading > .ob-loading { height: 100%; }
 .ob-export-empty { margin: auto; }

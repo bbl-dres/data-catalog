@@ -14,7 +14,7 @@ const { workspace } = require('./print-test-helpers.cjs');
   };
   try {
     await visit('#/tables'); await open();
-    await choose('[data-diagram-setting="layout"]', 'grid');
+    await choose('[data-diagram-setting="layout"]', 'list');
     const url = page.url();
     await scope('GWR'); assert.equal(page.url(), url);
     assert.equal(await page.evaluate(() => window.printTest.layout.entityCount), 7);
@@ -69,7 +69,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     assert.equal(await page.evaluate(() => window.printTest.snapshot.kind), 'refs');
     assert((await page.evaluate(() => window.printTest.layout.fieldCount)) > 500);
     await page.evaluate(() => { window.printTest.settings.selected = window.printTest.snapshot.entities.filter(entity => entity.rows.length > 0 && entity.rows.length < 10).slice(0, 2).map(entity => entity.id); });
-    await choose('[data-diagram-setting="layout"]', 'grid');
+    await choose('[data-diagram-setting="layout"]', 'list');
     await download('reference-codes');
     await scope('Datenprodukte');
     assert.equal(await page.evaluate(() => window.printTest.layout.entityCount), 5);

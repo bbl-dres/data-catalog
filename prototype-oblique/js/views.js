@@ -38,7 +38,7 @@
     const open = state.menu === 'info';
     const btn = `<button type="button" class="ob-button ob-button--icon${open ? ' is-active' : ''}" title="${esc(t('header.help'))}" aria-label="${esc(t('header.help'))}" aria-haspopup="dialog" aria-expanded="${open}" data-action="help-toggle">${icon('question', 'xl')}</button>`;
     if (!open) return btn;
-    const link = l => ui.link(l.route || l.url, `${esc(l.label)}${l.route ? '' : ' ' + icon('link_external', 'sm')}`, { className: 'ob-popover-link', external: !l.route });
+    const link = l => ui.link(l.route ? router.href(l.route) : l.url, `${esc(l.label)}${l.route ? '' : ' ' + icon('link_external', 'sm')}`, { className: 'ob-popover-link', external: !l.route });
     return btn + `
       <div class="ob-popover" role="dialog" aria-label="${esc(t('header.help'))}">
         <div class="ob-popover-arrow"></div>
@@ -65,13 +65,13 @@
   views.mainNav = function (route) {
     const isCatalog = !['manual', 'api'].includes(route.view);
     const items = [['#/', t('nav.catalog'), isCatalog], ['#/manual', t('nav.manual'), route.view === 'manual'], ['#/api', t('nav.api'), route.view === 'api']];
-    return items.map(([href, label, active]) => `<a class="ob-main-nav-item" href="${href}"${active ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
+    return items.map(([href, label, active]) => `<a class="ob-main-nav-item" href="${esc(router.href(href))}"${active ? ' aria-current="page"' : ''}>${esc(label)}</a>`).join('');
   };
 
   views.footer = function () {
     const cfg = data.config;
     const links = cfg.footerLinks.map(l => {
-      const href = l.route || l.url;
+      const href = l.route ? router.href(l.route) : l.url;
       const ext = !!l.url && !/^mailto:/.test(l.url);
       return `<li>${ui.link(href, esc(l.label), { external: ext })}</li>`;
     }).join('');
@@ -100,7 +100,7 @@
     const tree = manual ? DK.manual.tree(state) : views.tree(route, state);
     const railItems = manual
       ? [{ key: 'manual', label: title, icon: 'file_list', active: true }]
-      : [{ key: 'home', label: t('tree.overview'), icon: 'home', href: '#/', active: route.view === 'home' }, ...data.sections().map(kind => ({ key: kind, label: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, active: state.treeSection === kind && route.view !== 'home' }))];
+      : [{ key: 'home', label: t('tree.overview'), icon: 'home', href: router.href('/'), active: route.view === 'home' }, ...data.sections().map(kind => ({ key: kind, label: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, active: state.treeSection === kind && route.view !== 'home' }))];
     const rail = `<nav class="ob-icon-rail" aria-label="${esc(title)}">${railItems.map(it => it.href
       ? `<a class="ob-rail-item${it.active ? ' is-active' : ''}" href="${it.href}" title="${esc(it.label)}" aria-label="${esc(it.label)}">${icon(it.icon, 'xl')}</a>`
       : `<button type="button" class="ob-rail-item${it.active ? ' is-active' : ''}" data-action="rail-section" data-key="${it.key}" title="${esc(it.label)}" aria-label="${esc(it.label)}" aria-expanded="${state.flyout === it.key}" aria-controls="sidebar-flyout">${icon(it.icon, 'xl')}</button>`).join('')}</nav>`;
@@ -168,7 +168,7 @@
     if (ctx.domain && !isDomain) ctx.title += ' – ' + ctx.domain.name;
 
     // Breadcrumbs follow section, container and entity; home is the root.
-    const crumbs = [{ label: t('nav.home'), href: '#/' }];
+    const crumbs = [{ label: t('nav.home'), href: router.href('/') }];
     if (route.view === 'detail') {
       const container = data.navModel() === 'container';
       const nav = routeNav(route);
@@ -333,7 +333,7 @@
     const isActive = (kind, id) => !!treeE && treeE.kind === kind && treeE.id === id;
     const contains = (kind, members) => !!treeE && treeE.kind === kind && members.some(m => m.identifier === treeE.id);
     const items = [];
-    if (!onlySection) items.push({ label: t('tree.overview'), level: 1, icon: 'home', active: route.view === 'home', href: '#/', action: 'open-overview' });
+    if (!onlySection) items.push({ label: t('tree.overview'), level: 1, icon: 'home', active: route.view === 'home', href: router.href('/'), action: 'open-overview' });
 
     data.sections().forEach(sec => {
       if (onlySection && sec !== onlySection) return;
@@ -488,7 +488,7 @@
     return answer + `<section id="search-page" tabindex="-1" aria-label="${esc(t('search.results'))}"><div class="ob-search-result-controls">${ui.pageRange(paging, true)}${sorting}</div>${ui.table(columns, rows)}${ui.pager(paging, { showRange: false })}</section>`;
   };
 
-  views.notFound = () => ui.empty(t('notfound.title'), esc(t('notfound.text')), { actions: `<a href="#/">${esc(t('notfound.link'))}</a>` });
+  views.notFound = () => ui.empty(t('notfound.title'), esc(t('notfound.text')), { actions: `<a href="${esc(router.href('/'))}">${esc(t('notfound.link'))}</a>` });
 
   /* API page */
   views.apiPage = function () {

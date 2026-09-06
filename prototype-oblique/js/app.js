@@ -5,7 +5,7 @@
   const ui = DK.ui, data = DK.data, router = DK.router, views = DK.views, detail = DK.detail;
   const t = ui.t;
 
-  /** Transient UI state that is not part of the URL. */
+  /** UI state and cached preferences; bookmarkable choices are restored from the URL. */
   const state = {
     query: '', suggest: false, suggestIdx: -1,
     searchOptions: DK.search.options(),
@@ -72,7 +72,8 @@
 
   function resolveRoute() {
     const r = router.parse();
-    data.navModelOverride = r.params.nav || null;
+    data.navModelOverride = ['entity', 'container'].includes(r.params.nav) ? r.params.nav : null;
+    if (Object.hasOwn(r.params, 'nav') && !data.navModelOverride) { router.replaceParams({ nav: null }); delete r.params.nav; }
     r.entity = null;
     if (r.view === 'list' && r.params.domain && (!data.contentKinds().includes(r.kind) || !data.domainOf(r.params.domain))) r.view = 'notfound';
     if (r.view === 'detail') {
@@ -114,6 +115,7 @@
 
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
+    clearTimeout(chapterScrollTimer); chapterScrollLock = null;
     DK.diagramExport?.close(false);
     const diagramHadFocus = DK.graph.closeFullscreen(false);
     DK.graph.onPointerUp();
@@ -132,14 +134,12 @@
       // Domain browsing follows the collection layout preference, never an entity's relations/history tab.
       state.detailTab = detail.resolveTab(route.entity, route.params.tab || route.params.view || state.mode);
       if (state.detailTab !== 'overview') state.mode = state.detailTab;
-      router.replaceParams({ tab: state.detailTab, view: null, page: null });
+      router.replaceParams({ tab: state.detailTab, view: null });
     } else if (route.view === 'detail') {
-      // A bookmarked row search must reopen its table; other fresh loads start at overview.
-      const rowSearch = route.params.tab === 'rows' && (route.params.filter || Object.hasOwn(route.params, 'fields'));
-      const requested = !previous && !rowSearch ? 'overview' : route.params.tab || (previous?.view === 'detail' ? state.detailTab : 'overview');
+      // Explicit links win on both cold loads and history traversal. Snapshot implicit defaults below.
+      const requested = route.params.tab || (previous?.view === 'detail' ? state.detailTab : 'overview');
       state.detailTab = detail.resolveTab(route.entity, requested);
-      const wanted = state.detailTab === 'overview' ? undefined : state.detailTab;
-      if (route.params.tab !== wanted) router.replaceParams({ tab: wanted || null, page: null });
+      router.replaceParams({ tab: state.detailTab, ...(state.detailTab !== 'rows' ? { page: null } : {}) });
     } else {
       state.detailTab = 'overview';
     }
@@ -158,8 +158,8 @@
     if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     if (route.view === 'manual') {
-      state.chapter = DK.manual.resolveChapter(route.params.ch || state.chapter);
-      if (route.params.ch) router.replaceParams({ ch: state.chapter });
+      state.chapter = DK.manual.resolveChapter(route.params.ch);
+      router.replaceParams({ ch: state.chapter });
     }
     app.render(true);
     if (navigationHadFocus) $('page-content').focus({ preventScroll: true });
@@ -185,14 +185,13 @@
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     const visibleKind = DK.presentation.routeKind(route);
     if (visibleKind && Object.hasOwn(route.params, 'fields')) DK.presentation.save(visibleKind, route.params.fields.split(','));
-    if (visibleKind && route.params.sort) {
-      const [field, direction] = route.params.sort.split(':');
-      if (DK.presentation.selected(visibleKind).includes(field) && ['asc', 'desc'].includes(direction)) {
-        const key = route.view === 'list' || route.kind === 'domains' ? `list:${visibleKind}` : `detail:${route.kind}:rows`;
-        state.tableSorts[key] = { field, direction };
-      }
+    if (visibleKind && (navigated || Object.hasOwn(route.params, 'sort'))) {
+      const key = route.view === 'list' || route.kind === 'domains' ? `list:${visibleKind}` : `detail:${route.kind}:rows`;
+      const sort = router.sort(route.params.sort);
+      delete state.tableSorts[key];
+      if (sort && DK.presentation.fields(visibleKind).some(field => field.id === sort.field && field.type !== 'links')) state.tableSorts[key] = sort;
     }
-    if (route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
+    if (route.view === 'list' && route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
     if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
@@ -205,6 +204,8 @@
       route = resolveRoute(); ctx.route = route;
     }
     replaceHtml($('main-nav'), views.mainNav(route));
+    $('brand-link').setAttribute('href', router.href('/'));
+    replaceHtml($('footer'), views.footer());
     replaceHtml($('header-tools'), views.headerTools(state, route));
     if (navigated) $('main').innerHTML = page.html; else replaceHtml($('main'), page.html);
     DK.sidebar.sync();
@@ -374,7 +375,7 @@
   function normalizeSearchPage() {
     if (!ctx.searchPage) return;
     const { sort } = ctx.searchPage;
-    router.replaceParams({ ...ui.pageParams(ctx.searchPage), sort: sort === 'relevance' ? null : sort });
+    router.replaceParams({ ...DK.search.params(state.searchOptions), ...ui.pageParams(ctx.searchPage), sort: sort === 'relevance' ? null : sort });
     route = resolveRoute(); ctx.route = route;
   }
   function renderSearchResults() {
@@ -418,7 +419,9 @@
     const kind = DK.presentation.routeKind(resolveRoute());
     if (kind) {
       const sort = ctx?.isList ? ctx.tableOptions?.sort : ctx?.isRows ? ctx.rowList?.options.sort : null;
-      router.replaceParams({ fields: DK.presentation.selected(kind).join(','), sort: sort?.field ? `${sort.field}:${sort.direction}` : null });
+      router.replaceParams({ fields: DK.presentation.selected(kind).join(','), sort: sort?.field ? `${sort.field}:${sort.direction}` : null,
+        ...(ctx?.isRows ? ui.pageParams(ctx.rowList.paging) : {}) });
+      route = resolveRoute(); ctx.route = route;
     }
   }
   app.refreshVisibility = () => { syncVisibilityUrl(); app.render(); };
@@ -517,7 +520,7 @@
   }
   function goChapter(id) {
     state.chapter = id;
-    router.replaceParams({ ch: id });
+    router.pushParams({ ch: id });
     if (state.navDrawerOpen) setNavigation(false);
     else if (state.flyout) closeFlyout(true);
     else updateChapterNav();
@@ -541,11 +544,13 @@
       const element = $(DK.manual.anchorId(chapter.id));
       if (element && element.getBoundingClientRect().top <= chapterThreshold) activeChapter = chapter.id;
     });
-    if (activeChapter !== state.chapter) { state.chapter = activeChapter; updateChapterNav(); }
+    if (activeChapter !== state.chapter) { state.chapter = activeChapter; router.replaceParams({ ch: activeChapter }); updateChapterNav(); }
   }
 
   /* events */
   function onClick(e) {
+    const anchor = e.target.closest('a[href]');
+    if (anchor && (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || anchor.target === '_blank' || anchor.hasAttribute('download'))) return;
     const action = e.target.closest('[data-action]');
     const samePageLink = e.target.closest('a[href^="#/"]');
     if (samePageLink && samePageLink.getAttribute('href') === location.hash && (state.navDrawerOpen || state.flyout)) {
@@ -653,7 +658,7 @@
       }
       case 'set-tab': {
         state.detailTab = detail.resolveTab(route.entity, el.dataset.tab);
-        router.replaceParams({ tab: state.detailTab === 'overview' ? null : state.detailTab, page: null });
+        router.replaceParams({ tab: state.detailTab, page: null });
         app.render();
         return;
       }

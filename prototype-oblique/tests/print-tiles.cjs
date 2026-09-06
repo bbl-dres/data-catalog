@@ -35,7 +35,7 @@ const { workspace } = require('./print-test-helpers.cjs');
         };
       });
       if (!geometry.contained) await page.screenshot({ path: path.join(output, 'print-menu-overflow.png') });
-      assert(geometry.contained && geometry.horizontal && geometry.count === 3, JSON.stringify({ width, geometry }));
+      assert(geometry.contained && geometry.horizontal && geometry.count === 2, JSON.stringify({ width, geometry }));
       assert(geometry.joined && geometry.icons && geometry.activeShadow === 'none', JSON.stringify({ width, geometry }));
     }
     await page.setViewportSize({ width: 1600, height: 1000 }); await settle(page);
@@ -55,7 +55,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     assert.equal(await page.evaluate(() => printTest.layout.pages.flat().length), 1);
     assert.equal(await page.locator('#diagram-sheets [data-row-id]').count(), 0, 'Single-entity scope stays a tile');
     assert(await page.locator('#diagram-columns-host').isVisible());
-    await choose('[data-diagram-setting="layout"]', 'grid');
+    await choose('[data-diagram-setting="layout"]', 'list');
     assert(await page.locator('#diagram-columns-host').isVisible());
     assert((await page.locator('#diagram-sheets [data-row-id]').count()) > 0, 'Switching back restores attributes');
     await page.locator('.ob-export-header [data-diagram-action="close"]').first().click();

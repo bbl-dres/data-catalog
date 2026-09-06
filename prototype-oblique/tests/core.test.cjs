@@ -29,6 +29,21 @@ async function loaded(change) {
   return dk;
 }
 
+test('responsibility grouping covers every collection and orders unknown organisations alphabetically', async () => {
+  const { data } = await loaded();
+  for (const kind of data.kinds) assert(data.groupOptions(kind).some(option => option.id === 'resp'), kind);
+  const original = data.list;
+  data.list = () => [
+    { identifier: 'z', responsibleOrg: 'Zürich' }, { identifier: 'empty' },
+    { identifier: 'a', responsibleOrg: 'Aarau' }, { identifier: 'a2', responsibleOrg: 'Aarau' },
+  ];
+  try {
+    const groups = data.buildGroups('tables', 'resp');
+    assert.deepEqual(Array.from(groups, group => group.title), ['Aarau', 'Zürich', '–']);
+    assert.deepEqual(Array.from(groups, group => group.items.length), [2, 1, 1]);
+  } finally { data.list = original; }
+});
+
 test('localized SQL columns preserve language fallback without constructing label maps', () => {
   const { ui } = runtime(), record = { name_de: 'Gebäude', name_fr: 'Bâtiment', name_it: 'Edificio', name_en: 'Building' };
   for (const lang of ['de', 'fr', 'it', 'en']) {
@@ -271,6 +286,24 @@ test('unknown navigation models, including inherited property names, fall back t
   }
   data.navModelOverride = 'container';
   assert.equal(data.sections()[0], 'domains');
+});
+
+test('route links retain only navigation context, while state serialization stays pure', () => {
+  const { router, data } = runtime();
+  data.navModelOverride = 'container';
+  assert.equal(router.entityHref('tables', 'a b?#%ä'), '#/tables/a%20b%3F%23%25%C3%A4?nav=container');
+  assert.equal(router.parse(router.entityHref('fields', 'parent/A/B?#%ä')).id, 'parent/A/B?#%ä');
+  assert.equal(router.href('#/manual?ch=model'), '#/manual?nav=container&ch=model');
+  assert.equal(router.href('/', { nav: null }), '#/');
+  assert.equal(router.build('/search', { q: 'A&B' }), '#/search?q=A%26B');
+  data.navModelOverride = '__proto__';
+  assert.equal(router.listHref('objects'), '#/objects');
+});
+
+test('URL sorts require exactly one nonempty field and one supported direction', () => {
+  const { router } = runtime();
+  for (const value of ['', 'name', 'name:desc:extra', ':asc', 'name:up', 'name:DESC']) assert.equal(router.sort(value), null, value);
+  assert.deepEqual({ ...router.sort('name:desc') }, { field: 'name', direction: 'desc' });
 });
 
 test('router rejects malformed and extra path segments while retaining encoded identifiers', () => {

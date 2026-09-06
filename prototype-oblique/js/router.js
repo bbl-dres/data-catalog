@@ -39,17 +39,28 @@
     const qs = params ? Object.entries(params).filter(([, v]) => v != null && v !== '').map(([k, v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v)).join('&') : '';
     return '#' + path + (qs ? '?' + qs : '');
   };
-  router.listHref = (kind, params) => router.build('/' + kind, params);
+  /** App links carry the explicit tree override; URL-state writes remain context-free. */
+  router.href = (path, params) => {
+    const route = router.parse(path), nav = DK.data.navModelOverride;
+    return router.build(route.path, { ...(['entity', 'container'].includes(nav) ? { nav } : {}), ...route.params, ...params });
+  };
+  router.listHref = (kind, params) => router.href('/' + kind, params);
   router.domainListHref = (kind, domain, params) => router.listHref(kind, { domain, group: 'domain', ...params });
   router.entityHref = function (kind, id, params) {
     if (kind === 'attrs' || kind === 'fields') {
       const i = id.indexOf('/');
       const parent = kind === 'attrs' ? 'objects' : 'tables', child = kind === 'attrs' ? 'attributes' : 'fields';
-      return router.build('/' + parent + '/' + encodeURIComponent(id.slice(0, i)) + '/' + child + '/' + encodeURIComponent(id.slice(i + 1)), params);
+      return router.href('/' + parent + '/' + encodeURIComponent(id.slice(0, i)) + '/' + child + '/' + encodeURIComponent(id.slice(i + 1)), params);
     }
-    return router.build('/' + kind + '/' + encodeURIComponent(id), params);
+    return router.href('/' + kind + '/' + encodeURIComponent(id), params);
   };
-  router.searchHref = (q, params = {}) => router.build('/search', { q, ...params });
+  router.searchHref = (q, params = {}) => router.href('/search', { q, ...params });
+
+  /** Reject partial sort expressions rather than silently accepting trailing segments. */
+  router.sort = value => {
+    const parts = String(value || '').split(':');
+    return parts.length === 2 && parts[0] && ['asc', 'desc'].includes(parts[1]) ? { field: parts[0], direction: parts[1] } : null;
+  };
 
   /** Go to a hash; re-renders even when the hash is unchanged. */
   router.navigate = function (hash) {

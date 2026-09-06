@@ -9,7 +9,7 @@
   // Legacy IDs are data aliases, not renderer names or DOM identifiers.
   manual.resolveChapter = id => (data.manual.chapters.find(chapter => chapter.id === id || (chapter.legacyId && chapter.legacyId === id)) || data.manual.chapters[0]).id;
   manual.anchorId = id => 'manual-' + id;
-  manual.tree = state => `<ul class="ob-tree">${data.manual.chapters.map((chapter, index) => `<li><div class="ob-tree-row ob-tree-row--chapter${state.chapter === chapter.id ? ' is-active' : ''}" style="--level:1"><a class="ob-tree-link" href="${router.build('/manual', { ch: chapter.id })}"${state.chapter === chapter.id ? ' aria-current="location"' : ''} data-action="chapter" data-chapter="${esc(chapter.id)}"><span class="ob-tree-label" title="${esc(chapter.title)}">${index + 1}. ${esc(chapter.title)}</span></a></div></li>`).join('')}</ul>`;
+  manual.tree = state => `<ul class="ob-tree">${data.manual.chapters.map((chapter, index) => `<li><div class="ob-tree-row ob-tree-row--chapter${state.chapter === chapter.id ? ' is-active' : ''}" style="--level:1"><a class="ob-tree-link" href="${esc(router.href('/manual', { ch: chapter.id }))}"${state.chapter === chapter.id ? ' aria-current="location"' : ''} data-action="chapter" data-chapter="${esc(chapter.id)}"><span class="ob-tree-label" title="${esc(chapter.title)}">${index + 1}. ${esc(chapter.title)}</span></a></div></li>`).join('')}</ul>`;
 
   manual.render = function (headerHtml) {
     const content = data.manual, model = data.model;

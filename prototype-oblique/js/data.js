@@ -301,10 +301,10 @@
   /* grouping */
   const GROUP_IDS = {
     objects: ['none', 'domain', 'resp', 'status'],
-    tables: ['none', 'system', 'domain', 'status'],
-    refs: ['none', 'domain', 'status'],
-    products: ['none', 'domain', 'access', 'status'],
-    apis: ['none', 'domain', 'system', 'status'],
+    tables: ['none', 'system', 'domain', 'resp', 'status'],
+    refs: ['none', 'domain', 'resp', 'status'],
+    products: ['none', 'domain', 'resp', 'access', 'status'],
+    apis: ['none', 'domain', 'system', 'resp', 'status'],
     domains: ['none', 'resp'],
     systems: ['none', 'resp'],
   };
@@ -332,12 +332,15 @@
   };
   data.groupOrder = function (g) {
     if (g === 'domain') return data.domains.map(d => d.name);
-    if (g === 'resp') return data.model.responsibilities;
     if (g === 'system') return data.systems.map(s => s.name);
     if (g === 'source') return data.model.normativeReferences;
     if (g === 'access') return data.model.accessOrder;
     if (g === 'status') return Object.keys(data.model.statuses);
     return [];
+  };
+  data.compareGroupTitles = (a, b, language = DK.app?.state.lang || 'de') => {
+    const unspecified = title => !title || title === '–' || title === t('diagram.unspecified');
+    return Number(unspecified(a)) - Number(unspecified(b)) || a.localeCompare(b, language, { numeric: true });
   };
   /** Groups [{ id, title, items, entityKind, entity }] of a section, in canonical order. */
   data.buildGroups = function (kind, g, sortByName) {
@@ -352,7 +355,7 @@
       map.get(id).items.push(e);
     });
     const rank = title => { const i = order.indexOf(title); return i < 0 ? 1e6 : i; };
-    const groups = [...map.values()].sort((a, b) => rank(a.title) - rank(b.title));
+    const groups = [...map.values()].sort((a, b) => g === 'resp' ? data.compareGroupTitles(a.title, b.title) : rank(a.title) - rank(b.title));
     if (sortByName) groups.forEach(group => group.items.sort((a, b) => a.name.localeCompare(b.name, 'de')));
     return groups;
   };

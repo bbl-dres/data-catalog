@@ -88,9 +88,15 @@
         progress(i + 1, layout.pages.length);
         if (i) doc.addPage([layout.width, layout.height], settings.orientation);
         host.innerHTML = DK.diagram.pageSvg(snapshot, settings, layout, i, palette, assets.logo);
+        // PDF destinations are added after pagination, independently of SVG link handling.
+        host.querySelectorAll('[data-diagram-target-page]').forEach(link => link.removeAttribute('href'));
         await doc.svg(host.firstElementChild, { x: 0, y: 0, width: layout.width, height: layout.height });
         assertActive();
         await new Promise(resolve => setTimeout(resolve, 0));
+      }
+      for (let index = 0; index < layout.pages.length; index++) {
+        doc.setPage(index + 1);
+        for (const link of DK.diagram.pageLinks(layout, index)) doc.link(link.x, link.y, link.width, link.height, { pageNumber: link.targetPage + 1, top: layout.bodyTop });
       }
       assertActive();
       return doc.output('blob');
