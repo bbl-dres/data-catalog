@@ -400,63 +400,6 @@
     ]
   },
   {
-    "identifier": "r-sia-nutz",
-    "name": "SIA Nutzungsart",
-    "description": "Nutzungsart einer Fläche gemäss SIA 416.",
-    "status": "Entwurf",
-    "version": "2023.1",
-    "created": "2021-09-03",
-    "modified": "2024-06-01",
-    "responsibleOrg": "Immobilienmanagement",
-    "dataOwner": "Martina Aebischer",
-    "dataSteward": "Lukas Zbinden",
-    "classification": "intern",
-    "personalData": false,
-    "source": "Architektur-Repository",
-    "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "sourceAuthority": "SIA",
-    "businessObject": "nutzungseinheit",
-    "values": [
-      {
-        "code": "BU",
-        "label": "Büro"
-      },
-      {
-        "code": "WO",
-        "label": "Wohnen"
-      },
-      {
-        "code": "VK",
-        "label": "Verkauf"
-      },
-      {
-        "code": "LA",
-        "label": "Lager"
-      },
-      {
-        "code": "PR",
-        "label": "Produktion"
-      },
-      {
-        "code": "SC",
-        "label": "Schule"
-      },
-      {
-        "code": "LB",
-        "label": "Labor"
-      },
-      {
-        "code": "PK",
-        "label": "Parkierung"
-      },
-      {
-        "code": "SO",
-        "label": "Sonstiges"
-      }
-    ]
-  },
-  {
     "identifier": "r-sia-flaeche",
     "name": "SIA 416 Flächenart",
     "description": "Flächenarten (GF, NF, HNF, …) gemäss SIA 416.",
@@ -506,55 +449,6 @@
       {
         "code": "FF",
         "label": "Funktionsfläche"
-      }
-    ]
-  },
-  {
-    "identifier": "r-geak",
-    "name": "GEAK Effizienzklasse",
-    "description": "Energieeffizienzklasse A–G gemäss GEAK.",
-    "status": "Entwurf",
-    "version": "2023.1",
-    "created": "2021-09-03",
-    "modified": "2026-02-03",
-    "responsibleOrg": "Immobilienmanagement",
-    "dataOwner": "Martina Aebischer",
-    "dataSteward": "Lukas Zbinden",
-    "classification": "intern",
-    "personalData": false,
-    "source": "Architektur-Repository",
-    "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "sourceAuthority": "GEAK",
-    "businessObject": "gebaeude",
-    "values": [
-      {
-        "code": "A",
-        "label": "Sehr effizient"
-      },
-      {
-        "code": "B",
-        "label": "Effizient"
-      },
-      {
-        "code": "C",
-        "label": "Gut"
-      },
-      {
-        "code": "D",
-        "label": "Mittel"
-      },
-      {
-        "code": "E",
-        "label": "Unterdurchschnittlich"
-      },
-      {
-        "code": "F",
-        "label": "Schlecht"
-      },
-      {
-        "code": "G",
-        "label": "Sehr schlecht"
       }
     ]
   },
@@ -638,116 +532,6 @@
     "sourceAuthority": "BBL intern",
     "businessObject": "stromzaehler",
     "values": []
-  },
-  {
-    "identifier": "r-geschoss",
-    "name": "Geschosstyp",
-    "description": "Typ eines Geschosses (UG, EG, OG, DG, …).",
-    "status": "Entwurf",
-    "version": "2023.1",
-    "created": "2021-09-03",
-    "modified": "2024-06-01",
-    "responsibleOrg": "Immobilienmanagement",
-    "dataOwner": "Martina Aebischer",
-    "dataSteward": "Lukas Zbinden",
-    "classification": "intern",
-    "personalData": false,
-    "source": "Architektur-Repository",
-    "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
-    "businessObject": "geschoss",
-    "values": [
-      {
-        "code": "UG",
-        "label": "Untergeschoss"
-      },
-      {
-        "code": "EG",
-        "label": "Erdgeschoss"
-      },
-      {
-        "code": "ZG",
-        "label": "Zwischengeschoss"
-      },
-      {
-        "code": "OG",
-        "label": "Obergeschoss"
-      },
-      {
-        "code": "DG",
-        "label": "Dachgeschoss"
-      },
-      {
-        "code": "AG",
-        "label": "Attikageschoss"
-      }
-    ]
-  },
-  {
-    "identifier": "r-raum",
-    "name": "Raumtyp",
-    "description": "Funktionaler Raumtyp.",
-    "status": "Entwurf",
-    "version": "2023.1",
-    "created": "2021-09-03",
-    "modified": "2024-06-01",
-    "responsibleOrg": "Immobilienmanagement",
-    "dataOwner": "Martina Aebischer",
-    "dataSteward": "Lukas Zbinden",
-    "classification": "intern",
-    "personalData": false,
-    "source": "Architektur-Repository",
-    "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
-    "businessObject": "raum",
-    "values": [
-      {
-        "code": "BUE",
-        "label": "Büro"
-      },
-      {
-        "code": "SIZ",
-        "label": "Sitzungszimmer"
-      },
-      {
-        "code": "ARC",
-        "label": "Archiv"
-      },
-      {
-        "code": "LAG",
-        "label": "Lager"
-      },
-      {
-        "code": "TEC",
-        "label": "Technikraum"
-      },
-      {
-        "code": "SAN",
-        "label": "Sanitärraum"
-      },
-      {
-        "code": "KOR",
-        "label": "Korridor"
-      },
-      {
-        "code": "KUE",
-        "label": "Küche"
-      },
-      {
-        "code": "LAB",
-        "label": "Labor"
-      },
-      {
-        "code": "WER",
-        "label": "Werkstatt"
-      },
-      {
-        "code": "GAR",
-        "label": "Garage"
-      }
-    ]
   },
   {
     "identifier": "r-eigentum",
@@ -8010,5 +7794,494 @@
     ],
     "sourceUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised#STRART",
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised)"
+  },
+  {
+    "identifier": "r-av-land-cover-type",
+    "name": "AV Bodenbedeckungsart",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Bodenbedeckung.BBArt",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "Gebaeude",
+        "label": "Gebaeude",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "befestigt.Strasse_Weg",
+        "label": "befestigt.Strasse Weg",
+        "sourceOrdinal": 1
+      },
+      {
+        "code": "befestigt.Trottoir",
+        "label": "befestigt.Trottoir",
+        "sourceOrdinal": 2
+      },
+      {
+        "code": "befestigt.Verkehrsinsel",
+        "label": "befestigt.Verkehrsinsel",
+        "sourceOrdinal": 3
+      },
+      {
+        "code": "befestigt.Bahn",
+        "label": "befestigt.Bahn",
+        "sourceOrdinal": 4
+      },
+      {
+        "code": "befestigt.Flugplatz",
+        "label": "befestigt.Flugplatz",
+        "sourceOrdinal": 5
+      },
+      {
+        "code": "befestigt.Wasserbecken",
+        "label": "befestigt.Wasserbecken",
+        "sourceOrdinal": 6
+      },
+      {
+        "code": "befestigt.uebrige_befestigte",
+        "label": "befestigt.uebrige befestigte",
+        "sourceOrdinal": 7
+      },
+      {
+        "code": "humusiert.Acker_Wiese_Weide",
+        "label": "humusiert.Acker Wiese Weide",
+        "sourceOrdinal": 8
+      },
+      {
+        "code": "humusiert.Intensivkultur.Reben",
+        "label": "humusiert.Intensivkultur.Reben",
+        "sourceOrdinal": 9
+      },
+      {
+        "code": "humusiert.Intensivkultur.uebrige_Intensivkultur",
+        "label": "humusiert.Intensivkultur.uebrige Intensivkultur",
+        "sourceOrdinal": 10
+      },
+      {
+        "code": "humusiert.Gartenanlage",
+        "label": "humusiert.Gartenanlage",
+        "sourceOrdinal": 11
+      },
+      {
+        "code": "humusiert.Hoch_Flachmoor",
+        "label": "humusiert.Hoch Flachmoor",
+        "sourceOrdinal": 12
+      },
+      {
+        "code": "humusiert.uebrige_humusierte",
+        "label": "humusiert.uebrige humusierte",
+        "sourceOrdinal": 13
+      },
+      {
+        "code": "Gewaesser.stehendes",
+        "label": "Gewaesser.stehendes",
+        "sourceOrdinal": 14
+      },
+      {
+        "code": "Gewaesser.fliessendes",
+        "label": "Gewaesser.fliessendes",
+        "sourceOrdinal": 15
+      },
+      {
+        "code": "Gewaesser.Schilfguertel",
+        "label": "Gewaesser.Schilfguertel",
+        "sourceOrdinal": 16
+      },
+      {
+        "code": "bestockt.geschlossener_Wald",
+        "label": "bestockt.geschlossener Wald",
+        "sourceOrdinal": 17
+      },
+      {
+        "code": "bestockt.Wytweide.Wytweide_dicht",
+        "label": "bestockt.Wytweide.Wytweide dicht",
+        "sourceOrdinal": 18
+      },
+      {
+        "code": "bestockt.Wytweide.Wytweide_offen",
+        "label": "bestockt.Wytweide.Wytweide offen",
+        "sourceOrdinal": 19
+      },
+      {
+        "code": "bestockt.uebrige_bestockte",
+        "label": "bestockt.uebrige bestockte",
+        "sourceOrdinal": 20
+      },
+      {
+        "code": "vegetationslos.Fels",
+        "label": "vegetationslos.Fels",
+        "sourceOrdinal": 21
+      },
+      {
+        "code": "vegetationslos.Gletscher_Firn",
+        "label": "vegetationslos.Gletscher Firn",
+        "sourceOrdinal": 22
+      },
+      {
+        "code": "vegetationslos.Geroell_Sand",
+        "label": "vegetationslos.Geroell Sand",
+        "sourceOrdinal": 23
+      },
+      {
+        "code": "vegetationslos.Abbau_Deponie",
+        "label": "vegetationslos.Abbau Deponie",
+        "sourceOrdinal": 24
+      },
+      {
+        "code": "vegetationslos.uebrige_vegetationslose",
+        "label": "vegetationslos.uebrige vegetationslose",
+        "sourceOrdinal": 25
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte.",
+    "businessObject": "bodenbedeckung"
+  },
+  {
+    "identifier": "r-av-quality",
+    "name": "AV Qualitätsstandard",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Qualitaetsstandard",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "AV93",
+        "label": "AV93",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "PV74",
+        "label": "PV74",
+        "sourceOrdinal": 1
+      },
+      {
+        "code": "PN",
+        "label": "PN",
+        "sourceOrdinal": 2
+      },
+      {
+        "code": "PEP",
+        "label": "PEP",
+        "sourceOrdinal": 3
+      },
+      {
+        "code": "weitere",
+        "label": "weitere",
+        "sourceOrdinal": 4
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte."
+  },
+  {
+    "identifier": "r-av-update-status",
+    "name": "AV Nachführungsstatus",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Status",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "projektiert",
+        "label": "projektiert",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "gueltig",
+        "label": "gueltig",
+        "sourceOrdinal": 1
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte."
+  },
+  {
+    "identifier": "r-av-property-type",
+    "name": "AV Grundstücksart",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstuecksart",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "Liegenschaft",
+        "label": "Liegenschaft",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "SelbstRecht.Baurecht",
+        "label": "SelbstRecht.Baurecht",
+        "sourceOrdinal": 1
+      },
+      {
+        "code": "SelbstRecht.Quellenrecht",
+        "label": "SelbstRecht.Quellenrecht",
+        "sourceOrdinal": 2
+      },
+      {
+        "code": "SelbstRecht.Konzessionsrecht",
+        "label": "SelbstRecht.Konzessionsrecht",
+        "sourceOrdinal": 3
+      },
+      {
+        "code": "SelbstRecht.weitere",
+        "label": "SelbstRecht.weitere",
+        "sourceOrdinal": 4
+      },
+      {
+        "code": "Bergwerk",
+        "label": "Bergwerk",
+        "sourceOrdinal": 5
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte.",
+    "businessObject": "grundstueck"
+  },
+  {
+    "identifier": "r-av-property-validity",
+    "name": "AV Grundstücksgültigkeit",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstueck.Gueltigkeit",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "rechtskraeftig",
+        "label": "rechtskraeftig",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "streitig",
+        "label": "streitig",
+        "sourceOrdinal": 1
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte.",
+    "businessObject": "grundstueck"
+  },
+  {
+    "identifier": "r-av-completeness",
+    "name": "AV Grundstücksvollständigkeit",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstueck.Vollstaendigkeit",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "Vollstaendig",
+        "label": "Vollstaendig",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "unvollstaendig",
+        "label": "unvollstaendig",
+        "sourceOrdinal": 1
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte.",
+    "businessObject": "grundstueck"
+  },
+  {
+    "identifier": "r-av-boundary-line-type",
+    "name": "AV Grenzlinienart",
+    "description": "Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "24 / LV95",
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft.Linienart",
+    "responsibleOrg": "Bundesamt für Landestopografie swisstopo",
+    "values": [
+      {
+        "code": "streitig",
+        "label": "streitig",
+        "sourceOrdinal": 0
+      },
+      {
+        "code": "unvollstaendig",
+        "label": "unvollstaendig",
+        "sourceOrdinal": 1
+      }
+    ],
+    "comment": "Codes sind symbolische INTERLIS-Pfade; sourceOrdinal ist nur die Quellreihenfolge. Keine erfundenen numerischen Fachcodes. Anzeigenamen sind lesbar formatierte Modellwerte. Linienattribute gehören zur Geometrie, nicht zu einem eigenständigen Polygonattribut. Undefiniert bedeutet im Modell rechtskräftig und vollständig.",
+    "businessObject": "grundstueck"
   }
 ]

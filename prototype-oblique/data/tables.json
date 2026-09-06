@@ -14713,5 +14713,1490 @@
       "email": "immobilienmanagement@bbl.admin.ch",
       "phone": "+41 58 465 50 10"
     }
+  },
+  {
+    "identifier": "t-av-land-cover",
+    "name": "Bodenabdeckung – DM.01",
+    "description": "Flächen der Bodenbedeckung im DM.01-AV-CH. Art unterscheidet unter anderem Gebäude, befestigte und humusierte Flächen, Gewässer, bestockte und vegetationslose Flächen.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Bodenbedeckung.BoFlaeche",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Bodenabdeckung – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "Entstehung",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Nachführung"
+        },
+        "description": "Modellreferenz auf BBNachfuehrung; keine bestätigte physische Fremdschlüsselspalte.",
+        "dataType": "-> BBNachfuehrung",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+          "declaration": "Entstehung: -> BBNachfuehrung ;",
+          "modelReference": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung"
+        }
+      },
+      {
+        "technicalName": "Geometrie",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Geometrie"
+        },
+        "description": "",
+        "dataType": "AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+          "declaration": "Geometrie: AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050;"
+        }
+      },
+      {
+        "technicalName": "Qualitaet",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Qualitätsstandard"
+        },
+        "description": "",
+        "dataType": "Qualitaetsstandard",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+          "declaration": "Qualitaet: Qualitaetsstandard;"
+        },
+        "codeList": "r-av-quality"
+      },
+      {
+        "technicalName": "Art",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Art"
+        },
+        "description": "",
+        "dataType": "BBArt",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+          "declaration": "Art: BBArt;"
+        },
+        "codeList": "r-av-land-cover-type"
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch"
+    ],
+    "descriptionSource": {
+      "title": "Bodenbedeckung.BoFlaeche",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE BoFlaeche =\n      Entstehung: -> BBNachfuehrung\n        // Gueltigkeit = gueltig //;  !! Beziehung 1-mc\n      Geometrie: AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord\n        WITHOUT OVERLAPS > 0.050;\n      Qualitaet: Qualitaetsstandard;\n      Art: BBArt;\n    NO IDENT\n    END BoFlaeche;",
+    "modelIdentifiers": [],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst.",
+    "realizes": "bodenbedeckung"
+  },
+  {
+    "identifier": "t-av-building-number",
+    "name": "Gebäudenummer – DM.01",
+    "description": "Nummern einer Bodenbedeckungsfläche der Art Gebäude. Ein GWR_EGID kann angegeben werden, wenn die Gebäudedefinition mit jener des BFS übereinstimmt.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Bodenbedeckung.Gebaeudenummer",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Gebäudenummer – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.Gebaeudenummer",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "Gebaeudenummer_von",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Bodenbedeckungsfläche"
+        },
+        "description": "Modellreferenz auf BoFlaeche; keine bestätigte physische Fremdschlüsselspalte.",
+        "dataType": "-> BoFlaeche",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.Gebaeudenummer",
+          "declaration": "Gebaeudenummer_von: -> BoFlaeche ;",
+          "modelReference": "DM01AVCH24LV95D.Bodenbedeckung.BoFlaeche"
+        }
+      },
+      {
+        "technicalName": "Nummer",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Nummer"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.Gebaeudenummer",
+          "declaration": "Nummer: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "GWR_EGID",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
+        "description": "",
+        "dataType": "[1..999999999]",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.Gebaeudenummer",
+          "declaration": "GWR_EGID: OPTIONAL [1..999999999];"
+        }
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Bodenbedeckung.Gebaeudenummer",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch"
+    ],
+    "descriptionSource": {
+      "title": "Bodenbedeckung.Gebaeudenummer",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE Gebaeudenummer =\n      Gebaeudenummer_von: -> BoFlaeche // Art = Gebaeude //;  !! Beziehung 1-mc\n      Nummer: TEXT*12;\n      !! GWR_EGID falls die Definition der Gebaeude mit jener des\n      !! BFS uebereinstimmt\n      GWR_EGID: OPTIONAL [1..999999999];\n    NO IDENT\n    END Gebaeudenummer;",
+    "modelIdentifiers": [],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst.",
+    "realizes": "gebaeude"
+  },
+  {
+    "identifier": "t-av-land-cover-update",
+    "name": "Nachführung Bodenabdeckung – DM.01",
+    "description": "Nachführungsinformationen der Bodenbedeckung mit Identifikation, Beschreibung, optionalem Perimeter, Gültigkeit und Datumsangaben.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Bodenbedeckung.BBNachfuehrung",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Nachführung Bodenabdeckung – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "NBIdent",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Identifikation Nummerierungsbereich"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "NBIdent: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Identifikator",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Identifikator"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "Identifikator: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Beschreibung",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Beschreibung"
+        },
+        "description": "",
+        "dataType": "TEXT*30",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "Beschreibung: TEXT*30;"
+        }
+      },
+      {
+        "technicalName": "Perimeter",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Perimeter"
+        },
+        "description": "",
+        "dataType": "SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "Perimeter: OPTIONAL SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050;"
+        }
+      },
+      {
+        "technicalName": "Gueltigkeit",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gültigkeit"
+        },
+        "description": "",
+        "dataType": "Status",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "Gueltigkeit: Status;"
+        },
+        "codeList": "r-av-update-status"
+      },
+      {
+        "technicalName": "GueltigerEintrag",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gültiger Eintrag"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "GueltigerEintrag: OPTIONAL DATE;"
+        }
+      },
+      {
+        "technicalName": "Datum1",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Datum 1 (Altbestand)"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+          "declaration": "Datum1: OPTIONAL DATE;"
+        },
+        "comment": "Altbestand laut Modellkommentar. Für neue Nachführungen gelten GueltigerEintrag bzw. zusätzlich GBEintrag; die formale OPTIONAL-Deklaration bleibt unverändert."
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Bodenbedeckung.BBNachfuehrung",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch"
+    ],
+    "descriptionSource": {
+      "title": "Bodenbedeckung.BBNachfuehrung",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE BBNachfuehrung =\n      NBIdent: TEXT*12;  !! Beziehung 1-m zu Nummerierungsbereich\n      Identifikator: TEXT*12;  !! z.B. Nummer des technischen Dossiers\n      Beschreibung: TEXT*30;\n      Perimeter: OPTIONAL SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord\n        WITHOUT OVERLAPS > 0.050;\n      Gueltigkeit: Status;\n      !! Fuer zukuenftige Nachfuehrungen ist das Attribut GueltigerEintrag zu \n      !! erfassen. Datum1 betrifft die alten Nachfuehrungen und wird nicht mehr \n      !! angewendet. In der naechsten Revision des Datenmodells wird das Attribut \n      !! Datum1 geloescht und das Attribut GueltigerEintrag wird obligatorisch.\n      GueltigerEintrag: OPTIONAL DATE;\n      Datum1: OPTIONAL DATE;  !! z.B. Datum des gueltigen Eintrags\n    IDENT NBIdent, Identifikator;\n    END BBNachfuehrung;",
+    "modelIdentifiers": [
+      "NBIdent, Identifikator"
+    ],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst."
+  },
+  {
+    "identifier": "t-av-property",
+    "name": "Grundstück – DM.01",
+    "description": "Grundstücksidentifikation und Zustandsangaben im DM.01-AV-CH. Die Art unterscheidet Liegenschaft, selbständige Rechte und Bergwerk. Die Geometrie einer Liegenschaft wird in der zugehörigen Klasse Liegenschaft geführt.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Liegenschaften.Grundstueck",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Grundstück – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "Entstehung",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Nachführung"
+        },
+        "description": "Modellreferenz auf LSNachfuehrung; keine bestätigte physische Fremdschlüsselspalte.",
+        "dataType": "-> LSNachfuehrung",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "Entstehung: -> LSNachfuehrung ;",
+          "modelReference": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung"
+        }
+      },
+      {
+        "technicalName": "NBIdent",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Identifikation Nummerierungsbereich"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "NBIdent: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Nummer",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Nummer"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "Nummer: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "EGRIS_EGRID",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Eidgenössischer Grundstücksidentifikator"
+        },
+        "description": "",
+        "dataType": "TEXT*14",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "EGRIS_EGRID: OPTIONAL TEXT*14;"
+        }
+      },
+      {
+        "technicalName": "Gueltigkeit",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gültigkeit"
+        },
+        "description": "",
+        "dataType": "ENUMERATION",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "Gueltigkeit: ( rechtskraeftig, streitig);"
+        },
+        "codeList": "r-av-property-validity"
+      },
+      {
+        "technicalName": "Vollstaendigkeit",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Vollständigkeit"
+        },
+        "description": "",
+        "dataType": "ENUMERATION",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "Vollstaendigkeit: ( Vollstaendig, unvollstaendig);"
+        },
+        "codeList": "r-av-completeness"
+      },
+      {
+        "technicalName": "Art",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Art"
+        },
+        "description": "",
+        "dataType": "Grundstuecksart",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "Art: Grundstuecksart;"
+        },
+        "codeList": "r-av-property-type"
+      },
+      {
+        "technicalName": "GesamteFlaechenmass",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gesamtes Flächenmass"
+        },
+        "description": "",
+        "dataType": "DIM2 1 999999999",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+          "declaration": "GesamteFlaechenmass: OPTIONAL DIM2 1 999999999;"
+        }
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstueck",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch",
+      "https://www.ech.ch/de/ech/ech-0153/1.0"
+    ],
+    "descriptionSource": {
+      "title": "Liegenschaften.Grundstueck",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE Grundstueck =\n      Entstehung: -> LSNachfuehrung\n        // Gueltigkeit = gueltig //;  !! Beziehung 1-mc\n      NBIdent: TEXT*12;  !! Beziehung 1-m zu Nummerierungsbereich\n      Nummer: TEXT*12;\n      !! Elektronisches Grundstueckinformationssystem\n      EGRIS_EGRID: OPTIONAL TEXT*14;\n      !! abgeleitetes Attribut: muss streitig sein, falls Liegenschaft,\n      !! SelbstRechtvoder Bergwerk streitig;\n      Gueltigkeit: (\n        rechtskraeftig,\n        streitig);\n      !!unvollstaendig, falls z.B. das Grundstueck\n      !! teilweise ausserhalb des Perimeters liegt.\n      Vollstaendigkeit: (\n        Vollstaendig,\n        unvollstaendig);\n      Art: Grundstuecksart;\n      !! GesamteFlaechenmass wird nur benutzt, falls TeilGrundstueke existieren.\n      !! Das heisst mehrere Objekte Liegenschaft, SelbstRecht\n      !! oder Bergwerk werden zu einem Objekt Grundstueck.\n      GesamteFlaechenmass: OPTIONAL DIM2 1 999999999;\n    IDENT NBIdent, Nummer;\n    END Grundstueck;",
+    "modelIdentifiers": [
+      "NBIdent, Nummer"
+    ],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst. EGRID ist im Modell optional. NBIdent und Nummer bilden die deklarierte Identifikation. Keine Eigentümer-, Rechte- oder Grundbuchdaten aus eGRISDM importiert.",
+    "realizes": "grundstueck"
+  },
+  {
+    "identifier": "t-av-parcel",
+    "name": "Liegenschaft – DM.01",
+    "description": "Geometrie und Flächenmass einer Liegenschaft beziehungsweise eines Teilgrundstücks. Die Referenz Liegenschaft_von verbindet sie mit der Grundstücksidentifikation.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Liegenschaften.Liegenschaft",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Liegenschaft – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "Liegenschaft_von",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Grundstück"
+        },
+        "description": "Modellreferenz auf Grundstueck; keine bestätigte physische Fremdschlüsselspalte.",
+        "dataType": "-> Grundstueck",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+          "declaration": "Liegenschaft_von: -> Grundstueck ;",
+          "modelReference": "DM01AVCH24LV95D.Liegenschaften.Grundstueck"
+        }
+      },
+      {
+        "technicalName": "NummerTeilGrundstueck",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Nummer Teilgrundstück"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+          "declaration": "NummerTeilGrundstueck: OPTIONAL TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Geometrie",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Geometrie"
+        },
+        "description": "",
+        "dataType": "AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord BASE WITHOUT OVERLAPS > 0.050",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+          "declaration": "Geometrie: AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord BASE WITHOUT OVERLAPS > 0.050 LINEATTR = Linienart: OPTIONAL ( streitig, unvollstaendig); END;",
+          "lineAttributes": [
+            {
+              "technicalName": "Linienart",
+              "mandatory": false,
+              "codeList": "r-av-boundary-line-type"
+            }
+          ]
+        }
+      },
+      {
+        "technicalName": "Flaechenmass",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Flächenmass"
+        },
+        "description": "",
+        "dataType": "DIM2 1 999999999",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+          "declaration": "Flaechenmass: DIM2 1 999999999;"
+        }
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch"
+    ],
+    "descriptionSource": {
+      "title": "Liegenschaften.Liegenschaft",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE Liegenschaft =\n      Liegenschaft_von: -> Grundstueck // Art = Liegenschaft //;  !! Beziehung 1-mc\n      !! NummerTeilGrundstueck ist fuer Teil Grundstueck noetig\n      NummerTeilGrundstueck: OPTIONAL TEXT*12; \n      Geometrie: AREA WITH (STRAIGHTS, ARCS) VERTEX LKoord BASE\n        // Geometrie nur LFP1, LFP2, LFP3, Grenzpunkt oder Hoheitsgrenzpunkt //\n        WITHOUT OVERLAPS > 0.050\n        LINEATTR =\n          Linienart: OPTIONAL (\n            !! undefiniert bedeutet rechtskraeftig und vollstaendig\n            streitig,\n            unvollstaendig);\n        END;\n      Flaechenmass: DIM2 1 999999999;\n    NO IDENT\n    END Liegenschaft;",
+    "modelIdentifiers": [],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst. Ein Grundstück kann mehrere Teilflächen haben. AREA kann Kreisbögen enthalten; GeoJSON erfordert deren Approximation. Das amtliche Flächenmass ist nicht durch eine neu berechnete Polygonfläche zu ersetzen.",
+    "realizes": "grundstueck"
+  },
+  {
+    "identifier": "t-av-property-update",
+    "name": "Nachführung Liegenschaften – DM.01",
+    "description": "Nachführungsinformationen der Liegenschaften mit Identifikation, Beschreibung, optionalem Perimeter, Gültigkeit sowie technischem und Grundbucheintrag.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "version": "DM.01-AV-CH 24 / LV95",
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "Liegenschaften.LSNachfuehrung",
+    "technicalNameKind": "model-class",
+    "labels": {
+      "de": "Nachführung Liegenschaften – DM.01"
+    },
+    "system": "av",
+    "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+    "fieldScope": "model-inventory",
+    "fields": [
+      {
+        "technicalName": "NBIdent",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Identifikation Nummerierungsbereich"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "NBIdent: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Identifikator",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Identifikator"
+        },
+        "description": "",
+        "dataType": "TEXT*12",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Identifikator: TEXT*12;"
+        }
+      },
+      {
+        "technicalName": "Beschreibung",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Beschreibung"
+        },
+        "description": "",
+        "dataType": "TEXT*30",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Beschreibung: TEXT*30;"
+        }
+      },
+      {
+        "technicalName": "Perimeter",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Perimeter"
+        },
+        "description": "",
+        "dataType": "SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Perimeter: OPTIONAL SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord WITHOUT OVERLAPS > 0.050;"
+        }
+      },
+      {
+        "technicalName": "Gueltigkeit",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gültigkeit"
+        },
+        "description": "",
+        "dataType": "Status",
+        "dataTypeKind": "model-type",
+        "mandatory": true,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Gueltigkeit: Status;"
+        },
+        "codeList": "r-av-update-status"
+      },
+      {
+        "technicalName": "GueltigerEintrag",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Gültiger Eintrag"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "GueltigerEintrag: OPTIONAL DATE;"
+        }
+      },
+      {
+        "technicalName": "GBEintrag",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Grundbucheintrag"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "GBEintrag: OPTIONAL DATE;"
+        }
+      },
+      {
+        "technicalName": "Datum1",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Datum 1 (Altbestand)"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Datum1: OPTIONAL DATE;"
+        },
+        "comment": "Altbestand laut Modellkommentar. Für neue Nachführungen gelten GueltigerEintrag bzw. zusätzlich GBEintrag; die formale OPTIONAL-Deklaration bleibt unverändert."
+      },
+      {
+        "technicalName": "Datum2",
+        "technicalNameKind": "model-attribute",
+        "labels": {
+          "de": "Datum 2 (Altbestand)"
+        },
+        "description": "",
+        "dataType": "DATE",
+        "dataTypeKind": "model-type",
+        "mandatory": false,
+        "keyRole": null,
+        "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+        "catalogMetadata": {
+          "modelClass": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+          "declaration": "Datum2: OPTIONAL DATE;"
+        },
+        "comment": "Altbestand laut Modellkommentar. Für neue Nachführungen gelten GueltigerEintrag bzw. zusätzlich GBEintrag; die formale OPTIONAL-Deklaration bleibt unverändert."
+      }
+    ],
+    "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.LSNachfuehrung",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch"
+    ],
+    "descriptionSource": {
+      "title": "Liegenschaften.LSNachfuehrung",
+      "url": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "kind": "source-summary",
+      "reviewed": "2026-09-05"
+    },
+    "modelDeclaration": "TABLE LSNachfuehrung =\n      NBIdent: TEXT*12;  !! Beziehung 1-m zu Nummerierungsbereich\n      Identifikator: TEXT*12;  !! z.B. Nummer des technischen Dossiers\n      Beschreibung: TEXT*30;\n      Perimeter: OPTIONAL SURFACE WITH (STRAIGHTS, ARCS) VERTEX LKoord\n        WITHOUT OVERLAPS > 0.050;\n      Gueltigkeit: Status;\n      !! Fuer zukuenftige Nachfuehrungen sind die Attribute GueltigerEintrag und\n      !! GBEintrag zu erfassen. Datum1 und Datum2 betreffen die alten \n      !! Nachfuehrungen und werden nicht mehr angewendet. In der naechsten Revision \n      !! des Datenmodells werden die Attribute Datum1 und Datum2 geloescht und die\n      !! Attribute GueltigerEintrag und GBEintrag werden obligatorisch.\n      GueltigerEintrag: OPTIONAL DATE; !! Techn. Bearbeitung\n      GBEintrag: OPTIONAL DATE;\n      Datum1: OPTIONAL DATE;  !! z.B. Techn. Bearbeitung\n      Datum2: OPTIONAL DATE;  !! Vergabe durch Kanton, z.B. GB-Eintrag, Genehmigung\n    IDENT NBIdent, Identifikator;\n    END LSNachfuehrung;",
+    "modelIdentifiers": [
+      "NBIdent, Identifikator"
+    ],
+    "comment": "INTERLIS-Modellklasse; technischer Name ist kein physischer Datenbanktabellenname. Die Beschreibung ist eine Zusammenfassung. Modellpflicht und Eindeutigkeit gelten für den Datentransfer, nicht automatisch für einen Webdienst."
+  },
+  {
+    "identifier": "t-av-service-land-cover",
+    "name": "Bodenabdeckung – geodienste.ch",
+    "description": "Publizierte Serviceprojektion für Bodenbedeckungsflächen.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "LCSF",
+    "technicalNameKind": "service-layer",
+    "labels": {
+      "de": "Bodenabdeckung – geodienste.ch"
+    },
+    "system": "av",
+    "realizes": "bodenbedeckung",
+    "fieldScope": "api-projection",
+    "fields": [
+      {
+        "technicalName": "msGeometry",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Geometrie"
+        },
+        "description": "",
+        "dataType": "gml:GeometryPropertyType",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "msGeometry",
+            "type": "gml:GeometryPropertyType",
+            "minOccurs": "0",
+            "maxOccurs": "1"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "BFSNr",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "BFS-Gemeindenummer"
+        },
+        "description": "",
+        "dataType": "integer",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "BFSNr",
+            "minOccurs": "0",
+            "type": "integer"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Qualitaet",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Qualitätsstandard"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "Qualitaet",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Art",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Art"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "Art",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "GWR_EGID",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Eidgenössischer Gebäudeidentifikator"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "GWR_EGID",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Kanton",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Kanton"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:LCSF",
+          "xsd": {
+            "name": "Kanton",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      }
+    ],
+    "version": "24.0.0",
+    "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+    "sourceDetail": "WFS 1.1.0 DescribeFeatureType · ms:LCSF",
+    "informationUrls": [
+      "https://geodienste.ch/services/av/info",
+      "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+      "https://geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF?f=json"
+    ],
+    "serviceMetadata": {
+      "crs": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        "http://www.opengis.net/def/crs/EPSG/0/2056",
+        "http://www.opengis.net/def/crs/EPSG/0/4326",
+        "http://www.opengis.net/def/crs/EPSG/0/3857"
+      ],
+      "description": "Darstellung der rechtsgültigen Bodenbedeckungsflächen in Schwarzweiss",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              5.702801,
+              45.740376,
+              10.644679,
+              47.851923
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        }
+      },
+      "id": "LCSF",
+      "itemType": "feature",
+      "links": [
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF?f=json",
+          "rel": "self",
+          "title": "This collection as JSON",
+          "type": "application/json"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF?f=html",
+          "rel": "alternate",
+          "title": "This collection as HTML",
+          "type": "text/html"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF/items?f=json",
+          "rel": "items",
+          "title": "Items for this collection as GeoJSON",
+          "type": "application/geo+json"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF/items?f=html",
+          "rel": "items",
+          "title": "Items for this collection as HTML",
+          "type": "text/html"
+        }
+      ],
+      "storageCrs": "http://www.opengis.net/def/crs/EPSG/0/2056",
+      "title": "Bodenbedeckung schwarzweiss"
+    },
+    "comment": "Service-Layer, keine physische Tabelle. Feldnamen und Typen sind im XSD bestätigt; Geometrie ist dort allgemein gml:GeometryPropertyType. Die OGC-API-Beispielabfrage lieferte hier HTTP 403. Wertecodierung und Geometriequalität des Dienstes sind noch zu prüfen; DM.01-Wertelisten werden nicht als bestätigte Servicecodes zugeordnet."
+  },
+  {
+    "identifier": "t-av-service-parcel",
+    "name": "Liegenschaften – geodienste.ch",
+    "description": "Publizierte Serviceprojektion für Liegenschaftsflächen mit Grundstücksidentifikation.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technicalName": "RESF",
+    "technicalNameKind": "service-layer",
+    "labels": {
+      "de": "Liegenschaften – geodienste.ch"
+    },
+    "system": "av",
+    "realizes": "grundstueck",
+    "fieldScope": "api-projection",
+    "fields": [
+      {
+        "technicalName": "msGeometry",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Geometrie"
+        },
+        "description": "",
+        "dataType": "gml:GeometryPropertyType",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "msGeometry",
+            "type": "gml:GeometryPropertyType",
+            "minOccurs": "0",
+            "maxOccurs": "1"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "BFSNr",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "BFS-Gemeindenummer"
+        },
+        "description": "",
+        "dataType": "integer",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "BFSNr",
+            "minOccurs": "0",
+            "type": "integer"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "NBIdent",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Identifikation Nummerierungsbereich"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "NBIdent",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Nummer",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Nummer"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "Nummer",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "EGRIS_EGRID",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Eidgenössischer Grundstücksidentifikator"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "EGRIS_EGRID",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Vollstaendigkeit",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Vollständigkeit"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "Vollstaendigkeit",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Flaeche",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Fläche"
+        },
+        "description": "",
+        "dataType": "integer",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "Flaeche",
+            "minOccurs": "0",
+            "type": "integer"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      },
+      {
+        "technicalName": "Kanton",
+        "technicalNameKind": "api-field",
+        "labels": {
+          "de": "Kanton"
+        },
+        "description": "",
+        "dataType": "string",
+        "dataTypeKind": "service-schema",
+        "keyRole": null,
+        "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+        "catalogMetadata": {
+          "featureType": "ms:RESF",
+          "xsd": {
+            "name": "Kanton",
+            "minOccurs": "0",
+            "type": "string"
+          }
+        },
+        "comment": "DescribeFeatureType beschreibt dieses Servicefeld. minOccurs=0 erlaubt das Weglassen im XML; daraus wird keine physische Nullfähigkeit abgeleitet."
+      }
+    ],
+    "version": "24.0.0",
+    "sourceUrl": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+    "sourceDetail": "WFS 1.1.0 DescribeFeatureType · ms:RESF",
+    "informationUrls": [
+      "https://geodienste.ch/services/av/info",
+      "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+      "https://geodienste.ch/db/av_0/deu/ogcapi/collections/RESF?f=json"
+    ],
+    "serviceMetadata": {
+      "crs": [
+        "http://www.opengis.net/def/crs/OGC/1.3/CRS84",
+        "http://www.opengis.net/def/crs/EPSG/0/2056",
+        "http://www.opengis.net/def/crs/EPSG/0/4326",
+        "http://www.opengis.net/def/crs/EPSG/0/3857"
+      ],
+      "description": "Darstellung der rechtsgültigen Liegenschaften",
+      "extent": {
+        "spatial": {
+          "bbox": [
+            [
+              5.702801,
+              45.740376,
+              10.644679,
+              47.851923
+            ]
+          ],
+          "crs": "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+        }
+      },
+      "id": "RESF",
+      "itemType": "feature",
+      "links": [
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/RESF?f=json",
+          "rel": "self",
+          "title": "This collection as JSON",
+          "type": "application/json"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/RESF?f=html",
+          "rel": "alternate",
+          "title": "This collection as HTML",
+          "type": "text/html"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/RESF/items?f=json",
+          "rel": "items",
+          "title": "Items for this collection as GeoJSON",
+          "type": "application/geo+json"
+        },
+        {
+          "href": "https://www.geodienste.ch/db/av_0/deu/ogcapi/collections/RESF/items?f=html",
+          "rel": "items",
+          "title": "Items for this collection as HTML",
+          "type": "text/html"
+        }
+      ],
+      "storageCrs": "http://www.opengis.net/def/crs/EPSG/0/2056",
+      "title": "Liegenschaften"
+    },
+    "comment": "Service-Layer, keine physische Tabelle. Feldnamen und Typen sind im XSD bestätigt; Geometrie ist dort allgemein gml:GeometryPropertyType. Die OGC-API-Beispielabfrage lieferte hier HTTP 403. Wertecodierung und Geometriequalität des Dienstes sind noch zu prüfen; DM.01-Wertelisten werden nicht als bestätigte Servicecodes zugeordnet."
   }
 ]

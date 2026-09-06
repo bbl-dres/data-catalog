@@ -272,6 +272,7 @@ const server = createServer();
         await page.waitForURL(url => url.hash.includes('/search?'));
         assert.equal(await page.evaluate(() => DK.router.parse(location.hash).params.q), 'Energieverbrauch');
         assert(page.url().includes('domains=energie') && page.url().includes('types=products') && page.url().includes('ai=0'));
+        await page.locator('#search-results-panel tbody tr').first().waitFor();
         assert.equal(await page.locator('.ob-search-answer').count(), 0);
         assert.equal(await page.locator('#search-results-panel tbody tr').count(), 1);
         await visit('#/objects'); await page.click('[data-action="toggle-search"]');

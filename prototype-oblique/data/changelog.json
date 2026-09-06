@@ -1120,41 +1120,6 @@
     "user": "Nadia Ferrari"
   },
   {
-    "entity": "refs:r-sia-nutz",
-    "date": "2024-06-01",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "refs:r-sia-nutz",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-sia-nutz",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "refs:r-sia-nutz",
-    "date": "2024-03-12",
-    "action": "Werte ergänzt",
-    "detail": "9 Werte erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-sia-nutz",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Werteliste im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
     "entity": "refs:r-sia-flaeche",
     "date": "2024-06-01",
     "action": "Abgeglichen",
@@ -1184,41 +1149,6 @@
   },
   {
     "entity": "refs:r-sia-flaeche",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Werteliste im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "refs:r-geak",
-    "date": "2026-02-03",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "refs:r-geak",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-geak",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Entwurf",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "refs:r-geak",
-    "date": "2024-03-12",
-    "action": "Werte ergänzt",
-    "detail": "7 Werte erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-geak",
     "date": "2024-02-01",
     "action": "Erstellt",
     "detail": "Werteliste im Katalog angelegt",
@@ -1310,76 +1240,6 @@
   },
   {
     "entity": "refs:r-zaehler",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Werteliste im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "refs:r-geschoss",
-    "date": "2024-06-01",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "refs:r-geschoss",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-geschoss",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "refs:r-geschoss",
-    "date": "2024-03-12",
-    "action": "Werte ergänzt",
-    "detail": "6 Werte erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-geschoss",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "Werteliste im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "refs:r-raum",
-    "date": "2024-06-01",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "refs:r-raum",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-raum",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "refs:r-raum",
-    "date": "2024-03-12",
-    "action": "Werte ergänzt",
-    "detail": "11 Werte erfasst",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "refs:r-raum",
     "date": "2024-02-01",
     "action": "Erstellt",
     "detail": "Werteliste im Katalog angelegt",
@@ -1645,62 +1505,6 @@
     "user": "Nadia Ferrari"
   },
   {
-    "entity": "apis:api-immo",
-    "date": "2026-04-20",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "apis:api-immo",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "apis:api-immo",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "apis:api-immo",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "API im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "apis:api-geo",
-    "date": "2025-12-02",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "apis:api-geo",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "apis:api-geo",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "apis:api-geo",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "API im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
     "entity": "apis:api-energie",
     "date": "2026-02-03",
     "action": "Abgeglichen",
@@ -1723,34 +1527,6 @@
   },
   {
     "entity": "apis:api-energie",
-    "date": "2024-02-01",
-    "action": "Erstellt",
-    "detail": "API im Katalog angelegt",
-    "user": "Nadia Ferrari"
-  },
-  {
-    "entity": "apis:api-opendata",
-    "date": "2026-04-01",
-    "action": "Abgeglichen",
-    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
-    "user": "System"
-  },
-  {
-    "entity": "apis:api-opendata",
-    "date": "2026-02-03",
-    "action": "Beschreibung geändert",
-    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
-    "user": "Lukas Zbinden"
-  },
-  {
-    "entity": "apis:api-opendata",
-    "date": "2024-06-01",
-    "action": "Status geändert",
-    "detail": "Entwurf → Gültig",
-    "user": "Martina Aebischer"
-  },
-  {
-    "entity": "apis:api-opendata",
     "date": "2024-02-01",
     "action": "Erstellt",
     "detail": "API im Katalog angelegt",
@@ -2246,5 +2022,173 @@
     "detail": "Felddefinitionen aus BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx übernommen; Quellstatus und offene Modellfragen separat dokumentiert.",
     "user": "Katalogimport",
     "importId": "gis-immo-workbook"
+  },
+  {
+    "entity": "tables:t-av-land-cover",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-building-number",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-land-cover-update",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-property",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-parcel",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-property-update",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-service-land-cover",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "tables:t-av-service-parcel",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-land-cover-type",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-quality",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-update-status",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-property-type",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-property-validity",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-completeness",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "refs:r-av-boundary-line-type",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "apis:api-av-wms",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "apis:api-av-wfs",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "apis:api-av-features",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "apis:api-av-geoadmin",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "apis:api-av-geoadmin-wms",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
+  },
+  {
+    "entity": "systems:av",
+    "date": "2026-09-05",
+    "action": "Metadaten importiert",
+    "detail": "Geprüfter AV-Auszug: Modell, Serviceprojektionen und Wertelisten getrennt dokumentiert.",
+    "user": "Katalogimport",
+    "importId": "av-dm01-reviewed"
   }
 ]

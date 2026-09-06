@@ -58,7 +58,7 @@
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t('fact.key.none');
         primary.push(internal(t('fact.object'), o.name, 'objects', o.identifier));
         primary.push(plain(t('fact.valueType'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), e.mandatory ? t('yes') : t('no')),
-          plain(t('fact.normReference'), e.normReference), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: o.attributes.length })));
+          plain(t('fact.normReference'), e.normReference));
         break;
       }
       case 'tables':
@@ -73,16 +73,13 @@
         break;
       case 'fields': {
         const table = data.get('tables', e.table);
-        const source = data.fieldSourceFacts(e);
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance ? 'fact.undocumented' : 'fact.key.none');
-        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key), plain(t('fact.position'), t('fact.positionOf', { i: e.position, n: table.fields.length })));
-        primary.push(plain(t('fact.sourceStatus'), e.sourceStatus), plain(t('fact.objectTypes'), e.appliesToObjectTypes?.join(', ')));
+        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key));
         primary.push(plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null));
         const ref = data.get('refs', e.codeList);
         primary.push(ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')));
-        primary.push(plain(t('fact.registerAccess'), source.registerAccess), plain(t('fact.masterData'), source.masterData));
         break;
       }
       case 'products':
@@ -98,8 +95,8 @@
         break;
     }
     if (e.sourceUrl && !informationUrls.includes(e.sourceUrl)) primary.push(ext(t('fact.sourceDocument'), t('fact.openSourceDocument'), e.sourceUrl));
-    if (e.provenance || e.sourceUrl) primary.push(plain(t('fact.sourceDetail'), e.sourceDetail));
-    if (e.descriptionSource) {
+    if (!['fields', 'tables'].includes(e.kind) && (e.provenance || e.sourceUrl)) primary.push(plain(t('fact.sourceDetail'), e.sourceDetail));
+    if (e.kind !== 'tables' && e.descriptionSource) {
       const label = `${e.descriptionSource.title} · ${t(e.descriptionSource.kind === 'source-excerpt' ? 'fact.sourceExcerpt' : 'fact.sourceSummary')}`;
       primary.push(informationUrls.includes(e.descriptionSource.url)
         ? plain(t('fact.definitionSource'), label) : ext(t('fact.definitionSource'), label, e.descriptionSource.url));

@@ -596,7 +596,8 @@
             "type": "object",
               "required": ["system"],
             "properties": {
-                "technicalName": { "type": "string", "example": "VIBDBU", "description": "Dokumentierter technischer Tabellenname. Fehlt, wenn nur ein fachlicher Alias oder Modellname bekannt ist." },
+                "technicalName": { "type": "string", "example": "VIBDBU", "description": "Dokumentierter technischer Name. technicalNameKind unterscheidet physische Tabellen, formale Modellklassen und publizierte Service-Layer. Unbestätigte Namen werden weggelassen." },
+                "technicalNameKind": { "type": "string", "enum": ["physical-table", "model-class", "service-layer"] },
                 "labels": { "$ref": "#/components/schemas/LocalizedLabel" },
                 "fieldScope": { "type": "string", "enum": ["api-projection", "datasource-projection", "model-inventory"], "description": "Kennzeichnet eine API-, DataSource- oder Modell-Feldliste anstelle einer bestätigten physischen Tabellendefinition." },
                 "dataSource": { "type": "string", "example": "0BUSENTITY_ATTR", "description": "Technischer Name der dokumentierten SAP DataSource." },
@@ -623,7 +624,7 @@
           "comment": { "type": "string", "description": "Optionaler Kommentar zum Feld; wird nicht von der Datentabelle geerbt." },
           "sourceStatus": { "type": "string", "description": "Status der Felddefinition in der Quelle, getrennt vom Katalogstatus.", "example": "DEV" },
           "dataType": { "type": "string", "example": "CHAR(4)", "description": "Dokumentierter Datentyp; fehlt, wenn kein verlässlicher Typ vorliegt." },
-          "dataTypeKind": { "type": "string", "enum": ["model-type"], "description": "Ein Modelltyp ist keine verifizierte physische Datenbankdefinition." },
+          "dataTypeKind": { "type": "string", "enum": ["model-type", "service-schema"], "description": "Modell- und Service-Schematypen sind keine verifizierten physischen Datenbankdefinitionen." },
           "nullable": { "type": "boolean", "example": false },
           "mapsToAttribute": { "type": ["string", "null"], "example": "gebaeude/bewirtschaftungseinheit" }
         }

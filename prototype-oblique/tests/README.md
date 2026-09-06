@@ -22,6 +22,9 @@ node prototype-oblique/tests/list-search.cjs
 node prototype-oblique/tests/responsive.cjs
 node prototype-oblique/tests/graph.cjs
 node prototype-oblique/tests/gwr.cjs
+node prototype-oblique/tests/sap.cjs
+node prototype-oblique/tests/gis.cjs
+node prototype-oblique/tests/av.cjs
 node prototype-oblique/tests/fields.cjs
 node prototype-oblique/tests/excel.cjs
 node prototype-oblique/tests/sidebar.cjs
@@ -42,6 +45,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `gwr.cjs` | Real GWR field coverage, project-domain/object mappings, system/tree navigation, field/code-list links, 119-value pagination, sorting, complete Excel workbooks, collection search and mobile layouts |
 | `sap.cjs` | Curated SAP scope, source inventories, alphabetical tree, retired entries, architectural types, field search, documentation/comments, responsive layouts and complete Excel metadata |
 | `gis.cjs` | GIS workbook scope, Bodenabdeckung type Gebäude, duplicate field identities, source statuses, pagination/search, mobile layouts and complete 275-field Excel export |
+| `av.cjs` | AV model/service navigation, field search, value-list links, hidden source facts, stable empty metadata, mobile layouts and complete 49-field Excel export |
 | `fields.cjs` | Field links/profiles, localized labels and German fallback, stable technical names and URLs, consistent table fonts, organisation/person contacts and inheritance, breadcrumbs, both tree models, inherited history, code lists, invalid routes, keyboard and mobile navigation |
 | `excel.cjs` | Lazy local writer, actual downloads, retry, mobile profile/empty-list exports, duplicate guard and scope preservation across navigation |
 | `sidebar.cjs` | Live mouse resizing without DOM replacement, saved width, keyboard/reset/cancellation, collapse, responsive bounds, mobile/API exclusions and unavailable storage |
@@ -54,8 +58,8 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 
 Each browser script owns its server and browser and closes them on completion or failure. Fixture mutations and failed responses are confined to tests. No external server, catalog edits or app build is needed. No CI workflow is added to this repository's unrelated chat-worker deployment.
 
-The contrast suite writes measurements and screenshots to `oblique-contrast-review` in the OS temporary directory. Keep `REPORT_ONLY` unset for verification; setting it to `1` records a baseline without contrast/focus assertions. See [the contrast review](../docs/contrast-review-2026-09-05.md) for thresholds, findings and measurement limitations.
+The contrast suite writes measurements and screenshots to `oblique-contrast-review` in the OS temporary directory. Keep `REPORT_ONLY` unset for verification; setting it to `1` records a baseline without contrast/focus assertions. See [contrast guidance](../docs/design-system.md#contrast-and-accessibility) for thresholds and measurement limitations.
 
-The mobile suite writes to `oblique-mobile-review` in the same temporary directory and also supports `REPORT_ONLY=1` for baseline layout measurements. Its keyboard cases simulate visual-viewport changes; they do not operate an actual OS keyboard. See [the mobile review](../docs/mobile-responsive-review-2026-09-05.md).
+The mobile suite writes to `oblique-mobile-review` in the same temporary directory and also supports `REPORT_ONLY=1` for baseline layout measurements. Its keyboard cases simulate visual-viewport changes; they do not operate an actual OS keyboard. See [responsive guidance](../docs/design-system.md#responsive-layout).
 
-See [the developer review](../docs/developer-review-2026-09-05.md) for findings and the limits of these checks, and [the responsive review](../docs/responsive-strategy.md) for the viewport matrix.
+See [architecture](../docs/architecture.md#testing) for verification scope and [responsive guidance](../docs/design-system.md#responsive-layout) for layout contracts.

@@ -1,4 +1,4 @@
-/* Run from any directory. Requires Playwright; see docs/responsive-strategy.md.
+/* Run from any directory. Requires Playwright; see docs/design-system.md.
    Test data is injected into the browser only. No application data is modified. */
 const assert = require('node:assert/strict');
 const { createServer, settle, chromium } = require('./browser-helpers.cjs');

@@ -151,7 +151,7 @@
       const label = ui.localized(e.labels);
       return label && label !== e.technicalName ? `${label} (${e.technicalName})` : e.technicalName;
     }
-    if (kind === 'apis') return `${e.name} ${e.version}`;
+    if (kind === 'apis') return [e.name, e.version].filter(Boolean).join(' ');
     return e.name;
   };
   /** Attribute as a first-class entity: id = "<objectId>/<attributeId>". */
@@ -258,7 +258,7 @@
       case 'domains': return [e.responsibleOrg, e.description, String(data.objectsOfDomain(e).length)];
       case 'systems': return [e.technology, e.description, String(data.tablesOfSystem(e).length)];
       case 'products': return [e.accessRights, e.description, e.format];
-      case 'apis': return [`${data.nameOf('systems', e.system)} · ${e.version}`, e.description, e.protocol];
+      case 'apis': return [[data.nameOf('systems', e.system), e.version].filter(Boolean).join(' · '), e.description, e.protocol];
       default: return [e.sourceAuthority, e.description, e.values.length ? String(e.values.length) : '–'];
     }
   };

@@ -216,7 +216,9 @@ test('responsibility distinguishes organisations and people, and field profiles 
     assert.ok(html.includes('href="https://www.housing-stat.ch/de/home.html"'));
     assert.ok(html.includes('href="mailto:housing-stat@bfs.admin.ch"'));
     assert.ok(html.includes('href="tel:0800866600"'));
-    assert.ok(!html.includes('Admindir') && !html.includes('<dt>Dateneigner</dt>') && !html.includes('<dt>Datenverwalter</dt>'));
+    assert.ok(!html.includes('Admindir'));
+    assert.ok(html.includes('<dt>Dateneigner</dt><dd><span>—</span></dd>'));
+    assert.ok(html.includes('<dt>Datenverwalter</dt><dd><span>—</span></dd>'));
     assert.ok(!detail.facts(e).primary.some(f => f.value === e.responsibleOrg));
   }
   const system = { ...data.sysOf('sap'), kind: 'systems' };
@@ -234,7 +236,7 @@ test('responsibility distinguishes organisations and people, and field profiles 
   assert.ok(mixed.includes('href="https://example.org/team"'));
   assert.ok(mixed.includes('<dt>Datenverwalter</dt><dd>Fachbereich</dd>'));
   assert.ok(mixed.includes('A &amp; B im Admindir öffnen'));
-  assert.equal(detail.responsibility({ kind: 'objects' }), '');
+  assert.equal((detail.responsibility({ kind: 'objects' }).match(/<span>—<\/span>/g) || []).length, 6);
   // Inheritance also works for non-GWR records without guessing contacts from a domain/system.
   const object = data.get('objects', 'gebaeude');
   object.contact = { email: 'team@example.org' };
@@ -458,7 +460,9 @@ test('table information links are safe, optional and preserved in Excel metadata
   assert.ok(html.includes('target="_blank" rel="noopener"'));
   assert.ok(!html.includes('javascript:') && !html.includes('/invalid'));
   for (const informationUrls of [undefined, [], ['javascript:alert(1)']]) {
-    assert.ok(!detail.overview({ ...entity, informationUrls }).includes('ob-fact-links'));
+    const empty = detail.overview({ ...entity, informationUrls });
+    assert.ok(!empty.includes('ob-fact-links'));
+    assert.ok(empty.includes('<dt>Weitere Informationen</dt><dd><span>—</span></dd>'));
   }
   entity.informationUrls = urls;
   const plan = excel.plan({ view: 'detail', kind: 'tables', entity }, { title: entity.name, state: { tableSorts: {} } }, 'http://localhost/');
@@ -475,6 +479,7 @@ test('comments belong to each entity and render safely in core facts and Excel',
     assert.ok(html.includes('Review &lt;script&gt; &amp; field mapping\nSecond line'));
     assert.ok(!html.includes('<script>'));
     assert.ok(!detail.overview({ ...entity, comment: '  ' }).includes('ob-comment'));
+    assert.ok(detail.overview({ ...entity, comment: '  ' }).includes('<dt>Kommentar</dt><dd><span>—</span></dd>'));
   }
   const table = data.tables[0], object = data.objects[0];
   table.comment = 'Parent table only'; object.comment = 'Parent object only';
@@ -497,8 +502,8 @@ test('SAP catalog curation excludes rejected classes and preserves source eviden
   assert.equal(tables.length, 7);
   assert.equal(tables.reduce((sum, table) => sum + table.fields.length, 0), 142);
   assert.ok(tables.every(table => table.modelView !== 'usage'));
-  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/sap-refx-import-report.json'), 'utf8'));
-  const definitions = JSON.parse(fs.readFileSync(path.join(root, 'docs/sap-refx-definitions.json'), 'utf8'));
+  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/sources/sap-refx/sap-refx-import-report.json'), 'utf8'));
+  const definitions = JSON.parse(fs.readFileSync(path.join(root, 'docs/sources/sap-refx/sap-refx-definitions.json'), 'utf8'));
   for (const definition of definitions.entries) {
     const table = data.get('tables', definition.tableId);
     assert.equal(table.description, definition.description);
@@ -578,7 +583,7 @@ test('SAP catalog curation excludes rejected classes and preserves source eviden
 
 test('GIS workbook preserves every source row, ambiguous field names and typed land coverage', async () => {
   const { data, detail } = await loaded();
-  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/gis-immo-import-report.json'), 'utf8'));
+  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/sources/gis-immo/gis-immo-import-report.json'), 'utf8'));
   const expected = { 't-geb-gis': 74, 't-boden': 46, 't-parzelle': 42, 't-huelle': 30, 't-gis-room': 32, 't-proj': 27, 't-gis-green-area': 24 };
   const tables = data.tablesOfSystem(data.sysOf('gis'));
   assert.equal(tables.length, 7);
@@ -627,11 +632,67 @@ test('GIS workbook preserves every source row, ambiguous field names and typed l
   assert.equal(data.field('t-geb-gis/wgs84_lat').dataType, 'String');
   assert.equal(data.field('t-gis-room/ao_id').source, 'BBL SAP Korasoft');
   const room = { ...data.field('t-gis-room/ao_id'), kind: 'fields' };
-  assert.equal(detail.facts(room).primary.find(fact => fact.label === 'Status in Quelle').value, 'DEV');
+  assert.equal(room.sourceStatus, 'DEV');
+  assert.ok(!detail.facts(room).primary.some(fact => fact.label === 'Status in Quelle'));
   assert.equal(data.field('t-gis-green-area/bbl_port').sourceStatus, undefined);
   assert.ok(data.field('t-gis-green-area/bbl_port').comment.includes('nicht angegeben'));
   assert.equal(report.replacedCatalog.tables.length, 5);
   assert.equal(report.retiredTableIds.length, 0);
+});
+
+test('AV keeps model classes, service fields and geometry evidence separate', async () => {
+  const { data, detail } = await loaded();
+  const report = JSON.parse(fs.readFileSync(path.join(root, 'docs/sources/av/av-import-report.json'), 'utf8'));
+  const tables = data.tables.filter(table => table.system === 'av');
+  assert.equal(tables.length, 8);
+  assert.equal(tables.reduce((sum, table) => sum + table.fields.length, 0), 49);
+  assert.equal(report.fieldCount, 49);
+  assert.equal(report.valueCount, 45);
+  for (const [file, expected] of Object.entries(report.provenance.files)) {
+    const actual = require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root, 'docs/sources/av', file))).digest('hex');
+    assert.equal(actual, expected, file);
+  }
+  assert.equal(tables.filter(table => table.technicalNameKind === 'model-class').length, 6);
+  assert.equal(tables.filter(table => table.technicalNameKind === 'service-layer').length, 2);
+  assert.ok(tables.every(table => table.status === 'Entwurf'));
+  const property = data.get('tables', 't-av-property');
+  assert.equal(property.modelIdentifiers.join(), 'NBIdent, Nummer');
+  assert.equal(property.fields.find(field => field.technicalName === 'EGRIS_EGRID').mandatory, false);
+  assert.ok(!property.fields.some(field => field.technicalName === 'Geometrie'));
+  const parcel = data.get('tables', 't-av-parcel');
+  assert.ok(!parcel.fields.some(field => field.technicalName === 'EGRIS_EGRID' || field.technicalName === 'Linienart'));
+  const geometry = parcel.fields.find(field => field.technicalName === 'Geometrie');
+  assert.match(geometry.dataType, /^AREA WITH \(STRAIGHTS, ARCS\)/);
+  assert.equal(geometry.catalogMetadata.lineAttributes[0].codeList, 'r-av-boundary-line-type');
+  const cover = data.get('refs', 'r-av-land-cover-type');
+  assert.equal(cover.values.length, 26);
+  assert.ok(cover.values.some(value => value.code === 'humusiert.Intensivkultur.Reben'));
+  assert.ok(!cover.values.some(value => value.code === 'humusiert'));
+  for (const table of tables.filter(table => table.technicalNameKind === 'service-layer')) {
+    assert.ok(table.fields.every(field => field.technicalNameKind === 'api-field' && field.dataTypeKind === 'service-schema'));
+    assert.ok(table.fields.every(field => field.mandatory === undefined && field.nullable === undefined && field.codeList === undefined));
+    assert.equal(table.fields[0].dataType, 'gml:GeometryPropertyType');
+  }
+  const api = data.get('apis', 'api-av-geoadmin');
+  assert.equal(data.displayName('apis', api), api.name, 'unknown API version is not rendered as undefined');
+  assert.ok(api.verification.every(check => check.httpStatus === 200 && check.geometryTypes.includes('Polygon')));
+  assert.ok(data.get('apis', 'api-av-features').verification.every(check => check.httpStatus === 403 && check.geometryVerified === false));
+  assert.ok(data.get('apis', 'api-av-wms').servicePurpose === 'map-image');
+  const html = detail.overview({ ...data.field('t-av-service-parcel/EGRIS_EGRID'), kind: 'fields' });
+  assert.ok(html.includes('<dt>Pflichtfeld</dt><dd><span>—</span></dd>'));
+});
+
+test('retired samples stay absent and field profiles omit the requested source facts', async () => {
+  const { data, detail } = await loaded();
+  for (const id of ['r-geak', 'r-geschoss', 'r-raum', 'r-sia-nutz']) assert.equal(data.get('refs', id), null);
+  for (const id of ['api-geo', 'api-immo', 'api-opendata']) assert.equal(data.get('apis', id), null);
+  assert.equal(data.validate().length, 0);
+  for (const id of ['t-boden/ao_id', 't-gwr-gebaeude/EGID']) {
+    const field = { ...data.field(id), kind: 'fields' };
+    const labels = detail.facts(field).primary.map(fact => fact.label);
+    for (const label of ['Position', 'Status in Quelle', 'Objekttypen', 'Zugriffskategorie (GWR)', 'Stammdaten (GWR)', 'Quellenstand']) assert.ok(!labels.includes(label), label);
+  }
+  assert.ok(!detail.facts({ ...data.attr('gebaeude/egid'), kind: 'attrs' }).primary.some(fact => fact.label === 'Position'));
 });
 
 test('GWR import preserves source coverage, versions and explicit field-to-code-list links', async () => {
@@ -691,7 +752,8 @@ test('GWR import preserves source coverage, versions and explicit field-to-code-
   assert.ok(!floors.some(v => v.code === '3301'), 'old attic codes are outside the revised floor ranges');
   const unmapped = { ...data.get('tables', 't-gwr-arbeiten'), kind: 'tables' };
   assert.ok(!detail.overview(unmapped).includes('#/objects/undefined'));
-  assert.ok(!detail.facts(unmapped).primary.some(f => f.label === 'Personendaten'), 'unknown register data classification must not become No');
+  assert.equal(detail.facts(unmapped).primary.find(f => f.label === 'Personendaten').value, null, 'unknown register data classification must not become No');
+  assert.ok(detail.overview(unmapped).includes('<dt>Personendaten</dt><dd><span>—</span></dd>'));
 });
 
 test('loading rejects broken collection and embedded-list shapes with useful locations', async () => {

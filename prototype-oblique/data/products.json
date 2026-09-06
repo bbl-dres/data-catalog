@@ -29,9 +29,7 @@
       "t-geb-gis",
       "t-parzelle"
     ],
-    "servedBy": [
-      "api-immo"
-    ],
+    "servedBy": [],
     "attributes": [
       {
         "name": "EGID",
@@ -89,9 +87,7 @@
     "sourcedFrom": [
       "t-bem"
     ],
-    "servedBy": [
-      "api-immo"
-    ],
+    "servedBy": [],
     "attributes": []
   },
   {
@@ -174,9 +170,7 @@
       "kondition"
     ],
     "sourcedFrom": [],
-    "servedBy": [
-      "api-immo"
-    ],
+    "servedBy": [],
     "attributes": []
   },
   {
@@ -208,9 +202,7 @@
       "t-geb-gis",
       "t-parzelle"
     ],
-    "servedBy": [
-      "api-opendata"
-    ],
+    "servedBy": [],
     "attributes": [
       {
         "name": "EGID",

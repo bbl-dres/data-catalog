@@ -1,9 +1,6 @@
 # Design system: Oblique without Angular
 
-For current responsive dimensions and deliberate deviations, see the [responsive strategy](responsive-strategy.md): a 1600 px workspace, a separate desktop navigation row, 15/24 reading text and 14/20 data rows. The source mappings below document the Oblique origin and earlier compact scale.
-
-The current application uses the compact scale from [mockup option 1b](compact-layout.md): 24/32 headings, 17/24 section headings, 14/20 body, controls and data rows, 12/16 supporting labels and a 320 px default sidebar / 56 px icon rail. Sidebar width is adjustable from 240 to 480 px, constrained by available content space; its default, limits and divider hit area use tokens. The header identity follows the federal flag/type dimensions below; the selected mockup determines the remaining density. See the [token consistency review](token-consistency.md) for the current token policy and cleanup.
-
+The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 320 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) ships as an Angular library. This prototype does not use it directly. Instead `css/tokens.css` reproduces Oblique's tokens as plain CSS custom properties; `css/components.css`, `css/main.css` and `css/graph.css` implement the interface against them.
 
@@ -12,8 +9,8 @@ The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, 
 Three sources were compared, in this order of authority for this app:
 
 1. **Oblique code** (`github.com/oblique-bit/oblique`, v15.4.4). Palette and semantic aliases from `projects/oblique/src/styles/scss/core/_palette.scss` and `_variables.scss`; shadows from `core/mixins/_shadow.scss`; breakpoints from the legacy grid (sm 600, md 905, lg 1240, xl 1440). The newer `projects/design-system` package is framework-agnostic CSS but contains tokens and base typography only, no components yet; its shadow tokens are emitted without units and are unusable as-is.
-2. **Oblique Figma library** (`docs/Oblique Library 15-1-2.fig`, "OB Library 15.1.2 – F1.0 (Community)"). Decoded from the fig-kiwi format; the extracted variables, text styles and effect styles are in [oblique-figma-tokens.json](oblique-figma-tokens.json), the component inventory in [oblique-figma-components.txt](oblique-figma-components.txt).
-3. **The Claude Design wireframe** (`docs/wireframes/`), which already used Oblique's colours.
+2. **Oblique Figma library**, "OB Library 15.1.2 – F1.0 (Community)". The extracted variables, text styles and effect styles remain in [oblique-figma-tokens.json](sources/design/oblique-figma-tokens.json). The original binary and component inventory are available in Git history.
+3. **The selected compact wireframe, option 1b**, which established the initial layout. Historical wireframes are available in Git history; current dimensions live in the application tokens and this guide.
 
 The source audit established the palette and shadows. The selected 1b mockup now governs layout and typography; other differences are listed below.
 
@@ -63,9 +60,7 @@ The source audit established the palette and shadows. The selected 1b mockup now
 
 ## Known deltas
 
-The [contrast review](contrast-review-2026-09-05.md) documents current contrast measurements, state-specific corrections and the scoped Swagger palette overrides. Essential graphics use a separate alias from decorative borders; the shared palette primitives are unchanged.
-
-The [mobile refinement](mobile-responsive-review-2026-09-05.md) centralizes the 32/44 px control-height switch, introduces runtime visual-viewport geometry for keyboard-aware API dialogs and keeps API table scrolling inside existing containers.
+Essential graphics use a separate alias from decorative borders. The shared control-height token switches between 32 and 44 px. Runtime visual-viewport geometry supports keyboard-aware overlays, and API table scrolling stays inside its containers. See the responsive and contrast rules below.
 
 - **Focus colour**: code uses `#8655f6`, the Figma variable Border/focus is `#8b5cf6`. Code value kept.
 - **Active tab underline**: the compact mockup and application use the `#e53940` accent; Figma uses pure red `#ff0000`.
@@ -101,13 +96,42 @@ The flag image has empty alternative text; the home link's accessible name inclu
 
 ## Component ownership
 
-Catalogue tables use meaningful names, field identifiers or codes to identify entries, without a synthetic row-number column. Attribute tables follow the same rule; source positions remain available as detail metadata and in Excel exports. All table values use the standard body font, including technical field names and code values; monospace is reserved for actual code examples.
+Catalogue tables use meaningful names, field identifiers or codes to identify entries, without a synthetic row-number column. Attribute tables follow the same rule; source positions remain in source metadata and Excel exports, but are omitted from profile overviews. All table values use the standard body font, including technical field names and code values; monospace is reserved for actual code examples. Text headers and values align left, numeric counts align right, and table headers do not wrap. Core and expanded metadata rows share the same spacing tokens.
 
-`components.css` owns reusable buttons, inputs/selects, quiet icon actions, badges/chips, disclosures and filled cards. `main.css` owns the header, navigation, content layouts, tables, search composition, menus, pagination, notices and contextual variants; its final high-contrast rules preserve system colors and focus visibility. `graph.css` owns the bubble workspace and its controls. The current application band is capped at 1600 px. The [design polish review](design-polish-2026-09-05.md) records the shared component contracts and checks.
+`components.css` owns reusable buttons, inputs/selects, quiet icon actions, badges/chips, disclosures and filled cards. `main.css` owns the header, navigation, content layouts, tables, search composition, menus, pagination, notices and contextual variants; its final high-contrast rules preserve system colors and focus visibility. `graph.css` owns the bubble workspace and its controls. Reuse these components before adding context-specific styling.
 
 Oblique provides general scrolling utilities, but its documentation, source component inventory and bundled Figma 15.1.2 library do not define a back-to-top UI component. The prototype therefore uses an application-specific pattern built from the standard secondary button, spacing, shadow, focus and icon tokens. It appears only after meaningful page scrolling, respects reduced-motion preferences, and uses a compact icon-only presentation on phones.
 
 Naming follows Oblique's flat kebab-case convention: `.ob-<component>-<part>`, variants as `.ob-<component>--<variant>`, states as `.is-*` or ARIA attributes (`aria-selected`, `aria-pressed`, `aria-current`, `aria-expanded`).
+
+## Token policy
+
+Use existing semantic colors and shared spacing, typography, borders, radius and elevation tokens. Add a component token when a dimension expresses a reusable contract; do not create aliases for every isolated number. Keep responsive token overrides in `tokens.css`. The tile gap is `--ob-tile-gap`, referencing the 16 px `--ob-space-default`; groups share column sizing so sparse groups do not stretch cards differently.
+
+Literal media/container-query thresholds, percentages and content-dependent graph geometry remain appropriate. CSS custom properties cannot replace ordinary media-query conditions. JavaScript may supply measured viewport or diagram geometry through custom properties, while CSS retains visual styling. Keep vendor overrides scoped to `.ob-api`; use `!important` only where an inline vendor style requires it.
+
+## Responsive layout
+
+The document scrolls vertically. Home domains and latest changes stay stacked at every width. KPI cards and home tables share the same maximum width; the AI answer and result table also align. The hero sits on the white page without an extra surface panel. Handbook content adapts within its own bounded reading width.
+
+| Condition | Behavior |
+|---|---|
+| Above 960 px | Separate navigation below the identity header; resizable sidebar, 240–480 px, reserving at least 600 px for content. A narrower window clamps the visible width without replacing the saved preference. |
+| At or below 960 px | Modal navigation drawer, reduced content padding, no desktop resize handle. |
+| Narrow content container | Controls wrap; table columns switch to labeled cards based on available width, including when the sidebar is wide. Swagger tables retain their column structure with local horizontal scrolling. |
+| Coarse pointer or viewport at/below 960 px | Shared 44 px control targets, including hybrid touch laptops. Search inputs use a size that avoids mobile browser auto-zoom. |
+| Large desktop | Bounded workspace and prose widths; consistent tile columns and compact metadata columns. Avoid stretching individual sections to fill unused space. |
+| Short viewport or software keyboard | Search suggestions, help, menus and API dialogs fit the visual viewport; internal scrolling keeps controls reachable. Fullscreen diagram controls remain accessible. |
+
+The API reference has no catalog side tree. Inline diagrams preserve native page scrolling and pinch zoom; fullscreen diagram gestures are scoped to the workspace. Reduced-motion preferences and forced colors remain supported. Shared visual-viewport updates must preserve input focus, the query and local UI state.
+
+## Contrast and accessibility
+
+The regression checks target contrast ratios of 4.5:1 for normal text, 3:1 for large text and 3:1 for meaningful graphics/control boundaries. Essential graphics use `--ob-color-graphic` (`#828e9a`), measured at 3.34:1 on white and 3.02:1 on the default surface; it is not a small-text color. Recheck hover/selected backgrounds rather than assuming the same ratio holds. API examples use `--ob-color-code-bg`; overrides stay local to Swagger.
+
+Keyboard focus must remain visible across buttons, inputs, menus, tabs, cards, the tree divider and vendor controls. Statuses include text; color is not the sole indicator. Disabled controls suppress active hover styling. Shared input/select/icon components keep state behavior consistent.
+
+The [test guide](../tests/README.md) is the maintained suite index. Responsive coverage includes phone through 3840 px desktop layouts, touch controls and simulated keyboard viewports. Contrast sampling accounts for alpha and ancestor opacity, but not images, gradients, occlusion or antialiasing. Automated Chromium checks do not replace physical iOS/Android, Safari/Firefox or screen-reader review, and are not a claim of complete accessibility conformance.
 
 ## Icons and fonts
 

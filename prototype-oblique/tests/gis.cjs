@@ -43,7 +43,7 @@ const { readWorkbook } = require('./excel-helpers.cjs');
       await page.locator('#panel-rows a').last().click();
       await page.waitForFunction(() => document.querySelector('h1')?.textContent.includes('Archivwürdigkeit'));
       assert((await page.locator('.ob-comment').innerText()).includes('zweimal'));
-      assert((await page.locator('.ob-core-facts').innerText()).includes('LIVE'));
+      assert.equal(await page.locator('.ob-core-facts dt').filter({ hasText: 'Status in Quelle' }).count(), 0);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `field overflow at ${width}px`);
       await visit('#/tables/t-boden?tab=rows');
       assert.equal(await page.locator('#panel-rows tbody tr').count(), 46);
@@ -51,7 +51,7 @@ const { readWorkbook } = require('./excel-helpers.cjs');
       assert.equal(await page.locator('#panel-rows tbody tr').count(), 1);
       await page.locator('#panel-rows a').first().click();
       await page.waitForFunction(() => document.querySelector('h1')?.textContent === 'AO ID (ao_id)');
-      assert.equal(await page.locator('.ob-core-facts dt').filter({ hasText: 'Objekttypen' }).locator('+ dd').innerText(), 'Gebäude');
+      assert.equal(await page.locator('.ob-core-facts dt').filter({ hasText: 'Objekttypen' }).count(), 0);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `typed field overflow at ${width}px`);
       console.log(`PASS GIS navigation, pagination, duplicate fields and type scope at ${width}px`);
     }

@@ -46,7 +46,7 @@ const server = createServer();
       ['#/objects/gebaeude/attributes/egid', 'Attribute', 2],
       ['#/tables/t-gwr-gebaeude/fields/GKAT', 'Felder', 2],
       ['#/products/p-gebaeudebestand', 'Attribute', 6],
-      ['#/apis/api-immo', 'API-Verzeichnis', 2],
+      ['#/apis/api-energie', 'API-Verzeichnis', 2],
       ['#/objects?filter=no-such-record', 'Geschäftsobjekte', 1],
     ];
     await page.setViewportSize({ width: 390, height: 844 });

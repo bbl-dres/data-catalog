@@ -79,5 +79,43 @@
     "description": "Eidgenössisches Gebäude- und Wohnungsregister des BFS. Der importierte Merkmalskatalog 5.0.0 beschreibt Bauprojekte, Arbeiten, Gebäude, Wärmeerzeugungsanlagen, Gebäudeeingänge, Wohnungen und Strassen.",
     "informationUrl": "https://www.housing-stat.ch/catalog/de/5.0/revised",
     "sourceDetail": "Merkmalskatalog.mhtml · 5.0.0 (revised) · Metadatenimport"
+  },
+  {
+    "identifier": "av",
+    "name": "Amtliche Vermessung (AV)",
+    "description": "Verteilte Daten der amtlichen Vermessung. Katalogauszug für Bodenabdeckung und Liegenschaften mit DM.01-Modellklassen und getrennten geodienste.ch-Serviceprojektionen.",
+    "status": "Entwurf",
+    "created": "2026-09-05",
+    "modified": "2026-09-05",
+    "synced": "2026-09-05",
+    "domain": "bau",
+    "source": "Amtliche Vermessung",
+    "provenance": {
+      "importId": "av-dm01-reviewed",
+      "captured": "2026-09-05",
+      "model": "DM01AVCH24LV95D",
+      "files": {
+        "av-collections.json": "4b2cba7f252b40f2f06d607a445bd2c61c8e4b97439db46ac32206579c8c7b65",
+        "av-wfs-capabilities.xml": "d5ee26b9c85292535cb33a21fa373a983e1cfe91c83a501a9d353cbefdac5bfc",
+        "av-wfs-schema.xsd": "e154843b30a7333b31cf219093fadf40b005cba918fb2ca997af6fcb2e559b2a",
+        "av-wms-capabilities.xml": "29cf37134eaf658d77222c411bedbcd1a749a00eaf4773763e808070848ebd5b",
+        "ch.kantone.cadastralwebmap-farbe.json": "2b0b7428cec3e75e070869460981cdfc83d9751804697d3a7e26538e1ffdcc2d",
+        "ch.swisstopo-vd.amtliche-vermessung.json": "50ae693c5862feee567a3c79d20d392c416c747ae21294379c72bd5bda5b212d",
+        "DM.01-AV-CH_LV95_24d_ili1.ili": "1e1454531f4f76df52032f9c2c01625a3fbd0442d441ef17659fa3a5d3b67f53",
+        "geoadmin-metadata.json": "78fbb7d0eb3d7593753de7b9545611be747902c6482641f2d4735fc764602383",
+        "model-record.json": "b81913eaaf0ca20a0eafc75d56eaab2ced9cf5f0e578f19bccab2078004b21ef",
+        "service-checks.json": "dae48de070b544484bc23f148a1ec1b60cb43e2833870b1ee46da9676883cdff",
+        "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
+      }
+    },
+    "responsibleOrg": "Kantonale Stellen der amtlichen Vermessung",
+    "contact": {
+      "url": "https://geodienste.ch/services/av"
+    },
+    "technology": "INTERLIS 1 · DM.01-AV-CH 24 · LV95",
+    "informationUrl": "https://www.cadastre-manual.admin.ch/de/modelldokumentation-dm01-av-ch",
+    "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "sourceDetail": "DM.01-AV-CH 24, LV95; geodienste.ch Angebotsversion 24.0",
+    "comment": "Fachlicher Datenbestand aus kantonalen Quellen, kein zentrales BBL-System. Bundesaufsicht: swisstopo. DM.01 wird gemäss swisstopo bis 31.12.2027 durch DMAV abgelöst. eCH-0153 beschreibt das elektronische Grundbuch und ist kein Ersatz für das AV-Geometriemodell. Katalogstatus bleibt Entwurf."
   }
 ]
