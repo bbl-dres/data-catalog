@@ -145,7 +145,7 @@ def build(captured):
             scope = section(scope, 'TABLE', table)
         codes = enumeration(scope, name)
         record = common(identifier, title, 'Aufzählungswerte aus dem DM.01-AV-CH. Technische Werte und Hierarchie entsprechen dem INTERLIS-Modell.', captured, provenance)
-        record.update(sourceAuthority='swisstopo · DM.01-AV-CH', sourceUrl=MODEL_URL, version='24 / LV95',
+        record.update(normReference='swisstopo · DM.01-AV-CH', sourceUrl=MODEL_URL, informationUrls=[MODEL_URL], version='24 / LV95',
                       sourceDetail=f'{MODEL}.{topic + "." if topic else ""}{table + "." if table else ""}{name}',
                       responsibleOrg='Bundesamt für Landestopografie swisstopo',
                       values=[{'code': code, 'label': code.replace('_', ' '), 'sourceOrdinal': index} for index, code in enumerate(codes)],

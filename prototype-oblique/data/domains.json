@@ -14,11 +14,7 @@
     "personalData": false,
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "synced": "2024-06-01"
   },
   {
     "identifier": "energie",
@@ -35,11 +31,7 @@
     "personalData": false,
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "contact": {
-      "email": "energiemanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 30"
-    }
+    "synced": "2024-06-01"
   },
   {
     "identifier": "finanzen",
@@ -56,11 +48,7 @@
     "personalData": false,
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "contact": {
-      "email": "portfoliomanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 20"
-    }
+    "synced": "2024-06-01"
   },
   {
     "identifier": "partner",
@@ -77,11 +65,7 @@
     "personalData": false,
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "contact": {
-      "email": "vertragsmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 40"
-    }
+    "synced": "2024-06-01"
   },
   {
     "identifier": "miete",
@@ -98,11 +82,7 @@
     "personalData": false,
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
-    "synced": "2024-06-01",
-    "contact": {
-      "email": "liegenschaften@bbl.admin.ch",
-      "phone": "+41 58 465 50 50"
-    }
+    "synced": "2024-06-01"
   },
   {
     "identifier": "projekt",

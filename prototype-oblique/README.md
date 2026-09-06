@@ -47,7 +47,8 @@ Open <http://localhost:8000/prototype-oblique/>.
 Start with the [documentation index](docs/README.md).
 
 - [Architecture](docs/architecture.md), [design system](docs/design-system.md) and [behavior](docs/behavior.md) describe the current prototype.
-- [Catalog data model](docs/data-model.md) and [business-object attributes](docs/business-object-attribute-proposal.md) are proposals for later implementation.
+- [Catalog data model](docs/data-model.md) defines the conceptual target; [implementation and migration](docs/data-model-implementation.md) covers PostgreSQL, current mappings and validation.
+- [Business-object attributes](docs/business-object-attribute-proposal.md) are separate proposals for later content updates.
 - [Imports and source evidence](docs/imports/README.md) preserve source instructions, curation decisions and unresolved gaps.
 - [Test setup](tests/README.md) provides repeatable checks.
 

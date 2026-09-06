@@ -2145,11 +2145,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-huelle",
@@ -3000,11 +2996,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-proj",
@@ -3761,11 +3753,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-boden",
@@ -5233,11 +5221,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-parzelle",
@@ -6413,11 +6397,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "status": "Gültig",
@@ -6426,9 +6406,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7274,7 +7252,10 @@
         }
       }
     ],
-    "realizes": "bauprojekt"
+    "realizes": "bauprojekt",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-bauprojekt"
+    ]
   },
   {
     "status": "Gültig",
@@ -7283,9 +7264,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7540,7 +7519,10 @@
         "codeList": "r-gwr-pandumb"
       }
     ],
-    "realizes": "bauarbeiten"
+    "realizes": "bauarbeiten",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-arbeiten"
+    ]
   },
   {
     "status": "Gültig",
@@ -7549,9 +7531,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -8446,7 +8426,10 @@
         }
       }
     ],
-    "realizes": "gebaeude"
+    "realizes": "gebaeude",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-gebaeude"
+    ]
   },
   {
     "status": "Gültig",
@@ -8455,9 +8438,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -8862,6 +8843,9 @@
           "Qualitätsanforderungen": "--"
         }
       }
+    ],
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-waermeerzeugungsanlage"
     ]
   },
   {
@@ -8871,9 +8855,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -9096,6 +9078,9 @@
           "Qualitätsanforderungen": "Der Ortschaftsname ist im Amtlichem Ortschaftenverzeichnis enthalten. Nur Namen mit dazugehöriger Postleitzahl (DPLZ4 und DPLZZ) sind gültig. Nur Namen, die einen geografischen Ort in der Schweiz bezeichnen, sind zulässig."
         }
       }
+    ],
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-gebaeudeeingang"
     ]
   },
   {
@@ -9105,9 +9090,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -9669,7 +9652,10 @@
         }
       }
     ],
-    "realizes": "wohnung"
+    "realizes": "wohnung",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-wohnung"
+    ]
   },
   {
     "status": "Gültig",
@@ -9678,9 +9664,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -9928,6 +9912,9 @@
           "Qualitätsanforderungen": "--"
         }
       }
+    ],
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-strassen"
     ]
   },
   {
@@ -14016,11 +14003,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-gis-green-area",
@@ -14708,11 +14691,7 @@
     "dataOwner": "Martina Aebischer",
     "dataSteward": "Lukas Zbinden",
     "dataCustodian": "Immobilienmanagement",
-    "classification": "intern",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    }
+    "classification": "intern"
   },
   {
     "identifier": "t-av-land-cover",

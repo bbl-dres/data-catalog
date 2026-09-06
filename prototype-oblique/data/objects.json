@@ -17,6 +17,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "VILB, eCH-0071",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Areal",
@@ -90,6 +91,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "VILB Anhang A",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Campus",
@@ -154,6 +156,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "ZGB Art. 655, eCH-0071",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Grundstück",
@@ -237,6 +240,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "eCH-0071 v2.0, GWR",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Gebäude",
@@ -338,6 +342,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "SIA 416",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Nutzungseinheit",
@@ -402,6 +407,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "SIA 416",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Geschoss",
@@ -471,6 +477,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "SIA 416, DIN 277",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Raum",
@@ -535,6 +542,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "DM.01-AV-CH, eCH-0071",
+    "informationUrls": [],
     "termdat": [],
     "attributes": [
       {
@@ -593,6 +601,7 @@
     "synced": "2024-06-01",
     "domain": "bau",
     "normReference": "SIA 416",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Geschossfläche",
@@ -662,6 +671,7 @@
     "synced": "2024-06-01",
     "domain": "energie",
     "normReference": "SIA 380/1",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Heizzentrale",
@@ -740,6 +750,7 @@
     "synced": "2024-06-01",
     "domain": "energie",
     "normReference": "MID 2014/32/EU",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Stromzähler",
@@ -804,6 +815,7 @@
     "synced": "2024-06-01",
     "domain": "energie",
     "normReference": "BBL intern",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Messwert",
@@ -868,6 +880,7 @@
     "synced": "2024-06-01",
     "domain": "finanzen",
     "normReference": "SAP RE-FX, VILB",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Wirtschaftseinheit",
@@ -937,6 +950,7 @@
     "synced": "2024-06-01",
     "domain": "finanzen",
     "normReference": "SAP FI",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Buchungskreis",
@@ -1001,6 +1015,7 @@
     "synced": "2024-06-01",
     "domain": "partner",
     "normReference": "eCH-0044, DSG",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Natürliche Person",
@@ -1083,6 +1098,7 @@
     "synced": "2024-06-01",
     "domain": "partner",
     "normReference": "eCH-0046",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Kontakt",
@@ -1147,6 +1163,7 @@
     "synced": "2024-06-01",
     "domain": "partner",
     "normReference": "eCH-0097, UID",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Unternehmen",
@@ -1225,6 +1242,7 @@
     "synced": "2024-06-01",
     "domain": "miete",
     "normReference": "SAP RE-FX",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Mietobjekt",
@@ -1298,6 +1316,7 @@
     "synced": "2024-06-01",
     "domain": "miete",
     "normReference": "GWR (EWID), eCH-0071",
+    "informationUrls": [],
     "termdat": [],
     "attributes": [
       {
@@ -1365,6 +1384,7 @@
     "synced": "2024-06-01",
     "domain": "miete",
     "normReference": "OR Art. 253ff",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Mietvertrag",
@@ -1434,6 +1454,7 @@
     "synced": "2024-06-01",
     "domain": "miete",
     "normReference": "OR Art. 269ff",
+    "informationUrls": [],
     "termdat": [
       {
         "name": "Mietzins",
@@ -1489,6 +1510,9 @@
     "sourceDetail": "Definition wörtlich aus dem GWR-Merkmalskatalog 5.0.0; Attribute und Pflichtangaben sind lokale Modellierungsbeispiele.",
     "domain": "projekt",
     "normReference": "",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-bauprojekt"
+    ],
     "termdat": [],
     "attributes": [
       {
@@ -1570,6 +1594,7 @@
     "sourceDetail": "Fachlicher Entwurf für Projekt Management; Attribute und Pflichtangaben sind Modellierungsbeispiele.",
     "domain": "projekt",
     "normReference": "",
+    "informationUrls": [],
     "termdat": [],
     "attributes": [
       {
@@ -1641,6 +1666,7 @@
     "sourceDetail": "Fachlicher Entwurf für Projekt Management; Attribute und Pflichtangaben sind Modellierungsbeispiele.",
     "domain": "projekt",
     "normReference": "",
+    "informationUrls": [],
     "termdat": [],
     "attributes": [
       {
@@ -1721,6 +1747,9 @@
     "sourceDetail": "Definition wörtlich aus dem GWR-Merkmalskatalog 5.0.0; Attribute und Pflichtangaben sind lokale Modellierungsbeispiele.",
     "domain": "projekt",
     "normReference": "",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-arbeiten"
+    ],
     "termdat": [],
     "attributes": [
       {

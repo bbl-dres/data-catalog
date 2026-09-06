@@ -182,12 +182,7 @@ def main():
     base = {
         'status': 'Gültig', 'version': '5.0.0', 'created': captured, 'modified': captured,
         'responsibleOrg': 'Bundesamt für Statistik (BFS)',
-        # Shared GWR contact published on the official portal, verified 2026-09-05.
-        # This is organisation contact metadata, not an inferred person/owner role.
-        'contact': {
-            'url': 'https://www.housing-stat.ch/de/home.html',
-            'email': 'housing-stat@bfs.admin.ch', 'phone': '0800 866 600',
-        },
+        'contact': {'url': 'https://www.housing-stat.ch/de/home.html'},
         'source': 'GWR', 'synced': captured, 'provenance': provenance,
     }
     workbook = workbook_rows(args.codes)
@@ -199,6 +194,7 @@ def main():
             'description': definition,
             'technicalName': 'GWR_' + slug.upper(), 'system': 'gwr', 'domain': domain,
             'sourceUrl': definition_url,
+            'informationUrls': [definition_url],
             'fieldsSourceUrl': f'{URL}#{section}',
             'sourceDetail': f'Merkmalskatalog.mhtml · 5.0.0 (revised) · {expected} Merkmale',
             'fields': [],
@@ -249,7 +245,7 @@ def main():
                 ref = {
                     **base, 'identifier': ref_id, 'name': f'GWR {field["labels"]["de"]} ({code})',
                     'description': f'Werteliste für {field["labels"]["de"]} ({code}) in der GWR-Entität {name}.',
-                    'sourceAuthority': 'GWR / eCH', 'domain': domain,
+                    'normReference': 'GWR / eCH', 'domain': domain,
                     'sourceField': code, 'codeListOrigin': origin,
                     'classification': 'öffentlich', 'personalData': False, 'values': values,
                 }
@@ -262,6 +258,7 @@ def main():
                     ref.update(sourceUrl=field['sourceUrl'], sourceDetail='Merkmalskatalog.mhtml · 5.0.0 (revised)')
                     if ranges:
                         ref['sourceDetail'] += ' · Bereichsauflösung und Bezeichnungen aus gwr codes.xlsx, MK 4.2'
+                ref['informationUrls'] = [ref['sourceUrl']] if ref.get('sourceUrl') else []
                 refs.append(ref)
                 report['codeLists'].append({
                     'feature': code, 'id': ref_id, 'origin': origin, 'count': len(values),
@@ -292,6 +289,10 @@ def main():
             merged = [r for r in current if (r['entity'], r['date'], r['action']) not in keys] + incoming
         else:
             new = {r['identifier']: r for r in incoming}
+            for record in current:
+                replacement = new.get(record['identifier'])
+                if replacement is not None and record.get('informationUrls'):
+                    replacement['informationUrls'] = list(dict.fromkeys([*replacement.get('informationUrls', []), *record['informationUrls']]))
             merged = [new.pop(r['identifier'], r) for r in current]
             merged.extend(new.values())
         path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

@@ -191,14 +191,15 @@
   };
   data.objOf = id => data.get('objects', id);
   data.sysOf = id => data.get('systems', id);
+  data.supportsCustodian = kind => ['systems', 'tables', 'fields', 'apis'].includes(kind);
   data.custodianOf = function (kind, e) {
+    if (!data.supportsCustodian(kind)) return '';
     if (kind === 'fields') return e.dataCustodian || data.custodianOf('tables', data.get('tables', e.table));
-    if (kind === 'systems') return e.dataCustodian || '';
     if (kind === 'tables') {
       const system = data.sysOf(e.system);
       return e.dataCustodian || (system && system.dataCustodian) || '';
     }
-    return '';
+    return e.dataCustodian || '';
   };
 
   /** The business object an entity realises / types / belongs to (null for domains, systems, products, APIs). */
@@ -259,7 +260,7 @@
       case 'systems': return [e.technology, e.description, String(data.tablesOfSystem(e).length)];
       case 'products': return [e.accessRights, e.description, e.format];
       case 'apis': return [[data.nameOf('systems', e.system), e.version].filter(Boolean).join(' · '), e.description, e.protocol];
-      default: return [e.sourceAuthority, e.description, e.values.length ? String(e.values.length) : '–'];
+      default: return [e.normReference, e.description, e.values.length ? String(e.values.length) : '–'];
     }
   };
   /** Raw column order shared by collection sorting and Excel export. */
@@ -282,7 +283,7 @@
       case 'systems': return [c('col.system', '26%'), c('col.technology', '20%'), c('col.description'), compact('col.tables', true), compact('col.status')];
       case 'products': return [c('col.product', '26%'), c('col.access', '20%'), c('col.description'), compact('col.format'), compact('col.status')];
       case 'apis': return [c('col.api', '26%'), c('col.systemVersion', '20%'), c('col.description'), compact('col.protocol'), compact('col.status')];
-      default: return [c('col.name', '26%'), c('col.source', '20%'), c('col.description'), compact('col.values', true), compact('col.status')];
+      default: return [c('col.name', '26%'), c('fact.normReference', '20%'), c('col.description'), compact('col.values', true), compact('col.status')];
     }
   };
   /** One result schema for every searchable type; context retains its section metadata. */
@@ -319,7 +320,7 @@
     if (ref) return ref.entity ? ref.entity.name : '–';
     if (g === 'resp') return e.responsibleOrg || '–';
     if (g === 'status') return data.statusOf(kind, e) || '–';
-    if (g === 'source') return e.sourceAuthority || '–';
+    if (g === 'source') return e.normReference || '–';
     if (g === 'access') return e.accessRights || '–';
     return t('group.all', { what: data.kindDef(kind).plural });
   };
@@ -327,7 +328,7 @@
     if (g === 'domain') return data.domains.map(d => d.name);
     if (g === 'resp') return data.model.responsibilities;
     if (g === 'system') return data.systems.map(s => s.name);
-    if (g === 'source') return data.model.sourceAuthorities;
+    if (g === 'source') return data.model.normativeReferences;
     if (g === 'access') return data.model.accessOrder;
     if (g === 'status') return Object.keys(data.model.statuses);
     return [];
@@ -356,7 +357,7 @@
     const href = (k, id) => DK.router.entityHref(k, id);
     const link = {
       tables: x => ({ name: data.displayName('tables', x), sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) }),
-      refs: r => ({ name: r.name, sub: r.sourceAuthority, href: href('refs', r.identifier) }),
+      refs: r => ({ name: r.name, sub: r.normReference, href: href('refs', r.identifier) }),
       objects: o => ({ name: o.name, sub: `${o.attributes.length} ${t('unit.attributes')}`, href: href('objects', o.identifier) }),
       domains: d => ({ name: d.name, sub: d.responsibleOrg, href: href('domains', d.identifier) }),
       systems: s => ({ name: s.name, sub: s.technology, href: href('systems', s.identifier) }),

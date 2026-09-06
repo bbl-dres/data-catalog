@@ -55,7 +55,7 @@ All entity kinds support an optional plain-text `comment`, shown as Kommentar in
 
 Tree groups and members sort by displayed labels with German Swiss collation, case-insensitively and with natural numeric order. Top-level navigation categories and the overview shortcut retain their established positions. Sorting presentation lists does not reorder source fields or datasets.
 
-Tables support optional `informationUrls: string[]`, shown as **Weitere Informationen** in Kerndaten. Multiple HTTP(S) links wrap on narrow screens. A source URL already in this list is not duplicated as Quelldokument. SAP imports populate known documentation links and preserve additional curated links. The array remains in Excel metadata. See [data-model.md](../data-model.md).
+Tables support optional `informationUrls: string[]`, shown as **Weitere Informationen** in Kerndaten. Multiple HTTP(S) links wrap on narrow screens. A source URL already in this list is not duplicated as Quelldokument. SAP imports populate known documentation links and preserve additional curated links. The array remains in Excel metadata. See the [catalog migration mapping](../data-model-implementation.md#tables).
 
 ## Verification
 

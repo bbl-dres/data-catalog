@@ -214,8 +214,8 @@ test('responsibility distinguishes organisations and people, and field profiles 
     const html = detail.responsibility(e);
     assert.ok(html.includes('Bundesamt für Statistik (BFS)'));
     assert.ok(html.includes('href="https://www.housing-stat.ch/de/home.html"'));
-    assert.ok(html.includes('href="mailto:housing-stat@bfs.admin.ch"'));
-    assert.ok(html.includes('href="tel:0800866600"'));
+    assert.ok(!html.includes('mailto:') && !html.includes('tel:'));
+    assert.equal(html.includes('<dt>Datenhalter</dt>'), ['systems', 'tables', 'fields', 'apis'].includes(e.kind));
     assert.ok(!html.includes('Admindir'));
     assert.ok(html.includes('<dt>Dateneigner</dt><dd><span>—</span></dd>'));
     assert.ok(html.includes('<dt>Datenverwalter</dt><dd><span>—</span></dd>'));
@@ -236,15 +236,16 @@ test('responsibility distinguishes organisations and people, and field profiles 
   assert.ok(mixed.includes('href="https://example.org/team"'));
   assert.ok(mixed.includes('<dt>Datenverwalter</dt><dd>Fachbereich</dd>'));
   assert.ok(mixed.includes('A &amp; B im Admindir öffnen'));
-  assert.equal((detail.responsibility({ kind: 'objects' }).match(/<span>—<\/span>/g) || []).length, 6);
+  assert.equal((detail.responsibility({ kind: 'objects' }).match(/<span>—<\/span>/g) || []).length, 3);
+  assert.ok(detail.responsibility({ kind: 'apis', dataCustodian: 'API operations' }).includes('<dt>Datenhalter</dt><dd>API operations</dd>'));
   // Inheritance also works for non-GWR records without guessing contacts from a domain/system.
   const object = data.get('objects', 'gebaeude');
-  object.contact = { email: 'team@example.org' };
-  assert.equal(data.attr('gebaeude/egid').contact.email, 'team@example.org');
+  object.contact = { url: 'https://example.org/team' };
+  assert.equal(data.attr('gebaeude/egid').contact.url, 'https://example.org/team');
   const table = data.get('tables', 't-gwr-gebaeude');
-  table.fields[0].contact = { email: 'field@example.org' };
-  assert.equal(data.field(`${table.identifier}/${data.fieldId(table.fields[0])}`).contact.email, 'field@example.org');
-  assert.equal(table.contact.email, 'housing-stat@bfs.admin.ch');
+  table.fields[0].contact = { url: 'https://example.org/field' };
+  assert.equal(data.field(`${table.identifier}/${data.fieldId(table.fields[0])}`).contact.url, 'https://example.org/field');
+  assert.equal(table.contact.url, 'https://www.housing-stat.ch/de/home.html');
 });
 
 test('field identifiers support encoded names and reject ambiguous duplicates', async () => {
@@ -449,24 +450,45 @@ test('tree groups and members sort by displayed labels without changing source o
   assert.ok(named.indexOf('Ärea 10') < named.indexOf('Zulu ('));
 });
 
-test('table information links are safe, optional and preserved in Excel metadata', async () => {
-  const { data, detail, excel } = await loaded();
+test('information links are safe, optional and preserved in Excel metadata across profiles', async () => {
+  const { data, detail, excel, ui } = await loaded();
   const urls = ['https://example.org/reference?a=1&b=2', 'https://example.org/second'];
-  const entity = { ...data.tables[0], kind: 'tables', sourceUrl: urls[0], informationUrls: [...urls, urls[0], 'javascript:alert(1)', null, 'https://example.org/\ninvalid'] };
-  const html = detail.overview(entity);
-  assert.ok(html.includes('Weitere Informationen'));
-  assert.equal((html.match(/href="https:\/\/example.org\/reference/g) || []).length, 1);
-  assert.ok(html.includes('a=1&amp;b=2'));
-  assert.ok(html.includes('target="_blank" rel="noopener"'));
-  assert.ok(!html.includes('javascript:') && !html.includes('/invalid'));
-  for (const informationUrls of [undefined, [], ['javascript:alert(1)']]) {
-    const empty = detail.overview({ ...entity, informationUrls });
-    assert.ok(!empty.includes('ob-fact-links'));
-    assert.ok(empty.includes('<dt>Weitere Informationen</dt><dd><span>—</span></dd>'));
+  for (const kind of ['tables', 'objects', 'refs']) {
+    const entity = { ...data.list(kind)[0], kind, sourceUrl: urls[0], informationUrls: [...urls, urls[0], 'javascript:alert(1)', null, 'https://example.org/\ninvalid'] };
+    const html = detail.overview(entity);
+    assert.ok(html.includes('Weitere Informationen'));
+    assert.equal((html.match(/href="https:\/\/example.org\/reference/g) || []).length, 1);
+    assert.ok(html.includes('a=1&amp;b=2'));
+    assert.ok(html.includes('target="_blank" rel="noopener"'));
+    assert.ok(!html.includes('javascript:') && !html.includes('/invalid'));
+    for (const informationUrls of [undefined, [], ['javascript:alert(1)']]) {
+      const empty = detail.overview({ ...entity, informationUrls });
+      assert.ok(!empty.includes('ob-fact-links'));
+      assert.ok(empty.includes('<dt>Weitere Informationen</dt><dd><span>—</span></dd>'));
+      if (kind === 'tables' || kind === 'refs') {
+        assert.ok(!empty.includes('<dt>Quelldokument</dt>') && !empty.includes('<dt>Quellenstand</dt>'));
+      }
+    }
+    entity.informationUrls = urls;
+    const plan = excel.plan({ view: 'detail', kind, entity }, { title: entity.name, state: { tableSorts: {} } }, 'http://localhost/');
+    assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'informationUrls' && row[4] === JSON.stringify(urls)));
   }
-  entity.informationUrls = urls;
-  const plan = excel.plan({ view: 'detail', kind: 'tables', entity }, { title: entity.name, state: { tableSorts: {} } }, 'http://localhost/');
-  assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'informationUrls' && row[4] === JSON.stringify(urls)));
+  for (const lang of ['de', 'fr', 'it', 'en']) {
+    ui.setDictionary(data.i18n, lang);
+    for (const table of data.tables) {
+      const facts = detail.facts({ ...table, kind: 'tables' }).primary;
+      assert.ok(!facts.some(fact => [ui.t('fact.sourceDocument'), ui.t('fact.sourceDetail')].includes(fact.label)));
+      if (table.sourceUrl) assert.ok(table.informationUrls.includes(table.sourceUrl));
+    }
+    assert.equal(data.columns('refs')[1].label, ui.t('fact.normReference'));
+    for (const ref of data.refs) {
+      const facts = detail.facts({ ...ref, kind: 'refs' }).primary;
+      assert.equal(facts.find(fact => fact.label === ui.t('fact.normReference')).value, ref.normReference);
+      assert.ok(!facts.some(fact => [ui.t('fact.sourceDocument'), ui.t('fact.sourceDetail')].includes(fact.label)));
+      assert.equal(data.cols('refs', ref)[0], ref.normReference);
+      if (ref.sourceUrl) assert.ok(ref.informationUrls.includes(ref.sourceUrl));
+    }
+  }
 });
 
 test('comments belong to each entity and render safely in core facts and Excel', async () => {
@@ -841,7 +863,8 @@ test('Excel workbooks contain complete scoped GWR data and retain explicit cell 
   assert.equal(rows('Referenzdaten').length, 48);
   assert.equal(rows('Werte').length, 467);
   assert.ok(rows('Quelldokumentation').some(r => r[1] === 'EGID' && r[3].includes('gesamtschweizerisch eindeutige')));
-  assert.ok(rows('Metadaten').some(r => r[3] === 'contact.email' && r[4] === 'housing-stat@bfs.admin.ch'));
+  assert.ok(rows('Metadaten').some(r => r[3] === 'contact.url' && r[4] === 'https://www.housing-stat.ch/de/home.html'));
+  assert.ok(!rows('Metadaten').some(r => ['contact.email', 'contact.phone'].includes(r[3])));
   assert.equal(new Set(rows('Felder').map(r => r[0] + '/' + r[2])).size, 146);
   const workbook = excel.createWorkbook(plan, ExcelJS);
   const buffer = await workbook.xlsx.writeBuffer();

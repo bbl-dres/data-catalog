@@ -41,7 +41,8 @@
     const internal = (label, value, kind, id) => ({ label, value, type: 'internal', href: router.entityHref(kind, id) });
     const ext = (label, value, href) => ({ label, value, type: 'link', href });
     const dom = data.domainForEntity(e.kind, e);
-    const informationUrls = e.kind === 'tables' && Array.isArray(e.informationUrls)
+    const hasInformationLinks = ['objects', 'tables', 'refs'].includes(e.kind);
+    const informationUrls = hasInformationLinks && Array.isArray(e.informationUrls)
       ? [...new Set(e.informationUrls.filter(url => typeof url === 'string' && /^https?:\/\//i.test(url) && ui.safeHref(url)))] : [];
     const primary = [plain(t('fact.type'), data.kindDef(e.kind).singular), { label: t('fact.status'), value: e.status, type: 'chip', tone: data.statusTone(e.status) }];
     if (e.kind !== 'domains') primary.push(dom ? internal(t('fact.domain'), dom.name, 'domains', dom.identifier) : plain(t('fact.domain')));
@@ -64,12 +65,6 @@
       case 'tables':
         primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.technicalName'), e.technicalName));
         primary.push(e.realizes ? internal(t('fact.realizes'), data.nameOf('objects', e.realizes), 'objects', e.realizes) : plain(t('fact.realizes')));
-        primary.push({ label: t('fact.moreInformation'), value: informationUrls, type: 'links', labels: informationUrls.map(url => {
-          if (url === e.descriptionSource?.url) return `${t('fact.definitionSource')}: ${e.descriptionSource.title}`;
-          if (url === e.sourceUrl && e.source) return [e.source, e.dataSource || e.apiStructure].filter(Boolean).join(' · ');
-          if (url === e.technicalNameSource && e.technicalName) return `${t('fact.technicalName')}: ${e.technicalName}`;
-          return url;
-        }) });
         break;
       case 'fields': {
         const table = data.get('tables', e.table);
@@ -90,13 +85,19 @@
           plain(t('fact.baseUrl'), e.endpointURL), ext(t('fact.documentation'), e.documentation ? t('fact.openDocs') : null, e.documentation));
         break;
       case 'refs':
-        primary.push(plain(t('fact.codeSource'), e.sourceAuthority));
+        primary.push(plain(t('fact.normReference'), e.normReference));
         primary.push(e.businessObject ? internal(t('fact.object'), data.nameOf('objects', e.businessObject), 'objects', e.businessObject) : plain(t('fact.object')));
         break;
     }
-    if (e.sourceUrl && !informationUrls.includes(e.sourceUrl)) primary.push(ext(t('fact.sourceDocument'), t('fact.openSourceDocument'), e.sourceUrl));
-    if (!['fields', 'tables'].includes(e.kind) && (e.provenance || e.sourceUrl)) primary.push(plain(t('fact.sourceDetail'), e.sourceDetail));
-    if (e.kind !== 'tables' && e.descriptionSource) {
+    if (hasInformationLinks) primary.push({ label: t('fact.moreInformation'), value: informationUrls, type: 'links', labels: informationUrls.map(url => {
+      if (url === e.descriptionSource?.url) return `${t('fact.definitionSource')}: ${e.descriptionSource.title}`;
+      if (url === e.sourceUrl && e.source) return [e.source, e.dataSource || e.apiStructure].filter(Boolean).join(' · ');
+      if (url === e.technicalNameSource && e.technicalName) return `${t('fact.technicalName')}: ${e.technicalName}`;
+      return url;
+    }) });
+    if (!['tables', 'refs'].includes(e.kind) && e.sourceUrl && !informationUrls.includes(e.sourceUrl)) primary.push(ext(t('fact.sourceDocument'), t('fact.openSourceDocument'), e.sourceUrl));
+    if (!['fields', 'tables', 'refs'].includes(e.kind) && (e.provenance || e.sourceUrl)) primary.push(plain(t('fact.sourceDetail'), e.sourceDetail));
+    if (!['tables', 'refs'].includes(e.kind) && e.descriptionSource) {
       const label = `${e.descriptionSource.title} · ${t(e.descriptionSource.kind === 'source-excerpt' ? 'fact.sourceExcerpt' : 'fact.sourceSummary')}`;
       primary.push(informationUrls.includes(e.descriptionSource.url)
         ? plain(t('fact.definitionSource'), label) : ext(t('fact.definitionSource'), label, e.descriptionSource.url));
@@ -157,9 +158,7 @@
     const rows = row('detail.organisation', e.responsibleOrg ? website(e.responsibleOrg, contact.url) : '')
       + row('detail.owner', actor(e.dataOwner, 'person'))
       + row('detail.steward', actor(e.dataSteward, 'person'))
-      + row('detail.dataCustodian', actor(data.custodianOf(e.kind, e), 'organisation'))
-      + row('detail.email', contact.email ? ui.link('mailto:' + encodeURIComponent(contact.email).replace(/%40/g, '@'), esc(contact.email), { className: 'ob-inline-link' }) : '')
-      + row('detail.phone', contact.phone ? ui.link('tel:' + contact.phone.replace(/[\s().-]/g, ''), esc(contact.phone), { className: 'ob-inline-link' }) : '');
+      + (data.supportsCustodian(e.kind) ? row('detail.dataCustodian', actor(data.custodianOf(e.kind, e), 'organisation')) : '');
     return rows ? `<section class="ob-responsibility"><h2>${esc(t('detail.contacts'))}</h2><dl class="ob-facts">${rows}</dl></section>` : '';
   };
 

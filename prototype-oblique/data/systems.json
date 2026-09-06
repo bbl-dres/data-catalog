@@ -15,11 +15,7 @@
     "source": "Architektur-Repository",
     "synced": "2024-06-01",
     "technology": "SAP S/4HANA",
-    "dataCustodian": "Portfoliomanagement",
-    "contact": {
-      "email": "portfoliomanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 20"
-    }
+    "dataCustodian": "Portfoliomanagement"
   },
   {
     "identifier": "gis",
@@ -36,10 +32,6 @@
     "synced": "2026-09-05",
     "technology": "ArcGIS Enterprise",
     "dataCustodian": "Immobilienmanagement",
-    "contact": {
-      "email": "immobilienmanagement@bbl.admin.ch",
-      "phone": "+41 58 465 50 10"
-    },
     "sourceDetail": "BBL GIS IMMO - Modellbeschreibung - Kopie.xlsx · Attribute · 7 Modellgruppen",
     "sourceModified": "2025-03-02T10:28:54",
     "provenance": {
@@ -58,9 +50,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",

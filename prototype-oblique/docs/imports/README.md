@@ -27,7 +27,7 @@ The owner deliberately removed these sample records. Imports or later migrations
 
 Position is omitted from attribute/field overviews but remains available as source ordering and in Excel. Field overviews omit source status, object types, GWR access category, GWR master-data classification and source snapshot; table overviews omit source snapshot and definition source. Field profiles have no separate source-documentation section. Underlying source evidence is retained in JSON and exports.
 
-Shared empty facts, comments, responsibility roles and further-information rows remain visible as **—**; unknown booleans stay unknown and empty URLs do not become links. This does not mean every optional source-specific row is rendered: see the [model's migration requirements](../data-model.md) before changing that behavior.
+Shared empty facts, comments, responsibility roles and further-information rows remain visible as **—**; unknown booleans stay unknown and empty URLs do not become links. This does not mean every optional source-specific row is rendered: see the [model implementation and migration requirements](../data-model-implementation.md#current-prototype-differences) before changing that behavior.
 
 GWR definitions retain their official-source release status; other current catalog definitions remain drafts. Imported source LIVE/DEV or similar status is independent of catalog approval. Evidence that a field exists in one source does not establish its availability through another interface or define a solution-neutral business requirement.
 

@@ -534,6 +534,7 @@
               },
               "attributeCount": { "type": "integer", "example": 7 },
               "normReference": { "type": "string", "example": "eCH-0071 v2.0, GWR" },
+              "informationUrls": { "type": "array", "uniqueItems": true, "items": { "type": "string", "format": "uri", "pattern": "^https?://" }, "description": "Links to documentation and further information about the business object." },
               "classification": { "type": "string", "example": "intern" },
               "personalData": { "type": "boolean", "example": false }
             }
@@ -647,7 +648,8 @@
           {
             "type": "object",
             "properties": {
-              "sourceAuthority": { "type": "string", "example": "GWR / eCH" },
+              "normReference": { "type": "string", "example": "GWR / eCH" },
+              "informationUrls": { "type": "array", "uniqueItems": true, "items": { "type": "string", "format": "uri", "pattern": "^https?://" }, "description": "Links to documentation and further information about the code list." },
               "businessObject": { "type": "string", "example": "gebaeude" },
               "valueCount": { "type": "integer", "example": 6 }
             }

@@ -6,9 +6,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -25,7 +23,10 @@
     "identifier": "r-gwr-kat",
     "name": "GWR Gebäudekategorie (GKAT)",
     "description": "Werteliste für Gebäudekategorie (GKAT) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GKAT"
+    ],
     "domain": "bau",
     "sourceField": "GKAT",
     "codeListOrigin": "catalog-5.0",
@@ -146,9 +147,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -165,7 +164,10 @@
     "identifier": "r-gwr-status",
     "name": "GWR Gebäudestatus (GSTAT)",
     "description": "Werteliste für Gebäudestatus (GSTAT) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GSTAT"
+    ],
     "domain": "bau",
     "sourceField": "GSTAT",
     "codeListOrigin": "catalog-5.0",
@@ -221,7 +223,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [],
     "businessObject": "heizzentrale",
     "values": [
       {
@@ -290,7 +293,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [],
     "businessObject": "grundstueck",
     "values": [
       {
@@ -415,7 +419,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "SIA",
+    "normReference": "SIA",
+    "informationUrls": [],
     "businessObject": "bemessung",
     "values": [
       {
@@ -468,7 +473,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "kondition",
     "values": [
       {
@@ -509,7 +515,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "mietvertrag",
     "values": []
   },
@@ -529,7 +536,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "stromzaehler",
     "values": []
   },
@@ -549,7 +557,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "grundstueck",
     "values": []
   },
@@ -569,7 +578,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "heizzentrale",
     "values": [
       {
@@ -614,7 +624,8 @@
     "source": "Architektur-Repository",
     "sourceDetail": "Innovator / smartfacts",
     "synced": "2024-06-01",
-    "sourceAuthority": "BBL intern",
+    "normReference": "BBL intern",
+    "informationUrls": [],
     "businessObject": "kondition",
     "values": [
       {
@@ -638,9 +649,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -657,7 +666,10 @@
     "identifier": "r-gwr-partbz",
     "name": "GWR Bewilligungsgrund (PARTBZ)",
     "description": "Werteliste für Bewilligungsgrund (PARTBZ) in der GWR-Entität Bauprojekt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PARTBZ"
+    ],
     "domain": "projekt",
     "sourceField": "PARTBZ",
     "codeListOrigin": "catalog-5.0",
@@ -1034,9 +1046,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -1053,7 +1063,10 @@
     "identifier": "r-gwr-ptypag",
     "name": "GWR Typ der Auftraggeber (PTYPAG)",
     "description": "Werteliste für Typ der Auftraggeber (PTYPAG) in der GWR-Entität Bauprojekt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PTYPAG"
+    ],
     "domain": "projekt",
     "sourceField": "PTYPAG",
     "codeListOrigin": "catalog-5.0",
@@ -1292,9 +1305,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -1311,7 +1322,10 @@
     "identifier": "r-gwr-partbw",
     "name": "GWR Art der Bauwerke (PARTBW)",
     "description": "Werteliste für Art der Bauwerke (PARTBW) in der GWR-Entität Bauprojekt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PARTBW"
+    ],
     "domain": "projekt",
     "sourceField": "PARTBW",
     "codeListOrigin": "catalog-5.0",
@@ -1378,9 +1392,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -1397,7 +1409,10 @@
     "identifier": "r-gwr-ptypbw",
     "name": "GWR Typ der Bauwerke (PTYPBW)",
     "description": "Werteliste für Typ der Bauwerke (PTYPBW) in der GWR-Entität Bauprojekt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PTYPBW"
+    ],
     "domain": "projekt",
     "sourceField": "PTYPBW",
     "codeListOrigin": "catalog-5.0",
@@ -2136,9 +2151,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2155,7 +2168,10 @@
     "identifier": "r-gwr-pstat",
     "name": "GWR Status Bauprojekt (PSTAT)",
     "description": "Werteliste für Status Bauprojekt (PSTAT) in der GWR-Entität Bauprojekt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PSTAT"
+    ],
     "domain": "projekt",
     "sourceField": "PSTAT",
     "codeListOrigin": "catalog-5.0",
@@ -2266,9 +2282,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2285,7 +2299,10 @@
     "identifier": "r-gwr-partab",
     "name": "GWR Art der Arbeiten (PARTAB)",
     "description": "Werteliste für Art der Arbeiten (PARTAB) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PARTAB"
+    ],
     "domain": "projekt",
     "sourceField": "PARTAB",
     "codeListOrigin": "catalog-5.0",
@@ -2352,9 +2369,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2371,7 +2386,10 @@
     "identifier": "r-gwr-pensan",
     "name": "GWR Energetische Sanierung (PENSAN)",
     "description": "Werteliste für Energetische Sanierung (PENSAN) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PENSAN"
+    ],
     "domain": "projekt",
     "sourceField": "PENSAN",
     "codeListOrigin": "catalog-5.0",
@@ -2422,9 +2440,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2441,7 +2457,10 @@
     "identifier": "r-gwr-pheizsan",
     "name": "GWR Sanierung des Heizsystems (PHEIZSAN)",
     "description": "Werteliste für Sanierung des Heizsystems (PHEIZSAN) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PHEIZSAN"
+    ],
     "domain": "projekt",
     "sourceField": "PHEIZSAN",
     "codeListOrigin": "catalog-5.0",
@@ -2492,9 +2511,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2511,7 +2528,10 @@
     "identifier": "r-gwr-pinnumb",
     "name": "GWR Umbauten / Renovationen im Innenbereich (PINNUMB)",
     "description": "Werteliste für Umbauten / Renovationen im Innenbereich (PINNUMB) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PINNUMB"
+    ],
     "domain": "projekt",
     "sourceField": "PINNUMB",
     "codeListOrigin": "catalog-5.0",
@@ -2562,9 +2582,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2581,7 +2599,10 @@
     "identifier": "r-gwr-pumnutz",
     "name": "GWR Umnutzung (PUMNUTZ)",
     "description": "Werteliste für Umnutzung (PUMNUTZ) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PUMNUTZ"
+    ],
     "domain": "projekt",
     "sourceField": "PUMNUTZ",
     "codeListOrigin": "catalog-5.0",
@@ -2632,9 +2653,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2651,7 +2670,10 @@
     "identifier": "r-gwr-perwmhz",
     "name": "GWR Beheizte Erweiterung (PERWMHZ)",
     "description": "Werteliste für Beheizte Erweiterung (PERWMHZ) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PERWMHZ"
+    ],
     "domain": "projekt",
     "sourceField": "PERWMHZ",
     "codeListOrigin": "catalog-5.0",
@@ -2702,9 +2724,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2721,7 +2741,10 @@
     "identifier": "r-gwr-perwohz",
     "name": "GWR Nicht beheizte Erweiterung (PERWOHZ)",
     "description": "Werteliste für Nicht beheizte Erweiterung (PERWOHZ) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PERWOHZ"
+    ],
     "domain": "projekt",
     "sourceField": "PERWOHZ",
     "codeListOrigin": "catalog-5.0",
@@ -2772,9 +2795,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2791,7 +2812,10 @@
     "identifier": "r-gwr-pthersol",
     "name": "GWR Thermische Solaranlage (PTHERSOL)",
     "description": "Werteliste für Thermische Solaranlage (PTHERSOL) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PTHERSOL"
+    ],
     "domain": "projekt",
     "sourceField": "PTHERSOL",
     "codeListOrigin": "catalog-5.0",
@@ -2842,9 +2866,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2861,7 +2883,10 @@
     "identifier": "r-gwr-pphotsol",
     "name": "GWR Photovoltaische Solaranlage (PPHOTSOL)",
     "description": "Werteliste für Photovoltaische Solaranlage (PPHOTSOL) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PPHOTSOL"
+    ],
     "domain": "projekt",
     "sourceField": "PPHOTSOL",
     "codeListOrigin": "catalog-5.0",
@@ -2912,9 +2937,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -2931,7 +2954,10 @@
     "identifier": "r-gwr-pandumb",
     "name": "GWR Andere Umbauten (PANDUMB)",
     "description": "Werteliste für Andere Umbauten (PANDUMB) in der GWR-Entität Arbeiten.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#PANDUMB"
+    ],
     "domain": "projekt",
     "sourceField": "PANDUMB",
     "codeListOrigin": "catalog-5.0",
@@ -2982,9 +3008,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -3001,7 +3025,10 @@
     "identifier": "r-gwr-gksce",
     "name": "GWR Koordinatenherkunft (GKSCE)",
     "description": "Werteliste für Koordinatenherkunft (GKSCE) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GKSCE"
+    ],
     "domain": "bau",
     "sourceField": "GKSCE",
     "codeListOrigin": "catalog-5.0",
@@ -3080,9 +3107,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -3099,7 +3124,8 @@
     "identifier": "r-gwr-gklas",
     "name": "GWR Gebäudeklasse (GKLAS)",
     "description": "Werteliste für Gebäudeklasse (GKLAS) in der GWR-Entität Gebäude. Stand 4.2 aus der Excel-Datei; Übereinstimmung mit 5.0 nicht bestätigt.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [],
     "domain": "bau",
     "sourceField": "GKLAS",
     "codeListOrigin": "workbook-4.2-only",
@@ -3533,9 +3559,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -3552,7 +3576,10 @@
     "identifier": "r-gwr-gbaup",
     "name": "GWR Bauperiode (GBAUP)",
     "description": "Werteliste für Bauperiode (GBAUP) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GBAUP"
+    ],
     "domain": "bau",
     "sourceField": "GBAUP",
     "codeListOrigin": "catalog-5.0",
@@ -3767,9 +3794,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -3786,7 +3811,10 @@
     "identifier": "r-gwr-gvolnorm",
     "name": "GWR Gebäudevolumen: Norm (GVOLNORM)",
     "description": "Werteliste für Gebäudevolumen: Norm (GVOLNORM) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GVOLNORM"
+    ],
     "domain": "bau",
     "sourceField": "GVOLNORM",
     "codeListOrigin": "catalog-5.0",
@@ -3841,9 +3869,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -3860,7 +3886,10 @@
     "identifier": "r-gwr-gvolsce",
     "name": "GWR Informationsquelle zum Gebäudevolumen (GVOLSCE)",
     "description": "Werteliste für Informationsquelle zum Gebäudevolumen (GVOLSCE) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GVOLSCE"
+    ],
     "domain": "bau",
     "sourceField": "GVOLSCE",
     "codeListOrigin": "catalog-5.0",
@@ -4011,9 +4040,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4030,7 +4057,10 @@
     "identifier": "r-gwr-gschutzr",
     "name": "GWR Zivilschutzraum (GSCHUTZR)",
     "description": "Werteliste für Zivilschutzraum (GSCHUTZR) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GSCHUTZR"
+    ],
     "domain": "bau",
     "sourceField": "GSCHUTZR",
     "codeListOrigin": "catalog-5.0",
@@ -4081,9 +4111,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4100,7 +4128,10 @@
     "identifier": "r-gwr-gebfber",
     "name": "GWR Berechnungsart der Energiebezugsfläche (GEBFBER)",
     "description": "Werteliste für Berechnungsart der Energiebezugsfläche (GEBFBER) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GEBFBER"
+    ],
     "domain": "bau",
     "sourceField": "GEBFBER",
     "codeListOrigin": "catalog-5.0",
@@ -4127,9 +4158,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4146,7 +4175,10 @@
     "identifier": "r-gwr-gebfsce",
     "name": "GWR Informationsquelle der Energiebezugsfläche (GEBFSCE)",
     "description": "Werteliste für Informationsquelle der Energiebezugsfläche (GEBFSCE) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GEBFSCE"
+    ],
     "domain": "bau",
     "sourceField": "GEBFSCE",
     "codeListOrigin": "catalog-5.0",
@@ -4213,9 +4245,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4232,7 +4262,10 @@
     "identifier": "r-gwr-gebqhsce",
     "name": "GWR Informationsquelle zum Heizwärmebedarf des Gebäudes (GEBQHSCE)",
     "description": "Werteliste für Informationsquelle zum Heizwärmebedarf des Gebäudes (GEBQHSCE) in der GWR-Entität Gebäude.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#GEBQHSCE"
+    ],
     "domain": "bau",
     "sourceField": "GEBQHSCE",
     "codeListOrigin": "catalog-5.0",
@@ -4299,9 +4332,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4318,7 +4349,10 @@
     "identifier": "r-gwr-tstat",
     "name": "GWR Status Wärmeerzeugungsanlage (TSTAT)",
     "description": "Werteliste für Status Wärmeerzeugungsanlage (TSTAT) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TSTAT"
+    ],
     "domain": "energie",
     "sourceField": "TSTAT",
     "codeListOrigin": "catalog-5.0",
@@ -4352,9 +4386,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4371,7 +4403,10 @@
     "identifier": "r-gwr-tnheiz",
     "name": "GWR Wärmenutzung für Heizung (TNHEIZ)",
     "description": "Werteliste für Wärmenutzung für Heizung (TNHEIZ) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TNHEIZ"
+    ],
     "domain": "energie",
     "sourceField": "TNHEIZ",
     "codeListOrigin": "catalog-5.0",
@@ -4397,9 +4432,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4416,7 +4449,10 @@
     "identifier": "r-gwr-tnww",
     "name": "GWR Wärmenutzung für Warmwasser (TNWW)",
     "description": "Werteliste für Wärmenutzung für Warmwasser (TNWW) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TNWW"
+    ],
     "domain": "energie",
     "sourceField": "TNWW",
     "codeListOrigin": "catalog-5.0",
@@ -4442,9 +4478,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4461,7 +4495,10 @@
     "identifier": "r-gwr-twaerz",
     "name": "GWR Wärmeerzeugungsanlage (TWAERZ)",
     "description": "Werteliste für Wärmeerzeugungsanlage (TWAERZ) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TWAERZ"
+    ],
     "domain": "energie",
     "sourceField": "TWAERZ",
     "codeListOrigin": "catalog-5.0",
@@ -4535,9 +4572,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4554,7 +4589,10 @@
     "identifier": "r-gwr-tent",
     "name": "GWR Energieträger der Wärmeerzeugungsanlage (TENT)",
     "description": "Werteliste für Energieträger der Wärmeerzeugungsanlage (TENT) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TENT"
+    ],
     "domain": "energie",
     "sourceField": "TENT",
     "codeListOrigin": "catalog-5.0",
@@ -4648,9 +4686,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4667,7 +4703,10 @@
     "identifier": "r-gwr-tsce",
     "name": "GWR Informationsquelle der Wärmeerzeugungsanlage (TSCE)",
     "description": "Werteliste für Informationsquelle der Wärmeerzeugungsanlage (TSCE) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TSCE"
+    ],
     "domain": "energie",
     "sourceField": "TSCE",
     "codeListOrigin": "catalog-5.0",
@@ -4737,9 +4776,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4756,7 +4793,10 @@
     "identifier": "r-gwr-tnleistsce",
     "name": "GWR Informationsquelle der Nennleistung der Wärmeerzeugungsanlage (TNLEISTSCE)",
     "description": "Werteliste für Informationsquelle der Nennleistung der Wärmeerzeugungsanlage (TNLEISTSCE) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TNLEISTSCE"
+    ],
     "domain": "energie",
     "sourceField": "TNLEISTSCE",
     "codeListOrigin": "catalog-5.0",
@@ -4822,9 +4862,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4841,7 +4879,10 @@
     "identifier": "r-gwr-twaerzgebrolle",
     "name": "GWR Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude (TWAERZGEBROLLE)",
     "description": "Werteliste für Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude (TWAERZGEBROLLE) in der GWR-Entität Wärmeerzeugungsanlage.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#TWAERZGEBROLLE"
+    ],
     "domain": "energie",
     "sourceField": "TWAERZGEBROLLE",
     "codeListOrigin": "catalog-5.0",
@@ -4871,9 +4912,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4890,7 +4929,10 @@
     "identifier": "r-gwr-doffadr",
     "name": "GWR Offizielle Adresse (DOFFADR)",
     "description": "Werteliste für Offizielle Adresse (DOFFADR) in der GWR-Entität Gebäudeeingang.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#DOFFADR"
+    ],
     "domain": "bau",
     "sourceField": "DOFFADR",
     "codeListOrigin": "catalog-5.0",
@@ -4940,9 +4982,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -4959,7 +4999,10 @@
     "identifier": "r-gwr-wstwk",
     "name": "GWR Stockwerk (WSTWK)",
     "description": "Werteliste für Stockwerk (WSTWK) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WSTWK"
+    ],
     "domain": "miete",
     "sourceField": "WSTWK",
     "codeListOrigin": "catalog-5.0-ranges-with-workbook-4.2-labels",
@@ -6882,9 +6925,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -6901,7 +6942,10 @@
     "identifier": "r-gwr-wmehrg",
     "name": "GWR Mehrgeschossige Wohnung (WMEHRG)",
     "description": "Werteliste für Mehrgeschossige Wohnung (WMEHRG) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WMEHRG"
+    ],
     "domain": "miete",
     "sourceField": "WMEHRG",
     "codeListOrigin": "catalog-5.0",
@@ -6952,9 +6996,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -6971,7 +7013,10 @@
     "identifier": "r-gwr-wstat",
     "name": "GWR Wohnungsstatus (WSTAT)",
     "description": "Werteliste für Wohnungsstatus (WSTAT) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WSTAT"
+    ],
     "domain": "miete",
     "sourceField": "WSTAT",
     "codeListOrigin": "catalog-5.0",
@@ -7018,9 +7063,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7037,7 +7080,10 @@
     "identifier": "r-gwr-wkche",
     "name": "GWR Kocheinrichtung (WKCHE)",
     "description": "Werteliste für Kocheinrichtung (WKCHE) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WKCHE"
+    ],
     "domain": "miete",
     "sourceField": "WKCHE",
     "codeListOrigin": "catalog-5.0",
@@ -7088,9 +7134,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7107,7 +7151,10 @@
     "identifier": "r-gwr-wnart",
     "name": "GWR Nutzungsart der Wohnung (WNART)",
     "description": "Werteliste für Nutzungsart der Wohnung (WNART) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WNART"
+    ],
     "domain": "miete",
     "sourceField": "WNART",
     "codeListOrigin": "catalog-5.0",
@@ -7186,9 +7233,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7205,7 +7250,10 @@
     "identifier": "r-gwr-wnartsce",
     "name": "GWR Informationsquelle zur Nutzungsart (WNARTSCE)",
     "description": "Werteliste für Informationsquelle zur Nutzungsart (WNARTSCE) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WNARTSCE"
+    ],
     "domain": "miete",
     "sourceField": "WNARTSCE",
     "codeListOrigin": "catalog-5.0",
@@ -7276,9 +7324,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7295,7 +7341,10 @@
     "identifier": "r-gwr-wpershw",
     "name": "GWR Person(en) mit Hauptwohnsitz (WPERSHW)",
     "description": "Werteliste für Person(en) mit Hauptwohnsitz (WPERSHW) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WPERSHW"
+    ],
     "domain": "miete",
     "sourceField": "WPERSHW",
     "codeListOrigin": "catalog-5.0",
@@ -7346,9 +7395,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7365,7 +7412,10 @@
     "identifier": "r-gwr-wpersnw",
     "name": "GWR Person(en) mit Nebenwohnsitz (WPERSNW)",
     "description": "Werteliste für Person(en) mit Nebenwohnsitz (WPERSNW) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WPERSNW"
+    ],
     "domain": "miete",
     "sourceField": "WPERSNW",
     "codeListOrigin": "catalog-5.0",
@@ -7416,9 +7466,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7435,7 +7483,10 @@
     "identifier": "r-gwr-wgbanmerkung",
     "name": "GWR Nutzungsbeschränkung gemäss ZWG (WGBANMERKUNG)",
     "description": "Werteliste für Nutzungsbeschränkung gemäss ZWG (WGBANMERKUNG) in der GWR-Entität Wohnung.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#WGBANMERKUNG"
+    ],
     "domain": "miete",
     "sourceField": "WGBANMERKUNG",
     "codeListOrigin": "catalog-5.0",
@@ -7494,9 +7545,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7513,7 +7562,10 @@
     "identifier": "r-gwr-strsp",
     "name": "GWR Strassenbezeichnung Sprache (STRSP)",
     "description": "Werteliste für Strassenbezeichnung Sprache (STRSP) in der GWR-Entität Strasse.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#STRSP"
+    ],
     "domain": "bau",
     "sourceField": "STRSP",
     "codeListOrigin": "catalog-5.0",
@@ -7595,9 +7647,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7614,7 +7664,10 @@
     "identifier": "r-gwr-stroffiziel",
     "name": "GWR Strassenbezeichnung offiziell (STROFFIZIEL)",
     "description": "Werteliste für Strassenbezeichnung offiziell (STROFFIZIEL) in der GWR-Entität Strasse.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#STROFFIZIEL"
+    ],
     "domain": "bau",
     "sourceField": "STROFFIZIEL",
     "codeListOrigin": "catalog-5.0",
@@ -7664,9 +7717,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7683,7 +7734,10 @@
     "identifier": "r-gwr-sreal",
     "name": "GWR Realisierungsstand der Strasse (SREAL)",
     "description": "Werteliste für Realisierungsstand der Strasse (SREAL) in der GWR-Entität Strasse.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#SREAL"
+    ],
     "domain": "bau",
     "sourceField": "SREAL",
     "codeListOrigin": "catalog-5.0",
@@ -7753,9 +7807,7 @@
     "modified": "2026-09-05",
     "responsibleOrg": "Bundesamt für Statistik (BFS)",
     "contact": {
-      "url": "https://www.housing-stat.ch/de/home.html",
-      "email": "housing-stat@bfs.admin.ch",
-      "phone": "0800 866 600"
+      "url": "https://www.housing-stat.ch/de/home.html"
     },
     "source": "GWR",
     "synced": "2026-09-05",
@@ -7772,7 +7824,10 @@
     "identifier": "r-gwr-strart",
     "name": "GWR Art der Strasse (STRART)",
     "description": "Werteliste für Art der Strasse (STRART) in der GWR-Entität Strasse.",
-    "sourceAuthority": "GWR / eCH",
+    "normReference": "GWR / eCH",
+    "informationUrls": [
+      "https://www.housing-stat.ch/catalog/de/5.0/revised#STRART"
+    ],
     "domain": "bau",
     "sourceField": "STRART",
     "codeListOrigin": "catalog-5.0",
@@ -7823,7 +7878,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Bodenbedeckung.BBArt",
@@ -7991,7 +8049,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Qualitaetsstandard",
@@ -8053,7 +8114,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Status",
@@ -8100,7 +8164,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstuecksart",
@@ -8168,7 +8235,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstueck.Gueltigkeit",
@@ -8216,7 +8286,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Grundstueck.Vollstaendigkeit",
@@ -8264,7 +8337,10 @@
         "sources.json": "86562969d803993dc3aedd488cc761bbb4d4c7aefc12190f2a85b0e067b46ee1"
       }
     },
-    "sourceAuthority": "swisstopo · DM.01-AV-CH",
+    "normReference": "swisstopo · DM.01-AV-CH",
+    "informationUrls": [
+      "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili"
+    ],
     "sourceUrl": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
     "version": "24 / LV95",
     "sourceDetail": "DM01AVCH24LV95D.Liegenschaften.Liegenschaft.Linienart",

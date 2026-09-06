@@ -21,6 +21,18 @@ Collection controls place search before grouping/actions. Detail row tabs use th
 - Preserve the query through view/group changes and browser history. A bookmarked `tab=rows` filter reopens the row tab on reload.
 - Collection exports use the filtered collection. An entity export includes its complete schema regardless of local row filtering or pagination.
 
+## Key facts
+
+Business objects, data tables and reference data share a **More information** list backed by `informationUrls`. Keep the row visible when empty; deduplicate links and accept only safe HTTP(S) URLs. Existing source links remain available in this list. Data-table and reference-data profiles omit separate source-document, source-context and definition-source rows; their provenance remains in the data and Excel metadata.
+
+Reference-data profiles and collection tables use **Standard reference**, backed by `normReference`, matching business objects. Existing citation text is preserved without inferring an organisation record or a more precise standard identifier.
+
+## Responsibility
+
+Every entity profile shows organisation, data owner and data steward, retaining placeholders for applicable unknown values. Systems, tables, fields and APIs additionally show data custodian. Business definitions, domains, products and reference data have no custodian row. Fields inherit a table custodian and tables may inherit their system's custodian; API custodians are explicit.
+
+Organisation and person links retain their documented website/directory targets. Dedicated email and phone values are removed from catalog records and the Responsible section. The GWR importer emits only its organisation contact-page URL. Application help contacts remain separate configuration.
+
 ## Global search
 
 Home, results and the expandable header share the same search form/combobox. Results initialize from the decoded `q` parameter. On home/results, the header magnifier focuses the page form. Only one search input/listbox is active at a time, and page load does not autofocus it.
