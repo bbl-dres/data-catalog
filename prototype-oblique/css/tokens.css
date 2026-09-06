@@ -264,6 +264,8 @@
   --ob-tile-min-height: 74px;
   --ob-tile-gap: var(--ob-space-default);
   --ob-toast-max-width: 420px;
+  --ob-spinner-size: var(--ob-space-2xl);
+  --ob-spinner-duration: 800ms;
   --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
   --ob-table-card-min-width: 300px;
   --ob-api-max-width: 1200px;

@@ -203,6 +203,7 @@
     if ($('sidebar-flyout')) $('sidebar-flyout').scrollTop = flyoutScroll;
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
     syncDrawer();
+    ui.setLoading(state.exporting ? t('excel.preparing') : '');
     document.title = `${ctx.title} – ${data.config.app.name} ${data.config.app.organisation}`;
     requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); fitSearchSuggestions(); });
     updateBackToTop();
@@ -458,7 +459,8 @@
         const plan = DK.excel.plan(route, ctx);
         state.exporting = true;
         app.render();
-        ui.toast(t('excel.preparing'));
+        // Paint the status before synchronous workbook preparation starts.
+        await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
         await DK.excel.download(plan);
         ui.toast(t('excel.ready'));
       } catch (error) {
@@ -749,6 +751,8 @@
     } catch (err) {
       // The dictionary is part of the failed load, so this bootstrap fallback must stand on its own.
       $('main').innerHTML = ui.empty('Datenkatalog konnte nicht geladen werden', `Bitte laden Sie die Seite erneut.<div class="ob-load-error-detail">${ui.esc(err.message)}</div>`);
+      $('main').setAttribute('aria-busy', 'false');
+      ui.setLoading();
       console.error(err);
       return;
     }
@@ -836,6 +840,7 @@
 
     syncVisualViewport();
     app.onRoute();
+    $('main').setAttribute('aria-busy', 'false');
   };
 
   DK.app = app;

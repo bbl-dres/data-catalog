@@ -108,6 +108,15 @@
 
   ui.empty = (title, hint) => `<div class="ob-empty"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}</div>`;
 
+  ui.loading = label => `<div class="ob-loading" role="status" aria-live="polite" aria-atomic="true"><div class="ob-loading-content"><span class="ob-spinner" aria-hidden="true"></span><span class="ob-loading-label">${ui.esc(label)}</span></div></div>`;
+
+  ui.setLoading = function (label = '') {
+    const host = document.getElementById('loading');
+    const text = host.querySelector('.ob-loading-label');
+    if (text.textContent !== label) text.textContent = label;
+    host.hidden = !label;
+  };
+
   /** Shared local search for collections and detail rows; only one is mounted per page. */
   ui.collectionSearch = (filter, panel) => `<div class="ob-collection-search" role="search" aria-label="${ui.esc(ui.t('collection.search.label'))}">
     ${ui.icon('search', 'lg', 'ob-search-icon')}

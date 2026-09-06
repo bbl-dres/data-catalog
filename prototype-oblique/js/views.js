@@ -481,7 +481,7 @@
   /* API page */
   views.apiPage = function () {
     return `<div class="ob-api">
-      <div id="swagger-ui" class="ob-swagger" aria-live="polite" aria-busy="true"><div class="ob-swagger-loading">${esc(t('api.loading'))}</div></div>
+      <div id="swagger-ui" class="ob-swagger">${ui.loading(t('api.loading'))}</div>
     </div>`;
   };
 

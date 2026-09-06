@@ -29,6 +29,7 @@ node prototype-oblique/tests/gis.cjs
 node prototype-oblique/tests/av.cjs
 node prototype-oblique/tests/fields.cjs
 node prototype-oblique/tests/excel.cjs
+node prototype-oblique/tests/loading.cjs
 node prototype-oblique/tests/sidebar.cjs
 node prototype-oblique/tests/polish.cjs
 node prototype-oblique/tests/contrast.cjs
@@ -41,6 +42,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 |---|---|
 | `core.test.cjs` | Real and deliberately invalid fixtures; handbook chapter aliases, preference compatibility/failures, domain integrity, routing, loading, safe URLs, workbook round-trips, types/long text and sorting |
 | `functional.cjs` | Handbook legacy links and navigation; hero/header search examples, domain/type filters, one result table, global pagination/sorting, mock answers and URLs; collection filtering, IME, export and history; shared domain tabs, legacy links, scoped export, metadata, focus, menus, API lifecycle/races/retry and load failures |
+| `loading.cjs` | Centered startup/API loading states, mobile widths, reduced motion, high contrast, failure cleanup and retry; writes screenshots to the OS temporary directory |
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
 | `list-search.cjs` | Shared collection/detail search: complete row coverage, technical names/descriptions, pagination, IME/focus, empty states, URL restoration, responsive controls and full entity export |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |

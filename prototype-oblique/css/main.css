@@ -566,7 +566,7 @@ button.ob-tree-link { width: 100%; }
 /* ---- API page --------------------------------------------------------------- */
 .ob-api { max-width: var(--ob-api-max-width); }
 .ob-swagger { min-width: 0; }
-.ob-swagger-loading { padding: var(--ob-space-lg); border: var(--ob-border-width-xs) solid var(--ob-color-border); color: var(--ob-color-text-secondary); }
+.ob-swagger > .ob-loading { min-height: 50dvh; }
 .ob-swagger .swagger-ui { color: var(--ob-color-text); font-family: var(--ob-font-family-body); }
 .ob-swagger .swagger-ui .wrapper { max-width: none; padding: 0; }
 .ob-swagger .swagger-ui .info { margin: 0 0 var(--ob-space-xl); }
@@ -658,9 +658,6 @@ button.ob-tree-link { width: 100%; }
   margin: calc(-1 * var(--ob-space-xs)) calc(-1 * var(--ob-space-sm)) calc(-1 * var(--ob-space-xs)) auto;
 }
 .ob-alert-close:hover:not(:disabled) { background: var(--ob-color-bg); color: var(--ob-color-text); }
-
-/* ---- Loading / error ------------------------------------------------------- */
-.ob-loading { padding: var(--ob-space-3xl); text-align: center; color: var(--ob-color-text-tertiary); }
 
 /* ---- Responsive workspace: width follows content, targets follow input ---- */
 @container workspace (max-width: 1100px) {

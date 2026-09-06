@@ -84,6 +84,36 @@ a:focus-visible { border-radius: var(--ob-radius-md); }
 }
 .ob-card:hover, .ob-card:focus-visible { background: var(--ob-color-surface-hover); color: var(--ob-color-text); }
 
+/* Shared loading status; the overlay leaves navigation usable during exports. */
+.ob-loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: var(--ob-space-lg); color: var(--ob-color-text); text-align: center;
+}
+.ob-loading-content { display: flex; flex-direction: column; align-items: center; gap: var(--ob-space-default); max-width: 100%; overflow-wrap: anywhere; }
+.ob-loading-label { font-weight: var(--ob-font-weight-medium); }
+.ob-spinner {
+  display: block; flex: none; width: var(--ob-spinner-size); height: var(--ob-spinner-size);
+  border: var(--ob-border-width-lg) solid var(--ob-color-border);
+  border-top-color: var(--ob-color-accent-strong); border-radius: var(--ob-radius-pill);
+  animation: ob-spin var(--ob-spinner-duration) linear infinite;
+}
+.ob-loading--overlay {
+  position: fixed; inset: var(--ob-visual-viewport-top) 0 auto; height: var(--ob-visual-viewport-height);
+  z-index: var(--ob-z-overlay); pointer-events: none;
+}
+.ob-loading--overlay .ob-loading-content {
+  padding: var(--ob-space-lg) var(--ob-space-xl); background: var(--ob-color-bg);
+  border: var(--ob-border-width-xs) solid var(--ob-color-border); border-radius: var(--ob-radius-lg);
+  box-shadow: var(--ob-shadow-lg);
+}
+.ob-loading[hidden] { display: none; }
+@keyframes ob-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ob-spinner { animation: none; } }
+@media (forced-colors: active) {
+  .ob-spinner { border-color: CanvasText; border-top-color: Highlight; forced-color-adjust: none; }
+}
+@media print { .ob-loading { display: none !important; } }
+
 /* The same input policy applies to tablets, phones and desktop touch screens. */
 @media (any-pointer: coarse), (max-width: 960px) {
   .ob-button, .ob-tab, .ob-menu-item, .ob-group-header, .ob-metadata > summary, .ob-input, .ob-select, .ob-icon-button, .ob-check { min-height: var(--ob-touch-target); }

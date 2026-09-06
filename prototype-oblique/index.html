@@ -29,9 +29,14 @@
     <div class="ob-navigation-bar"><nav class="ob-main-nav" id="main-nav" aria-label="Hauptnavigation"></nav></div>
   </header>
 
-  <main class="ob-main" id="main" tabindex="-1">
-    <div class="ob-loading" id="loading">Daten werden geladen…</div>
-  </main>
+  <main class="ob-main" id="main" tabindex="-1" aria-busy="true"></main>
+
+  <div class="ob-loading ob-loading--overlay" id="loading" role="status" aria-live="polite" aria-atomic="true">
+    <div class="ob-loading-content">
+      <span class="ob-spinner" aria-hidden="true"></span>
+      <span class="ob-loading-label">Daten werden geladen…</span>
+    </div>
+  </div>
 
   <footer class="ob-footer" id="footer"></footer>
   <button type="button" class="ob-button ob-back-to-top" id="back-to-top" data-action="back-to-top" aria-controls="main" hidden></button>
