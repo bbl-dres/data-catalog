@@ -177,6 +177,28 @@ test('English handbook chapter identifiers preserve legacy links and render ever
   assert.equal(manual.resolveChapter('unknown'), 'introduction');
 });
 
+test('handbook reference links resolve, escape markup and refuse unsafe destinations', async () => {
+  const { data, manual } = await loaded();
+  const ids = data.manual.references.map(source => source.id);
+  assert.equal(new Set(ids).size, ids.length, 'Source IDs must be unique');
+  for (const source of data.manual.references) assert.equal(new URL(source.url).protocol, 'https:');
+  const checkReferences = value => {
+    if (typeof value === 'string') {
+      for (const match of value.matchAll(/\[([^\]\r\n]+)\]\[([a-z0-9-]+)\]/g)) assert(ids.includes(match[2]), 'Unknown source: ' + match[2]);
+    } else if (value && typeof value === 'object') Object.values(value).forEach(checkReferences);
+  };
+  checkReferences(data.manual);
+  const html = manual.render('');
+  assert(!/\[[^\]\r\n]+\]\[[a-z0-9-]+\]/.test(html), 'Unrendered source notation');
+  assert.match(html, /href="https:\/\/www\.dcat-ap\.ch\/" target="_blank" rel="noopener"/);
+  assert.match(manual.text('<img src=x> [BFS & BBL][bbl]'), /^&lt;img src=x&gt; <a[^>]+>BFS &amp; BBL<\/a>$/);
+  assert.equal(manual.text('[Unknown][missing]'), '[Unknown][missing]');
+  data.manual.references.push({ id: 'unsafe', url: 'javascript:alert(1)' });
+  assert.equal(manual.text('[<script>][unsafe]'), '<span>&lt;script&gt;</span>');
+  data.manual.references.push({ id: 'quoted', url: 'https://example.test/?q=" onclick="bad' });
+  assert.match(manual.text('[Source][quoted]'), /q=&quot; onclick=&quot;bad/);
+});
+
 test('preferences retain existing browser keys and tolerate unavailable storage', () => {
   const stored = new Map([['datenkatalog.lang', 'fr'], ['datenkatalog.sidebarWidth', '380']]);
   const localStorage = { getItem: key => stored.get(key) ?? null, setItem: (key, value) => stored.set(key, value), removeItem: key => stored.delete(key) };

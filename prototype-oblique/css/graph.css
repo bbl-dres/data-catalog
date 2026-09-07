@@ -59,7 +59,13 @@
 @container workspace (max-width: 640px) {
   .ob-detail-tabs-frame .ob-tabs { flex-wrap: wrap; gap: var(--ob-space-xs); }
   .ob-tab-list { flex-basis: 100%; }
-  .ob-relations-toggle { margin-bottom: var(--ob-space-compact); }
+  /* The relationship toggle wraps inside the frame, so put the divider on
+     the tab list itself, above the toggle. */
+  .ob-detail-controls:has(.ob-relations-toggle) { border-bottom: 0; }
+  .ob-detail-tabs-frame:has(.ob-relations-toggle) { margin-bottom: 0; }
+  .ob-detail-tabs-frame:has(.ob-relations-toggle) .ob-tab-list { border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+  .ob-detail-tabs-frame:has(.ob-relations-toggle) .ob-tab { margin-bottom: calc(-1 * var(--ob-border-width-xs)); }
+  .ob-relations-toggle { margin-bottom: calc(var(--ob-space-xs) + var(--ob-border-width-xs)); }
 }
 @media (any-pointer: coarse), (max-width: 960px) {
   .ob-graph-toolbar .ob-button, .ob-graph-pan-pad .ob-button, .ob-graph-group-pager .ob-button { min-width: var(--ob-touch-target); min-height: var(--ob-touch-target); }

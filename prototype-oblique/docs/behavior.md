@@ -2,6 +2,14 @@
 
 These are the current interaction contracts. Module ownership and route construction are in [architecture.md](architecture.md); layout and visual states are in [design-system.md](design-system.md). The [test guide](../tests/README.md) maps these contracts to executable checks.
 
+## Handbook
+
+The handbook is authored in `data/manual.json`. Use `[DCAT-AP CH][dcat-ap-ch]` for an inline source link and define its destination once in `references` with `id`, `title`, `source` and `url`. `manual.text()` escapes text and link labels, accepts only this reference notation and validates destinations with `ui.link()`; raw HTML is not supported. Missing reference IDs remain readable and are caught by the core checks. Source links open in a separate tab with `noopener`; the source list uses descriptive titles instead of bare URLs. Prefer the issuing institution's documentation and verify links when updating content.
+
+The introduction includes a local 16:9 explainer mockup with a planned 1:50 duration. Its poster was supplied by the user from `service-portal/assets/images/customer-portal-tutorial-placeholder.jpg` and copied to `assets/manual-explainer-placeholder.jpg`. The title, play symbol, timeline and time display are HTML/CSS. This is not a YouTube iframe and it makes no requests to a video provider. The caption identifies it as a preview; activating the poster opens the six-part narration outline and focuses its disclosure. The separate disclosure also works without the poster action. Replace the mock with an actual player and captions when the video exists.
+
+The text describes the current read-only prototype and uses Innovator as the architecture modelling tool. It does not promise daily synchronization, eIAM login, automatic external publication or an implemented DCAT export. The model chapter separates local catalog entities from standards and lists actual core field names instead of presenting unverified vocabulary mappings as an exchange contract.
+
 ## Navigation and collections
 
 Domain pages share the collection renderer with business-object lists. They offer **Overview, Tiles and Table**, defaulting to the preferred collection layout, initially tiles. Overview shows domain metadata; the other tabs browse its business objects. Domains have no relationship or history tabs. Legacy `tab=rows` opens Table; `tab=relations` or `tab=history` opens Overview. Domain collections start ungrouped unless an explicit grouping is supplied.

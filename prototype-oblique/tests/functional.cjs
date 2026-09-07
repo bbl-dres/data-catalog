@@ -28,7 +28,7 @@ const server = createServer();
 
     await check('handbook legacy links resolve to English chapters and keep desktop/mobile navigation', async () => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      for (const width of [1440, 390]) {
+      for (const width of [1440, 1280, 390]) {
         await page.setViewportSize({ width, height: 900 });
         await visit('#/manual?ch=modell');
         assert.equal(await page.evaluate(() => DK.router.parse().params.ch), 'model');
@@ -45,6 +45,31 @@ const server = createServer();
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
       }
       await page.emulateMedia({ reducedMotion: 'no-preference' });
+    });
+
+    await check('handbook source links and video preview work on laptop and phone', async () => {
+      for (const width of [1280, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await visit('#/manual?ch=introduction');
+        const intro = page.locator('#manual-introduction');
+        for (const href of ['https://www.dcat-ap.ch/', 'https://www.w3.org/TR/skos-reference/', 'https://www.i14y.admin.ch/de/home', 'https://www.bbl.admin.ch/de', 'https://www.bfs.admin.ch/bfs/de/home/nadb/nadb.html', 'https://innovator.de/']) {
+          const link = intro.locator(`a[href="${href}"]`).first();
+          assert.equal(await link.count(), 1, 'Missing source: ' + href);
+          assert.equal(await link.getAttribute('target'), '_blank');
+          assert.equal(await link.getAttribute('rel'), 'noopener');
+        }
+        assert(!/smartfacts/i.test(await page.locator('.ob-manual-content').innerText()));
+        assert.equal(await page.locator('.ob-manual-content iframe').count(), 0, 'The mock must not load an external player');
+        const poster = page.locator('.ob-video-preview');
+        const rect = await poster.boundingBox();
+        assert(Math.abs(rect.width / rect.height - 16 / 9) < 0.01, 'Poster aspect ratio');
+        await poster.locator('img').evaluate(image => image.decode());
+        await poster.focus(); await poster.press('Enter');
+        assert.equal(await page.locator('#manual-video-transcript').evaluate(el => el.open), true);
+        assert.equal(await page.locator('#manual-video-transcript summary').evaluate(el => el === document.activeElement), true);
+        assert.equal(await page.locator('#manual-video-transcript li').count(), 6);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
     });
 
     await check('home search supports suggestions, submit and the header shortcut at desktop and phone widths', async () => {

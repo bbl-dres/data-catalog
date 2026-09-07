@@ -581,6 +581,14 @@
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
       case 'back-to-top': e.preventDefault(); backToTop(); return;
+      case 'manual-video-preview': {
+        const transcript = $('manual-video-transcript');
+        if (!transcript) return;
+        transcript.open = true;
+        transcript.querySelector('summary').focus({ preventScroll: true });
+        transcript.scrollIntoView({ block: 'nearest' });
+        return;
+      }
       case 'toggle-search': setSearch(!state.searchOpen); return;
       case 'toggle-search-options':
         closeSuggest();

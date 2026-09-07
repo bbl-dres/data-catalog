@@ -24,6 +24,7 @@ node prototype-oblique/tests/functional.cjs
 node prototype-oblique/tests/list-search.cjs
 node prototype-oblique/tests/visibility.cjs
 node prototype-oblique/tests/responsive.cjs
+node prototype-oblique/tests/laptop-layout.cjs
 node prototype-oblique/tests/graph.cjs
 node prototype-oblique/tests/gwr.cjs
 node prototype-oblique/tests/sap.cjs
@@ -71,7 +72,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `security-sql.cjs` | Reproduces permissive future-object grants; tests the security migration, 19 public read-only tables, private/DDL denial, new table/sequence/function denial and preserved unrelated grants |
 | `security-browser.cjs` | Hostile SQL metadata, unsafe links, literal Excel formulas, vector PDF under CSP, blocked executable content/connections/base changes and refused snapshot redirects; requires PGlite and Playwright |
 | `routing.cjs` | Cold detail links/reloads, history restoration, strict sorts, canonical search scopes and detail pagination, handbook history/scroll/modified clicks, navigation-context links, outer hosting query preservation, hostile inputs and restored URL-to-print ordering. Uses the shared print fixture; `REPORT_ONLY=1` records failures without failing. Reports: `oblique-diagram-export/routing-{before,after}.json` in the OS temporary directory. |
-| `functional.cjs` | Handbook legacy links and navigation; hero/header search examples, domain/type filters, one result table, global pagination/sorting, mock answers and URLs; collection filtering, IME, export and history; shared domain tabs, legacy links, scoped export, metadata, focus, menus, API lifecycle/races/retry and load failures |
+| `functional.cjs` | Handbook legacy links/navigation, inline official sources and the responsive video mockup/outline; hero/header search examples, domain/type filters, one result table, global pagination/sorting, mock answers and URLs; collection filtering, IME, export and history; shared domain tabs, legacy links, scoped export, metadata, focus, menus, API lifecycle/races/retry and load failures |
 | `loading.cjs` | Centered startup/API loading states, mobile widths, reduced motion, high contrast, failure cleanup and retry; writes screenshots to the OS temporary directory |
 | `diagram.cjs` | Tile sizing, complete PDF rows, column controls, document metadata/language, 400 physical layout combinations (including the retained grid renderer), scrolling/zoom, mobile controls, cancellation and asset retry |
 | `print-details.cjs` | Responsibility grouping in seven collections/five print kinds; complete child lists, summary/context fidelity, multilingual pagination and downloaded PDFs |
@@ -84,6 +85,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `print-mobile.cjs` | 18 catalog layouts and 32 print states: short/touch screens, preview height, scrolling, footer and popover geometry, translated header actions, keyboard fitting and retained focus/filters; `REPORT_ONLY=1` captures before measurements |
 | `diagram-pdf.py` | Inspects generated PDFs with PyMuPDF: all GWR field names, page dimensions/bounds, embedded fonts, vector graphics, group headings, page numbering and the internal manifest hash |
 | `responsive.cjs` | Layout and interaction regression across widths, languages, records, table/card modes, pagination and touch behavior |
+| `laptop-layout.cjs` | 204 local-fixture layouts across 390–1920 px, 360/480 px sidebars, German/French labels and exact wrap thresholds; measured 24/29 px panel/action gaps, single tab dividers, header/table bounds, responsibility placement, retained filter/focus and relationship navigation. Measurements and screenshots: `oblique-diagram-export` in the OS temporary directory. |
 | `list-search.cjs` | Shared collection/detail search: complete row coverage, technical names/descriptions, pagination, IME/focus, empty states, URL restoration, responsive controls and full entity export |
 | `visibility.cjs` | Seven entity kinds, immediate checkbox/reset interactions, retained focus/scroll, shared ordering, URL restoration, measured column widths, inherited web/print layouts, collection and detail List rows, mixed choices, parent/child synchronization, default counts, classification-label removal and 320–1600 px picker geometry; `python prototype-oblique/tests/diagram-pdf.py visibility-list visibility-entries` validates the downloaded PDFs |
 | `graph.cjs` | Diagram/table defaults, zoom/pan/selection, group paging, fullscreen, keyboard, touch pan/pinch, dense data and print |
