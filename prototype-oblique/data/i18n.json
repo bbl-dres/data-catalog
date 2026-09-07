@@ -261,7 +261,7 @@
   "fact.registerAccess": { "de": "Zugriffskategorie (GWR)", "fr": "Catégorie d'accès (RegBL)", "it": "Categoria di accesso (REA)", "en": "Access category (GWR)" },
   "fact.masterData": { "de": "Stammdaten (GWR)", "fr": "Données de base (RegBL)", "it": "Dati di base (REA)", "en": "Master data (GWR)" },
   "detail.facts": { "de": "Kerndaten", "fr": "Données clés", "it": "Dati principali", "en": "Key facts" },
-  "detail.protection": { "de": "Schutz und Datenschutz", "fr": "Protection et confidentialité", "it": "Protezione e riservatezza", "en": "Protection and privacy" },
+  "detail.protection": { "de": "Informationsschutz", "fr": "Protection de l’information", "it": "Protezione delle informazioni", "en": "Information protection" },
   "detail.system": { "de": "System", "fr": "Système", "it": "Sistema", "en": "System" },
   "detail.contacts": { "de": "Verantwortlich", "fr": "Responsables", "it": "Responsabili", "en": "Responsible" },
   "detail.organisation": { "de": "Organisation", "fr": "Organisation", "it": "Organizzazione", "en": "Organisation" },

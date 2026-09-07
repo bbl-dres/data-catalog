@@ -56,9 +56,11 @@
         break;
       case 'attrs': {
         const o = data.objOf(e.object);
+        const ref = data.get('refs', e.codeList);
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : e._record ? t('fact.undocumented') : t('fact.key.none');
         primary.push(internal(t('fact.object'), o.name, 'objects', o.identifier));
-        primary.push(plain(t('fact.valueType'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
+        primary.push(plain(t('fact.format'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
+          ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')),
           plain(t('fact.normReference'), e.normReference));
         break;
       }
@@ -71,7 +73,7 @@
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance || (e._record && e.keyRoles == null) ? 'fact.undocumented' : 'fact.key.none');
-        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key));
+        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('fact.format'), e.dataType), plain(t('fact.key'), key));
         primary.push(plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null));
         const ref = data.get('refs', e.codeList);
         primary.push(ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')));

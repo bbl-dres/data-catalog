@@ -90,7 +90,7 @@
     const groupings = data.groupOptions(kind).map(option => ({ ...grouping(option.id), label: option.label }));
     const labels = Object.fromEntries(['continued', 'emptyFields', 'page', 'documentId', 'version', 'created', 'selection', 'legend', 'tooLong', 'noSelection', 'noFilterMatches', 'filters', 'scope', 'fieldCount'].map(key => [key, ui.t('diagram.' + key)]));
     Object.assign(labels, { name: ui.t(kind === 'tables' ? 'col.field' : kind === 'apis' ? 'print.endpoint' : kind === 'refs' || kind === 'products' ? 'col.name' : 'col.attribute'),
-      type: ui.t(kind === 'tables' ? 'col.dataType' : kind === 'apis' ? 'print.protocol' : kind === 'products' ? 'col.type' : 'col.valueType'),
+      type: ui.t(kind === 'apis' ? 'print.protocol' : kind === 'products' ? 'col.type' : 'col.format'),
       key: ui.t('col.key'), code: ui.t('print.column.code'), codeList: ui.t('print.column.codeList'), description: ui.t('col.description') });
     return clone({ templateVersion: diagram.templateVersion, createdAt: new Date().toISOString(), language, dictionary,
       kind, title, scope: ui.t('print.kind.' + kind), entityLabel: data.kindDef(kind).singular,

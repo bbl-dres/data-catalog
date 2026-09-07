@@ -75,7 +75,7 @@ const server = createServer();
     assert.equal(await page.locator('.ob-entity-header .ob-chip').count(), 0, 'Type/status must be in Kerndaten, not the title');
     assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Kommentar']);
     assert.deepEqual(await page.locator('.ob-protection-facts dt').allTextContents(), ['Klassifizierung', 'Personendaten']);
-    assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Schutz und Datenschutz', 'System']);
+    assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
     const factHeights = await page.locator('.ob-facts dt, .ob-facts dd').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
     assert(factHeights.every(height => height === 37), 'System, protection, core facts and contacts share the same single-line row height');
     await page.setViewportSize({ width: 1024, height: 768 });

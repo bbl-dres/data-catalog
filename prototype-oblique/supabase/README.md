@@ -87,6 +87,8 @@ For an explicit offline fixture run, set `provider: 'json'` in catalog-config.js
 
 ## Editing boundary
 
+Prepared standalone content scripts are listed in [Catalog content updates](updates/README.md), including the revised business-object profiles. Apply these explicitly in SQL Editor; the original import and fixtures remain frozen.
+
 The schema enforces identities, FKs, status/type constraints, hierarchies, version dates, append-only history and automatic row revisions. Initial legacy inserts preserve unknown version dates using a transaction-local import flag.
 
 The audited edit API remains future work: authorize identities separately from catalog actors, compare expected row versions, maintain modification dates and create canonical ChangeEvents atomically. Direct SQL Editor edits are not automatically audited. Do not grant browser writes to bypass this boundary.

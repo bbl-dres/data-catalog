@@ -50,6 +50,9 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 
 | Suite | Purpose |
 |---|---|
+| `business-object-profiles.cjs` | Executes the standalone update with the real schema/import: 98 active definitions across seven profiles, SAP key components, Zone, property-set comments, four draft vocabularies, five measurement-subject links, preserved identities/GIS scope/change logs, result queries after commit, rollback previews, repeat runs and stale-data/collision refusal; requires PGlite |
+| `business-object-labels.cjs` | Executes the German naming follow-up: exact Markdown/database text (through the later reviewed overlay), preserved IDs/references/property sets and change logs, rollback previews, result queries after commit, repeat runs and stale-data refusal; requires PGlite |
+| `business-object-geometry.cjs` | Executes the 106-attribute synchronization after both prior operations: exact reviewed edits and untouched records, eight new core attributes, twelve measurement kinds and the m unit, retired Raumnutzung rule, unchanged building/parcel measurement scope, full doc↔database equivalence for all 106 definitions, runtime projection, rollback previews, repeat runs, stale-baseline and collision refusal; requires PGlite |
 | `api-contract.cjs` / `api-schema.py` | Generated OpenAPI freshness, executed SQL columns/keys/nullability, local refs, read-only request guards and full response JSON Schema validation; optional `API_LIVE_READ=1` verifies public hosted reads |
 | `api.cjs` | Real Swagger contract and automatic publishable-key headers, table filters/projection/pagination, snapshot POST, retry, state retention and mobile widths using intercepted read responses |
 | `performance.cjs` | Local SQL startup, 12 views, search, 10× projection fixture, PDF layouts, idle-scroll work and modal cleanup; JSON measurements in the OS temporary directory |

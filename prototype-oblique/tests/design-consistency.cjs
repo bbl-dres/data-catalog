@@ -70,7 +70,7 @@ const { installContrast } = require('./contrast-helpers.cjs');
       }
     }
     await visit('#/objects/gebaeude'); await shot('metadata');
-    assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Schutz und Datenschutz', 'System']);
+    assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
     assert(await page.locator('.ob-system-facts dl').isVisible());
     await visit('#/objects?filter=NoMatchingCatalogEntry');
     const emptyType = await page.locator('.ob-empty-title').evaluate(el => {

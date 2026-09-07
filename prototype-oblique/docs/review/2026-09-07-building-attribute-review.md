@@ -2,6 +2,8 @@
 
 Review date: 7 September 2026. This supports the revised [business-object proposal](../business-object-attribute-proposal.md). It changes proposed requirements, not catalog records. Wirtschaftseinheit and Bemessung retain their previous profiles. **Gebäudehülle (AO) remains in scope.**
 
+**Subsequent owner clarification:** the worldwide portfolio uses a SAP-based **Building ID as its business PK**, with EGID as an optional GWR reference. The current proposal adds seven separate address components and WGS84 latitude/longitude, giving **23 building attributes**. The 14-attribute recommendation below records the preceding source review; the prepared SQL follows the updated owner requirements.
+
 ## Evidence used
 
 | Source | Reviewed material and limits |
@@ -60,4 +62,4 @@ Recommend **14 building attributes**, including a hierarchical BBL classificatio
 
 Keep the **7 parcel attributes**, refining their scope and relationships. Keep **6 Wirtschaftseinheit** and **8 Bemessung** attributes unchanged. Gebäudehülle (AO) remains an independent source inventory; repeated area/volume fields there do not establish equivalence to the building or footprint.
 
-Before generating the content SQL, settle physical building boundaries, BBL classification/use/status vocabularies and source mapping rules. The superseded seven-attribute SQL draft was not applied. No source fixtures or catalog records were changed by this review.
+The [prepared content update](../../supabase/updates/20260907-business-object-profiles.sql) records the revised definitions as drafts while retaining unresolved boundaries, vocabularies and mapping questions. Settle these before approving definitions or implementation mappings. The earlier seven-attribute SQL draft was not applied. No source fixtures or hosted catalog records were changed while preparing or locally testing the revision.

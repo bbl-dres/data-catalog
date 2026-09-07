@@ -44,8 +44,8 @@
     refs: ['name', 'normReference', 'description', 'valueCount', 'status'],
     products: ['name', 'accessRights', 'description', 'format', 'attributeCount', 'status'],
     apis: ['name', 'system', 'serviceVersion', 'description', 'protocol', 'endpointCount', 'status'],
-    attrs: ['name', 'description', 'type', 'key', 'required'],
-    fields: ['name', 'description', 'type', 'key', 'codeList'],
+    attrs: ['name', 'type', 'key', 'codeList'],
+    fields: ['name', 'type', 'key', 'codeList'],
     values: ['code', 'name', 'type'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
   };
   const extras = {
@@ -59,7 +59,7 @@
   const nameLabels = { objects: 'col.name', tables: 'col.name', domains: 'col.domain', systems: 'col.system', refs: 'col.codeList', products: 'col.product', apis: 'col.api', attrs: 'col.attribute', fields: 'col.field', values: 'col.label', productAttrs: 'col.attribute', endpoints: 'visibility.endpoint' };
   const rowFields = kind => [
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name),
-    field('type', kind === 'fields' ? 'col.dataType' : kind === 'values' ? 'col.type' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => kind === 'values' ? 'Code' : e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
+    field('type', ['attrs', 'fields'].includes(kind) ? 'col.format' : kind === 'values' ? 'col.type' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => kind === 'values' ? 'Code' : e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
     field('required', 'col.mandatory', e => e.mandatory, 'boolean'),
     field('key', 'col.key', e => kind === 'attrs' ? e.keyRole === 'PK' ? 'ID' : null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UQ' }[k] || k)).join(', ') : e.keyRole),
     field('codeList', 'col.codeList', e => e.codeList ? data.nameOf('refs', e.codeList) : null, 'text', { href: e => e.codeList ? DK.router.entityHref('refs', e.codeList) : null }),
@@ -70,8 +70,8 @@
     ...(kind === 'endpoints' ? [field('description', 'col.description', e => ui.localized(e, 'description_') || e.description, 'long')] : []),
   ].map(f => f.id === 'nullable' ? { ...f, type: 'boolean' } : f);
   const rowExtras = {
-    attrs: ['codeList', 'normReference', 'semanticName', ...responsibility, ...protection],
-    fields: ['code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
+    attrs: ['description', 'required', 'normReference', 'semanticName', ...responsibility, ...protection],
+    fields: ['description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
     values: ['description', 'shortName', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
     productAttrs: ['required', 'semanticName', 'code', 'source', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
     endpoints: ['code', 'http_method', 'relative_path', 'url'],
@@ -85,8 +85,8 @@
     refs: ['domain', 'responsibleOrg', 'version'],
     products: ['domain', ...responsibility, 'version'],
     apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL'],
-    attrs: ['codeList', 'normReference', ...responsibility, 'version'],
-    fields: ['code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
+    attrs: ['description', 'required', 'normReference', ...responsibility, 'version'],
+    fields: ['description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
     values: ['description'], productAttrs: ['required', 'code'],
     endpoints: ['http_method', 'relative_path', 'url'],
   };
