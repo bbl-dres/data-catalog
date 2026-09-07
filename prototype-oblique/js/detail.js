@@ -57,7 +57,7 @@
       case 'attrs': {
         const o = data.objOf(e.object);
         const ref = data.get('refs', e.codeList);
-        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : e._record ? t('fact.undocumented') : t('fact.key.none');
+        const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : null;
         primary.push(internal(t('fact.object'), o.name, 'objects', o.identifier));
         primary.push(plain(t('fact.format'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
           ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')),

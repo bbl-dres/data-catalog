@@ -7,7 +7,9 @@
   const text = (record, base) => DK.ui.localized(record, base + '_');
   const status = { draft: 'Entwurf', valid: 'Gültig', retired: 'Archiviert' };
   const classification = { internal: 'intern', public: 'öffentlich', confidential: 'vertraulich', secret: 'geheim' };
-  const valueTypes = { text: 'Text', identifier: 'Text', integer: 'Ganzzahl', decimal: 'Dezimal', date: 'Datum', dateTime: 'Datum / Zeit', year: 'Jahr', code: 'Code', geometry: 'Geometrie', boolean: 'Boolean', structured: 'Strukturiert' };
+  /* Non-technical display formats; identifiers, codes and structured values read as text.
+     Bounded vocabularies stay visible through the separate Werteliste reference. */
+  const valueTypes = { text: 'Text', identifier: 'Text', integer: 'Ganzzahl', decimal: 'Dezimalzahl', date: 'Datum', dateTime: 'Datum / Zeit', year: 'Jahr', code: 'Text', geometry: 'Geometrie', boolean: 'Ja / Nein', structured: 'Text' };
   const frequencies = { continuous: 'kontinuierlich', daily: 'täglich', weekly: 'wöchentlich', monthly: 'monatlich', quarterly: 'quartalsweise', annually: 'jährlich', onChange: 'bei Änderung', onDemand: 'bei Bedarf', irregular: 'unregelmässig' };
   const localized = (value, getters) => Object.defineProperties(value, Object.fromEntries(Object.entries(getters).map(([key, get]) => [key, { enumerable: true, configurable: true, get }])));
 

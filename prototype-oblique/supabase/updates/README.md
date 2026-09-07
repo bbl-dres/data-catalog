@@ -76,17 +76,35 @@ It also aligns references in definitions, three object comments and the affected
 
 Attribute identities, retired records, change logs, source inventories (including Gebäudehülle) and all other content are untouched. The seven attributes whose Markdown definitions were unchanged keep their revisions.
 
+## BBL Referenzdaten — 7 September 2026
+
+[20260907-bbl-referenzdaten.sql](20260907-bbl-referenzdaten.sql) loads the SAP F4 value helps captured in [screenshot evidence](../../docs/sources/sap-refx/2026-09-07-sap-f4-referenzdaten.json). It requires the 106-attribute synchronization and was applied to the hosted database on 7 September 2026. **164 record edits/creates:**
+
+| Change | Scope |
+|---|---|
+| 4 new reference lists | **Teilportfolio (BBL)** (10 values), **Gebäudeart 1 (BBL)** (21), **Gebäudeart 2 (BBL)** (100, two Langtexte truncated in the capture and flagged; 02.05 absent), **Mietmodell (BBL)** (14, Verrechnungsmodell Miete) |
+| Eigentumsart | List renamed to **Eigentumsart (BBL)**; the confirmed SAP codes 01 (Eigentum Bund), 03 (Mietobjekt) and 05 (Spezialfall) are recorded on the three agreed values, whose codes and identifiers stay unchanged |
+| 2 attribute bindings | Teilportfolio (BBL) becomes the bound Werteliste of the Gebäude and Grundstück Teilportfolio attributes |
+| 8 field bindings | `bbl_gbda1`/`bbl_gbda2` → Gebäudeart 1/2, `bbl_port` (three GIS tables) → Teilportfolio, `bbl_eigen` (three GIS tables) → Eigentumsart; the GIS descriptions document exactly this SAP master data |
+| Gebäudeart attribute | References both Gebäudeart lists in its comment; the two-level `structured` attribute deliberately binds neither single list |
+
+An assignment audit of every code list against attributes and fields found no incorrect links. Deliberately unbound and documented: AV service fields (WFS strings without enumerated wire values), AV Grenzlinienart (line geometry, no scalar field), GKLAS on the attribute (4.2/5.0 vocabulary unverified), Mietmodell (BBL) (attribute decision open) and the legacy 2021 lists (r-energie, r-gwr-heiz with the older 4.x heating codes, r-kanton, r-kond, r-sia-flaeche, r-waehrung and the empty r-eigentum/r-vertrag/r-zaehler) whose anchors never existed, are retired or lack captured vocabularies.
+
+## Kompakte Kommentare — 7 September 2026
+
+[20260907-kompakte-kommentare.sql](20260907-kompakte-kommentare.sql) compacts the comments the four operations above created; it requires the BBL Referenzdaten and was applied to the hosted database on 7 September 2026. **319 comment edits, nothing else changes.** Every record keeps only load-bearing lines: the property-set assignment, the short key role (PK, PK-Komponente, PK-Komponente / FK, FK), the conditional-applicability text, the Gebäudeart reference-list pointer, the three confirmed SAP-code notes and the two truncation flags. The repeated per-record source lines, the core/optional presence boilerplate and the identical methodology paragraph on all seven objects are removed; each object keeps one source reference plus a distilled two-to-four-sentence note. Import-curated comments elsewhere, retired records and their history are untouched. Baselines are pinned by SHA-256 of the previous comment instead of repeating the long texts.
+
 ## Transaction and repeat-run behavior
 
 None of the scripts generates change-log entries. Existing creation/version dates are preserved; modified dates and revisions reflect the actual edits. The original operation's previously saved history remains in the database.
 
 All three scripts acquire the catalog write lock and validate the expected records before editing. The profile update checks the original six objects, 28 attributes, 26 requirement assignments and reviewed GKAT vocabulary. The naming follow-up requires the profile operation and checks the 17 affected records' revisions and previous text. The 106-attribute synchronization requires the naming follow-up and checks all 28 edited records' revisions and previous text, refuses pre-existing identifiers for its creations and verifies the final active counts. Intervening edits or collisions cause a rollback.
 
-The private operation marker fingerprints the embedded content and baseline. Identical repeat execution performs no edits, including after subsequent catalog changes. Reusing an operation ID with different content is refused. Operation IDs are `business-object-profiles-20260907-v2`, `business-object-labels-20260907-v1` and `business-object-geometry-20260907-v1`.
+The private operation marker fingerprints the embedded content and baseline. Identical repeat execution performs no edits, including after subsequent catalog changes. Reusing an operation ID with different content is refused. Operation IDs are `business-object-profiles-20260907-v2`, `business-object-labels-20260907-v1`, `business-object-geometry-20260907-v1`, `bbl-referenzdaten-20260907-v1` and `kompakte-kommentare-20260907-v1`.
 
 ## Run in Supabase SQL Editor
 
-1. All three scripts are applied in the hosted database; repeat execution is a no-op. For a fresh original import, run the profile script, then the naming follow-up, then the 106-attribute synchronization, each as the project's `postgres` SQL Editor role.
+1. All five scripts are applied in the hosted database; repeat execution is a no-op. For a fresh original import, run the profile script, the naming follow-up, the 106-attribute synchronization, the BBL Referenzdaten and the compact comments in that order, each as the project's `postgres` SQL Editor role.
 2. For a preview, replace only the **final** `COMMIT;` with `ROLLBACK;`. Run the whole file and inspect the result: profile counts for the first script, current attribute names for the follow-up, counts/new attributes/vocabularies for the synchronization. The preview leaves catalog content and operation markers unchanged.
 3. To apply, restore the final `COMMIT;` and run the entire file. If an error leaves a transaction open, execute `ROLLBACK;` before retrying.
 4. Reload the catalog. Repeat execution shows current catalog results without repeating the edits. The final result queries also work independently after commit; they do not require temporary tables or change logs.
@@ -100,6 +118,8 @@ $env:PGLITE_MODULE = Join-Path $env:TEMP 'oblique-sql-test-tools/node_modules/@e
 node prototype-oblique/tests/business-object-profiles.cjs
 node prototype-oblique/tests/business-object-labels.cjs
 node prototype-oblique/tests/business-object-geometry.cjs
+node prototype-oblique/tests/bbl-referenzdaten.cjs
+node prototype-oblique/tests/kompakte-kommentare.cjs
 ```
 
-The suites execute the three scripts against the complete schema/import. They check final Markdown/SQL definitions and property sets, identity reuse, the new object and vocabularies, measurement links, revisions, runtime loading and preserved source scope; the earlier suites verify their own operation results against the current Markdown through the later reviewed overlays. They also verify that change logs remain unchanged, result queries work after commit, previews and failures roll back completely, repeat runs preserve subsequent edits, and stale baselines and identifier collisions are refused. The suites never contact the hosted database.
+The suites execute the five scripts against the complete schema/import. They check final Markdown/SQL definitions and property sets, identity reuse, the new object and vocabularies, measurement links, revisions, runtime loading and preserved source scope; the earlier suites verify their own operation results against the current Markdown through the later reviewed overlays. They also verify that change logs remain unchanged, result queries work after commit, previews and failures roll back completely, repeat runs preserve subsequent edits, and stale baselines and identifier collisions are refused. The suites never contact the hosted database.

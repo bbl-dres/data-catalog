@@ -434,7 +434,9 @@
       }
       const fieldName = ui.fieldName(e.name);
       const relTables = data.tables.filter(x => x.realizes === o.identifier && x.fields.some(f => f.technicalName === fieldName));
-      const relRefs = e.valueType === 'Code' ? data.refs.filter(r => r.businessObject === o.identifier) : [];
+      /* Code attributes read as Text; the stored value specification keeps the vocabulary hint. */
+      const relRefs = (e._record?.value_specification?.valueType === 'code' || e.valueType === 'Code')
+        ? data.refs.filter(r => r.businessObject === o.identifier) : [];
       const stem = e.name.toLowerCase().split(/[ -]/)[0];
       return [
         mk('object', 'stack', 'objects', [o]),

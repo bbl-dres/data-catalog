@@ -28,8 +28,8 @@
     return { ...identity(row), id: rowId(row, index),
       name: kind === 'tables' ? data.displayName('fields', row) : kind === 'refs' && code && code !== name ? `${name} (${code})` : name, label: name, code,
       type: row.dataType || row.valueType || row.protocol || '', description: [row.description || row.note || '', operation].filter(Boolean).join(' · '),
-      key: kind === 'objects' ? (row.keyRole === 'PK' ? 'ID' : '') : row.keyRoles?.length
-        ? row.keyRoles.filter(key => ['primary', 'foreign'].includes(key)).map(key => key === 'primary' ? 'PK' : 'FK').join(' ') : row.keyRole || '',
+      key: kind === 'objects' ? (row.keyRole || '') : row.keyRoles?.length
+        ? row.keyRoles.map(key => ({ primary: 'PK', foreign: 'FK', unique: 'UK' }[key])).filter(Boolean).join(' ') : row.keyRole || '',
       required: typeof row.mandatory === 'boolean' ? row.mandatory : null,
       codeList: row.codeList ? data.nameOf('refs', row.codeList) : '', unit: [row.length, row.unit].filter(value => value !== undefined && value !== null && value !== '').join(' / '),
       source: row.source || '', modified: row.modified || '',

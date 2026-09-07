@@ -61,7 +61,7 @@
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name),
     field('type', ['attrs', 'fields'].includes(kind) ? 'col.format' : kind === 'values' ? 'col.type' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => kind === 'values' ? 'Code' : e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
     field('required', 'col.mandatory', e => e.mandatory, 'boolean'),
-    field('key', 'col.key', e => kind === 'attrs' ? e.keyRole === 'PK' ? 'ID' : null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UQ' }[k] || k)).join(', ') : e.keyRole),
+    field('key', 'col.key', e => kind === 'attrs' ? e.keyRole || null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UK' }[k] || k)).join(', ') : e.keyRole),
     field('codeList', 'col.codeList', e => e.codeList ? data.nameOf('refs', e.codeList) : null, 'text', { href: e => e.codeList ? DK.router.entityHref('refs', e.codeList) : null }),
     field('unit', 'print.column.unit', e => [e.length, e.unit].filter(v => v != null).join(' / ')), property('source', 'print.column.source'),
     record('nullable', 'visibility.nullable', 'is_nullable'), record('semanticName', 'visibility.semanticName', 'semantic_name'),
