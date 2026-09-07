@@ -128,7 +128,7 @@ Literal media/container-query thresholds, percentages and content-dependent grap
 
 ## Responsive layout
 
-The document scrolls vertically. Home domains and latest changes stay stacked at every width. KPI cards and home tables share the same maximum width; the AI answer and result table also align. The hero sits on the white page without an extra surface panel. Handbook content adapts within its own bounded reading width.
+The document scrolls vertically. Home domains and latest changes stay stacked at every width. KPI cards and home tables share the same maximum width; the AI answer and result table also align. The hero sits on the white page without an extra surface panel. Each handbook chapter is bounded by `--ob-manual-prose-max-width` (100ch), so paragraphs, lists, tables and video share its right edge. Tables still switch to labeled cards when the available chapter width is too narrow.
 
 | Condition | Behavior |
 |---|---|

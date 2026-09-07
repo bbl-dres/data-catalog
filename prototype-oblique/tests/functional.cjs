@@ -63,7 +63,7 @@ const server = createServer();
         const poster = page.locator('.ob-video-preview');
         const rect = await poster.boundingBox();
         assert(Math.abs(rect.width / rect.height - 16 / 9) < 0.01, 'Poster aspect ratio');
-        await poster.locator('img').evaluate(image => image.decode());
+        await poster.locator(':scope > img').evaluate(image => image.decode());
         await poster.focus(); await poster.press('Enter');
         assert.equal(await page.locator('#manual-video-transcript').evaluate(el => el.open), true);
         assert.equal(await page.locator('#manual-video-transcript summary').evaluate(el => el === document.activeElement), true);

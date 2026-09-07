@@ -23,10 +23,9 @@
   manual.video = video => video ? `<figure class="ob-manual-video">
     <button type="button" class="ob-video-preview" data-action="manual-video-preview" aria-label="${esc(video.actionLabel)}" aria-controls="manual-video-transcript" aria-describedby="manual-video-caption">
       <img src="assets/manual-explainer-placeholder.jpg" width="1672" height="941" alt="" decoding="async">
-      <span class="ob-video-title" aria-hidden="true"><span class="ob-video-avatar">BBL</span>${esc(video.title)}</span>
+      <span class="ob-video-title" aria-hidden="true"><span class="ob-video-avatar"><img src="assets/swiss-logo-flag.svg" width="32" height="35" alt=""></span><span class="ob-video-heading"><strong>${esc(video.title)}</strong><span class="ob-video-channel">${esc(video.channel)}</span></span></span>
       <span class="ob-video-play" aria-hidden="true"><span class="ob-video-triangle"></span></span>
-      <span class="ob-video-timeline" aria-hidden="true"></span>
-      <span class="ob-video-bar" aria-hidden="true"><span class="ob-video-triangle"></span><span class="ob-video-volume"></span><span>0:00 / ${esc(video.duration)}</span>${ui.icon('expand', 'sm')}</span>
+      <span class="ob-video-watch" aria-hidden="true"><span class="ob-video-youtube"><span class="ob-video-triangle"></span></span>${esc(video.watchLabel)}</span>
     </button>
     <figcaption id="manual-video-caption">${esc(video.caption)}</figcaption>
     <details id="manual-video-transcript" class="ob-video-transcript"><summary>${esc(video.transcriptTitle)}</summary><ol class="ob-list">${video.scenes.map(scene => `<li><strong>${esc(scene.time)} · ${esc(scene.title)}</strong><p>${manual.text(scene.text)}</p></li>`).join('')}</ol></details>
