@@ -89,7 +89,7 @@ The header uses the existing flag SVG followed by a 16 px gap (`--ob-logo-gap`),
 | 1024–1279 px | 32 × 35.2 px | 14 px |
 | From 1280 px | 32 × 35.2 px | 16 px |
 
-The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
+The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The prototype notice is centered between the logo and controls on wide screens and occupies its own 28 px row at widths up to 1200 px. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity, notice and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
 
 The flag stays capped at 32 px wide on large screens, preserving the SVG's 40:44 ratio. The image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The compact composition has been checked from phone to wide desktop sizes.
 
