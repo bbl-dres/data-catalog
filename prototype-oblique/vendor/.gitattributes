@@ -1,0 +1,3 @@
+# Preserve published asset bytes for integrity verification on every platform.
+*.js -text
+*.css -text

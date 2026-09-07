@@ -122,14 +122,20 @@
     return result;
   }
 
-  async function load(config) {
+  function connection(config) {
     const url = new URL(config.url);
-    if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('Supabase requires HTTPS');
-    if (url.username || url.password || !config.publishableKey?.startsWith('sb_publishable_')) throw new Error('Use a Supabase publishable key in the browser configuration');
+    const localHttp = url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !localHttp) throw new Error('Supabase requires HTTPS');
+    if (url.username || url.password || typeof config.publishableKey !== 'string' || !config.publishableKey.startsWith('sb_publishable_')) throw new Error('Use a Supabase publishable key in the browser configuration');
+    return { base: new URL('/rest/v1/', url), key: config.publishableKey };
+  }
+
+  async function load(config) {
+    const target = connection(config);
     const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch(new URL('/rest/v1/rpc/read_snapshot', url), { method: 'POST', cache: 'no-store', credentials: 'omit', signal: controller.signal,
-        headers: { apikey: config.publishableKey, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' });
+      const response = await fetch(new URL('rpc/read_snapshot', target.base), { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal,
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' });
       if (!response.ok) {
         const detail = await response.json().catch(() => ({}));
         const hint = detail.code === 'PGRST106' ? 'Expose the catalog schema in Supabase Data API settings.' : detail.code === 'PGRST202' ? 'Apply the catalog public-read and import migrations.' : 'Check the catalog migrations and read policies.';
@@ -141,5 +147,5 @@
       throw error;
     } finally { clearTimeout(timeout); }
   }
-  DK.catalog = { load, project };
+  DK.catalog = { load, project, connection };
 })(window.DK);

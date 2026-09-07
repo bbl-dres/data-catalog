@@ -4,6 +4,8 @@ The prototype now reads public catalog metadata from Supabase without a login. U
 
 ## Apply to the existing project
 
+**Security update, 7 September 2026:** run [20260907000000_catalog_security.sql](migrations/20260907000000_catalog_security.sql) as `postgres` in the SQL Editor. This tested, repeatable migration closes the future-object default-grant gap. It changes future global defaults for `postgres` and local defaults in the catalog schemas, preserving current records and grants. Global changes affect future objects across the database; other schemas' local defaults remain unchanged. This update has not yet been applied to the hosted project. See the [security review](../docs/review/2026-09-07-security-review.md).
+
 This project is already initialized and seeded; do not run setup again. The following records the SQL Editor procedure used after installing the catalog schema and original member RLS scripts.
 
 1. Open [the project SQL Editor](https://supabase.com/dashboard/project/zicluerzbevodlmtbxow/sql/new) with the `postgres` role.
@@ -39,11 +41,12 @@ Expected: **30 tables, 621 fields, 25 business objects, 119 business attributes,
 | [20260906010000_catalog_rls.sql](migrations/20260906010000_catalog_rls.sql) | Original member-read policy and private Auth access list. Already applied. |
 | [20260906020000_catalog_public_read.sql](migrations/20260906020000_catalog_public_read.sql) | Public SELECT policies, private import ledger and invoker-rights snapshot RPC. Replaces member-only reads. |
 | [20260906030000_catalog_import.sql](migrations/20260906030000_catalog_import.sql) | Generated initial import, depending on preceding migrations. |
-| [seed.sql](seed.sql) | SQL Editor bundle of the last two migrations, applied atomically. |
+| [20260907000000_catalog_security.sql](migrations/20260907000000_catalog_security.sql) | Deny future implicit API-role grants; apply separately to the existing project. |
+| [seed.sql](seed.sql) | Historical SQL Editor bundle of public-read and import migrations, applied atomically; excludes the later security update. |
 | [import-catalog.cjs](import-catalog.cjs) | Deterministic offline importer and bundle generator. |
 | [import-manifest.json](import-manifest.json) | Source SHA-256 hashes, all allocated identities and expected counts. Retain with backups. |
 
-For a **fresh project**, apply all four numbered migrations in order; do not then apply seed.sql. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users.
+For a **fresh project**, apply all five numbered migrations in order; do not then apply seed.sql. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users.
 
 If CLI tracking is introduced later, first inspect the deployed schema and mark the SQL Editor migrations as applied. Do not push the initial schema into an existing database. This setup needs no CLI, MCP, connection string or administrator credential in the app.
 
@@ -72,7 +75,7 @@ node prototype-oblique/supabase/import-catalog.cjs
 
 Both `anon` and `authenticated` can SELECT the current catalog, including comments and history. Classification describes the underlying data, not access to its catalog entry. The private access list is reserved for future editing and no longer gates reads. No eIAM integration is introduced.
 
-Browser INSERT, UPDATE, DELETE and TRUNCATE remain denied. The service role retains its previous read-only grants. Future tables receive no new default public grants. The publishable key is intentionally public; database passwords and secret/service-role keys are not shipped.
+Browser INSERT, UPDATE, DELETE and TRUNCATE remain denied. The service role retains its previous read-only grants. After the security update, future catalog objects created by `postgres` receive no implicit API-role grants; other owners require a separate default-privilege review. The publishable key is intentionally public; database passwords and secret/service-role keys are not shipped.
 
 `catalog.read_snapshot()` projects normalized tables in one consistent statement using **SECURITY INVOKER**, respecting RLS. It returns one JSON object, so PostgREST row limits do not truncate collections. Numeric quality thresholds travel as exact decimal strings. No JSON catalog mirror is stored.
 

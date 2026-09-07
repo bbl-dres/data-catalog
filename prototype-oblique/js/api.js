@@ -40,17 +40,16 @@
   function connection(spec) {
     const config = DK.catalogConfig;
     if (config?.provider !== 'supabase') return null;
-    if (!config.publishableKey?.startsWith('sb_publishable_')) throw new Error('API documentation requires a publishable key');
-    const base = new URL('/rest/v1/', config.url);
-    spec.servers = [{ url: base.href.replace(/\/$/, ''), description: 'Supabase catalog Data API' }];
-    return { base, key: config.publishableKey };
+    const target = DK.catalog.connection(config);
+    spec.servers = [{ url: target.base.href.replace(/\/$/, ''), description: 'Supabase catalog Data API' }];
+    return target;
   }
 
   function prepareRequest(request, spec, target) {
     if (!target) throw new Error('Live API requests are disabled in offline fixture mode');
     const url = new URL(request.url), method = request.method.toLowerCase();
     const path = '/' + url.pathname.slice(target.base.pathname.length);
-    if (url.origin !== target.base.origin || !url.pathname.startsWith(target.base.pathname)
+    if (url.username || url.password || url.origin !== target.base.origin || !url.pathname.startsWith(target.base.pathname)
       || !(method === 'get' && spec.paths[path]?.get || method === 'post' && path === '/rpc/read_snapshot' && spec.paths[path]?.post)) {
       throw new Error('Only documented catalog reads are allowed');
     }
@@ -65,6 +64,7 @@
     if (method === 'post') headers.set('Content-Type', 'application/json');
     request.headers = Object.fromEntries(headers);
     request.credentials = 'omit';
+    request.redirect = 'error';
     return request;
   }
 
@@ -88,7 +88,7 @@
         if (!host.isConnected) return;
         const target = connection(spec);
         const swagger = window.SwaggerUIBundle({
-          spec, domNode: content, deepLinking: false,
+          spec, domNode: content, deepLinking: false, queryConfigEnabled: false,
           docExpansion: 'list', defaultModelsExpandDepth: 1, filter: true,
           supportedSubmitMethods: target ? ['get', 'post'] : [], validatorUrl: null,
           requestInterceptor: request => prepareRequest(request, spec, target),

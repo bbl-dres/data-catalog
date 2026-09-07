@@ -12924,6 +12924,10 @@
       {
         "file": "20260906020000_catalog_public_read.sql",
         "sha256": "f1e54b7925fd4169ed4c5abae71eec5a8dc369dbdff7bb301db56c712939f00c"
+      },
+      {
+        "file": "20260907000000_catalog_security.sql",
+        "sha256": "60624215a5e2b3a54c0fe3f4c588bd221f750ef36b90300283bafb5e50cbfb02"
       }
     ]
   }

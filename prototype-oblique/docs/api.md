@@ -17,6 +17,8 @@ Create, update and delete remain disabled in the current database grants. A futu
 
 Swagger only permits documented reads against the configured origin. It supplies schema headers, omits cookies and bearer authorization, and rejects secret/service-role keys. These browser guards supplement database permissions; they do not replace them. In explicit offline JSON fixture mode, documentation renders but “Try it out” is disabled.
 
+The catalog loader and Swagger share URL/key validation. Requests refuse redirects and Swagger ignores URL-supplied configuration. Update the explicit CSP connection origin in `index.html` when changing the configured Supabase project. See [Security and deployment](security.md).
+
 ## Querying records
 
 Use the actual SQL names, including language suffixes. For example, this request returns the German and English labels of one business object:

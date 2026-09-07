@@ -11,19 +11,26 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || (process.platform === 'win32' ? 'msedge' : undefined), headless: true });
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
     const errors = [], requests = [];
+    await page.addInitScript(() => {
+      window.securityViolations = [];
+      document.addEventListener('securitypolicyviolation', event => window.securityViolations.push(event.violatedDirective));
+    });
     page.on('pageerror', error => errors.push(error.message));
-    let rejectRead = false;
+    let rejectRead = false, redirectRead = false, redirectedRequests = 0;
     await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/**', async route => {
       const request = route.request(), url = new URL(request.url());
       requests.push({ path: url.pathname, query: url.searchParams, method: request.method(), headers: request.headers(), body: request.postData() });
+      if (url.pathname.endsWith('/redirect-target')) { redirectedRequests++; return route.fulfill({ json: [] }); }
       if (url.pathname.endsWith('/rpc/read_snapshot')) return route.fulfill({ json: snapshot });
       if (url.pathname.endsWith('/business_object') && request.method() === 'GET') {
+        if (redirectRead) return route.fulfill({ status: 307, headers: { Location: '/rest/v1/redirect-target' } });
         return rejectRead ? route.fulfill({ status: 503, json: { message: 'Temporary test outage' } })
           : route.fulfill({ json: [{ identifier: 'gebaeude', name_de: 'Gebäude' }], headers: { 'Content-Range': '0-0/1' } });
       }
       throw new Error('Unexpected API request: ' + request.method() + ' ' + url.pathname);
     });
-    await page.goto(`http://127.0.0.1:${server.address().port}/#/api`);
+    await page.route('https://untrusted.invalid/**', () => { throw new Error('Swagger must ignore query configuration'); });
+    await page.goto(`http://127.0.0.1:${server.address().port}/?url=https://untrusted.invalid/spec.json&configUrl=https://untrusted.invalid/config.json#/api`);
     await page.locator('#swagger-ui .ob-swagger-content[aria-busy="false"]').waitFor();
     assert.equal(await page.locator('#swagger-ui .opblock').count(), 20);
     assert.equal(await page.locator('#sidebar:visible').count(), 0);
@@ -73,7 +80,12 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     await page.evaluate(() => { DK.app.state.lang = 'en'; DK.app.render(); }); await settle(page);
     assert.equal(await page.locator('#swagger-ui .operation-filter-input').inputValue(), 'Business objects');
     assert.equal(await input('identifier').inputValue(), 'eq.gebaeude');
+    redirectRead = true;
+    await operation.getByRole('button', { name: 'Execute', exact: true }).click();
+    await operation.getByText('Failed to fetch.', { exact: false }).first().waitFor();
+    assert.equal(redirectedRequests, 0, 'Swagger preserves redirect refusal through its HTTP client');
     assert.deepEqual(errors, []);
+    assert.deepEqual(await page.evaluate(() => window.securityViolations), [], 'Swagger works without relaxing the script policy');
     console.log('PASS: 20 real API operations, automatic public-key reads, schema headers, filter/projection/pagination, snapshot POST, retry, retained state and 320–1600 px layouts.');
   } finally {
     if (browser) await browser.close();

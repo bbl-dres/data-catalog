@@ -46,7 +46,18 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
       for (const row of rows) assert.equal(model.properties[row.column_name]['x-postgresql-not-null'], row.is_nullable === 'NO');
     }
     const context = { window: { DK: {} }, URL, Headers };
+    vm.runInNewContext(fs.readFileSync(path.join(root, 'js/catalog.js'), 'utf8'), context);
     vm.runInNewContext(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8'), context);
+    const connect = context.window.DK.catalog.connection;
+    for (const url of ['http://catalog.example', 'ftp://localhost', 'https://user:password@catalog.example']) {
+      assert.throws(() => connect({ url, publishableKey: 'sb_publishable_test' }));
+    }
+    for (const publishableKey of ['sb_secret_test', 'eyJ_test', null, 42]) {
+      assert.throws(() => connect({ url: 'https://catalog.example', publishableKey }));
+    }
+    for (const url of ['https://catalog.example', 'http://localhost:54321', 'http://127.0.0.1:54321', 'http://[::1]:54321']) {
+      assert.equal(connect({ url, publishableKey: 'sb_publishable_test' }).base.href, url + '/rest/v1/');
+    }
     const prepare = context.window.DK.api.prepareRequest;
     const target = { base: new URL('https://catalog.example/rest/v1/'), key: 'sb_publishable_test' };
     const request = (url, method = 'GET', headers = {}) => ({ url: new URL(url, target.base).href, method, headers });
@@ -55,11 +66,12 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
     assert.equal(read.headers['accept-profile'], 'catalog');
     assert(!('authorization' in read.headers)); assert(!('content-profile' in read.headers));
     assert.equal(read.credentials, 'omit');
+    assert.equal(read.redirect, 'error');
     const snapshotRequest = prepare(request('rpc/read_snapshot', 'POST'), spec, target);
     assert.equal(snapshotRequest.headers['content-profile'], 'catalog');
     assert.equal(snapshotRequest.headers['content-type'], 'application/json');
     for (const method of ['POST', 'PATCH', 'DELETE', 'PUT']) assert.throws(() => prepare(request('domain', method), spec, target), /Only documented/);
-    for (const url of ['https://other.example/rest/v1/domain', '../domain', 'unknown', 'rpc/write_record']) assert.throws(() => prepare(request(url), spec, target), /Only documented/);
+    for (const url of ['https://other.example/rest/v1/domain', 'https://user:password@catalog.example/rest/v1/domain', '../domain', 'unknown', 'rpc/write_record']) assert.throws(() => prepare(request(url), spec, target), /Only documented/);
     for (const apikey of ['sb_secret_no', 'eyJ_service_role']) assert.throws(() => prepare(request('domain', 'GET', { apikey }), spec, target), /publishable key/);
     assert.throws(() => prepare(request('domain'), spec, null), /offline fixture/);
 

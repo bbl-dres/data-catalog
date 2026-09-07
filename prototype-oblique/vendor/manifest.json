@@ -1,0 +1,35 @@
+[
+  {
+    "package": "swagger-ui-dist",
+    "version": "5.32.11",
+    "archiveIntegrity": "sha512-NEZzRuxHHQkbG3GCjNbzz+XRDoM7AztnXyzc2VCW5RXUvZBDW7bb3W29/SPfvav3yOzqnDTOLP2Xzbjxo0bldQ==",
+    "files": [
+      { "path": "swagger-ui/swagger-ui-bundle.js", "member": "package/swagger-ui-bundle.js", "sha256": "fcb81e2c79e7e3b76ddb9bd7fc791552045040fde05c19d3f98f9213e7f7724d" },
+      { "path": "swagger-ui/swagger-ui.css", "member": "package/swagger-ui.css", "sha256": "ca238f7d7c2cf4480c1e77a9c3b9da915ab216e96ffd354e69076560c650c6de" }
+    ]
+  },
+  {
+    "package": "exceljs",
+    "version": "4.4.0",
+    "archiveIntegrity": "sha512-XctvKaEMaj1Ii9oDOqbW/6e1gXknSY4g/aLCDicOXqBE4M0nRWkUu0PTp++UPNzoFY12BNHMfs/VadKIS6llvg==",
+    "files": [
+      { "path": "exceljs/exceljs.min.js", "member": "package/dist/exceljs.min.js", "sha256": "7e49da68588e250dbb8bba190d2caa8ab3787cc0284bda1d8b2f805c4df742c9" }
+    ]
+  },
+  {
+    "package": "jspdf",
+    "version": "4.2.1",
+    "archiveIntegrity": "sha512-YyAXyvnmjTbR4bHQRLzex3CuINCDlQnBqoSYyjJwTP2x9jDLuKDzy7aKUl0hgx3uhcl7xzg32agn5vlie6HIlQ==",
+    "files": [
+      { "path": "jspdf/jspdf.umd.min.js", "member": "package/dist/jspdf.umd.min.js", "sha256": "e6551fcdc32f09d6853b2c5126d18d01d9447e0da618a41a11ebeee0f6c20d54" }
+    ]
+  },
+  {
+    "package": "svg2pdf.js",
+    "version": "2.8.1",
+    "archiveIntegrity": "sha512-AzXfPHjHnFt9dpdRPhWWBOKipnMSWQZRKiV3FTTPdY6wwRgT3labbA4s0HIQaskNhwAhrcI2u2rDhD8j8udfNQ==",
+    "files": [
+      { "path": "svg2pdf.js/svg2pdf.umd.min.js", "member": "package/dist/svg2pdf.umd.min.js", "sha256": "2f10c0d16959e9a0c4cfd8605cfce0830ddc384337f74fa0351a6eff1c1efb8b" }
+    ]
+  }
+]
