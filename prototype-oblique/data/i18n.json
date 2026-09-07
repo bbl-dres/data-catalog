@@ -478,6 +478,7 @@
   "toast.close": { "de": "Schliessen", "fr": "Fermer", "it": "Chiudi", "en": "Close" },
 
   "footer.version": { "de": "Datenkatalog v{v}", "fr": "Catalogue de données v{v}", "it": "Catalogo dei dati v{v}", "en": "Data catalog v{v}" },
+  "footer.sourceCode": { "de": "Quellencode", "fr": "Code source", "it": "Codice sorgente", "en": "Source code" },
   "visibility.label": {"de": "Ansicht", "fr": "Affichage", "it": "Vista", "en": "View"},
   "visibility.title": {"de": "Angezeigte Angaben", "fr": "Informations affichées", "it": "Informazioni visualizzate", "en": "Visible fields"},
   "visibility.fixed": {"de": "immer sichtbar", "fr": "toujours visible", "it": "sempre visibile", "en": "always visible"},

@@ -125,7 +125,8 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 
 /* ---- Oblique header with the federal logo lockup ------------------------ */
 .ob-header { background: var(--ob-color-bg); position: sticky; top: 0; z-index: var(--ob-z-layout); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
-.ob-header-bar { display: flex; align-items: center; height: calc(var(--ob-header-identity-height) - var(--ob-border-width-xs)); max-width: var(--ob-content-max-width); margin: 0 auto; padding: 0 var(--ob-space-xl) 0 var(--ob-space-default); }
+.ob-header-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--ob-space-lg); height: calc(var(--ob-header-identity-height) + var(--ob-header-notice-height) - var(--ob-border-width-xs)); max-width: var(--ob-content-max-width); margin: 0 auto; padding: 0 var(--ob-space-xl) 0 var(--ob-space-default); }
+.ob-header-notice { text-align: center; white-space: nowrap; color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-md); }
 .ob-logo { display: flex; align-items: center; gap: var(--ob-logo-gap); flex: 0 1 auto; min-width: 0; color: var(--ob-color-text); text-decoration: none; }
 .ob-logo:hover, .ob-logo:focus { color: var(--ob-color-text); }
 .ob-logo-flag { flex: none; width: var(--ob-logo-flag-width); height: var(--ob-logo-flag-height); }
@@ -145,6 +146,11 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-header-search .ob-search-clear { width: var(--ob-control-height-sm); height: var(--ob-control-height); }
 .ob-header-search .ob-suggest { min-width: 100%; }
 .ob-navigation-toggle.ob-button { display: none; }
+@media (max-width: 1200px) {
+  .ob-header-bar { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: calc(var(--ob-header-identity-height) - var(--ob-border-width-xs)) var(--ob-header-notice-height); column-gap: 0; }
+  .ob-header-notice { grid-column: 1 / -1; grid-row: 2; align-self: start; }
+  .ob-header-tools { grid-column: 2; grid-row: 1; }
+}
 
 /* Logo-only breakpoints from designsystem/app/tailwind.config.js. The app shell keeps its own breakpoints. */
 @media (min-width: 480px) {
@@ -653,8 +659,10 @@ button.ob-tree-link { width: 100%; }
 .ob-footer { position: relative; color: var(--ob-color-text-inverse); background: var(--ob-color-footer-bg); font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-md); }
 .ob-footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0 var(--ob-space-lg); max-width: var(--ob-content-max-width); margin: 0 auto; padding: var(--ob-space-xs) var(--ob-space-xl) var(--ob-space-xs) var(--ob-space-default); }
 .ob-footer-links { display: flex; flex-wrap: wrap; gap: var(--ob-space-sm) var(--ob-space-lg); list-style: none; }
-.ob-footer-links a { color: var(--ob-color-text-inverse); text-decoration: none; }
-.ob-footer-links a:hover { text-decoration: underline; }
+.ob-footer a { color: var(--ob-color-text-inverse); text-decoration: none; }
+.ob-footer a:hover { text-decoration: underline; }
+.ob-footer-end { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0 var(--ob-space-lg); min-width: 0; margin-left: auto; }
+.ob-footer-source { flex: none; }
 .ob-footer-meta { color: var(--ob-color-border-strong); }
 
 /* ---- Back to top ------------------------------------------------------------ */
@@ -757,7 +765,7 @@ button.ob-tree-link { width: 100%; }
   .ob-pager-range { flex-basis: 100%; margin: 0; }
   .ob-footer-inner { padding: var(--ob-space-sm) var(--ob-space-default); }
   .ob-footer-links { gap: var(--ob-space-sm) var(--ob-space-default); }
-  .ob-footer-links a { display: inline-flex; align-items: center; min-height: var(--ob-touch-target); }
+  .ob-footer a { display: inline-flex; align-items: center; min-height: var(--ob-touch-target); }
   .ob-back-to-top { right: var(--ob-space-default); bottom: var(--ob-space-default); width: var(--ob-touch-target); padding: 0; }
   .ob-back-to-top span:last-child { display: none; }
   .ob-toast-region { right: var(--ob-space-default); bottom: var(--ob-space-default); max-width: calc(100vw - var(--ob-space-xl)); }

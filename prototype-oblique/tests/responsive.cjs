@@ -61,7 +61,7 @@ const server = createServer();
         assert(result.contactsFirst, `${width}: ${route}/${tab} responsibility must precede stacked metadata or align with its top`);
         assert(result.shell <= 1600, 'Workspace exceeds reading band');
         const identityHeight = width >= 1920 ? 86 : width >= 768 ? 72 : 56;
-        assert.equal(result.headerHeight, identityHeight + (width > 960 ? 45 : 0), 'Header height does not match sticky offsets');
+        assert.equal(result.headerHeight, identityHeight + (width <= 1200 ? 28 : 0) + (width > 960 ? 45 : 0), 'Header height does not match sticky offsets');
         assert.equal(result.navVisible, width > 960, 'Primary navigation row at wrong breakpoint');
         assert(result.homeStacked, 'Independent home sections must stay stacked');
         assert.equal(result.brokenHeaders, false, `${width}: ${route}/${tab} wrapped or overflowing header`);

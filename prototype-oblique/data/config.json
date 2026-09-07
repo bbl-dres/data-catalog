@@ -5,7 +5,8 @@
     "organisationShort": "BBL",
     "version": "0.4.0",
     "badge": "Prototyp",
-    "footerNote": "Prototyp – Beispieldaten und GWR-Katalogmetadaten, keine Registerdaten",
+    "footerNote": "Prototyp – nur zur Demonstration",
+    "sourceCodeUrl": "https://github.com/bbl-dres/data-catalog/tree/main/prototype-oblique",
     "language": "de",
     "languages": ["de", "fr", "it", "en"],
     "user": { "name": "David Reber", "initials": "DR" }

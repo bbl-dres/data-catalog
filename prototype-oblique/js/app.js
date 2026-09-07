@@ -792,6 +792,7 @@
     $('brand-acronym').textContent = cfg.app.organisationShort || '';
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
+    $('header-notice').textContent = cfg.app.footerNote;
     setLanguage(DK.preferences.read('language') || cfg.app.language || 'de');
 
     document.addEventListener('click', onClick);

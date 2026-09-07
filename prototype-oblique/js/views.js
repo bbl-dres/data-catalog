@@ -75,7 +75,7 @@
       const ext = !!l.url && !/^mailto:/.test(l.url);
       return `<li>${ui.link(href, esc(l.label), { external: ext })}</li>`;
     }).join('');
-    return `<div class="ob-footer-inner"><ul class="ob-footer-links">${links}</ul><span class="ob-footer-meta">${esc(t('footer.version', { v: cfg.app.version }))} · ${esc(cfg.app.footerNote)}</span></div>`;
+    return `<div class="ob-footer-inner"><ul class="ob-footer-links">${links}</ul><div class="ob-footer-end"><span class="ob-footer-meta">${esc(cfg.app.footerNote)}</span>${ui.link(cfg.app.sourceCodeUrl, esc(t('footer.sourceCode')), { external: true, className: 'ob-footer-source' })}</div></div>`;
   };
 
   /* page chrome */
