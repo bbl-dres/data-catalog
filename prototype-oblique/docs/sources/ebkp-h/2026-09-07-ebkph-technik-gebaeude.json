@@ -107,7 +107,8 @@
     "eBKP-H (SN 506 511) wird als normative Referenz ergänzt; SIA und GEFMA bleiben erhalten.",
     "Die D-Positionen werden noch nicht als Referenzdaten-Codeliste angelegt, weil kein Attribut Anlageart existiert; Kandidat für spätere Typprofil-Arbeit."
   ],
-  "openQuestions": [
-    "D04.06 ist im Screenshot als «Rauch- und Wärmebehandlungsanlage» wiedergegeben; die verbreitete eBKP-H-Bezeichnung lautet «Rauch- und Wärmeabzugsanlage (RWA)». Gegen die Norm prüfen, bevor eine Codeliste entsteht."
+  "openQuestions": [],
+  "resolved": [
+    "D04.06 «Rauch- und Wärmebehandlungsanlage» am 7. September 2026 gegen das Normdokument (Auszug_eBKP_2020_Web.pdf, Verzeichnis 5.1) bestätigt; die Screenshot-Transkription war korrekt. Vollständiges Verzeichnis aller Hauptgruppen: 2026-09-07-ebkph-kostenelemente.json."
   ]
 }

@@ -46,7 +46,7 @@
     apis: ['name', 'system', 'serviceVersion', 'description', 'protocol', 'endpointCount', 'status'],
     attrs: ['name', 'type', 'key', 'codeList'],
     fields: ['name', 'type', 'key', 'codeList'],
-    values: ['code', 'name', 'type'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
+    values: ['code', 'name'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
   };
   const extras = {
     objects: ['domain', 'normReference', ...responsibility, ...protection],
@@ -59,7 +59,7 @@
   const nameLabels = { objects: 'col.name', tables: 'col.name', domains: 'col.domain', systems: 'col.system', refs: 'col.codeList', products: 'col.product', apis: 'col.api', attrs: 'col.attribute', fields: 'col.field', values: 'col.label', productAttrs: 'col.attribute', endpoints: 'visibility.endpoint' };
   const rowFields = kind => [
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name),
-    field('type', ['attrs', 'fields'].includes(kind) ? 'col.format' : kind === 'values' ? 'col.type' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => kind === 'values' ? 'Code' : e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
+    field('type', ['attrs', 'fields'].includes(kind) ? 'col.format' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
     field('required', 'col.mandatory', e => e.mandatory, 'boolean'),
     field('key', 'col.key', e => kind === 'attrs' ? e.keyRole || null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UK' }[k] || k)).join(', ') : e.keyRole),
     field('codeList', 'col.codeList', e => e.codeList ? data.nameOf('refs', e.codeList) : null, 'text', { href: e => e.codeList ? DK.router.entityHref('refs', e.codeList) : null }),
