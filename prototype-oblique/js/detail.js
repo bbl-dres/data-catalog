@@ -46,6 +46,8 @@
       ? [...new Set(e.informationUrls.filter(url => typeof url === 'string' && /^https?:\/\//i.test(url) && ui.safeHref(url)))] : [];
     const primary = [plain(t('fact.type'), data.kindDef(e.kind).singular), { label: t('fact.status'), value: e.status, type: 'chip', tone: data.statusTone(e.status) }];
     if (e.kind !== 'domains') primary.push(dom ? internal(t('fact.domain'), dom.name, 'domains', dom.identifier) : plain(t('fact.domain')));
+    /* The system of record belongs to the key facts, e.g. Gebäude = SAP RE-FX. */
+    primary.push(plain(t('fact.source'), e.source));
     switch (e.kind) {
       case 'systems':
         primary.push(plain(t('fact.technology'), e.technology));
@@ -108,7 +110,7 @@
     }
     const protection = [plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), typeof e.personalData === 'boolean' ? (e.personalData ? t('yes') : t('no')) : null)];
     primary.push({ label: t('fact.comment'), value: e.comment, type: 'comment' });
-    const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.source'), e.source), plain(t('fact.synced'), fmt(e.synced))];
+    const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.synced'), fmt(e.synced))];
     return { primary, protection, metadata };
   };
 

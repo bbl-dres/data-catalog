@@ -1,0 +1,113 @@
+{
+  "captured": "2026-09-07",
+  "source": "eBKP-H (SN 506 511) Baukostenplan Hochbau, Hauptgruppe D Technik Gebäude; Screenshots aus der Norm, bereitgestellt am 7. September 2026",
+  "purpose": "Beleg, dass Technische Anlage alle gebäudetechnischen Anlagen umfasst (nicht nur HLK). Grundlage für die Präzisierung des Geschäftsobjekts technische-anlage und für spätere Typprofil- oder Referenzdaten-Arbeit.",
+  "groups": [
+    { "code": "D01", "label": "Elektroanlage", "positions": [
+      { "code": "D01.01", "label": "Anlage Erzeugung Starkstrom" },
+      { "code": "D01.02", "label": "Transformierung Starkstrom" },
+      { "code": "D01.03", "label": "Speicherung Starkstrom" },
+      { "code": "D01.04", "label": "Installation Starkstrom" },
+      { "code": "D01.05", "label": "Verbraucher Starkstrom: Leuchten" },
+      { "code": "D01.06", "label": "Verbraucher Starkstrom: Elektrogeräte" },
+      { "code": "D01.07", "label": "Anlage Erzeugung Schwachstrom" },
+      { "code": "D01.08", "label": "Transformierung Schwachstrom" },
+      { "code": "D01.09", "label": "Speicherung Schwachstrom" },
+      { "code": "D01.10", "label": "Installation Schwachstrom" },
+      { "code": "D01.11", "label": "Verbraucher Schwachstrom" }
+    ] },
+    { "code": "D02", "label": "Gebäudeautomation", "positions": [
+      { "code": "D02.01", "label": "Managementebene" },
+      { "code": "D02.02", "label": "Automationsebene" },
+      { "code": "D02.03", "label": "Feldebene" },
+      { "code": "D02.04", "label": "Raumautomation" },
+      { "code": "D02.05", "label": "Automationsnetzwerk" },
+      { "code": "D02.06", "label": "Schaltgerätekombination" },
+      { "code": "D02.07", "label": "Systemintegration" }
+    ] },
+    { "code": "D03", "label": "Sicherheitsanlage", "positions": [
+      { "code": "D03.01", "label": "Einbruchmeldeanlage, Überfallmeldeanlage" },
+      { "code": "D03.02", "label": "Zutrittskontrollanlage" },
+      { "code": "D03.03", "label": "Videoüberwachungsanlage" },
+      { "code": "D03.04", "label": "Schliessanlage" }
+    ] },
+    { "code": "D04", "label": "Technische Brandschutzanlage", "positions": [
+      { "code": "D04.01", "label": "Brandmeldeanlage" },
+      { "code": "D04.02", "label": "Gaswarnanlage" },
+      { "code": "D04.03", "label": "Nasslöschanlage" },
+      { "code": "D04.04", "label": "Trockenlöschanlage" },
+      { "code": "D04.05", "label": "Löschgerät" },
+      { "code": "D04.06", "label": "Rauch- und Wärmebehandlungsanlage" },
+      { "code": "D04.07", "label": "Elektroakustische Lautsprecheranlage" }
+    ] },
+    { "code": "D05", "label": "Wärmetechnische Anlage", "positions": [
+      { "code": "D05.01", "label": "Wärmequelle, -senke, Brennstofflager" },
+      { "code": "D05.02", "label": "Wärmeerzeugung" },
+      { "code": "D05.03", "label": "Wärmespeicherung" },
+      { "code": "D05.04", "label": "Wärmeverteilung" },
+      { "code": "D05.05", "label": "Wärmeabgabe" },
+      { "code": "D05.06", "label": "Wärmebezug: Investitionsanteil" }
+    ] },
+    { "code": "D06", "label": "Kältetechnische Anlage", "positions": [
+      { "code": "D06.01", "label": "Kältequelle, -senke, Brennstofflager" },
+      { "code": "D06.02", "label": "Kälteerzeugung" },
+      { "code": "D06.03", "label": "Kältespeicherung" },
+      { "code": "D06.04", "label": "Kälteverteilung" },
+      { "code": "D06.05", "label": "Kälteabgabe" },
+      { "code": "D06.06", "label": "Kältebezug: Investitionsanteil" }
+    ] },
+    { "code": "D07", "label": "Lufttechnische Anlage", "positions": [
+      { "code": "D07.01", "label": "Aussenluftversorgung, Fortluftführung" },
+      { "code": "D07.02", "label": "Luftaufbereitung" },
+      { "code": "D07.03", "label": "Luftwärmespeicherung" },
+      { "code": "D07.04", "label": "Luftverteilung" },
+      { "code": "D07.05", "label": "Luftabgabe" },
+      { "code": "D07.06", "label": "Luft: Investitionsanteil" }
+    ] },
+    { "code": "D08", "label": "Wassertechnische Anlage", "positions": [
+      { "code": "D08.01", "label": "Wasserversorgung" },
+      { "code": "D08.02", "label": "Wasserbehandlung" },
+      { "code": "D08.03", "label": "Wasserspeicher" },
+      { "code": "D08.04", "label": "Wasserverteilung" },
+      { "code": "D08.05", "label": "Wasser: Armatur, Apparat" },
+      { "code": "D08.06", "label": "Wasser: Installationselement" }
+    ] },
+    { "code": "D09", "label": "Abwassertechnische Anlage", "positions": [
+      { "code": "D09.01", "label": "Abwasserentsorgung" },
+      { "code": "D09.02", "label": "Abwasserbehandlung" },
+      { "code": "D09.03", "label": "Abwasserspeicher" },
+      { "code": "D09.04", "label": "Abwassersammlung" },
+      { "code": "D09.05", "label": "Abwasser: Armatur, Apparat" }
+    ] },
+    { "code": "D10", "label": "Gastechnische Anlage", "positions": [
+      { "code": "D10.01", "label": "Gasversorgung" },
+      { "code": "D10.02", "label": "Gasbehandlung" },
+      { "code": "D10.03", "label": "Gasspeicherung" },
+      { "code": "D10.04", "label": "Gasverteilung" },
+      { "code": "D10.05", "label": "Gas: Armatur, Apparat" }
+    ] },
+    { "code": "D11", "label": "Anlage für Spezialmedien", "positions": [
+      { "code": "D11.01", "label": "Spezialmedien: Versorgung, Entsorgung" },
+      { "code": "D11.02", "label": "Spezialmedien: Aufbereitung" },
+      { "code": "D11.03", "label": "Spezialmedien: Speicherung" },
+      { "code": "D11.04", "label": "Spezialmedien: Verteilung" },
+      { "code": "D11.05", "label": "Spezialmedien: Armatur, Apparat" }
+    ] },
+    { "code": "D12", "label": "Beförderungsanlage", "positions": [
+      { "code": "D12.01", "label": "Personenaufzug" },
+      { "code": "D12.02", "label": "Lasten- und Serviceaufzug" },
+      { "code": "D12.03", "label": "Spezialaufzug" },
+      { "code": "D12.04", "label": "Fahrtreppe" },
+      { "code": "D12.05", "label": "Fahrsteig" },
+      { "code": "D12.06", "label": "Hebeeinrichtung, Verladestation" }
+    ] }
+  ],
+  "decisions": [
+    "Das Geschäftsobjekt technische-anlage wird als allgemeine gebäudetechnische Anlage (Systemebene) beschrieben; die Anlagearten folgen eBKP-H Hauptgruppe D statt der zwölf EA-IMMO-Spezialisierungen.",
+    "eBKP-H (SN 506 511) wird als normative Referenz ergänzt; SIA und GEFMA bleiben erhalten.",
+    "Die D-Positionen werden noch nicht als Referenzdaten-Codeliste angelegt, weil kein Attribut Anlageart existiert; Kandidat für spätere Typprofil-Arbeit."
+  ],
+  "openQuestions": [
+    "D04.06 ist im Screenshot als «Rauch- und Wärmebehandlungsanlage» wiedergegeben; die verbreitete eBKP-H-Bezeichnung lautet «Rauch- und Wärmeabzugsanlage (RWA)». Gegen die Norm prüfen, bevor eine Codeliste entsteht."
+  ]
+}

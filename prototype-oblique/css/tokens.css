@@ -321,10 +321,10 @@
   :root { --ob-header-identity-height: 86px; }
 }
 @media (max-width: 1200px) {
-  :root { --ob-facts-label-width: 128px; --ob-header-notice-height: calc(var(--ob-line-height-md) + var(--ob-space-sm)); }
+  :root { --ob-facts-label-width: 128px; }
 }
 @media (max-width: 960px) {
-  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; --ob-tree-padding-inline: var(--ob-space-sm); }
+  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; --ob-header-notice-height: calc(var(--ob-line-height-md) + var(--ob-space-sm)); --ob-tree-padding-inline: var(--ob-space-sm); }
 }
 @media (max-width: 600px) {
   :root { --ob-facts-row-min-height: 32px; }

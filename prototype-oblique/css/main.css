@@ -146,7 +146,11 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-header-search .ob-search-clear { width: var(--ob-control-height-sm); height: var(--ob-control-height); }
 .ob-header-search .ob-suggest { min-width: 100%; }
 .ob-navigation-toggle.ob-button { display: none; }
-@media (max-width: 1200px) {
+@media (min-width: 961px) {
+  /* The opened search field stretches across the centered notice; hide the covered text. */
+  .ob-header-bar:has(#header-search-field:not([hidden])) .ob-header-notice { visibility: hidden; }
+}
+@media (max-width: 960px) {
   .ob-header-bar { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: calc(var(--ob-header-identity-height) - var(--ob-border-width-xs)) var(--ob-header-notice-height); column-gap: 0; }
   .ob-header-notice { grid-column: 1 / -1; grid-row: 2; align-self: start; }
   .ob-header-tools { grid-column: 2; grid-row: 1; }

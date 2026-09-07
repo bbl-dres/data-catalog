@@ -51,7 +51,12 @@ const server = createServer();
             return label && (label.getBoundingClientRect().height > parseFloat(getComputedStyle(label).lineHeight) + 1 || label.getBoundingClientRect().right > th.getBoundingClientRect().right);
           }),
           tables: [...document.querySelectorAll('.ob-table-region')].filter(el => el.checkVisibility()).map(el => ({
-            width: el.clientWidth, min: Number(el.dataset.tableMinWidth), cards: el.classList.contains('is-cards'),
+            width: el.clientWidth,
+            // Mirror adaptTable: sized tables use their em minimum, others the pixel minimum.
+            min: el.dataset.tableMinEm
+              ? Number(el.dataset.tableMinEm) * parseFloat(getComputedStyle(el.querySelector('table')).fontSize)
+              : Number(el.dataset.tableMinWidth),
+            cards: el.classList.contains('is-cards'),
             sortVisible: el.querySelector('[data-action="sort-cards"]')?.checkVisibility(),
             headerVisible: el.querySelector('.ob-table-sort')?.checkVisibility(),
             emptyLabels: [...el.querySelectorAll('td')].some(td => !td.dataset.label)
@@ -61,13 +66,13 @@ const server = createServer();
         assert(result.contactsFirst, `${width}: ${route}/${tab} responsibility must precede stacked metadata or align with its top`);
         assert(result.shell <= 1600, 'Workspace exceeds reading band');
         const identityHeight = width >= 1920 ? 86 : width >= 768 ? 72 : 56;
-        assert.equal(result.headerHeight, identityHeight + (width <= 1200 ? 28 : 0) + (width > 960 ? 45 : 0), 'Header height does not match sticky offsets');
+        assert.equal(result.headerHeight, identityHeight + (width <= 960 ? 28 : 0) + (width > 960 ? 45 : 0), 'Header height does not match sticky offsets');
         assert.equal(result.navVisible, width > 960, 'Primary navigation row at wrong breakpoint');
         assert(result.homeStacked, 'Independent home sections must stay stacked');
         assert.equal(result.brokenHeaders, false, `${width}: ${route}/${tab} wrapped or overflowing header`);
         if (route === '#/api') assert.equal(result.hasTree, false, 'API must not render the catalog tree');
         for (const table of result.tables) {
-          assert.equal(table.cards, table.width < table.min, 'Table did not adapt to its container');
+          assert.equal(table.cards, table.width < table.min, width + ': ' + route + '/' + tab + ' table did not adapt (width ' + table.width + ', min ' + table.min + ', cards ' + table.cards + ')');
           assert.equal(table.emptyLabels, false, 'Card field lacks label');
           if (table.sortVisible !== undefined) assert.equal(table.sortVisible, table.cards, 'Sorting unavailable or duplicated');
           if (table.headerVisible !== undefined) assert.equal(table.headerVisible, !table.cards, 'Hidden header control remains visible');
@@ -81,24 +86,27 @@ const server = createServer();
     await visit('#/domains/bau');
     await page.click('#view-tab-overview');
     assert.equal(await page.locator('.ob-entity-header .ob-chip').count(), 0, 'Type/status must be in Kerndaten, not the title');
-    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Kommentar']);
+    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Führendes System', 'Kommentar']);
     assert.deepEqual(await page.locator('.ob-protection-facts dt').allTextContents(), ['Klassifizierung', 'Personendaten']);
     assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
     const factHeights = await page.locator('.ob-facts dt, .ob-facts dd').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
     assert(factHeights.every(height => height === 37), 'System, protection, core facts and contacts share the same single-line row height');
+    /* The trimmed attribute table fits beside the sidebar, so the grouped object
+       list is now the table that switches modes at these desktop widths. */
     await page.setViewportSize({ width: 1024, height: 768 });
-    await visit('#/objects/gebaeude', 'rows');
-    await page.locator('[data-action="sort-cards"]').focus();
-    await page.locator('[data-action="sort-cards"]').selectOption('0:desc');
-    assert.equal(await page.locator('.ob-detail-rows tbody tr').first().locator('td.is-primary').innerText(), 'Grundstück');
+    await visit('#/objects?view=table');
+    const bauSort = page.locator('[data-action="sort-cards"]').first();
+    await bauSort.focus();
+    await bauSort.selectOption('name:desc');
+    assert.equal(await page.locator('.ob-table-region').first().locator('td.is-primary').first().innerText(), 'Raum');
     assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-cards');
     await page.locator('[data-action="toggle-sidebar"]').click();
     await settle(page);
-    assert.equal(await page.locator('.ob-detail-rows .is-cards').count(), 0);
-    assert.equal(await page.locator('th[aria-sort="descending"]').innerText(), 'Attribut');
+    assert.equal(await page.locator('.ob-table-region.is-cards').count(), 0);
+    assert.equal(await page.locator('th[aria-sort="descending"]').first().innerText(), 'Name');
     await page.locator('[data-action="toggle-sidebar"]').click();
     await settle(page);
-    await page.locator('[data-action="sort-cards"]').focus();
+    await page.locator('[data-action="sort-cards"]').first().focus();
     await page.setViewportSize({ width: 1280, height: 768 });
     await settle(page);
     assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-table');
@@ -108,7 +116,7 @@ const server = createServer();
     await page.setViewportSize({ width: 1280, height: 768 });
     await settle(page);
     assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-table');
-    assert.equal(await page.locator('.ob-detail-rows tbody tr').first().locator('td.is-primary').innerText(), 'Grundstück');
+    assert.equal(await page.locator('.ob-table-region').first().locator('td.is-primary').first().innerText(), 'Raum');
 
     // Sorting a later group restores focus to that same group's control.
     await page.setViewportSize({ width: 390, height: 844 });
@@ -116,7 +124,7 @@ const server = createServer();
     const groupSort = page.locator('[data-action="sort-cards"]').nth(1);
     const focusId = await groupSort.getAttribute('data-focus');
     await groupSort.focus();
-    await groupSort.selectOption('0:desc');
+    await groupSort.selectOption('name:desc');
     assert.equal(await page.evaluate(() => document.activeElement.dataset.focus), focusId);
 
     // Pagination/sorting/export keep the full dataset in card mode.
@@ -131,7 +139,7 @@ const server = createServer();
     assert.equal(await page.locator('.ob-detail-rows tbody tr').count(), 50);
     await page.locator('.ob-pager--top [data-action="set-page"][data-page="2"]').click();
     assert.equal(await page.locator('.ob-detail-rows td.is-primary').first().innerText(), 'Test 051');
-    await page.locator('[data-action="sort-cards"]').selectOption('0:desc');
+    await page.locator('[data-action="sort-cards"]').selectOption('name:desc');
     assert.equal(await page.locator('.ob-detail-rows td.is-primary').first().innerText(), 'Test 123');
     await page.locator('[data-action="set-page-size"]').selectOption('100');
     assert.equal(await page.locator('.ob-detail-rows tbody tr').count(), 100);
