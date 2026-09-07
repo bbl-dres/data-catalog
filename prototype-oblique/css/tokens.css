@@ -207,7 +207,7 @@
   --ob-visual-viewport-top: 0px;
   --ob-content-max-width: 1600px;
   --ob-home-max-width: 1120px;                         /* shared by summary cards and both tables */
-  --ob-sidebar-default-width: 320px;
+  --ob-sidebar-default-width: 400px;
   --ob-sidebar-width: var(--ob-sidebar-default-width);
   --ob-sidebar-min-width: 240px;
   --ob-sidebar-max-width: 480px;

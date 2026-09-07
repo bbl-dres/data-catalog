@@ -131,12 +131,12 @@
     const section = (className, heading, rows) => `<section class="${className}"><h2>${esc(t(heading))}</h2><dl class="ob-facts">${renderFacts(rows)}</dl></section>`;
     return `
       <div class="ob-detail-sections">
+        ${detail.responsibility(e)}
         <div class="ob-detail-facts">
           ${section('ob-core-facts', 'detail.facts', facts.primary)}
           ${section('ob-protection-facts', 'detail.protection', facts.protection)}
           ${section('ob-system-facts', 'detail.system', facts.metadata)}
         </div>
-        ${detail.responsibility(e)}
       </div>`;
   };
 

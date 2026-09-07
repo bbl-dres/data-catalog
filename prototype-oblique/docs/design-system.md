@@ -1,6 +1,6 @@
 # Design system: Oblique without Angular
 
-The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 320 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
+The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 400 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) provides the reference palette and typography. This prototype implements its compact interface with plain CSS custom properties in `tokens.css`, shared components in `components.css`, and contextual styles in `main.css`, `graph.css` and `export.css`.
 
@@ -135,6 +135,7 @@ The document scrolls vertically. Home domains and latest changes stay stacked at
 | Above 960 px | Separate navigation below the identity header; resizable sidebar, 240–480 px, reserving at least 600 px for content. A narrower window clamps the visible width without replacing the saved preference. |
 | At or below 960 px | Modal navigation drawer, reduced content padding, no desktop resize handle. |
 | Narrow content container | Controls wrap; table columns switch to labeled cards based on available width, including when the sidebar is wide. Swagger tables retain their column structure with local horizontal scrolling. |
+| Detail profiles | Verantwortlich sits to the right of Kerndaten on wide screens. At a content width of 880 px or less, or a viewport of 960 px or less, it appears above Kerndaten. Contacts come first in the document order so keyboard and assistive-technology users can reach them before the metadata. |
 | Coarse pointer or viewport at/below 960 px | Shared 44 px control targets, including hybrid touch laptops. Search inputs use a size that avoids mobile browser auto-zoom. |
 | Large desktop | Bounded workspace and prose widths; consistent tile columns and compact metadata columns. Avoid stretching individual sections to fill unused space. |
 | Short viewport or software keyboard | Search suggestions, help, menus and API dialogs fit the visual viewport; internal scrolling keeps controls reachable. Fullscreen diagram controls remain accessible. |

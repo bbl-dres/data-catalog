@@ -38,6 +38,13 @@ const server = createServer();
           headerHeight: document.querySelector('#header').getBoundingClientRect().height,
           navVisible: document.querySelector('#main-nav').checkVisibility(),
           hasTree: !!document.querySelector('#sidebar-tree'),
+          contactsFirst: [...document.querySelectorAll('.ob-detail-sections')].every(section => {
+            const contacts = section.querySelector('.ob-responsibility'), facts = section.querySelector('.ob-detail-facts');
+            if (!contacts || !facts) return true;
+            const c = contacts.getBoundingClientRect(), f = facts.getBoundingClientRect();
+            return section.firstElementChild === contacts && c.top <= f.top + 1 &&
+              (innerWidth > 960 || c.bottom <= f.top);
+          }),
           homeStacked: !document.querySelector('.ob-home-recent') || document.querySelector('.ob-home-recent').getBoundingClientRect().top >= document.querySelector('.ob-home-domains').getBoundingClientRect().bottom,
           brokenHeaders: [...document.querySelectorAll('.ob-table-region:not(.is-cards) th')].some(th => {
             const label = th.querySelector('.ob-table-sort-label');
@@ -51,6 +58,7 @@ const server = createServer();
           }))
         }));
         assert.equal(result.overflow, false, `${width}: ${route}/${tab} page overflow`);
+        assert(result.contactsFirst, `${width}: ${route}/${tab} responsibility must precede stacked metadata or align with its top`);
         assert(result.shell <= 1600, 'Workspace exceeds reading band');
         const identityHeight = width >= 1920 ? 86 : width >= 768 ? 72 : 56;
         assert.equal(result.headerHeight, identityHeight + (width > 960 ? 45 : 0), 'Header height does not match sticky offsets');
