@@ -72,9 +72,15 @@
       rows,
     };
   }
+  const dictionaries = new Map(); // one translated dictionary per language and catalog
+  function dictionaryFor(language) {
+    if (dictionaries.get(language)?.source !== data.i18n) dictionaries.set(language, { source: data.i18n, values: Object.fromEntries(Object.keys(data.i18n).map(key => [key, ui.t(key)])) });
+    return dictionaries.get(language).values;
+  }
   function content(kind, entries, language, title, filter = '', groupBy = data.defaultGroup(kind)) {
-    const dictionary = Object.fromEntries(Object.keys(data.i18n).map(key => [key, ui.t(key)]));
-    const entities = entries.map(e => entityContent(kind, e)).sort((a, b) => a.name.localeCompare(b.name, language, { numeric: true }) || a.id.localeCompare(b.id));
+    const dictionary = dictionaryFor(language);
+    const byName = ui.collator(language, { numeric: true });
+    const entities = entries.map(e => entityContent(kind, e)).sort((a, b) => byName.compare(a.name, b.name) || a.id.localeCompare(b.id));
     const facetIds = ['domain', ...(kind === 'tables' || kind === 'apis' ? ['system'] : []), ...(kind === 'tables' || kind === 'refs' ? ['businessObject'] : []), 'status', 'resp', 'classification', 'source', ...(kind === 'products' ? ['access'] : [])];
     const grouping = id => {
       const groups = new Map();
@@ -114,10 +120,18 @@
 
   diagram.capture = (route, ctx, language) => {
     const createdAt = new Date().toISOString(), catalogs = {}, initial = diagram.snapshot(route, ctx, language);
-    for (const lang of data.config.app.languages) catalogs[lang] = ui.withLanguage(data.i18n, lang, () => Object.fromEntries(diagram.kinds.map(kind => {
-      const snapshot = content(kind, data.list(kind), lang, ui.t('print.kind.' + kind)); snapshot.createdAt = createdAt;
-      return [kind, snapshot];
-    })));
+    // Every language × kind is reachable from the workspace, but a session touches few of them: each catalog is
+    // captured on first access (the same frozen content, the same creation time) instead of all twenty on opening.
+    for (const lang of data.config.app.languages) {
+      const perLanguage = {};
+      for (const kind of diagram.kinds) Object.defineProperty(perLanguage, kind, { enumerable: true, configurable: true, get() {
+        const snapshot = ui.withLanguage(data.i18n, lang, () => content(kind, data.list(kind), lang, ui.t('print.kind.' + kind)));
+        snapshot.createdAt = createdAt;
+        Object.defineProperty(perLanguage, kind, { value: snapshot, enumerable: true });
+        return snapshot;
+      } });
+      catalogs[lang] = perLanguage;
+    }
     const entity = route.entity;
     const scope = { kind: initial.kind, facet: '', value: '', entityId: '', initialIds: initial.entities.map(e => e.id), query: initial.filter };
     if (ctx.isList) scope.order = ctx.groups.flatMap(group => group.items.map(entity => entity.identifier));

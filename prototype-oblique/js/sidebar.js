@@ -2,21 +2,25 @@
 (function (DK) {
   'use strict';
   const root = document.documentElement;
-  let preferred = null, drag = null, frame = null;
+  let preferred = null, drag = null, frame = null, tokens = null, applied = null;
   const sidebar = {};
-  const bounds = () => {
+  // The width tokens are constants of tokens.css: reading them once per resize avoids a style
+  // recalculation on every render, which sync() runs right after the page markup was replaced.
+  const readTokens = () => {
     const css = getComputedStyle(root);
     const px = name => parseFloat(css.getPropertyValue(name));
-    const min = px('--ob-sidebar-min-width');
+    return { min: px('--ob-sidebar-min-width'), max: px('--ob-sidebar-max-width'), contentMin: px('--ob-sidebar-content-min-width'), initial: px('--ob-sidebar-default-width'), step: px('--ob-space-default') };
+  };
+  const bounds = () => {
+    tokens ||= readTokens();
     const available = document.querySelector('.ob-workspace')?.clientWidth || root.clientWidth;
-    return { min, max: Math.max(min, Math.min(px('--ob-sidebar-max-width'), available - px('--ob-sidebar-content-min-width'))),
-      initial: px('--ob-sidebar-default-width'), step: px('--ob-space-default') };
+    return { min: tokens.min, max: Math.max(tokens.min, Math.min(tokens.max, available - tokens.contentMin)), initial: tokens.initial, step: tokens.step };
   };
   const clamp = (width, limits) => Math.round(Math.max(limits.min, Math.min(limits.max, width)));
-  const apply = width => {
-    const limits = bounds();
+  const apply = (width, limits = bounds()) => {
     const actual = clamp(width ?? preferred ?? limits.initial, limits);
-    root.style.setProperty('--ob-sidebar-width', actual + 'px');
+    // An unchanged width is not written: the root property invalidates the whole document's styles.
+    if (actual !== applied) { root.style.setProperty('--ob-sidebar-width', actual + 'px'); applied = actual; }
     const handle = document.getElementById('sidebar-resizer');
     if (handle) {
       handle.setAttribute('aria-valuemin', limits.min);
@@ -75,7 +79,7 @@
       if (!(event.buttons & 1)) { finish(false); return; }
       drag.moved ||= event.clientX !== drag.x;
       drag.width = clamp(drag.start + event.clientX - drag.x, drag.limits);
-      if (frame == null) frame = requestAnimationFrame(() => { frame = null; if (drag) apply(drag.width); });
+      if (frame == null) frame = requestAnimationFrame(() => { frame = null; if (drag) apply(drag.width, drag.limits); });
     });
     document.addEventListener('pointerup', event => { if (event.pointerId === drag?.pointerId) finish(true); });
     document.addEventListener('pointercancel', event => { if (event.pointerId === drag?.pointerId) finish(false); });
@@ -83,7 +87,7 @@
     document.addEventListener('dblclick', event => { if (event.target.closest('#sidebar-resizer')) { event.preventDefault(); reset(); } });
     window.addEventListener('blur', sidebar.cancel);
     // Clamp the visible width for a small laptop without overwriting the desktop preference.
-    window.addEventListener('resize', sidebar.sync, { passive: true });
+    window.addEventListener('resize', () => { tokens = null; sidebar.sync(); }, { passive: true });
   };
   DK.sidebar = sidebar;
 })(window.DK);

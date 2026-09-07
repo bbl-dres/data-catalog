@@ -57,7 +57,8 @@
       if (typeof value === 'object' && !Array.isArray(value)) Object.entries(value).forEach(([k, v]) => flatten(kind, id, name, v, path ? `${path}.${k}` : k));
       else metadata.rows.push([kind, String(id), name, path, Array.isArray(value) ? JSON.stringify(value) : value]);
     };
-    const meta = (e, kindLabel) => Object.entries(e).filter(([k]) => !['kind', 'attributes', 'fields', 'values', 'catalogMetadata'].includes(k)).forEach(([k, v]) => flatten(kindLabel, e.identifier, e.name, v, k));
+    // Keys starting with "_" are projection internals (the SQL record and its relationship index), not catalog metadata.
+    const meta = (e, kindLabel) => Object.entries(e).filter(([k]) => !k.startsWith('_') && !['kind', 'attributes', 'fields', 'values', 'catalogMetadata'].includes(k)).forEach(([k, v]) => flatten(kindLabel, e.identifier, e.name, v, k));
     const kinds = [...new Set([...roots.map(e => e.kind), ...data.kinds])].filter(k => !['attrs', 'fields'].includes(k));
     kinds.forEach(kind => {
       const items = [...records.values()].filter(e => e.kind === kind);
@@ -114,7 +115,7 @@
   excel.createWorkbook = function (plan, ExcelJS) {
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'BBL Datenkatalog'; workbook.title = plan.title;
-    const used = new Set();
+    const used = new Set(['history']); // Excel reserves the sheet name "History" (the English history tab)
     const nameOf = proposed => {
       const base = proposed.replace(/[\\/*?:\[\]]/g, ' ').replace(/^'+|'+$/g, '').slice(0, 31) || 'Sheet';
       let name = base, n = 1;

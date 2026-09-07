@@ -27,14 +27,19 @@
     return loading;
   }
 
-  async function loadSpec() {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 20000);
-    try {
-      const response = await fetch('data/swagger.json', { signal: controller.signal });
-      if (!response.ok) throw new Error(`API documentation request failed (${response.status})`);
-      return await response.json();
-    } finally { clearTimeout(timer); }
+  let spec = null; // the parsed contract is reused by every later visit; a failed load is forgotten so a retry fetches again
+  function loadSpec() {
+    spec ||= (async () => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 20000);
+      try {
+        const response = await fetch('data/swagger.json', { signal: controller.signal });
+        if (!response.ok) throw new Error(`API documentation request failed (${response.status})`);
+        return await response.json();
+      } catch (error) { spec = null; throw error; }
+      finally { clearTimeout(timer); }
+    })();
+    return spec;
   }
 
   function connection(spec) {

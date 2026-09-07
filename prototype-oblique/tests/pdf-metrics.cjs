@@ -14,6 +14,11 @@ for (const [text, width, expected] of [
   ['äé🙂猫äé🙂猫', 3, ['äé🙂', '猫äé', '🙂猫']], ['x', 0.5, ['x']],
 ]) assert.deepEqual(Array.from(diagram.wrap(text, width, 10, false, measure)), expected);
 
+// Lines accumulate measured words: growing line prefixes would defeat the measurer's cache.
+const measured = [];
+assert.deepEqual(Array.from(diagram.wrap('Gebäude mit sehr langem Namen', 12, 9, false, text => { measured.push(text); return [...text].length; })), ['Gebäude mit', 'sehr langem', 'Namen']);
+assert.ok(measured.every(text => !text.includes(' ') || text === ' '), 'only words and the space are measured');
+
 let calls = 0, font, size;
 pdf.create = () => ({
   setFont: (_, style) => { font = style; }, setFontSize: value => { size = value; },

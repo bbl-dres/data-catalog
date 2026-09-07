@@ -55,7 +55,7 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 
 .ob-disclosure > summary { display: flex; align-items: center; gap: var(--ob-space-sm); max-width: 100%; cursor: pointer; font-weight: var(--ob-font-weight-semibold); line-height: var(--ob-line-height-md); list-style: none; overflow-wrap: anywhere; }
 .ob-disclosure > summary::-webkit-details-marker { display: none; }
-.ob-disclosure > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: url('../assets/icons/chevron_down.svg') center / contain no-repeat; }
+.ob-disclosure > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: var(--ob-icon-chevron_down) center / contain no-repeat; }
 .ob-disclosure[open] > summary::before { transform: rotate(180deg); }
 .ob-disclosure > summary:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 

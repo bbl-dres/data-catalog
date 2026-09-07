@@ -25,7 +25,8 @@
     if (!['json', 'supabase'].includes(provider)) throw new Error('Unknown catalog provider: ' + provider);
     const files = Object.entries(FILES).filter(([key]) => provider === 'json' || ['config', 'i18n', 'model', 'manual'].includes(key));
     const [entries, catalog] = await Promise.all([Promise.all(files.map(async ([key, file]) => {
-      const res = await fetch(base + file, { cache: 'no-cache' });
+      // boot.js may have requested the UI files already; the HTTP cache policy is the same as for scripts and styles.
+      const res = await (DK.boot?.take(base + file)?.response || fetch(base + file));
       if (!res.ok) throw new Error(file + ' → HTTP ' + res.status);
       try { return [key, await res.json()]; }
       catch (err) { throw new Error(file + ': invalid JSON (' + err.message + ')'); }
@@ -51,6 +52,7 @@
     ['config', 'i18n', 'model', 'manual'].forEach(key => record(next[key], FILES[key]));
     record(next.config.app, 'config.json.app');
     array(next.manual.chapters, 'manual.json.chapters');
+    if (!next.manual.chapters.length) throw new Error('manual.json.chapters: expected at least one chapter');
     array(next.changelog, 'changelog.json');
     record(next.model.kinds, 'model.json.kinds');
     record(next.model.navModels, 'model.json.navModels');
@@ -343,7 +345,7 @@
   };
   data.compareGroupTitles = (a, b, language = DK.app?.state.lang || 'de') => {
     const unspecified = title => !title || title === '–' || title === t('diagram.unspecified');
-    return Number(unspecified(a)) - Number(unspecified(b)) || a.localeCompare(b, language, { numeric: true });
+    return Number(unspecified(a)) - Number(unspecified(b)) || ui.collator(language, { numeric: true }).compare(a, b);
   };
   /** Groups [{ id, title, items, entityKind, entity }] of a section, in canonical order. */
   data.buildGroups = function (kind, g, sortByName) {
@@ -359,7 +361,7 @@
     });
     const rank = title => { const i = order.indexOf(title); return i < 0 ? 1e6 : i; };
     const groups = [...map.values()].sort((a, b) => g === 'resp' ? data.compareGroupTitles(a.title, b.title) : rank(a.title) - rank(b.title));
-    if (sortByName) groups.forEach(group => group.items.sort((a, b) => a.name.localeCompare(b.name, 'de')));
+    if (sortByName) { const byName = ui.collator('de', {}); groups.forEach(group => group.items.sort((a, b) => byName.compare(a.name, b.name))); }
     return groups;
   };
 
@@ -506,8 +508,9 @@
   };
   /** One result group: items by relevance, then shorter names first, then alphabetical. */
   const resultGroup = (kind, q) => {
+    const byName = ui.collator('de', {});
     const ranked = data.list(kind).map(e => ({ e, score: data.relevance(e, q) })).filter(x => x.score > 0)
-      .sort((a, b) => b.score - a.score || a.e.name.length - b.e.name.length || a.e.name.localeCompare(b.e.name, 'de'));
+      .sort((a, b) => b.score - a.score || a.e.name.length - b.e.name.length || byName.compare(a.e.name, b.e.name));
     const items = ranked.map(x => x.e);
     return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: ranked.length, best: ranked.length ? ranked[0].score : 0 };
   };
@@ -528,7 +531,8 @@
       const dom = data.domainForEntity(kind, e);
       feed.push({ kind, id: e.identifier, name: data.displayName(kind, e), kindLabel: data.kindDef(kind).singular, group: dom ? dom.name : '–', status: data.statusOf(kind, e), modified: e.modified || '', href: DK.router.entityHref(kind, e.identifier) });
     }));
-    return feed.sort((a, b) => (b.modified > a.modified ? 1 : b.modified < a.modified ? -1 : a.name.localeCompare(b.name, 'de'))).slice(0, n);
+    const byName = ui.collator('de', {});
+    return feed.sort((a, b) => (b.modified > a.modified ? 1 : b.modified < a.modified ? -1 : byName.compare(a.name, b.name))).slice(0, n);
   };
   data.kpis = () => data.contentKinds().map(kind => {
     const def = data.kindDef(kind);

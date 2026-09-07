@@ -113,17 +113,36 @@
   /** Link to a catalog entity inside a table cell. `labelHtml` is used verbatim when given (already escaped). */
   ui.entityLink = (href, label, labelHtml) => ui.link(href, labelHtml || ui.esc(label), { className: 'ob-table-entity-link' });
 
-  /** Escaped text with every occurrence of `query` wrapped in <mark>, case- and diacritic-insensitive. */
+  /** Escaped text with every occurrence of `query` wrapped in <mark>, under the same foldings as search:
+   *  case- and diacritic-insensitive, and "ae/oe/ue/ss" for umlauts, so a hit found by search is also shown. */
+  const foldMarks = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const foldUmlauts = x => x.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
   ui.highlight = function (text, query) {
     const s = String(text == null ? '' : text);
-    const fold = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const q = fold((query || '').trim());
-    const f = fold(s);
-    if (!q || f.length !== s.length) return ui.esc(s); // folding changed the length: no safe offsets
-    let out = '', pos = 0, i;
-    while ((i = f.indexOf(q, pos)) >= 0) {
-      out += ui.esc(s.slice(pos, i)) + '<mark class="ob-mark">' + ui.esc(s.slice(i, i + q.length)) + '</mark>';
-      pos = i + q.length;
+    const raw = (query || '').trim();
+    if (!raw) return ui.esc(s);
+    const ranges = [];
+    for (const fold of [foldMarks, foldUmlauts]) {
+      const q = fold(raw);
+      if (!q) continue;
+      // Fold character by character so every folded offset maps back to its source character.
+      const origin = []; let f = '';
+      for (let i = 0; i < s.length; i++) { const part = fold(s[i]); f += part; for (let j = 0; j < part.length; j++) origin.push(i); }
+      for (let at = 0, i; (i = f.indexOf(q, at)) >= 0;) {
+        const end = origin[i + q.length - 1] + 1;
+        ranges.push([origin[i], end]);
+        at = i + q.length;
+        while (at < f.length && origin[at] < end) at++; // a source character that folded to several: continue after all of them
+      }
+    }
+    if (!ranges.length) return ui.esc(s);
+    ranges.sort((a, b) => a[0] - b[0]);
+    let out = '', pos = 0;
+    for (const [start, end] of ranges) {
+      if (end <= pos) continue;
+      const from = Math.max(start, pos);
+      out += ui.esc(s.slice(pos, from)) + '<mark class="ob-mark">' + ui.esc(s.slice(from, end)) + '</mark>';
+      pos = end;
     }
     return out + ui.esc(s.slice(pos));
   };
@@ -164,10 +183,19 @@
     return m ? `${+m[3]}.${+m[2]}.${m[1]}` : iso;
   };
 
+  /** Cached collators: constructing one per comparison costs about 25× a reused compare. Catalog order is de-CH, numeric, base. */
+  const collators = new Map(), CATALOG_ORDER = { numeric: true, sensitivity: 'base' };
+  ui.collator = function (language = 'de-CH', options = CATALOG_ORDER) {
+    const key = `${language}|${options.numeric ? 1 : 0}|${options.sensitivity || ''}`;
+    if (!collators.has(key)) collators.set(key, new Intl.Collator(language, options));
+    return collators.get(key);
+  };
+  ui.language = () => language;
+
   /** Stable, locale-aware table sort. `getValues(row)` returns one raw value per column. */
   ui.sortRows = function (rows, sort, getValues) {
     if (!sort || !Number.isInteger(sort.column)) return rows.slice();
-    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+    const collator = ui.collator();
     const direction = sort.direction === 'desc' ? -1 : 1;
     return rows.map((row, index) => {
       const value = (getValues(row) || [])[sort.column], text = String(value ?? '').trim();

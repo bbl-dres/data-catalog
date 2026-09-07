@@ -108,7 +108,7 @@
       ? [{ key: 'manual', label: title, icon: 'file_list', active: true }]
       : [{ key: 'home', label: t('tree.overview'), icon: 'home', href: router.href('/'), active: route.view === 'home' }, ...data.sections().map(kind => ({ key: kind, label: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, active: state.treeSection === kind && route.view !== 'home' }))];
     const rail = `<nav class="ob-icon-rail" aria-label="${esc(title)}">${railItems.map(it => it.href
-      ? `<a class="ob-rail-item${it.active ? ' is-active' : ''}" href="${it.href}" title="${esc(it.label)}" aria-label="${esc(it.label)}">${icon(it.icon, 'xl')}</a>`
+      ? `<a class="ob-rail-item${it.active ? ' is-active' : ''}" href="${esc(it.href)}" title="${esc(it.label)}" aria-label="${esc(it.label)}">${icon(it.icon, 'xl')}</a>`
       : `<button type="button" class="ob-rail-item${it.active ? ' is-active' : ''}" data-action="rail-section" data-key="${it.key}" title="${esc(it.label)}" aria-label="${esc(it.label)}" aria-expanded="${state.flyout === it.key}" aria-controls="sidebar-flyout">${icon(it.icon, 'xl')}</button>`).join('')}</nav>`;
     const flyoutTitle = state.flyout === 'manual' ? title : state.flyout ? data.kindDef(state.flyout).plural : '';
     const flyout = state.flyout ? `<section class="ob-sidebar-flyout" id="sidebar-flyout" aria-label="${esc(flyoutTitle)}"><div class="ob-sidebar-heading"><h2>${esc(flyoutTitle)}</h2><button type="button" class="ob-button ob-button--icon" data-action="close-flyout" aria-label="${esc(t('navigation.closeFlyout'))}">${icon('xmark')}</button></div>${manual ? tree : views.tree(route, state, state.flyout)}</section>` : '';
@@ -120,6 +120,10 @@
       ${views.drawerTools(state)}
     </aside>${state.sidebarCollapsed ? '' : `<div id="sidebar-resizer" class="ob-sidebar-resizer" role="separator" tabindex="0" aria-orientation="vertical" aria-controls="navigation-panel page-content" aria-label="${esc(t('navigation.resize'))}" title="${esc(t('navigation.resizeHelp'))}"></div>`}</div>`;
   };
+
+  /** The grouping preference a route uses. A domain profile lists business objects with its own default (no grouping),
+   *  so it keeps its own key rather than sharing one with the domains list or the business-object list. */
+  views.groupKey = route => route.view === 'detail' && route.entity?.kind === 'domains' ? 'domains/objects' : route.kind;
 
   /* context: everything the page composition needs */
   views.context = function (route, state) {
@@ -136,7 +140,7 @@
     };
     if (ctx.isList) {
       const defaultGroup = isDomain ? 'none' : data.defaultGroup(ctx.kind);
-      const requestedGroup = route.params.group || state.groupBy[route.kind] || defaultGroup;
+      const requestedGroup = route.params.group || state.groupBy[views.groupKey(route)] || defaultGroup;
       const availableGroups = data.groupOptions(ctx.kind);
       const g = availableGroups.some(o => o.id === requestedGroup) ? requestedGroup : defaultGroup;
       ctx.groupBy = g;
@@ -241,7 +245,7 @@
     if (!ctx.actions.length) return '';
     const open = ctx.state.menu === 'actions';
     const menu = open ? `<div class="ob-menu ob-menu--wide" role="menu" aria-label="${esc(t('toolbar.export'))}">${ctx.actions.map(a => `<button type="button" role="menuitem" class="ob-menu-item" data-action="export" data-export="${esc(a.id)}" data-label="${esc(a.label)}"${['xlsx', 'xlsx-all'].includes(a.id) && ctx.state.exporting ? ' disabled' : ''}>${esc(a.label)}</button>`).join('')}</div>` : '';
-    return `<div class="ob-menu-host ob-actions-menu"><button type="button" class="ob-button ob-button--menu" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${ui.buttonContent(t('toolbar.export'), { icon: 'download', menu: true, iconClass: 'ob-export-icon', labelClass: 'ob-export-label', chevronClass: 'ob-export-chevron' })}</button>${menu}</div>`;
+    return `<div class="ob-menu-host ob-actions-menu" id="actions-menu-host"><button type="button" class="ob-button ob-button--menu" aria-label="${esc(t('toolbar.export'))}" aria-haspopup="menu" aria-expanded="${open}" data-action="menu" data-menu="actions">${ui.buttonContent(t('toolbar.export'), { icon: 'download', menu: true, iconClass: 'ob-export-icon', labelClass: 'ob-export-label', chevronClass: 'ob-export-chevron' })}</button>${menu}</div>`;
   };
 
   views.entityHeader = function (ctx) {
@@ -258,7 +262,7 @@
   views.groupMenu = function (ctx) {
     const state = ctx.state;
     const menu = state.menu === 'group' ? `<div class="ob-menu" role="menu" aria-label="${esc(t('toolbar.group'))}">${ctx.groupOptions.map(o => `<button type="button" role="menuitem" class="ob-menu-item${o.active ? ' is-active' : ''}" data-action="set-group" data-group="${esc(o.id)}">${esc(o.label)}</button>`).join('')}</div>` : '';
-    return `<div class="ob-menu-host ob-collection-group"><button type="button" class="ob-button ob-button--menu" aria-haspopup="menu" aria-expanded="${state.menu === 'group'}" data-action="menu" data-menu="group">${ui.buttonContent(`${t('toolbar.group')}: ${ctx.groupLabel}`, { icon: 'grid', menu: true })}</button>${menu}</div>`;
+    return `<div class="ob-menu-host ob-collection-group" id="group-menu-host"><button type="button" class="ob-button ob-button--menu" aria-haspopup="menu" aria-expanded="${state.menu === 'group'}" data-action="menu" data-menu="group">${ui.buttonContent(`${t('toolbar.group')}: ${ctx.groupLabel}`, { icon: 'grid', menu: true })}</button>${menu}</div>`;
   };
 
   views.collectionControls = function (ctx) {
@@ -331,7 +335,7 @@
   /* catalog tree */
   views.tree = function (route, state, onlySection) {
     const kinds = data.model.kinds;
-    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+    const collator = ui.collator();
     const navParams = routeNav(route);
     const listHref = kind => router.listHref(kind, navParams);
     const entityHref = (kind, id) => router.entityHref(kind, id, navParams);
@@ -358,7 +362,8 @@
         const active = !!b.entity && (scoped
           ? route.view === 'list' && route.kind === sec && route.params.domain === b.entity.identifier
           : isActive(b.entityKind, b.entity.identifier));
-        const bOpen = !!state.treeOpen[b.key] || contains(b.itemKind, b.items);
+        // A branch holding the current page opens by itself until the user decides otherwise.
+        const bOpen = Object.hasOwn(state.treeOpen, b.key) ? !!state.treeOpen[b.key] : contains(b.itemKind, b.items);
         items.push({
           label: b.title, count: b.items.length, level: 2, icon: b.entityKind ? kinds[b.entityKind].icon : 'folder', expandable: true, expanded: bOpen, key: b.key,
           active,
@@ -394,7 +399,7 @@
   /* home */
   views.home = function (ctx) {
     const kpis = data.kpis().map(k => `
-      <a class="ob-card ob-kpi" href="${router.listHref(k.kind)}">
+      <a class="ob-card ob-kpi" href="${esc(router.listHref(k.kind))}">
         <div class="ob-kpi-head">${icon(k.icon, 'xl')}<h3>${esc(k.label)}</h3></div>
         <span class="ob-kpi-count"><strong>${k.count}</strong><span class="ob-kpi-unit">${esc(k.unit)}</span></span>
       </a>`).join('');
@@ -448,8 +453,8 @@
     const description = fields.find(f => f.id === 'description');
     const footer = fields.filter(f => f.type === 'number' || f.id === 'status');
     const facts = fields.filter(f => f.id !== 'name' && f.id !== 'description' && !footer.includes(f));
-    return `<article class="ob-card ob-tile${fields.length < 3 ? ' is-compact' : ''}" data-href="${href}">
-      <span class="ob-tile-heading"><a class="ob-tile-name" href="${href}" data-field="name">${esc(name)}</a></span>
+    return `<article class="ob-card ob-tile${fields.length < 3 ? ' is-compact' : ''}" data-href="${esc(href)}">
+      <span class="ob-tile-heading"><a class="ob-tile-name" href="${esc(href)}" data-field="name">${esc(name)}</a></span>
       ${description ? `<span class="ob-tile-sub" data-field="description">${DK.presentation.cell(description, description.read(entity, kind))}</span>` : ''}
       ${facts.length ? `<dl class="ob-tile-facts">${facts.map(f => `<div data-field="${f.id}"><dt>${esc(t(f.label))}</dt><dd>${DK.presentation.cell(f, f.read(entity, kind))}</dd></div>`).join('')}</dl>` : ''}
       ${footer.length ? `<div class="ob-tile-footer">${footer.map(f => `<span data-field="${f.id}">${DK.presentation.cell(f, f.read(entity, kind))}${f.type === 'number' ? ` ${esc(t(f.label))}` : ''}</span>`).join('')}</div>` : ''}
@@ -474,7 +479,7 @@
   /** A single globally ordered result table, with the same pager as detail tables. */
   views.searchResults = function (ctx) {
     const q = (ctx.route.params.q || '').trim();
-    if (!DK.search.selectedDomains(ctx.state.searchOptions).length) return ui.empty(t('search.domains.none'), `<button type="button" class="ob-button" data-action="search-domains-all">${esc(t('search.domains.selectAll'))}</button>`);
+    if (DK.search.domains().length && !DK.search.selectedDomains(ctx.state.searchOptions).length) return ui.empty(t('search.domains.none'), `<button type="button" class="ob-button" data-action="search-domains-all">${esc(t('search.domains.selectAll'))}</button>`);
     if (!DK.search.selectedKinds(ctx.state.searchOptions).length) return ui.empty(t('search.scope.none'), `<button type="button" class="ob-button" data-action="search-types-all">${esc(t('search.scope.selectAll'))}</button>`);
     const paging = ctx.searchPage, total = paging.total;
     const answer = views.searchAnswer(q, ctx.state.searchOptions, ctx.searchGroups);

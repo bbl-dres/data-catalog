@@ -18,7 +18,7 @@
     dialog.querySelectorAll('[data-diagram-layout]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.diagramLayout === settings.layout)));
     dialog.querySelector('#diagram-selection-hint').textContent = t(session, settings.layout === 'tiles' ? 'print.tilesHint' : 'print.selectionHint');
     dialog.querySelector('#diagram-filter-status').textContent = t(session, 'diagram.filterCount', { matched: diagram.filteredEntities(snapshot, settings).length,
-      total: session.catalogs[session.language][snapshot.kind].entities.length, selected: diagram.exportEntities(snapshot, settings).length });
+      total: snapshot.entities.length, selected: diagram.exportEntities(snapshot, settings).length });
     if (focusedEntity && !focused.isConnected) dialog.querySelectorAll('[data-diagram-entity]').forEach(input => { if (input.dataset.diagramEntity === focusedEntity) input.focus({ preventScroll: true }); });
     session.selectMenus.refresh();
     if (focusedSetting && !focused.isConnected) session.selectMenus.focus(dialog.querySelector(`.ob-export-toolbar [data-diagram-setting="${focusedSetting}"]`));
@@ -121,7 +121,8 @@
     Object.keys(session.settings.filters).forEach(id => { if (!session.snapshot.facets.some(facet => facet.id === id)) delete session.settings.filters[id]; });
     for (const facet of session.snapshot.facets) session.settings.filters[facet.id] = diagram.filterValues(session.settings.filters[facet.id]).map(id => {
       const group = previous.facets.find(f => f.id === facet.id)?.groups.find(g => g.id === id);
-      return facet.groups.find(g => g.id === id || group && g.value === group.value)?.id || `${scope.kind}:${facet.id}:${group?.value || id}`;
+      // A remembered choice without a counterpart keeps its identifier; re-prefixing it would grow it on every scope change.
+      return facet.groups.find(g => g.id === id || group && g.value === group.value)?.id || (group ? `${scope.kind}:${facet.id}:${group.value}` : id);
     });
     if (!session.snapshot.groupings.some(g => g.id === session.settings.groupBy)) session.settings.groupBy = session.snapshot.defaultGroupBy;
     if (!session.customLayout) session.settings.layout = diagram.defaultLayout(scope.kind);
@@ -270,7 +271,7 @@
   async function download(session) {
     if (current !== session || session.busy) return;
     dismiss(session, false);
-    update(session);
+    if (!session.layout) update(session); // every settings change already laid the preview out; re-laying it out here would reset the preview
     if (!session.layout?.entityCount) return;
     session.busy = true; controls(session);
     const busy = session.dialog.querySelector('#diagram-busy');

@@ -8,7 +8,10 @@
   <title>Datenkatalog – Bundesamt für Bauten und Logistik</title>
   <meta name="description" content="Datenkatalog des BBL: Geschäftsobjekte, Datentabellen, Referenzdaten, Datenprodukte und APIs. Prototyp mit fiktiven Inhalten.">
   <link rel="icon" type="image/svg+xml" href="assets/swiss-logo-flag.svg">
+  <link rel="preconnect" href="https://zicluerzbevodlmtbxow.supabase.co" crossorigin>
+  <link rel="preload" href="assets/fonts/noto-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/icons.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/main.css" id="main-css">
   <link rel="stylesheet" href="css/graph.css">
@@ -46,10 +49,13 @@
   <button type="button" class="ob-button ob-back-to-top" id="back-to-top" data-action="back-to-top" aria-controls="main" hidden></button>
   <div class="ob-toast-region" id="toasts" role="status" aria-live="polite"></div>
 
+  <!-- Connection settings and the early catalog request come first: they run as soon as they and the
+       stylesheets have arrived, while the application scripts below are still downloading. -->
+  <script src="js/catalog-config.js"></script>
+  <script src="js/boot.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/select-menu.js"></script>
   <script src="js/preferences.js"></script>
-  <script src="js/catalog-config.js"></script>
   <script src="js/catalog.js"></script>
   <script src="js/data.js"></script>
   <script src="js/router.js"></script>

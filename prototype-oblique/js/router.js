@@ -74,7 +74,8 @@
     const params = Object.assign(Object.create(null), r.params, patch);
     Object.keys(params).forEach(k => { if (params[k] == null || params[k] === '') delete params[k]; });
     const h = router.build(r.path, params);
-    if (h !== location.hash) history[method](null, '', location.pathname + location.search + h);
+    // Browsers rate-limit history writes (Safari throws after 100 in 30 s); the page state is authoritative, the URL catches up.
+    if (h !== location.hash) { try { history[method](null, '', location.pathname + location.search + h); } catch (error) { console.warn('History update skipped:', error.message); } }
     return h;
   }
   router.replaceParams = patch => writeParams(patch, 'replaceState');

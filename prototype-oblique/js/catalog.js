@@ -134,10 +134,12 @@
 
   async function load(config) {
     const target = connection(config);
-    const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
+    const url = new URL('rpc/read_snapshot', target.base);
+    const early = DK.boot?.take(url); // boot.js sends the same request before the application scripts
+    const controller = early?.controller || new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch(new URL('rpc/read_snapshot', target.base), { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal,
-        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' });
+      const response = await (early?.response || fetch(url, { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal,
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' }));
       if (!response.ok) {
         const detail = await response.json().catch(() => ({}));
         const hint = detail.code === 'PGRST106' ? 'Expose the catalog schema in Supabase Data API settings.' : detail.code === 'PGRST202' ? 'Apply the catalog public-read and import migrations.' : 'Check the catalog migrations and read policies.';

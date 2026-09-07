@@ -22,7 +22,7 @@
       ai: options?.ai === false ? '0' : null,
     };
   };
-  search.canSubmit = (query, options) => !!query.trim() && search.selectedKinds(options).length > 0 && search.selectedDomains(options).length > 0;
+  search.canSubmit = (query, options) => !!query.trim() && search.selectedKinds(options).length > 0 && (!search.domains().length || search.selectedDomains(options).length > 0);
 
   function domainFilter(options) {
     const domains = new Set(search.selectedDomains(options));
@@ -65,8 +65,9 @@
     const words = terms(q);
     if (!words.length) return [];
     return rankGroups(kinds.map(kind => {
+      const byName = DK.ui.collator('de', {});
       const items = data.list(kind).filter(e => inDomain(kind, e) && words.every(word => data.match(e, word)))
-        .sort((a, b) => score(b) - score(a) || a.name.localeCompare(b.name, 'de'));
+        .sort((a, b) => score(b) - score(a) || byName.compare(a.name, b.name));
       return { kind, title: data.kindDef(kind).plural, icon: data.kindDef(kind).icon, items, total: items.length, best: items.length ? score(items[0]) : 0 };
     }));
   };
@@ -78,7 +79,7 @@
   search.page = function (groups, query, params = {}) {
     const sort = search.sorts.includes(params.sort) ? params.sort : 'relevance';
     const score = ranker(query);
-    const collator = new Intl.Collator('de-CH', { numeric: true, sensitivity: 'base' });
+    const collator = DK.ui.collator();
     const items = groups.flatMap(g => g.items.map(e => ({ kind: g.kind, e, score: score(e) })));
     items.sort((a, b) => {
       let primary = 0;
@@ -92,11 +93,18 @@
   };
 
   /** A few answerable examples for an empty combobox, constrained by its current scope. */
-  search.examples = options => [
-    { query: DK.ui.t('search.example.gwr'), type: 'question' },
-    // Catalog names remain German, like the records they search in every UI language.
-    ...['Gebäude', 'Energieverbrauch', 'Bauprojekt'].map(query => ({ query, type: 'keyword' })),
-  ].filter(example => search.results(example.query, options).length);
+  let examples = null; // last result, reused while options, language and catalog are unchanged (three callers per focus)
+  search.examples = options => {
+    const language = DK.ui.language(), catalog = data.list('objects');
+    if (examples && examples.options === options && examples.language === language && examples.catalog === catalog) return examples.result;
+    const result = [
+      { query: DK.ui.t('search.example.gwr'), type: 'question' },
+      // Catalog names remain German, like the records they search in every UI language.
+      ...['Gebäude', 'Energieverbrauch', 'Bauprojekt'].map(query => ({ query, type: 'keyword' })),
+    ].filter(example => search.results(example.query, options).length);
+    examples = { options, language, catalog, result };
+    return result;
+  };
   search.canSuggest = (query, options) => query.trim() ? search.canSubmit(query, options) : search.examples(options).length > 0;
 
   /** Short, verbatim excerpts from actual matches, with explicit catalog citations. */

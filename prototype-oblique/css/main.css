@@ -97,32 +97,6 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-icon--xl { width: var(--ob-icon-size-xl); height: var(--ob-icon-size-xl); }
 .ob-icon--2xl { width: var(--ob-icon-size-2xl); height: var(--ob-icon-size-2xl); }
 .ob-icon--3xl { width: var(--ob-icon-size-3xl); height: var(--ob-icon-size-3xl); }
-.ob-icon-apps { --icon: url("../assets/icons/apps.svg"); }
-.ob-icon-arrow_right { --icon: url("../assets/icons/arrow_right.svg"); }
-.ob-icon-branch { --icon: url("../assets/icons/branch.svg"); }
-.ob-icon-briefcase { --icon: url("../assets/icons/briefcase.svg"); }
-.ob-icon-chevron_down { --icon: url("../assets/icons/chevron_down.svg"); }
-.ob-icon-chevron_left { --icon: url("../assets/icons/chevron_left.svg"); }
-.ob-icon-chevron_right { --icon: url("../assets/icons/chevron_right.svg"); }
-.ob-icon-database { --icon: url("../assets/icons/database.svg"); }
-.ob-icon-download { --icon: url("../assets/icons/download.svg"); }
-.ob-icon-expand { --icon: url("../assets/icons/expand.svg"); }
-.ob-icon-file_list { --icon: url("../assets/icons/file_list.svg"); }
-.ob-icon-folder { --icon: url("../assets/icons/folder.svg"); }
-.ob-icon-grid { --icon: url("../assets/icons/grid.svg"); }
-.ob-icon-grid_rows { --icon: url("../assets/icons/grid_rows.svg"); }
-.ob-icon-home { --icon: url("../assets/icons/home.svg"); }
-.ob-icon-link_external { --icon: url("../assets/icons/link_external.svg"); }
-.ob-icon-list { --icon: url("../assets/icons/list.svg"); }
-.ob-icon-mail { --icon: url("../assets/icons/mail.svg"); }
-.ob-icon-phone { --icon: url("../assets/icons/phone.svg"); }
-.ob-icon-question { --icon: url("../assets/icons/question.svg"); }
-.ob-icon-search { --icon: url("../assets/icons/search.svg"); }
-.ob-icon-stack { --icon: url("../assets/icons/stack.svg"); }
-.ob-icon-tag { --icon: url("../assets/icons/tag.svg"); }
-.ob-icon-xmark { --icon: url("../assets/icons/xmark.svg"); }
-.ob-icon-zoom_in { --icon: url("../assets/icons/zoom_in.svg"); }
-.ob-icon-zoom_out { --icon: url("../assets/icons/zoom_out.svg"); }
 
 /* ---- Oblique header with the federal logo lockup ------------------------ */
 .ob-header { background: var(--ob-color-bg); position: sticky; top: 0; z-index: var(--ob-z-layout); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }

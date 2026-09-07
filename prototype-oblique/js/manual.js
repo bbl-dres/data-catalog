@@ -55,7 +55,7 @@
           <div><h3>${esc(chapter.statusTitle)}</h3><p>${text(chapter.statusNote)}</p><ul class="ob-list">${join(Object.entries(model.statuses).map(([status, definition]) => `<li><strong>${esc(status)}</strong>: ${esc(definition.text)}</li>`))}</ul></div>`;
       },
       usage: chapter => `<ol class="ob-list">${join(chapter.steps.map(step => `<li><strong>${esc(step.title)}</strong>: ${text(step.text)}</li>`))}</ol>`,
-      retrieval: chapter => `<ul class="ob-list"><li><strong>Export</strong>: ${text(chapter.export)}</li><li><strong>API</strong>: ${text(chapter.api)} <a href="#/api">${esc(t('manual.toApi'))}</a></li></ul>`,
+      retrieval: chapter => `<ul class="ob-list"><li><strong>Export</strong>: ${text(chapter.export)}</li><li><strong>API</strong>: ${text(chapter.api)} <a href="${esc(router.href('/api'))}">${esc(t('manual.toApi'))}</a></li></ul>`,
       faq: entries => `<ul class="ob-list ob-list--loose">${join(entries.map(entry => `<li><strong>${esc(entry.q)}</strong><br>${text(entry.a)}</li>`))}</ul>`,
       glossary: entries => `<ul class="ob-list">${join(entries.map(entry => `<li><strong>${text(entry.term)}</strong>: ${text(entry.text)}</li>`))}</ul>`,
       references: entries => `<ul class="ob-list">${join(entries.map(entry => `<li>${ui.link(entry.url, esc(entry.title), { external: true })} (${esc(entry.source)})</li>`))}</ul>`,

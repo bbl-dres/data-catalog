@@ -159,7 +159,7 @@ The [test guide](../tests/README.md) is the maintained suite index. Responsive c
 
 ## Icons and fonts
 
-The 28 local SVG icons include the Oblique wireframe set and three diagram tools. CSS masks make them follow `currentColor`; decorative icons are hidden from assistive technology and icon-only actions have text labels. Noto Sans (variable weight, latin and latin-ext subsets) and Noto Sans Mono are self-hosted under `assets/fonts/`; the mono font comes from the Oblique repository. Both fonts are SIL Open Font License 1.1.
+The 28 local SVG icons include the Oblique wireframe set and three diagram tools. They are inlined into the generated `css/icons.css` (`python3 prototype-oblique/scripts/build-icons.py`), so no page render requests icon files. CSS masks make them follow `currentColor`; decorative icons are hidden from assistive technology and icon-only actions have text labels. Noto Sans (variable weight, latin and latin-ext subsets) and Noto Sans Mono are self-hosted under `assets/fonts/`; the mono font comes from the Oblique repository. Both fonts are SIL Open Font License 1.1.
 
 ## Licensing
 

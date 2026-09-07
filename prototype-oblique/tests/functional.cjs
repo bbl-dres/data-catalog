@@ -793,6 +793,42 @@ const server = createServer();
       await failed.close();
     });
 
+    await check('menus close before other actions, the field picker toggles from its trigger and one early request serves the load', async () => {
+      await visit('#/objects');
+      await page.click('[data-menu="actions"]');
+      assert.equal(await page.locator('#actions-menu-host .ob-menu').count(), 1);
+      await page.click('#view-tab-table'); await settle(page);
+      assert.equal(await page.locator('.ob-menu').count(), 0, 'switching the view closes the open export menu');
+      assert.equal(await page.locator('#collection-view-panel table').count() > 0, true);
+      await page.click('[data-action="field-picker"]'); await settle(page);
+      assert.equal(await page.locator('.ob-field-picker').count(), 1);
+      await page.click('[data-action="field-picker"]'); await settle(page);
+      assert.equal(await page.locator('.ob-field-picker').count(), 0, 'the trigger closes its own popover');
+      assert.equal(await page.locator('[data-action="field-picker"]').getAttribute('aria-expanded'), 'false');
+      await page.keyboard.press('Enter'); await settle(page);
+      assert.equal(await page.locator('.ob-field-picker').count(), 1, 'keyboard activation re-opens it');
+      await page.keyboard.press('Escape'); await settle(page);
+      await visit('#/objects/gebaeude');
+      if (await page.locator('.ob-tree-panel.is-collapsed').count()) { await page.click('[data-action="toggle-sidebar"]'); await settle(page); }
+      const branch = page.locator('#sidebar-tree .ob-tree-row.is-ancestor [data-action="toggle-tree"]').last();
+      assert.equal(await branch.getAttribute('aria-expanded'), 'true');
+      await branch.click(); await settle(page);
+      assert.equal(await page.locator('#sidebar-tree a[aria-current="page"]').count(), 0, 'the branch holding the current page collapses');
+      assert.equal(await page.evaluate(() => document.activeElement?.dataset.action), 'toggle-tree', 'focus stays on the toggle');
+      await page.locator('#sidebar-tree [data-action="toggle-tree"][aria-expanded="false"]').first().click(); await settle(page);
+      assert.equal(await page.locator('#sidebar-tree a[aria-current="page"]').count(), 1);
+      await page.click('#sidebar-tree a[aria-current="page"]'); await settle(page);
+      assert.equal(await page.evaluate(() => document.activeElement?.id), 'page-content', 'in-page navigation hands focus to the content');
+      const fresh = await browser.newPage();
+      const counts = {};
+      fresh.on('request', request => { const file = request.url().split('/').pop(); if (/^(config|i18n|model|manual)\.json$/.test(file)) counts[file] = (counts[file] || 0) + 1; });
+      await fresh.goto(base + '#/objects');
+      await fresh.waitForSelector('#page-content h1');
+      assert.deepEqual(counts, { 'config.json': 1, 'i18n.json': 1, 'model.json': 1, 'manual.json': 1 }, 'the early requests are consumed, not repeated');
+      assert.equal(await fresh.evaluate(() => performance.getEntriesByType('resource').filter(e => /assets\/icons\//.test(e.name)).length), 0, 'icons are inline masks');
+      await fresh.close();
+    });
+
     assert.deepEqual(errors, [], 'unexpected browser exceptions');
     assert.deepEqual(failures, [], 'functional regressions');
     console.log('PASS: all functional regression checks.');

@@ -1,7 +1,4 @@
 /* Relationship workspace. SVG controls use the same CSS-mask mechanism as Oblique icons. */
-.ob-icon-graph_pan { --icon: url('../assets/icons/graph_pan.svg'); }
-.ob-icon-graph_select { --icon: url('../assets/icons/graph_select.svg'); }
-.ob-icon-graph_fit { --icon: url('../assets/icons/graph_fit.svg'); }
 .ob-detail-tabs-frame .ob-tabs { align-items: center; gap: var(--ob-space-md); overflow: visible; }
 .ob-tab-list { display: flex; flex: 1; min-width: 0; overflow-x: auto; scroll-padding-inline: var(--ob-space-lg); scrollbar-width: none; } /* a focused tab scrolls clear of the end fade */
 .ob-tab-list::-webkit-scrollbar { display: none; }

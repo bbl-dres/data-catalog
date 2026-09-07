@@ -70,6 +70,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `api-contract.cjs` / `api-schema.py` | Generated OpenAPI freshness, executed SQL columns/keys/nullability, local refs, read-only request guards and full response JSON Schema validation; optional `API_LIVE_READ=1` verifies public hosted reads |
 | `api.cjs` | Real Swagger contract and automatic publishable-key headers, table filters/projection/pagination, snapshot POST, retry, state retention and mobile widths using intercepted read responses |
 | `performance.cjs` | Local SQL startup, 12 views, search, 10× projection fixture, PDF layouts, idle-scroll work and modal cleanup; JSON measurements in the OS temporary directory |
+| `performance-load.cjs` | Load and reactivity under a real request waterfall: an HTTP/2 GitHub-Pages-like server (gzip, `max-age`, ETag), same-origin SQL snapshot, cold start with a sampling profile, warm reload, 12 route changes, 16 interactions with forced style/layout counts and memory over 150 route changes; optional CPU/network throttling and `--root` for a baseline checkout |
 | `pdf-metrics.cjs` | Word/identifier/Unicode wrapping, text-width cache isolation, font/size keys and eviction; no browser required |
 | `design-consistency.cjs` | Whole-app visual inventory of 21 routes/tab states; shared action states/contrast, panel alignment, disclosure markers, checkbox dimensions and mobile empty recovery |
 | `design-review.cjs` | Diagnostic capture of 18 states from 320 px phones to 2560 px desktops (title row, controls, tables, profile, diagram, print workspace, drawer, footer, search, handbook, API) with screenshots and layout measurements in `oblique-design-review` in the OS temporary directory; compare two runs by their `measurements.json`. See the [mobile design review](../docs/review/2026-09-07-mobile-design-review.md) |
@@ -119,6 +120,16 @@ node prototype-oblique/tests/performance.cjs
 $env:PERF_CPU_RATE = '4'
 node prototype-oblique/tests/performance.cjs
 ```
+
+The load measurement uses the same environment (`PGLITE_MODULE`; `--json` serves the fixture catalog instead). Compare a baseline checkout with `--root`, for example a git worktree of the previous commit:
+
+```powershell
+node prototype-oblique/tests/performance-load.cjs after
+node prototype-oblique/tests/performance-load.cjs after-slow --cpu 4 --net 3g
+node prototype-oblique/tests/performance-load.cjs before --root C:\path\to\previous\prototype-oblique
+```
+
+It writes `oblique-diagram-export/load-<label>.json` in the OS temporary directory and prints a summary. HTTP/2 needs `openssl` for a self-signed loopback certificate; without it, or with `--h1`, the server speaks HTTP/1.1. See the [code review](../docs/review/2026-09-07-code-review.md) for the recorded comparison.
 
 Run timings in isolation. `REPORT_ONLY=1` labels a baseline and skips deterministic work assertions; it does not restore older code. Reports are written after each stage to `oblique-diagram-export/performance-{before|after}-{1|4}x.json` in the OS temporary directory. Only 1× runs include the expensive 10× catalog fixture. Timings are diagnostic, with no machine-dependent pass threshold; unchanged-scroll mutations and excessive text measurements fail the after checks. CPU throttling is a desktop simulation, not a physical mobile-device result. See the [review](../docs/review/2026-09-06-performance-review.md) for the recorded comparison.
 

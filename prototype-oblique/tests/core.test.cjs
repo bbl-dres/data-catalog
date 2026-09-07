@@ -1158,3 +1158,29 @@ test('relationship bubbles and captions never overlap and large groups have boun
   data.relations = () => [];
   verify(graph.layout(entity));
 });
+
+test('highlighting marks hits under the same foldings as search, and search works in a catalog without domains', async () => {
+  const { ui, search, views } = await loaded();
+  assert.equal(ui.highlight('Gebäude', 'gebaeude'), '<mark class="ob-mark">Gebäude</mark>');
+  assert.equal(ui.highlight('Gebäude Zürich', 'zuerich'), 'Gebäude <mark class="ob-mark">Zürich</mark>');
+  assert.equal(ui.highlight('Gebäude', 'gebau'), '<mark class="ob-mark">Gebäu</mark>de');
+  assert.equal(ui.highlight('Strasse & Straße', 'strasse'), '<mark class="ob-mark">Strasse</mark> &amp; <mark class="ob-mark">Straße</mark>');
+  assert.equal(ui.highlight('<b>', 'b'), '&lt;<mark class="ob-mark">b</mark>&gt;');
+  assert.equal(ui.highlight('Gebäude', ''), 'Gebäude');
+  assert.equal(search.canSubmit('Gebäude', search.options({ domains: '' })), false, 'an explicitly empty selection cannot search');
+  const original = search.domains;
+  search.domains = () => [];
+  try { assert.equal(search.canSubmit('Gebäude', search.options({})), true, 'no domains to choose from is not an empty selection'); }
+  finally { search.domains = original; }
+  assert.equal(views.groupKey({ view: 'detail', kind: 'domains', entity: { kind: 'domains' } }), 'domains/objects');
+  assert.equal(views.groupKey({ view: 'list', kind: 'domains' }), 'domains');
+  assert.equal(views.groupKey({ view: 'list', kind: 'objects' }), 'objects');
+});
+
+test('the tree collapses a branch that the current page opened', async () => {
+  const { views, data } = await loaded();
+  const route = { view: 'detail', kind: 'objects', entity: { kind: 'objects', identifier: 'gebaeude' }, params: {} };
+  const branch = data.buildGroups('objects', 'domain').find(group => group.items.some(e => e.identifier === 'gebaeude')).id;
+  assert.match(views.tree(route, { treeOpen: { objects: true } }), /href="#\/objects\/gebaeude"/, 'the branch holding the page opens by itself');
+  assert.doesNotMatch(views.tree(route, { treeOpen: { objects: true, [branch]: false } }), /href="#\/objects\/gebaeude"/, 'and closes when the user collapses it');
+});

@@ -39,17 +39,23 @@
 
   // Table layout follows container width, including sidebar resizing.
   // One observer keeps DOM semantics and keyboard focus in sync with card mode.
-  function adaptTable(region) {
-    if (!region.isConnected) return;
-    const minWidth = region.dataset.tableMinEm ? Number(region.dataset.tableMinEm) * parseFloat(getComputedStyle(region.querySelector('table')).fontSize) : Number(region.dataset.tableMinWidth);
-    const cards = region.clientWidth < minWidth;
+  // Geometry is read for every region first and written afterwards: a read after a write forces a
+  // layout per table, which made a page with many tables lay out once per table.
+  const tableGeometry = new WeakMap(); // region → the "width:fontSize" it was last adapted to
+  const measureTable = region => ({ region, width: region.clientWidth, fontSize: parseFloat(getComputedStyle(region.querySelector('table')).fontSize) });
+  function adaptTable({ region, width, fontSize }) {
+    const geometry = `${width}:${fontSize}`;
+    if (!region.isConnected || tableGeometry.get(region) === geometry) return; // the observer's first notification repeats the render-time pass
+    tableGeometry.set(region, geometry);
+    const minWidth = region.dataset.tableMinEm ? Number(region.dataset.tableMinEm) * fontSize : Number(region.dataset.tableMinWidth);
+    const cards = width < minWidth;
     const wasCards = region.classList.contains('is-cards');
     const focused = region.contains(document.activeElement) ? document.activeElement : null;
     region.classList.toggle('is-cards', cards);
     if (!cards && region.dataset.tableMinEm) {
-      const headers = [...region.querySelectorAll('[data-column-min-em]')], fontSize = parseFloat(getComputedStyle(region.querySelector('table')).fontSize);
+      const headers = [...region.querySelectorAll('[data-column-min-em]')];
       const minima = headers.map(header => Number(header.dataset.columnMinEm) * fontSize);
-      const remaining = Math.max(0, region.clientWidth - minima.reduce((sum, width) => sum + width, 0));
+      const remaining = Math.max(0, width - minima.reduce((sum, width) => sum + width, 0));
       const weight = headers.reduce((sum, header) => sum + Number(header.dataset.columnWeight), 0);
       headers.forEach((header, index) => { header.style.width = `${minima[index] + remaining * Number(header.dataset.columnWeight) / weight}px`; });
     }
@@ -63,11 +69,13 @@
       }
     }
   }
-  const tableLayoutObserver = new ResizeObserver(entries => entries.forEach(entry => adaptTable(entry.target)));
+  const tableLayoutObserver = new ResizeObserver(entries => entries.map(entry => measureTable(entry.target)).forEach(adaptTable));
 
   function observeTables() {
     tableLayoutObserver.disconnect();
-    document.querySelectorAll('.ob-table-region').forEach(region => { adaptTable(region); tableLayoutObserver.observe(region); });
+    const measured = [...document.querySelectorAll('.ob-table-region')].map(measureTable);
+    measured.forEach(adaptTable);
+    measured.forEach(({ region }) => tableLayoutObserver.observe(region));
   }
 
   function resolveRoute() {
@@ -97,8 +105,9 @@
   /** Selector that re-identifies a focused control after `container` is re-rendered, or null. */
   function focusSelector(el, container) {
     if (!el || !container.contains(el)) return null;
-    // A menu item disappears with its menu: return to the button that opened it.
+    // A menu item or popover link disappears with its menu: return to the button that opened it.
     if (el.closest('.ob-menu')) el = el.closest('.ob-menu-host').querySelector('[data-action="menu"]');
+    else if (el.closest('.ob-popover')) el = el.closest('.ob-popover-host').querySelector('[data-action="help-toggle"]');
     if (el.dataset.focus) return `[data-focus="${CSS.escape(el.dataset.focus)}"]`;
     if (el.id) return '#' + CSS.escape(el.id);
     const attrs = [...el.attributes].filter(a => a.name.startsWith('data-') && !['data-label', 'data-href'].includes(a.name));
@@ -112,6 +121,29 @@
     const target = selector && container.querySelector(selector);
     if (target && !target.disabled) target.focus({ preventScroll: true });
   }
+  /** Swap one element for the markup of its new version, keeping focus like replaceHtml. */
+  function replaceElement(element, html) {
+    const selector = focusSelector(document.activeElement, element);
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    const next = template.content.firstElementChild;
+    if (!next) { element.remove(); return; }
+    element.replaceWith(next);
+    const target = selector && next.querySelector(selector);
+    if (target && !target.disabled) target.focus({ preventScroll: true });
+  }
+  /** The page's own menus (export, grouping) open and close without re-rendering the page. */
+  function renderPageMenus() {
+    const actions = $('actions-menu-host'); if (actions) replaceElement(actions, views.actionsMenu(ctx));
+    const group = $('group-menu-host'); if (group) replaceElement(group, views.groupMenu(ctx));
+  }
+  /** Expanding or collapsing a branch re-renders the tree only. */
+  function renderTree() {
+    const tree = $('sidebar-tree');
+    if (tree && route.view !== 'manual') { const scroll = tree.scrollTop; replaceHtml(tree, views.tree(route, state)); tree.scrollTop = scroll; }
+    const flyoutTree = state.flyout && state.flyout !== 'manual' && $('sidebar-flyout')?.querySelector('.ob-tree');
+    if (flyoutTree) replaceElement(flyoutTree, views.tree(route, state, state.flyout));
+  }
 
   /** Called on every hash change (and by router.navigate): reset transient state, then render. */
   app.onRoute = function () {
@@ -120,7 +152,8 @@
     const diagramHadFocus = DK.graph.closeFullscreen(false);
     DK.graph.onPointerUp();
     const previous = route;
-    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, .ob-hero-search-form');
+    // Focus that the new page removes (a followed link, the tree, the search field) moves to the content, not to <body>.
+    const navigationHadFocus = diagramHadFocus || state.navDrawerOpen || !!state.flyout || !!document.activeElement?.closest('.ob-search, .ob-hero-search-form, #main, #main-nav');
     route = resolveRoute();
     state.navDrawerOpen = false;
     state.flyout = null;
@@ -195,7 +228,7 @@
       if (sort && DK.presentation.fields(visibleKind).some(field => field.id === sort.field && field.type !== 'links')) state.tableSorts[key] = sort;
     }
     if (route.view === 'list' && route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
-    if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[route.kind] = route.params.group;
+    if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[views.groupKey(route)] = route.params.group;
     const page = views.page(route, state);
     ctx = page.ctx;
     normalizeSearchPage();
@@ -320,6 +353,7 @@
     if (open && state.suggestIdx >= 0) $('suggest-' + state.suggestIdx)?.scrollIntoView({ block: 'nearest' });
   }
   /** Share visual-viewport fitting between hero and header without replacing the input. */
+  let touchTarget = null; // the token is constant until the window changes; reading it forces a style recalculation
   function fitSearchSuggestions(revealForm = false) {
     const list = $('search-suggest');
     if (!list) return;
@@ -327,24 +361,26 @@
     const bottom = viewport ? viewport.offsetTop + viewport.height : window.innerHeight;
     let available = bottom - list.getBoundingClientRect().top;
     const form = document.querySelector('.ob-hero-search-form');
-    const target = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-touch-target'));
-    if (revealForm === true && form && available < target * 2 && document.activeElement === $('search-input')) {
+    touchTarget ??= parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-touch-target'));
+    if (revealForm === true && form && available < touchTarget * 2 && document.activeElement === $('search-input')) {
       form.scrollIntoView({ block: 'start' });
       available = bottom - list.getBoundingClientRect().top;
     }
     list.style.setProperty('--ob-suggest-available-height', available + 'px');
   }
+  // Root properties invalidate every element's style, so they are written only when they change.
+  const rootProperty = (name, value) => {
+    const style = document.documentElement.style;
+    if (value == null) { if (style.getPropertyValue(name)) style.removeProperty(name); }
+    else if (style.getPropertyValue(name) !== value) style.setProperty(name, value);
+  };
   function syncVisualViewport(revealForm = false) {
-    const viewport = window.visualViewport, style = document.documentElement.style;
+    const viewport = window.visualViewport;
     // Follow keyboard resizing/panning. During browser pinch zoom, retain native
     // modal geometry so zooming does not continuously shrink the dialog itself.
-    if (viewport && viewport.scale === 1) {
-      style.setProperty('--ob-visual-viewport-height', viewport.height + 'px');
-      style.setProperty('--ob-visual-viewport-top', viewport.offsetTop + 'px');
-    } else {
-      style.removeProperty('--ob-visual-viewport-height');
-      style.removeProperty('--ob-visual-viewport-top');
-    }
+    const follow = viewport && viewport.scale === 1;
+    rootProperty('--ob-visual-viewport-height', follow ? viewport.height + 'px' : null);
+    rootProperty('--ob-visual-viewport-top', follow ? viewport.offsetTop + 'px' : null);
     fitSearchSuggestions(revealForm);
   }
   // Update only the hosts affected by opening or closing a menu.
@@ -357,8 +393,11 @@
     state.flyout = null;
     state.menu = next; state.suggest = false; state.suggestIdx = -1;
     const inMain = m => !!m && !HEADER_MENUS.includes(m);
-    if (inMain(prev) || inMain(next) || hadFlyout || closeSearch) app.render();
-    else if (hadSuggest) renderSuggest();
+    if (hadFlyout || closeSearch) app.render();
+    else {
+      if (inMain(prev) || inMain(next)) renderPageMenus();
+      if (hadSuggest) renderSuggest();
+    }
     if (HEADER_MENUS.includes(prev) || HEADER_MENUS.includes(next)) renderHelp();
   }
   function closeTransient() { if (state.menu || state.suggest) setMenu(null); }
@@ -542,7 +581,7 @@
     if (!route || route.view !== 'manual' || chapterScrollLock) return;
     const firstChapter = document.querySelector('.ob-chapter');
     if (!firstChapter) return;
-    let activeChapter = data.manual.chapters[0].id;
+    let activeChapter = data.manual.chapters[0]?.id;
     // Use the same CSS offset as chapter links, allowing a pixel for scroll rounding.
     const chapterThreshold = parseFloat(getComputedStyle(firstChapter).scrollMarginTop) + 1;
     data.manual.chapters.forEach(chapter => {
@@ -570,7 +609,7 @@
     const el = action;
     if (!el) {
       if (e.target.closest('.ob-search-options')) return;
-      if (e.target.id === 'search-input') { if (!state.suggest) { state.suggest = true; renderSuggest(); } return; }
+      if (e.target.id === 'search-input') { if (state.menu) setMenu(null); if (!state.suggest) { state.suggest = true; renderSuggest(); } return; }
       if (e.target.closest('.ob-popover, .ob-menu, #search-suggest')) return;
       const tr = e.target.closest('tr.is-clickable[data-href], .ob-tile[data-href]');
       if (tr && !e.target.closest('a, button')) { router.navigate(tr.dataset.href); return; }
@@ -582,6 +621,8 @@
       return;
     }
     const key = el.dataset.key;
+    // Any other control closes an open menu; menu items and the menu buttons manage their own menu.
+    if (state.menu && !['menu', 'help-toggle'].includes(el.dataset.action) && !el.closest('.ob-menu, .ob-popover')) setMenu(null);
     if (el.dataset.action.startsWith('graph-')) { DK.graph.action(el, e); return; }
     switch (el.dataset.action) {
       case 'skip': e.preventDefault(); $('main').focus(); return;
@@ -627,7 +668,7 @@
       case 'field-picker':
         e.stopPropagation();
         DK.fieldPicker.open(el, el.dataset.fieldPicker, () => { syncVisibilityUrl(); renderCollectionResults(); }); return;
-      case 'set-group': state.groupBy[route.kind] = el.dataset.group; state.closed = {}; state.filteredClosed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
+      case 'set-group': state.groupBy[views.groupKey(route)] = el.dataset.group; state.closed = {}; state.filteredClosed = {}; state.menu = null; router.replaceParams({ group: el.dataset.group }); app.render(); return;
       case 'set-view': {
         if (ctx.isDomain) {
           state.detailTab = detail.resolveTab(route.entity, el.dataset.view);
@@ -656,7 +697,13 @@
         const closed = ctx.filter ? state.filteredClosed : state.closed;
         closed[key] = !closed[key]; app.render(); return;
       }
-      case 'toggle-tree': e.preventDefault(); e.stopPropagation(); state.treeOpen[key] = !state.treeOpen[key]; app.render(); return;
+      case 'toggle-tree': {
+        e.preventDefault(); e.stopPropagation();
+        // The row's own state also covers a branch that is open because it contains the current page.
+        const expanded = el.closest('.ob-tree-row')?.querySelector('[aria-expanded]')?.getAttribute('aria-expanded') === 'true';
+        state.treeOpen[key] = !expanded;
+        renderTree(); return;
+      }
       case 'open-navigation': e.preventDefault(); setNavigation(true); return;
       case 'close-navigation': e.preventDefault(); setNavigation(false); return;
       case 'open-overview': {
@@ -680,7 +727,7 @@
         router.replaceParams({ page: el.dataset.page === '1' ? null : el.dataset.page }); app.render();
         document.querySelector('.ob-detail-rows')?.scrollIntoView({ block: 'start' }); return;
       case 'toggle-relation-view': state.relationDiagram = !state.relationDiagram; app.render(); return;
-      case 'export': { const id = el.dataset.export, label = el.dataset.label; state.menu = null; app.render(); doExport(id, label); return; }
+      case 'export': { const id = el.dataset.export, label = el.dataset.label; setMenu(null); doExport(id, label); return; }
       case 'clear-query': {
         state.query = ''; state.suggest = true; state.suggestIdx = -1;
         const input = $('search-input'); if (input) { input.value = ''; input.focus(); }
@@ -773,8 +820,6 @@
     $('skip-link').textContent = t('skip');
     $('brand-link').setAttribute('aria-label', `${cfg.app.organisation} – ${cfg.app.name} – ${t('nav.home')}`);
     $('main-nav').setAttribute('aria-label', t('nav.main'));
-    $('header-tools').innerHTML = views.headerTools(state, route);
-    $('footer').innerHTML = views.footer();
     const backToTopButton = $('back-to-top');
     backToTopButton.setAttribute('aria-label', t('backToTop.aria'));
     backToTopButton.innerHTML = `${ui.icon('arrow_right', 'sm')}<span>${ui.esc(t('backToTop.label'))}</span>`;
@@ -863,9 +908,8 @@
     document.addEventListener('pointermove', DK.graph.onPointerMove);
     document.addEventListener('pointerup', DK.graph.onPointerUp);
     document.addEventListener('pointercancel', DK.graph.onPointerUp);
-    document.addEventListener('wheel', DK.graph.onWheel, { passive: false });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', () => { updateBackToTop(); requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); syncVisualViewport(true); }); }, { passive: true });
+    window.addEventListener('resize', () => { touchTarget = null; updateBackToTop(); requestAnimationFrame(() => { revealActiveTab(); DK.graph.resize(); syncVisualViewport(true); }); }, { passive: true });
     window.visualViewport?.addEventListener('resize', () => syncVisualViewport(true), { passive: true });
     window.visualViewport?.addEventListener('scroll', () => syncVisualViewport(), { passive: true });
     window.addEventListener('hashchange', app.onRoute);

@@ -12,7 +12,7 @@ function createServer({ catalogProvider = 'json' } = {}) {
     catch { res.writeHead(400); res.end('Bad path'); return; }
     if (pathname === '/js/catalog-config.js' && catalogProvider === 'json') {
       res.writeHead(200, { 'Content-Type': 'application/javascript' });
-      res.end("window.DK.catalogConfig = { provider: 'json' };");
+      res.end("window.DK = window.DK || {}; window.DK.catalogConfig = { provider: 'json' };");
       return;
     }
     const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));

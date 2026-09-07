@@ -174,6 +174,9 @@
     draw(); graph.resize(); transform();
     observer = observer || new ResizeObserver(() => { if (current?.state.autoFit) fit(); });
     observer.observe($('graph'));
+    // Ctrl+wheel zoom needs preventDefault, so this listener cannot be passive: it belongs to the viewport, not the document,
+    // where it would delay every page scroll. The viewport node is new for every mount and moves as a whole into fullscreen.
+    $('graph').addEventListener('wheel', graph.onWheel, { passive: false });
   };
 
   /** Full-window modal workspace, including on phones; browser chrome is retained. */

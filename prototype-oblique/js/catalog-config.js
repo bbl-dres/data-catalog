@@ -1,4 +1,6 @@
-/* Public connection settings. Never put a secret key or database password here. */
+/* Public connection settings. Never put a secret key or database password here.
+   Loaded first: it creates the DK namespace so boot.js can start the catalog request. */
+window.DK = window.DK || {};
 window.DK.catalogConfig = Object.freeze({
   provider: 'supabase',
   url: 'https://zicluerzbevodlmtbxow.supabase.co',

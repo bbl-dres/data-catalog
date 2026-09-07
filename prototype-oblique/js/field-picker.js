@@ -2,7 +2,7 @@
 (function (DK) {
   'use strict';
   const { ui, presentation } = DK, esc = ui.esc;
-  let active;
+  let active, dismissed = null; // { trigger, at }: light dismiss by a press on the trigger; its click must not re-open
   const label = kind => `${ui.t('visibility.label')} (${presentation.selected(kind).length})`;
   const checklist = (fields, selected, { name = 'visible-field', translate = ui.t } = {}) => fields.map(f => `<label class="ob-check"><input type="checkbox" name="${esc(name)}" value="${esc(f.id)}"${f.required || selected.includes(f.id) ? ' checked' : ''}${f.required ? ' disabled data-fixed' : ''}><span>${esc(f.labelText || translate(f.label))}${f.required ? ` <span class="ob-field-required">${esc(translate('visibility.fixed'))}</span>` : ''}</span></label>`).join('');
   function close(restore = false) {
@@ -12,6 +12,9 @@
     if (restore && trigger.isConnected) trigger.focus({ preventScroll: true });
   }
   function open(trigger, kind, applied) {
+    if (dismissed?.trigger === trigger && performance.now() - dismissed.at < 1000) { dismissed = null; return; }
+    dismissed = null;
+    if (active?.trigger === trigger) { close(true); return; } // keyboard activation of the open trigger
     close();
     const definitions = presentation.choices(kind), node = document.createElement('div'), events = new AbortController();
     const listen = (target, type, callback) => target.addEventListener(type, callback, { signal: events.signal });
@@ -45,7 +48,9 @@
     });
     listen(node, 'change', event => { event.stopPropagation(); update(); });
     listen(node, 'keydown', event => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(true); } });
-    listen(node, 'toggle', event => { if (event.newState === 'closed') close(false); });
+    let pressedTrigger = false;
+    listen(document, 'pointerdown', event => { pressedTrigger = trigger.contains(event.target); }, { capture: true });
+    listen(node, 'toggle', event => { if (event.newState === 'closed') { if (pressedTrigger) dismissed = { trigger, at: performance.now() }; close(false); } });
     listen(window, 'resize', position); listen(window, 'scroll', position);
     if (window.visualViewport) { listen(visualViewport, 'resize', position); listen(visualViewport, 'scroll', position); }
     node.showPopover(); position(); node.querySelector('input:not(:disabled)')?.focus();
