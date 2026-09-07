@@ -96,7 +96,7 @@ An assignment audit of every code list against attributes and fields found no in
 
 ## Dokumente Management und Architektonische Sicht — 7 September 2026
 
-Five applied operations extend the catalog with EA-IMMO content from `prototype-datamodel/docs/`, one KBOB-IPB document type and an eBKP-H clarification:
+Six applied operations extend the catalog with EA-IMMO content from `prototype-datamodel/docs/`, one KBOB-IPB document type, an eBKP-H clarification and a catalog-wide comment review:
 
 | Script | Content |
 |---|---|
@@ -105,6 +105,7 @@ Five applied operations extend the catalog with EA-IMMO content from `prototype-
 | [20260907-dokumente-kuerzung.sql](20260907-dokumente-kuerzung.sql) | Review: Version, Workflow, Anweisung and Nachricht removed again (validated same-day creations without references; the identity guard is disabled only for these four deletes and re-enabled), and the thirteen remaining new comments compacted to group, priority, primary identification and note |
 | [20260907-cafm-basisplan.sql](20260907-cafm-basisplan.sql) | **CAFM Basisplan** as an eighth Dokumente-Management object: the KBOB-IPB Anhang C document type (Dokumenttypenkatalog 2016) for the DWG floor base plan of the Flächenmanagement, with the catalog PDF linked |
 | [20260907-technische-anlage-ebkph.sql](20260907-technische-anlage-ebkph.sql) | **Technische Anlage** broadened from HLK-only to the general building system per eBKP-H Hauptgruppe D (Technik Gebäude): Elektro, Gebäudeautomation, Sicherheit, Brandschutz, Wärme, Kälte, Luft, Wasser, Abwasser, Gas, Spezialmedien, Beförderung; eBKP-H (SN 506 511) joins the normative references. Evidence: [docs/sources/ebkp-h](../../docs/sources/ebkp-h/2026-09-07-ebkph-technik-gebaeude.json) |
+| [20260907-kommentar-review.sql](20260907-kommentar-review.sql) | Catalog-wide comment review: 56 comment edits across attributes, fields, tables, code lists and systems. The identical XSD note on 14 service fields moves into the two service-table comments (comments removed); stale source blocks on 7 retired attributes, repeated INTERLIS/Arbeitsmappe/AV-list boilerplate and catalog-status meta are dropped. Substantive record-specific flags (SAP codes, RPG/RPV references, truncation flags, open checks) stay; already compact entities are untouched |
 
 All created records follow the Zone precedent: draft status, descriptions and standards from the source documents, no invented governance, classification, version or priority. JSON fixtures stay frozen; the new content is visible in the hosted catalog only.
 
@@ -114,11 +115,11 @@ None of the scripts generates change-log entries. Existing creation/version date
 
 All three scripts acquire the catalog write lock and validate the expected records before editing. The profile update checks the original six objects, 28 attributes, 26 requirement assignments and reviewed GKAT vocabulary. The naming follow-up requires the profile operation and checks the 17 affected records' revisions and previous text. The 106-attribute synchronization requires the naming follow-up and checks all 28 edited records' revisions and previous text, refuses pre-existing identifiers for its creations and verifies the final active counts. Intervening edits or collisions cause a rollback.
 
-The private operation marker fingerprints the embedded content and baseline. Identical repeat execution performs no edits, including after subsequent catalog changes. Reusing an operation ID with different content is refused. Operation IDs are `business-object-profiles-20260907-v2`, `business-object-labels-20260907-v1`, `business-object-geometry-20260907-v1`, `bbl-referenzdaten-20260907-v1`, `kompakte-kommentare-20260907-v1`, `dokumentenmanagement-20260907-v1`, `architektonische-sicht-20260907-v1`, `dokumente-kuerzung-20260907-v1`, `cafm-basisplan-20260907-v1` and `technische-anlage-ebkph-20260907-v1`.
+The private operation marker fingerprints the embedded content and baseline. Identical repeat execution performs no edits, including after subsequent catalog changes. Reusing an operation ID with different content is refused. Operation IDs are `business-object-profiles-20260907-v2`, `business-object-labels-20260907-v1`, `business-object-geometry-20260907-v1`, `bbl-referenzdaten-20260907-v1`, `kompakte-kommentare-20260907-v1`, `dokumentenmanagement-20260907-v1`, `architektonische-sicht-20260907-v1`, `dokumente-kuerzung-20260907-v1`, `cafm-basisplan-20260907-v1`, `technische-anlage-ebkph-20260907-v1` and `kommentar-review-20260907-v1`.
 
 ## Run in Supabase SQL Editor
 
-1. All ten scripts are applied in the hosted database; repeat execution is a no-op. For a fresh original import, run them in file order (profiles, labels, geometry, Referenzdaten, compact comments, Dokumente Management, Architektonische Sicht, Kürzung, CAFM Basisplan, Technische Anlage eBKP-H), each as the project's `postgres` SQL Editor role.
+1. All eleven scripts are applied in the hosted database; repeat execution is a no-op. For a fresh original import, run them in file order (profiles, labels, geometry, Referenzdaten, compact comments, Dokumente Management, Architektonische Sicht, Kürzung, CAFM Basisplan, Technische Anlage eBKP-H, Kommentar-Review), each as the project's `postgres` SQL Editor role. The comment review additionally expects the hosted `t-huelle` rename of 2026-09-05 (Gebäudehülle (AO) → Gebäudehülle), which is not part of the scripted chain.
 2. For a preview, replace only the **final** `COMMIT;` with `ROLLBACK;`. Run the whole file and inspect the result: profile counts for the first script, current attribute names for the follow-up, counts/new attributes/vocabularies for the synchronization. The preview leaves catalog content and operation markers unchanged.
 3. To apply, restore the final `COMMIT;` and run the entire file. If an error leaves a transaction open, execute `ROLLBACK;` before retrying.
 4. Reload the catalog. Repeat execution shows current catalog results without repeating the edits. The final result queries also work independently after commit; they do not require temporary tables or change logs.
@@ -139,6 +140,7 @@ node prototype-oblique/tests/architektonische-sicht.cjs
 node prototype-oblique/tests/dokumente-kuerzung.cjs
 node prototype-oblique/tests/cafm-basisplan.cjs
 node prototype-oblique/tests/technische-anlage-ebkph.cjs
+node prototype-oblique/tests/kommentar-review.cjs
 ```
 
-The suites execute the ten scripts against the complete schema/import. They check final Markdown/SQL definitions and property sets, identity reuse, the new object and vocabularies, measurement links, revisions, runtime loading and preserved source scope; the earlier suites verify their own operation results against the current Markdown through the later reviewed overlays. They also verify that change logs remain unchanged, result queries work after commit, previews and failures roll back completely, repeat runs preserve subsequent edits, and stale baselines and identifier collisions are refused. The suites never contact the hosted database.
+The suites execute the eleven scripts against the complete schema/import. They check final Markdown/SQL definitions and property sets, identity reuse, the new object and vocabularies, measurement links, revisions, runtime loading and preserved source scope; the earlier suites verify their own operation results against the current Markdown through the later reviewed overlays. They also verify that change logs remain unchanged, result queries work after commit, previews and failures roll back completely, repeat runs preserve subsequent edits, and stale baselines and identifier collisions are refused. The suites never contact the hosted database.

@@ -544,6 +544,14 @@ button.ob-tree-link { width: 100%; }
   .ob-local-actions { flex: 1 1 100%; flex-wrap: wrap; min-width: 0; }
   .ob-collection-search { flex: 1 1 var(--ob-collection-search-width); max-width: 100%; }
   .ob-collection-group { margin-left: auto; }
+  .ob-detail-controls:has(.ob-local-actions) { border-bottom: 0; }
+  .ob-detail-controls:has(.ob-local-actions) .ob-detail-tabs-frame { margin-bottom: 0; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+  .ob-detail-controls:has(.ob-local-actions) .ob-tabs { margin-bottom: calc(-1 * var(--ob-border-width-xs)); }
+  .ob-detail-controls .ob-local-actions { padding-bottom: var(--ob-space-xs); }
+}
+@container workspace (min-width: 601px) and (max-width: 880px) {
+  .ob-detail-controls .ob-local-actions { justify-content: flex-end; }
+  .ob-detail-controls .ob-collection-search { flex: 0 1 var(--ob-collection-search-width); }
 }
 @media (any-pointer: coarse), (max-width: 960px) {
   .ob-collection-search .ob-search-clear { width: var(--ob-touch-target); height: var(--ob-touch-target); right: 0; }

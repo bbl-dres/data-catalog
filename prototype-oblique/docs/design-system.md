@@ -1,6 +1,6 @@
 # Design system: Oblique without Angular
 
-The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 400 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
+The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 360 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) provides the reference palette and typography. This prototype implements its compact interface with plain CSS custom properties in `tokens.css`, shared components in `components.css`, and contextual styles in `main.css`, `graph.css` and `export.css`.
 
@@ -89,7 +89,7 @@ The header uses the existing flag SVG followed by a 16 px gap (`--ob-logo-gap`),
 | 1024–1279 px | 32 × 35.2 px | 14 px |
 | From 1280 px | 32 × 35.2 px | 16 px |
 
-The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The prototype notice is centered between the logo and controls on wide screens and occupies its own 28 px row at widths up to 1200 px. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity, notice and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
+The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The prototype notice is centered between the logo and controls whenever the desktop navigation is present, hides while the opened header search covers its space, and occupies its own 28 px row only in drawer mode at widths up to 960 px. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity, notice and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
 
 The flag stays capped at 32 px wide on large screens, preserving the SVG's 40:44 ratio. The image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The compact composition has been checked from phone to wide desktop sizes.
 
@@ -135,6 +135,7 @@ The document scrolls vertically. Home domains and latest changes stay stacked at
 | Above 960 px | Separate navigation below the identity header; resizable sidebar, 240–480 px, reserving at least 600 px for content. A narrower window clamps the visible width without replacing the saved preference. |
 | At or below 960 px | Modal navigation drawer, reduced content padding, no desktop resize handle. |
 | Narrow content container | Controls wrap; table columns switch to labeled cards based on available width, including when the sidebar is wide. Swagger tables retain their column structure with local horizontal scrolling. |
+| Wrapped detail controls | Tabs retain their full-width baseline above the search/view row, which has no additional bottom border. At content widths of 601–880 px, search and view controls align right with a 280 px search field; smaller containers allow them to fill and wrap. |
 | Detail profiles | Verantwortlich sits to the right of Kerndaten on wide screens. At a content width of 880 px or less, or a viewport of 960 px or less, it appears above Kerndaten. Contacts come first in the document order so keyboard and assistive-technology users can reach them before the metadata. |
 | Coarse pointer or viewport at/below 960 px | Shared 44 px control targets, including hybrid touch laptops. Search inputs use a size that avoids mobile browser auto-zoom. |
 | Large desktop | Bounded workspace and prose widths; consistent tile columns and compact metadata columns. Avoid stretching individual sections to fill unused space. |
