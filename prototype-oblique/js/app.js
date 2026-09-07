@@ -157,6 +157,8 @@
     const key = route.entity ? `${route.kind}:${route.id}` : null;
     if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
+    // The URL always names a chapter, but only an explicitly requested one scrolls; a plain #/manual opens at the top.
+    const requestedChapter = route.view === 'manual' ? route.params.ch : null;
     if (route.view === 'manual') {
       state.chapter = DK.manual.resolveChapter(route.params.ch);
       router.replaceParams({ ch: state.chapter });
@@ -164,10 +166,10 @@
     app.render(true);
     if (navigationHadFocus) $('page-content').focus({ preventScroll: true });
     renderHelp();
-    if (route.view === 'manual' && route.params.ch) {
+    if (requestedChapter) {
       const el = $(DK.manual.anchorId(state.chapter));
       if (el) el.scrollIntoView({ block: 'start' });
-    } else if (route.view !== 'manual') {
+    } else {
       window.scrollTo(0, 0);
     }
   };
@@ -181,6 +183,7 @@
     const swaggerHost = !navigated && route?.view === 'api' ? $('swagger-ui') : null;
     const swaggerFocus = swaggerHost?.contains(document.activeElement) ? document.activeElement : null;
     const treeScroll = document.querySelector('.ob-sidebar-tree')?.scrollTop || 0;
+    const drawerScroll = document.querySelector('.ob-drawer-body')?.scrollTop || 0; // the drawer scrolls nav and tree as one region
     const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     const visibleKind = DK.presentation.routeKind(route);
@@ -217,6 +220,8 @@
     if (mainFocus) $('main').querySelector(mainFocus)?.focus({ preventScroll: true });
     const tree = document.querySelector('.ob-sidebar-tree');
     if (tree) tree.scrollTop = treeScroll;
+    const drawerBody = document.querySelector('.ob-drawer-body');
+    if (drawerBody) drawerBody.scrollTop = drawerScroll;
     if ($('sidebar-flyout')) $('sidebar-flyout').scrollTop = flyoutScroll;
     document.documentElement.classList.toggle('ob-navigation-open', state.navDrawerOpen);
     syncDrawer();
@@ -297,7 +302,7 @@
   function renderHelp() {
     const h = $('help-host'); if (h) replaceHtml(h, views.helpHost(state));
     const l = $('language-host'); if (l) replaceHtml(l, views.languageHost(state));
-    const dh = $('drawer-help-host'); if (dh) replaceHtml(dh, views.helpHost(state));
+    const dh = $('drawer-help-host'); if (dh) replaceHtml(dh, views.helpHost(state, { labelled: true }));
     const dl = $('drawer-language-host'); if (dl) replaceHtml(dl, views.languageHost(state));
   }
   function renderSuggest() {

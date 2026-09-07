@@ -38,11 +38,11 @@
   function positionPopover(session) {
     if (!session.popoverMode) return;
     const popover = session.dialog.querySelector('#diagram-popover'), bounds = session.popoverTrigger.getBoundingClientRect();
-    const inset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-space-sm'));
+    const style = getComputedStyle(document.documentElement), inset = parseFloat(style.getPropertyValue('--ob-space-sm')), offset = parseFloat(style.getPropertyValue('--ob-menu-offset'));
     const viewport = window.visualViewport, top = viewport?.scale === 1 ? viewport.offsetTop : 0;
     const bottom = top + (viewport?.scale === 1 ? viewport.height : innerHeight);
     popover.style.left = Math.max(inset, Math.min(bounds.left, innerWidth - popover.offsetWidth - inset)) + 'px';
-    popover.style.top = Math.max(top + inset, Math.min(bounds.bottom + inset, bottom - popover.offsetHeight - inset)) + 'px';
+    popover.style.top = Math.max(top + inset, Math.min(bounds.bottom + offset, bottom - popover.offsetHeight - inset)) + 'px';
   }
   function showPopover(session, mode, trigger) {
     dismiss(session, false); session.popoverMode = mode; session.popoverTrigger = trigger;

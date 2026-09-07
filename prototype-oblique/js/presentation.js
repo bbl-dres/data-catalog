@@ -95,11 +95,13 @@
     'format', 'accessRights', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
     'attributeCount', 'fieldCount', 'objectCount', 'tableCount', 'apiCount', 'valueCount', 'endpointCount', 'status'];
   // Relative widths carry the same reading priorities into CSS tables and physical PDF columns.
+  // Short enumerated values (organisations, systems, norm references) reserve 14 em so compounds
+  // such as "Immobilienmanagement" stay on one line; the clamped description donates the slack.
   const sizing = f => f.id === 'name' ? { minEm: 12, weight: 2.4 }
-    : f.type === 'long' ? { minEm: 18, weight: 4 }
+    : f.type === 'long' ? { minEm: 18, weight: 3 }
     : ['number', 'boolean', 'status', 'date'].includes(f.type) || f.id === 'key' ? { minEm: 5, weight: .25 }
     : ['type', 'version', 'serviceVersion', 'protocol'].includes(f.id) ? { minEm: 7, weight: .7 }
-    : { minEm: 10, weight: 1.6 };
+    : { minEm: 14, weight: 1.6 };
   const definitionCache = new Map();
   function definitions(kind) {
     if (!Object.hasOwn(defaults, kind)) return [];

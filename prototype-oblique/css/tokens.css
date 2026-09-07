@@ -241,6 +241,7 @@
   --ob-language-select-min-width: 64px;
   --ob-drawer-width: 320px;
   --ob-drawer-header-height: 56px;
+  --ob-footer-height: calc(var(--ob-line-height-md) + 2 * var(--ob-space-xs)); /* single-row footer band (28px); sticky panels and the last handbook chapter keep clear of it */
   --ob-search-min-width: 260px;
   --ob-search-max-width: 480px;
   --ob-header-search-width: 400px;
@@ -249,6 +250,7 @@
   --ob-hero-control-height: 48px;
   --ob-hero-suggest-max-height: 360px;
   --ob-suggest-max-height: 420px;
+  --ob-menu-offset: var(--ob-space-xs);                  /* gap between a trigger and its dropdown surface: catalog menus, select menus and print popovers */
   --ob-menu-min-width: 240px;
   --ob-menu-min-width-wide: 260px;
   --ob-menu-min-width-narrow: 200px;
@@ -259,11 +261,12 @@
   --ob-kpi-count-font-size-small: 1.375rem;               /* 22px, stacked summary cards */
   --ob-kpi-compact-min-height: calc(var(--ob-touch-target) + var(--ob-space-sm));
   --ob-tab-min-height: var(--ob-space-2xl);
-  --ob-graph-min-height: 380px;
+  --ob-graph-min-height: 380px;                           /* inline diagram shell floor; graph.js raises it to the remaining viewport height */
   --ob-graph-viewport-min-height: 160px;
-  --ob-graph-control-size: 36px;
+  --ob-graph-control-size: var(--ob-control-height);      /* diagram toolbar follows the shared 32/44px control scale */
   --ob-graph-zoom-min-width: 54px;
-  --ob-facts-label-width: 160px;
+  --ob-graph-fit-min-zoom: 0.75;                          /* auto-fit floor keeps 12px node labels at 9px or more; smaller windows pan instead */
+  --ob-facts-label-width: 176px;                          /* fits the longest standard label ("Weitere Informationen") plus its 12px gap */
   --ob-facts-row-min-height: 36px;
   --ob-facts-row-padding: var(--ob-space-sm);
   --ob-tile-min-width: 300px;
@@ -272,9 +275,10 @@
   --ob-toast-max-width: 420px;
   --ob-spinner-size: var(--ob-space-2xl);
   --ob-spinner-duration: 800ms;
-  --ob-export-settings-width: 320px;
+  --ob-export-inset: var(--ob-space-lg);                  /* print header/toolbar/filter bands share this edge inset; export.css narrows it to 16px in compact mode and centres the bands within --ob-content-max-width */
+  --ob-export-settings-width: 320px;                      /* print scope column; widens with the viewport below like the catalog sidebar */
   --ob-export-popover-width: 380px;
-  --ob-export-facets-height: 320px;
+  --ob-export-facets-height: 320px;                       /* facet list and compact scope tree; grows with the visible height below */
   --ob-export-preview-min-height: 280px;
   --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
   --ob-table-card-min-width: 300px;
@@ -301,13 +305,8 @@
 
 /* Centralised responsive token values. Native @media/@container conditions
    cannot reference custom properties; component layout queries stay literal.
-   The compact app caps the flag at 32px wide and title text at 16px. */
-@media (min-width: 480px) {
-  :root { --ob-logo-title-font-size: var(--ob-font-size-xs); }
-}
-@media (min-width: 640px) {
-  :root { --ob-logo-title-font-size: var(--ob-font-size-md); }
-}
+   The compact app caps the flag at 32px wide and title text at 16px; the
+   logo type only grows with the viewport (14px up to 1279px, 16px from 1280px). */
 @media (min-width: 768px) {
   :root { --ob-header-identity-height: 72px; }
 }
@@ -315,24 +314,49 @@
   :root { --ob-logo-flag-width: 32px; --ob-logo-flag-height: 35.2px; }
 }
 @media (min-width: 1280px) {
-  :root { --ob-logo-title-font-size: var(--ob-font-size-input); }
+  :root { --ob-logo-title-font-size: var(--ob-font-size-input); --ob-export-settings-width: 360px; }
 }
 @media (min-width: 1920px) {
-  :root { --ob-header-identity-height: 86px; }
+  :root { --ob-header-identity-height: 86px; --ob-export-settings-width: 480px; }
+}
+/* Tall viewports show more facet rows and compact tree rows before scrolling. */
+@media (min-height: 900px) {
+  :root { --ob-export-facets-height: 480px; }
+}
+@media (min-height: 1200px) {
+  :root { --ob-export-facets-height: 560px; }
+}
+/* Short viewports (landscape phones, 615–720px laptops) keep the 56px identity
+   row and 14px logo type so the sticky header stays below a fifth of the height. */
+@media (min-width: 768px) and (max-height: 720px) {
+  :root { --ob-header-identity-height: 56px; --ob-logo-title-font-size: var(--ob-font-size-md); }
 }
 @media (max-width: 1200px) {
-  :root { --ob-facts-label-width: 128px; }
+  :root { --ob-facts-label-width: 144px; }
 }
 @media (max-width: 960px) {
   :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; --ob-header-notice-height: calc(var(--ob-line-height-md) + var(--ob-space-sm)); --ob-tree-padding-inline: var(--ob-space-sm); }
+  /* Phones and tablets: the diagram shell fills the visible height below the sticky header once scrolled into view. */
+  :root { --ob-graph-min-height: calc(100dvh - var(--ob-header-height) - var(--ob-space-default)); }
 }
 @media (max-width: 600px) {
   :root { --ob-facts-row-min-height: 32px; }
 }
-/* Shared control geometry, including search clearances on touch laptops. */
+/* Shared control geometry, including search clearances on touch laptops.
+   Footer links grow to touch targets, so the band is 44px plus 8px padding. */
 @media (any-pointer: coarse), (max-width: 960px) {
-  :root { --ob-control-height: var(--ob-touch-target); }
+  :root { --ob-control-height: var(--ob-touch-target); --ob-footer-height: calc(var(--ob-touch-target) + 2 * var(--ob-space-sm)); }
 }
-@container workspace (max-width: 600px) {
+/* Touch screens keep diagram nodes and pagers at their unscaled target size; the canvas pans. */
+@media (any-pointer: coarse) {
+  :root { --ob-graph-fit-min-zoom: 1; }
+}
+/* Short drawers (landscape phones, open keyboards) trade header height for tree rows. */
+@media (max-height: 500px) {
+  :root { --ob-drawer-header-height: var(--ob-touch-target); }
+}
+/* Phone-width content columns; the 600px minimum the sidebar reserves keeps the desktop values. */
+@container workspace (width < 600px) {
   .ob-panel { --ob-panel-padding: var(--ob-space-default); }
+  .ob-facts { --ob-facts-label-width: 128px; }
 }

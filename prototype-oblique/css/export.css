@@ -4,20 +4,21 @@
 .ob-export-dialog[open] { display: flex; flex-direction: column; }
 .ob-export-dialog::backdrop { background: var(--ob-color-backdrop); }
 .ob-export-dialog :is(input, select, button) { max-width: 100%; }
-.ob-export-header, .ob-export-toolbar, .ob-export-filterbar { display: flex; flex: none; align-items: center; gap: var(--ob-space-md); padding: var(--ob-space-sm) var(--ob-space-lg); }
+/* The bands keep full-width dividers while their content centres within the catalog's 1600px bound, like .ob-footer-inner. */
+.ob-export-header, .ob-export-toolbar, .ob-export-filterbar { display: flex; flex: none; align-items: center; gap: var(--ob-space-md); padding: var(--ob-space-sm) max(var(--ob-export-inset), calc((100% - var(--ob-content-max-width)) / 2 + var(--ob-export-inset))); }
 .ob-export-header { justify-content: space-between; }
 .ob-export-header h2 { min-width: 0; overflow-wrap: anywhere; font-size: var(--ob-font-size-xl); }
 .ob-export-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); min-width: 0; }
 .ob-export-header-actions > .ob-export-control > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.ob-export-toolbar { flex-wrap: wrap; align-items: flex-start; padding-bottom: var(--ob-space-default); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+/* Both groups share one wrapping row; a wrapped end group starts flush left instead of hanging right. */
+.ob-export-toolbar { flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding-bottom: var(--ob-space-default); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
 .ob-export-tools-panel { flex: none; min-height: 0; }
 .ob-export-tools-panel > summary { display: none; padding: var(--ob-space-sm) var(--ob-space-default); }
 .ob-export-control { display: flex; flex-direction: column; gap: var(--ob-space-xs); min-width: 0; font-size: var(--ob-font-size-sm); }
-.ob-export-control :is(.ob-input, .ob-select) { box-sizing: border-box; min-width: 0; width: 100%; }
-.ob-export-document-control { width: calc(var(--ob-export-settings-width) * .6); }
+.ob-export-control :is(.ob-input, .ob-select) { min-width: 0; width: 100%; }
+.ob-export-document-control { max-width: var(--ob-export-popover-width); } /* sizes to the document title; longer titles ellipsize at the popover width */
 .ob-export-preview-tools { display: flex; align-items: flex-end; gap: var(--ob-space-xs); }
 .ob-export-toolbar-start, .ob-export-toolbar-end { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--ob-space-md); min-width: 0; }
-.ob-export-toolbar-end { margin-left: auto; }
 .ob-export-toolbar-divider { border-inline-end: var(--ob-border-width-xs) solid var(--ob-color-border); padding-inline-end: var(--ob-space-md); min-width: 0; }
 .ob-export-layout { display: flex; }
 .ob-export-layout .ob-button { flex: 1; gap: var(--ob-space-xs); padding-inline: var(--ob-space-sm); border-radius: 0; }
@@ -31,17 +32,19 @@
 .ob-export-filterbar { flex-wrap: wrap; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
 .ob-export-filterbar > p { margin-left: auto; }
 .ob-export-chips { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); min-width: 0; }
-.ob-export-chip { display: inline-flex; align-items: center; gap: var(--ob-space-xs); border: var(--ob-border-width-xs) solid transparent; background: var(--ob-color-surface); color: var(--ob-color-text); border-radius: var(--ob-radius-pill); padding: var(--ob-space-sm) var(--ob-space-md); font-size: var(--ob-font-size-xs); overflow-wrap: anywhere; }
+/* Chips share the 32/44px control height with the adjacent filter button; a wrapped scope chip grows by 16px lines. */
+.ob-export-chip { display: inline-flex; align-items: center; gap: var(--ob-space-xs); min-height: var(--ob-control-height); border: var(--ob-border-width-xs) solid transparent; background: var(--ob-color-surface); color: var(--ob-color-text); border-radius: var(--ob-radius-pill); padding: var(--ob-space-xs) var(--ob-space-md); font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); overflow-wrap: anywhere; }
 button.ob-export-chip { cursor: pointer; }
-.ob-export-chip--scope { display: block; border-radius: var(--ob-radius-lg); }
+.ob-export-chip--scope { flex-wrap: wrap; gap: 0 var(--ob-space-xs); border-radius: var(--ob-radius-lg); }
 .ob-export-chip--scope > span { white-space: nowrap; }
 button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
 .ob-export-chip .ob-icon { flex: none; }
 .ob-export-workspace { display: flex; flex: 1; min-height: 0; }
 .ob-export-settings { width: var(--ob-export-settings-width); flex: none; padding: var(--ob-space-sm); overflow: auto; border-right: var(--ob-border-width-xs) solid var(--ob-color-border); }
-.ob-export-settings summary { padding: var(--ob-space-sm); }
-.ob-export-settings-body { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--ob-space-sm); }
-.ob-export-settings-body > :not(nav) { margin-inline: var(--ob-space-sm); }
+/* Inside the 8px aside, the scope chevron and search field start at the 24px band inset of the toolbar controls and chips. */
+.ob-export-settings summary { padding: var(--ob-space-sm) var(--ob-space-default); }
+.ob-export-settings-body { display: flex; flex-direction: column; gap: var(--ob-space-sm); }
+.ob-export-settings-body > :not(nav) { margin-inline: var(--ob-space-default); }
 .ob-export-hint { font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); color: var(--ob-color-text-secondary); }
 /* Leaf selection occupies the shared tree's toggle column. */
 .ob-export-tree-check { display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -74,29 +77,29 @@ button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
 .ob-export-facet-list .ob-check { width: 100%; align-items: start; }
 .ob-export-facet-list .ob-check > span:first-of-type { flex: 1; overflow-wrap: anywhere; }
 .ob-pdf-render { position: fixed; left: -100000px; top: 0; pointer-events: none; }
-.ob-export-dialog.is-compact :is(.ob-export-header, .ob-export-toolbar, .ob-export-filterbar) { padding-inline: var(--ob-space-default); gap: var(--ob-space-sm); }
-.ob-export-dialog.is-compact .ob-export-header h2 { font-size: var(--ob-font-size-md); }
-.ob-export-dialog.is-compact .ob-export-preview-tools { margin-left: 0; }
+/* Compact mode narrows the band inset to 16px; the title keeps its 17px size above the 14px disclosure labels. */
+.ob-export-dialog.is-compact { --ob-export-inset: var(--ob-space-default); }
+.ob-export-dialog.is-compact :is(.ob-export-header, .ob-export-toolbar, .ob-export-filterbar) { gap: var(--ob-space-sm); }
 .ob-export-dialog.is-compact .ob-export-workspace { display: grid; grid-template-rows: auto minmax(var(--ob-export-preview-min-height), 1fr); flex: 1 0 auto; }
+/* The aside's 16px padding is the compact inset: chevron, search field, toolbar controls and chips align at x=16. */
 .ob-export-dialog.is-compact .ob-export-settings { width: 100%; max-height: none; padding: var(--ob-space-xs) var(--ob-space-default); border-right: 0; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+.ob-export-dialog.is-compact .ob-export-settings summary { padding-inline: 0; }
+.ob-export-dialog.is-compact .ob-export-settings-body > :not(nav) { margin-inline: 0; }
 .ob-export-dialog.is-compact #diagram-tree { max-height: var(--ob-export-facets-height); overflow: auto; overscroll-behavior: contain; }
 .ob-export-dialog.is-compact .ob-export-preview { min-height: var(--ob-export-preview-min-height); }
 .ob-export-dialog.is-compact .ob-export-canvas { position: absolute; inset: 0; padding: var(--ob-space-default); }
 .ob-export-dialog.is-compact .ob-export-tools-panel > summary { display: flex; }
 .ob-export-dialog.is-compact .ob-export-facet-list { max-height: none; overflow: visible; }
-@media (any-pointer: coarse), (max-width: 960px) {
-  button.ob-export-chip { min-height: var(--ob-touch-target); }
-}
 @media (max-width: 600px) {
   .ob-export-header { flex-wrap: wrap; }
   .ob-export-header-actions { width: 100%; display: grid; grid-template-columns: auto auto minmax(0, 1fr); }
-  .ob-export-header-actions .ob-button { padding-inline: var(--ob-space-sm); font-size: var(--ob-font-size-xs); }
+  .ob-export-header-actions .ob-button { padding-inline: var(--ob-space-sm); }
   .ob-export-header-actions [data-diagram-action="download"] { height: auto; min-height: var(--ob-touch-target); padding-block: var(--ob-space-xs); white-space: normal; }
   .ob-export-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ob-export-toolbar-start, .ob-export-toolbar-end { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: var(--ob-space-sm); }
   .ob-export-toolbar-start > .ob-export-toolbar-divider { border-inline-end: 0; padding-inline-end: 0; }
   .ob-export-toolbar-end > .ob-export-toolbar-divider { grid-column: 1 / -1; border-inline-end: 0; padding-inline-end: 0; }
-  .ob-export-document-control { width: auto; }
+  .ob-export-document-control { grid-column: 1 / -1; max-width: none; } /* the document title takes the whole first row; Papier and Ausrichtung pair below it */
   .ob-export-preview-tools { grid-column: 1 / -1; }
   .ob-export-preview-tools > .ob-export-control { flex: 1; }
   .ob-export-filterbar > p { width: 100%; }

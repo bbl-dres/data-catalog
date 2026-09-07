@@ -23,7 +23,7 @@ Maintain these guides alongside changes to the prototype. The app's [README](../
 - Update the relevant guide when behavior changes; keep test commands in the test guide.
 - Keep model meaning and attributes in data-model.md; maintain storage, prototype coverage and migration decisions in data-model-implementation.md.
 - Keep source evidence in `sources/` and executable import tools in `../scripts/`. Generated import reports belong beside their source evidence because they preserve mappings and retired records.
-- Keep temporary screenshots and test output outside the repository. Current preview images live in `../assets/`.
+- Keep temporary screenshots and test output outside the repository. Current preview images live in `../assets/`; a review may keep a few compressed before/after composites in a folder named after it.
 - Consolidate completed review decisions in the maintained guides. Preserve `wireframes/` and its supporting assets; delete archived designs only on explicit user request.
 
 Superseded reviews remain available in Git history. Restored wireframes are indexed in the design archive above.

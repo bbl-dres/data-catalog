@@ -4,6 +4,7 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [7 September 2026 — Mobile and multi-device design](2026-09-07-mobile-design-review.md) | Phones, tablets, small laptops and large desktops: title row, drawer, footer and floating widgets, column sizing, fact labels, tab strips, relationship diagram, print workspace and API reference, with before/after measurements and comparison images. |
 | [7 September 2026 — Building attributes](2026-09-07-building-attribute-review.md) | GIS IMMO, BBL RE-FX and GWR evidence for the revised business proposal: building boundaries, classifications, status, dates, storeys and relationships. Proposal only; no catalog changes. |
 | [7 September 2026 — Security](2026-09-07-security-review.md) | Database default privileges, browser injection defenses, API request guards, export safety and dependency integrity. |
 | [7 September 2026 — Print details, contents and widths](2026-09-07-print-details-review.md) | Complete child lists, responsibility grouping, measured widths, two-level linked contents and plain section headings. |

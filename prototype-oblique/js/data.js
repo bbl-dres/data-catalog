@@ -292,10 +292,13 @@
   });
 
   data.columns = kind => DK.presentation.fields(kind).map(DK.presentation.column);
-  /** One result schema for every searchable type; context retains its section metadata. */
+  /** One result schema for every searchable type; context retains its section metadata.
+   *  The em sizing mirrors the presentation.js buckets (name, short text, long text, status);
+   *  the type column holds kind labels such as "Geschäftsobjekt", so it reserves 10 em. */
   data.searchColumns = () => [
-    { label: t('col.name'), width: '25%' }, { label: t('col.type'), width: '11rem' },
-    { label: t('search.context'), width: '18%' }, { label: t('col.description') }, { label: t('col.status'), compact: true },
+    { id: 'name', label: t('col.name'), sizing: { minEm: 12, weight: 2.4 } }, { id: 'type', label: t('col.type'), sizing: { minEm: 10, weight: .7 } },
+    { id: 'context', label: t('search.context'), sizing: { minEm: 14, weight: 1.6 } }, { id: 'description', label: t('col.description'), sizing: { minEm: 18, weight: 3 } },
+    { id: 'status', label: t('col.status'), compact: true, sizing: { minEm: 5, weight: .25 } },
   ];
 
   /* grouping */

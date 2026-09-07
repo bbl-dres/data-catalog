@@ -94,6 +94,8 @@ const { workspace } = require('./print-test-helpers.cjs');
     await page.locator('.ob-export-header [data-diagram-action="close"]').click();
     await visit('#/objects/gebaeude?tab=rows');
     await page.locator('[data-tab="rows"]').click();
+    // Attribute defaults omit the description (2026-09-07), so select it at the attribute level: the shared print choice is then mixed the other way round from 'version'.
+    await selectFields('attrs', ['type', 'key', 'codeList', 'description']);
     await open();
     assert(await page.evaluate(() => DK.diagram.usesRows(window.printTest.settings)), 'Attribute tables retain detailed print rows');
     await choose('[data-diagram-setting="orientation"]', 'landscape');

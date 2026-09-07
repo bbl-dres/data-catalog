@@ -57,7 +57,10 @@ const server = createServer();
     await visit('#/objects');
     await page.screenshot({ path: path.join(dir, 'after-tiles-wide.png') });
     await page.setViewportSize({ width: 740, height: 1000 });
-    await visit('#/objects/gebaeude', 'rows');
+    // 2026-09-07 design review (C19): the four-column attribute table fits a 708 px column, so the
+    // card-sort select is exercised on the system's data-table list, which still needs 762 px.
+    await visit('#/systems/gwr', 'rows');
+    assert(await page.locator('.ob-table-region').first().evaluate(el => el.classList.contains('is-cards')), 'rows list must render as cards at tablet width');
     const pager = await paint('.ob-page-size select'), sort = await paint('.ob-table-card-sort select');
     for (const key of ['height', 'font', 'border', 'color']) assert.equal(pager[key], sort[key], `select ${key} differs at tablet width`);
     assert(pager.height >= 44); assert.equal(pager.font, '16px');

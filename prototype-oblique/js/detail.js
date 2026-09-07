@@ -26,13 +26,13 @@
     const tab = detail.resolveTab(e, route.params.tab);
     const rowList = tab === 'rows' ? ctx?.rowList || detail.rowsContext(e, route, state) : null;
     const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
-    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}${DK.fieldPicker.button(rowList.kind)}</div>` : ''}</div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}<div class="ob-local-menus">${DK.fieldPicker.button(rowList.kind)}</div></div>` : ''}</div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state, rowList);
     else if (tab === 'relations') panel = detail.relations(e, state);
     else panel = detail.history(e, state);
-    return tabsHtml + (rowList ? ui.collectionStatus(rowList) : '') + `<div id="panel-${tab}" role="tabpanel" aria-labelledby="tab-${tab}" tabindex="0">${panel}</div>`;
+    return tabsHtml + (rowList ? ui.collectionStatus(rowList) : '') + ui.tabPanel(`panel-${tab}`, `tab-${tab}`, panel);
   };
 
   /* Overview */
@@ -121,11 +121,11 @@
       if (empty) v = '<span>—</span>';
       else if (f.type === 'chip') v = ui.chip(f.value, f.tone);
       else if (f.type === 'comment') v = `<span class="ob-comment">${esc(f.value)}</span>`;
-      else if (f.type === 'links') v = `<ul class="ob-fact-links">${f.value.map((url, i) => `<li>${ui.link(url, `${esc(f.labels[i])} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title: url })}</li>`).join('')}</ul>`;
+      else if (f.type === 'links') v = `<ul class="ob-fact-links">${f.value.map((url, i) => `<li>${ui.link(url, `${esc(f.labels[i])}&nbsp;${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title: url })}</li>`).join('')}</ul>`;
       else if (f.type === 'internal') v = `<a class="ob-fact-link" href="${esc(f.href)}">${esc(f.value)}</a>`;
       else if (f.type === 'link') v = f.href
-        ? ui.link(f.href, `${esc(f.value)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true })
-        : `<a class="ob-inline-link" href="#" data-action="not-available" data-what="${esc(f.value)}">${esc(f.value)} ${icon('link_external', 'sm')}</a>`;
+        ? ui.link(f.href, `${esc(f.value)}&nbsp;${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true })
+        : `<a class="ob-inline-link" href="#" data-action="not-available" data-what="${esc(f.value)}">${esc(f.value)}&nbsp;${icon('link_external', 'sm')}</a>`;
       else v = `<span>${esc(f.value)}</span>`;
       return `<dt>${esc(f.label)}</dt><dd>${v}</dd>`;
     }).join('');
@@ -147,7 +147,7 @@
     const row = (label, html) => `<dt>${esc(t(label))}</dt><dd>${html || '<span>—</span>'}</dd>`;
     const website = (name, url, title) => {
       const href = ui.safeHref(url);
-      return href ? ui.link(href, `${esc(name)} ${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title }) : esc(name);
+      return href ? ui.link(href, `${esc(name)}&nbsp;${icon('link_external', 'sm')}`, { className: 'ob-inline-link', external: true, title }) : esc(name);
     };
     // Existing owner/steward strings denote people; custodian strings denote organisational units.
     // Explicit { type, name, url? } values allow either actor type in every role.
@@ -196,9 +196,11 @@
     const ordered = options.sort ? DK.presentation.sort(rd.kind, matches, options.sort, row => row.entity) : matches;
     const fields = DK.presentation.fields(rd.kind);
     const paging = ui.pageState(ordered.length, route.params);
+    // Rows that list catalog entities (a system's tables) clamp long text like the collection tables do; other cells stay plain strings.
+    const cell = (f, row) => { const html = DK.presentation.cell(f, row.values[f.id], row.entity); return f.type === 'long' && data.contentKinds().includes(rd.kind) ? { html, cls: 'ob-cell-summary' } : html; };
     return { filter, total: rd.rows.length, matched: matches.length, kind: rd.kind, columns: fields.map(DK.presentation.column), options, paging,
       rows: ordered.slice(paging.from - 1, paging.to).map(row => ({ href: row.href, cells: fields.map(f => f.primary && row.href
-        ? ui.entityLink(row.href, DK.presentation.format(f, row.values[f.id])) : DK.presentation.cell(f, row.values[f.id], row.entity)) })) };
+        ? ui.entityLink(row.href, DK.presentation.format(f, row.values[f.id])) : cell(f, row)) })) };
   };
 
   detail.rows = function (e, route, state, list = detail.rowsContext(e, route, state)) {

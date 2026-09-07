@@ -68,8 +68,11 @@ const server = createServer();
     assert(page.url().includes('#/tables/t-gwr-gebaeude'));
 
     await visit('#/refs/r-gwr-gklas');
-    assert((await page.locator('#panel-overview').innerText()).includes('MK 4.2'));
+    // Reference-data profiles omit the source-version row (behavior.md, Key facts); the import provenance stays in the history.
+    assert(!(await page.locator('#panel-overview').innerText()).includes('Quellenstand'), 'reference overview omits the source-version row');
     assert((await page.locator('.ob-detail-description').innerText()).includes('nicht bestätigt'));
+    await page.click('#tab-history');
+    assert((await page.locator('#panel-history').innerText()).includes('MK 4.2'), 'import provenance remains in the history');
     await visit('#/refs/r-gwr-wstwk');
     await page.click('#tab-rows');
     assert.equal(await page.locator('#panel-rows tbody tr').count(), 50);
@@ -118,7 +121,7 @@ const server = createServer();
       assert(await page.locator('.ob-relations-diagram').isVisible());
       await page.click('[data-action="toggle-relation-view"]');
       await page.click('.ob-relations-list a[href="#/tables/t-gwr-arbeiten"]'); await settle(page);
-      assert.equal(await page.locator('h1').innerText(), 'Arbeiten');
+      assert.equal(await page.locator('h1').innerText(), 'Arbeiten (GWR_ARBEITEN)', 'table titles carry the technical name (data.displayName)');
       await page.click('#tab-overview');
       assert((await page.locator('.ob-responsibility').innerText()).includes('Bundesamt für Statistik (BFS)'));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

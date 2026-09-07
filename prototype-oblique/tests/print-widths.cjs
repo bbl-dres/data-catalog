@@ -4,9 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { workspace } = require('./print-test-helpers.cjs');
 (async () => {
-  const test = await workspace(), { page, visit, open, download, output } = test;
+  const test = await workspace(), { page, visit, open, download, output, settle } = test;
   try {
     await visit('#/domains/bau?tab=table&fields=name,description,responsibleOrg,attributeCount,status'); await open();
+    // Attribute rows no longer show descriptions by default (2026-09-07), so the shared description choice is selected to measure that column.
+    await page.locator('[data-diagram-action="columns"]').click();
+    await page.locator('[name="column"][value="description"]').check();
+    await page.locator('[data-diagram-action="dismiss"]').click(); await settle(page);
     const result = await page.evaluate(async () => {
       const measure = DK.pdf.measure(await DK.pdf.load()), current = printTest, { snapshot, settings } = current, results = [];
       for (const orientation of ['portrait', 'landscape']) {

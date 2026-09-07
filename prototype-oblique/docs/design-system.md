@@ -1,6 +1,6 @@
 # Design system: Oblique without Angular
 
-The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, and 12/16 supporting labels. The workspace is capped at 1600 px; the default sidebar is 360 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
+The application uses a compact scale: 24/32 headings, 17/24 section headings, 14/20 controls and data rows, 15/24 reading text, 13/20 supporting text (pager, tile facts, status lines) and 12/16 labels. The workspace is capped at 1600 px; the default sidebar is 360 px with a 56 px collapsed rail. This guide consolidates the current design, responsive and contrast decisions.
 
 The Swiss federal design system [Oblique](https://oblique.bit.admin.ch) (FOITT, MIT) provides the reference palette and typography. This prototype implements its compact interface with plain CSS custom properties in `tokens.css`, shared components in `components.css`, and contextual styles in `main.css`, `graph.css` and `export.css`.
 
@@ -20,7 +20,7 @@ The source audit established the palette and shadows. The selected 1b mockup now
 |---|---|---|
 | Primitives | `--ob-red-500`, `--ob-secondary-800`, `--ob-font-size-xl`, `--ob-space-lg`, `--ob-radius-lg`, `--ob-shadow-default`, `--ob-z-widget` | Colour primitives define semantic aliases; components may use shared spacing/type/radius/elevation tokens directly |
 | Semantic | `--ob-color-text`, `--ob-color-surface`, `--ob-color-border-strong`, `--ob-color-accent`, `--ob-color-link`, `--ob-color-focus`, `--ob-color-success` | Purpose-based colours used by components |
-| Component | `--ob-control-height`, `--ob-touch-target`, `--ob-logo-*`, `--ob-sidebar-width`, `--ob-tile-gap`, `--ob-home-max-width`, `--ob-table-row-padding` | Shared component dimensions and compact application choices, with responsive value overrides in `tokens.css` |
+| Component | `--ob-control-height`, `--ob-touch-target`, `--ob-logo-*`, `--ob-sidebar-width`, `--ob-footer-height`, `--ob-menu-offset`, `--ob-tile-gap`, `--ob-home-max-width`, `--ob-table-row-padding`, `--ob-graph-fit-min-zoom` (read by `graph.js`) | Shared component dimensions and compact application choices, with responsive value overrides in `tokens.css` |
 
 ## Mapping
 
@@ -64,14 +64,14 @@ Essential graphics use a separate alias from decorative borders. The shared cont
 
 - **Focus colour**: code uses `#8655f6`, the Figma variable Border/focus is `#8b5cf6`. Code value kept.
 - **Active tab underline**: the compact mockup and application use the `#e53940` accent; Figma uses pure red `#ff0000`.
-- **Button label**: 14px medium in the compact mockup; desktop controls are 32px high, with larger touch controls.
+- **Button label**: 14px medium in the compact mockup; desktop controls are 32px high, with larger touch controls. Pager buttons, the current-page box, sort selects, the diagram toolbar and the Swagger controls follow the same 32/44 px token.
 - **Breadcrumb**: the compact application uses 13px, close to Oblique's 0.8rem (12.8px).
 - **Warning chip**: Oblique uses orange-600 (3.3:1 with white text); the app uses orange-700 (5.2:1) to pass AA for 12 px text.
-- **Footer**: the compact footer uses 12px links, version and prototype note. The print workspace reuses `views.footer()` and `.ob-footer`; its PDF document branding remains separate.
+- **Footer**: the compact footer uses 12px links, version and prototype note in a 28 px band (`--ob-footer-height`); on coarse pointers or at 960 px and below the links are 44 px targets in a 60 px band whose right corner is reserved for the docked back-to-top button, and phone footers align both rows to the left. The print workspace reuses `views.footer()` and `.ob-footer`; its PDF document branding remains separate.
 - **Alert / toast**: a compact variant (4 px status border plus light background) instead of Oblique's icon column; the status colours are the same.
 - **Visited links**: only prose links (handbook, help popover) take Oblique's purple-700; catalogue navigation links are controls and stay blue.
 - **Letter spacing**: compact 1b uses 0.25px body tracking and 1px uppercase table/panel labels.
-- **Breakpoints**: the compact layout uses 600px for phone content, 960px for the navigation drawer and 1200px for small-desktop adjustments. The workspace is capped at 1600px; a surrounding surface appears above that width. Table and content layouts also respond to their available container width.
+- **Breakpoints**: the compact layout uses 600px for phone content (container rules apply below 600 px, so the 600 px content column the sidebar reserves keeps the desktop layout), 960px for the navigation drawer and 1200px for small-desktop adjustments. The workspace is capped at 1600px; a surrounding surface appears above that width. Table and content layouts also respond to their available container width.
 - The Figma file has **no spacing or radius variables**; spacing follows the legacy `$ob-spacing-*` scale (4 / 8 / 12 / 16 / 24 / 32 / 48).
 
 ## Federal header logo
@@ -83,15 +83,14 @@ The header uses the existing flag SVG followed by a 16 px gap (`--ob-logo-gap`),
 | Viewport | Flag box | Title size |
 |---|---|---|
 | Below 480 px | 30 × 33 px | 14 px; acronym + app name |
-| 480–639 px | 30 × 33 px | 12 px; full organisation + app name |
-| 640–767 px | 30 × 33 px | 14 px |
+| 480–767 px | 30 × 33 px | 14 px; full organisation + app name |
 | 768–1023 px | 30 × 33 px | 14 px |
 | 1024–1279 px | 32 × 35.2 px | 14 px |
 | From 1280 px | 32 × 35.2 px | 16 px |
 
-The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The prototype notice is centered between the logo and controls whenever the desktop navigation is present, hides while the opened header search covers its space, and occupies its own 28 px row only in drawer mode at widths up to 960 px. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity, notice and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
+The identity row reserves 56 px below 768 px, 72 px up to 1919 px and 86 px from 1920 px, including the header bottom border. Viewports up to 720 px high (landscape phones, 615–720 px laptops) keep the 56 px row and the 14 px title from 768 px upward, so the sticky header stays below a fifth of the height. This compact outer spacing is a prototype choice; the reference's full top-header padding is not imported. The prototype notice is centered on the bar from 1201 px, centred in the free space between the lockup and the controls from 961 to 1200 px, hides while the opened header search covers its space, and occupies its own 28 px row only in drawer mode at widths up to 960 px. The existing desktop navigation adds 45 px above 960 px. `--ob-header-height` derives from the identity, notice and navigation tokens so the sidebar, sticky table headings, handbook anchors and mobile search stay below the header.
 
-The flag stays capped at 32 px wide on large screens, preserving the SVG's 40:44 ratio. The image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The compact composition has been checked from phone to wide desktop sizes.
+The flag stays capped at 32 px wide on large screens, preserving the SVG's 40:44 ratio. The home link ends with the lockup rather than the grid column. The image has empty alternative text; the home link's accessible name includes the full organisation, app name and destination even when the visible organisation is abbreviated. The compact composition has been checked from phone to wide desktop sizes.
 
 ## Component ownership
 
@@ -99,7 +98,7 @@ Reference-value lists show Code and Bezeichnung by default, with Beschreibung av
 
 Catalogue tables use meaningful names, field identifiers or codes to identify entries, without a synthetic row-number column. Attribute tables follow the same rule; source positions remain in source metadata and Excel exports, but are omitted from profile overviews. All table values use the standard body font, including technical field names and code values; monospace is reserved for actual code examples. Text headers and values align left, numeric counts align right, and table headers do not wrap. Key facts, Protection and privacy, System and Responsibility share the same row spacing. The first three sections stack vertically and stay expanded.
 
-`components.css` owns reusable buttons, inputs/selects, quiet icon actions, badges/chips, disclosures, filled cards, neutral panels, empty states and loading indicators. `main.css` owns the header, navigation, content layouts, tables, search composition, menus, pagination, notices and contextual variants; its final high-contrast rules preserve system colors and focus visibility. `graph.css` owns the bubble workspace and its controls. `export.css` owns print composition. Reuse these components before adding context-specific styling.
+`components.css` owns reusable buttons, inputs/selects, quiet icon actions, badges/chips (the outline chip draws its border inside so every chip is 18 px tall), disclosures, filled cards, neutral panels, empty states and loading indicators. `main.css` owns the header, navigation, content layouts, tables, search composition, menus, pagination, notices and contextual variants; its final high-contrast rules preserve system colors and focus visibility. `graph.css` owns the bubble workspace and its controls; the toolbar wraps in groups (zoom, mode, pan pad, fullscreen) and shows dividers only on single-row shells of 641 px or more, using the shell as its own container so inline and fullscreen behave alike. `export.css` owns print composition. Reuse these components before adding context-specific styling.
 
 | Pattern | Shared contract | Context owns |
 | --- | --- | --- |
@@ -108,7 +107,7 @@ Catalogue tables use meaningful names, field identifiers or codes to identify en
 | Primary action | `.ob-button--primary` uses semantic action colors for default/hover/pressed states. Disabled styling retains full opacity. | Search submit and PDF download availability. |
 | Disclosure | `.ob-disclosure` provides the chevron, expanded state, keyboard focus and touch sizing. | Print padding and responsive open state. |
 | Neutral panel | `.ob-panel` provides the surface, border, radius and responsive `--ob-panel-padding`. | Search-filter and answer widths/margins. |
-| Empty state | `ui.empty()` provides title, hint and optional recovery actions. `.ob-empty--plain` fits an existing surface. | Messages, available recovery actions and placement. |
+| Empty state | `ui.empty()` provides title, hint and optional recovery actions; a recovery link is rendered as an anchor with the `.ob-button` class. `.ob-empty--plain` fits an existing surface. | Messages, available recovery actions and placement. |
 | Selection checkbox | `.ob-check input` and `.ob-check-input` share the 18px native control. | Full label/toggle-slot target and selection behavior. |
 | Tile summary | `data.tileSummary()` resolves the localized count/unit or API protocol for both catalog and print tiles. | Card layout, title, description and status. |
 
@@ -116,7 +115,7 @@ The [whole-app polish review](review/2026-09-06-design-polish-review.md) records
 
 Loading uses `.ob-loading` with a decorative `.ob-spinner` and a readable live status. Startup and Excel processing center the indicator in the viewport; API documentation centers it within its content area until the specification is ready. Export feedback leaves navigation usable. Always clear loading on success or failure; reduced-motion mode keeps the indicator static.
 
-Oblique provides general scrolling utilities, but its documentation, source component inventory and bundled Figma 15.1.2 library do not define a back-to-top UI component. The prototype therefore uses an application-specific pattern built from the standard secondary button, spacing, shadow, focus and icon tokens. It appears only after meaningful page scrolling, respects reduced-motion preferences, and uses a compact icon-only presentation on phones.
+Oblique provides general scrolling utilities, but its documentation, source component inventory and bundled Figma 15.1.2 library do not define a back-to-top UI component. The prototype therefore uses an application-specific pattern built from the standard secondary button, spacing, shadow, focus and icon tokens. It appears only after meaningful page scrolling, respects reduced-motion preferences, uses a compact icon-only presentation up to 1200 px, is anchored 24 px inside the workspace edge at every width and rests on the footer band at the page end.
 
 Naming follows Oblique's flat kebab-case convention: `.ob-<component>-<part>`, variants as `.ob-<component>--<variant>`, states as `.is-*` or ARIA attributes (`aria-selected`, `aria-pressed`, `aria-current`, `aria-expanded`).
 
@@ -130,31 +129,31 @@ Literal media/container-query thresholds, percentages and content-dependent grap
 
 ## Responsive layout
 
-The document scrolls vertically. Home domains and latest changes stay stacked at every width. KPI cards and home tables share the same maximum width; the AI answer and result table also align. The hero sits on the white page without an extra surface panel. Each handbook chapter is bounded by `--ob-manual-prose-max-width` (100ch), so paragraphs, lists, tables and video share its right edge. Tables still switch to labeled cards when the available chapter width is too narrow.
+The document scrolls vertically. Home domains and latest changes stay stacked at every width. KPI cards and home tables share the same maximum width; the AI answer and result table also align. The hero sits on the white page without an extra surface panel. Each handbook chapter is bounded by `--ob-manual-prose-max-width` (100ch), so paragraphs, lists, tables and video share its right edge. The last chapter reserves the viewport height below the header offset (minus content padding and footer band) so its heading reaches the shared 16 px scroll position on every screen; a plain `#/manual` opens at the top. Tables still switch to labeled cards when the available chapter width is too narrow.
 
 | Condition | Behavior |
 |---|---|
-| Above 960 px | Separate navigation below the identity header; resizable sidebar, 240–480 px, reserving at least 600 px for content. A narrower window clamps the visible width without replacing the saved preference. |
-| At or below 960 px | Modal navigation drawer, reduced content padding, no desktop resize handle. |
-| Narrow content container | Controls wrap; table columns switch to labeled cards based on available width, including when the sidebar is wide. Swagger tables retain their column structure with local horizontal scrolling. |
-| Wrapped collection/detail controls | Tabs retain their full-width baseline above the search/view row, which has no additional bottom border. At content widths of 601–880 px, detail search and view controls align right with a 280 px search field; smaller containers allow them to fill and wrap. Relationship views follow the same divider rule when their toggle wraps below the tabs at 640 px or less. |
+| Above 960 px | Separate navigation below the identity header; resizable sidebar, 240–480 px, reserving at least 600 px for content. A narrower window clamps the visible width without replacing the saved preference. The sticky tree panel and flyout are limited to the viewport minus header and footer band, so the page end never pushes them under the header. |
+| At or below 960 px | Modal navigation drawer, reduced content padding, no desktop resize handle. The drawer scrolls navigation tabs and tree as one region between a pinned 56 px header (44 px on viewports up to 500 px high) and the tools row; the section overline is hidden because the active tab names the section. |
+| Narrow content container | Controls wrap; table columns switch to labeled cards based on available width, including when the sidebar is wide (short text columns reserve 14 em, descriptions 18 em). Profile tab strips show an end fade in containers of 640 px or less, limited to the tab row; tabs use 8 px horizontal padding at 430 px or less. Swagger tables retain their column structure with local horizontal scrolling; long schema titles wrap inside the list. |
+| Wrapped collection/detail controls | The h1 is top-aligned and keeps its line box as the row height on all widths; below 600 px it keeps the full width and the outlined Drucken/Export pair moves to its own right-aligned row only when it does not fit. Tabs retain their full-width baseline above the search/view row, which has no additional bottom border. At content widths of 600–880 px, detail search and view controls align right with a 280 px search field; smaller containers allow them to fill and wrap. Collection view and grouping menus form one pair: in containers of 680 px or less the search takes its own row and the pair shares the next row with equal widths. Relationship views follow the same divider rule when their toggle wraps below the tabs at 640 px or less. |
 | Controls-to-content spacing | Without a visible filter status, the controls wrapper ends 24 px above its panel in both single-row and wrapped layouts. The lowest search/view control ends 29 px above the panel: the 24 px gap plus a 5 px inset. Wrapped actions replace the single-row 4 px margin and 1 px divider with a 5 px margin, without extra padding. A visible filter status, top pager or card-sort toolbar occupies its own space. |
-| Detail profiles | Verantwortlich sits to the right of Kerndaten on wide screens. At a content width of 880 px or less, or a viewport of 960 px or less, it appears above Kerndaten. Contacts come first in the document order so keyboard and assistive-technology users can reach them before the metadata. |
-| Coarse pointer or viewport at/below 960 px | Shared 44 px control targets, including hybrid touch laptops. Search inputs use a size that avoids mobile browser auto-zoom. |
+| Detail profiles | The fact label column is 176 px (144 px at viewports of 1200 px or less, 128 px in content columns narrower than 600 px); labels wrap at word or hyphenation boundaries, values may break anywhere. Verantwortlich sits to the right of Kerndaten on wide screens. At a content width of 880 px or less, or a viewport of 960 px or less, it appears above Kerndaten. Contacts come first in the document order so keyboard and assistive-technology users can reach them before the metadata. |
+| Coarse pointer or viewport at/below 960 px | Shared 44 px control targets, including hybrid touch laptops, sortable table headers, footer links (in a 60 px band) and the diagram toolbar; breadcrumb rows are 24 px with a 4 px row gap. Search inputs use a size that avoids mobile browser auto-zoom. |
 | Large desktop | Bounded workspace and prose widths; consistent tile columns and compact metadata columns. Avoid stretching individual sections to fill unused space. |
 | Short viewport or software keyboard | Search suggestions, help, menus and API dialogs fit the visual viewport; internal scrolling keeps controls reachable. Fullscreen diagram controls remain accessible. |
 
 The API reference has no catalog side tree. Inline diagrams preserve native page scrolling and pinch zoom; fullscreen diagram gestures are scoped to the workspace. Reduced-motion preferences and forced colors remain supported. Shared visual-viewport updates must preserve input focus, the query and local UI state.
 
-The [small-laptop review](review/2026-09-07-laptop-responsive-review.md) records the measured spacing and divider fixes, including saved sidebar widths and the exact container wrap thresholds.
+The [small-laptop review](review/2026-09-07-laptop-responsive-review.md) records the measured spacing and divider fixes, including saved sidebar widths and the exact container wrap thresholds. The [mobile and multi-device review](review/2026-09-07-mobile-design-review.md) records the phone, tablet, laptop and large-desktop measurements behind the title row, drawer, footer, diagram, print and API contracts above.
 
-The print workspace uses compact mode at widths up to 960 px or visible heights up to 500 px. Expanded controls participate in outer vertical scrolling; a grid reserves `--ob-export-preview-min-height` (280 px) for the preview. Only the scope tree, PDF page stack and settings form body need local scrolling. Popovers follow the visual viewport and retain visible Apply/Cancel actions. Disclosures and filter chips share the 44 px touch target. See the [responsive review](review/2026-09-06-responsive-design-review.md) for measured findings and verification.
+The print workspace uses compact mode at widths up to 960 px or visible heights up to 500 px. Expanded controls participate in outer vertical scrolling; a grid reserves `--ob-export-preview-min-height` (280 px) for the preview. Only the scope tree, PDF page stack and settings form body need local scrolling. Popovers follow the visual viewport and retain visible Apply/Cancel actions. Disclosures share the 44 px touch target; chips derive their height from `--ob-control-height` (32 px desktop, 44 px touch) like the adjacent filter button. The header, toolbar and filter bar centre their content within `--ob-content-max-width` at the `--ob-export-inset` (24 px desktop, 16 px compact) while the scope column and preview stay full-bleed; the scope column is 320 px, 360 px from 1280 px and 480 px from 1920 px, and the facet list grows with the visible height. A wrapped toolbar group starts flush left, and the compact disclosures, scope search field and toolbar controls share the 16 px inset. See the [responsive review](review/2026-09-06-responsive-design-review.md) for measured findings and verification.
 
 ## Contrast and accessibility
 
-The regression checks target contrast ratios of 4.5:1 for normal text, 3:1 for large text and 3:1 for meaningful graphics/control boundaries. Essential graphics use `--ob-color-graphic` (`#828e9a`), measured at 3.34:1 on white and 3.02:1 on the default surface; it is not a small-text color. Recheck hover/selected backgrounds rather than assuming the same ratio holds. API examples use `--ob-color-code-bg`; overrides stay local to Swagger.
+The regression checks target contrast ratios of 4.5:1 for normal text, 3:1 for large text and 3:1 for meaningful graphics/control boundaries. Essential graphics use `--ob-color-graphic` (`#828e9a`), measured at 3.34:1 on white and 3.02:1 on the default surface; it is not a small-text color. Recheck hover/selected backgrounds rather than assuming the same ratio holds. API examples use `--ob-color-code-bg`; overrides stay local to Swagger, which uses the app's two font families only, keeps supporting labels at 12 px or more, sizes its filter, server select and Authorize controls with the control-height token and styles its version badges with the chip metrics.
 
-Keyboard focus must remain visible across buttons, inputs, menus, tabs, cards, the tree divider and vendor controls. Statuses include text; color is not the sole indicator. Disabled controls suppress active hover styling. Shared input/select/icon components keep state behavior consistent.
+Keyboard focus must remain visible across buttons, inputs, menus, tabs, cards, the tree divider and vendor controls; vendor operation and schema disclosures show the ring for keyboard focus only. In forced-colors mode chips and badges are outlined with CanvasText, and the open drawer and the footer keep a 1 px CanvasText edge. Statuses include text; color is not the sole indicator. Disabled controls suppress active hover styling. Shared input/select/icon components keep state behavior consistent.
 
 The [test guide](../tests/README.md) is the maintained suite index. Responsive coverage includes phone through 3840 px desktop layouts, touch controls and simulated keyboard viewports. Contrast sampling accounts for alpha and ancestor opacity, but not images, gradients, occlusion or antialiasing. Automated Chromium checks do not replace physical iOS/Android, Safari/Firefox or screen-reader review, and are not a claim of complete accessibility conformance.
 

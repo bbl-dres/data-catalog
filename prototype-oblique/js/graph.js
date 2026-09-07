@@ -4,7 +4,8 @@
   const ui = DK.ui, data = DK.data, t = ui.t, esc = ui.esc, icon = ui.icon;
   const graph = {}, PAGE_SIZE = 6, PHONE_PAGE_SIZE = 3, PAD = 24;
   // Geometry is shared with CSS through canvas custom properties, in unscaled pixels.
-  const NODE_WIDTH = 64, NODE_HEIGHT = 48, NODE_GAP = 8, HALO = 16;
+  // A node holds a 22px icon above two 16px label lines inside its padding and border.
+  const NODE_WIDTH = 96, NODE_HEIGHT = 64, NODE_GAP = 8, HALO = 16;
   const HUB_SIZE = 100, LABEL_WIDTH = 220, LABEL_HEIGHT = 20, LABEL_GAP = 8, PAGER_HEIGHT = 48;
   let current = null, observer = null, drag = null, fullscreen = null, suppressClick = false, pinch = null;
   const touches = new Map();
@@ -56,11 +57,9 @@
   graph.render = function (entity, state) {
     return `<section class="ob-graph-shell" id="graph-shell" aria-label="${esc(t('graph.label'))}">
       <div class="ob-graph-toolbar" role="group" aria-label="${esc(t('graph.controls'))}">
-        ${control('zoom-in', 'zoom_in', 'zoomIn')}${control('zoom-out', 'zoom_out', 'zoomOut')}${control('fit', 'graph_fit', 'fit')}
-        <button type="button" class="ob-button ob-graph-zoom" data-action="graph-actual" title="${esc(t('graph.actual'))}" aria-label="${esc(t('graph.actual'))}"><output id="graph-zoom">100%</output></button>
-        <span class="ob-graph-toolbar-divider" aria-hidden="true"></span>
-        ${control('pan', 'graph_pan', 'pan', ` aria-pressed="${state.mode === 'pan'}"`)}${control('select', 'graph_select', 'select', ` aria-pressed="${state.mode === 'select'}"`)}
-        <div class="ob-graph-pan-pad" role="group" aria-label="${esc(t('graph.pan'))}">${control('left', 'chevron_left', 'left')}${control('up', 'chevron_right', 'up')}${control('down', 'chevron_right', 'down')}${control('right', 'chevron_right', 'right')}</div>
+        <div class="ob-graph-toolbar-group">${control('zoom-in', 'zoom_in', 'zoomIn')}${control('zoom-out', 'zoom_out', 'zoomOut')}${control('fit', 'graph_fit', 'fit')}<button type="button" class="ob-button ob-graph-zoom" data-action="graph-actual" title="${esc(t('graph.actual'))}" aria-label="${esc(t('graph.actual'))}"><output id="graph-zoom">100%</output></button></div>
+        <div class="ob-graph-toolbar-group">${control('pan', 'graph_pan', 'pan', ` aria-pressed="${state.mode === 'pan'}"`)}${control('select', 'graph_select', 'select', ` aria-pressed="${state.mode === 'select'}"`)}</div>
+        <div class="ob-graph-toolbar-group ob-graph-pan-pad" role="group" aria-label="${esc(t('graph.pan'))}">${control('left', 'chevron_left', 'left')}${control('up', 'chevron_right', 'up')}${control('down', 'chevron_right', 'down')}${control('right', 'chevron_right', 'right')}</div>
         ${control('fullscreen', 'expand', 'fullscreen', ' aria-expanded="false"')}
       </div>
       <div class="ob-graph" id="graph" tabindex="0" role="region" aria-label="${esc(t('graph.label'))}" aria-describedby="graph-hint" data-mode="${state.mode}">
@@ -113,7 +112,7 @@
     const group = current.layout.panels.find(p => p.group.key === chosen?.group)?.group;
     const item = group?.items[chosen.index];
     $('graph-selection').innerHTML = item
-      ? `<div><strong>${esc(item.name)}</strong><span>${esc(group.title)}${item.sub ? ' · ' + esc(item.sub) : ''}</span></div>${ui.link(item.href, `${esc(t('graph.open'))} ${icon(item.external ? 'link_external' : 'arrow_right', 'sm')}`, { className: 'ob-inline-link', external: item.external })}<button type="button" class="ob-button ob-button--icon" data-action="graph-clear" aria-label="${esc(t('graph.clear'))}">${icon('xmark')}</button>`
+      ? `<div><strong>${esc(item.name)}</strong><span>${esc(group.title)}${item.sub ? ' · ' + esc(item.sub) : ''}</span></div><div class="ob-graph-selection-actions">${ui.link(item.href, `${esc(t('graph.open'))}&nbsp;${icon(item.external ? 'link_external' : 'arrow_right', 'sm')}`, { className: 'ob-inline-link', external: item.external })}<button type="button" class="ob-button ob-button--icon" data-action="graph-clear" aria-label="${esc(t('graph.clear'))}">${icon('xmark')}</button></div>`
       : `<span>${esc(t(current.layout.panels.length ? 'graph.choose' : 'detail.noRelations'))}</span>`;
   }
 
@@ -127,12 +126,16 @@
     document.querySelector('[data-action="graph-zoom-in"]').disabled = g.zoom >= 2;
     document.querySelector('[data-action="graph-zoom-out"]').disabled = g.zoom <= 0.15;
   }
+  /** Fits the layout at up to 100 %, but never below the CSS fit floor: a diagram that would become illegible starts at its first group, centred on the hub, and pans instead. */
   function fit() {
     if (!current || !$('graph')?.clientWidth) return;
     const viewport = $('graph'), g = current.state, layout = current.layout;
-    g.zoom = Math.max(0.15, Math.min(1, (viewport.clientWidth - (layout.narrow ? 0 : 32)) / layout.width, layout.narrow ? 1 : (viewport.clientHeight - 32) / layout.height));
-    g.x = (viewport.clientWidth - layout.width * g.zoom) / 2;
-    g.y = layout.narrow ? 16 : (viewport.clientHeight - layout.height * g.zoom) / 2;
+    const floor = parseFloat(getComputedStyle($('graph-shell')).getPropertyValue('--ob-graph-fit-min-zoom')) || 0.15;
+    const fitted = Math.min(1, (viewport.clientWidth - (layout.narrow ? 0 : 32)) / layout.width, layout.narrow ? 1 : (viewport.clientHeight - 32) / layout.height);
+    g.zoom = Math.max(0.15, floor, fitted);
+    const overflow = g.zoom > fitted && !layout.narrow;
+    g.x = overflow ? viewport.clientWidth / 2 - (layout.hub.x + layout.hub.width / 2) * g.zoom : (viewport.clientWidth - layout.width * g.zoom) / 2;
+    g.y = layout.narrow || overflow ? 16 : (viewport.clientHeight - layout.height * g.zoom) / 2;
     g.autoFit = true; transform();
   }
   function zoom(value, x, y) {
@@ -144,12 +147,21 @@
   }
   function pan(dx, dy) { const g = current.state; g.x += dx; g.y += dy; g.autoFit = false; transform(); }
 
+  /** The inline shell grows with its content; its minimum is the remaining viewport height, capped once the whole layout fits at 100 %. */
+  function bound() {
+    const shell = $('graph-shell'), viewport = $('graph');
+    if (fullscreen) { shell.style.minHeight = ''; return; }
+    const remaining = window.innerHeight - Math.max(0, shell.getBoundingClientRect().top);
+    const chrome = shell.offsetHeight - viewport.clientHeight;
+    // CSS owns the floor and the bottom spacing; JS supplies viewport and layout geometry.
+    shell.style.minHeight = `max(var(--ob-graph-min-height), min(calc(${remaining}px - var(--ob-space-default)), ${current.layout.height + chrome + 2 * PAD}px))`;
+  }
   graph.resize = function () {
     if (!current || !$('graph-shell')?.checkVisibility()) return;
-    const shell = $('graph-shell');
-    // CSS owns the minimum height and bottom spacing; JS supplies viewport geometry.
-    if (!fullscreen) shell.style.height = `calc(${window.innerHeight - Math.max(0, shell.getBoundingClientRect().top)}px - var(--ob-space-default))`;
-    if (current.layout.availableWidth !== $('graph').clientWidth || current.layout.availableHeight !== $('graph').clientHeight) { draw(); current.state.autoFit = true; }
+    const viewport = $('graph'), changed = () => current.layout.availableWidth !== viewport.clientWidth || current.layout.availableHeight !== viewport.clientHeight;
+    bound();
+    // A new window size can change the orbit's aspect ratio and, with it, the cap.
+    if (changed()) { draw(); current.state.autoFit = true; bound(); }
     if (current.state.autoFit) fit();
   };
   graph.mount = function (entity, state) {

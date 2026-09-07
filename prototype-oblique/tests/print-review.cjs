@@ -40,7 +40,11 @@ const { workspace } = require('./print-test-helpers.cjs');
     const countLabel = await page.locator('[data-diagram-action="columns"]').innerText();
     const [selectedCount] = countLabel.match(/\d+/g).map(Number);
     await page.locator('[data-diagram-action="columns"]').click();
-    await page.locator('[name="column"][value="description"]').uncheck();
+    // The shared description choice is mixed here (table descriptions on, field descriptions off since the
+    // 2026-09-07 field defaults), so a fully selected optional column proves that unchecking lowers the count.
+    const typeColumn = page.locator('[name="column"][value="type"]');
+    assert.equal(await typeColumn.evaluate(el => el.checked && !el.indeterminate), true, 'data type starts fully selected');
+    await typeColumn.uncheck();
     assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), `(${selectedCount - 1})`);
     await page.locator('[data-diagram-action="reset-columns"]').click();
     assert.equal(await page.locator('[data-diagram-action="columns"]').innerText(), countLabel);

@@ -81,7 +81,7 @@ const server = createServer();
     assert.equal(wb.getWorksheet('Geschäftsobjekte').rowCount, 2);
     assert.equal(wb.getWorksheet('Geschäftsobjekte').getCell('B2').value, 'Meilenstein');
     assert.equal(wb.getWorksheet('Attribute').rowCount, 7);
-    assert(page.url().endsWith('#/manual'));
+    assert.equal(page.url().split('#')[1], '/manual?ch=introduction', 'navigation completed with the canonical handbook chapter');
     await page.waitForFunction(() => !DK.app.state.exporting);
     assert(await page.locator('#loading').isHidden());
     assert.deepEqual(errors, []);

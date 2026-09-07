@@ -45,6 +45,7 @@ node prototype-oblique/tests/sidebar.cjs
 node prototype-oblique/tests/polish.cjs
 node prototype-oblique/tests/contrast.cjs
 node prototype-oblique/tests/mobile.cjs
+node prototype-oblique/tests/design-review.cjs
 ```
 
 Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGHT_CHANNEL` to use Playwright's bundled Chromium; install it with `node <playwright-directory>/cli.js install chromium`. The module override is optional when Node can resolve `require('playwright')` normally.
@@ -71,6 +72,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `performance.cjs` | Local SQL startup, 12 views, search, 10× projection fixture, PDF layouts, idle-scroll work and modal cleanup; JSON measurements in the OS temporary directory |
 | `pdf-metrics.cjs` | Word/identifier/Unicode wrapping, text-width cache isolation, font/size keys and eviction; no browser required |
 | `design-consistency.cjs` | Whole-app visual inventory of 21 routes/tab states; shared action states/contrast, panel alignment, disclosure markers, checkbox dimensions and mobile empty recovery |
+| `design-review.cjs` | Diagnostic capture of 18 states from 320 px phones to 2560 px desktops (title row, controls, tables, profile, diagram, print workspace, drawer, footer, search, handbook, API) with screenshots and layout measurements in `oblique-design-review` in the OS temporary directory; compare two runs by their `measurements.json`. See the [mobile design review](../docs/review/2026-09-07-mobile-design-review.md) |
 | `print-menus.cjs` | Main-app/print dropdown appearance, four widths/languages, keyboard navigation/typeahead, nested/outside dismissal, custom zoom, disabled states, forced colors, simplified controls and the shared footer |
 | `core.test.cjs` | Real and deliberately invalid fixtures; handbook chapter aliases, preference compatibility/failures, domain integrity, routing, loading, safe URLs, workbook round-trips, types/long text and sorting |
 | `security-sql.cjs` | Reproduces permissive future-object grants; tests the security migration, 19 public read-only tables, private/DDL denial, new table/sequence/function denial and preserved unrelated grants |
@@ -100,7 +102,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `fields.cjs` | Field links/profiles, localized labels and German fallback, stable technical names and URLs, consistent table fonts, organisation/person contacts and inheritance, breadcrumbs, both tree models, inherited history, code lists, invalid routes, keyboard and mobile navigation |
 | `excel.cjs` | Lazy local writer, actual downloads, retry, mobile profile/empty-list exports, duplicate guard and scope preservation across navigation |
 | `sidebar.cjs` | Live mouse resizing without DOM replacement, saved width, keyboard/reset/cancellation, collapse, responsive bounds, mobile/API exclusions and unavailable storage |
-| `polish.cjs` | Long tile labels and equal widths, disabled hover states, shared selects/reading typography, high-contrast icons/focus/navigation and unscaled touch pager targets |
+| `polish.cjs` | Long tile labels and equal widths, disabled hover states, shared selects (system table list at 740 px) and reading typography, high-contrast icons/focus/navigation and unscaled touch pager targets |
 | `contrast.cjs` | Computed text/graphic contrast at phone, tablet and desktop widths; hover, API schemas/examples/dialog, input boundaries and keyboard focus |
 | `mobile.cjs` | Short/mobile/touch layouts, API table scrolling, dialog/menu/help access, fullscreen scrolling and simulated keyboard viewport changes without losing state |
 | `contrast-helpers.cjs` | Test-only sRGB relative luminance and alpha-composited foreground/background sampler |

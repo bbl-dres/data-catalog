@@ -130,6 +130,9 @@
 
   ui.tableOptions = (state, key, defaultSort) => ({ key, sort: state.tableSorts[key] || defaultSort || null });
 
+  /** Tab panel wrapper. Per the WAI-ARIA tabs pattern a panel is a keyboard stop only when its content has no focusable element. `content` is finished markup. */
+  ui.tabPanel = (id, tabId, content) => `<div id="${ui.esc(id)}" role="tabpanel" aria-labelledby="${ui.esc(tabId)}"${/<(?:a|button|input|select|textarea)[\s>]/i.test(content) ? '' : ' tabindex="0"'}>${content}</div>`;
+
   /** Hint and actions are already escaped markup, just like table cell content. */
   ui.empty = (title, hint, options = {}) => `<div class="ob-empty${options.className ? ' ' + ui.esc(options.className) : ''}"><div class="ob-empty-title">${ui.esc(title)}</div>${hint ? `<div>${hint}</div>` : ''}${options.actions ? `<div class="ob-empty-action">${options.actions}</div>` : ''}</div>`;
 
@@ -203,7 +206,7 @@
       const label = ui.t('sort.' + (direction === 'asc' ? 'ascending' : 'descending'), { column: c.label });
       return `<option value="${c.id || i}:${direction}"${(opts.sort?.field ? opts.sort.field === c.id : opts.sort?.column === i) && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
     })).join('');
-    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select class="ob-select ob-select--comfortable" data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
+    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select class="ob-select" data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
     const minWidth = opts.minWidth || (columns.length >= 6 ? 880 : columns.length >= 5 ? 720 : 640);
     return `<div class="ob-table-region" data-table-min-width="${minWidth}"${sized ? ` data-table-min-em="${Math.max(36, minimumEm)}"` : ''}>${cardSort}<div class="ob-table-wrap"><table class="ob-table${sized ? ' ob-table--fields' : ''}" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
   };
