@@ -228,25 +228,22 @@
         ? `<button type="button" class="ob-table-sort" data-action="sort-table" data-sort-key="${ui.esc(opts.key)}" data-sort-column="${i}"${c.id ? ` data-sort-field="${ui.esc(c.id)}"` : ''} data-focus="sort-table:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}:${i}" aria-label="${ui.esc(ui.t('sort.' + next, { column: c.label }))}"><span class="ob-table-sort-label">${ui.esc(c.label)}</span>${ui.icon('chevron_down', 'sm', 'ob-table-sort-icon')}</button>`
         : ui.esc(c.label);
       const cls = [c.numeric ? 'ob-cell-numeric' : '', c.compact ? 'ob-col-compact' : ''].filter(Boolean).join(' ');
-      return `<th role="columnheader" scope="col"${cls ? ` class="${cls}"` : ''}${active ? ` aria-sort="${ariaSort}"` : ''}${sized ? ` data-column-min-em="${minima[i]}" data-column-weight="${c.sizing.weight}"` : c.width ? ` style="width:${c.width}"` : ''}>${content}${sortable ? `<span class="ob-table-heading-label">${ui.esc(c.label)}</span>` : ''}</th>`;
+      return `<th role="columnheader" scope="col"${cls ? ` class="${cls}"` : ''}${active ? ` aria-sort="${ariaSort}"` : ''}${sized ? ` data-column-min-em="${minima[i]}" data-column-weight="${c.sizing.weight}"` : c.width ? ` style="width:${c.width}"` : ''}>${content}</th>`;
     }).join('');
-    const sortChoices = columns.flatMap((c, i) => c.sortable === false ? [] : ['asc', 'desc'].map(direction => {
-      const label = ui.t('sort.' + (direction === 'asc' ? 'ascending' : 'descending'), { column: c.label });
-      return `<option value="${c.id || i}:${direction}"${(opts.sort?.field ? opts.sort.field === c.id : opts.sort?.column === i) && opts.sort.direction === direction ? ' selected' : ''}>${ui.esc(label)}</option>`;
-    })).join('');
-    const cardSort = opts.key ? `<label class="ob-table-card-sort" hidden><span>${ui.esc(ui.t('sort.label'))}</span><select class="ob-select" data-action="sort-cards" data-sort-key="${ui.esc(opts.key)}" data-focus="sort-cards:${ui.esc(opts.key)}:${ui.esc(opts.instance || '')}">${!opts.sort ? `<option value="" selected disabled>${ui.esc(ui.t('sort.choose'))}</option>` : ''}${sortChoices}</select></label>` : '';
+    // A container narrower than the table's minimum scrolls it sideways (app.js adaptTable): the hint names the gesture
+    // until the table was scrolled, and the scroll wrapper carries the edge shadows of the hidden side(s).
+    const hint = `<p class="ob-table-scroll-hint" hidden>${ui.icon('chevron_right', 'sm')}<span>${ui.esc(ui.t('table.scrollHint'))}</span></p>`;
     const minWidth = opts.minWidth || (columns.length >= 6 ? 880 : columns.length >= 5 ? 720 : 640);
-    return `<div class="ob-table-region" data-table-min-width="${minWidth}"${sized ? ` data-table-min-em="${Math.max(36, minimumEm)}"` : ''}>${cardSort}<div class="ob-table-wrap"><table class="ob-table${sized ? ' ob-table--fields' : ''}" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div>`;
+    return `<div class="ob-table-region" data-table-min-width="${minWidth}"${sized ? ` data-table-min-em="${Math.max(36, minimumEm)}"` : ''}>${hint}<div class="ob-table-scroll"><div class="ob-table-wrap"><table class="ob-table${sized ? ' ob-table--fields' : ''}" role="table"><thead role="rowgroup"><tr role="row">${head}</tr></thead><tbody role="rowgroup">${rowsHtml}</tbody></table></div></div></div>`;
   };
 
-  /** Table row. cells: html string | {html, cls}. Column labels support mobile cards. */
+  /** Table row. cells: html string | {html, cls}. */
   ui.tr = function (cells, href, columns) {
     const tds = cells.map((c, i) => {
       const o = c && typeof c === 'object' ? c : { html: c };
-      const label = o.label || (columns && columns[i] && columns[i].label) || '';
       const primary = columns?.some(c => c.primary) ? columns[i]?.primary : i === 0;
       const cls = [o.cls, primary ? 'is-primary' : '', columns?.[i]?.numeric ? 'ob-cell-numeric' : ''].filter(Boolean).join(' ');
-      return `<td role="cell"${columns?.[i]?.id ? ` data-field="${ui.esc(columns[i].id)}"` : ''}${label ? ` data-label="${ui.esc(label)}"` : ''}${cls ? ` class="${cls}"` : ''}><span class="ob-cell-value">${o.html == null ? '' : o.html}</span></td>`;
+      return `<td role="cell"${columns?.[i]?.id ? ` data-field="${ui.esc(columns[i].id)}"` : ''}${cls ? ` class="${cls}"` : ''}><span class="ob-cell-value">${o.html == null ? '' : o.html}</span></td>`;
     }).join('');
     return `<tr role="row"${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
   };

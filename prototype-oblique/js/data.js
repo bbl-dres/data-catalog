@@ -300,7 +300,7 @@
   data.searchColumns = () => [
     { id: 'name', label: t('col.name'), sizing: { minEm: 12, weight: 2.4 } }, { id: 'type', label: t('col.type'), sizing: { minEm: 10, weight: .7 } },
     { id: 'context', label: t('search.context'), sizing: { minEm: 14, weight: 1.6 } }, { id: 'description', label: t('col.description'), sizing: { minEm: 18, weight: 3 } },
-    { id: 'status', label: t('col.status'), compact: true, sizing: { minEm: 5, weight: .25 } },
+    { id: 'status', label: t('col.status'), compact: true, sizing: { minEm: 7.5, weight: .25 } }, // the widest status chip needs 7.2 em
   ];
 
   /* grouping */

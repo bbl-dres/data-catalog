@@ -159,7 +159,9 @@
     return Array.isArray(value) ? value.join('; ') : String(value);
   }
   const fields = (kind, ids = selected(kind)) => { const visible = new Set(normalize(kind, ids)); return definitions(kind).filter(f => visible.has(f.id)); };
-  const column = f => ({ id: f.id, label: t(f.label), primary: f.primary, sizing: f.sizing, numeric: f.type === 'number', compact: ['boolean', 'number', 'status', 'date'].includes(f.type) || ['key', 'type', 'code'].includes(f.id), sortable: f.type !== 'links' });
+  // Web status chips carry padding and letter-spacing that the print minimum does not: "Archiviato" needs 7.2 em.
+  const webSizing = f => f.type === 'status' && f.sizing ? { ...f.sizing, minEm: Math.max(f.sizing.minEm, 7.5) } : f.sizing;
+  const column = f => ({ id: f.id, label: t(f.label), primary: f.primary, sizing: webSizing(f), numeric: f.type === 'number', compact: ['boolean', 'number', 'status', 'date'].includes(f.type) || ['key', 'type', 'code'].includes(f.id), sortable: f.type !== 'links' });
   const values = (kind, entity) => Object.fromEntries(definitions(kind).map(f => [f.id, f.read(entity, kind)]));
   const display = (kind, entity) => Object.fromEntries(definitions(kind).map(f => [f.id, format(f, f.read(entity, kind))]));
   function cell(f, value, entity) {

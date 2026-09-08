@@ -46,7 +46,10 @@ const server = createServer();
         assert.equal(await page.locator('#panel-rows tbody tr').count(), table.count);
         assert(await page.locator('#panel-rows a[href^="#/refs/r-gwr-"]').count() > 0);
         assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `${width}: ${table.id}`);
-        if (width <= 390) assert(await page.locator('#panel-rows .ob-table-region.is-cards').isVisible());
+        if (width <= 390) {
+          assert(await page.locator('#panel-rows .ob-table-region.is-scrollable').isVisible(), 'the field table scrolls sideways on a phone');
+          assert(await page.locator('#panel-rows .ob-table-scroll-hint').isVisible());
+        }
       }
       console.log(`PASS: all seven GWR field tables and reference links at ${width}px`);
     }

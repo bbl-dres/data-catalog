@@ -37,8 +37,8 @@
   /* rendering */
   const $ = id => document.getElementById(id);
 
-  // Table layout follows container width, including sidebar resizing.
-  // One observer keeps DOM semantics and keyboard focus in sync with card mode.
+  // Table layout follows container width, including sidebar resizing: columns share the width above their
+  // minima, and a container narrower than the table's minimum scrolls it sideways with a hint and edge shadows.
   // Geometry is read for every region first and written afterwards: a read after a write forces a
   // layout per table, which made a page with many tables lay out once per table.
   const tableGeometry = new WeakMap(); // region → the "width:fontSize" it was last adapted to
@@ -47,35 +47,43 @@
     const geometry = `${width}:${fontSize}`;
     if (!region.isConnected || tableGeometry.get(region) === geometry) return; // the observer's first notification repeats the render-time pass
     tableGeometry.set(region, geometry);
-    const minWidth = region.dataset.tableMinEm ? Number(region.dataset.tableMinEm) * fontSize : Number(region.dataset.tableMinWidth);
-    const cards = width < minWidth;
-    const wasCards = region.classList.contains('is-cards');
-    const focused = region.contains(document.activeElement) ? document.activeElement : null;
-    region.classList.toggle('is-cards', cards);
-    if (!cards && region.dataset.tableMinEm) {
+    const table = region.querySelector('table');
+    if (region.dataset.tableMinEm) {
       const headers = [...region.querySelectorAll('[data-column-min-em]')];
       const minima = headers.map(header => Number(header.dataset.columnMinEm) * fontSize);
-      const remaining = Math.max(0, width - minima.reduce((sum, width) => sum + width, 0));
+      const minimum = minima.reduce((sum, width) => sum + width, 0);
+      const remaining = Math.max(0, width - minimum);
       const weight = headers.reduce((sum, header) => sum + Number(header.dataset.columnWeight), 0);
       headers.forEach((header, index) => { header.style.width = `${minima[index] + remaining * Number(header.dataset.columnWeight) / weight}px`; });
-    }
-    const select = region.querySelector('[data-action="sort-cards"]');
-    if (select) select.closest('label').hidden = !cards;
-    if (cards !== wasCards && focused) {
-      if (cards && focused.matches('.ob-table-sort')) select?.focus({ preventScroll: true });
-      else if (!cards && focused === select) {
-        const column = select.value.split(':')[0];
-        region.querySelector(`[data-sort-field="${column}"], [data-sort-column="${column}"]`)?.focus({ preventScroll: true });
-      }
-    }
+      table.style.minWidth = `${Math.ceil(minimum)}px`;
+    } else table.style.minWidth = `${Number(region.dataset.tableMinWidth) || 0}px`;
   }
-  const tableLayoutObserver = new ResizeObserver(entries => entries.map(entry => measureTable(entry.target)).forEach(adaptTable));
+  /** Scroll affordances: read for every region, then written, like adaptTable. */
+  const measureScroll = region => {
+    const wrap = region.querySelector('.ob-table-wrap');
+    return { region, wrap, overflow: wrap.scrollWidth > wrap.clientWidth + 1, before: wrap.scrollLeft > 1, after: wrap.scrollLeft + wrap.clientWidth < wrap.scrollWidth - 1 };
+  };
+  function applyScroll({ region, wrap, overflow, before, after }) {
+    region.classList.toggle('is-scrollable', overflow);
+    wrap.parentElement.classList.toggle('has-more-start', overflow && before);
+    wrap.parentElement.classList.toggle('has-more-end', overflow && after);
+    if (before) region.dataset.scrolled = 'true'; // the gesture is known once the table was scrolled
+    region.querySelector('.ob-table-scroll-hint').hidden = !overflow || !!region.dataset.scrolled;
+    // A scrolling table is a keyboard-reachable region, so users without a pointer can scroll it too.
+    if (overflow) { wrap.setAttribute('tabindex', '0'); wrap.setAttribute('role', 'region'); wrap.setAttribute('aria-label', t('table.scrollHint')); }
+    else { wrap.removeAttribute('tabindex'); wrap.removeAttribute('role'); wrap.removeAttribute('aria-label'); }
+  }
+  function layoutTables(regions) {
+    regions.map(measureTable).forEach(adaptTable);
+    regions.map(measureScroll).forEach(applyScroll);
+  }
+  const tableLayoutObserver = new ResizeObserver(entries => layoutTables(entries.map(entry => entry.target).filter(region => region.isConnected)));
 
   function observeTables() {
     tableLayoutObserver.disconnect();
-    const measured = [...document.querySelectorAll('.ob-table-region')].map(measureTable);
-    measured.forEach(adaptTable);
-    measured.forEach(({ region }) => tableLayoutObserver.observe(region));
+    const regions = [...document.querySelectorAll('.ob-table-region')];
+    layoutTables(regions);
+    regions.forEach(region => tableLayoutObserver.observe(region));
   }
 
   function resolveRoute() {
@@ -110,7 +118,7 @@
     else if (el.closest('.ob-popover')) el = el.closest('.ob-popover-host').querySelector('[data-action="help-toggle"]');
     if (el.dataset.focus) return `[data-focus="${CSS.escape(el.dataset.focus)}"]`;
     if (el.id) return '#' + CSS.escape(el.id);
-    const attrs = [...el.attributes].filter(a => a.name.startsWith('data-') && !['data-label', 'data-href'].includes(a.name));
+    const attrs = [...el.attributes].filter(a => a.name.startsWith('data-') && a.name !== 'data-href');
     return attrs.length ? el.tagName.toLowerCase() + attrs.map(a => `[${a.name}="${CSS.escape(a.value)}"]`).join('') : null;
   }
 
@@ -892,14 +900,12 @@
         router.replaceParams(ui.pageParams(ui.pageState(0, { size: e.target.value })));
         app.render();
       }
-      if (e.target.matches('[data-action="sort-cards"]') && e.target.value) {
-        const [column, direction] = e.target.value.split(':');
-        state.tableSorts[e.target.dataset.sortKey] = /^\d+$/.test(column) ? { column: Number(column), direction } : { field: column, direction };
-        if ((ctx.isList || ctx.isRows) && !/^\d+$/.test(column)) router.replaceParams({ sort: `${column}:${direction}` });
-        if (['detail', 'search'].includes(route.view)) router.replaceParams({ page: null });
-        app.render();
-      }
     });
+    // Element scrolls do not bubble; the capture phase reaches every table scroller with one listener.
+    document.addEventListener('scroll', e => {
+      const region = e.target instanceof Element && e.target.classList.contains('ob-table-wrap') ? e.target.closest('.ob-table-region') : null;
+      if (region) applyScroll(measureScroll(region));
+    }, { capture: true, passive: true });
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
     document.addEventListener('focusout', onFocusout);

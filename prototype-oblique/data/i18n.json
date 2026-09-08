@@ -1,6 +1,5 @@
 {
   "sort.label": { "de": "Sortierung", "fr": "Tri", "it": "Ordinamento", "en": "Sort order" },
-  "sort.choose": { "de": "Sortierung wählen", "fr": "Choisir le tri", "it": "Scegli ordinamento", "en": "Choose sort order" },
   "navigation.title": { "de": "Navigation", "fr": "Navigation", "it": "Navigazione", "en": "Navigation" },
   "navigation.open": { "de": "Navigation öffnen", "fr": "Ouvrir la navigation", "it": "Apri navigazione", "en": "Open navigation" },
   "navigation.expand": { "de": "Seitenspalte ausklappen", "fr": "Développer la barre latérale", "it": "Espandi barra laterale", "en": "Expand sidebar" },
@@ -116,6 +115,7 @@
   "toolbar.view": { "de": "Darstellung", "fr": "Affichage", "it": "Visualizzazione", "en": "View" },
   "toolbar.tiles": { "de": "Kacheln", "fr": "Tuiles", "it": "Riquadri", "en": "Tiles" },
   "toolbar.table": { "de": "Tabelle", "fr": "Tableau", "it": "Tabella", "en": "Table" },
+  "table.scrollHint": { "de": "Horizontal scrollen, um alle Spalten zu sehen", "fr": "Faire défiler horizontalement pour voir toutes les colonnes", "it": "Scorrere orizzontalmente per vedere tutte le colonne", "en": "Scroll horizontally to see all columns" },
   "toolbar.export.xlsx": { "de": "Excel: Aktuelle Auswahl", "fr": "Excel : sélection actuelle", "it": "Excel: selezione attuale", "en": "Excel: Current selection" },
   "toolbar.export.xlsxAll": { "de": "Excel: Gesamter Katalog", "fr": "Excel : catalogue complet", "it": "Excel: catalogo completo", "en": "Excel: Entire catalog" },
   "excel.catalog": { "de": "Gesamter Katalog", "fr": "Catalogue complet", "it": "Catalogo completo", "en": "Entire catalog" },

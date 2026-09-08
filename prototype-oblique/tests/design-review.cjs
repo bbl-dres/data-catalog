@@ -45,7 +45,7 @@ const measure = () => {
     header: header && rect(header), footer: footer && rect(footer),
     h1: h1 && { text: h1.textContent.trim().slice(0, 60), ...rect(h1), lines: Math.round(h1.getBoundingClientRect().height / parseFloat(cs(h1).lineHeight)) },
     tokens, tileColumns: new Set(tiles.map(t => t.x)).size,
-    tables: [...document.querySelectorAll('.ob-table-region')].filter(visible).map(el => ({ cards: el.classList.contains('is-cards'), ...rect(el) })),
+    tables: [...document.querySelectorAll('.ob-table-region')].filter(visible).map(el => ({ scrollable: el.classList.contains('is-scrollable'), ...rect(el) })),
     smallTargets: controls.filter(el => { const r = rect(el); return r.w < 44 || r.h < 44; }).slice(0, 20).map(describe),
     outside: [...document.querySelectorAll('#page-content *, #header *, #footer *')].filter(el => visible(el) && cs(el).position !== 'fixed' && (el.getBoundingClientRect().right > vw + 1 || el.getBoundingClientRect().left < -1)).slice(0, 10).map(describe),
     graph: (() => { const shell = document.getElementById('graph-shell'), win = document.getElementById('graph'); return shell && win ? { shell: rect(shell).h, window: rect(win).h, zoom: document.getElementById('graph-zoom')?.textContent, toolbarRows: new Set([...document.querySelectorAll('.ob-graph-toolbar .ob-button')].map(b => Math.round(b.getBoundingClientRect().top))).size } : null; })(),

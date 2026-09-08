@@ -46,7 +46,7 @@ const server = createServer();
               (innerWidth > 960 || c.bottom <= f.top);
           }),
           homeStacked: !document.querySelector('.ob-home-recent') || document.querySelector('.ob-home-recent').getBoundingClientRect().top >= document.querySelector('.ob-home-domains').getBoundingClientRect().bottom,
-          brokenHeaders: [...document.querySelectorAll('.ob-table-region:not(.is-cards) th')].some(th => {
+          brokenHeaders: [...document.querySelectorAll('.ob-table-region th')].some(th => {
             const label = th.querySelector('.ob-table-sort-label');
             return label && (label.getBoundingClientRect().height > parseFloat(getComputedStyle(label).lineHeight) + 1 || label.getBoundingClientRect().right > th.getBoundingClientRect().right);
           }),
@@ -56,10 +56,12 @@ const server = createServer();
             min: el.dataset.tableMinEm
               ? Number(el.dataset.tableMinEm) * parseFloat(getComputedStyle(el.querySelector('table')).fontSize)
               : Number(el.dataset.tableMinWidth),
-            cards: el.classList.contains('is-cards'),
-            sortVisible: el.querySelector('[data-action="sort-cards"]')?.checkVisibility(),
+            scrollable: el.classList.contains('is-scrollable'),
+            overflows: el.querySelector('.ob-table-wrap').scrollWidth > el.querySelector('.ob-table-wrap').clientWidth + 1,
+            hintVisible: el.querySelector('.ob-table-scroll-hint').checkVisibility(),
+            focusable: el.querySelector('.ob-table-wrap').getAttribute('tabindex') === '0',
             headerVisible: el.querySelector('.ob-table-sort')?.checkVisibility(),
-            emptyLabels: [...el.querySelectorAll('td')].some(td => !td.dataset.label)
+            clipped: el.getBoundingClientRect().right > innerWidth + 1
           }))
         }));
         assert.equal(result.overflow, false, `${width}: ${route}/${tab} page overflow`);
@@ -72,10 +74,13 @@ const server = createServer();
         assert.equal(result.brokenHeaders, false, `${width}: ${route}/${tab} wrapped or overflowing header`);
         if (route === '#/api') assert.equal(result.hasTree, false, 'API must not render the catalog tree');
         for (const table of result.tables) {
-          assert.equal(table.cards, table.width < table.min, width + ': ' + route + '/' + tab + ' table did not adapt (width ' + table.width + ', min ' + table.min + ', cards ' + table.cards + ')');
-          assert.equal(table.emptyLabels, false, 'Card field lacks label');
-          if (table.sortVisible !== undefined) assert.equal(table.sortVisible, table.cards, 'Sorting unavailable or duplicated');
-          if (table.headerVisible !== undefined) assert.equal(table.headerVisible, !table.cards, 'Hidden header control remains visible');
+          // A narrower container scrolls the table sideways; the region keeps the page width.
+          assert.equal(table.overflows, table.width < table.min - 1, width + ': ' + route + '/' + tab + ' table did not keep its minimum (width ' + table.width + ', min ' + table.min + ', overflows ' + table.overflows + ')');
+          assert.equal(table.scrollable, table.overflows, 'Scroll affordances do not match the overflow');
+          assert.equal(table.hintVisible, table.overflows, 'Scroll hint must appear exactly for an overflowing table');
+          assert.equal(table.focusable, table.overflows, 'Only a scrolling table is a focusable region');
+          assert.equal(table.clipped, false, 'Table region must stay inside the viewport');
+          if (table.headerVisible !== undefined) assert.equal(table.headerVisible, true, 'Header sorting must stay available');
         }
         layouts++;
       }
@@ -92,42 +97,38 @@ const server = createServer();
     const factHeights = await page.locator('.ob-facts dt, .ob-facts dd').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
     assert(factHeights.every(height => height === 37), 'System, protection, core facts and contacts share the same single-line row height');
     /* The trimmed attribute table fits beside the sidebar, so the grouped object
-       list is now the table that switches modes at these desktop widths. */
+       list is the table that scrolls sideways at these desktop widths. */
     await page.setViewportSize({ width: 1024, height: 768 });
     await visit('#/objects?view=table');
-    const bauSort = page.locator('[data-action="sort-cards"]').first();
+    const first = page.locator('.ob-table-region').first();
+    assert(await first.evaluate(el => el.classList.contains('is-scrollable')), 'the grouped object table scrolls beside the sidebar');
+    const bauSort = first.locator('[data-sort-field="name"]');
     await bauSort.focus();
-    await bauSort.selectOption('name:desc');
+    await bauSort.click(); await settle(page); // the name column starts ascending: one click sorts descending
     assert.equal(await page.locator('.ob-table-region').first().locator('td.is-primary').first().innerText(), 'Raum');
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-cards');
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.sortField), 'name', 'header sorting keeps its focus');
     await page.locator('[data-action="toggle-sidebar"]').click();
     await settle(page);
-    assert.equal(await page.locator('.ob-table-region.is-cards').count(), 0);
+    assert.equal(await page.locator('.ob-table-region.is-scrollable').count(), 0, 'the collapsed sidebar gives the table its full width');
     assert.equal(await page.locator('th[aria-sort="descending"]').first().innerText(), 'Name');
     await page.locator('[data-action="toggle-sidebar"]').click();
     await settle(page);
-    await page.locator('[data-action="sort-cards"]').first().focus();
+    // The scroller is a keyboard-reachable region exactly while it overflows; the hint disappears once scrolled.
+    const wrap = first.locator('.ob-table-wrap');
+    assert.equal(await wrap.getAttribute('tabindex'), '0');
+    assert.equal(await first.locator('.ob-table-scroll-hint').isVisible(), true);
+    await wrap.evaluate(el => { el.scrollLeft = 80; }); await page.waitForTimeout(50); await settle(page);
+    assert.equal(await first.locator('.ob-table-scroll-hint').isVisible(), false, 'the hint hides after the first scroll');
+    assert.deepEqual(await first.locator('.ob-table-scroll').evaluate(el => [el.classList.contains('has-more-start'), el.classList.contains('has-more-end')]), [true, true]);
+    await wrap.evaluate(el => { el.scrollLeft = el.scrollWidth; }); await page.waitForTimeout(50); await settle(page);
+    assert.deepEqual(await first.locator('.ob-table-scroll').evaluate(el => [el.classList.contains('has-more-start'), el.classList.contains('has-more-end')]), [true, false]);
     await page.setViewportSize({ width: 1280, height: 768 });
     await settle(page);
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-table');
-    await page.setViewportSize({ width: 1024, height: 768 });
-    await settle(page);
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-cards');
-    await page.setViewportSize({ width: 1280, height: 768 });
-    await settle(page);
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'sort-table');
+    assert.equal(await wrap.getAttribute('tabindex'), null, 'a table that fits is not a tab stop');
     assert.equal(await page.locator('.ob-table-region').first().locator('td.is-primary').first().innerText(), 'Raum');
 
-    // Sorting a later group restores focus to that same group's control.
+    // Pagination/sorting/export keep the full dataset in a phone-width scrolling table.
     await page.setViewportSize({ width: 390, height: 844 });
-    await visit('#/objects?view=table');
-    const groupSort = page.locator('[data-action="sort-cards"]').nth(1);
-    const focusId = await groupSort.getAttribute('data-focus');
-    await groupSort.focus();
-    await groupSort.selectOption('name:desc');
-    assert.equal(await page.evaluate(() => document.activeElement.dataset.focus), focusId);
-
-    // Pagination/sorting/export keep the full dataset in card mode.
     await visit('#/objects/gebaeude', 'rows');
     await page.evaluate(() => {
       const object = DK.data.objOf('gebaeude');
@@ -139,7 +140,8 @@ const server = createServer();
     assert.equal(await page.locator('.ob-detail-rows tbody tr').count(), 50);
     await page.locator('.ob-pager--top [data-action="set-page"][data-page="2"]').click();
     assert.equal(await page.locator('.ob-detail-rows td.is-primary').first().innerText(), 'Test 051');
-    await page.locator('[data-action="sort-cards"]').selectOption('name:desc');
+    await page.locator('.ob-detail-rows [data-sort-field="name"]').click(); await settle(page);
+    await page.locator('.ob-detail-rows [data-sort-field="name"]').click(); await settle(page);
     assert.equal(await page.locator('.ob-detail-rows td.is-primary').first().innerText(), 'Test 123');
     await page.locator('[data-action="set-page-size"]').selectOption('100');
     assert.equal(await page.locator('.ob-detail-rows tbody tr').count(), 100);
@@ -154,7 +156,8 @@ const server = createServer();
     assert(attrs.getColumn(5).values.includes('Test 001'));
     await page.emulateMedia({ media: 'print' });
     assert.equal(await page.locator('.ob-table thead').evaluate(el => getComputedStyle(el).position), 'static');
-    assert.equal(await page.locator('.ob-table-card-sort').evaluate(el => getComputedStyle(el).display), 'none');
+    assert.equal(await page.locator('.ob-table-scroll-hint').first().evaluate(el => getComputedStyle(el).display), 'none', 'print shows no scroll hint');
+    assert.equal(await page.locator('.ob-table').first().evaluate(el => getComputedStyle(el).minWidth), '0px', 'print lets the page decide the table width');
     await page.emulateMedia({ media: 'screen' });
 
     // Drawer, keyboard tabs and orientation change.

@@ -2,6 +2,8 @@
 
 7 September 2026. Scope: the whole catalog application on smartphones, tablets, small laptops and large desktop screens, with mobile support as the focus. Every recommendation was implemented as a refactor of presentation, spacing, sizing, wrapping, alignment, tokens or markup structure. No feature was added or removed, no string changed, and catalog data is untouched.
 
+> **Follow-up, 8 September 2026.** The labelled card presentation of narrow tables (C57/C58 and the card-sort control below) was replaced by a decision of the product owner: tables now stay tables at every width and scroll sideways within the page, with edge shadows, a scroll hint and a keyboard-focusable scroll region, following the Swiss federal web pattern for wide tables. See [design-system.md](../design-system.md#responsive-layout).
+
 ## Method
 
 Measurements use `getBoundingClientRect()` and computed styles after fonts and layout settle, in CSS pixels, on the local JSON fixture in headless Chromium 141 through the repository's test server. Ten independent review passes (shell on phones, shell on wide screens, home and search, collections, profiles, relationship diagram, print workspace, handbook and API, typography and control consistency, states and edge cases) captured about 400 states and produced 113 raw findings. Duplicates were merged into 81 findings; a second, adversarial pass reproduced each one, tried to refute it against the documented design decisions, and confirmed 72. Nine were refuted and three dropped (see [Refuted and deliberately unchanged](#refuted-and-deliberately-unchanged)).

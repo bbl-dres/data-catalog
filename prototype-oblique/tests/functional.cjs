@@ -480,7 +480,7 @@ const server = createServer();
       assert.equal(await page.locator('.ob-tile').count(), 1);
       await page.click('#view-tab-table');
       assert.equal(await page.locator('#collection-view-panel tbody tr').count(), 1);
-      assert(await page.locator('.ob-table-region.is-cards').isVisible());
+      assert(await page.locator('.ob-table-region.is-scrollable .ob-table-scroll-hint').isVisible(), 'a phone-width table scrolls sideways with a hint');
       await page.fill('#collection-filter', 'SAP');
       assert(await page.locator('#collection-view-panel tbody tr').count() > 1);
       await page.press('#collection-filter', 'Escape');

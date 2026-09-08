@@ -386,7 +386,7 @@ button.ob-tree-link { width: 100%; }
 .ob-drawer-header, .ob-drawer-nav, .ob-drawer-tools, .ob-drawer-backdrop { display: none; }
 
 /* ---- Tables -------------------------------------------------------------- */
-.ob-table-wrap { overflow-x: auto; }
+.ob-table-wrap { overflow-x: auto; overscroll-behavior-x: contain; }
 .ob-table { width: 100%; border-collapse: collapse; font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md); letter-spacing: var(--ob-letter-spacing-table); }
 .ob-table--fields { table-layout: fixed; }
 .ob-table--fields td { overflow-wrap: anywhere; }
@@ -422,30 +422,18 @@ button.ob-tree-link { width: 100%; }
 .ob-table .ob-cell-strong { color: var(--ob-color-text); }
 .ob-cell-value { display: block; min-width: 0; overflow-wrap: anywhere; hyphens: auto; }
 .ob-table-region { min-width: 0; }
-.ob-table-heading-label { display: none; }
-.ob-table-card-sort { display: flex; align-items: center; gap: var(--ob-space-sm) var(--ob-space-md); margin-bottom: var(--ob-space-md); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); }
-/* Both sort selects share one row with their label and take the remaining width; phone columns stack them. */
-.ob-table-card-sort .ob-select, .ob-search-sort .ob-select { flex: 1 1 auto; min-width: 0; }
-/* Card mode follows each table's available width, including sidebar changes. */
-.ob-table-region.is-cards .ob-table-wrap { overflow: visible; }
-.ob-table-region.is-cards .ob-table { display: block; }
-.ob-table-region.is-cards thead { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
-.ob-table-region.is-cards th { position: static; }
-.ob-table-region.is-cards .ob-table-sort { display: none; }
-.ob-table-region.is-cards .ob-table-heading-label { display: inline; }
-.ob-table-region.is-cards tbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(var(--ob-table-card-min-width), 100%), 1fr)); gap: var(--ob-space-md); }
-.ob-table-region.is-cards tbody tr { display: flex; flex-direction: column; min-width: 0; padding: var(--ob-space-sm) var(--ob-space-md); border: var(--ob-border-width-xs) solid var(--ob-color-border); background: var(--ob-color-bg); }
-.ob-table-region.is-cards tbody tr:hover { background: var(--ob-color-surface); }
-.ob-table-region.is-cards td { display: grid; grid-template-columns: minmax(var(--ob-card-label-min-width), var(--ob-card-label-width)) minmax(0, 1fr); gap: var(--ob-space-md); height: auto; padding: var(--ob-space-compact) 0; text-align: left; overflow-wrap: anywhere; }
-.ob-table-region.is-cards td[data-field="description"] { display: block; }
-.ob-table-region.is-cards td[data-field="description"]::before { content: none; }
-.ob-table-region.is-cards td.ob-cell-summary > .ob-cell-value { -webkit-line-clamp: var(--ob-card-summary-lines); }
-.ob-table-region.is-cards td::before { content: attr(data-label); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); font-weight: var(--ob-font-weight-regular); }
-.ob-table-region.is-cards td.ob-cell-numeric .ob-cell-value { text-align: left; } /* one value column in cards; numbers align right only in true tables */
-.ob-table-region.is-cards td.is-primary { display: block; order: -1; padding: 0 0 var(--ob-space-sm); margin-bottom: var(--ob-space-xs); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); font-size: var(--ob-font-size-body-lg); font-weight: var(--ob-font-weight-semibold); }
-.ob-table-region.is-cards td.is-primary::before { content: none; }
-.ob-table-region.is-cards .ob-table-entity-link { display: flex; align-items: center; min-height: var(--ob-touch-target); }
-.ob-table-region.is-cards .ob-cell-nowrap { white-space: normal; }
+/* A container narrower than the table's minimum scrolls it sideways instead of compressing its columns:
+   edge shadows show the hidden side(s), the hint names the gesture until the table was scrolled, and the
+   scroller is a focusable region (app.js) so keyboard users can scroll it too. */
+.ob-table-scroll { position: relative; }
+.ob-table-scroll::before, .ob-table-scroll::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: 1; width: var(--ob-table-scroll-shadow-width); pointer-events: none; opacity: 0; transition: opacity var(--ob-duration-micro) var(--ob-easing-standard); }
+.ob-table-scroll::before { left: 0; background: linear-gradient(to right, var(--ob-color-scroll-shadow), transparent); }
+.ob-table-scroll::after { right: 0; background: linear-gradient(to left, var(--ob-color-scroll-shadow), transparent); }
+.ob-table-scroll.has-more-start::before, .ob-table-scroll.has-more-end::after { opacity: 1; }
+.ob-table-wrap:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--ob-focus-width) var(--ob-color-focus); }
+.ob-table-scroll-hint { display: flex; align-items: center; gap: var(--ob-space-xs); margin: 0 0 var(--ob-space-sm); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); }
+.ob-table-scroll-hint .ob-icon { color: var(--ob-color-text-tertiary); }
+.ob-search-sort .ob-select { flex: 1 1 auto; min-width: 0; }
 
 /* Pager */
 .ob-pager { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-md); margin-top: var(--ob-space-default); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); }
@@ -556,9 +544,8 @@ button.ob-tree-link { width: 100%; }
 @container workspace (width < 600px) {
   .ob-detail-controls .ob-local-menus { flex: 1 1 100%; min-width: 0; margin-left: 0; }
   .ob-detail-controls .ob-local-menus .ob-button { width: 100%; }
-  .ob-table-card-sort, .ob-search-sort { flex-wrap: wrap; }
-  .ob-search-sort { flex-basis: 100%; margin-left: 0; }
-  .ob-table-card-sort .ob-select, .ob-search-sort .ob-select { flex-basis: 100%; }
+  .ob-search-sort { flex-wrap: wrap; flex-basis: 100%; margin-left: 0; }
+  .ob-search-sort .ob-select { flex-basis: 100%; }
 }
 @media (any-pointer: coarse), (max-width: 960px) {
   .ob-collection-search .ob-search-clear { width: var(--ob-touch-target); height: var(--ob-touch-target); right: 0; }
@@ -581,7 +568,8 @@ button.ob-tree-link { width: 100%; }
 [role="tabpanel"] { scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
 [role="tabpanel"]:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 .ob-detail-rows { scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
-.ob-detail-rows .ob-table-wrap { overflow: visible; }
+/* Sticky column headers need an unclipped ancestor; a table that scrolls sideways gives them up for the scroller. */
+.ob-detail-rows .ob-table-region:not(.is-scrollable) .ob-table-wrap { overflow: visible; }
 .ob-detail-rows th { position: sticky; top: var(--ob-header-height); z-index: 1; background: var(--ob-color-surface); box-shadow: 0 var(--ob-border-width-xs) var(--ob-color-border-strong); }
 .ob-detail-rows td { overflow-wrap: anywhere; }
 
@@ -911,13 +899,10 @@ button.ob-tree-link { width: 100%; }
   .ob-header { position: static; }
   .ob-detail-rows th { position: static; }
   .ob-content { width: 100%; padding: var(--ob-space-default) 0; }
-  .ob-table-card-sort { display: none !important; }
-  .ob-table-region.is-cards .ob-table { display: table; }
-  .ob-table-region.is-cards thead { display: table-header-group; position: static; width: auto; height: auto; margin: 0; overflow: visible; clip-path: none; }
-  .ob-table-region.is-cards tbody { display: table-row-group; }
-  .ob-table-region.is-cards tbody tr { display: table-row; }
-  .ob-table-region.is-cards td, .ob-table-region.is-cards td.is-primary { display: table-cell; border: 0; margin: 0; padding: var(--ob-space-sm); font-size: inherit; font-weight: var(--ob-font-weight-regular); }
-  .ob-table-region.is-cards td::before { content: none; }
+  .ob-table-scroll-hint { display: none !important; }
+  .ob-table-scroll::before, .ob-table-scroll::after { content: none; }
+  .ob-table-wrap { overflow: visible; }
+  .ob-table { min-width: 0 !important; } /* the page, not a scroller, decides the printed width */
   .ob-relations-list, .ob-relations-view.is-diagram .ob-relations-list { display: block; }
   .ob-relations-diagram, .ob-relations-view.is-diagram .ob-relations-diagram { display: none; }
   .ob-table thead tr { background: var(--ob-secondary-100) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -937,6 +922,7 @@ button.ob-tree-link { width: 100%; }
    These overrides follow contextual styles; shadows are suppressed by the OS. */
 @media (forced-colors: active) {
   .ob-icon, .ob-disclosure > summary::before { forced-color-adjust: none; background-color: currentColor; }
+  .ob-table-scroll::before, .ob-table-scroll::after { content: none; } /* the hint text and the focusable region remain */
   .ob-card, .ob-badge, .ob-chip { outline: var(--ob-border-width-xs) solid CanvasText; outline-offset: -1px; }
   .ob-tree-panel.is-mobile-open { border-right: var(--ob-border-width-xs) solid CanvasText; }
   .ob-footer { border-top: var(--ob-border-width-xs) solid CanvasText; }

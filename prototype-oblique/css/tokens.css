@@ -135,6 +135,7 @@
   --ob-border-width-lg: 4px;
 
   /* ---- 1. Primitives: shadows (legacy _shadow.scss, valid CSS) --------- */
+  --ob-color-scroll-shadow: rgba(0, 0, 0, 0.12);         /* hidden side of a sideways-scrolling table */
   --ob-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --ob-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 5px rgba(0, 0, 0, 0.08);
   --ob-shadow-default: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -280,9 +281,7 @@
   --ob-export-popover-width: 380px;
   --ob-export-facets-height: 320px;                       /* facet list and compact scope tree; grows with the visible height below */
   --ob-export-preview-min-height: 280px;
-  --ob-card-label-min-width: 96px;                       /* label column of phone table cards */
-  --ob-table-card-min-width: 300px;
-  --ob-card-label-width: 36%;
+  --ob-table-scroll-shadow-width: 24px;                  /* edge shadow of a sideways-scrolling table */
   --ob-card-summary-lines: 3;
   --ob-table-summary-lines: 2;
   --ob-api-max-width: 1200px;

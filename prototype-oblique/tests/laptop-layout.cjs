@@ -60,7 +60,7 @@ const { workspace } = require('./print-test-helpers.cjs');
               if (visibleGap !== null && Math.abs(visibleGap - 29) > 0.5) issues.push('visible-action-to-panel gap: ' + visibleGap);
               return { outer: box(outer), tabs: tabBox, actions: actions && box(actions), panel: box(panel), panelGap, visibleGap };
             });
-            for (const label of document.querySelectorAll('.ob-table-region:not(.is-cards) .ob-table-sort-label')) {
+            for (const label of document.querySelectorAll('.ob-table-region .ob-table-sort-label')) {
               const r = box(label), th = box(label.closest('th'));
               if (r.right > th.right + 1 || r.left < th.left - 1) issues.push('clipped table heading: ' + label.textContent);
             }
