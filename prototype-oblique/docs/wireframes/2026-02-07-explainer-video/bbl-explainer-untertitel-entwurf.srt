@@ -1,0 +1,131 @@
+1
+00:00:00,500 --> 00:00:05,729
+Wo finde ich Daten zu einem Gebäude? Was
+bedeuten die Angaben? Und wer beantwortet
+
+2
+00:00:05,809 --> 00:00:10,909
+meine Fragen? Der Datenkatalog des BBL
+hilft Ihnen dabei. Er macht Informationen
+
+3
+00:00:10,989 --> 00:00:15,701
+über Daten im Immobilienmanagement
+auffindbar und verbindet ihre Bedeutung
+
+4
+00:00:15,781 --> 00:00:18,420
+mit Struktur, Quellen und Zuständigkeiten.
+
+5
+00:00:20,500 --> 00:00:24,696
+Geschäftsobjekte erklären Begriffe wie
+Gebäude, Grundstück oder Raum – unabhängig
+
+6
+00:00:24,776 --> 00:00:28,285
+vom Quellsystem. Ihre Attribute
+beschreiben Eigenschaften, etwa eine
+
+7
+00:00:28,365 --> 00:00:32,455
+Gebäude-ID oder eine Fläche. So entsteht
+ein gemeinsames Verständnis, auch wenn
+
+8
+00:00:32,535 --> 00:00:36,467
+verschiedene Teams mit unterschiedlichen
+Anwendungen arbeiten. Der fachliche
+
+9
+00:00:36,547 --> 00:00:38,420
+Begriff verbindet diese Perspektiven.
+
+10
+00:00:40,500 --> 00:00:44,893
+Datentabellen und Felder beschreiben die
+technische Struktur in den Quellsystemen.
+
+11
+00:00:44,973 --> 00:00:49,256
+Verknüpfungen zeigen die dokumentierten
+Zuordnungen zu den Geschäftsobjekten. So
+
+12
+00:00:49,336 --> 00:00:53,293
+wird nachvollziehbar, wie ein fachlicher
+Begriff in verschiedenen Systemen
+
+13
+00:00:53,373 --> 00:00:57,656
+abgebildet ist. Die eigentlichen Gebäude-
+und Vertragsdaten bleiben dabei in den
+
+14
+00:00:57,736 --> 00:00:58,420
+Quellsystemen.
+
+15
+00:01:00,500 --> 00:01:04,546
+Wertelisten erläutern zulässige Codes und
+ihre Bedeutung. Quellenlinks führen zu
+
+16
+00:01:04,626 --> 00:01:08,363
+weiterführenden Definitionen. Im Abschnitt
+«Verantwortlich» finden Sie die
+
+17
+00:01:08,443 --> 00:01:11,973
+dokumentierten Fachstellen und
+Ansprechpersonen. So können Sie Angaben
+
+18
+00:01:12,053 --> 00:01:15,944
+einordnen und offene Fragen gezielt
+klären. Ein Katalogeintrag allein gewährt
+
+19
+00:01:16,024 --> 00:01:18,420
+noch keinen Zugriff auf die beschriebenen
+Daten.
+
+20
+00:01:20,500 --> 00:01:24,836
+Starten Sie mit einem Suchbegriff oder
+navigieren Sie durch den Katalog. Öffnen
+
+21
+00:01:24,916 --> 00:01:29,029
+Sie einen Steckbrief und folgen Sie den
+Beziehungen. Mit Excel, PDF und der
+
+22
+00:01:29,109 --> 00:01:32,998
+Katalog-API können Sie die Metadaten
+weiterverwenden. Exportiert werden
+
+23
+00:01:33,078 --> 00:01:37,078
+Beschreibungen und dokumentierte
+Referenzwerte – keine einzelnen Gebäude-
+
+24
+00:01:37,158 --> 00:01:38,420
+oder Vertragsdatensätze.
+
+25
+00:01:40,500 --> 00:01:46,140
+Der Katalog ist ein Prototyp. Probieren
+Sie ihn aus und melden Sie fehlende
+
+26
+00:01:46,220 --> 00:01:52,547
+Definitionen oder unklare Zuständigkeiten:
+an die dokumentierte Fachstelle oder über
+
+27
+00:01:52,627 --> 00:01:58,420
+«Hilfe und Kontakt». Ihr Feedback hilft,
+den Katalog gemeinsam zu verbessern.
+

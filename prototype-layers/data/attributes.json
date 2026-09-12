@@ -1,0 +1,821 @@
+[
+  {
+    "id": "attr-building-egid",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "EGID",
+      "en": "EGID",
+      "fr": "EGID",
+      "it": "EGID"
+    },
+    "type": "Integer",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eidgenössischer Gebäudeidentifikator",
+      "en": "Federal Building Identifier",
+      "fr": "Identifiant fédéral de bâtiment",
+      "it": "Identificatore federale degli edifici"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-building-building_type",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Gebäudetyp",
+      "en": "Building Type",
+      "fr": "Type de bâtiment",
+      "it": "Tipo di edificio"
+    },
+    "type": "Reference",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": "enum-building-type",
+    "description": {
+      "de": "Klassifikation des Gebäudes nach Nutzungszweck",
+      "en": "Classification of building by purpose of use",
+      "fr": "Classification du bâtiment selon son utilisation",
+      "it": "Classificazione dell'edificio secondo l'uso"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-building-address_street",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Strasse",
+      "en": "Street",
+      "fr": "Rue",
+      "it": "Via"
+    },
+    "type": "String",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Strassenadresse des Gebäudes",
+      "en": "Street address of the building",
+      "fr": "Adresse de rue du bâtiment",
+      "it": "Indirizzo stradale dell'edificio"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-building-address_city",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Ort",
+      "en": "City",
+      "fr": "Localité",
+      "it": "Località"
+    },
+    "type": "String",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Stadt oder Ortschaft des Gebäudes",
+      "en": "City or location of the building",
+      "fr": "Ville ou localité du bâtiment",
+      "it": "Città o località dell'edificio"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-building-construction_year",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Baujahr",
+      "en": "Construction Year",
+      "fr": "Année de construction",
+      "it": "Anno di costruzione"
+    },
+    "type": "Integer",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Jahr der Fertigstellung des Gebäudes",
+      "en": "Year the building was completed",
+      "fr": "Année d'achèvement du bâtiment",
+      "it": "Anno di completamento dell'edificio"
+    },
+    "display_order": 5
+  },
+  {
+    "id": "attr-building-total_area_sqm",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Gesamtfläche",
+      "en": "Total Area",
+      "fr": "Surface totale",
+      "it": "Superficie totale"
+    },
+    "type": "Decimal",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Gesamtfläche des Gebäudes in Quadratmetern",
+      "en": "Total area of the building in square meters",
+      "fr": "Surface totale du bâtiment en mètres carrés",
+      "it": "Superficie totale dell'edificio in metri quadrati"
+    },
+    "display_order": 6
+  },
+  {
+    "id": "attr-building-plot_id",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Grundstück",
+      "en": "Plot",
+      "fr": "Bien-fonds",
+      "it": "Fondo"
+    },
+    "type": "Reference",
+    "nullable": false,
+    "key": "FK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Referenz zum zugehörigen Grundstück",
+      "en": "Reference to the associated plot",
+      "fr": "Référence au bien-fonds associé",
+      "it": "Riferimento al fondo associato"
+    },
+    "display_order": 7
+  },
+  {
+    "id": "attr-building-status",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Status",
+      "en": "Status",
+      "fr": "Statut",
+      "it": "Stato"
+    },
+    "type": "Reference",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": "enum-status",
+    "description": {
+      "de": "Aktueller Status des Gebäudes",
+      "en": "Current status of the building",
+      "fr": "Statut actuel du bâtiment",
+      "it": "Stato attuale dell'edificio"
+    },
+    "display_order": 8
+  },
+  {
+    "id": "attr-building-energy_rating",
+    "entity_id": "ent-building",
+    "name": {
+      "de": "Energieklasse",
+      "en": "Energy Class",
+      "fr": "Classe énergétique",
+      "it": "Classe energetica"
+    },
+    "type": "Reference",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": "enum-energy-rating",
+    "description": {
+      "de": "Energieeffizienzklasse nach GEAK-Standard",
+      "en": "Energy efficiency class according to GEAK standard",
+      "fr": "Classe d'efficacité énergétique selon le standard CECB",
+      "it": "Classe di efficienza energetica secondo lo standard CECE"
+    },
+    "display_order": 9
+  },
+  {
+    "id": "attr-plot-plot_id",
+    "entity_id": "ent-plot",
+    "name": {
+      "de": "Grundstücks-ID",
+      "en": "Plot ID",
+      "fr": "ID du bien-fonds",
+      "it": "ID del fondo"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator des Grundstücks",
+      "en": "Unique identifier of the plot",
+      "fr": "Identifiant unique du bien-fonds",
+      "it": "Identificatore univoco del fondo"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-plot-area_sqm",
+    "entity_id": "ent-plot",
+    "name": {
+      "de": "Fläche",
+      "en": "Area",
+      "fr": "Surface",
+      "it": "Superficie"
+    },
+    "type": "Decimal",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Fläche des Grundstücks in Quadratmetern",
+      "en": "Area of the plot in square meters",
+      "fr": "Surface du bien-fonds en mètres carrés",
+      "it": "Superficie del fondo in metri quadrati"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-plot-zone_type",
+    "entity_id": "ent-plot",
+    "name": {
+      "de": "Nutzungszone",
+      "en": "Usage Zone",
+      "fr": "Zone d'affectation",
+      "it": "Zona d'uso"
+    },
+    "type": "Reference",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": "enum-zone",
+    "description": {
+      "de": "Zoneneinteilung nach Raumplanungsrecht",
+      "en": "Zone classification according to spatial planning law",
+      "fr": "Classification des zones selon le droit de l'aménagement",
+      "it": "Classificazione delle zone secondo il diritto di pianificazione"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-plot-municipality",
+    "entity_id": "ent-plot",
+    "name": {
+      "de": "Gemeinde",
+      "en": "Municipality",
+      "fr": "Commune",
+      "it": "Comune"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Politische Gemeinde des Grundstücks",
+      "en": "Political municipality of the plot",
+      "fr": "Commune politique du bien-fonds",
+      "it": "Comune politico del fondo"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-rental-unit-unit_id",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Mietobjekt-ID",
+      "en": "Unit ID",
+      "fr": "ID de l'objet",
+      "it": "ID dell'unità"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator des Mietobjekts",
+      "en": "Unique identifier of the rental unit",
+      "fr": "Identifiant unique de l'objet locatif",
+      "it": "Identificatore univoco dell'unità in affitto"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-rental-unit-building_egid",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Gebäude",
+      "en": "Building",
+      "fr": "Bâtiment",
+      "it": "Edificio"
+    },
+    "type": "Integer",
+    "nullable": false,
+    "key": "FK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Referenz zum übergeordneten Gebäude",
+      "en": "Reference to the parent building",
+      "fr": "Référence au bâtiment parent",
+      "it": "Riferimento all'edificio principale"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-rental-unit-floor",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Stockwerk",
+      "en": "Floor",
+      "fr": "Étage",
+      "it": "Piano"
+    },
+    "type": "Integer",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Stockwerk, auf dem sich das Mietobjekt befindet",
+      "en": "Floor on which the rental unit is located",
+      "fr": "Étage où se trouve l'objet locatif",
+      "it": "Piano in cui si trova l'unità in affitto"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-rental-unit-area_sqm",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Fläche",
+      "en": "Area",
+      "fr": "Surface",
+      "it": "Superficie"
+    },
+    "type": "Decimal",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Fläche des Mietobjekts in Quadratmetern",
+      "en": "Area of the rental unit in square meters",
+      "fr": "Surface de l'objet locatif en mètres carrés",
+      "it": "Superficie dell'unità in affitto in metri quadrati"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-rental-unit-unit_type",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Objekttyp",
+      "en": "Unit Type",
+      "fr": "Type d'objet",
+      "it": "Tipo di unità"
+    },
+    "type": "Reference",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": "enum-unit-type",
+    "description": {
+      "de": "Klassifikation des Mietobjekts nach Nutzungsart",
+      "en": "Classification of rental unit by usage type",
+      "fr": "Classification de l'objet locatif selon le type d'utilisation",
+      "it": "Classificazione dell'unità in affitto per tipo di utilizzo"
+    },
+    "display_order": 5
+  },
+  {
+    "id": "attr-rental-unit-rent_monthly",
+    "entity_id": "ent-rental-unit",
+    "name": {
+      "de": "Monatsmiete",
+      "en": "Monthly Rent",
+      "fr": "Loyer mensuel",
+      "it": "Affitto mensile"
+    },
+    "type": "Decimal",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Monatliche Mietkosten in Schweizer Franken",
+      "en": "Monthly rent in Swiss Francs",
+      "fr": "Loyer mensuel en francs suisses",
+      "it": "Affitto mensile in franchi svizzeri"
+    },
+    "display_order": 6
+  },
+  {
+    "id": "attr-project-project_id",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Projekt-ID",
+      "en": "Project ID",
+      "fr": "ID du projet",
+      "it": "ID del progetto"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator des Bauprojekts",
+      "en": "Unique identifier of the construction project",
+      "fr": "Identifiant unique du projet de construction",
+      "it": "Identificatore univoco del progetto di costruzione"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-project-name",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Projektname",
+      "en": "Project Name",
+      "fr": "Nom du projet",
+      "it": "Nome del progetto"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Bezeichnung des Bauprojekts",
+      "en": "Name of the construction project",
+      "fr": "Désignation du projet de construction",
+      "it": "Denominazione del progetto di costruzione"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-project-building_egid",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Gebäude",
+      "en": "Building",
+      "fr": "Bâtiment",
+      "it": "Edificio"
+    },
+    "type": "Integer",
+    "nullable": true,
+    "key": "FK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Referenz zum betroffenen Gebäude",
+      "en": "Reference to the affected building",
+      "fr": "Référence au bâtiment concerné",
+      "it": "Riferimento all'edificio interessato"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-project-phase",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Projektphase",
+      "en": "Project Phase",
+      "fr": "Phase du projet",
+      "it": "Fase del progetto"
+    },
+    "type": "Reference",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": "enum-project-phase",
+    "description": {
+      "de": "Aktuelle Phase des Bauprojekts nach SIA 112",
+      "en": "Current phase of the construction project per SIA 112",
+      "fr": "Phase actuelle du projet de construction selon SIA 112",
+      "it": "Fase attuale del progetto di costruzione secondo SIA 112"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-project-budget_chf",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Budget",
+      "en": "Budget",
+      "fr": "Budget",
+      "it": "Budget"
+    },
+    "type": "Decimal",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Projektbudget in Schweizer Franken",
+      "en": "Project budget in Swiss Francs",
+      "fr": "Budget du projet en francs suisses",
+      "it": "Budget del progetto in franchi svizzeri"
+    },
+    "display_order": 5
+  },
+  {
+    "id": "attr-project-start_date",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Startdatum",
+      "en": "Start Date",
+      "fr": "Date de début",
+      "it": "Data di inizio"
+    },
+    "type": "Date",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Geplantes oder effektives Startdatum des Projekts",
+      "en": "Planned or actual start date of the project",
+      "fr": "Date de début prévue ou effective du projet",
+      "it": "Data di inizio prevista o effettiva del progetto"
+    },
+    "display_order": 6
+  },
+  {
+    "id": "attr-project-end_date",
+    "entity_id": "ent-project",
+    "name": {
+      "de": "Enddatum",
+      "en": "End Date",
+      "fr": "Date de fin",
+      "it": "Data di fine"
+    },
+    "type": "Date",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Geplantes oder effektives Enddatum des Projekts",
+      "en": "Planned or actual end date of the project",
+      "fr": "Date de fin prévue ou effective du projet",
+      "it": "Data di fine prevista o effettiva del progetto"
+    },
+    "display_order": 7
+  },
+  {
+    "id": "attr-cost-center-cost_center_id",
+    "entity_id": "ent-cost-center",
+    "name": {
+      "de": "Kostenstellen-ID",
+      "en": "Cost Center ID",
+      "fr": "ID centre de coûts",
+      "it": "ID centro di costo"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator der Kostenstelle",
+      "en": "Unique identifier of the cost center",
+      "fr": "Identifiant unique du centre de coûts",
+      "it": "Identificatore univoco del centro di costo"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-cost-center-name",
+    "entity_id": "ent-cost-center",
+    "name": {
+      "de": "Bezeichnung",
+      "en": "Name",
+      "fr": "Désignation",
+      "it": "Denominazione"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Bezeichnung der Kostenstelle",
+      "en": "Name of the cost center",
+      "fr": "Désignation du centre de coûts",
+      "it": "Denominazione del centro di costo"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-cost-center-responsible_person",
+    "entity_id": "ent-cost-center",
+    "name": {
+      "de": "Verantwortliche Person",
+      "en": "Responsible Person",
+      "fr": "Personne responsable",
+      "it": "Persona responsabile"
+    },
+    "type": "String",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Für die Kostenstelle verantwortliche Person",
+      "en": "Person responsible for the cost center",
+      "fr": "Personne responsable du centre de coûts",
+      "it": "Persona responsabile del centro di costo"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-cost-center-budget_year",
+    "entity_id": "ent-cost-center",
+    "name": {
+      "de": "Budgetjahr",
+      "en": "Budget Year",
+      "fr": "Année budgétaire",
+      "it": "Anno di bilancio"
+    },
+    "type": "Integer",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Geschäftsjahr für das Budget",
+      "en": "Fiscal year for the budget",
+      "fr": "Exercice comptable pour le budget",
+      "it": "Esercizio finanziario per il budget"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-location-location_id",
+    "entity_id": "ent-location",
+    "name": {
+      "de": "Standort-ID",
+      "en": "Location ID",
+      "fr": "ID de l'emplacement",
+      "it": "ID della posizione"
+    },
+    "type": "Integer",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator des Standorts",
+      "en": "Unique identifier of the location",
+      "fr": "Identifiant unique de l'emplacement",
+      "it": "Identificatore univoco della posizione"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-location-coord_e",
+    "entity_id": "ent-location",
+    "name": {
+      "de": "Koordinate E",
+      "en": "Coordinate E",
+      "fr": "Coordonnée E",
+      "it": "Coordinata E"
+    },
+    "type": "Decimal",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Ost-Koordinate im Schweizer Koordinatensystem LV95",
+      "en": "Easting coordinate in Swiss coordinate system LV95",
+      "fr": "Coordonnée Est dans le système suisse LV95",
+      "it": "Coordinata Est nel sistema svizzero LV95"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-location-coord_n",
+    "entity_id": "ent-location",
+    "name": {
+      "de": "Koordinate N",
+      "en": "Coordinate N",
+      "fr": "Coordonnée N",
+      "it": "Coordinata N"
+    },
+    "type": "Decimal",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Nord-Koordinate im Schweizer Koordinatensystem LV95",
+      "en": "Northing coordinate in Swiss coordinate system LV95",
+      "fr": "Coordonnée Nord dans le système suisse LV95",
+      "it": "Coordinata Nord nel sistema svizzero LV95"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-location-elevation",
+    "entity_id": "ent-location",
+    "name": {
+      "de": "Höhe",
+      "en": "Elevation",
+      "fr": "Altitude",
+      "it": "Altitudine"
+    },
+    "type": "Decimal",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Höhe über Meer in Metern",
+      "en": "Elevation above sea level in meters",
+      "fr": "Altitude au-dessus du niveau de la mer en mètres",
+      "it": "Altitudine sul livello del mare in metri"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-address-address_id",
+    "entity_id": "ent-address",
+    "name": {
+      "de": "Adress-ID",
+      "en": "Address ID",
+      "fr": "ID de l'adresse",
+      "it": "ID dell'indirizzo"
+    },
+    "type": "Integer",
+    "nullable": false,
+    "key": "PK",
+    "enumeration_id": null,
+    "description": {
+      "de": "Eindeutiger Identifikator der Adresse",
+      "en": "Unique identifier of the address",
+      "fr": "Identifiant unique de l'adresse",
+      "it": "Identificatore univoco dell'indirizzo"
+    },
+    "display_order": 1
+  },
+  {
+    "id": "attr-address-street",
+    "entity_id": "ent-address",
+    "name": {
+      "de": "Strasse",
+      "en": "Street",
+      "fr": "Rue",
+      "it": "Via"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Strassenname der Adresse",
+      "en": "Street name of the address",
+      "fr": "Nom de la rue de l'adresse",
+      "it": "Nome della via dell'indirizzo"
+    },
+    "display_order": 2
+  },
+  {
+    "id": "attr-address-house_number",
+    "entity_id": "ent-address",
+    "name": {
+      "de": "Hausnummer",
+      "en": "House Number",
+      "fr": "Numéro",
+      "it": "Numero civico"
+    },
+    "type": "String",
+    "nullable": true,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Hausnummer der Adresse",
+      "en": "House number of the address",
+      "fr": "Numéro de maison de l'adresse",
+      "it": "Numero civico dell'indirizzo"
+    },
+    "display_order": 3
+  },
+  {
+    "id": "attr-address-postal_code",
+    "entity_id": "ent-address",
+    "name": {
+      "de": "PLZ",
+      "en": "Postal Code",
+      "fr": "NPA",
+      "it": "CAP"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Postleitzahl der Adresse",
+      "en": "Postal code of the address",
+      "fr": "Code postal de l'adresse",
+      "it": "Codice postale dell'indirizzo"
+    },
+    "display_order": 4
+  },
+  {
+    "id": "attr-address-city",
+    "entity_id": "ent-address",
+    "name": {
+      "de": "Ort",
+      "en": "City",
+      "fr": "Localité",
+      "it": "Località"
+    },
+    "type": "String",
+    "nullable": false,
+    "key": "",
+    "enumeration_id": null,
+    "description": {
+      "de": "Ortschaft der Adresse",
+      "en": "City of the address",
+      "fr": "Localité de l'adresse",
+      "it": "Località dell'indirizzo"
+    },
+    "display_order": 5
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "sourceUrl": "https://models.geo.admin.ch/ilimodels.xml",
+  "records": [
+    {
+      "Name": "DM01AVCH24LV95D",
+      "SchemaLanguage": "ili1",
+      "File": "V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+      "Version": "2004-06-04",
+      "publishingDate": "2008-03-06",
+      "Tags": "51.1,52.1,53.1,54.1,55.1,56.1,57.1,58.1,59.1,60.1,61.1,62.1,63.1,64.1",
+      "Issuer": "https://www.cadastre.ch",
+      "technicalContact": "mailto:infovd@swisstopo.ch",
+      "furtherInformation": "https://www.cadastre.ch/de/manual-av/method/modell.html",
+      "md5": "8adfccf7b74f084d4fceeaf46b0bc14c"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "reviewed": "2026-09-05",
+  "sourceVersion": "SAP ERP 6.0 EHP8 SP25",
+  "method": "Reviewed SAP Help definitions. Short source excerpts retain the wording with paragraph breaks normalized; summaries are explicitly identified. Definitions describe SAP concepts, not the completeness of imported field inventories.",
+  "entries": [
+    {
+      "tableId": "t-sap-business-entity",
+      "title": "Wirtschaftseinheit",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/f65fd0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-excerpt",
+      "description": "Gliederungselement für einen Immobilienbestand\n\nSachlich zusammenhängende Immobilienbestände können so nach wirtschaftlichen und/oder standortbezogenen Kriterien individuell eingeteilt werden."
+    },
+    {
+      "tableId": "t-sap-land-architecture",
+      "title": "Grundstück",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/115ed0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-excerpt",
+      "description": "Ein Grundstück umfasst im Sinne des Flexiblen Immobilienmanagements nur den Grund und Boden und nicht auch die darauf errichteten Gebäude."
+    },
+    {
+      "tableId": "t-sap-building",
+      "title": "Gebäude",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/495bd0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-excerpt",
+      "description": "Objekt, welches die Basis zur Vermietung von Räumlichkeiten (z.B. Wohnung, Lager, Geschäft) bildet. Ein Gebäude ist Bestandteil einer Wirtschaftseinheit."
+    },
+    {
+      "tableId": "t-sap-rental-object",
+      "title": "Mietobjekt",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/245dd0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-summary",
+      "description": "SAP unterscheidet beim Mietobjekt die Typen Flächenpool, Mietfläche, Mieteinheit und Vergleichswohnung. Ein Flächenpool stellt den Vorrat für vermietbare Teilflächen bereit; der Pool selbst wird nicht vermietet."
+    },
+    {
+      "tableId": "t-sap-contract",
+      "title": "Immobilienvertrag",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/61f7cf536db84408e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-excerpt",
+      "description": "Mit dem Immobilienvertrag können Sie alle Verträge zum Immobilienmanagement abbilden."
+    },
+    {
+      "tableId": "t-sap-architectural-object",
+      "title": "Architektonische Sicht",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/df5ed0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-summary",
+      "description": "Architektonische Objekte bilden die räumliche Struktur einer Immobilie ab, beispielsweise Stockwerke und Räume. Diese optionale Hierarchie ist unabhängig vom Buchungskreis und kann mit Nutzungsobjekten sowie grafischen Systemen verbunden werden."
+    },
+    {
+      "tableId": "t-bem",
+      "title": "Bemessungen",
+      "sourceUrl": "https://help.sap.com/docs/SAP_ERP_SPV/d91b9ba4593d4466bfc484ac34ab743d/6d5ed0531d8b4208e10000000a174cb4.html?locale=de-DE",
+      "kind": "source-excerpt",
+      "description": "Bemessungen werden generell verwendet, um messbare Eigenschaften von Objekten festzulegen."
+    }
+  ]
+}

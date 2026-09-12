@@ -1,0 +1,1479 @@
+[
+  {
+    "identifier": "areal",
+    "name": "Areal",
+    "description": "Ein definiertes Landareal bestehend aus einer oder mehreren Parzellen, typischerweise ein Bundeskampus oder eine Anlage.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "VILB, eCH-0071",
+    "termdat": [
+      {
+        "name": "Areal",
+        "id": 40230,
+        "url": "https://www.termdat.bk.admin.ch/entry/40230"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "areal-id",
+        "name": "Areal-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Areal.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "gueltig-bis",
+        "name": "Gültig bis",
+        "description": "Ende der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "kampus",
+    "name": "Kampus",
+    "description": "Eine zusammengehörende Gruppe von Gebäuden, die eine funktionale Einheit bilden, z.B. Bundeskampus Zollikofen.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "VILB Anhang A",
+    "termdat": [
+      {
+        "name": "Campus",
+        "id": 40233,
+        "url": "https://www.termdat.bk.admin.ch/entry/40233"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "kampus-id",
+        "name": "Kampus-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Kampus.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "grundstueck",
+    "name": "Grundstück",
+    "description": "Ein im Grundbuch eingetragenes, rechtlich definiertes Stück Land, identifiziert durch eine EGRID.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "ZGB Art. 655, eCH-0071",
+    "termdat": [
+      {
+        "name": "Grundstück",
+        "id": 40102,
+        "url": "https://www.termdat.bk.admin.ch/entry/40102"
+      },
+      {
+        "name": "Parzelle",
+        "id": 40108,
+        "url": "https://www.termdat.bk.admin.ch/entry/40108"
+      },
+      {
+        "name": "EGRID",
+        "id": 61121,
+        "url": "https://www.termdat.bk.admin.ch/entry/61121"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "egrid",
+        "name": "EGRID",
+        "description": "Eidgenössischer Grundstücksidentifikator gemäss amtlicher Vermessung.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "parzellennummer",
+        "name": "Parzellennummer",
+        "description": "Nummer der Parzelle im Grundbuch der Gemeinde.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "gemeinde",
+        "name": "Gemeinde",
+        "description": "BFS-Gemeindenummer der Standortgemeinde.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "flaeche",
+        "name": "Fläche",
+        "description": "Grundstücksfläche in m² gemäss Grundbuch.",
+        "valueType": "Dezimal",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "eigentumsform",
+        "name": "Eigentumsform",
+        "description": "Eigentumsverhältnis (Alleineigentum, Baurecht, Miteigentum).",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "gebaeude",
+    "name": "Gebäude",
+    "description": "Ein dauerhaftes, überdachtes Bauwerk, das im eidgenössischen Gebäude- und Wohnungsregister (GWR) erfasst und durch eine EGID identifiziert wird.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "eCH-0071 v2.0, GWR",
+    "termdat": [
+      {
+        "name": "Gebäude",
+        "id": 39047,
+        "url": "https://www.termdat.bk.admin.ch/entry/39047"
+      },
+      {
+        "name": "Bauwerk",
+        "id": 39051,
+        "url": "https://www.termdat.bk.admin.ch/entry/39051"
+      },
+      {
+        "name": "EGID",
+        "id": 61120,
+        "url": "https://www.termdat.bk.admin.ch/entry/61120"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "egid",
+        "name": "EGID",
+        "description": "Eidgenössischer Gebäudeidentifikator gemäss GWR.",
+        "valueType": "Ganzzahl",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Gebäudename oder Kurzbezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "gebaeudekategorie",
+        "name": "Gebäudekategorie",
+        "description": "Kategorie gemäss GWR Merkmalskatalog.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "baujahr",
+        "name": "Baujahr",
+        "description": "Jahr der Fertigstellung.",
+        "valueType": "Ganzzahl",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "grundstueck",
+        "name": "Grundstück",
+        "description": "Zugehöriges Grundstück (EGRID).",
+        "valueType": "Text",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 5
+      },
+      {
+        "identifier": "gebaeudestatus",
+        "name": "Gebäudestatus",
+        "description": "Status gemäss GWR (bestehend, projektiert, abgebrochen).",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 6
+      },
+      {
+        "identifier": "energietraeger",
+        "name": "Energieträger",
+        "description": "Hauptenergieträger der Heizung.",
+        "valueType": "Code",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 7
+      }
+    ]
+  },
+  {
+    "identifier": "nutzungseinheit",
+    "name": "Nutzungseinheit",
+    "description": "Ein in sich geschlossener Bereich innerhalb eines Gebäudes, der einem einzigen Zweck dient, z.B. eine Bürofläche oder ein Lager.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "SIA 416",
+    "termdat": [
+      {
+        "name": "Nutzungseinheit",
+        "id": 40340,
+        "url": "https://www.termdat.bk.admin.ch/entry/40340"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "nutzungseinheit-id",
+        "name": "Nutzungseinheit-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Nutzungseinheit.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "geschoss",
+    "name": "Geschoss",
+    "description": "Eine horizontale Ebene innerhalb eines Gebäudes, gemessen nach SIA 416.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "SIA 416",
+    "termdat": [
+      {
+        "name": "Geschoss",
+        "id": 40310,
+        "url": "https://www.termdat.bk.admin.ch/entry/40310"
+      },
+      {
+        "name": "Stockwerk",
+        "id": 40311,
+        "url": "https://www.termdat.bk.admin.ch/entry/40311"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "geschoss-id",
+        "name": "Geschoss-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Geschoss.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "raum",
+    "name": "Raum",
+    "description": "Ein einzelner umschlossener Raum innerhalb eines Geschosses, identifiziert durch eine Raumnummer.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "SIA 416, DIN 277",
+    "termdat": [
+      {
+        "name": "Raum",
+        "id": 40320,
+        "url": "https://www.termdat.bk.admin.ch/entry/40320"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "raum-id",
+        "name": "Raum-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Raum.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "bodenbedeckung",
+    "name": "Bodenbedeckung",
+    "description": "Fläche einer bestimmten Bodenbedeckungsart (Gebäude, befestigt, humusiert, Gewässer) gemäss amtlicher Vermessung.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "DM.01-AV-CH, eCH-0071",
+    "termdat": [],
+    "attributes": [
+      {
+        "identifier": "bodenbedeckung-id",
+        "name": "Bodenbedeckung-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Bodenbedeckung.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "bemessung",
+    "name": "Bemessung",
+    "description": "Berechnete Flächen- und Volumenkennwerte für ein Gebäude oder eine Einheit (Geschossfläche, Nutzfläche, Volumen).",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Immobilienmanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "bau",
+    "normReference": "SIA 416",
+    "termdat": [
+      {
+        "name": "Geschossfläche",
+        "id": 40350,
+        "url": "https://www.termdat.bk.admin.ch/entry/40350"
+      },
+      {
+        "name": "Nutzfläche",
+        "id": 40352,
+        "url": "https://www.termdat.bk.admin.ch/entry/40352"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "bemessung-id",
+        "name": "Bemessung-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Bemessung.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "heizzentrale",
+    "name": "Heizzentrale",
+    "description": "Technische Anlage zur Wärmeerzeugung, die ein oder mehrere Gebäude versorgt.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "energie",
+    "normReference": "SIA 380/1",
+    "termdat": [
+      {
+        "name": "Heizzentrale",
+        "id": 42010,
+        "url": "https://www.termdat.bk.admin.ch/entry/42010"
+      },
+      {
+        "name": "Wärmeerzeuger",
+        "id": 42012,
+        "url": "https://www.termdat.bk.admin.ch/entry/42012"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "heizzentrale-id",
+        "name": "Heizzentrale-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Heizzentrale.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "gueltig-bis",
+        "name": "Gültig bis",
+        "description": "Ende der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "stromzaehler",
+    "name": "Stromzähler",
+    "description": "Messeinrichtung zur Erfassung des elektrischen Energieverbrauchs eines Gebäudes oder einer Nutzungseinheit.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "energie",
+    "normReference": "MID 2014/32/EU",
+    "termdat": [
+      {
+        "name": "Stromzähler",
+        "id": 42020,
+        "url": "https://www.termdat.bk.admin.ch/entry/42020"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "stromzaehler-id",
+        "name": "Stromzähler-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Stromzähler.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "betriebsmesswert",
+    "name": "Betriebsmesswert",
+    "description": "Zeitreihenwert aus dem Gebäudebetrieb, z.B. Wärmeverbrauch, Stromverbrauch oder Wasserverbrauch pro Periode.",
+    "status": "Entwurf",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Energiemanagement",
+    "dataOwner": "Rahel Gasser",
+    "dataSteward": "Simon Bürki",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "energie",
+    "normReference": "BBL intern",
+    "termdat": [
+      {
+        "name": "Messwert",
+        "id": 42030,
+        "url": "https://www.termdat.bk.admin.ch/entry/42030"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "betriebsmesswert-id",
+        "name": "Betriebsmesswert-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Betriebsmesswert.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "wirtschaftseinheit",
+    "name": "Wirtschaftseinheit",
+    "description": "Eine eigenständige wirtschaftliche Einheit in der Immobilienbuchhaltung, typischerweise ein Gebäude oder eine Gebäudegruppe, die als ein Profit Center geführt wird. Zentrale Organisationseinheit in SAP RE-FX.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Portfoliomanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "finanzen",
+    "normReference": "SAP RE-FX, VILB",
+    "termdat": [
+      {
+        "name": "Wirtschaftseinheit",
+        "id": 43010,
+        "url": "https://www.termdat.bk.admin.ch/entry/43010"
+      },
+      {
+        "name": "Profit Center",
+        "id": 43014,
+        "url": "https://www.termdat.bk.admin.ch/entry/43014"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "we-nummer",
+        "name": "WE-Nummer",
+        "description": "Eindeutige Nummer der Wirtschaftseinheit in SAP RE-FX.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung der Wirtschaftseinheit.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "buchungskreis",
+        "name": "Buchungskreis",
+        "description": "Zugeordneter Buchungskreis der Wirtschaftseinheit.",
+        "valueType": "Text",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "profit-center",
+        "name": "Profit Center",
+        "description": "Zugeordnetes Profit Center für die Ergebnisrechnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "buchungskreis",
+    "name": "Buchungskreis",
+    "description": "Kleinste organisatorische Einheit des externen Rechnungswesens, für die eine vollständige Buchhaltung geführt wird.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Portfoliomanagement",
+    "dataOwner": "Martina Aebischer",
+    "dataSteward": "Lukas Zbinden",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "finanzen",
+    "normReference": "SAP FI",
+    "termdat": [
+      {
+        "name": "Buchungskreis",
+        "id": 43020,
+        "url": "https://www.termdat.bk.admin.ch/entry/43020"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "buchungskreis-id",
+        "name": "Buchungskreis-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Buchungskreis.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "person",
+    "name": "Person",
+    "description": "Natürliche Person, die in einer Geschäftsbeziehung zum BBL steht, z.B. als Mieterin, Ansprechperson oder Bewirtschafter.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Vertragsmanagement",
+    "dataOwner": "Corinne Marti",
+    "dataSteward": "Pascal Rüegg",
+    "classification": "vertraulich",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "partner",
+    "normReference": "eCH-0044, DSG",
+    "termdat": [
+      {
+        "name": "Natürliche Person",
+        "id": 44010,
+        "url": "https://www.termdat.bk.admin.ch/entry/44010"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "personen-id",
+        "name": "Personen-ID",
+        "description": "Eindeutiger Identifikator der Person im führenden System.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "name",
+        "name": "Name",
+        "description": "Familienname.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "vorname",
+        "name": "Vorname",
+        "description": "Vorname.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "geburtsdatum",
+        "name": "Geburtsdatum",
+        "description": "Geburtsdatum gemäss eCH-0044.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 4
+      },
+      {
+        "identifier": "unternehmen",
+        "name": "Unternehmen",
+        "description": "Zugehöriges Unternehmen, falls die Person eine Organisation vertritt.",
+        "valueType": "Text",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 5
+      },
+      {
+        "identifier": "rolle",
+        "name": "Rolle",
+        "description": "Rolle in der Geschäftsbeziehung (Mieter, Ansprechperson, Bewirtschafter).",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 6
+      }
+    ]
+  },
+  {
+    "identifier": "kontakt",
+    "name": "Kontakt",
+    "description": "Erreichbarkeitsangaben (E-Mail, Telefon, Adresse) einer Person oder eines Unternehmens.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Vertragsmanagement",
+    "dataOwner": "Corinne Marti",
+    "dataSteward": "Pascal Rüegg",
+    "classification": "vertraulich",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "partner",
+    "normReference": "eCH-0046",
+    "termdat": [
+      {
+        "name": "Kontakt",
+        "id": 44020,
+        "url": "https://www.termdat.bk.admin.ch/entry/44020"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "kontakt-id",
+        "name": "Kontakt-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Kontakt.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "unternehmen",
+    "name": "Unternehmen",
+    "description": "Juristische Person oder Organisationseinheit, identifiziert durch die Unternehmens-Identifikationsnummer (UID).",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Vertragsmanagement",
+    "dataOwner": "Corinne Marti",
+    "dataSteward": "Pascal Rüegg",
+    "classification": "intern",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "partner",
+    "normReference": "eCH-0097, UID",
+    "termdat": [
+      {
+        "name": "Unternehmen",
+        "id": 44030,
+        "url": "https://www.termdat.bk.admin.ch/entry/44030"
+      },
+      {
+        "name": "UID",
+        "id": 44031,
+        "url": "https://www.termdat.bk.admin.ch/entry/44031"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "unternehmen-id",
+        "name": "Unternehmen-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Unternehmen.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "gueltig-bis",
+        "name": "Gültig bis",
+        "description": "Ende der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "mietobjekt",
+    "name": "Mietobjekt",
+    "description": "Vermietbare Einheit (Fläche, Raum, Parkplatz), die Gegenstand eines Mietvertrags sein kann.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "intern",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "miete",
+    "normReference": "SAP RE-FX",
+    "termdat": [
+      {
+        "name": "Mietobjekt",
+        "id": 45010,
+        "url": "https://www.termdat.bk.admin.ch/entry/45010"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "mietobjekt-nummer",
+        "name": "Mietobjekt-Nummer",
+        "description": "Eindeutige Nummer des Mietobjekts in SAP RE-FX.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Bezeichnung des Mietobjekts.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "wirtschaftseinheit",
+        "name": "Wirtschaftseinheit",
+        "description": "Übergeordnete Wirtschaftseinheit.",
+        "valueType": "Text",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "nutzungsart",
+        "name": "Nutzungsart",
+        "description": "Nutzungsart gemäss SIA 416.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "flaeche",
+        "name": "Fläche",
+        "description": "Vermietbare Fläche in m².",
+        "valueType": "Dezimal",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "wohnung",
+    "name": "Wohnung",
+    "description": "Wohneinheit innerhalb eines Gebäudes, im GWR durch eine EWID identifiziert; kann als Mietobjekt vermietet werden.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "intern",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "miete",
+    "normReference": "GWR (EWID), eCH-0071",
+    "termdat": [],
+    "attributes": [
+      {
+        "identifier": "wohnung-id",
+        "name": "Wohnung-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Wohnung.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      },
+      {
+        "identifier": "gueltig-bis",
+        "name": "Gültig bis",
+        "description": "Ende der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": false,
+        "position": 5
+      }
+    ]
+  },
+  {
+    "identifier": "mietvertrag",
+    "name": "Mietvertrag",
+    "description": "Vertragliche Vereinbarung zwischen Vermieter und Mieter über die Nutzung eines oder mehrerer Mietobjekte.",
+    "status": "Gültig",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2024-06-01",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "vertraulich",
+    "personalData": true,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "miete",
+    "normReference": "OR Art. 253ff",
+    "termdat": [
+      {
+        "name": "Mietvertrag",
+        "id": 45020,
+        "url": "https://www.termdat.bk.admin.ch/entry/45020"
+      },
+      {
+        "name": "Miete",
+        "id": 45021,
+        "url": "https://www.termdat.bk.admin.ch/entry/45021"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "mietvertrag-id",
+        "name": "Mietvertrag-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Mietvertrag.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      },
+      {
+        "identifier": "gueltig-ab",
+        "name": "Gültig ab",
+        "description": "Beginn der Gültigkeit.",
+        "valueType": "Datum",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 4
+      }
+    ]
+  },
+  {
+    "identifier": "kondition",
+    "name": "Kondition",
+    "description": "Finanzielle Bedingung eines Mietvertrags, z.B. Nettomiete, Nebenkosten oder Kaution.",
+    "status": "Entwurf",
+    "version": "2024.1",
+    "created": "2021-09-03",
+    "modified": "2026-02-03",
+    "responsibleOrg": "Liegenschaftsmanagement",
+    "dataOwner": "Andrea Kaufmann",
+    "dataSteward": "Thomas Wyss",
+    "classification": "vertraulich",
+    "personalData": false,
+    "source": "Architektur-Repository",
+    "sourceDetail": "Innovator / smartfacts",
+    "synced": "2024-06-01",
+    "domain": "miete",
+    "normReference": "OR Art. 269ff",
+    "termdat": [
+      {
+        "name": "Mietzins",
+        "id": 45030,
+        "url": "https://www.termdat.bk.admin.ch/entry/45030"
+      },
+      {
+        "name": "Nebenkosten",
+        "id": 45031,
+        "url": "https://www.termdat.bk.admin.ch/entry/45031"
+      }
+    ],
+    "attributes": [
+      {
+        "identifier": "kondition-id",
+        "name": "Kondition-ID",
+        "description": "Eindeutiger Identifikator des Geschäftsobjekts Kondition.",
+        "valueType": "Text",
+        "keyRole": "PK",
+        "mandatory": true,
+        "position": 1
+      },
+      {
+        "identifier": "bezeichnung",
+        "name": "Bezeichnung",
+        "description": "Name/Bezeichnung.",
+        "valueType": "Text",
+        "keyRole": null,
+        "mandatory": true,
+        "position": 2
+      },
+      {
+        "identifier": "status",
+        "name": "Status",
+        "description": "Lebenszyklusstatus des Objekts.",
+        "valueType": "Code",
+        "keyRole": "FK",
+        "mandatory": true,
+        "position": 3
+      }
+    ]
+  }
+]

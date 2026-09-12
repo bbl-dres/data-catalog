@@ -1,0 +1,3097 @@
+'use strict';
+
+// Apply persisted sidebar state before first render so the UI doesn't
+// flash expanded → collapsed on pages loaded with the rail mode saved.
+try {
+  if (localStorage.getItem('sidebar-collapsed') === '1') {
+    document.body.classList.add('sidebar-collapsed');
+  }
+} catch {}
+
+// ── State ──────────────────────────────────────────────────
+// ============================================================
+// State
+// ============================================================
+let currentSection = 'vocabulary';
+let currentEntityId = null;
+let currentCollectionId = null;
+let currentTab = 'overview';
+let lastListTab = 'table';
+const grouping = { vocabulary: 'domain', terms: 'domain', codelists: 'domain', systems: 'none', datasets: 'none' };
+let searchQuery = '';
+const expandedSections = new Set(['vocabulary']);
+let recents = [];
+const expandedConcepts = new Set();
+let sidebarCounts = null; // cached sidebar counts
+let relGraphData = null; // relationship graph data (replaces relGraphData)
+let relCleanup = null; // cleanup function for relationship graph event listeners
+// activeFilters[section] = { [dimensionId]: [value, ...] } — rebuilt from URL each route
+let activeFilters = {};
+let currentQueryStr = ''; // preserved across tab switches within a section
+let filterPanelOpen = false; // preserved across re-renders so selecting a checkbox doesn't collapse the panel
+let pendingFocus = null; // descriptor captured before navigation, restored after re-render
+let attrsMode = 'show'; // 'show' | 'hide' — diagram-view attribute visibility. Default is show; absence = show, ?attrs=0 = hide.
+
+// ── State-coupled helpers ──────────────────────────────────
+function addRecent(title, hash) {
+  recents = recents.filter(r => r.hash !== hash);
+  recents.unshift({ title, hash });
+  if (recents.length > 4) recents.length = 4;
+}
+
+// Announce a route change to assistive tech via the polite #sr-live region.
+// Uses the page's first heading when available.
+function announceRoute() {
+  const live = document.getElementById('sr-live');
+  if (!live) return;
+  const heading = document.querySelector('#main-content h1, #main-content h2');
+  const text = heading?.textContent?.trim();
+  if (text) live.textContent = text;
+}
+
+// Phone-only: open/close the sidebar drawer. CSS handles the slide
+// animation off body.sidebar-open. aria-expanded keeps screen readers
+// in sync. No-op on desktop because the trigger is display:none there.
+function setMobileDrawer(open) {
+  document.body.classList.toggle('sidebar-open', open);
+  const btn = document.getElementById('mobile-menu-btn');
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(open));
+    btn.setAttribute('aria-label', open ? 'Navigation schliessen' : 'Navigation öffnen');
+  }
+}
+
+// ── Router ─────────────────────────────────────────────────
+function navigate(hash) {
+  window.location.hash = hash;
+}
+
+function parseRoute() {
+  const hash = window.location.hash || '#/home';
+  // Strip query string before splitting path so "#/search?q=sap" → section "search"
+  const qSplit = hash.indexOf('?');
+  const pathPart = qSplit >= 0 ? hash.slice(0, qSplit) : hash;
+  const queryStr = qSplit >= 0 ? hash.slice(qSplit + 1) : '';
+  const parts = pathPart.replace('#/', '').split('/');
+  const section = parts[0] || 'home';
+  const filters = parseFilterQuery(queryStr);
+  const attrs = parseAttrsMode(queryStr);
+
+  if (section === 'search') {
+    const qStart = hash.indexOf('?q=');
+    searchQuery = qStart >= 0 ? decodeURIComponent(hash.slice(qStart + 3)) : '';
+    return { section: 'search', entityId: null, tab: null, subEntityId: null, filters: {}, queryStr: '', attrsMode: 'hide' };
+  }
+
+  // Handle systems/:id/datasets/:did/:tab
+  if (section === 'systems' && parts.length >= 4 && parts[2] === 'datasets') {
+    return { section: 'systems', entityId: parts[1], subSection: 'datasets', subEntityId: parts[3], tab: parts[4] || 'overview', filters, queryStr, attrsMode: attrs };
+  }
+
+  // Collection filter: #/vocabulary/collection/:collId/:tab
+  if (parts[1] === 'collection' && parts[2]) {
+    return { section, entityId: null, collectionId: parts[2], tab: parts[3] || 'table', subEntityId: null, filters, queryStr, attrsMode: attrs };
+  }
+
+  // List-level tabs (table/diagram) — not an entity ID
+  const listTabs = ['table', 'diagram'];
+  if (parts[1] && listTabs.includes(parts[1])) {
+    return { section, entityId: null, collectionId: null, tab: parts[1], subEntityId: null, filters, queryStr, attrsMode: attrs };
+  }
+
+  return {
+    section,
+    entityId: parts[1] || null,
+    collectionId: null,
+    tab: parts[2] || 'overview',
+    subEntityId: null,
+    filters,
+    queryStr,
+    attrsMode: attrs
+  };
+}
+
+function handleRoute() {
+  if (relCleanup) { relCleanup(); relCleanup = null; }
+  hideSearchDropdown();
+  const route = parseRoute();
+  // Close filter panel when switching to a different section (dimensions differ).
+  if (currentSection && route.section !== currentSection) filterPanelOpen = false;
+  currentSection = route.section;
+  currentEntityId = route.entityId;
+  currentCollectionId = route.collectionId || null;
+  currentTab = route.tab || 'overview';
+  activeFilters[currentSection] = route.filters || {};
+  currentQueryStr = route.queryStr || '';
+  attrsMode = route.attrsMode || 'show';
+
+  // Auto-expand the active section in sidebar
+  if (currentSection) expandedSections.add(currentSection);
+
+  renderSidebar();
+
+  if (route.section === 'home') {
+    const main = document.getElementById('main-content');
+    main.innerHTML = renderHome();
+  } else if (route.section === 'search') {
+    renderSearchResults();
+  } else if (route.section === 'chat') {
+    renderChatView();
+  } else if (route.section === 'export') {
+    renderExportView();
+  } else if (route.section === 'api-docs') {
+    renderApiDocsView();
+  } else if (route.subEntityId) {
+    currentTab = route.tab || 'overview';
+    renderDatasetDetail(route.subEntityId, route.entityId);
+  } else if (route.entityId) {
+    renderDetailView(route.section, route.entityId, route.tab || 'overview');
+  } else {
+    renderListView(route.section, route.tab || 'table', route.collectionId);
+  }
+
+  const mainEl = document.getElementById('main-content');
+  const sidebarEl = document.getElementById('sidebar');
+  if (mainEl) lucide.createIcons({ nodes: [mainEl] });
+  if (sidebarEl) lucide.createIcons({ nodes: [sidebarEl] });
+  restorePendingFocus();
+  announceRoute();
+}
+
+window.addEventListener('hashchange', handleRoute);
+
+
+
+function renderStakeholderCard(name, org, email) {
+  return `<div class="stakeholder-card">
+    <div class="stakeholder-avatar">${getInitials(name)}</div>
+    <div>
+      <div class="stakeholder-name">${escapeHtml(name)}</div>
+      ${org ? '<div class="stakeholder-org">' + escapeHtml(org) + '</div>' : ''}
+      ${email ? '<div class="stakeholder-email"><a href="mailto:' + escapeHtml(email) + '">' + escapeHtml(email) + '</a></div>' : ''}
+    </div>
+  </div>`;
+}
+
+// Render one role group: title + description + N stakeholder cards (or a
+// visible warning when the group has no assignees). `contacts` is an array
+// of { name, organisation, email }. Role must match a role_<name> i18n key.
+function renderStakeholderGroup(role, contacts) {
+  const title = tr('role_' + role);
+  const desc  = tr('role_' + role + '_desc');
+  let html = `<div class="stakeholder-section">
+    <div class="stakeholder-role-title">${escapeHtml(title)}</div>
+    <div class="stakeholder-role-desc">${escapeHtml(desc)}</div>`;
+  if (contacts && contacts.length) {
+    contacts.forEach(c => {
+      html += renderStakeholderCard(c.name, c.organisation, c.email);
+    });
+  } else {
+    html += `<div class="stakeholder-empty-warning" role="alert">
+      <i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i>
+      <span>${escapeHtml(tr('stakeholders_empty_warning', { role: title }))}</span>
+    </div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Wrap one or more role groups in the shared VERANTWORTLICHE section.
+// `groups` = [{ role, contacts: [] }, ...]
+function renderStakeholdersSection(groups) {
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_stakeholders') + '</div>';
+  groups.forEach(g => { html += renderStakeholderGroup(g.role, g.contacts || []); });
+  html += '</div>';
+  return html;
+}
+
+// ── Inline edit mode (visual mockup) ──────────────────────────
+// Renders both the view-mode button set (pencil, message) and the
+// edit-mode button set (save, cancel); CSS picks one via .edit-mode.
+// `opts.readOnly`: when true, skip the edit pencil entirely (used for
+// access-restricted entities where "edit" makes no sense).
+function renderTitleActions(opts) {
+  const readOnly = !!(opts && opts.readOnly);
+  const editLabel   = tr('edit_button');
+  const saveLabel   = tr('edit_save');
+  const cancelLabel = tr('edit_cancel');
+  const editBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-view btn-edit" aria-label="${escapeHtml(editLabel)}" title="${escapeHtml(editLabel)}"><i data-lucide="pencil" style="width:18px;height:18px;"></i></button>`;
+  const saveBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-edit btn-save" aria-label="${escapeHtml(saveLabel)}" title="${escapeHtml(saveLabel)}"><i data-lucide="check" style="width:18px;height:18px;"></i></button>`;
+  const cancelBtn = readOnly ? '' :
+    `<button class="header-icon-btn action-edit btn-cancel" aria-label="${escapeHtml(cancelLabel)}" title="${escapeHtml(cancelLabel)}"><i data-lucide="x" style="width:18px;height:18px;"></i></button>`;
+  return `
+    ${editBtn}
+    <button class="header-icon-btn action-view" aria-label="Kommentare" title="Kommentare"><i data-lucide="message-square" style="width:18px;height:18px;"></i></button>
+    ${saveBtn}
+    ${cancelBtn}`;
+}
+
+function enterEditMode(article) {
+  if (!article || article.classList.contains('edit-mode')) return;
+  article.classList.add('edit-mode');
+  // Inject amber banner directly under the article's first child.
+  const banner = document.createElement('div');
+  banner.className = 'edit-mode-banner';
+  banner.setAttribute('role', 'status');
+  banner.innerHTML = `<i data-lucide="alert-triangle" style="width:16px;height:16px;flex-shrink:0;"></i><span>${escapeHtml(tr('edit_banner'))}</span>`;
+  article.insertBefore(banner, article.firstChild);
+  // Flip contenteditable on flagged elements.
+  article.querySelectorAll('[data-editable]').forEach(el => {
+    el.setAttribute('contenteditable', 'true');
+  });
+  if (window.lucide) lucide.createIcons({ nodes: [banner] });
+  // Move focus to the title and select it so the first keystroke
+  // replaces the text — matches common wiki/docs editor ergonomics.
+  const firstField = article.querySelector('[data-editable="title"]');
+  if (firstField) {
+    firstField.focus();
+    const range = document.createRange();
+    range.selectNodeContents(firstField);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+}
+
+function exitEditMode(article) {
+  if (!article || !article.classList.contains('edit-mode')) return;
+  article.classList.remove('edit-mode');
+  article.querySelector('.edit-mode-banner')?.remove();
+  article.querySelectorAll('[data-editable]').forEach(el => {
+    el.removeAttribute('contenteditable');
+  });
+}
+
+let toastTimer = null;
+function showToast(message) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px;"></i><span>${escapeHtml(message)}</span>`;
+  if (window.lucide) lucide.createIcons({ nodes: [toast] });
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.classList.remove('visible'); }, 2400);
+}
+
+// ── Views: Lists ───────────────────────────────────────────
+function renderSidebar() {
+  if (!sidebarCounts) {
+    sidebarCounts = {
+      vocabulary: query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0,
+      terms: query("SELECT COUNT(*) as c FROM term")[0]?.c || 0,
+      codelists: query("SELECT COUNT(*) as c FROM code_list")[0]?.c || 0,
+      systems: query("SELECT COUNT(*) as c FROM system")[0]?.c || 0,
+      datasets: query("SELECT COUNT(*) as c FROM data_product")[0]?.c || 0,
+    };
+  }
+  const counts = sidebarCounts;
+  const collapsed = document.body.classList.contains('sidebar-collapsed');
+
+  let html = '';
+
+  // Collapse/expand toggle — always the first row, reachable in both states.
+  html += `<button type="button" class="sidebar-toggle" id="sidebar-toggle"
+      aria-label="${escapeHtml(tr(collapsed ? 'sidebar_expand' : 'sidebar_collapse'))}"
+      aria-expanded="${!collapsed}" title="${escapeHtml(tr(collapsed ? 'sidebar_expand' : 'sidebar_collapse'))}">
+    <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
+  </button>`;
+
+  // Home + utility items
+  const homeActive = currentSection === 'home';
+  html += `<div class="nav-item${homeActive ? ' active' : ''}" data-nav="home" role="link" title="${escapeHtml(tr('home'))}">
+    <i data-lucide="home" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>${escapeHtml(tr('home'))}</span>
+  </div>`;
+  const chatActive = currentSection === 'chat';
+  html += `<div class="nav-item${chatActive ? ' active' : ''}" data-nav="chat" role="link" title="KI-Assistent">
+    <i data-lucide="sparkles" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>KI-Assistent</span>
+  </div>`;
+  const exportActive = currentSection === 'export' || currentSection === 'api-docs';
+  html += `<div class="nav-item${exportActive ? ' active' : ''}" data-nav="export" role="link" title="${escapeHtml(tr('workflows_api'))}">
+    <i data-lucide="workflow" style="width:16px;height:16px;flex-shrink:0;"></i>
+    <span>${escapeHtml(tr('workflows_api'))}</span>
+  </div>`;
+  html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
+
+  ['terms', 'vocabulary', 'codelists', 'systems', 'datasets'].forEach(sec => {
+    const isActive = currentSection === sec;
+    const isExpanded = expandedSections.has(sec);
+    const label = SECTION_LABELS[sec][lang] || SECTION_LABELS[sec]['en'];
+
+    // Section header — active whenever user is anywhere in this section
+    const headerClass = 'nav-item' + (isActive ? ' active' : '');
+
+    html += `<div class="${headerClass}" data-nav="${sec}" role="link" title="${escapeHtml(label)}">
+      <i data-lucide="${SECTION_ICONS[sec]}" style="width:16px;height:16px;flex-shrink:0;"></i>
+      <span>${escapeHtml(label)}</span>
+      <span class="nav-count">${counts[sec]}</span>
+    </div>`;
+
+  });
+
+  if (recents.length > 0) {
+    html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
+    html += '<div class="nav-section-label">Recents</div>';
+    recents.forEach(r => {
+      html += `<div class="nav-recent-item" data-hash="${escapeHtml(r.hash)}">${escapeHtml(r.title)}</div>`;
+    });
+  }
+
+  html += '<div class="nav-divider sidebar-collapsed-hide"></div>';
+  html += '<div class="nav-section-label">Bookmarks</div>';
+  html += `<div class="sidebar-collapsed-hide" style="padding: var(--space-1) var(--space-3); font-size: 13px; color: var(--color-text-placeholder);">${escapeHtml(tr('no_bookmarks'))}</div>`;
+
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+
+
+
+function renderListView(section, listTab, collectionId) {
+  const main = document.getElementById('main-content');
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  switch(section) {
+    case 'vocabulary': main.innerHTML = renderVocabularyList(listTab, collectionId); break;
+    case 'terms': main.innerHTML = renderTermsList(listTab); break;
+    case 'codelists': main.innerHTML = renderCodeListsList(listTab); break;
+    case 'systems': main.innerHTML = renderSystemsList(listTab); break;
+    case 'datasets': main.innerHTML = renderProductsList(listTab); break;
+    default: main.innerHTML = renderVocabularyList(listTab);
+  }
+}
+
+function renderListTabBar(routeBase, activeTab, groupingOptions, activeGrouping, extraControls, filterCtx) {
+  const qs = filterCtx?.queryStr || '';
+  // Tabs live inside .tab-bar-scroll so horizontal overflow scrolls only
+  // the tabs. The outer .tab-bar stays overflow:visible so absolutely
+  // positioned dropdowns (Gruppierung) can extend below without being
+  // clipped by the scroll context.
+  let html = '<div class="tab-bar" role="tablist"><div class="tab-bar-scroll">';
+  const tabs = [
+    { id: 'table', label: tr('list_tab_table') },
+    { id: 'diagram', label: tr('list_tab_diagram') }
+  ];
+  tabs.forEach(t => {
+    const isActive = t.id === activeTab;
+    html += `<button class="tab${isActive ? ' active' : ''}" data-list-tab="${t.id}" data-list-route="#/${routeBase}/${t.id}${qs}" role="tab" aria-selected="${isActive}">${t.label}</button>`;
+  });
+  html += '</div>';
+  // Trailing actions live outside the scroll container.
+  // Order: [extraControls (Attribute toggle)] → [Filter] → [Gruppierung]
+  if (extraControls) html += extraControls;
+  if (filterCtx) {
+    html += filterCtx.toggleHtml;
+  }
+  if (groupingOptions) {
+    const activeLabel = groupingOptions.find(o => o.id === activeGrouping)?.label || groupingOptions[0].label;
+    html += '<div class="grouping-dropdown">';
+    html += `<button class="grouping-btn" id="grouping-btn">${tr('group_label')}: ${activeLabel} <i data-lucide="chevron-down" style="width:14px;height:14px;"></i></button>`;
+    html += '<div class="grouping-menu" id="grouping-menu">';
+    groupingOptions.forEach(o => {
+      html += `<div class="grouping-option${o.id === activeGrouping ? ' active' : ''}" data-grouping="${o.id}" data-grouping-section="${routeBase}">${o.label}</div>`;
+    });
+    html += '</div></div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+
+
+// Read the data-driven key role from a concept_attribute row.
+// Values: 'PK' | 'FK' | 'UK' | '' (seeded in prototype-sqlite/docs/seed-data.sql).
+function conceptAttrKey(a) {
+  return a.key_role || '';
+}
+
+// ──────────────────────────────────────────────────────────
+// Section card config — drives the expandable UML card content.
+// Each section that wants expandable cards declares what rows to show (Attribute / Werte / Tabellen / …),
+// the empty-state label, max row count, and a batch fetcher that returns { [itemId]: row[] }.
+// Each row: { marker, name, type } — rendered as a monospace UML-attribute-style line.
+// Sections not in this map fall through to simple (non-expandable) cards.
+// ──────────────────────────────────────────────────────────
+// Store i18n keys; callers resolve via tr() at render time so the config
+// doesn't snapshot empty strings before loadI18n() has populated I18N.
+const SECTION_CARD_CONFIG = {
+  vocabulary: {
+    rowLabelKey: 'sec_attributes',
+    emptyLabelKey: 'no_attributes',
+    maxRows: 8,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT concept_id, name_en, name_de, name_fr, name_it, value_type, required, code_list_id, key_role
+         FROM concept_attribute WHERE concept_id IN (${placeholders})
+         ORDER BY sort_order, name_en`,
+        ids
+      );
+      rows.forEach(a => {
+        const type = a.value_type === 'code' && a.code_list_id ? 'code' : (a.value_type || '');
+        const name = n(a, 'name') || '';
+        (out[a.concept_id] = out[a.concept_id] || []).push({ name, type, key: conceptAttrKey(a, name) });
+      });
+      return out;
+    }
+  },
+  codelists: {
+    rowLabelKey: 'col_values',
+    emptyLabelKey: 'no_values',
+    maxRows: 10,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT code_list_id, code, label_en, label_de, label_fr, label_it, deprecated
+         FROM code_list_value WHERE code_list_id IN (${placeholders})
+         ORDER BY sort_order, code`,
+        ids
+      );
+      rows.forEach(v => {
+        (out[v.code_list_id] = out[v.code_list_id] || []).push({
+          name: n(v, 'label') || v.code,
+          type: v.code
+        });
+      });
+      return out;
+    }
+  },
+  systems: {
+    rowLabelKey: 'col_tables',
+    emptyLabelKey: 'no_tables',
+    maxRows: 12,
+    fetchRowsBatch: (ids) => {
+      const out = {};
+      if (!ids.length) return out;
+      const placeholders = ids.map(() => '?').join(',');
+      const rows = query(
+        `SELECT sc.system_id, d.id, d.name, d.display_name, d.dataset_type
+         FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id
+         WHERE sc.system_id IN (${placeholders})
+         ORDER BY d.name`,
+        ids
+      );
+      rows.forEach(d => {
+        (out[d.system_id] = out[d.system_id] || []).push({
+          name: d.display_name || d.name,
+          type: d.dataset_type || ''
+        });
+      });
+      return out;
+    }
+  }
+};
+
+// ──────────────────────────────────────────────────────────
+// Reusable UML diagram module
+// ──────────────────────────────────────────────────────────
+// Renders grouped list items as class-box cards in a uniform grid.
+//   groups:          [{ id, title, items }]  — empty groups are skipped
+//   renderCard:      (item) => HTML for one card
+//   groupIdPrefix:   string prefix for data-toggle-group ids (namespacing across sections)
+function renderUmlDiagram(groups, renderCard, groupIdPrefix) {
+  let html = '<div class="diagram-canvas">';
+  groups.forEach(g => {
+    if (!g.items || g.items.length === 0) return;
+    const gid = groupIdPrefix + '-' + g.id;
+    html += '<div class="diagram-group">';
+    html += `<div class="group-header" data-toggle-group="${escapeHtml(gid)}">
+      <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+      <span class="group-header-title">${escapeHtml(g.title)} (${g.items.length})</span>
+    </div>`;
+    html += `<div class="group-content diagram-group-grid" data-group="${escapeHtml(gid)}">`;
+    g.items.forEach(item => { html += renderCard(item); });
+    html += '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+// Builds the diagram-view "Attribute/Werte/Tabellen anzeigen/ausblenden" toggle button.
+// Returns '' for sections without a SECTION_CARD_CONFIG entry.
+function buildAttrsToggleHtml(section) {
+  const cfg = SECTION_CARD_CONFIG[section];
+  if (!cfg) return '';
+  const shown = attrsMode === 'show';
+  const rowLabel = tr(cfg.rowLabelKey);
+  const label = tr(shown ? 'aria_hide_rows' : 'aria_show_rows', { label: rowLabel });
+  const icon = shown ? 'eye-off' : 'eye';
+  return `<button class="grouping-btn" data-attrs-toggle type="button" aria-pressed="${shown}"><i data-lucide="${icon}" style="width:14px;height:14px;"></i> ${label}</button>`;
+}
+
+// Simple UML card — name only, whole card navigates. For non-expandable sections.
+// Uses the same .uml-card-header layout as expandable cards (left-aligned, same padding/typography)
+// for visual consistency; just no chevron and no button behavior.
+function renderSimpleCard(href, name, tooltip) {
+  const safeName = escapeHtml(name);
+  let titleAttr = '';
+  if (tooltip) {
+    const trimmed = tooltip.length > 240 ? tooltip.substring(0, 240) + '…' : tooltip;
+    titleAttr = ` title="${escapeHtml(trimmed)}"`;
+  }
+  return `<div class="uml-card clickable-row" data-href="${escapeHtml(href)}"${titleAttr}>
+    <div class="uml-card-header uml-card-header--static">
+      <span class="uml-card-name">${safeName}</span>
+    </div>
+  </div>`;
+}
+
+// Effective expanded state for one concept card: global default flipped by any per-card override.
+function isCardExpanded(conceptId) {
+  const overridden = expandedConcepts.has(conceptId);
+  const defaultShown = attrsMode === 'show';
+  return defaultShown ? !overridden : overridden;
+}
+
+// Generic rows compartment used by all expandable cards (class name kept for historical reasons).
+// rows:    [{ name, type }]
+// opts:    { emptyLabel, maxRows, moreHref }
+function renderUmlRowsSection(rows, opts) {
+  opts = opts || {};
+  if (!rows.length) return `<div class="uml-card-empty">${escapeHtml(opts.emptyLabel || tr('no_entries'))}</div>`;
+  const max = opts.maxRows || rows.length;
+  const shown = rows.slice(0, max);
+  const extra = rows.length - shown.length;
+  let html = '<div class="uml-card-attrs">';
+  shown.forEach(r => {
+    const keyPill = r.key ? `<span class="uml-card-attr-key" title="${escapeHtml(r.key)}">${escapeHtml(r.key)}</span>` : '';
+    html += `<div class="uml-card-attr">
+      <span class="uml-card-attr-name">${escapeHtml(r.name || '')}</span>
+      <span class="uml-card-attr-type">${keyPill}${escapeHtml(r.type || '')}</span>
+    </div>`;
+  });
+  if (extra > 0 && opts.moreHref) {
+    html += `<a class="uml-card-more" href="${escapeHtml(opts.moreHref)}">+ ${extra} weitere &rarr;</a>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+// Expandable UML card — used by sections registered in SECTION_CARD_CONFIG.
+// cardData: { id, href, name, tooltip }
+// rows:     already in generic shape [{ marker, name, type }]
+// opts:     { rowLabel, emptyLabel, maxRows } — typically SECTION_CARD_CONFIG[section]
+function renderExpandableCard(cardData, isExpanded, rows, opts) {
+  opts = opts || {};
+  const name = escapeHtml(cardData.name);
+  const href = cardData.href;
+  const chevron = isExpanded ? 'chevron-up' : 'chevron-down';
+  const tooltip = cardData.tooltip
+    ? escapeHtml(cardData.tooltip.substring(0, 240)) + (cardData.tooltip.length > 240 ? '…' : '')
+    : '';
+  const expandedCls = isExpanded ? ' uml-card--expanded' : '';
+  const rowLabel = opts.rowLabelKey ? tr(opts.rowLabelKey) : (opts.rowLabel || 'Details');
+  const emptyLabel = opts.emptyLabelKey ? tr(opts.emptyLabelKey) : (opts.emptyLabel || tr('no_entries'));
+  const chevronLabel = tr(isExpanded ? 'aria_hide_rows' : 'aria_show_rows', { label: rowLabel });
+  const rowsHtml = isExpanded
+    ? renderUmlRowsSection(rows, { emptyLabel, maxRows: opts.maxRows, moreHref: href })
+    : '';
+
+  return `<div class="uml-card clickable-row${expandedCls}" data-href="${escapeHtml(href)}"${tooltip ? ` title="${tooltip}"` : ''}>
+    <button class="uml-card-header" type="button" data-toggle-concept="${escapeHtml(cardData.id)}" aria-label="${escapeHtml(chevronLabel)}" aria-expanded="${isExpanded}">
+      <span class="uml-card-name">${name}</span>
+      <i data-lucide="${chevron}" class="uml-card-chevron" style="width:14px;height:14px;" aria-hidden="true"></i>
+    </button>
+    ${rowsHtml}
+  </div>`;
+}
+
+// Surgical toggle for a single UML card — no full re-render, no flicker.
+// Uses SECTION_CARD_CONFIG[currentSection] to fetch the right rows (attrs / values / tables / …).
+function toggleConceptCardInPlace(id) {
+  const header = document.querySelector(`.uml-card > .uml-card-header[data-toggle-concept="${CSS.escape(id)}"]`);
+  if (!header) return false;
+  const card = header.closest('.uml-card');
+  const cfg = SECTION_CARD_CONFIG[currentSection];
+  if (!cfg) return false;
+  const willExpand = !card.classList.contains('uml-card--expanded');
+  const rowLabel = tr(cfg.rowLabelKey);
+
+  if (willExpand) {
+    const rows = cfg.fetchRowsBatch([id])[id] || [];
+    const href = card.dataset.href || '';
+    card.insertAdjacentHTML('beforeend', renderUmlRowsSection(rows, {
+      emptyLabel: tr(cfg.emptyLabelKey),
+      maxRows: cfg.maxRows,
+      moreHref: href
+    }));
+    card.classList.add('uml-card--expanded');
+    header.setAttribute('aria-expanded', 'true');
+    header.setAttribute('aria-label', tr('aria_hide_rows', { label: rowLabel }));
+  } else {
+    card.querySelector('.uml-card-attrs, .uml-card-empty')?.remove();
+    card.classList.remove('uml-card--expanded');
+    header.setAttribute('aria-expanded', 'false');
+    header.setAttribute('aria-label', tr('aria_show_rows', { label: rowLabel }));
+  }
+
+  const chevronEl = header.querySelector('.uml-card-chevron');
+  if (chevronEl) {
+    chevronEl.outerHTML = `<i data-lucide="chevron-${willExpand ? 'up' : 'down'}" class="uml-card-chevron" style="width:14px;height:14px;" aria-hidden="true"></i>`;
+    lucide.createIcons({ nodes: [header] });
+  }
+
+  if (expandedConcepts.has(id)) expandedConcepts.delete(id);
+  else expandedConcepts.add(id);
+  return true;
+}
+
+
+function renderVocabularyList(listTab, collectionId) {
+  const totalConcepts = query("SELECT COUNT(*) as c FROM concept")[0]?.c || 0;
+
+  // Single query with LEFT JOIN to get collection concept counts (fix N+1)
+  const collections = query(`SELECT col.*,
+    COUNT(c.id) as concept_count
+    FROM collection col
+    LEFT JOIN concept c ON c.collection_id = col.id
+    GROUP BY col.id
+    ORDER BY col.sort_order, col.${nameCol('name')}`);
+
+  // Pre-fetch all concepts with mapping counts and steward name in one query
+  const allConceptsUnfiltered = query(`SELECT c.*,
+    COALESCE(mc.mapping_count, 0) as mapping_count,
+    u.name as steward_name
+    FROM concept c
+    LEFT JOIN (SELECT concept_id, COUNT(*) as mapping_count FROM concept_mapping GROUP BY concept_id) mc ON mc.concept_id = c.id
+    LEFT JOIN "user" u ON c.steward_id = u.id
+    ORDER BY c.${nameCol('name')}`);
+
+  // If filtered by collection
+  const activeCollection = collectionId ? collections.find(c => c.id === collectionId) : null;
+
+  // Build filter definitions (only in unscoped vocabulary view)
+  const stewardOpts = [];
+  const seenStewards = new Set();
+  allConceptsUnfiltered.forEach(c => {
+    const key = c.steward_id || '__none__';
+    const label = c.steward_name || tr('val_unassigned');
+    if (!seenStewards.has(key)) { seenStewards.add(key); stewardOpts.push({ value: key, label }); }
+  });
+  stewardOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const vocabFilterDefs = activeCollection ? [] : [
+    {
+      id: 'domain',
+      label: 'Domäne',
+      options: collections.filter(col => col.concept_count > 0).map(col => ({ value: col.id, label: n(col, 'name') })),
+      match: (c, vals) => vals.includes(c.collection_id)
+    },
+    {
+      id: 'status',
+      label: tr('col_approval'),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
+      match: (c, vals) => vals.includes(c.status)
+    },
+    {
+      id: 'steward',
+      label: tr('col_responsible'),
+      options: stewardOpts,
+      match: (c, vals) => vals.includes(c.steward_id || '__none__')
+    }
+  ];
+  const currentFilters = activeFilters.vocabulary || {};
+  const filterCtx = vocabFilterDefs.length ? createFilterContext(vocabFilterDefs, currentFilters) : null;
+
+  // Apply filters
+  const allConcepts = filterCtx ? applyFilterDefs(allConceptsUnfiltered, vocabFilterDefs, currentFilters) : allConceptsUnfiltered;
+
+  // Group concepts by collection_id (after filtering)
+  const conceptsByCollection = {};
+  const ungrouped = [];
+  allConcepts.forEach(c => {
+    if (c.collection_id) {
+      if (!conceptsByCollection[c.collection_id]) conceptsByCollection[c.collection_id] = [];
+      conceptsByCollection[c.collection_id].push(c);
+    } else {
+      ungrouped.push(c);
+    }
+  });
+
+  const hasActiveFilters = filterCtx && filterCtx.count > 0;
+  const filteredCollections = activeCollection
+    ? [activeCollection]
+    : (hasActiveFilters ? collections.filter(col => (conceptsByCollection[col.id] || []).length > 0) : collections);
+  const filteredUngrouped = activeCollection ? [] : ungrouped;
+  const filteredCount = activeCollection
+    ? (conceptsByCollection[collectionId] || []).length
+    : (filterCtx && filterCtx.count > 0 ? allConcepts.length : totalConcepts);
+  const countLabel = (filterCtx && filterCtx.count > 0) ? `${allConcepts.length} / ${totalConcepts}` : filteredCount;
+  const tabBaseRoute = activeCollection ? 'vocabulary/collection/' + collectionId : 'vocabulary';
+
+  let html = '<div class="content-wrapper">';
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  if (activeCollection) {
+    html += `<a class="breadcrumb-link" href="#/vocabulary">${SECTION_LABELS.vocabulary[lang]}</a>`;
+    html += '<span class="breadcrumb-separator"> / </span>';
+    html += `<span class="breadcrumb-current">${escapeHtml(n(activeCollection, 'name'))}</span>`;
+  } else {
+    html += `<span class="breadcrumb-current">${SECTION_LABELS.vocabulary[lang]}</span>`;
+  }
+  html += '</nav>';
+
+  html += `<div class="section-header"><div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.vocabulary}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${activeCollection ? escapeHtml(n(activeCollection, 'name')) : SECTION_LABELS.vocabulary[lang]} (${countLabel})</h2>
+    <div class="section-subtitle">Lösungsneutrale Geschäftsobjekte und ihre fachlichen Attribute.</div>
+  </div></div>`;
+
+  const vocabGroupOpts = activeCollection ? null : [
+    { id: 'domain', label: 'Domäne' },
+    { id: 'status', label: tr('col_approval') },
+    { id: 'steward', label: tr('col_responsible') },
+    { id: 'none', label: tr('group_none') }
+  ];
+
+  const toggleAllCtrl = listTab === 'diagram' ? buildAttrsToggleHtml('vocabulary') : '';
+  html += renderListTabBar(tabBaseRoute, listTab, vocabGroupOpts, grouping.vocabulary, toggleAllCtrl, filterCtx);
+  if (filterCtx) {
+    html += filterCtx.panelHtml;
+    html += filterCtx.pillsHtml;
+    announceFilterResult(SECTION_LABELS.vocabulary[lang], allConcepts.length, totalConcepts, filterCtx.count);
+  }
+
+  // Build collection lookup
+  const collectionMap = {};
+  collections.forEach(col => { collectionMap[col.id] = col; });
+
+
+  // Build generic groups based on grouping.vocabulary
+  function getGroupKey(c) {
+    if (grouping.vocabulary === 'domain') {
+      const col = c.collection_id ? collectionMap[c.collection_id] : null;
+      return col ? n(col, 'name') : 'Ohne Domäne';
+    }
+    if (grouping.vocabulary === 'status') return tStatus(c.status) || c.status || tr('unknown');
+    if (grouping.vocabulary === 'steward') return c.steward_name || tr('val_unassigned');
+    return null;
+  }
+
+  // Diagram
+  if (listTab === 'diagram') {
+    const cfg = SECTION_CARD_CONFIG.vocabulary;
+    const expandedIds = allConcepts.filter(c => isCardExpanded(c.id)).map(c => c.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
+
+    const groups = [];
+    if (activeCollection) {
+      groups.push({ id: activeCollection.id, title: n(activeCollection, 'name'), items: conceptsByCollection[activeCollection.id] || [] });
+    } else if (grouping.vocabulary === 'none') {
+      groups.push({ id: 'all', title: tr('group_all_concepts'), items: allConcepts });
+    } else if (grouping.vocabulary === 'domain') {
+      filteredCollections.forEach(col => {
+        groups.push({ id: col.id, title: n(col, 'name'), items: conceptsByCollection[col.id] || [] });
+      });
+      if (filteredUngrouped.length) groups.push({ id: 'ungrouped', title: 'Ohne Domäne', items: filteredUngrouped });
+    } else {
+      const byKey = {};
+      allConcepts.forEach(c => { const k = getGroupKey(c); (byKey[k] = byKey[k] || []).push(c); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
+    }
+    const renderCard = c => renderExpandableCard(
+      { id: c.id, href: '#/vocabulary/' + c.id, name: n(c, 'name'), tooltip: getDefinitionText(c.definition, lang) },
+      isCardExpanded(c.id),
+      rowsById[c.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-vocab');
+    html += '</div>';
+    return html;
+  }
+
+  if (allConcepts.length === 0) {
+    if (filterCtx && filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_concepts'));
+    } else {
+      html += renderEmptyState('book-open', tr('no_concepts'), tr('empty_body_concepts'));
+    }
+    html += '</div>';
+    return html;
+  }
+
+  html += '<div class="list-panel">';
+
+  const conceptColumns = [
+    { label: tr('col_name'),          width: '17%', render: c => escapeHtml(n(c, 'name')) },
+    { label: 'Domäne',        width: '15%', render: c => {
+        const col = c.collection_id ? collectionMap[c.collection_id] : null;
+        return col ? filterBadge(n(col, 'name'), 'domain', col.id) : '&ndash;';
+      } },
+    { label: tr('col_description'),  width: '28%', render: c => {
+        const desc = getDefinitionText(c.definition, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: tr('col_fields'),        width: '8%',  render: c => c.mapping_count > 0 ? c.mapping_count : '&ndash;' },
+    { label: tr('col_approval'),      width: '10%', render: c => statusBadge(c.status, 'status') },
+    { label: tr('col_responsible'), width: '22%', render: c => c.steward_name ? escapeHtml(c.steward_name) : '&ndash;' }
+  ];
+  const conceptTableOpts = { rowHref: c => '#/vocabulary/' + c.id };
+
+  if (activeCollection || grouping.vocabulary === 'none') {
+    const concepts = activeCollection ? (conceptsByCollection[collectionId] || []) : allConcepts;
+    html += renderDataTable(conceptColumns, concepts, conceptTableOpts);
+  } else if (grouping.vocabulary === 'domain') {
+    filteredCollections.forEach(col => {
+      const concepts = conceptsByCollection[col.id] || [];
+      html += `<div class="group-header" data-toggle-group="${col.id}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(n(col, 'name'))} (${col.concept_count})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="${col.id}">`;
+      html += renderDataTable(conceptColumns, concepts, conceptTableOpts);
+      html += '</div>';
+    });
+
+    if (filteredUngrouped.length > 0) {
+      html += `<div class="group-header"><i data-lucide="chevron-down" style="width:16px;height:16px;"></i>
+        <span class="group-header-title">Ohne Domäne (${filteredUngrouped.length})</span></div>`;
+      html += `<div class="group-content">`;
+      html += renderDataTable(conceptColumns, filteredUngrouped, conceptTableOpts);
+      html += '</div>';
+    }
+  } else {
+    const groups = {};
+    allConcepts.forEach(c => { const k = getGroupKey(c); if (!groups[k]) groups[k] = []; groups[k].push(c); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="g-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="g-${k}">`;
+      html += renderDataTable(conceptColumns, items, conceptTableOpts);
+      html += '</div>';
+    });
+  }
+
+  html += '</div>'; // close list-panel
+  html += '</div>'; // close content-wrapper
+  return html;
+}
+
+function renderCodeListsList(listTab) {
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  // Fetch codelists with domain via concept_attribute → concept → collection
+  const allCodeLists = query(`SELECT cl.*,
+    COALESCE(vc.value_count, 0) as value_count,
+    COALESCE(vc.deprecated_count, 0) as deprecated_count,
+    dom.domain_name,
+    c.name as owner_name
+    FROM code_list cl
+    LEFT JOIN (
+      SELECT code_list_id,
+        COUNT(*) as value_count,
+        SUM(CASE WHEN deprecated = 1 THEN 1 ELSE 0 END) as deprecated_count
+      FROM code_list_value GROUP BY code_list_id
+    ) vc ON vc.code_list_id = cl.id
+    LEFT JOIN (
+      SELECT ca.code_list_id, MIN(col.id) as collection_id, MIN(col.${nameCol('name')}) as domain_name
+      FROM concept_attribute ca
+      JOIN concept c ON ca.concept_id = c.id
+      JOIN collection col ON c.collection_id = col.id
+      GROUP BY ca.code_list_id
+    ) dom ON dom.code_list_id = cl.id
+    LEFT JOIN contact c ON c.id = cl.owner_id
+    ORDER BY cl.${nameCol('name')}`);
+  const totalCount = allCodeLists.length;
+
+  // Build filter options from data — value is collection_id (stable) for bookmark safety
+  const domainOpts = [];
+  const seenDomains = new Set();
+  allCodeLists.forEach(cl => {
+    const key = cl.collection_id || '__none__';
+    if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: cl.domain_name || 'Ohne Domäne' }); }
+  });
+  domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const sourceOpts = [];
+  const seenSources = new Set();
+  allCodeLists.forEach(cl => {
+    const key = cl.source_ref || '__none__';
+    if (!seenSources.has(key)) { seenSources.add(key); sourceOpts.push({ value: key, label: cl.source_ref || 'Andere' }); }
+  });
+  sourceOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const codelistFilterDefs = [
+    {
+      id: 'domain', label: 'Domäne', options: domainOpts,
+      match: (cl, vals) => vals.includes(cl.collection_id || '__none__')
+    },
+    {
+      id: 'source', label: tr('col_source'), options: sourceOpts,
+      match: (cl, vals) => vals.includes(cl.source_ref || '__none__')
+    },
+    {
+      id: 'status', label: tr('col_approval'),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
+      match: (cl, vals) => vals.includes(cl.status)
+    }
+  ];
+  const currentFilters = activeFilters.codelists || {};
+  const filterCtx = createFilterContext(codelistFilterDefs, currentFilters);
+  const codeLists = applyFilterDefs(allCodeLists, codelistFilterDefs, currentFilters);
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.codelists[lang] + '</span></nav>';
+  html += `<div class="section-header"><div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.codelists}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.codelists[lang]} (${sectionCountLabel(totalCount, codeLists.length, filterCtx)})</h2>
+    <div class="section-subtitle">Standardisierte Wertelisten für Attribute der Geschäftsobjekte.</div>
+  </div></div>`;
+
+  const groupingOpts = [
+    { id: 'domain', label: 'Domäne' },
+    { id: 'source', label: tr('col_source') },
+    { id: 'none', label: tr('group_none') }
+  ];
+  html += renderListTabBar('codelists', listTab, groupingOpts, grouping.codelists, listTab === 'diagram' ? buildAttrsToggleHtml('codelists') : '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.codelists[lang], codeLists.length, totalCount, filterCtx.count);
+
+  if (codeLists.length === 0) {
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_codelists'));
+    } else {
+      html += renderEmptyState('list-ordered', tr('no_codelists'), tr('empty_body_codelists'));
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function getClGroupKey(cl) {
+    if (grouping.codelists === 'domain') return cl.domain_name || 'Ohne Domäne';
+    if (grouping.codelists === 'source') return cl.source_ref || 'Andere';
+    return null;
+  }
+
+  if (listTab === 'diagram') {
+    const cfg = SECTION_CARD_CONFIG.codelists;
+    const expandedIds = codeLists.filter(cl => isCardExpanded(cl.id)).map(cl => cl.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
+
+    const groups = [];
+    if (grouping.codelists === 'none') {
+      groups.push({ id: 'all', title: tr('group_all_codelists'), items: codeLists });
+    } else {
+      const byKey = {};
+      codeLists.forEach(cl => { const k = getClGroupKey(cl); (byKey[k] = byKey[k] || []).push(cl); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
+    }
+    const renderCard = cl => renderExpandableCard(
+      { id: cl.id, href: '#/codelists/' + cl.id, name: n(cl, 'name'), tooltip: getDefinitionText(cl.description, lang) },
+      isCardExpanded(cl.id),
+      rowsById[cl.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-cl');
+    html += '</div>';
+    return html;
+  }
+
+  const clColumns = [
+    { label: tr('col_name'),         width: '18%', render: cl => escapeHtml(n(cl, 'name')) },
+    { label: 'Domäne',       width: '14%', render: cl => cl.domain_name ? filterBadge(cl.domain_name, 'domain', cl.collection_id) : '&ndash;' },
+    { label: tr('col_description'), width: '25%', render: cl => {
+        const desc = getDefinitionText(cl.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: tr('col_values'),        width: '8%',  render: cl => cl.value_count },
+    { label: tr('col_approval'),     width: '12%', render: cl => statusBadge(cl.status, 'status') },
+    { label: tr('col_responsible'), width: '23%', render: cl => cl.owner_name ? escapeHtml(cl.owner_name) : '<span style="color:var(--color-text-placeholder);font-size:var(--text-small);">Nicht zugewiesen</span>' }
+  ];
+  const clTableOpts = { rowHref: cl => '#/codelists/' + cl.id };
+
+  html += '<div class="list-panel">';
+  if (grouping.codelists === 'none') {
+    html += renderDataTable(clColumns, codeLists, clTableOpts);
+  } else {
+    const groups = {};
+    codeLists.forEach(cl => { const k = getClGroupKey(cl); if (!groups[k]) groups[k] = []; groups[k].push(cl); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="cl-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="cl-${k}">`;
+      html += renderDataTable(clColumns, items, clTableOpts);
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function renderTermsList(listTab) {
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  // Fetch terms with domain name via concept_term → concept → collection
+  const allTerms = query(`SELECT t.*,
+    MIN(col.id) as collection_id,
+    MIN(col.${nameCol('name')}) as domain_name
+    FROM term t
+    LEFT JOIN concept_term ct ON ct.term_id = t.id
+    LEFT JOIN concept c ON ct.concept_id = c.id
+    LEFT JOIN collection col ON c.collection_id = col.id
+    GROUP BY t.id
+    ORDER BY t.${nameCol('name')}`);
+  const totalCount = allTerms.length;
+
+  // Build filter options from data — value is collection_id (stable) for bookmark safety
+  const domainOpts = [];
+  const seenDomains = new Set();
+  allTerms.forEach(t => {
+    const key = t.collection_id || '__none__';
+    if (!seenDomains.has(key)) { seenDomains.add(key); domainOpts.push({ value: key, label: t.domain_name || 'Ohne Domäne' }); }
+  });
+  domainOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const SOURCE_TYPE_LABELS = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  const sourceOpts = [];
+  const seenSources = new Set();
+  allTerms.forEach(t => {
+    if (!t.source_type || seenSources.has(t.source_type)) return;
+    seenSources.add(t.source_type);
+    sourceOpts.push({ value: t.source_type, label: SOURCE_TYPE_LABELS[t.source_type] || t.source_type });
+  });
+
+  const termFilterDefs = [
+    {
+      id: 'domain', label: 'Domäne', options: domainOpts,
+      match: (t, vals) => vals.includes(t.collection_id || '__none__')
+    },
+    {
+      id: 'status', label: tr('col_approval'),
+      options: Object.keys(STATUS_LABELS).map(k => ({ value: k, label: tStatus(k) })),
+      match: (t, vals) => vals.includes(t.status)
+    },
+    {
+      id: 'source', label: tr('col_source'), options: sourceOpts,
+      match: (t, vals) => vals.includes(t.source_type)
+    }
+  ];
+  const currentFilters = activeFilters.terms || {};
+  const filterCtx = createFilterContext(termFilterDefs, currentFilters);
+  const terms = applyFilterDefs(allTerms, termFilterDefs, currentFilters);
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.terms[lang] + '</span></nav>';
+  html += `<div class="section-header"><div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.terms}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.terms[lang]} (${sectionCountLabel(totalCount, terms.length, filterCtx)})</h2>
+    <div class="section-subtitle">Fachbegriffe und Definitionen aus Standards, Gesetzen und Normen.</div>
+  </div></div>`;
+
+  const groupingOpts = [
+    { id: 'domain', label: 'Domäne' },
+    { id: 'status', label: tr('col_approval') },
+    { id: 'none', label: tr('group_none') }
+  ];
+  html += renderListTabBar('terms', listTab, groupingOpts, grouping.terms, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.terms[lang], terms.length, totalCount, filterCtx.count);
+
+  if (terms.length === 0) {
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_terms'));
+    } else {
+      html += renderEmptyState('book-open', tr('no_terms'), tr('empty_body_terms'));
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function getTermGroupKey(t) {
+    if (grouping.terms === 'domain') return t.domain_name || 'Ohne Domäne';
+    if (grouping.terms === 'status') return tStatus(t.status) || t.status || tr('unknown');
+    return null;
+  }
+
+  if (listTab === 'diagram') {
+    const groups = [];
+    if (grouping.terms === 'none') {
+      groups.push({ id: 'all', title: tr('group_all_terms'), items: terms });
+    } else {
+      const byKey = {};
+      terms.forEach(t => { const k = getTermGroupKey(t); (byKey[k] = byKey[k] || []).push(t); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
+    }
+    const renderCard = t => renderSimpleCard('#/terms/' + t.id, n(t, 'name'), getDefinitionText(t.definition, lang));
+    html += renderUmlDiagram(groups, renderCard, 'diag-term');
+    html += '</div>';
+    return html;
+  }
+
+  const termColumns = [
+    { label: tr('col_name'),         width: '18%', render: t => escapeHtml(n(t, 'name')) },
+    { label: 'Domäne',       width: '15%', render: t => t.domain_name ? filterBadge(t.domain_name, 'domain', t.collection_id) : '&ndash;' },
+    { label: tr('col_description'), width: '35%', render: t => {
+        const def = getDefinitionText(t.definition, lang);
+        return def ? escapeHtml(def.substring(0, 100)) + (def.length > 100 ? '...' : '') : '&ndash;';
+      } },
+    { label: tr('col_approval'),     width: '12%', render: t => statusBadge(t.status, 'status') },
+    { label: 'Standard',     width: '20%', render: t => t.standard_ref ? escapeHtml(t.standard_ref) : '&ndash;' }
+  ];
+  const termTableOpts = { rowHref: t => '#/terms/' + t.id };
+
+  html += '<div class="list-panel">';
+
+  if (grouping.terms === 'none') {
+    html += renderDataTable(termColumns, terms, termTableOpts);
+  } else {
+    const activeGroups = {};
+    terms.forEach(t => { const k = getTermGroupKey(t); if (!activeGroups[k]) activeGroups[k] = []; activeGroups[k].push(t); });
+    Object.keys(activeGroups).sort().forEach(k => {
+      const items = activeGroups[k];
+      html += `<div class="group-header" data-toggle-group="t-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="t-${k}">`;
+      html += renderDataTable(termColumns, items, termTableOpts);
+      html += '</div>';
+    });
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+
+
+
+function renderSystemsList(listTab) {
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  const allSystems = query(`SELECT s.*,
+    c.name as owner_name, c.organisation as owner_org,
+    COALESCE(ds_counts.dataset_count, 0) as dataset_count
+    FROM system s
+    LEFT JOIN contact c ON s.owner_id = c.id
+    LEFT JOIN (SELECT sc.system_id, COUNT(*) as dataset_count FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id GROUP BY sc.system_id) ds_counts ON ds_counts.system_id = s.id
+    ORDER BY s.${nameCol('name')}`);
+  const totalCount = allSystems.length;
+
+  // Filter option collection
+  const techOpts = [];
+  const seenTech = new Set();
+  allSystems.forEach(s => {
+    const key = s.technology_stack || '__none__';
+    if (!seenTech.has(key)) { seenTech.add(key); techOpts.push({ value: key, label: s.technology_stack || tr('unknown') }); }
+  });
+  techOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const systemFilterDefs = [
+    {
+      id: 'technology', label: 'Technologie', options: techOpts,
+      match: (s, vals) => vals.includes(s.technology_stack || '__none__')
+    },
+    {
+      id: 'status', label: tr('col_status'),
+      options: [
+        { value: 'active', label: tr('val_active') },
+        { value: 'deprecated', label: 'Veraltet' }
+      ],
+      match: (s, vals) => vals.includes(s.active ? 'active' : 'deprecated')
+    }
+  ];
+  const currentFilters = activeFilters.systems || {};
+  const filterCtx = createFilterContext(systemFilterDefs, currentFilters);
+  const systems = applyFilterDefs(allSystems, systemFilterDefs, currentFilters);
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.systems[lang] + '</span></nav>';
+  html += `<div class="section-header"><div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.systems}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.systems[lang]} (${sectionCountLabel(totalCount, systems.length, filterCtx)})</h2>
+    <div class="section-subtitle">Physische Quellsysteme mit Tabellen, Datasets und Feldern.</div>
+  </div></div>`;
+
+  const groupingOpts = [
+    { id: 'technology', label: 'Technologie' },
+    { id: 'status', label: tr('col_status') },
+    { id: 'none', label: tr('group_none') }
+  ];
+  html += renderListTabBar('systems', listTab, groupingOpts, grouping.systems, listTab === 'diagram' ? buildAttrsToggleHtml('systems') : '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.systems[lang], systems.length, totalCount, filterCtx.count);
+
+  if (systems.length === 0) {
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_systems'));
+    } else {
+      html += renderEmptyState('database', tr('no_systems'), tr('empty_body_systems'));
+    }
+    html += '</div>';
+    return html;
+  }
+
+  if (listTab === 'diagram') {
+    const cfg = SECTION_CARD_CONFIG.systems;
+    const expandedIds = systems.filter(s => isCardExpanded(s.id)).map(s => s.id);
+    const rowsById = cfg.fetchRowsBatch(expandedIds);
+
+    const groups = [];
+    if (grouping.systems === 'none') {
+      groups.push({ id: 'all', title: tr('group_all_systems'), items: systems });
+    } else {
+      const byKey = {};
+      systems.forEach(s => {
+        const k = grouping.systems === 'technology' ? (s.technology_stack || tr('unknown')) : (s.active ? tr('val_active') : 'Veraltet');
+        (byKey[k] = byKey[k] || []).push(s);
+      });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
+    }
+    const renderCard = s => renderExpandableCard(
+      { id: s.id, href: '#/systems/' + s.id, name: n(s, 'name'), tooltip: getDefinitionText(s.description, lang) },
+      isCardExpanded(s.id),
+      rowsById[s.id] || [],
+      cfg
+    );
+    html += renderUmlDiagram(groups, renderCard, 'diag-sys');
+    html += '</div>';
+    return html;
+  }
+
+  const sysColumns = [
+    { label: tr('col_name'),          width: '18%', render: s => escapeHtml(n(s, 'name')) },
+    { label: tr('col_description'),  width: '28%', render: s => {
+        const desc = getDefinitionText(s.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: 'Technologie',   width: '14%', render: s => s.technology_stack ? filterBadge(s.technology_stack, 'technology', s.technology_stack) : '&ndash;' },
+    { label: tr('col_tables'),      width: '10%', render: s => s.dataset_count },
+    { label: tr('col_status'),        width: '10%', render: s => statusBadge(s.active ? 'active' : 'deprecated', 'status') },
+    { label: tr('col_responsible'), width: '20%', render: s => s.owner_name ? escapeHtml(s.owner_name) : '&ndash;' }
+  ];
+  const sysTableOpts = { rowHref: s => '#/systems/' + s.id };
+
+  html += '<div class="list-panel">';
+  if (grouping.systems === 'none') {
+    html += renderDataTable(sysColumns, systems, sysTableOpts);
+  } else {
+    const groups = {};
+    systems.forEach(s => {
+      const k = grouping.systems === 'technology' ? (s.technology_stack || tr('unknown')) : (s.active ? tr('val_active') : 'Veraltet');
+      if (!groups[k]) groups[k] = [];
+      groups[k].push(s);
+    });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="sys-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="sys-${k}">`;
+      html += renderDataTable(sysColumns, items, sysTableOpts);
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function renderProductsList(listTab) {
+  if (!listTab || (listTab !== 'table' && listTab !== 'diagram')) listTab = 'table';
+  const allProducts = query(`SELECT dp.*,
+    COALESCE(dc.dist_count, 0) as dist_count
+    FROM data_product dp
+    LEFT JOIN (SELECT data_product_id, COUNT(*) as dist_count FROM distribution GROUP BY data_product_id) dc ON dc.data_product_id = dp.id
+    ORDER BY dp.${nameCol('name')}`);
+  const totalCount = allProducts.length;
+
+  // Filter options
+  const publisherOpts = [];
+  const seenPubs = new Set();
+  allProducts.forEach(dp => {
+    const key = dp.publisher || '__none__';
+    if (!seenPubs.has(key)) { seenPubs.add(key); publisherOpts.push({ value: key, label: dp.publisher || tr('unknown') }); }
+  });
+  publisherOpts.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+
+  const productFilterDefs = [
+    {
+      id: 'publisher', label: tr('col_publisher'), options: publisherOpts,
+      match: (dp, vals) => vals.includes(dp.publisher || '__none__')
+    },
+    {
+      id: 'status', label: tr('col_approval'),
+      options: [
+        { value: 'approved', label: 'Freigegeben' },
+        { value: 'draft', label: 'Entwurf' }
+      ],
+      match: (dp, vals) => vals.includes(dp.certified ? 'approved' : 'draft')
+    }
+  ];
+  const currentFilters = activeFilters.datasets || {};
+  const filterCtx = createFilterContext(productFilterDefs, currentFilters);
+  const products = applyFilterDefs(allProducts, productFilterDefs, currentFilters);
+
+  let html = '<div class="content-wrapper">';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome() + '<span class="breadcrumb-current">' + SECTION_LABELS.datasets[lang] + '</span></nav>';
+  html += `<div class="section-header"><div>
+    <h2 class="section-title"><i data-lucide="${SECTION_ICONS.datasets}" style="width:24px;height:24px;vertical-align:-4px;margin-right:8px;"></i>${SECTION_LABELS.datasets[lang]} (${sectionCountLabel(totalCount, products.length, filterCtx)})</h2>
+    <div class="section-subtitle">Aufbereitete und publizierte Datensätze mit Distributionen.</div>
+  </div></div>`;
+
+  const groupingOpts = [
+    { id: 'publisher', label: tr('col_publisher') },
+    { id: 'status', label: tr('col_approval') },
+    { id: 'none', label: tr('group_none') }
+  ];
+  html += renderListTabBar('datasets', listTab, groupingOpts, grouping.datasets, '', filterCtx);
+  html += filterCtx.panelHtml;
+  html += filterCtx.pillsHtml;
+  announceFilterResult(SECTION_LABELS.datasets[lang], products.length, totalCount, filterCtx.count);
+
+  if (products.length === 0) {
+    if (filterCtx.count > 0) {
+      html += renderEmptyState('filter-x', tr('no_hits_title'), tr('no_filter_body_datasets'));
+    } else {
+      html += renderEmptyState('package', tr('no_datasets'), tr('empty_body_datasets'));
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function getProductGroupKey(dp) {
+    if (grouping.datasets === 'publisher') return dp.publisher || tr('unknown');
+    if (grouping.datasets === 'status') return dp.certified ? tr('val_certified') : tr('val_not_certified');
+    return null;
+  }
+
+  if (listTab === 'diagram') {
+    const groups = [];
+    if (grouping.datasets === 'none') {
+      groups.push({ id: 'all', title: tr('group_all_datasets'), items: products });
+    } else {
+      const byKey = {};
+      products.forEach(dp => { const k = getProductGroupKey(dp); (byKey[k] = byKey[k] || []).push(dp); });
+      Object.keys(byKey).sort().forEach(k => groups.push({ id: k, title: k, items: byKey[k] }));
+    }
+    const renderCard = dp => renderSimpleCard('#/datasets/' + dp.id, n(dp, 'name'), getDefinitionText(dp.description, lang));
+    html += renderUmlDiagram(groups, renderCard, 'diag-prod');
+    html += '</div>';
+    return html;
+  }
+
+  const productColumns = [
+    { label: tr('col_name'),         width: '25%', render: dp => escapeHtml(n(dp, 'name')) },
+    { label: tr('col_description'),  width: '40%', render: dp => {
+        const desc = getDefinitionText(dp.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 120)) + (desc.length > 120 ? '...' : '') : '&ndash;';
+      } },
+    { label: tr('col_approval'),     width: '15%', render: dp => certifiedBadge(dp.certified, 'status') },
+    { label: tr('col_responsible'),  width: '20%', render: dp => dp.publisher ? filterBadge(dp.publisher, 'publisher', dp.publisher) : '&ndash;' }
+  ];
+  const productTableOpts = { rowHref: dp => '#/datasets/' + dp.id };
+
+  html += '<div class="list-panel">';
+  if (grouping.datasets === 'none') {
+    html += renderDataTable(productColumns, products, productTableOpts);
+  } else {
+    const groups = {};
+    products.forEach(dp => { const k = getProductGroupKey(dp); if (!groups[k]) groups[k] = []; groups[k].push(dp); });
+    Object.keys(groups).sort().forEach(k => {
+      const items = groups[k];
+      html += `<div class="group-header" data-toggle-group="dp-${k}">
+        <i data-lucide="chevron-down" style="width:16px;height:16px;" class="group-chevron"></i>
+        <span class="group-header-title">${escapeHtml(k)} (${items.length})</span>
+      </div>`;
+      html += `<div class="group-content" data-group="dp-${k}">`;
+      html += renderDataTable(productColumns, items, productTableOpts);
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+
+
+// ── Views: Details ─────────────────────────────────────────
+// ============================================================
+// Detail Views
+// ============================================================
+function renderDetailView(section, entityId, tab) {
+  const main = document.getElementById('main-content');
+  switch(section) {
+    case 'vocabulary': renderConceptDetail(entityId, tab, main); break;
+    case 'terms': renderTermDetail(entityId, tab, main); break;
+    case 'codelists': renderCodeListDetail(entityId, tab, main); break;
+    case 'systems': renderSystemDetail(entityId, tab, main); break;
+    case 'datasets': renderProductDetail(entityId, tab, main); break;
+    default: main.innerHTML = '<p>Not found</p>';
+  }
+}
+
+// ============================================================
+// Concept Detail
+// ============================================================
+function renderConceptDetail(conceptId, tab, main) {
+  const concept = queryOne("SELECT c.*, col.id as col_id FROM concept c LEFT JOIN collection col ON c.collection_id = col.id WHERE c.id = ?", [conceptId]);
+  if (!concept) { main.innerHTML = '<p>Concept not found</p>'; return; }
+
+  const collection = concept.col_id ? queryOne("SELECT * FROM collection WHERE id = ?", [concept.col_id]) : null;
+  const vocab = queryOne("SELECT * FROM vocabulary WHERE id = ?", [concept.vocabulary_id]);
+  const steward = concept.steward_id ? queryOne('SELECT * FROM "user" WHERE id = ?', [concept.steward_id]) : null;
+
+
+  addRecent(n(concept, 'name') || concept.name_en, `#/vocabulary/${conceptId}`);
+
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'fields',        label: tr('col_fields') },
+    { id: 'mappings',      label: 'Mappings' },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/vocabulary">${SECTION_LABELS.vocabulary[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  if (collection) {
+    html += `<a class="breadcrumb-link" href="#/vocabulary">${escapeHtml(n(collection, 'name'))}</a>`;
+    html += '<span class="breadcrumb-separator"> / </span>';
+  }
+  html += `<span class="breadcrumb-current">${escapeHtml(n(concept, 'name'))}</span>`;
+  html += '</nav>';
+
+  // Title block
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="box" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(concept, 'name'))}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions();
+  html += '</div>';
+  html += '</div>';
+
+  html += renderTabBar(tabs, tab, '#/vocabulary/' + conceptId);
+
+  // Tab content
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderConceptOverview(concept, collection, vocab, steward); break;
+    case 'fields': html += renderConceptContents(conceptId); break;
+    case 'mappings': html += renderConceptMappings(conceptId); break;
+    case 'relationships': html += renderConceptRelationships(conceptId); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderHistoryTab() {
+  return '<div class="content-section">' + renderEmptyState('clock', '\u00c4nderungsprotokoll', 'Das \u00c4nderungsprotokoll wird in einer zuk\u00fcnftigen Version verf\u00fcgbar sein.') + '</div>';
+}
+
+function renderCodeListRelationships(codeListId, cl) {
+  // Concepts that use this code list via concept_attribute
+  const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_attribute ca ON ca.concept_id = c.id WHERE ca.code_list_id = ?`, [codeListId]);
+
+  const satellites = [];
+  if (concepts.length) {
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_codelist_relations')) + '</div>';
+  return renderRelGraph(n(cl, 'name'), satellites);
+}
+
+function renderSystemRelationships(systemId, sys) {
+  // Schemas and datasets in this system
+  const schemas = query(`SELECT sc.id, sc.name FROM schema_ sc WHERE sc.system_id = ?`, [systemId]);
+  const datasets = query(`SELECT d.id, d.name, d.display_name, sc.id as schema_id FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id WHERE sc.system_id = ?`, [systemId]);
+
+  // Concepts mapped to datasets in this system
+  const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname
+    FROM concept c
+    JOIN concept_mapping cm ON cm.concept_id = c.id
+    JOIN field f ON cm.field_id = f.id
+    JOIN dataset d ON f.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    WHERE sc.system_id = ?`, [systemId]);
+
+  // Data products using datasets from this system
+  const products = query(`SELECT DISTINCT dp.id, dp.${nameCol('name')} as dp_name
+    FROM data_product dp
+    JOIN data_product_dataset dpd ON dpd.data_product_id = dp.id
+    JOIN dataset d ON dpd.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    WHERE sc.system_id = ?`, [systemId]);
+
+  const satellites = [];
+  if (datasets.length) {
+    satellites.push({ title: 'Datasets', items: datasets.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + systemId + '/datasets/' + d.id, icon: 'table-2', meta: '' })), color: '#C9820B' });
+  }
+  if (concepts.length) {
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+  }
+  if (products.length) {
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses System hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  return renderRelGraph(n(sys, 'name'), satellites);
+}
+
+function renderDatasetRelationships(datasetId, ds) {
+  // System
+  const sys = queryOne(`SELECT s.id, s.${nameCol('name')} as sname FROM system s JOIN schema_ sc ON sc.system_id = s.id WHERE sc.id = ?`, [ds.schema_id]);
+
+  // Mapped concepts
+  const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname
+    FROM concept c JOIN concept_mapping cm ON cm.concept_id = c.id
+    JOIN field f ON cm.field_id = f.id WHERE f.dataset_id = ?`, [datasetId]);
+
+  // Data products
+  const products = query(`SELECT DISTINCT dp.id, dp.${nameCol('name')} as dp_name
+    FROM data_product dp JOIN data_product_dataset dpd ON dpd.data_product_id = dp.id
+    WHERE dpd.dataset_id = ?`, [datasetId]);
+
+  // Lineage: upstream
+  const upstream = query(`SELECT d.id, d.name, d.display_name FROM lineage_link ll JOIN dataset d ON ll.source_dataset_id = d.id JOIN schema_ sc ON d.schema_id = sc.id WHERE ll.target_dataset_id = ?`, [datasetId]);
+  // Lineage: downstream
+  const downstream = query(`SELECT d.id, d.name, d.display_name FROM lineage_link ll JOIN dataset d ON ll.target_dataset_id = d.id JOIN schema_ sc ON d.schema_id = sc.id WHERE ll.source_dataset_id = ?`, [datasetId]);
+
+  const satellites = [];
+  if (sys) {
+    satellites.push({ title: 'System', items: [{ label: sys.sname, href: '#/systems/' + sys.id, icon: 'database', meta: '' }], color: '#059669' });
+  }
+  if (concepts.length) {
+    satellites.push({ title: tSection('vocabulary'), items: concepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+  }
+  if (products.length) {
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+  }
+  if (upstream.length) {
+    satellites.push({ title: 'Upstream', items: upstream.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + ds.system_id + '/datasets/' + d.id, icon: 'arrow-left', meta: '' })), color: '#2E6EB5' });
+  }
+  if (downstream.length) {
+    satellites.push({ title: 'Downstream', items: downstream.map(d => ({ label: d.display_name || d.name, href: '#/systems/' + ds.system_id + '/datasets/' + d.id, icon: 'arrow-right', meta: '' })), color: '#C9820B' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses Dataset hat noch keine Beziehungen zu anderen Entitäten.') + '</div>';
+  return renderRelGraph(ds.display_name || ds.name, satellites);
+}
+
+function renderProductRelationships(productId, dp) {
+  // Source datasets
+  const sources = query(`SELECT d.id, d.name, d.display_name, s.${nameCol('name')} as sys_name, s.id as sys_id
+    FROM data_product_dataset dpd
+    JOIN dataset d ON dpd.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE dpd.data_product_id = ?`, [productId]);
+
+  // Distributions
+  const dists = query("SELECT id, name, format FROM distribution WHERE data_product_id = ?", [productId]);
+
+  const satellites = [];
+  if (sources.length) {
+    satellites.push({ title: 'Quelldatasets', items: sources.map(s => ({ label: s.display_name || s.name, href: '#/systems/' + s.sys_id + '/datasets/' + s.id, icon: 'table-2', meta: s.sys_name })), color: '#C9820B' });
+  }
+  if (dists.length) {
+    satellites.push({ title: 'Distributionen', items: dists.map(d => ({ label: d.name || d.format, icon: 'file-output', meta: d.format || '' })), color: '#0891B2' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_dataset_relations')) + '</div>';
+  return renderRelGraph(n(dp, 'name'), satellites);
+}
+
+function renderConceptOverview(concept, collection, vocab, steward) {
+  let html = '';
+
+  // Definition
+  const def = getDefinitionText(concept.definition, lang);
+  html += `<div class="content-section"><div class="section-label">${tr('sec_definition')}</div>`;
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',      value: collection ? escapeHtml(n(collection, 'name')) : null },
+    { label: tr('col_approval'),    value: statusBadge(concept.status) },
+    { label: 'Vocabulary',  value: vocab ? escapeHtml(n(vocab, 'name')) + (vocab.version ? ' v' + escapeHtml(vocab.version) : '') : null },
+    { label: tr('col_created'),    value: formatDate(concept.created_at) },
+    { label: tr('col_modified'),    value: formatDate(concept.modified_at) },
+    { label: 'Freigegeben', value: concept.approved_at ? formatDate(concept.approved_at) : null }
+  ]);
+  html += '</div>';
+
+  // Verantwortliche — Data Steward comes from concept.steward_id → user
+  const stewardContacts = steward
+    ? [{ name: steward.name, organisation: steward.department || '', email: steward.email }]
+    : [];
+  html += renderStakeholdersSection([{ role: 'data_steward', contacts: stewardContacts }]);
+
+  return html;
+}
+
+function renderConceptContents(conceptId) {
+  const attrs = query(`SELECT ca.*, cl.${nameCol('name')} as code_list_name, cl.id as cl_id
+    FROM concept_attribute ca
+    LEFT JOIN code_list cl ON ca.code_list_id = cl.id
+    WHERE ca.concept_id = ?
+    ORDER BY ca.sort_order, ca.${nameCol('name')}`, [conceptId]);
+
+  if (attrs.length === 0) return '<div class="content-section">' + renderEmptyState('list', tr('no_attributes'), tr('empty_body_concept_attributes')) + '</div>';
+
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_attributes') + '</div>';
+  html += '<table class="data-table"><thead><tr>';
+  html += '<th scope="col">Name</th><th scope="col">Typ</th><th scope="col">Key</th><th scope="col">Pflicht</th><th scope="col">Codeliste</th><th scope="col">Beschreibung</th>';
+  html += '</tr></thead><tbody>';
+  attrs.forEach(a => {
+    const def = getDefinitionText(a.definition, lang);
+    const key = conceptAttrKey(a);
+    html += `<tr>
+      <td class="cell-mono">${escapeHtml(n(a, 'name'))}</td>
+      <td class="cell-mono">${escapeHtml(a.value_type)}</td>
+      <td>${key ? `<span class="uml-card-attr-key">${key}</span>` : '&ndash;'}</td>
+      <td>${a.required ? 'Yes' : 'No'}</td>
+      <td>${a.cl_id ? '<a href="#/codelists/' + a.cl_id + '">' + escapeHtml(a.code_list_name || '') + '</a>' : '&ndash;'}</td>
+      <td>${escapeHtml(def || '')}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderConceptMappings(conceptId) {
+  const mappings = query(`SELECT cm.*, f.name as field_name, f.data_type,
+    d.name as dataset_name, d.id as dataset_id,
+    s.${nameCol('name')} as system_name, s.id as system_id,
+    sc.id as schema_id
+    FROM concept_mapping cm
+    JOIN field f ON cm.field_id = f.id
+    JOIN dataset d ON f.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE cm.concept_id = ?
+    ORDER BY s.name_en, d.name`, [conceptId]);
+
+  if (mappings.length === 0) return '<div class="content-section">' + renderEmptyState('link', tr('no_mappings'), tr('empty_body_concept_mappings')) + '</div>';
+
+  let html = `<div class="content-section"><div class="section-label">${tr('sec_mappings', { count: mappings.length })}</div>`;
+  html += '<table class="data-table"><thead><tr>';
+  html += '<th scope="col">Field</th><th scope="col">Dataset / System</th><th scope="col">Match</th><th scope="col">Verified</th>';
+  html += '</tr></thead><tbody>';
+  mappings.forEach(m => {
+    const matchLabel = (m.match_type || '').replace('skos:', '').replace('Match', '');
+    html += `<tr>
+      <td class="cell-mono">${escapeHtml(m.field_name)}</td>
+      <td><a href="#/systems/${m.system_id}/datasets/${m.dataset_id}">${escapeHtml(m.dataset_name)}</a> &middot; ${escapeHtml(m.system_name)}</td>
+      <td>${escapeHtml(matchLabel.charAt(0).toUpperCase() + matchLabel.slice(1))}</td>
+      <td>${m.verified ? '<span class="verified-check"><i data-lucide="check-circle" style="width:16px;height:16px;"></i></span>' : '<span class="unverified"><i data-lucide="circle" style="width:16px;height:16px;"></i></span>'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+
+
+function renderConceptRelationships(conceptId) {
+  const concept = queryOne("SELECT * FROM concept WHERE id = ?", [conceptId]);
+
+  // Mapped fields → datasets → systems
+  const mappings = query(`SELECT cm.match_type, f.name as field_name, f.id as field_id,
+    d.name as dataset_name, d.display_name, d.id as dataset_id,
+    s.${nameCol('name')} as system_name, s.id as system_id, s.technology_stack
+    FROM concept_mapping cm
+    JOIN field f ON cm.field_id = f.id
+    JOIN dataset d ON f.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE cm.concept_id = ?`, [conceptId]);
+
+  // Stakeholder (steward)
+  const steward = concept.steward_id ? queryOne('SELECT * FROM "user" WHERE id = ?', [concept.steward_id]) : null;
+
+  // Data products linked through mapped datasets
+  const datasetIds = [...new Set(mappings.map(m => m.dataset_id))];
+  let products = [];
+  if (datasetIds.length > 0) {
+    const placeholders = datasetIds.map(() => '?').join(',');
+    products = query(`SELECT DISTINCT dp.id, dp.${nameCol('name')} as dp_name
+      FROM data_product dp
+      JOIN data_product_dataset dpd ON dpd.data_product_id = dp.id
+      WHERE dpd.dataset_id IN (${placeholders})`, datasetIds);
+  }
+
+  // Build satellite groups
+  const satellites = [];
+
+  // Begriffe (linked terms)
+  const linkedTerms = query(`SELECT t.id, t.${nameCol('name')} as tname, t.standard_ref FROM term t JOIN concept_term ct ON ct.term_id = t.id WHERE ct.concept_id = ?`, [conceptId]);
+  if (linkedTerms.length) {
+    satellites.push({ title: 'Begriffe', items: linkedTerms.map(t => ({ label: t.tname, href: '#/terms/' + t.id, icon: 'book-open', meta: t.standard_ref ? 'Standard: ' + t.standard_ref : '' })), color: '#2E6EB5' });
+  }
+
+  // Codelisten (concept_attribute → code_list)
+  const codeLists = query(`SELECT DISTINCT cl.id, cl.${nameCol('name')} as clname FROM concept_attribute ca JOIN code_list cl ON ca.code_list_id = cl.id WHERE ca.concept_id = ?`, [conceptId]);
+  if (codeLists.length) {
+    satellites.push({ title: tSection('codelists'), items: codeLists.map(cl => ({ label: cl.clname, href: '#/codelists/' + cl.id, icon: 'list-ordered', meta: '' })), color: '#0891B2' });
+  }
+
+  // Tabellen (datasets)
+  const datasets = [];
+  const seenDs = new Set();
+  mappings.forEach(m => {
+    if (!seenDs.has(m.dataset_id)) {
+      seenDs.add(m.dataset_id);
+      datasets.push({ label: m.display_name || m.dataset_name, href: '#/systems/' + m.system_id + '/datasets/' + m.dataset_id, icon: 'table-2', meta: 'System: ' + m.system_name });
+    }
+  });
+  if (datasets.length) satellites.push({ title: tr('col_tables'), items: datasets, color: '#C9820B' });
+
+  // Benutzer
+  if (steward) {
+    satellites.push({ title: 'Benutzer', items: [{ label: steward.name, icon: 'user', meta: 'Role: Data Steward' }], color: '#1A9E55' });
+  }
+
+  // Datensätze
+  if (products.length) {
+    satellites.push({ title: tSection('datasets'), items: products.map(dp => ({ label: dp.dp_name, href: '#/datasets/' + dp.id, icon: 'package', meta: '' })), color: '#8B5CF6' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), 'Dieses Konzept hat noch keine Beziehungen.') + '</div>';
+  return renderRelGraph(n(concept, 'name'), satellites);
+}
+
+// ============================================================
+// Code List Detail
+// ============================================================
+function renderCodeListDetail(codeListId, tab, main) {
+  const cl = queryOne("SELECT * FROM code_list WHERE id = ?", [codeListId]);
+  if (!cl) { main.innerHTML = '<p>Code list not found</p>'; return; }
+
+  const clCounts = queryOne("SELECT COUNT(*) as total, SUM(CASE WHEN deprecated = 1 THEN 1 ELSE 0 END) as dep FROM code_list_value WHERE code_list_id = ?", [codeListId]);
+  const valueCount = clCounts?.total || 0;
+  const deprecatedCount = clCounts?.dep || 0;
+
+  addRecent(n(cl, 'name') || cl.name_en, `#/codelists/${codeListId}`);
+
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_values') },
+    { id: 'mappings',      label: 'Mappings' },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/codelists">${SECTION_LABELS.codelists[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(cl, 'name'))}</span>`;
+  html += '</nav>';
+
+  // Title
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="list-ordered" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(cl, 'name'))}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions();
+  html += '</div></div>';
+
+  html += renderTabBar(tabs, tab, '#/codelists/' + codeListId);
+
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderCodeListOverview(cl, valueCount, deprecatedCount); break;
+    case 'contents': html += renderCodeListContents(codeListId); break;
+    case 'mappings': html += renderCodeListMappings(codeListId); break;
+    case 'relationships': html += renderCodeListRelationships(codeListId, cl); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderCodeListOverview(cl, valueCount, deprecatedCount) {
+  let html = '';
+
+  // Definition
+  const def = getDefinitionText(cl.description, lang);
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Derive domain from linked concepts (display-only join; not stored on code_list)
+  const clDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_attribute ca
+    JOIN concept c ON ca.concept_id = c.id
+    JOIN collection col ON c.collection_id = col.id
+    WHERE ca.code_list_id = ? LIMIT 1`, [cl.id]);
+  const owner = cl.owner_id ? queryOne("SELECT name, email, organisation, role FROM contact WHERE id = ?", [cl.owner_id]) : null;
+
+  // Metadata
+  const clLinkedConcept = cl.concept_id
+    ? queryOne(`SELECT ${nameCol('name')} as cname FROM concept WHERE id = ?`, [cl.concept_id])
+    : null;
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',         value: clDomain ? escapeHtml(clDomain.dname) : null },
+    { label: tr('col_approval'),       value: statusBadge(cl.status) },
+    { label: 'Version',        value: cl.version ? escapeHtml(cl.version) : null },
+    { label: tr('col_values'),          value: `${valueCount} (${valueCount - deprecatedCount} aktiv${deprecatedCount > 0 ? ' &middot; ' + deprecatedCount + ' veraltet' : ''})` },
+    { label: tr('col_source'),         value: cl.source_ref ? escapeHtml(cl.source_ref) : null },
+    { label: tr('col_concept'), value: clLinkedConcept ? `<a href="#/vocabulary/${cl.concept_id}">${escapeHtml(clLinkedConcept.cname)}</a>` : null }
+  ]);
+  html += '</div>';
+
+  // Verantwortliche — code_list.owner_id → contact (semantic: Data Owner)
+  const ownerContacts = owner ? [owner] : [];
+  html += renderStakeholdersSection([{ role: 'data_owner', contacts: ownerContacts }]);
+
+  return html;
+}
+
+function renderCodeListContents(codeListId) {
+  const values = query(`SELECT * FROM code_list_value WHERE code_list_id = ? ORDER BY sort_order, code`, [codeListId]);
+
+  if (values.length === 0) return '<div class="content-section">' + renderEmptyState('list-ordered', tr('no_values'), 'Diese Codeliste enth\u00e4lt noch keine Werte.') + '</div>';
+
+  let html = '<div class="content-section">';
+  html += `<div style="margin-bottom:var(--space-3);font-size:var(--text-small);color:var(--color-text-secondary);">
+    ${values.length} Werte
+  </div>`;
+
+  html += '<table class="data-table"><colgroup><col style="width:20%"><col style="width:30%"><col style="width:50%"></colgroup><thead><tr>';
+  html += '<th scope="col">Code</th><th scope="col">Bezeichnung</th><th scope="col">Beschreibung</th>';
+  html += '</tr></thead><tbody>';
+  values.forEach(v => {
+    const isDeprecated = v.deprecated === 1;
+    const style = isDeprecated ? ' style="color:var(--color-text-placeholder);font-style:italic;"' : '';
+    const label = v['label_' + lang] || v.label_de || v.label_en || '';
+    const desc = getDefinitionText(v.description, lang);
+    html += `<tr${style}>
+      <td class="cell-mono">${escapeHtml(v.code)}</td>
+      <td>${escapeHtml(label)}</td>
+      <td>${desc ? escapeHtml(desc) : '&ndash;'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderCodeListMappings(codeListId) {
+  // Concept attributes using this code list
+  const attrs = query(`SELECT ca.*, c.${nameCol('name')} as concept_name, c.id as concept_id
+    FROM concept_attribute ca
+    JOIN concept c ON ca.concept_id = c.id
+    WHERE ca.code_list_id = ?`, [codeListId]);
+
+  let html = '<div class="content-section">';
+  if (attrs.length > 0) {
+    html += '<div class="section-label">' + tr('sec_used_by_concepts') + '</div>';
+    html += '<table class="data-table"><thead><tr><th scope="col">Concept</th><th scope="col">Attribute</th></tr></thead><tbody>';
+    attrs.forEach(a => {
+      html += `<tr>
+        <td><a href="#/vocabulary/${a.concept_id}">${escapeHtml(a.concept_name)}</a></td>
+        <td>${escapeHtml(n(a, 'name'))}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+  }
+
+  if (attrs.length === 0) {
+    html += renderEmptyState('link', tr('no_mappings'), tr('empty_body_codelist_mappings'));
+  }
+  html += '</div>';
+  return html;
+}
+
+// ============================================================
+// System Detail
+// ============================================================
+function renderSystemDetail(systemId, tab, main) {
+  const sys = queryOne("SELECT s.*, c.name as owner_name, c.organisation as owner_org, c.email as owner_email FROM system s LEFT JOIN contact c ON s.owner_id = c.id WHERE s.id = ?", [systemId]);
+  if (!sys) { main.innerHTML = '<p>System not found</p>'; return; }
+
+  const schemas = query("SELECT * FROM schema_ WHERE system_id = ? ORDER BY name", [systemId]);
+  const datasetCount = query("SELECT COUNT(*) as c FROM dataset d JOIN schema_ sc ON d.schema_id = sc.id WHERE sc.system_id = ?", [systemId])[0]?.c || 0;
+
+  addRecent(n(sys, 'name') || sys.name_en, `#/systems/${systemId}`);
+
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_tables') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/systems">${SECTION_LABELS.systems[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(sys, 'name'))}</span>`;
+  html += '</nav>';
+
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="database" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(sys, 'name'))}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions();
+  html += '</div>';
+  html += '</div>';
+
+  html += renderTabBar(tabs, tab, '#/systems/' + systemId);
+
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderSystemOverview(sys, schemas, datasetCount); break;
+    case 'contents': html += renderSystemContents(systemId, schemas); break;
+    case 'relationships': html += renderSystemRelationships(systemId, sys); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderSystemOverview(sys, schemas, datasetCount) {
+  let html = '';
+
+  // Definition
+  const desc = getDefinitionText(sys.description, lang);
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: tr('col_status'),       value: statusBadge(sys.active ? 'active' : 'deprecated') },
+    { label: 'Technologie',  value: sys.technology_stack ? escapeHtml(sys.technology_stack) : null },
+    { label: tr('col_tables'),     value: datasetCount },
+    { label: tr('col_created'),     value: formatDate(sys.created_at) },
+    { label: tr('col_last_scan'), value: sys.last_scanned_at ? formatDate(sys.last_scanned_at) : null }
+  ]);
+  html += '</div>';
+
+  // Verantwortliche — system.owner_id → contact. A system's "owner" is
+  // semantically the Anwendungsverantwortliche (Application Owner / PO
+  // at system level), not a business data owner.
+  const sysOwnerContacts = sys.owner_name
+    ? [{ name: sys.owner_name, organisation: sys.owner_org || '', email: sys.owner_email }]
+    : [];
+  html += renderStakeholdersSection([{ role: 'application_owner', contacts: sysOwnerContacts }]);
+
+  return html;
+}
+
+function renderSystemContents(systemId, schemas) {
+  // Flat list of all datasets across all schemas
+  const datasets = query(`SELECT d.*,
+    sc.name as schema_name, sc.display_name as schema_display_name,
+    COALESCE(fc.field_count, 0) as field_count
+    FROM dataset d
+    JOIN schema_ sc ON d.schema_id = sc.id
+    LEFT JOIN (SELECT dataset_id, COUNT(*) as field_count FROM field GROUP BY dataset_id) fc ON fc.dataset_id = d.id
+    WHERE sc.system_id = ?
+    ORDER BY d.name`, [systemId]);
+
+  if (datasets.length === 0) {
+    return '<div class="content-section">' + renderEmptyState('table-2', tr('no_tables'), tr('empty_body_system_tables')) + '</div>';
+  }
+
+  const columns = [
+    { label: tr('col_name'),         width: '30%', render: d => escapeHtml(d.display_name || d.name) },
+    { label: tr('col_description'), width: '30%', render: d => {
+        const desc = getDefinitionText(d.description, lang);
+        return desc ? escapeHtml(desc.substring(0, 80)) + (desc.length > 80 ? '...' : '') : '&ndash;';
+      } },
+    { label: tr('col_type'),          width: '15%', render: d => escapeHtml(d.dataset_type) },
+    { label: tr('col_fields'),       width: '10%', render: d => d.field_count },
+    { label: tr('col_approval'),     width: '15%', render: d => certifiedBadge(d.certified) }
+  ];
+  return '<div class="content-section">'
+    + renderDataTable(columns, datasets, { rowHref: d => `#/systems/${systemId}/datasets/${d.id}` })
+    + '</div>';
+}
+
+
+// ============================================================
+// Dataset Detail
+// ============================================================
+function renderDatasetDetail(datasetId, systemId) {
+  const ds = queryOne(`SELECT d.*, sc.name as schema_name, sc.display_name as schema_display_name,
+    sc.system_id, s.${nameCol('name')} as system_name
+    FROM dataset d
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE d.id = ?`, [datasetId]);
+  if (!ds) { document.getElementById('main-content').innerHTML = '<p>Dataset not found</p>'; return; }
+
+  const fieldCount = query("SELECT COUNT(*) as c FROM field WHERE dataset_id = ?", [datasetId])[0]?.c || 0;
+  const mappingCount = query(`SELECT COUNT(DISTINCT cm.concept_id) as c FROM concept_mapping cm
+    JOIN field f ON cm.field_id = f.id WHERE f.dataset_id = ?`, [datasetId])[0]?.c || 0;
+  const hasContacts = query("SELECT COUNT(*) as c FROM dataset_contact WHERE dataset_id = ?", [datasetId])[0]?.c > 0;
+
+  // Classification
+  const classification = queryOne(`SELECT dc.* FROM data_classification dc
+    JOIN dataset_classification dsc ON dc.id = dsc.classification_id
+    WHERE dsc.dataset_id = ?`, [datasetId]);
+
+  addRecent((ds.display_name || ds.name), `#/systems/${ds.system_id}/datasets/${datasetId}`);
+
+  // Check if access-restricted
+  const restricted = classification && classification.sensitivity_level >= 2;
+
+  const tab = currentTab || 'overview';
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'contents',      label: tr('col_fields') },
+    { id: 'lineage', label: tr('tab_lineage') },
+    { id: 'quality', label: tr('tab_quality') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === currentTab)) currentTab = 'overview';
+
+  const main = document.getElementById('main-content');
+  let html = '<div class="content-wrapper"><article>';
+
+  // Breadcrumb
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/systems">${SECTION_LABELS.systems[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<a class="breadcrumb-link" href="#/systems/${ds.system_id}">${escapeHtml(ds.system_name)}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(ds.display_name || ds.name)}</span>`;
+  html += '</nav>';
+
+  // Title
+  html += '<div class="title-block">';
+  html += `<div class="title-block-icon"><i data-lucide="${restricted ? 'lock' : 'table-2'}" style="width:24px;height:24px;"></i></div>`;
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name${restricted ? ' locked-name' : ''}"${restricted ? '' : ' data-editable="title"'}>${escapeHtml(ds.display_name || ds.name)}${restricted ? '<span class="locked-icon"><i data-lucide="lock" style="width:16px;height:16px;"></i></span>' : ''}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions({ readOnly: restricted });
+  html += '</div>';
+  html += '</div>';
+
+  if (restricted) {
+    // Access-restricted: show locked content message instead of tabs
+    html += renderLockedContent();
+    html += '</article></div>';
+    main.innerHTML = html;
+    return;
+  }
+
+  html += renderTabBar(tabs, currentTab, `#/systems/${ds.system_id}/datasets/${datasetId}`);
+
+  html += '<div class="tab-content">';
+  switch(currentTab) {
+    case 'overview': html += renderDatasetOverview(ds, fieldCount, mappingCount, classification); break;
+    case 'contents': html += renderDatasetContents(datasetId); break;
+    case 'lineage': html += renderDatasetLineage(datasetId, ds); break;
+    case 'quality': html += renderDatasetQuality(datasetId); break;
+    case 'relationships': html += renderDatasetRelationships(datasetId, ds); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderDatasetOverview(ds, fieldCount, mappingCount, classification) {
+  let html = '';
+
+  // Definition
+  const desc = getDefinitionText(ds.description, lang);
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: tr('col_approval'),          value: certifiedBadge(ds.certified) },
+    { label: 'System',            value: escapeHtml(ds.system_name) },
+    { label: tr('col_type'),               value: escapeHtml(ds.dataset_type) },
+    { label: tr('col_rows_approx'),  value: ds.row_count_approx ? formatNumber(ds.row_count_approx) : null },
+    { label: tr('col_fields'),            value: fieldCount },
+    { label: tr('col_classification'),   value: classification ? classificationBadge(classification) : null },
+    { label: tr('col_created'),          value: formatDate(ds.created_at) },
+    { label: tr('col_modified'),          value: formatDate(ds.modified_at) }
+  ]);
+  html += '</div>';
+
+  // Linked concepts
+  if (mappingCount > 0) {
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_linked_concepts') + '</div>';
+    const concepts = query(`SELECT DISTINCT c.id, c.${nameCol('name')} as cname
+      FROM concept c
+      JOIN concept_mapping cm ON cm.concept_id = c.id
+      JOIN field f ON cm.field_id = f.id
+      WHERE f.dataset_id = ?`, [ds.id]);
+    html += '<div class="domain-group-concepts">';
+    concepts.forEach(c => {
+      html += `<a class="concept-box" href="#/vocabulary/${c.id}">${escapeHtml(c.cname)}</a>`;
+    });
+    html += '</div></div>';
+  }
+
+  // Stakeholders (moved from standalone tab)
+  html += renderDatasetStakeholders(ds.id);
+
+  return html;
+}
+
+function renderDatasetContents(datasetId) {
+  const fields = query(`SELECT f.* FROM field f WHERE f.dataset_id = ? ORDER BY f.sort_order, f.name`, [datasetId]);
+
+  if (fields.length === 0) return '<div class="content-section">' + renderEmptyState('table-2', tr('no_fields'), tr('empty_body_dataset_fields')) + '</div>';
+
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_fields') + '</div>';
+  html += '<table class="data-table"><thead><tr>';
+  html += '<th scope="col">Name</th><th scope="col">Beschreibung</th><th scope="col">Typ</th><th scope="col">Key</th><th scope="col">Nullable</th>';
+  html += '</tr></thead><tbody>';
+  fields.forEach(f => {
+    let keyLabel = '&ndash;';
+    if (f.is_primary_key) keyLabel = 'PK';
+    else if (f.is_foreign_key) keyLabel = 'FK';
+    const desc = getDefinitionText(f.description, lang);
+    html += `<tr>
+      <td class="cell-mono">${escapeHtml(f.name)}</td>
+      <td>${desc ? escapeHtml(desc) : '&ndash;'}</td>
+      <td class="cell-mono">${escapeHtml(f.data_type)}</td>
+      <td>${keyLabel}</td>
+      <td>${f.nullable ? 'Yes' : 'No'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderDatasetLineage(datasetId, ds) {
+  const upstream = query(`SELECT ll.*, d.name as ds_name, d.display_name, d.id as ds_id,
+    s.${nameCol('name')} as sys_name
+    FROM lineage_link ll
+    JOIN dataset d ON ll.source_dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE ll.target_dataset_id = ?`, [datasetId]);
+
+  const downstream = query(`SELECT ll.*, d.name as ds_name, d.display_name, d.id as ds_id,
+    s.${nameCol('name')} as sys_name, sc.system_id as sys_id
+    FROM lineage_link ll
+    JOIN dataset d ON ll.target_dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE ll.source_dataset_id = ?`, [datasetId]);
+
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_lineage') + '</div>';
+  html += '<div class="lineage-tree-visual">';
+
+  // Upstream section
+  html += '<div class="lineage-section">';
+  html += '<h4>Upstream (Quellen)</h4>';
+  if (upstream.length === 0) {
+    html += `<div style="padding:var(--space-3);font-size:var(--text-body);color:var(--color-text-secondary);">${escapeHtml(ds.display_name || ds.name)} ist eine Prim\u00e4rquelle ohne Upstream-Abh\u00e4ngigkeiten</div>`;
+  } else {
+    upstream.forEach(u => {
+      html += `<div class="lineage-node-item" data-href="#/systems/${ds.system_id}/datasets/${u.ds_id}">
+        <i data-lucide="database" class="lineage-node-icon" style="width:16px;height:16px;"></i>
+        <span class="lineage-node-name">${escapeHtml(u.display_name || u.ds_name)}</span>
+        <span class="lineage-node-meta">${escapeHtml(u.sys_name)}${u.tool_name ? ' &middot; ' + escapeHtml(u.tool_name) : ''}${u.frequency ? ' &middot; ' + escapeHtml(u.frequency) : ''}</span>
+      </div>`;
+    });
+  }
+  html += '</div>';
+
+  // Current node
+  html += `<div class="lineage-current-node">
+    <i data-lucide="table-2" style="width:16px;height:16px;"></i>
+    ${escapeHtml(ds.display_name || ds.name)}
+  </div>`;
+
+  // Downstream section
+  html += '<div class="lineage-section">';
+  html += '<h4>Downstream (Abgeleitet)</h4>';
+  if (downstream.length === 0) {
+    html += '<div style="padding:var(--space-3);font-size:var(--text-body);color:var(--color-text-secondary);">Keine abgeleiteten Datasets</div>';
+  } else {
+    downstream.forEach(d => {
+      html += `<div class="lineage-node-item" data-href="#/systems/${d.sys_id}/datasets/${d.ds_id}">
+        <i data-lucide="database" class="lineage-node-icon" style="width:16px;height:16px;"></i>
+        <span class="lineage-node-name">${escapeHtml(d.display_name || d.ds_name)}</span>
+        <span class="lineage-node-meta">${escapeHtml(d.sys_name)}${d.tool_name ? ' &middot; ' + escapeHtml(d.tool_name) : ''}${d.frequency ? ' &middot; ' + escapeHtml(d.frequency) : ''}</span>
+      </div>`;
+    });
+  }
+  html += '</div></div></div>';
+  return html;
+}
+
+function renderDatasetQuality(datasetId) {
+  const profile = queryOne("SELECT * FROM data_profile WHERE dataset_id = ? ORDER BY profiled_at DESC LIMIT 1", [datasetId]);
+
+  const dimensions = [
+    { key: 'completeness', icon: 'check-circle', label: tr('quality_label_completeness'), desc: tr('quality_dim_completeness'), score: profile?.completeness_score },
+    { key: 'timeliness',   icon: 'clock',        label: tr('quality_label_timeliness'),   desc: tr('quality_dim_timeliness'),   score: profile?.timeliness_score },
+    { key: 'accuracy',     icon: 'target',       label: tr('quality_label_accuracy'),     desc: tr('quality_dim_accuracy'),     score: profile?.accuracy_score },
+    { key: 'consistency',  icon: 'git-compare',  label: tr('quality_label_consistency'),  desc: tr('quality_dim_cross_system'),score: profile?.consistency_score },
+    { key: 'validity',     icon: 'shield-check', label: tr('quality_label_validity'),     desc: tr('quality_dim_consistency'),  score: profile?.format_validity_score },
+    { key: 'uniqueness',   icon: 'fingerprint',  label: tr('quality_label_uniqueness'),   desc: tr('quality_dim_uniqueness'),   score: profile?.uniqueness_score }
+  ];
+
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_data_quality') + '</div>';
+
+  if (profile) {
+    html += `<div style="font-size:var(--text-small);color:var(--color-text-secondary);margin-bottom:var(--space-4);">
+      ${escapeHtml(tr('quality_profiling_prefix'))} ${formatDate(profile.profiled_at)}${profile.profiler ? ' &middot; ' + escapeHtml(profile.profiler) : ''}
+      ${profile.row_count ? ' &middot; ' + formatNumber(profile.row_count) + ' ' + escapeHtml(tr('quality_records_suffix')) : ''}
+    </div>`;
+  }
+
+  html += '<div class="dq-grid">';
+  dimensions.forEach(d => {
+    const hasScore = d.score != null;
+    const pct = hasScore ? Math.round(d.score * 100) : null;
+    const scoreColor = hasScore ? (pct >= 80 ? 'var(--color-quality-complete)' : pct >= 50 ? 'var(--color-quality-null)' : 'var(--color-status-error, #DC0018)') : null;
+
+    html += '<div class="dq-card">';
+    html += `<div class="dq-card-header">`;
+    html += `<i data-lucide="${d.icon}" style="width:18px;height:18px;color:var(--color-text-secondary);"></i>`;
+    html += `<span class="dq-card-title">${d.label}</span>`;
+    html += '</div>';
+    html += `<div class="dq-card-desc">${d.desc}</div>`;
+
+    if (hasScore) {
+      html += `<div class="dq-card-score" style="color:${scoreColor};">${pct}%</div>`;
+      html += `<div class="quality-bar"><div class="quality-bar-fill-complete" style="width:${pct}%;background:${scoreColor};"></div></div>`;
+    } else {
+      html += '<div class="dq-card-score dq-card-score--empty">&ndash;</div>';
+      html += '<div class="quality-bar"></div>';
+      html += '<div class="dq-card-empty">Noch nicht gemessen</div>';
+    }
+
+    html += '</div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function renderDatasetStakeholders(datasetId) {
+  const contacts = query(`SELECT c.*, dc.role FROM dataset_contact dc JOIN contact c ON dc.contact_id = c.id WHERE dc.dataset_id = ?`, [datasetId]);
+  const roles = ['data_owner', 'data_steward', 'data_custodian', 'application_owner'];
+  const byRole = {};
+  contacts.forEach(c => { (byRole[c.role] = byRole[c.role] || []).push(c); });
+  return renderStakeholdersSection(roles.map(role => ({ role, contacts: byRole[role] || [] })));
+}
+
+// ============================================================
+// Data Product Detail
+// ============================================================
+function renderProductDetail(productId, tab, main) {
+  const dp = queryOne("SELECT * FROM data_product WHERE id = ?", [productId]);
+  if (!dp) { main.innerHTML = '<p>Data product not found</p>'; return; }
+
+  const distCount = query("SELECT COUNT(*) as c FROM distribution WHERE data_product_id = ?", [productId])[0]?.c || 0;
+  const hasContacts = query("SELECT COUNT(*) as c FROM data_product_contact WHERE data_product_id = ?", [productId])[0]?.c > 0;
+
+  addRecent(n(dp, 'name') || dp.name_en, `#/datasets/${productId}`);
+
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'lineage', label: tr('tab_lineage') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/datasets">${SECTION_LABELS.datasets[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(dp, 'name'))}</span>`;
+  html += '</nav>';
+
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="package" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(dp, 'name'))}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions();
+  html += '</div>';
+  html += '</div>';
+
+  html += renderTabBar(tabs, tab, '#/datasets/' + productId);
+
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderProductOverview(dp); break;
+    case 'lineage': html += renderProductLineage(productId); break;
+    case 'relationships': html += renderProductRelationships(productId, dp); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderProductOverview(dp) {
+  let html = '';
+
+  // Definition
+  const desc = getDefinitionText(dp.description, lang);
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${desc ? '<p data-editable="description">' + escapeHtml(desc) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Beschreibung vorhanden.</p>'}</div></div>`;
+
+  // Metadata
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: tr('col_approval'),      value: certifiedBadge(dp.certified) },
+    { label: tr('col_publisher'),   value: dp.publisher ? escapeHtml(dp.publisher) : null },
+    { label: tr('col_update_freq'), value: dp.update_frequency ? escapeHtml(dp.update_frequency) : null },
+    { label: tr('col_license'),        value: dp.license ? escapeHtml(dp.license) : null },
+    { label: tr('col_created'),      value: dp.issued ? formatDate(dp.issued) : null },
+    { label: tr('col_modified'),      value: dp.modified ? formatDate(dp.modified) : null }
+  ]);
+  html += '</div>';
+
+  // Distributions summary
+  const dists = query("SELECT * FROM distribution WHERE data_product_id = ? ORDER BY name_en", [dp.id]);
+  if (dists.length > 0) {
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_distributions') + '</div>';
+    dists.forEach(d => {
+      const icon = d.access_type === 'rest_api' || d.access_type === 'odata' ? 'link-2' :
+                   d.access_type === 'file_export' ? 'file' : 'share-2';
+      html += `<div class="distribution-item">
+        <div class="distribution-icon"><i data-lucide="${icon}" style="width:16px;height:16px;"></i></div>
+        <div>
+          <div class="distribution-name">${escapeHtml(n(d, 'name'))}</div>
+          <div class="distribution-url">${escapeHtml(d.access_url || '')}</div>
+          <div class="distribution-meta">${escapeHtml(d.access_type || '')}${d.format ? ' &middot; ' + escapeHtml(d.format) : ''}${d.availability ? ' &middot; ' + escapeHtml(d.availability) : ''}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Stakeholders (moved from standalone tab)
+  html += renderProductStakeholders(dp.id);
+
+  return html;
+}
+
+function renderProductLineage(productId) {
+  const sources = query(`SELECT d.*, s.${nameCol('name')} as sys_name, sc.system_id as sys_id
+    FROM data_product_dataset dpd
+    JOIN dataset d ON dpd.dataset_id = d.id
+    JOIN schema_ sc ON d.schema_id = sc.id
+    JOIN system s ON sc.system_id = s.id
+    WHERE dpd.data_product_id = ?`, [productId]);
+
+  if (sources.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_source_datasets'), tr('empty_body_product_sources')) + '</div>';
+
+  let html = '<div class="content-section"><div class="section-label">' + tr('sec_source_datasets') + '</div>';
+  html += '<table class="data-table"><thead><tr>';
+  html += '<th scope="col">Datensatz</th><th scope="col">System</th><th scope="col">Typ</th>';
+  html += '</tr></thead><tbody>';
+  sources.forEach(s => {
+    html += `<tr class="clickable-row" data-href="#/systems/${s.sys_id}/datasets/${s.id}">
+      <td>${escapeHtml(s.display_name || s.name)}</td>
+      <td>${escapeHtml(s.sys_name)}</td>
+      <td>${escapeHtml(s.dataset_type)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderProductStakeholders(productId) {
+  const contacts = query(`SELECT c.*, dpc.role FROM data_product_contact dpc JOIN contact c ON dpc.contact_id = c.id WHERE dpc.data_product_id = ?`, [productId]);
+  const roles = ['data_owner', 'data_steward', 'publisher'];
+  const byRole = {};
+  contacts.forEach(c => { (byRole[c.role] = byRole[c.role] || []).push(c); });
+  return renderStakeholdersSection(roles.map(role => ({ role, contacts: byRole[role] || [] })));
+}
+
+// ============================================================
+// Search
+// ============================================================
+
+function renderTermDetail(termId, tab, main) {
+  const term = queryOne("SELECT * FROM term WHERE id = ?", [termId]);
+  if (!term) { main.innerHTML = '<p>Begriff nicht gefunden</p>'; return; }
+  addRecent(n(term, 'name') || term.name_de, '#/terms/' + termId);
+
+  const tabs = [
+    { id: 'overview', label: tr('tab_overview') },
+    { id: 'relationships', label: tr('tab_relationships') },
+    { id: 'history', label: tr('tab_history') }
+  ];
+  if (!tabs.some(t => t.id === tab)) tab = 'overview';
+  currentTab = tab;
+
+  let html = '<div class="content-wrapper"><article>';
+  html += '<nav class="breadcrumb" aria-label="Breadcrumb">' + breadcrumbHome();
+  html += `<a class="breadcrumb-link" href="#/terms">${SECTION_LABELS.terms[lang]}</a>`;
+  html += '<span class="breadcrumb-separator"> / </span>';
+  html += `<span class="breadcrumb-current">${escapeHtml(n(term, 'name'))}</span>`;
+  html += '</nav>';
+
+  html += '<div class="title-block">';
+  html += '<div class="title-block-icon"><i data-lucide="book-open" style="width:24px;height:24px;"></i></div>';
+  html += '<div class="title-block-content">';
+  html += `<h1 class="title-block-name" data-editable="title">${escapeHtml(n(term, 'name'))}</h1>`;
+  html += '</div>';
+  html += '<div class="title-block-actions">';
+  html += renderTitleActions();
+  html += '</div></div>';
+
+  html += renderTabBar(tabs, tab, '#/terms/' + termId);
+
+  html += '<div class="tab-content">';
+  switch(tab) {
+    case 'overview': html += renderTermOverview(term); break;
+    case 'relationships': html += renderTermRelationships(termId, term); break;
+    case 'history': html += renderHistoryTab(); break;
+  }
+  html += '</div></article></div>';
+  main.innerHTML = html;
+}
+
+function renderTermOverview(term) {
+  let html = '';
+  const def = getDefinitionText(term.definition, lang);
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_definition') + '</div>';
+  html += `<div class="prose">${def ? '<p data-editable="description">' + escapeHtml(def) + '</p>' : '<p data-editable="description" style="color:var(--color-text-placeholder);">Keine Definition vorhanden.</p>'}</div></div>`;
+
+  // Derive domain from linked concepts
+  const termDomain = queryOne(`SELECT col.${nameCol('name')} as dname FROM concept_term ct
+    JOIN concept c ON ct.concept_id = c.id
+    JOIN collection col ON c.collection_id = col.id
+    WHERE ct.term_id = ? LIMIT 1`, [term.id]);
+
+  const sourceLabels = { standard: 'Standard', law: 'Gesetz', regulation: 'Verordnung', norm: 'Norm' };
+  html += '<div class="content-section"><div class="section-label">' + tr('sec_metadata') + '</div>';
+  html += renderMetadataTable([
+    { label: 'Domäne',       value: termDomain ? escapeHtml(termDomain.dname) : null },
+    { label: tr('col_approval'),     value: statusBadge(term.status) },
+    { label: tr('col_created'),     value: formatDate(term.created_at) },
+    { label: tr('col_modified'),     value: formatDate(term.modified_at) },
+    { label: tr('col_source_type'),   value: escapeHtml(sourceLabels[term.source_type] || term.source_type) },
+    { label: 'Standard',     value: term.standard_ref ? escapeHtml(term.standard_ref) : null },
+    { label: 'Quelldokument', value: term.source_document ? escapeHtml(term.source_document) : null }
+  ]);
+  html += '</div>';
+
+  // Linked concepts
+  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [term.id]);
+  if (linkedConcepts.length > 0) {
+    html += '<div class="content-section"><div class="section-label">' + tr('sec_linked_concepts') + '</div>';
+    html += '<div class="domain-group-concepts">';
+    linkedConcepts.forEach(c => {
+      html += `<a class="concept-box" href="#/vocabulary/${c.id}">`;
+      html += `<span class="concept-box-name">${escapeHtml(c.cname)}</span>`;
+      html += `</a>`;
+    });
+    html += '</div></div>';
+  }
+
+  return html;
+}
+
+function renderTermRelationships(termId, term) {
+  // Linked concepts via concept_term
+  const linkedConcepts = query(`SELECT c.id, c.${nameCol('name')} as cname FROM concept c JOIN concept_term ct ON ct.concept_id = c.id WHERE ct.term_id = ?`, [termId]);
+
+  const satellites = [];
+
+  if (linkedConcepts.length) {
+    satellites.push({ title: tSection('vocabulary'), items: linkedConcepts.map(c => ({ label: c.cname, href: '#/vocabulary/' + c.id, icon: 'box', meta: '' })), color: '#6366F1' });
+  }
+
+  if (satellites.length === 0) return '<div class="content-section">' + renderEmptyState('git-branch', tr('no_relationships'), tr('empty_body_term_relations')) + '</div>';
+  return renderRelGraph(n(term, 'name'), satellites);
+}
+
+
+// ── Event Delegation & Init ────────────────────────────────
+// ============================================================
+// Lang-dropdown open/close helpers (keeps aria-expanded in sync)
+// ============================================================
+function isLangDropdownOpen() {
+  return document.getElementById('lang-dropdown')?.classList.contains('open') || false;
+}
+function setLangDropdownOpen(open) {
+  const dd = document.getElementById('lang-dropdown');
+  const btn = document.getElementById('lang-btn');
+  if (!dd || !btn) return;
+  dd.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+}
+
+// ============================================================
+// Event Delegation
+// ============================================================
+document.addEventListener('change', function(e) {
+  const cb = e.target.closest('.filter-checkbox[data-filter-dim]');
+  if (!cb) return;
+  const dim = cb.dataset.filterDim;
+  const val = cb.dataset.filterValue;
+  const next = { ...(activeFilters[currentSection] || {}) };
+  const list = (next[dim] || []).slice();
+  if (cb.checked) {
+    if (!list.includes(val)) list.push(val);
+    next[dim] = list;
+  } else {
+    const filtered = list.filter(v => String(v) !== String(val));
+    if (filtered.length) next[dim] = filtered; else delete next[dim];
+  }
+  navigateWithFilters(next);
+});
+
+document.addEventListener('click', function(e) {
+  const target = e.target;
+
+  // Inline edit mode (visual mockup — no persistence)
+  const editBtn = target.closest('.btn-edit');
+  if (editBtn) {
+    e.preventDefault();
+    enterEditMode(editBtn.closest('article'));
+    return;
+  }
+  const saveBtn = target.closest('.btn-save');
+  if (saveBtn) {
+    e.preventDefault();
+    exitEditMode(saveBtn.closest('article'));
+    showToast(tr('edit_toast_saved'));
+    return;
+  }
+  const cancelBtn = target.closest('.btn-cancel');
+  if (cancelBtn) {
+    e.preventDefault();
+    // Ignore in-place edits (mockup) — re-run the current route to re-render
+    // the detail view from DB state.
+    exitEditMode(cancelBtn.closest('article'));
+    handleRoute();
+    return;
+  }
+
+  // Language dropdown
+  if (target.closest('#lang-btn')) {
+    e.preventDefault();
+    setLangDropdownOpen(!isLangDropdownOpen());
+    return;
+  }
+  if (target.closest('.lang-option')) {
+    const newLang = target.closest('.lang-option').dataset.lang;
+    if (newLang) {
+      lang = newLang;
+      document.getElementById('lang-label').textContent = LANG_LABELS[lang];
+      setLangDropdownOpen(false);
+      document.querySelectorAll('.lang-option').forEach(el => {
+        const match = el.dataset.lang === lang;
+        el.classList.toggle('active', match);
+        el.setAttribute('aria-checked', String(match));
+      });
+      document.getElementById('lang-btn')?.focus();
+      handleRoute();
+    }
+    return;
+  }
+  // Close dropdown on outside click
+  if (!target.closest('.lang-switcher')) {
+    setLangDropdownOpen(false);
+  }
+  if (!target.closest('.grouping-dropdown')) {
+    document.getElementById('grouping-menu')?.classList.remove('open');
+  }
+  if (!target.closest('.header-search')) {
+    hideSearchDropdown();
+  }
+
+  // Filter panel toggle
+  if (target.closest('#filter-toggle')) {
+    e.preventDefault();
+    filterPanelOpen = !filterPanelOpen;
+    const btn = document.getElementById('filter-toggle');
+    const panel = document.getElementById('filter-panel');
+    const pillRow = document.querySelector('.filter-pill-row');
+    if (panel) {
+      if (filterPanelOpen) panel.removeAttribute('hidden'); else panel.setAttribute('hidden', '');
+    }
+    // Hide pill row while panel is open to avoid duplicate state surface
+    if (pillRow) pillRow.hidden = filterPanelOpen;
+    btn?.setAttribute('aria-expanded', String(filterPanelOpen));
+    btn?.classList.toggle('open', filterPanelOpen);
+    return;
+  }
+  // Filter badge (in-table): toggle value in active filters
+  const filterAdd = target.closest('[data-filter-add-dim]');
+  if (filterAdd) {
+    e.preventDefault();
+    e.stopPropagation();
+    const dim = filterAdd.dataset.filterAddDim;
+    const val = filterAdd.dataset.filterAddValue;
+    const next = { ...(activeFilters[currentSection] || {}) };
+    const list = (next[dim] || []).slice();
+    const idx = list.findIndex(v => String(v) === String(val));
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      if (list.length) next[dim] = list; else delete next[dim];
+    } else {
+      list.push(val);
+      next[dim] = list;
+    }
+    navigateWithFilters(next);
+    return;
+  }
+  // Filter pill: remove single value
+  const pillRemove = target.closest('[data-filter-remove-dim]');
+  if (pillRemove) {
+    e.preventDefault();
+    const dim = pillRemove.dataset.filterRemoveDim;
+    const val = pillRemove.dataset.filterRemoveValue;
+    const next = { ...(activeFilters[currentSection] || {}) };
+    next[dim] = (next[dim] || []).filter(v => String(v) !== String(val));
+    if (!next[dim].length) delete next[dim];
+    navigateWithFilters(next);
+    return;
+  }
+  // Reset all filters
+  if (target.closest('#filter-reset')) {
+    e.preventDefault();
+    navigateWithFilters({});
+    return;
+  }
+
+  // Grouping dropdown toggle
+  if (target.closest('#grouping-btn')) {
+    e.preventDefault();
+    document.getElementById('grouping-menu')?.classList.toggle('open');
+    return;
+  }
+  // Grouping option click
+  const groupOpt = target.closest('.grouping-option[data-grouping]');
+  if (groupOpt) {
+    const section = (groupOpt.dataset.groupingSection || '').split('/')[0];
+    if (grouping.hasOwnProperty(section)) grouping[section] = groupOpt.dataset.grouping;
+    document.getElementById('grouping-menu')?.classList.remove('open');
+    handleRoute();
+    return;
+  }
+
+  // Header logo
+  if (target.closest('#header-logo')) {
+    e.preventDefault();
+    navigate('#/home');
+    return;
+  }
+
+  // Sidebar collapse toggle
+  if (target.closest('#sidebar-toggle')) {
+    e.preventDefault();
+    const nextCollapsed = !document.body.classList.contains('sidebar-collapsed');
+    document.body.classList.toggle('sidebar-collapsed', nextCollapsed);
+    try { localStorage.setItem('sidebar-collapsed', nextCollapsed ? '1' : '0'); } catch {}
+    // Re-render sidebar so the toggle's aria-label / title reflect the new state.
+    renderSidebar();
+    lucide.createIcons({ nodes: [document.getElementById('sidebar')] });
+    return;
+  }
+
+  // Mobile drawer toggle (phones only — button is CSS-hidden on desktop).
+  if (target.closest('#mobile-menu-btn')) {
+    e.preventDefault();
+    setMobileDrawer(!document.body.classList.contains('sidebar-open'));
+    return;
+  }
+  // Tap on backdrop closes the drawer.
+  if (target.closest('#sidebar-backdrop')) {
+    setMobileDrawer(false);
+    return;
+  }
+  // Any nav-item click inside the open drawer should close it after
+  // navigation. Detect before handing off to the normal nav handler.
+  if (document.body.classList.contains('sidebar-open') && target.closest('#sidebar [data-nav], #sidebar .nav-recent-item')) {
+    // Defer so the route change handler runs first, then we close.
+    setTimeout(() => setMobileDrawer(false), 0);
+  }
+
+  // Data-export buttons
+  if (target.closest('[data-export-full]')) {
+    e.preventDefault();
+    exportFullCatalog();
+    return;
+  }
+  if (target.closest('[data-export-db]')) {
+    e.preventDefault();
+    exportDatabase();
+    return;
+  }
+
+  // Concept box: single toggle (chevron) — must run before the data-href nav handler
+  const conceptToggle = target.closest('[data-toggle-concept]');
+  if (conceptToggle) {
+    e.preventDefault();
+    e.stopPropagation();
+    const id = conceptToggle.dataset.toggleConcept;
+    // Surgical DOM update for UML cards — avoids the flicker of a full re-render.
+    if (toggleConceptCardInPlace(id)) return;
+    // Fallback (no matching uml-card in DOM): do a full re-render as before.
+    if (expandedConcepts.has(id)) expandedConcepts.delete(id);
+    else expandedConcepts.add(id);
+    pendingFocus = { sel: `[data-toggle-concept="${CSS.escape(id)}"]` };
+    handleRoute();
+    return;
+  }
+
+  // Diagram: global attribute visibility toggle (URL-backed via ?attrs=1)
+  if (target.closest('[data-attrs-toggle]')) {
+    e.preventDefault();
+    const nextMode = attrsMode === 'show' ? 'hide' : 'show';
+    expandedConcepts.clear(); // per-card overrides reset on global toggle
+    navigateWithAttrsMode(nextMode);
+    return;
+  }
+
+  // Sidebar nav (section click — toggles expand + navigates)
+  const navItem = target.closest('.nav-item[data-nav]');
+  if (navItem) {
+    const sec = navItem.dataset.nav;
+    if (sec === 'home') { navigate('#/home'); return; }
+    if (sec === 'chat') { navigate('#/chat'); return; }
+    if (sec === 'export') { navigate('#/export'); return; }
+    // If already on this section, toggle expand/collapse
+    if (currentSection === sec && !currentEntityId) {
+      if (expandedSections.has(sec)) {
+        expandedSections.delete(sec);
+      } else {
+        expandedSections.add(sec);
+      }
+      renderSidebar();
+      lucide.createIcons();
+      return;
+    }
+    // Navigate to section, expand it
+    expandedSections.add(sec);
+    const tab = (currentTab === 'diagram' || currentTab === 'table') ? currentTab : lastListTab;
+    navigate('#/' + sec + '/' + tab);
+    return;
+  }
+
+  // Sidebar recents
+  const recentItem = target.closest('.nav-recent-item[data-hash]');
+  if (recentItem) {
+    navigate(recentItem.dataset.hash);
+    return;
+  }
+
+  // List tab clicks (Übersicht / Diagramm)
+  const listTabBtn = target.closest('.tab[data-list-tab]');
+  if (listTabBtn) {
+    lastListTab = listTabBtn.dataset.listTab;
+    navigate(listTabBtn.dataset.listRoute);
+    return;
+  }
+
+  // Detail tab clicks
+  const tabBtn = target.closest('.tab[data-tab]');
+  if (tabBtn) {
+    const base = tabBtn.dataset.base;
+    const tabName = tabBtn.dataset.tab;
+    navigate(base + '/' + tabName);
+    return;
+  }
+
+  // Table column sorting
+  const th = target.closest('.data-table thead th');
+  if (th) {
+    sortTableByColumn(th);
+    return;
+  }
+
+  // Clickable rows (table rows, cards, search results)
+  const clickable = target.closest('[data-href]');
+  if (clickable) {
+    navigate(clickable.dataset.href);
+    return;
+  }
+
+  // Group toggle
+  const groupHeader = target.closest('.group-header[data-toggle-group]');
+  if (groupHeader) {
+    const groupId = groupHeader.dataset.toggleGroup;
+    const groupContent = document.querySelector(`[data-group="${groupId}"]`);
+    if (groupContent) {
+      const isHidden = groupContent.style.display === 'none';
+      groupContent.style.display = isHidden ? '' : 'none';
+      const chevron = groupHeader.querySelector('.group-chevron');
+      if (chevron) {
+        chevron.setAttribute('data-lucide', isHidden ? 'chevron-down' : 'chevron-right');
+        lucide.createIcons({ nodes: [chevron] });
+      }
+    }
+    return;
+  }
+
+  // Lineage nodes
+  const lineageNode = target.closest('.lineage-node[data-href]');
+  if (lineageNode) {
+    navigate(lineageNode.dataset.href);
+    return;
+  }
+});
+
+// ============================================================
+// Keyboard shortcuts + dropdown navigation
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  // Escape exits edit mode (treated as Cancel — discards changes).
+  if (e.key === 'Escape') {
+    const article = document.querySelector('article.edit-mode');
+    if (article) {
+      e.preventDefault();
+      exitEditMode(article);
+      handleRoute();
+      return;
+    }
+    if (document.body.classList.contains('sidebar-open')) {
+      setMobileDrawer(false);
+      return;
+    }
+  }
+
+  // Search focus: Ctrl+K and /
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('search-input')?.focus();
+    return;
+  }
+  if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) {
+    e.preventDefault();
+    document.getElementById('search-input')?.focus();
+    return;
+  }
+
+  // Lang dropdown: open with ArrowDown from button, navigate with arrows inside menu, Escape closes
+  const active = document.activeElement;
+  if (active?.id === 'lang-btn' && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+    e.preventDefault();
+    setLangDropdownOpen(true);
+    const items = document.querySelectorAll('#lang-dropdown .lang-option');
+    const target = e.key === 'ArrowDown' ? items[0] : items[items.length - 1];
+    target?.focus();
+    return;
+  }
+  if (active?.classList.contains('lang-option')) {
+    const items = Array.from(document.querySelectorAll('#lang-dropdown .lang-option'));
+    const idx = items.indexOf(active);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      items[(idx + 1) % items.length].focus();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      items[(idx - 1 + items.length) % items.length].focus();
+      return;
+    }
+    if (e.key === 'Home') { e.preventDefault(); items[0].focus(); return; }
+    if (e.key === 'End')  { e.preventDefault(); items[items.length - 1].focus(); return; }
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setLangDropdownOpen(false);
+      document.getElementById('lang-btn')?.focus();
+      return;
+    }
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('search-input');
+  if (!searchInput) return;
+  const searchClear = document.getElementById('search-clear');
+
+  searchInput.addEventListener('input', function() {
+    const q = this.value;
+    syncHeaderSearch(q);
+    if (searchDropdownDebounce) clearTimeout(searchDropdownDebounce);
+    searchDropdownDebounce = setTimeout(() => renderSearchDropdown(q), 120);
+  });
+
+  searchInput.addEventListener('focus', function() {
+    // On empty /search, the page itself is the search entry point — don't open a duplicate dropdown
+    if (currentSection === 'search' && !this.value) return;
+    renderSearchDropdown(this.value);
+  });
+
+  searchInput.addEventListener('keydown', function(e) {
+    const dropdown = document.getElementById('search-dropdown');
+    const items = dropdown && !dropdown.hidden
+      ? Array.from(dropdown.querySelectorAll('[role="option"]'))
+      : [];
+
+    if (e.key === 'ArrowDown' && items.length) {
+      e.preventDefault();
+      const cur = items.findIndex(el => el.getAttribute('aria-selected') === 'true');
+      const next = (cur + 1) % items.length;
+      setSearchDropdownActive(items, next);
+      return;
+    }
+    if (e.key === 'ArrowUp' && items.length) {
+      e.preventDefault();
+      const cur = items.findIndex(el => el.getAttribute('aria-selected') === 'true');
+      const next = (cur <= 0 ? items.length : cur) - 1;
+      setSearchDropdownActive(items, next);
+      return;
+    }
+    if (e.key === 'Enter') {
+      // If an item is actively selected in the dropdown, follow it.
+      const selected = items.find(el => el.getAttribute('aria-selected') === 'true');
+      if (selected && selected.dataset.href) {
+        e.preventDefault();
+        hideSearchDropdown();
+        this.blur();
+        navigate(selected.dataset.href);
+        return;
+      }
+      const q = this.value.trim();
+      if (q) {
+        hideSearchDropdown();
+        this.blur();
+        searchQuery = q;
+        navigate('#/search?q=' + encodeURIComponent(q));
+      }
+    }
+    if (e.key === 'Escape') {
+      hideSearchDropdown();
+      this.blur();
+    }
+  });
+
+  if (searchClear) {
+    searchClear.addEventListener('click', function(e) {
+      e.preventDefault();
+      searchInput.value = '';
+      syncHeaderSearch('');
+      renderSearchDropdown('');
+      searchInput.focus();
+      // If we're on a search results page, drop the ?q= so the view updates too
+      if (currentSection === 'search' && (window.location.hash || '').indexOf('?q=') >= 0) {
+        searchQuery = '';
+        navigate('#/search');
+      }
+    });
+  }
+});
+
+// ============================================================
+// Init: Load SQL.js + schema + seed data
+// ============================================================
+async function initApp() {
+  try {
+    // Load i18n dictionary in parallel with the sql.js wasm bootstrap.
+    const [SQL] = await Promise.all([
+      initSqlJs({
+        locateFile: () => 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.wasm'
+      }),
+      loadI18n()
+    ]);
+
+    // Try to load pre-built database file first
+    let dbLoaded = false;
+    try {
+      const dbResp = await fetch('data/catalog.db');
+      if (dbResp.ok) {
+        const buffer = await dbResp.arrayBuffer();
+        db = new SQL.Database(new Uint8Array(buffer));
+        dbLoaded = true;
+        console.log('Loaded pre-built catalog.db');
+      }
+    } catch(e) {
+      console.info('No catalog.db found, falling back to SQL files');
+    }
+
+    // Fallback: load from init-schema.sql + seed-data.sql
+    if (!dbLoaded) {
+      db = new SQL.Database();
+
+      // Load and execute schema
+      const schemaResp = await fetch('data/init-schema.sql');
+      if (!schemaResp.ok) throw new Error('Failed to load init-schema.sql: ' + schemaResp.status);
+      let schemaSql = await schemaResp.text();
+      // Remove WAL pragma (not supported in sql.js in-memory mode)
+      schemaSql = schemaSql.replace(/PRAGMA journal_mode\s*=\s*WAL\s*;?/gi, '');
+      db.exec(schemaSql);
+
+      // Load and execute seed data
+      try {
+        const seedResp = await fetch('data/seed-data.sql');
+        if (seedResp.ok) {
+          let seedSql = await seedResp.text();
+          // Fix table name: seed data uses "schema" but DDL uses "schema_"
+          seedSql = seedSql.replace(/INSERT INTO schema /g, 'INSERT INTO schema_ ');
+          // Execute each statement individually to handle partial failures gracefully
+          const statements = seedSql.split(/;\s*\n/).filter(s => s.trim());
+          for (const stmt of statements) {
+            const trimmed = stmt.trim();
+            if (trimmed && !trimmed.startsWith('--')) {
+              try { db.exec(trimmed + ';'); } catch(e2) { console.warn('Seed statement error:', e2.message, '\n', trimmed.slice(0, 100)); }
+            }
+          }
+        }
+      } catch(e) {
+        console.warn('No seed-data.sql found or failed to load:', e.message);
+      }
+    }
+
+    // Hide loading, show app
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+
+    // Set default lang option active
+    document.querySelectorAll('.lang-option').forEach(el => {
+      const match = el.dataset.lang === lang;
+      el.classList.toggle('active', match);
+      el.setAttribute('aria-checked', String(match));
+    });
+
+    // Initial render
+    lucide.createIcons();
+    if (!window.location.hash || window.location.hash === '#' || window.location.hash === '#/') {
+      window.location.hash = '#/home';
+    } else {
+      handleRoute();
+    }
+  } catch(err) {
+    console.error('Init error:', err);
+    document.getElementById('loading-screen').innerHTML = `
+      <div style="text-align:center;padding:40px;">
+        <p style="color:var(--color-error);font-weight:500;margin-bottom:8px;">Fehler beim Laden</p>
+        <p style="color:var(--color-text-secondary);font-size:14px;">${escapeHtml(err.message)}</p>
+      </div>`;
+  }
+}
+
+initApp();

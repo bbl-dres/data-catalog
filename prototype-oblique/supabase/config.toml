@@ -1,0 +1,4 @@
+# This function has public GET routes. Writes validate the user's JWT with Auth
+# and forward it to the Data API; no service-role or secret key is used.
+[functions.catalog-api]
+verify_jwt = false

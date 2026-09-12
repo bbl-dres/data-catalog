@@ -1,0 +1,862 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wfs:WFS_Capabilities xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:fes="http://www.opengis.net/fes/2.0" xmlns:ms="http://mapserver.gis.umn.edu/mapserver" xmlns="http://www.opengis.net/wfs/2.0" version="2.0.0" xsi:schemaLocation="http://www.opengis.net/wfs/2.0 https://schemas.opengis.net/wfs/2.0/wfs.xsd">
+  <ows:ServiceIdentification>
+    <ows:Title>geodienste.ch WFS AV: Standard</ows:Title>
+    <ows:Abstract>Die amtliche Vermessung – ein nationales Produkt – liefert geometrische Daten zum Grundeigentum und ist die Grundlage für viele weitere geografische Informationen und Anwendungen in Wirtschaft, Verwaltung und Privatleben. Die Daten basieren auf dem MGDM DM.01-AV-CH (ID 51.1 - 64.1). Der WFS «AV: Standard» basiert auf der «Empfehlung für die Realisierung des AV-WMS». Der Dienst bezweckt eine gesamtschweizerische Lösung für die Visualisierung der Daten der Amtlichen Vermessung als WMS und WFS. Die Darstellung der Daten ist für einen Massstab bis 1:25'000 optimiert.</ows:Abstract>
+    <ows:Keywords>
+      <ows:Keyword>geodienste.ch</ows:Keyword>
+      <ows:Keyword>Amtliche Vermessung</ows:Keyword>
+      <ows:Keyword>av</ows:Keyword>
+      <ows:Keyword>MOpublic</ows:Keyword>
+      <ows:Keyword>DM.01</ows:Keyword>
+      <ows:Keyword>Vermessung</ows:Keyword>
+      <ows:Keyword>amtlich</ows:Keyword>
+      <ows:Keyword>Bodenbedeckung</ows:Keyword>
+      <ows:Keyword>Liegenschaft</ows:Keyword>
+      <ows:Keyword>Parzelle</ows:Keyword>
+      <ows:Keyword>Grundbuch</ows:Keyword>
+      <ows:Keyword>Basisplan</ows:Keyword>
+      <ows:Keyword>Fixpunkte</ows:Keyword>
+      <ows:Keyword>Einzelobjekt</ows:Keyword>
+      <ows:Keyword>Gebäudeadresse</ows:Keyword>
+      <ows:Keyword>Adresse</ows:Keyword>
+      <ows:Keyword>Hoheitsgrenze</ows:Keyword>
+      <ows:Keyword>Grenze</ows:Keyword>
+      <ows:Keyword>Grundbuchplan</ows:Keyword>
+      <ows:Keyword>Situationsplan</ows:Keyword>
+      <ows:Keyword>Plan</ows:Keyword>
+      <ows:Keyword>IFC</ows:Keyword>
+      <ows:Keyword>ID 51.1</ows:Keyword>
+      <ows:Keyword>ID 52.1</ows:Keyword>
+      <ows:Keyword>ID 53.1</ows:Keyword>
+      <ows:Keyword>ID 53.2</ows:Keyword>
+      <ows:Keyword>ID 54.1</ows:Keyword>
+      <ows:Keyword>ID 54.2</ows:Keyword>
+      <ows:Keyword>ID 54.2</ows:Keyword>
+      <ows:Keyword>ID 55.1</ows:Keyword>
+      <ows:Keyword>ID 56.1</ows:Keyword>
+      <ows:Keyword>ID 57.1</ows:Keyword>
+      <ows:Keyword>ID 58.1</ows:Keyword>
+      <ows:Keyword>ID 59.1</ows:Keyword>
+      <ows:Keyword>ID 60.1</ows:Keyword>
+      <ows:Keyword>ID 61.1</ows:Keyword>
+      <ows:Keyword>ID 62.1</ows:Keyword>
+      <ows:Keyword>ID 63.1</ows:Keyword>
+      <ows:Keyword>ID 64.1</ows:Keyword>
+      <ows:Keyword>ID 228</ows:Keyword>
+    </ows:Keywords>
+    <ows:ServiceType codeSpace="OGC">WFS</ows:ServiceType>
+    <ows:ServiceTypeVersion>2.0.0</ows:ServiceTypeVersion>
+    <ows:Fees>Für den Bezug des Geodienstes können Kosten anfallen. Die Gebühren werden durch die Kantone erhoben.</ows:Fees>
+    <ows:AccessConstraints>https://geodienste.ch/terms-of-use</ows:AccessConstraints>
+  </ows:ServiceIdentification>
+  <ows:ServiceProvider>
+    <ows:ProviderName>Konferenz der Kantonalen Geoinformations- und Katasterstellen</ows:ProviderName>
+    <ows:ProviderSite xlink:type="simple" xlink:href=""/>
+    <!--WARNING: Optional metadata "ows_service_onlineresource" was missing for ows:ProviderSite/@xlink:href-->
+    <ows:ServiceContact>
+      <ows:IndividualName/>
+      <!--WARNING: Optional metadata "ows_contactperson" was missing for ows:IndividualName-->
+      <ows:PositionName/>
+      <!--WARNING: Optional metadata "ows_contactposition" was missing for ows:PositionName-->
+      <ows:ContactInfo>
+        <ows:Phone>
+          <ows:Voice/>
+          <!--WARNING: Optional metadata "ows_contactvoicetelephone" was missing for ows:Voice-->
+          <ows:Facsimile/>
+          <!--WARNING: Optional metadata "ows_contactfacsimiletelephone" was missing for ows:Facsimile-->
+        </ows:Phone>
+        <ows:Address>
+          <ows:DeliveryPoint/>
+          <!--WARNING: Optional metadata "ows_address" was missing for ows:DeliveryPoint-->
+          <ows:City/>
+          <!--WARNING: Optional metadata "ows_city" was missing for ows:City-->
+          <ows:AdministrativeArea/>
+          <!--WARNING: Optional metadata "ows_stateorprovince" was missing for ows:AdministrativeArea-->
+          <ows:PostalCode/>
+          <!--WARNING: Optional metadata "ows_postcode" was missing for ows:PostalCode-->
+          <ows:Country/>
+          <!--WARNING: Optional metadata "ows_country" was missing for ows:Country-->
+          <ows:ElectronicMailAddress/>
+          <!--WARNING: Optional metadata "ows_contactelectronicmailaddress" was missing for ows:ElectronicMailAddress-->
+        </ows:Address>
+        <ows:OnlineResource xlink:type="simple" xlink:href=""/>
+        <!--WARNING: Optional metadata "ows_service_onlineresource" was missing for ows:OnlineResource/@xlink:href-->
+        <ows:HoursOfService/>
+        <!--WARNING: Optional metadata "ows_hoursofservice" was missing for ows:HoursOfService-->
+        <ows:ContactInstructions>Bei Fragen oder Problemen wenden Sie sich bitte an den Support unter support@geodienste.kgk-cgc.ch</ows:ContactInstructions>
+      </ows:ContactInfo>
+      <ows:Role/>
+      <!--WARNING: Optional metadata "ows_role" was missing for ows:Role-->
+    </ows:ServiceContact>
+  </ows:ServiceProvider>
+  <ows:OperationsMetadata>
+    <ows:Operation name="GetCapabilities">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+      <ows:Parameter name="AcceptVersions">
+        <ows:AllowedValues>
+          <ows:Value>2.0.0</ows:Value>
+          <ows:Value>1.1.0</ows:Value>
+          <ows:Value>1.0.0</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+      <ows:Parameter name="AcceptFormats">
+        <ows:AllowedValues>
+          <ows:Value>text/xml</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+      <ows:Parameter name="Sections">
+        <ows:AllowedValues>
+          <ows:Value>ServiceIdentification</ows:Value>
+          <ows:Value>ServiceProvider</ows:Value>
+          <ows:Value>OperationsMetadata</ows:Value>
+          <ows:Value>FeatureTypeList</ows:Value>
+          <ows:Value>Filter_Capabilities</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+    </ows:Operation>
+    <ows:Operation name="DescribeFeatureType">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+      <ows:Parameter name="outputFormat">
+        <ows:AllowedValues>
+          <ows:Value>application/gml+xml; version=3.2</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.2.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.1.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/2.1.2</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+    </ows:Operation>
+    <ows:Operation name="GetFeature">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+      <ows:Parameter name="outputFormat">
+        <ows:AllowedValues>
+          <ows:Value>application/gml+xml; version=3.2</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.2.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.1.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/2.1.2</ows:Value>
+          <ows:Value>application/json; subtype=geojson</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+    </ows:Operation>
+    <ows:Operation name="GetPropertyValue">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+      <ows:Parameter name="outputFormat">
+        <ows:AllowedValues>
+          <ows:Value>application/gml+xml; version=3.2</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.2.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/3.1.1</ows:Value>
+          <ows:Value>text/xml; subtype=gml/2.1.2</ows:Value>
+        </ows:AllowedValues>
+      </ows:Parameter>
+    </ows:Operation>
+    <ows:Operation name="ListStoredQueries">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Operation name="DescribeStoredQueries">
+      <ows:DCP>
+        <ows:HTTP>
+          <ows:Get xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+          <ows:Post xlink:type="simple" xlink:href="https://wfs.geodienste.ch/av_0/deu?"/>
+        </ows:HTTP>
+      </ows:DCP>
+    </ows:Operation>
+    <ows:Parameter name="version">
+      <ows:AllowedValues>
+        <ows:Value>2.0.0</ows:Value>
+        <ows:Value>1.1.0</ows:Value>
+        <ows:Value>1.0.0</ows:Value>
+      </ows:AllowedValues>
+    </ows:Parameter>
+    <ows:Constraint name="ImplementsBasicWFS">
+      <ows:NoValues/>
+      <ows:DefaultValue>TRUE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsTransactionalWFS">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsLockingWFS">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="KVPEncoding">
+      <ows:NoValues/>
+      <ows:DefaultValue>TRUE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="XMLEncoding">
+      <ows:NoValues/>
+      <ows:DefaultValue>TRUE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="SOAPEncoding">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsInheritance">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsRemoteResolve">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsResultPaging">
+      <ows:NoValues/>
+      <ows:DefaultValue>TRUE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsStandardJoins">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsSpatialJoins">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsTemporalJoins">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ImplementsFeatureVersioning">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="ManageStoredQueries">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="PagingIsTransactionSafe">
+      <ows:NoValues/>
+      <ows:DefaultValue>FALSE</ows:DefaultValue>
+    </ows:Constraint>
+    <ows:Constraint name="QueryExpressions">
+      <ows:AllowedValues>
+        <ows:Value>wfs:Query</ows:Value>
+        <ows:Value>wfs:StoredQuery</ows:Value>
+      </ows:AllowedValues>
+    </ows:Constraint>
+  </ows:OperationsMetadata>
+  <FeatureTypeList>
+    <FeatureType>
+      <Name>ms:PLNA</Name>
+      <Title>Rohrleitungsbeschriftung</Title>
+      <Abstract>Darstellung der Beschriftungen der Rohrleitungen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=PLNA"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:PLSF</Name>
+      <Title>Rohrleitungen (Flaechen)</Title>
+      <Abstract>Darstellung der Rohrleitungen (Flächenelemente)</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=PLSF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:PLLI</Name>
+      <Title>Rohrleitungen (Linien)</Title>
+      <Abstract>Darstellung der Rohrleitungen (Linienelemente)</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=PLLI"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:LCOBJ</Name>
+      <Title>BB_Nummern_Namen</Title>
+      <Abstract>Darstellung der Gebäudenummern und Namen in der Informationsbene Bodenbedeckung</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=LCOBJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:LCSF</Name>
+      <Title>Bodenbedeckung schwarzweiss</Title>
+      <Abstract>Darstellung der rechtsgültigen Bodenbedeckungsflächen in Schwarzweiss</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=LCSF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:LCSFPROJ</Name>
+      <Title>ProjBodenbedeckung</Title>
+      <Abstract>Darstellung der projektierten Bodenbedeckungsflächen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=LCSFPROJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:SOOBJ</Name>
+      <Title>EO_Nummern_Namen</Title>
+      <Abstract>Darstellung der Nummern und Namen in der Informationsebene Einzelobjekte</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=SOOBJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:SOLI</Name>
+      <Title>Einzelobjekte (Linien)</Title>
+      <Abstract>Darstellung der Einzelobjekte (Linienelemente)</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=SOLI"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:SOSF</Name>
+      <Title>Einzelobjekte (Flaechen)</Title>
+      <Abstract>Darstellung der Einzelobjekte (Flächenelemente)</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=SOSF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:SOPT</Name>
+      <Title>Einzelobjekte (Punkte)</Title>
+      <Abstract>Darstellung der Einzelobjekte (Punktelemente)</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=SOPT"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:LOCPOS</Name>
+      <Title>Lokalisationen</Title>
+      <Abstract>Darstellung der Beschriftungen der Lokalisationen in der Informationsebene Gebäudeadressen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=LOCPOS"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:HADR</Name>
+      <Title>Gebaeudeadressen</Title>
+      <Abstract>Darstellung der Gebäudeadressen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=HADR"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:LNNA</Name>
+      <Title>Nomenklaturnamen</Title>
+      <Abstract>Darstellung der Namen der Flur-, Gelände- und Ortsnamen (Nomenklaturnamen) in der Informationsebene Nomenklatur</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=LNNA"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:OSNRPROJ</Name>
+      <Title>ProjLiegenschaftsnummern</Title>
+      <Abstract>Darstellung der Nummern der projektierten Liegenschaften, SDR, etc. in der Informationsebene Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=OSNRPROJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:OSNR</Name>
+      <Title>Liegenschaftsnummern</Title>
+      <Abstract>Darstellung der Nummern der rechtsgültigen Liegenschaften, SDR, etc. in der Informationsebene Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=OSNR"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:DPRSFPROJ</Name>
+      <Title>ProjSDRechte</Title>
+      <Abstract>Darstellung der projektierten Selbständigen Rechte (SDR) und Bergwerke in der Informationsebene Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=DPRSFPROJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:RESFPROJ</Name>
+      <Title>ProjLiegenschaften</Title>
+      <Abstract>Darstellung der projektierten Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=RESFPROJ"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:DPRSF</Name>
+      <Title>SDRechte</Title>
+      <Abstract>Darstellung der rechtsgültigen Selbständigen Rechte (SDR) und Bergwerke in der Informationsebene Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=DPRSF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:RESF</Name>
+      <Title>Liegenschaften</Title>
+      <Abstract>Darstellung der rechtsgültigen Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=RESF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:MBSF</Name>
+      <Title>Gemeindegrenzen</Title>
+      <Abstract>Darstellung der Gemeindegrenzen in der Informationsebene Hoheitsgrenzen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=MBSF"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:TBLI</Name>
+      <Title>Hoheitsgrenzabschnitte</Title>
+      <Abstract>Darstellung anderer Grenzabschnitte in der Informationsebene Hoheitsgrenzen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=TBLI"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:OSBP</Name>
+      <Title>Grenzpunkte</Title>
+      <Abstract>Darstellung der Grenzpunkte in der Informationsebene Liegenschaften</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=OSBP"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:CPPT</Name>
+      <Title>Fixpunkte</Title>
+      <Abstract>Darstellung der Fixpunkte der Kategorie 1, 2 und 3</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=CPPT"/>
+    </FeatureType>
+    <FeatureType>
+      <Name>ms:TBBP</Name>
+      <Title>Hoheitsgrenzpunkte</Title>
+      <Abstract>Darstellung der Hoheitsgrenzpunkte in der Informationsebene Hoheitsgrenzen</Abstract>
+      <DefaultCRS>urn:ogc:def:crs:EPSG::2056</DefaultCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+      <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+      <OutputFormats>
+        <Format>application/gml+xml; version=3.2</Format>
+        <Format>text/xml; subtype=gml/3.2.1</Format>
+        <Format>text/xml; subtype=gml/3.1.1</Format>
+        <Format>text/xml; subtype=gml/2.1.2</Format>
+        <Format>application/json; subtype=geojson</Format>
+      </OutputFormats>
+      <ows:WGS84BoundingBox dimensions="2">
+        <ows:LowerCorner>5.702802 45.740376</ows:LowerCorner>
+        <ows:UpperCorner>10.644678 47.851922</ows:UpperCorner>
+      </ows:WGS84BoundingBox>
+      <MetadataURL xlink:href="https://wfs.geodienste.ch/av_0/deu?request=GetMetadata&amp;layer=TBBP"/>
+    </FeatureType>
+  </FeatureTypeList>
+  <fes:Filter_Capabilities>
+    <fes:Conformance>
+      <fes:Constraint name="ImplementsQuery">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsAdHocQuery">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsFunctions">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsResourceId">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsMinStandardFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsStandardFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsMinSpatialFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsSpatialFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsMinTemporalFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsTemporalFilter">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsVersionNav">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsSorting">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsExtendedOperators">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsMinimumXPath">
+        <ows:NoValues/>
+        <ows:DefaultValue>TRUE</ows:DefaultValue>
+      </fes:Constraint>
+      <fes:Constraint name="ImplementsSchemaElementFunc">
+        <ows:NoValues/>
+        <ows:DefaultValue>FALSE</ows:DefaultValue>
+      </fes:Constraint>
+    </fes:Conformance>
+    <fes:Id_Capabilities>
+      <fes:ResourceIdentifier name="fes:ResourceId"/>
+    </fes:Id_Capabilities>
+    <fes:Scalar_Capabilities>
+      <fes:LogicalOperators/>
+      <fes:ComparisonOperators>
+        <fes:ComparisonOperator name="PropertyIsEqualTo"/>
+        <fes:ComparisonOperator name="PropertyIsNotEqualTo"/>
+        <fes:ComparisonOperator name="PropertyIsLessThan"/>
+        <fes:ComparisonOperator name="PropertyIsGreaterThan"/>
+        <fes:ComparisonOperator name="PropertyIsLessThanOrEqualTo"/>
+        <fes:ComparisonOperator name="PropertyIsGreaterThanOrEqualTo"/>
+        <fes:ComparisonOperator name="PropertyIsLike"/>
+        <fes:ComparisonOperator name="PropertyIsBetween"/>
+      </fes:ComparisonOperators>
+    </fes:Scalar_Capabilities>
+    <fes:Spatial_Capabilities>
+      <fes:GeometryOperands>
+        <fes:GeometryOperand name="gml:Point"/>
+        <fes:GeometryOperand name="gml:MultiPoint"/>
+        <fes:GeometryOperand name="gml:LineString"/>
+        <fes:GeometryOperand name="gml:MultiLineString"/>
+        <fes:GeometryOperand name="gml:Curve"/>
+        <fes:GeometryOperand name="gml:MultiCurve"/>
+        <fes:GeometryOperand name="gml:Polygon"/>
+        <fes:GeometryOperand name="gml:MultiPolygon"/>
+        <fes:GeometryOperand name="gml:Surface"/>
+        <fes:GeometryOperand name="gml:MultiSurface"/>
+        <fes:GeometryOperand name="gml:Box"/>
+        <fes:GeometryOperand name="gml:Envelope"/>
+      </fes:GeometryOperands>
+      <fes:SpatialOperators>
+        <fes:SpatialOperator name="Equals"/>
+        <fes:SpatialOperator name="Disjoint"/>
+        <fes:SpatialOperator name="Touches"/>
+        <fes:SpatialOperator name="Within"/>
+        <fes:SpatialOperator name="Overlaps"/>
+        <fes:SpatialOperator name="Crosses"/>
+        <fes:SpatialOperator name="Intersects"/>
+        <fes:SpatialOperator name="Contains"/>
+        <fes:SpatialOperator name="DWithin"/>
+        <fes:SpatialOperator name="Beyond"/>
+        <fes:SpatialOperator name="BBOX"/>
+      </fes:SpatialOperators>
+    </fes:Spatial_Capabilities>
+    <fes:Temporal_Capabilities>
+      <fes:TemporalOperands>
+        <fes:TemporalOperand name="gml:TimePeriod"/>
+        <fes:TemporalOperand name="gml:TimeInstant"/>
+      </fes:TemporalOperands>
+      <fes:TemporalOperators>
+        <fes:TemporalOperator name="During"/>
+      </fes:TemporalOperators>
+    </fes:Temporal_Capabilities>
+  </fes:Filter_Capabilities>
+</wfs:WFS_Capabilities>

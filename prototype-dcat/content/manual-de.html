@@ -1,0 +1,113 @@
+<h3>Das Metadatenmodell</h3>
+<p>Das Metadatenmodell des BBL-Immobilienkatalogs basiert auf dem Swiss DCAT Application Profile (DCAT-AP CH v3.0.0) und erweitert dieses minimal um spezifische Komponenten für die Verwaltung von Immobiliendaten des Bundes.</p>
+
+<h3>Kernarchitektur</h3>
+<p>Das Modell besteht aus fünf DCAT-Hauptklassen und einer BBL-spezifischen Erweiterung:</p>
+
+<p><strong>DCAT-Standardklassen:</strong></p>
+<ul>
+    <li><strong>dcat:Catalog</strong> - BBL-Immobilienkatalog als Gesamtverzeichnis</li>
+    <li><strong>dcat:Dataset</strong> - Immobiliendatensammlungen (Gebäudestammdaten, Energiedaten)</li>
+    <li><strong>dcat:DatasetSeries</strong> - Zeitreihen (Jahresberichte, Kostenentwicklungen)</li>
+    <li><strong>dcat:Distribution</strong> - Bereitstellungsformen (Excel, API, PDF)</li>
+    <li><strong>dcat:DataService</strong> - Datendienste (SAP-Schnittstellen, REST-APIs)</li>
+</ul>
+
+<p><strong>Schema-Modellierung (DCAT-konform):</strong></p>
+<ul>
+    <li><strong>dct:Standard</strong> - Geschäftsobjekt-Schema (Gebäude, Grundstück, Mietvertrag)</li>
+    <li><strong>skos:ConceptScheme</strong> - Kontrollierte Vokabulare und Wertelisten (Gebäudetypen, Kantone)</li>
+    <li><strong>skos:Concept</strong> - Einzelne Werte in Wertelisten</li>
+</ul>
+
+<p><strong>BBL-spezifische Erweiterung:</strong></p>
+<ul>
+    <li><strong>bv:Attribute</strong> - Datenfelder mit Typdefinitionen, Validierungsregeln und Wertelisten-Referenzen</li>
+</ul>
+
+<img src="assets/BBL DCAT-AP CH.avif" alt="Diagramm des BBL DCAT-AP CH Metadatenmodells" class="manual-img">
+
+<h3>Geschäftsobjekt-Modellierung</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+dct:Standard "Gebäude-Schema"
+├── dct:identifier: "STD-001"
+├── dct:title: "Gebäude"@de, "Bâtiment"@fr, "Edificio"@it
+├── dct:description: Definition gemäss KBOB/TERMDAT
+├── bv:hasAttribute:
+│   ├── bv:Attribute "Baujahr"
+│   │   ├── dct:type: "xsd:gYear"
+│   │   ├── dct:required: true
+│   │   └── dct:conformsTo → skos:ConceptScheme "Jahre"
+│   └── bv:Attribute "Gebäudetyp"
+│       └── dct:conformsTo → skos:ConceptScheme "Gebäudetypen"
+└── dcat:version: "3.0.0"
+</pre>
+
+<h3>Versionierung</h3>
+<p>Alle Elemente unterstützen vollständige Versionskontrolle:</p>
+<ul>
+    <li><strong>dcat:version</strong> - Semantische Versionierung (MAJOR.MINOR.PATCH)</li>
+    <li><strong>dct:issued</strong> - Erstveröffentlichung</li>
+    <li><strong>dct:modified</strong> - Letzte Änderung</li>
+    <li><strong>adms:versionNotes</strong> - Änderungsbeschreibung</li>
+    <li><strong>dcat:previousVersion</strong> - Verweis auf Vorgängerversion</li>
+</ul>
+
+<h3>Governance und Zugriffssteuerung</h3>
+<p><strong>Rollenmodell:</strong></p>
+<ul>
+    <li><strong>bv:dataOwner</strong> (foaf:Agent) - Fachverantwortlicher Immobilienmanagement</li>
+    <li><strong>bv:dataSteward</strong> (foaf:Agent) - Datenarchitekt/Datenmanager</li>
+    <li><strong>bv:dataCustodian</strong> (foaf:Agent) - Technischer Systembetreuer</li>
+</ul>
+
+<p><strong>Zugriffsrechte und Compliance:</strong></p>
+<ul>
+    <li><strong>dct:accessRights</strong> - Zugriffsbeschränkungen (öffentlich/intern/vertraulich)</li>
+    <li><strong>dct:license</strong> - Nutzungsbedingungen</li>
+    <li><strong>bv:dsgCategory</strong> - DSG-Klassifizierung</li>
+    <li><strong>bv:isgClassification</strong> - Informationssicherheitsstufe</li>
+    <li><strong>dcatap:applicableLegislation</strong> - Rechtliche Grundlagen (EMBAG, DSG)</li>
+</ul>
+
+<h3>Strukturbeispiel</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+BBL Immobilienkatalog (dcat:Catalog)
+├── Geschäftsobjekt-Schemas (Konzeptuelle Ebene)
+│   ├── dct:Standard "Gebäude-Schema" v3.0.0
+│   └── dct:Standard "Grundstück-Schema" v2.1.0
+│
+├── Datenattribute (Logische Ebene)
+│   ├── bv:Attribute "EGID" (required, unique)
+│   └── bv:Attribute "Nutzfläche" (decimal, m²)
+│
+├── Wertelisten (Referenzdaten)
+│   ├── skos:ConceptScheme "Gebäudetypen" v2.1.0
+│   └── skos:ConceptScheme "Kantone" v1.0.0
+│
+└── Datasets (Physische Ebene)
+    ├── dcat:Dataset "Gebäudestammdaten 2025"
+    │   └── dcat:Distribution (SAP-Export, REST-API)
+    └── dcat:DataService "IMMO-API v2"
+</pre>
+<p>Diese Struktur ermöglicht die vollständige Nachvollziehbarkeit der Datenherkunft, klare Verantwortlichkeiten und erfüllt alle regulatorischen Anforderungen der Bundesverwaltung.</p>
+
+<h3>Weiterführende Informationen und Standards</h3>
+<p><strong>Verwendete Standards und Spezifikationen:</strong></p>
+<ul>
+    <li><strong>DCAT v3 (W3C Recommendation)</strong><br>Die Basis unseres Metadatenmodells. Besonders relevant sind die Qualified Forms für erweiterte Beziehungen:<br><a href="https://www.w3.org/TR/vocab-dcat-3/#qualified-forms" target="_blank">https://www.w3.org/TR/vocab-dcat-3/#qualified-forms</a></li>
+    
+    <li><strong>Dublin Core Metadata Terms</strong><br>Definiert zentrale Properties wie dct:Standard, dct:conformsTo und dct:identifier:<br><a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard" target="_blank">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard</a></li>
+    
+    <li><strong>DCAT-AP CH (eCH-0200)</strong><br>Der Schweizer Anwendungsstandard für Datenportale der Bundesverwaltung:<br><a href="https://ech.ch/de/ech/ech-0200/3.0" target="_blank">https://ech.ch/de/ech/ech-0200/3.0</a><br><a href="https://www.dcat-ap.ch/" target="_blank">https://www.dcat-ap.ch/</a></li>
+    
+    <li><strong>SKOS (Simple Knowledge Organization System)</strong><br>Für die Modellierung von Wertelisten und kontrollierten Vokabularen:<br><a href="https://www.w3.org/TR/skos-reference/" target="_blank">https://www.w3.org/TR/skos-reference/</a></li>
+</ul>
+
+<p><strong>Governance-Rollen gemäss NaDB</strong></p>
+<p>Die Rollendefinitionen basieren auf der Nationalen Datenbewirtschaftung des BFS:</p>
+<ul>
+    <li><strong>Data Owner</strong> - Fachliche Verantwortung</li>
+    <li><strong>Data Steward</strong> - Datenarchitektur und -qualität</li>
+    <li><strong>Data Custodian</strong> - Technischer Betrieb</li>
+</ul>

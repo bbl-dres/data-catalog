@@ -1,0 +1,85 @@
+[
+  {
+    "id": "sys-sap",
+    "type": "system",
+    "layer": "physical",
+    "name": "SAP RE-FX",
+    "description": {
+      "de": "SAP Real Estate Flexible Management System für die Immobilienverwaltung des Bundes",
+      "en": "SAP Real Estate Flexible Management System for federal real estate management",
+      "fr": "Système de gestion immobilière flexible SAP RE-FX pour la gestion immobilière fédérale",
+      "it": "Sistema di gestione immobiliare flessibile SAP RE-FX per la gestione immobiliare federale"
+    },
+    "status": "active",
+    "technology": "SAP S/4HANA",
+    "vendor": "SAP SE",
+    "version": "2023 FPS02",
+    "environment": "production",
+    "owner": {
+      "de": "BBL IT",
+      "en": "FOBL IT",
+      "fr": "OFCL IT",
+      "it": "UFCL IT"
+    },
+    "created": "2024-01-10",
+    "updated": "2025-06-01",
+    "schemas": ["sch-sap-refx", "sch-sap-refx-parcel", "sch-sap-refx-measurements"]
+  },
+  {
+    "id": "sys-postgis",
+    "type": "system",
+    "layer": "physical",
+    "name": {
+      "de": "PostGIS Geodatenbank",
+      "en": "PostGIS Geodatabase",
+      "fr": "Base de données géographiques PostGIS",
+      "it": "Database geografico PostGIS"
+    },
+    "description": {
+      "de": "PostgreSQL-Datenbank mit PostGIS-Erweiterung für Geodaten",
+      "en": "PostgreSQL database with PostGIS extension for geodata",
+      "fr": "Base de données PostgreSQL avec extension PostGIS pour les géodonnées",
+      "it": "Database PostgreSQL con estensione PostGIS per i geodati"
+    },
+    "status": "active",
+    "technology": "PostgreSQL 15 / PostGIS 3.4",
+    "vendor": "PostgreSQL Global Development Group",
+    "version": "15.4",
+    "environment": "production",
+    "owner": {
+      "de": "BBL GIS Team",
+      "en": "FOBL GIS Team",
+      "fr": "Équipe SIG OFCL",
+      "it": "Team GIS UFCL"
+    },
+    "created": "2024-01-15",
+    "updated": "2025-03-20",
+    "schemas": ["sch-postgis-geo"]
+  },
+  {
+    "id": "sys-sap-ps",
+    "type": "system",
+    "layer": "physical",
+    "name": "SAP PS",
+    "description": {
+      "de": "SAP Projektsystem für das Projektmanagement",
+      "en": "SAP Project System for project management",
+      "fr": "Système de projet SAP pour la gestion de projet",
+      "it": "Sistema di progetto SAP per la gestione dei progetti"
+    },
+    "status": "active",
+    "technology": "SAP S/4HANA",
+    "vendor": "SAP SE",
+    "version": "2023 FPS02",
+    "environment": "production",
+    "owner": {
+      "de": "BBL Projektabteilung",
+      "en": "FOBL Project Department",
+      "fr": "Département des projets OFCL",
+      "it": "Dipartimento progetti UFCL"
+    },
+    "created": "2024-04-01",
+    "updated": "2025-02-15",
+    "schemas": ["sch-sap-ps"]
+  }
+]

@@ -1,0 +1,159 @@
+[
+  {
+    "id": "enum-building-type",
+    "name": {
+      "de": "Gebäudetyp",
+      "en": "Building Type",
+      "fr": "Type de bâtiment",
+      "it": "Tipo di edificio"
+    },
+    "description": {
+      "de": "Klassifikation der Gebäudearten nach Nutzungszweck",
+      "en": "Classification of building types by purpose of use",
+      "fr": "Classification des types de bâtiments selon leur utilisation",
+      "it": "Classificazione dei tipi di edificio secondo l'uso"
+    },
+    "status": "active",
+    "created": "2024-01-15",
+    "updated": "2024-06-01",
+    "values": [
+      { "code": "ADMIN", "label": { "de": "Verwaltungsgebäude", "en": "Administrative Building", "fr": "Bâtiment administratif", "it": "Edificio amministrativo" }, "description": { "de": "Gebäude für Verwaltungszwecke" } },
+      { "code": "WOHN", "label": { "de": "Wohngebäude", "en": "Residential Building", "fr": "Bâtiment résidentiel", "it": "Edificio residenziale" }, "description": { "de": "Gebäude für Wohnzwecke" } },
+      { "code": "LAGER", "label": { "de": "Lagergebäude", "en": "Warehouse", "fr": "Entrepôt", "it": "Magazzino" }, "description": { "de": "Gebäude für Lagerzwecke" } },
+      { "code": "TECH", "label": { "de": "Technisches Gebäude", "en": "Technical Building", "fr": "Bâtiment technique", "it": "Edificio tecnico" }, "description": { "de": "Gebäude für technische Anlagen" } },
+      { "code": "HIST", "label": { "de": "Historisches Gebäude", "en": "Historic Building", "fr": "Bâtiment historique", "it": "Edificio storico" }, "description": { "de": "Denkmalgeschütztes Gebäude" } },
+      { "code": "BILDUNG", "label": { "de": "Bildungsgebäude", "en": "Educational Building", "fr": "Bâtiment éducatif", "it": "Edificio educativo" }, "description": { "de": "Gebäude für Bildungszwecke" } }
+    ]
+  },
+  {
+    "id": "enum-status",
+    "name": {
+      "de": "Status",
+      "en": "Status",
+      "fr": "Statut",
+      "it": "Stato"
+    },
+    "description": {
+      "de": "Allgemeiner Statuswert für Objekte",
+      "en": "General status value for objects",
+      "fr": "Valeur de statut général pour les objets",
+      "it": "Valore di stato generale per gli oggetti"
+    },
+    "status": "active",
+    "created": "2024-01-15",
+    "updated": "2024-03-01",
+    "values": [
+      { "code": "ACTIVE", "label": { "de": "Aktiv", "en": "Active", "fr": "Actif", "it": "Attivo" }, "description": { "de": "Objekt ist aktiv und in Verwendung" } },
+      { "code": "INACTIVE", "label": { "de": "Inaktiv", "en": "Inactive", "fr": "Inactif", "it": "Inattivo" }, "description": { "de": "Objekt ist nicht mehr in Verwendung" } },
+      { "code": "PLANNED", "label": { "de": "Geplant", "en": "Planned", "fr": "Planifié", "it": "Pianificato" }, "description": { "de": "Objekt ist in Planung" } },
+      { "code": "ARCHIVED", "label": { "de": "Archiviert", "en": "Archived", "fr": "Archivé", "it": "Archiviato" }, "description": { "de": "Objekt wurde archiviert" } }
+    ]
+  },
+  {
+    "id": "enum-zone",
+    "name": {
+      "de": "Nutzungszone",
+      "en": "Usage Zone",
+      "fr": "Zone d'affectation",
+      "it": "Zona d'uso"
+    },
+    "description": {
+      "de": "Zoneneinteilung nach Raumplanungsrecht",
+      "en": "Zone classification according to spatial planning law",
+      "fr": "Classification des zones selon le droit de l'aménagement du territoire",
+      "it": "Classificazione delle zone secondo il diritto di pianificazione territoriale"
+    },
+    "status": "active",
+    "created": "2024-01-15",
+    "updated": "2024-05-10",
+    "values": [
+      { "code": "W", "label": { "de": "Wohnzone", "en": "Residential Zone", "fr": "Zone résidentielle", "it": "Zona residenziale" }, "description": { "de": "Zone für Wohnnutzung" } },
+      { "code": "M", "label": { "de": "Mischzone", "en": "Mixed Zone", "fr": "Zone mixte", "it": "Zona mista" }, "description": { "de": "Zone für gemischte Nutzung" } },
+      { "code": "G", "label": { "de": "Gewerbezone", "en": "Commercial Zone", "fr": "Zone commerciale", "it": "Zona commerciale" }, "description": { "de": "Zone für gewerbliche Nutzung" } },
+      { "code": "I", "label": { "de": "Industriezone", "en": "Industrial Zone", "fr": "Zone industrielle", "it": "Zona industriale" }, "description": { "de": "Zone für industrielle Nutzung" } },
+      { "code": "OE", "label": { "de": "Zone öffentlicher Bauten", "en": "Public Building Zone", "fr": "Zone de bâtiments publics", "it": "Zona edifici pubblici" }, "description": { "de": "Zone für öffentliche Einrichtungen" } },
+      { "code": "GR", "label": { "de": "Grünzone", "en": "Green Zone", "fr": "Zone verte", "it": "Zona verde" }, "description": { "de": "Zone für Grünflächen und Parks" } }
+    ]
+  },
+  {
+    "id": "enum-unit-type",
+    "name": {
+      "de": "Objekttyp",
+      "en": "Unit Type",
+      "fr": "Type d'objet",
+      "it": "Tipo di unità"
+    },
+    "description": {
+      "de": "Klassifikation der Mietobjektarten",
+      "en": "Classification of rental unit types",
+      "fr": "Classification des types d'objets locatifs",
+      "it": "Classificazione dei tipi di unità in affitto"
+    },
+    "status": "active",
+    "created": "2024-02-01",
+    "updated": "2024-06-15",
+    "values": [
+      { "code": "BUERO", "label": { "de": "Büro", "en": "Office", "fr": "Bureau", "it": "Ufficio" }, "description": { "de": "Bürofläche" } },
+      { "code": "WOHNUNG", "label": { "de": "Wohnung", "en": "Apartment", "fr": "Appartement", "it": "Appartamento" }, "description": { "de": "Wohneinheit" } },
+      { "code": "LADEN", "label": { "de": "Laden", "en": "Retail", "fr": "Commerce", "it": "Negozio" }, "description": { "de": "Verkaufsfläche" } },
+      { "code": "LAGER", "label": { "de": "Lager", "en": "Storage", "fr": "Entrepôt", "it": "Magazzino" }, "description": { "de": "Lagerfläche" } },
+      { "code": "PARKING", "label": { "de": "Parkplatz", "en": "Parking", "fr": "Parking", "it": "Parcheggio" }, "description": { "de": "Parkfläche" } },
+      { "code": "GASTRO", "label": { "de": "Gastronomie", "en": "Restaurant", "fr": "Restauration", "it": "Ristorazione" }, "description": { "de": "Gastronomiefläche" } }
+    ]
+  },
+  {
+    "id": "enum-energy-rating",
+    "name": {
+      "de": "Energieeffizienzklasse",
+      "en": "Energy Efficiency Class",
+      "fr": "Classe d'efficacité énergétique",
+      "it": "Classe di efficienza energetica"
+    },
+    "description": {
+      "de": "GEAK-Energieeffizienzklassen für Gebäude (A bis G)",
+      "en": "GEAK energy efficiency classes for buildings (A to G)",
+      "fr": "Classes d'efficacité énergétique CECB pour les bâtiments (A à G)",
+      "it": "Classi di efficienza energetica CECE per edifici (da A a G)"
+    },
+    "status": "active",
+    "created": "2024-11-15",
+    "updated": "2024-11-15",
+    "externalSource": "https://www.geak.ch",
+    "values": [
+      { "code": "A", "label": { "de": "A - Sehr effizient", "en": "A - Very Efficient", "fr": "A - Très efficace", "it": "A - Molto efficiente" }, "description": { "de": "Höchste Energieeffizienz" } },
+      { "code": "B", "label": { "de": "B - Effizient", "en": "B - Efficient", "fr": "B - Efficace", "it": "B - Efficiente" }, "description": { "de": "Hohe Energieeffizienz" } },
+      { "code": "C", "label": { "de": "C - Gut", "en": "C - Good", "fr": "C - Bon", "it": "C - Buono" }, "description": { "de": "Gute Energieeffizienz" } },
+      { "code": "D", "label": { "de": "D - Durchschnittlich", "en": "D - Average", "fr": "D - Moyen", "it": "D - Medio" }, "description": { "de": "Durchschnittliche Energieeffizienz" } },
+      { "code": "E", "label": { "de": "E - Unterdurchschnittlich", "en": "E - Below Average", "fr": "E - Inférieur à la moyenne", "it": "E - Sotto la media" }, "description": { "de": "Unterdurchschnittliche Energieeffizienz" } },
+      { "code": "F", "label": { "de": "F - Niedrig", "en": "F - Low", "fr": "F - Faible", "it": "F - Basso" }, "description": { "de": "Niedrige Energieeffizienz" } },
+      { "code": "G", "label": { "de": "G - Wenig effizient", "en": "G - Inefficient", "fr": "G - Peu efficace", "it": "G - Poco efficiente" }, "description": { "de": "Niedrigste Energieeffizienz" } }
+    ]
+  },
+  {
+    "id": "enum-project-phase",
+    "name": {
+      "de": "Projektphase",
+      "en": "Project Phase",
+      "fr": "Phase de projet",
+      "it": "Fase del progetto"
+    },
+    "description": {
+      "de": "Phasen eines Bauprojekts nach SIA 112",
+      "en": "Phases of a construction project according to SIA 112",
+      "fr": "Phases d'un projet de construction selon SIA 112",
+      "it": "Fasi di un progetto di costruzione secondo SIA 112"
+    },
+    "status": "active",
+    "created": "2024-04-15",
+    "updated": "2024-07-01",
+    "externalSource": "SIA 112",
+    "values": [
+      { "code": "SN", "label": { "de": "Strategische Planung", "en": "Strategic Planning", "fr": "Planification stratégique", "it": "Pianificazione strategica" }, "description": { "de": "Phase 1: Strategische Planung" } },
+      { "code": "VP", "label": { "de": "Vorstudien", "en": "Preliminary Studies", "fr": "Études préliminaires", "it": "Studi preliminari" }, "description": { "de": "Phase 2: Vorstudien" } },
+      { "code": "PJ", "label": { "de": "Projektierung", "en": "Project Planning", "fr": "Étude de projet", "it": "Progettazione" }, "description": { "de": "Phase 3: Projektierung" } },
+      { "code": "AU", "label": { "de": "Ausschreibung", "en": "Tendering", "fr": "Appel d'offres", "it": "Gara d'appalto" }, "description": { "de": "Phase 4: Ausschreibung" } },
+      { "code": "RE", "label": { "de": "Realisierung", "en": "Realization", "fr": "Réalisation", "it": "Realizzazione" }, "description": { "de": "Phase 5: Realisierung" } },
+      { "code": "BW", "label": { "de": "Bewirtschaftung", "en": "Facility Management", "fr": "Gestion", "it": "Gestione" }, "description": { "de": "Phase 6: Bewirtschaftung" } }
+    ]
+  }
+]

@@ -1,0 +1,37 @@
+/* Native modal supplies focus containment and makes the catalog behind it inert. */
+.ob-auth-trigger { margin-left: var(--ob-space-xs); }
+.ob-auth-dialog {
+  position: fixed; inset: auto 0;
+  top: calc(var(--ob-visual-viewport-top) + var(--ob-visual-viewport-height) / 2);
+  transform: translateY(-50%); margin: 0 auto;
+  width: min(440px, calc(100% - 32px)); max-height: calc(var(--ob-visual-viewport-height) - 32px);
+  padding: var(--ob-space-lg); overflow: auto;
+  border: var(--ob-border-width-xs) solid var(--ob-color-border-strong);
+  border-radius: var(--ob-radius-lg); box-shadow: var(--ob-shadow-lg);
+  background: var(--ob-color-bg); color: var(--ob-color-text);
+  font: inherit; letter-spacing: inherit;
+}
+.ob-auth-dialog::backdrop { background: rgb(19 27 34 / 50%); }
+.ob-auth-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ob-space-default); }
+.ob-auth-heading h2 { padding-top: var(--ob-space-xs); overflow-wrap: anywhere; }
+.ob-auth-description { margin-block: var(--ob-space-default); color: var(--ob-color-text-secondary); }
+.ob-auth-fields { display: grid; gap: var(--ob-space-default); }
+.ob-auth-field { display: grid; gap: var(--ob-space-xs); }
+.ob-auth-field > span { font-weight: var(--ob-font-weight-semibold); }
+.ob-auth-field .ob-input { width: 100%; padding-inline: var(--ob-space-sm); }
+.ob-auth-email { overflow-wrap: anywhere; font-weight: var(--ob-font-weight-semibold); }
+.ob-auth-submit { margin-top: var(--ob-space-lg); width: 100%; white-space: normal; height: auto; min-height: var(--ob-control-height); }
+.ob-auth-message { margin-top: var(--ob-space-default); padding: var(--ob-space-md); border-left: 4px solid var(--ob-color-success); background: var(--ob-color-success-bg); overflow-wrap: anywhere; }
+.ob-auth-message.is-error { border-color: var(--ob-color-error); background: var(--ob-color-error-bg); }
+.ob-auth-secondary { margin-top: var(--ob-space-sm); }
+.ob-auth-api { border-top: 1px solid var(--ob-color-border-control); margin-top: var(--ob-space-lg); padding-top: var(--ob-space-default); }
+.ob-auth-api h3 { font-size: var(--ob-font-size-lg); }
+.ob-auth-api p { margin-top: var(--ob-space-sm); overflow-wrap: anywhere; }
+.ob-auth-api-actions { display: flex; gap: var(--ob-space-sm); flex-wrap: wrap; margin-block: var(--ob-space-default); }
+.ob-auth-api textarea { display: block; width: 100%; padding: var(--ob-space-sm); resize: vertical; font-size: var(--ob-font-size-sm); overflow-wrap: anywhere; }
+.ob-auth-api [hidden] { display: none !important; }
+@media (max-width: 600px) {
+  .ob-auth-dialog { padding: var(--ob-space-default); }
+  .ob-auth-trigger { padding-inline: var(--ob-space-sm); }
+}
+@media print { .ob-auth-dialog { display: none !important; } }

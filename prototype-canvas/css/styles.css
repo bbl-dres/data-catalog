@@ -1,0 +1,3870 @@
+/* ============================================================
+   BBL Canvas — prototype-canvas styles
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* WCAG 2.3.3 — respect the OS-level "reduce motion" preference. We don't
+   strip animation entirely (some hover/focus state changes still need the
+   ~120ms easing to communicate causality), but we collapse durations to a
+   tick so vestibular-disorder users don't get hit with the panel slide-in,
+   the LOD overlay opacity ramp, the toast/auth-modal entrances, or the
+   minimap viewport transition. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Baseline focus ring — uses :where() so any per-element rule overrides it
+   without specificity gymnastics. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Skip-link: the first Tab stop on the page. Visually hidden until it
+   receives focus, then anchors to the top-left so screen-reader and
+   keyboard users can jump straight to #app-main. WCAG 2.4.1. */
+.skip-link {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  font-weight: 500;
+  text-decoration: none;
+  z-index: 1000;
+  /* Off-screen until focused. clip-path beats `display: none` because the
+     element must remain in the tab order. */
+  transform: translateY(-200%);
+  transition: transform 150ms ease;
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* Suppress iOS Safari's grey tap-highlight rectangle on every interactive
+   element — looked correct on the first prototype iteration but reads as
+   visual noise once buttons have proper :active states. */
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  /* 1.45 — comfortable for German prose (long compounds + dotted-Umlaute
+     need a touch more vertical space than English at the same point size).
+     Default browser ~1.2 was too tight. */
+  line-height: 1.45;
+  color: var(--color-text-primary);
+  background: var(--color-bg-page);
+  overflow: hidden;
+}
+
+button { font-family: inherit; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+#app {
+  display: grid;
+  /* Pill-bar row is `auto`: collapses to 0 when the bar has [hidden],
+     takes its natural height when filters are active. Keeps the canvas
+     row from shifting until filters appear. */
+  grid-template-rows: var(--header-height) var(--toolbar-height) auto 1fr var(--footer-height);
+  height: 100vh;
+}
+
+/* ---- Header ----
+   3-column grid: brand left, current-canvas info centred, actions right.
+   Equal-width 1fr side columns mirror each other so the auto-sized middle
+   lands at true page-centre, regardless of how wide actions is. */
+.app-header {
+  /* Flex layout: brand mark + breadcrumb sit at the left, header-actions
+     (search / lang / avatar) push to the right via `margin-left: auto`.
+     Previous 3-column grid was tuned to centre the breadcrumb — the
+     breadcrumb now sits adjacent to the logo, so the simpler flex pattern
+     fits better. */
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-header);
+}
+.header-logo { flex-shrink: 0; }
+.header-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: var(--text-heading-m);
+}
+.header-logo-icon {
+  width: 28px; height: 28px;
+  display: inline-flex; align-items: center; justify-content: center;
+  /* Swiss-Federal red — family-binds prototype-canvas to the rest of the
+     data-catalog prototypes (which all carry the red brand mark). */
+  background: var(--color-brand-red);
+  color: var(--color-text-on-accent);
+  border-radius: var(--radius-md);
+}
+.header-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.header-search .search-icon {
+  position: absolute; left: var(--space-3); color: var(--color-text-placeholder);
+  display: inline-flex;
+  pointer-events: none;
+}
+.header-search input {
+  /* Stable width that scales gracefully on narrow viewports.
+     - 280 px stays the desktop ideal (room for "Suchen…" + the / hint
+       without the on-focus reflow that pushed lang + avatar left).
+     - clamp() lets the input shrink to 180 px before the mobile breakpoint
+       at 640 px takes over with a flex:1 rule, so the 480–640 px window
+       no longer overflows the header. */
+  width: clamp(180px, 40vw, 280px);
+  padding: 6px 56px 6px 30px;
+  font: inherit;
+  font-size: var(--text-small);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.header-search input:focus,
+.header-search input:not(:placeholder-shown) {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-surface);
+}
+/* "/" hint — points at the global keyboard shortcut. Hidden once the input
+   is focused or has text so it doesn't fight the placeholder. */
+.header-search-hint {
+  position: absolute;
+  right: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  color: var(--color-text-placeholder);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: 3px;
+  padding: 0 5px;
+  pointer-events: none;
+}
+.header-search input:focus ~ .header-search-hint,
+.header-search input:not(:placeholder-shown) ~ .header-search-hint {
+  display: none;
+}
+.header-search input:focus + .search-dropdown { /* keep dropdown visible */ }
+
+/* ---- Search recommendations dropdown ---- */
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 320px;
+  max-width: 420px;
+  max-height: 360px;
+  overflow-y: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 4px;
+  z-index: 100;
+}
+.search-dropdown[hidden] { display: none; }
+.search-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.search-row:hover,
+.search-row.is-active { background: var(--color-bg-surface-hover); }
+.search-row-kind {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  margin-top: 1px;
+}
+.search-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.search-row-text strong {
+  font-weight: 500;
+  font-size: var(--text-small);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-row-text em {
+  font-style: normal;
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.search-empty {
+  padding: 12px 10px;
+  font-size: var(--text-small);
+  color: var(--color-text-placeholder);
+  text-align: center;
+}
+.prototype-hint {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-accent);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+/* Pushed to the right edge of the header by margin-left:auto so the
+   breadcrumb has room to grow on the left. */
+.header-actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); flex-shrink: 0; }
+.lang-marker {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+  padding: 0 var(--space-2);
+  /* Static badge, not interactive — keep the cursor neutral so users don't
+     mistake it for a switcher. */
+  cursor: default;
+  user-select: none;
+}
+.user-menu { position: relative; }
+.user-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: var(--text-small); font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.user-avatar:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 6px;
+  z-index: 100;
+}
+.user-dropdown[hidden] { display: none; }
+.user-dropdown-header {
+  padding: 8px 10px 6px;
+}
+.user-dropdown-name { font-weight: 500; font-size: var(--text-small); }
+.user-dropdown-sub  { font-size: var(--text-label); color: var(--color-text-secondary); }
+.user-dropdown-row {
+  display: flex;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-small);
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.user-dropdown-row:hover:not(:disabled) { background: var(--color-bg-surface-hover); }
+.user-dropdown-row:disabled {
+  color: var(--color-text-placeholder);
+  cursor: not-allowed;
+}
+.user-avatar.is-anonymous {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+}
+/* Avatar image when the session carries an external profile picture. */
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.user-avatar:has(.user-avatar-img) {
+  /* Image fills the circle — no need for the brand fill behind it. */
+  background: transparent;
+  padding: 0;
+}
+
+/* ---- Auth modal ----
+   Shown for signed-out sign-in (replaces the cramped dropdown form),
+   password-reset request, and the recovery "set new password" flow. */
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+.auth-modal[hidden] { display: none; }
+.auth-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+.auth-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  padding: var(--space-6);
+}
+.auth-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.auth-modal-close:hover {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+.auth-modal-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-heading-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.auth-modal-sub {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--text-small);
+  line-height: 1.45;
+}
+.auth-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.auth-modal-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 2px;
+  display: block;
+}
+.auth-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-body);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+.auth-modal-input:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+  box-shadow: 0 0 0 3px rgba(var(--color-bg-accent-strong-rgb), 0.12);
+}
+.auth-modal-input:disabled {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-placeholder);
+}
+.auth-modal-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 16px;
+  margin-top: var(--space-2);
+}
+.auth-modal-link {
+  background: none;
+  border: none;
+  padding: var(--space-1) 0;
+  color: var(--color-text-link);
+  font: inherit;
+  font-size: var(--text-small);
+  text-align: left;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.auth-modal-link:hover { text-decoration: underline; }
+.auth-modal-status {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  line-height: 1.4;
+}
+.auth-modal-status-error   { background: var(--color-error-bg);   color: var(--color-error); }
+.auth-modal-status-success { background: var(--color-success-bg); color: var(--color-success); }
+
+/* ---- Import modal — drop zone + change summary ---- */
+.import-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-4);
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-page);
+  text-align: center;
+  color: var(--color-text-secondary);
+  transition: border-color 120ms, background-color 120ms;
+}
+.import-dropzone.is-dragover {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+}
+.import-dropzone-icon {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-1);
+}
+.import-dropzone-main {
+  font-size: var(--text-body);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+.import-dropzone-or {
+  margin: 0;
+  font-size: var(--text-small);
+}
+.import-pick-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: var(--text-small);
+  color: var(--color-text-link);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.import-dropzone-hint {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-label);
+  color: var(--color-text-placeholder);
+}
+.import-summary-file {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+  background: var(--color-bg-surface-hover);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.import-summary-file strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+.import-summary-section {
+  margin-bottom: var(--space-3);
+}
+.import-summary-section-title {
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-1);
+}
+.import-summary-counts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+.import-summary-count {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface-hover);
+}
+.import-summary-count-num {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  line-height: 1;
+}
+.import-summary-count-label {
+  margin-top: 2px;
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+}
+.import-summary-count-add    .import-summary-count-num { color: var(--color-success); }
+.import-summary-count-update .import-summary-count-num { color: var(--color-bg-accent-strong); }
+.import-summary-count-remove .import-summary-count-num { color: var(--color-error); }
+.import-summary-count-same   .import-summary-count-num { color: var(--color-text-placeholder); }
+.import-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+.user-signin-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-small);
+  box-sizing: border-box;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+.user-signin-input:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+.user-signin-input:disabled {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-placeholder);
+}
+.user-signin-submit {
+  width: 100%;
+  justify-content: center;
+}
+.user-signin-status {
+  padding: 4px 10px 6px;
+  font-size: var(--text-label);
+  line-height: 1.35;
+}
+.user-signin-status-success { color: var(--color-success); }
+.user-signin-status-error   { color: var(--color-error); }
+
+/* ---- Toolbar ---- */
+.app-toolbar {
+  /* Two-cluster flex: view-seg on the left, action buttons on the right.
+     `space-between` keeps them at the outer edges; on narrow viewports
+     the right cluster wraps internally rather than displacing the left.
+     Was a 3-column grid when the centre was used for view-seg — simpler
+     now that the breadcrumb has moved up to the header. */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.toolbar-left  { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-right { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.toolbar-label { font-size: var(--text-small); color: var(--color-text-secondary); }
+.toolbar-select, .toolbar-input {
+  padding: 6px 10px;
+  font: inherit;
+  font-size: var(--text-small);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+}
+.toolbar-input { min-width: 200px; }
+/* Vertical divider — height matches the toolbar-input/seg-btn line-box (≈20 px). */
+.toolbar-sep { width: 1px; height: var(--space-5); background: var(--color-border-subtle); margin: 0 var(--space-2); }
+
+.tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: var(--text-small);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+}
+.tb-btn:hover { background: var(--color-bg-surface-hover); border-color: var(--color-border-strong); }
+/* Icon-only variant — drops the gap and squares the padding so a single
+   icon sits centred. Used for the toolbar undo button (and any future
+   compact-action button). */
+.tb-btn-icon {
+  gap: 0;
+  padding: 6px 8px;
+}
+.tb-btn-primary {
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-bg-accent-strong);
+}
+.tb-btn-primary:hover { background: var(--color-bg-accent-strong-hover); border-color: var(--color-bg-accent-strong-hover); }
+/* Disabled state for primary toolbar buttons — keep brand colour but
+   communicate "no action available" with reduced contrast and no hover. */
+.tb-btn-primary:disabled,
+.tb-btn-primary[disabled] {
+  background: var(--color-border-default);
+  border-color: var(--color-border-default);
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+.tb-btn-primary:disabled:hover,
+.tb-btn-primary[disabled]:hover {
+  background: var(--color-border-default);
+  border-color: var(--color-border-default);
+}
+
+/* Unsaved-changes counter — appears in the toolbar in edit mode when
+   there's at least one dirty change. */
+.unsaved-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-small);
+  color: var(--color-warning);
+}
+.unsaved-indicator::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  display: inline-block;
+}
+.unsaved-indicator[hidden] { display: none; }
+
+.seg {
+  display: inline-flex;
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: 2px;
+}
+
+/* ---- Shared dropdown row primitives ---- */
+/* These were originally introduced for the standalone Sichtbarkeit
+   dropdown; the Filter dropdown (and the user-dropdown's vis-divider)
+   now reuse them, so the names stayed for stability of selectors used
+   elsewhere. The wrapper styles (.vis-menu / .vis-dropdown / master
+   tri-state) were dropped with that merge. */
+.vis-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  user-select: none;
+}
+.vis-row:hover { background: var(--color-bg-surface-hover); }
+.vis-row input { margin: 0; }
+.vis-divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 4px 0;
+}
+.vis-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 8px 4px;
+}
+/* Row variant — used by Property Sets where the two buttons are short
+   and read more naturally side-by-side than stacked. Each button
+   stretches to share the available width equally. */
+.vis-footer-actions-row {
+  flex-direction: row;
+}
+.vis-footer-actions-row > .vis-action-btn {
+  flex: 1 1 0;
+  justify-content: center;
+  text-align: center;
+}
+.vis-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  background: transparent;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-align: left;
+}
+.vis-action-btn:hover {
+  background: var(--color-bg-surface-hover);
+  border-color: var(--color-border-strong, var(--color-border-default));
+}
+
+/* ---- Filter dropdown ---- */
+/* Houses the merged Filter + Sichtbarkeit dropdown — facets, layout
+   toggles, and bulk property-set expand/collapse. Reuses .vis-row /
+   .vis-divider / .vis-action-btn for the row chrome so dropdowns
+   across the toolbar share visual language. */
+.filter-menu { position: relative; }
+.filter-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 320px;
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 6px;
+  z-index: 100;
+}
+.filter-dropdown[hidden] { display: none; }
+/* Section header — chevron + label + count, click to collapse. */
+.filter-section { margin-bottom: 4px; }
+.filter-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px 4px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: var(--radius-sm);
+}
+.filter-section-header:hover { background: var(--color-bg-surface-hover); }
+.filter-section-chev {
+  display: inline-flex;
+  transition: transform 120ms ease;
+  color: var(--color-text-secondary);
+}
+.filter-section.is-collapsed .filter-section-chev { transform: rotate(-90deg); }
+.filter-section-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+.filter-section-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.filter-section-body { padding: 0 0 4px; }
+.filter-section.is-collapsed .filter-section-body { display: none; }
+/* Inline registry-search input inside the Datenpaket section. */
+.filter-section-search {
+  display: block;
+  width: calc(100% - 16px);
+  margin: 4px 8px;
+  padding: 5px 8px;
+  font: inherit;
+  font-size: var(--text-small);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+.filter-section-search:focus { border-color: var(--color-border-accent); }
+.filter-empty {
+  padding: 6px 8px;
+  font-size: var(--text-small);
+  color: var(--color-text-placeholder);
+}
+.filter-footer {
+  display: flex;
+  gap: 6px;
+  padding: 6px 8px 2px;
+  border-top: 1px solid var(--color-border-subtle);
+  margin-top: 4px;
+}
+.filter-footer .vis-action-btn { flex: 1; justify-content: center; }
+/* Active-filter count badge on the toolbar Filter button. */
+.filter-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: var(--text-label);
+  font-weight: 600;
+  /* Match line-height to the badge height so the digit's text box
+     aligns with the pill geometry — Inter at line-height:1 left a
+     visible top bias because its ascender allowance > descender. */
+  line-height: 18px;
+  font-variant-numeric: tabular-nums;
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border-radius: 10px;
+  margin-left: 2px;
+}
+.filter-badge[hidden] { display: none; }
+
+/* ---- Active-filter pill bar ---- */
+.filter-pill-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 6px var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  /* Don't introduce a vertical scrollbar — the row stays one line. */
+  -webkit-overflow-scrolling: touch;
+}
+/* Stay in the #app grid even when empty — `display: none` would remove
+   the pill bar from grid layout entirely, and CSS Grid auto-placement
+   would shift app-main and the footer up by one row. The result was a
+   total collapse: app-main would inherit the (0-height) `auto` row that
+   was meant for the pill bar, and the footer would expand into the
+   `1fr` row (rendered ~728px tall) — a "canvas appears empty" bug that
+   only resolved when filters became active and the bar took its
+   natural height. Keep the element as a grid item at height 0 instead. */
+.filter-pill-bar[hidden] {
+  display: flex;
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+.filter-pill-bar-label {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  margin-right: 2px;
+}
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  font-size: var(--text-small);
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.filter-pill-dim {
+  opacity: 0.7;
+  font-size: var(--text-label);
+  margin-right: 2px;
+}
+.filter-pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.65;
+}
+.filter-pill-remove:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
+  opacity: 1;
+}
+.filter-pill-bar-clear {
+  /* Sit directly after the last pill rather than being pushed to the
+     right edge of the bar — keeps the "remove everything" affordance
+     near the things it removes. */
+  margin-left: var(--space-2);
+  flex-shrink: 0;
+  font-size: var(--text-small);
+  color: var(--color-text-link);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+.filter-pill-bar-clear:hover { text-decoration: underline; }
+
+/* ---- Filter hide on canvas ---- */
+/* Filter narrows what's relevant — non-matching nodes are hidden
+   entirely (display: none) rather than dimmed. The earlier "ghost"
+   treatment (opacity 0.18) was hard to read at low fit-zoom; users
+   couldn't tell whether the canvas was empty or just dimmed. Edges
+   inherit: an edge whose endpoint vanishes hides too. System frames
+   re-render on every filter change (canvas.js filter handler) so
+   empty groups don't leave dangling rectangles. */
+.node[data-filtered="true"] {
+  display: none;
+}
+/* Selection trumps filter: if the user already had something selected
+   when they applied the filter, keep the node visible so the info
+   panel doesn't go stale and they can still drag it back out of the
+   filter scope. Same for an in-progress drag. */
+.node[data-filtered="true"].is-selected,
+.node[data-filtered="true"].is-dragging {
+  display: block;
+}
+.edge-group[data-filtered="true"] {
+  display: none;
+}
+
+/* ---- Export dropdown ---- */
+.export-menu { position: relative; }
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 240px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 4px;
+  z-index: 100;
+}
+.export-dropdown[hidden] { display: none; }
+.export-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-family: inherit;
+}
+.export-row:hover:not([disabled]) { background: var(--color-bg-surface-hover); }
+.export-row[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.export-row-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  color: var(--color-text-secondary);
+}
+.export-row-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.export-row-label {
+  font-size: var(--text-small);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.export-row-sub {
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+}
+.export-divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 4px 6px;
+}
+
+/* ---- body.hide-* layout toggles ---- */
+/* Type-as-visibility (display:none on .node[data-type=*]) was removed when
+   the Filter and Sichtbarkeit dropdowns merged. Type is now a filter
+   facet handled by the [data-filtered="true"] rule above (display: none). */
+
+body.hide-edges #edge-layer .edge-group,
+body.hide-edges #edge-overlay .edge-group { display: none; }
+
+body.hide-systems .group-layer { display: none; }
+
+.seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: var(--text-small);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+}
+.seg-btn:hover { color: var(--color-text-primary); }
+.seg-btn:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 1px;
+}
+.seg-btn.is-active {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  box-shadow: var(--shadow-toolbar), inset 0 -2px 0 0 var(--color-bg-accent-strong);
+}
+.seg-btn[data-mode="edit"].is-active {
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+}
+
+/* ---- Main ---- */
+.app-main {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg-page);
+}
+.view {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.view.is-active { display: block; }
+
+/* ---- Load-error overlay ---- */
+.load-error-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-page);
+  padding: var(--space-6);
+}
+.load-error-overlay[hidden] { display: none; }
+.load-error-card {
+  max-width: 460px;
+  text-align: center;
+  padding: var(--space-6) var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-card);
+}
+.load-error-icon {
+  /* One-off display element — deliberately larger than the heading scale
+     so the alert reads at a glance. Not tokenised (single use site). */
+  font-size: 36px;
+  line-height: 1;
+  margin-bottom: var(--space-4);
+  color: var(--color-warning);
+}
+.load-error-title {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-heading-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.load-error-body {
+  margin: 0 0 var(--space-5);
+  color: var(--color-text-primary);
+  font-size: var(--text-body);
+  word-break: break-word;
+}
+.load-error-retry {
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+.load-error-retry:hover { background: var(--color-bg-page); }
+
+/* ---- Canvas ---- */
+.canvas {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Mobile: claim every touch gesture as our own. With the default
+     touch-action: auto the browser interprets one-finger drags as a scroll
+     attempt, swallows the pointer stream, and dispatches pointercancel —
+     so the JS pan handler never starts. */
+  touch-action: none;
+  overscroll-behavior: contain;
+  user-select: none;
+  -webkit-user-select: none;
+  background-color: var(--color-bg-page);
+  background-image: radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  cursor: grab;
+}
+.canvas.is-panning { cursor: grabbing; }
+.canvas.is-edge-drawing { cursor: crosshair; }
+
+.canvas-transform {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.edge-layer,
+.edge-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 4000px; height: 4000px;
+  pointer-events: none;
+  overflow: visible;
+  outline: none;
+}
+.edge-layer:focus, .edge-overlay:focus,
+.edge-layer:focus-visible, .edge-overlay:focus-visible { outline: none; }
+.edge-layer foreignObject, .edge-overlay foreignObject,
+.edge-layer foreignObject:focus, .edge-overlay foreignObject:focus,
+.edge-layer foreignObject:focus-visible, .edge-overlay foreignObject:focus-visible,
+.edge-layer foreignObject:focus-within, .edge-overlay foreignObject:focus-within { outline: none; }
+/* Selected edge group needs hover/click to work even though the layer is
+   pointer-events:none — its child paths/handles re-enable them. */
+.edge-overlay .edge-group .edge-path,
+.edge-overlay .edge-group .edge-hit { pointer-events: stroke; }
+.edge-overlay .edge-group .edge-handle,
+.edge-overlay .edge-group foreignObject { pointer-events: all; }
+/* Edge styles apply to both #edge-layer (below nodes) and #edge-overlay
+   (above nodes). The fill: none is critical — SVG paths default to black
+   fill, which would draw the bezier as a filled wedge instead of a line. */
+.edge-path {
+  fill: none;
+  stroke: var(--color-edge);
+  stroke-width: 1.5;
+  pointer-events: stroke;
+  /* Keep stroke weight visually consistent across zoom levels — without
+     this, deeply-zoomed canvases get hairline edges and zoomed-out gets
+     fat ones. */
+  vector-effect: non-scaling-stroke;
+}
+.edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  pointer-events: stroke;
+  cursor: pointer;
+  vector-effect: non-scaling-stroke;
+}
+.edge-group:hover .edge-path,
+.edge-group.is-active .edge-path {
+  stroke: var(--color-edge-active);
+  stroke-width: 2;
+}
+.edge-group.is-selected .edge-path {
+  stroke: var(--color-edge-active);
+  stroke-width: 2.5;
+}
+
+/* ---- Crow's Foot cardinality markers ----
+   Strokes match the edge colour. Circles fill with the page background
+   so the line beneath them is masked, giving a clean "donut" look at the
+   junction. Stroke width matches the edge so visual weight is uniform. */
+.edge-cardinality line,
+.edge-cardinality circle {
+  stroke: var(--color-edge);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+}
+.edge-cardinality line {
+  fill: none;
+}
+.edge-cardinality circle {
+  fill: var(--color-bg-page);
+}
+.edge-group:hover .edge-cardinality line,
+.edge-group:hover .edge-cardinality circle,
+.edge-group.is-active .edge-cardinality line,
+.edge-group.is-active .edge-cardinality circle,
+.edge-group.is-selected .edge-cardinality line,
+.edge-group.is-selected .edge-cardinality circle {
+  stroke: var(--color-edge-active);
+}
+/* Static (non-selected) edge label — rendered as HTML inside a
+   foreignObject so long relation names wrap rather than running off the
+   diagram. The foreignObject itself is centred on the edge midpoint;
+   the inner wrap centres the label horizontally and vertically. */
+.edge-label-fo-static { overflow: visible; pointer-events: none; }
+.edge-label-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: var(--font-sans);
+  pointer-events: none;
+}
+.edge-label {
+  /* -webkit-box is what enables line-clamp; behaves like inline-block
+     for centring inside .edge-label-wrap. */
+  display: -webkit-box;
+  max-width: 100%;
+  padding: 1px 5px;
+  font-size: var(--text-label);
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+  /* Background pill "stencils" the label through edge crossings, the way
+     the previous SVG paint-order halo did. */
+  background: var(--color-bg-page);
+  border-radius: 3px;
+  /* Wrap long labels and clamp to three lines so the label doesn't grow
+     unboundedly; overflow ellipsises at the third line. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.edge-group:hover .edge-label,
+.edge-group.is-active .edge-label {
+  color: var(--color-edge-active);
+}
+
+/* Endpoint handles (visible only on a selected edge in edit mode) */
+.edge-handle {
+  fill: var(--color-bg-surface);
+  stroke: var(--color-edge-active);
+  stroke-width: 2;
+  cursor: crosshair;
+  pointer-events: all;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+.edge-handle:hover {
+  fill: var(--color-edge-active);
+}
+
+/* Edge label inline editor (foreignObject) */
+.edge-label-fo { overflow: visible; }
+.edge-label-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-edge-active);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  font-family: var(--font-sans);
+}
+/* The input + × clear together look like a single text field */
+.edge-label-input {
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-bg-page);
+  border-radius: var(--radius-sm);
+  padding: 0 2px 0 0;
+}
+.edge-label-input input {
+  font: inherit;
+  font-size: var(--text-label);
+  padding: 3px 6px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  min-width: 130px;
+  width: 130px;
+}
+.edge-label-input input::placeholder { color: var(--color-text-placeholder); }
+/* Hide browser-supplied clear / search-cancel pseudo-elements so our
+   own × is the only inline clear affordance. */
+.edge-label-input input::-ms-clear { display: none; width: 0; height: 0; }
+.edge-label-input input::-webkit-search-cancel-button { display: none; -webkit-appearance: none; }
+
+/* Cardinality dropdowns flanking the label input. Compact — they show
+   just the symbolic value (1 / 0..1 / 1..* / 0..*) so the popover stays
+   readable; longer descriptions live in the option labels. */
+.edge-card-select {
+  font: inherit;
+  font-size: var(--text-label);
+  padding: 2px 4px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+.edge-card-select:hover {
+  border-color: var(--color-border-strong, var(--color-border-default));
+}
+.edge-card-select:focus {
+  outline: 2px solid var(--color-bg-accent);
+  outline-offset: -1px;
+  border-color: var(--color-edge-active);
+}
+
+.edge-label-edit button {
+  background: none;
+  border: none;
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 0;
+}
+.edge-clear:hover { color: var(--color-text-primary); background: var(--color-bg-surface-hover); }
+.edge-delete:hover { color: var(--color-error); background: var(--color-error-bg); }
+/* Hide the inline × clear when the input is empty (placeholder visible) */
+.edge-label-input input:placeholder-shown + .edge-clear { visibility: hidden; }
+
+.edge-preview {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  outline: none;
+}
+
+/* ---- Canvas empty state ---- */
+.canvas-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+  pointer-events: auto;
+  z-index: 5;
+}
+.canvas-empty[hidden] { display: none; }
+.canvas-empty svg { color: var(--color-text-placeholder); }
+.canvas-empty-title {
+  margin: 0;
+  font-size: var(--text-heading-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.canvas-empty-sub {
+  margin: 0;
+  max-width: 360px;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.canvas-empty-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Loading-state overlay — sibling of .canvas-empty, mutually exclusive
+   via JS. Shown while State.load() is in flight; replaced by either the
+   real canvas (data arrived) or the canvas-empty placeholder (the fetch
+   succeeded but the DB returned zero nodes). */
+.canvas-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  pointer-events: none;
+  z-index: 5;
+}
+.canvas-loading[hidden] { display: none; }
+.canvas-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid var(--color-border-default);
+  border-top-color: var(--color-bg-accent-strong);
+  animation: canvas-loading-spin 800ms linear infinite;
+}
+.canvas-loading-label {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+@keyframes canvas-loading-spin {
+  to { transform: rotate(360deg); }
+}
+/* Respect prefers-reduced-motion — collapse the spin to a still ring.
+   The accent-coloured top arc still gives a "this is the spinner" cue
+   without the rotation. */
+@media (prefers-reduced-motion: reduce) {
+  .canvas-loading-spinner { animation: none; }
+}
+/* Preview edge drawn while the user is dragging to create a new
+   relationship. Solid line (no dasharray — solid feels more concrete
+   than dashed even for an in-progress shape) but slightly thicker so
+   it reads as "active in-flight gesture", not a settled edge. */
+.edge-preview path {
+  fill: none;
+  stroke: var(--color-edge-active);
+  stroke-width: 2.5;
+}
+
+/* ---- System group boxes (Miro-style frames) ---- */
+.group-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+.group-box {
+  position: absolute;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.025);
+  /* Interactive: click anywhere on the box (not just the small badge
+     label) selects the system. Nodes are in a later sibling layer and
+     paint on top, so clicks on a node still hit the node first; only
+     clicks on the gap-area between nodes inside a system frame land
+     here. The canvas pan handler sees pointerdown bubble up from the
+     box and starts a pan; if the user releases without moving, the
+     synthesized click event fires on the box and selects the system. */
+  pointer-events: auto;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+.group-box:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.05);
+}
+.group-box.is-selected {
+  border-color: var(--color-bg-accent-strong);
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.07);
+}
+.group-box-label {
+  position: absolute;
+  /* -10 px lifts the label half its own height above the box edge so the
+     label "punches through" the border. Magic by necessity (it's a vertical
+     centring on top of a 1 px stroke), but anchored to the 18 px label
+     height. */
+  top: -10px;
+  left: var(--space-4);
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-bg-page);
+  padding: 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 120ms ease, background-color 120ms ease;
+}
+.group-box-label:hover {
+  color: var(--color-bg-accent-strong);
+  background: var(--color-bg-accent);
+}
+.group-box.is-selected .group-box-label {
+  color: var(--color-bg-accent-strong);
+  background: var(--color-bg-accent);
+}
+
+/* ---- Low-zoom view ----
+   At very small canvas scale (<30 % with hysteresis to 35 %), individual
+   attribute rows render as sub-pixel noise and dominate the paint cost on
+   the IBPDI workload (256 nodes × ~7 rows = ~1.8k <li> elements). The
+   intent is a minimap-like view: nodes keep their full silhouette so users
+   can use them for spatial orientation, but their inner contents stop
+   painting. `visibility: hidden` is the right tool — it preserves layout
+   (height stays intact) while skipping the paint of the hidden subtree. */
+.canvas.is-low-zoom .node-cols,
+.canvas.is-low-zoom .node-set,
+.canvas.is-low-zoom .node-col-add,
+.canvas.is-low-zoom .node-header > * { visibility: hidden; }
+
+/* The 1 px node and group-box borders disappear at low zoom (sub-pixel),
+   so we lean on the type-tinted background fills to keep nodes visible
+   against the canvas. The whole node gets the type tint — without the
+   header divider on top, the card reads as one solid colour block, like
+   the minimap rectangles. */
+.canvas.is-low-zoom .node {
+  background: var(--color-bg-surface-hover);
+}
+.canvas.is-low-zoom .node[data-type="table"]    { background: var(--color-type-table-tint); }
+.canvas.is-low-zoom .node[data-type="view"]     { background: var(--color-type-view-tint); }
+.canvas.is-low-zoom .node[data-type="api"]      { background: var(--color-type-api-tint); }
+.canvas.is-low-zoom .node[data-type="file"]     { background: var(--color-type-file-tint); }
+.canvas.is-low-zoom .node[data-type="codelist"] { background: var(--color-type-codelist-tint); }
+.canvas.is-low-zoom .node-header {
+  border-bottom: none;
+  background: transparent;
+}
+
+/* Group box: bump the fill so the system region reads as a discrete block
+   even when its 1 px border has shrunk to sub-pixel. Same alpha across both
+   far + low tiers so the colour doesn't shift visibly when crossing the
+   LOD boundary on wheel-zoom. The previous 0.08 / 0.18 was too pale to
+   stand out against the canvas background; 0.14 / 0.26 gives system
+   regions visual weight without overpowering the per-card silhouettes. */
+.canvas.is-low-zoom .group-box {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.14);
+}
+.canvas.is-low-zoom .group-box:hover {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.18);
+}
+.canvas.is-low-zoom .group-box.is-selected {
+  background: rgba(var(--color-bg-accent-strong-rgb), 0.26);
+}
+
+/* ---- LOD-specific overrides ----
+   `data-lod` carries the current zoom tier (far / low / mid / full). The
+   `.is-low-zoom` rules above already cover the union of far + low (silhouette
+   cards, hidden attribute rows, hidden header chrome). The rules here add
+   tier-specific cuts: edges hide entirely at far; edge labels hide at far
+   AND low. */
+
+/* Far: hide all edges. At <22 % zoom each line is sub-pixel and contributes
+   nothing but paint cost on dense graphs (IBPDI: ~384 edges). Cluster
+   structure remains readable via the system frames + name overlays. */
+.canvas[data-lod="far"] #edge-layer,
+.canvas[data-lod="far"] #edge-overlay {
+  display: none;
+}
+
+/* Far + low: edge labels hidden — at 40 % zoom a 12 px label is ~5 px on
+   screen, illegible. Both the static label and the inline editor (only
+   shown when an edge is selected, but no point editing at this scale) go.
+   Each .edge-label-fo is a foreignObject + HTML wrapper so this saves a
+   meaningful amount of paint on the IBPDI workload. */
+.canvas.is-low-zoom .edge-label-fo,
+.canvas.is-low-zoom .edge-label-fo-static {
+  display: none;
+}
+
+/* ---- Centred card label (LOD = far + low) ----
+   Visible across BOTH the far and low tiers so users can orient on big
+   diagrams from a zoomed-out view — the user explicitly asked for labels
+   "a bit lower" because most diagrams are sizable and people scan for
+   info at overview zoom levels.
+
+   Two font sizes by tier so the on-screen pixel height stays readable
+   across the full far-to-low scale span:
+     far  (~10-22 %): 80 px world ⇒ 8-18 px on screen
+     low  (~22-45 %): 40 px world ⇒ 9-18 px on screen
+   The transition between tiers shrinks the label by 2× — visible step
+   but immediately compensated by the canvas zoom, so the label's
+   on-screen size stays inside the readable band on both sides.
+
+   No per-tick JS counter-scaling — each tier's font is hard-pinned and
+   the LOD class on canvasEl gates visibility, so this costs nothing on
+   pan / zoom.
+
+   Long compound names (`PortfolioAndAssetManagement`) overflow the
+   card sideways rather than truncate; neighbouring labels can visually
+   overlap at low zoom — accepted as the cost of legibility.
+
+   `aria-hidden="true"` on the markup — screen readers already get the
+   label via the node's regular `aria-label`, no need to double-announce. */
+.node-low-label { display: none; }
+.canvas[data-lod="far"] .node-low-label,
+.canvas[data-lod="low"] .node-low-label {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+  white-space: nowrap;
+}
+.canvas[data-lod="far"] .node-low-label > span,
+.canvas[data-lod="low"] .node-low-label > span {
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+/* far tier — bigger font for very-zoomed-out scale */
+.canvas[data-lod="far"] .node-low-label > span { font-size: 80px; }
+/* low tier — original size for the readable mid-low scale */
+.canvas[data-lod="low"] .node-low-label > span { font-size: 40px; }
+
+/* ---- System-name overlays ----
+   Big readable labels that fade in as the canvas zooms out, so the user can
+   orient themselves when individual node text becomes too small. The layer
+   sits above the node-layer in DOM order so node bodies can never obscure
+   the labels. JS counter-scales each label so its on-screen size stays
+   constant regardless of canvas zoom. */
+.system-overlay-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+.system-overlay {
+  position: absolute;
+  /* JS overwrites transform every frame to apply the counter-scale; the
+     translate(-50%, -50%) offset keeps the label centred (both axes) on
+     the anchor point, which JS positions at the geometric centre of the
+     group box. transform-origin matches so counter-scale grows from the
+     centre, not a corner. */
+  transform: translate(-50%, -50%);
+  transform-origin: 50% 50%;
+  font-family: var(--font-sans);
+  font-size: var(--text-display);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  padding: 6px 16px;
+  background: var(--color-bg-surface-translucent);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+}
+
+/* ---- Node ---- */
+.node {
+  position: absolute;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  width: 320px;
+  user-select: none;
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.node:hover { border-color: var(--color-border-strong); }
+/* Selection: brand-red border + halo, matching the Graph view's selection
+   treatment so the focal node reads with one consistent visual language
+   across both views. The halo is more pronounced than the previous blue
+   variant because red on a white card is louder than blue was — and
+   that's the point: selection should pop. */
+.node.is-selected {
+  border-color: var(--color-brand-red);
+  box-shadow: 0 0 0 3px rgba(var(--color-brand-red-rgb), 0.35), var(--shadow-card);
+}
+.node:focus { outline: none; }
+.node:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
+body.mode-edit .node { cursor: move; }
+body.mode-view .node { cursor: pointer; }
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  /* Type-tinted by default — overridden per type below.
+     Falls back to the neutral surface-hover for any node missing its
+     data-type attribute. */
+  background: var(--color-bg-surface-hover);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+/* Per-type tint — uses the same -bg pair the icon uses, so the header,
+   icon chip, and column key all live in the same colour family. */
+.node[data-type="table"]    .node-header { background: var(--color-type-table-bg); }
+.node[data-type="view"]     .node-header { background: var(--color-type-view-bg); }
+.node[data-type="api"]      .node-header { background: var(--color-type-api-bg); }
+.node[data-type="file"]     .node-header { background: var(--color-type-file-bg); }
+.node[data-type="codelist"] .node-header { background: var(--color-type-codelist-bg); }
+.node-type-icon {
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+.node[data-type="table"] .node-type-icon { background: var(--color-type-table-bg); color: var(--color-type-table); }
+.node[data-type="view"]  .node-type-icon { background: var(--color-type-view-bg);  color: var(--color-type-view); }
+.node[data-type="api"]   .node-type-icon { background: var(--color-type-api-bg);   color: var(--color-type-api); }
+.node[data-type="file"]  .node-type-icon { background: var(--color-type-file-bg);  color: var(--color-type-file); }
+.node[data-type="codelist"] .node-type-icon { background: var(--color-type-codelist-bg); color: var(--color-type-codelist); }
+.node-title {
+  font-weight: 600;
+  font-size: var(--text-heading-s);
+  color: var(--color-text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.node-system {
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+.node-cols {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  font-size: var(--text-mono-sm);
+  font-family: var(--font-mono);
+}
+.node-col {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  color: var(--color-text-primary);
+  position: relative;
+}
+.node-col:hover { background: var(--color-bg-surface-hover); }
+.node-col.is-selected {
+  background: var(--color-bg-accent);
+  box-shadow: inset 3px 0 0 0 var(--color-bg-accent-strong);
+}
+.node-col-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  padding: 1px 5px;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 3px;
+  color: transparent;
+  background: transparent;
+  flex-shrink: 0;
+  user-select: none;
+  /* Reserve the slot so the column-name column-aligns across keyed/unkeyed
+     rows — but drop the visible "–" so non-keyed rows look quieter. */
+}
+.node-col-key.pk { color: var(--color-text-on-accent); background: var(--color-pk); }
+.node-col-key.fk { color: var(--color-text-on-accent); background: var(--color-fk); }
+.node-col-key.uk { color: var(--color-text-on-accent); background: var(--color-uk); }
+/* In edit mode the empty key slot becomes interactive (cycle PK/FK/UK/–);
+   show the dash there so the user sees the affordance. The :not()
+   guard keeps the white-on-coloured text on already-keyed cells —
+   without it, edit mode was overriding the PK/FK/UK foreground due
+   to higher specificity, leaving the badge text gray-on-blue. */
+body.mode-edit .node-col-key:not(.pk):not(.fk):not(.uk) {
+  color: var(--color-text-placeholder);
+}
+.node-col-name {
+  color: var(--color-text-primary);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.node-col-type {
+  color: var(--color-text-secondary);
+  margin-left: auto;
+  font-size: var(--text-label);
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Placeholder dash when type is empty. Shown in both modes so the
+   column row reads as "name | –" rather than collapsing — keeps the
+   row alignment stable across nodes that have or don't have types. */
+.node-col-type:empty::before {
+  content: '–';
+  color: var(--color-text-placeholder);
+}
+
+/* Edge handles (edit mode) — four ports per node so users can pull
+   connections from any side. Centered on the node's edge, not a fixed Y.
+   The visible dot stays 12 × 12 (visually quiet against the node body)
+   but a 24 × 24 transparent ::before pseudo carries the actual hit area
+   so the WCAG 2.5.5 minimum (24 CSS px) is met without the visible dot
+   needing to grow. */
+.node-port {
+  position: absolute;
+  width: 12px; height: 12px;
+  background: var(--color-bg-surface);
+  border: 2px solid var(--color-bg-accent-strong);
+  border-radius: 50%;
+  display: none;
+  cursor: crosshair;
+  z-index: 2;
+}
+.node-port::before {
+  /* Invisible 24 × 24 hit pad centred on the dot. */
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+.node-port.left   { left: -6px;   top: 50%; transform: translateY(-50%); }
+.node-port.right  { right: -6px;  top: 50%; transform: translateY(-50%); }
+.node-port.top    { top: -6px;    left: 50%; transform: translateX(-50%); }
+.node-port.bottom { bottom: -6px; left: 50%; transform: translateX(-50%); }
+body.mode-edit .node:hover .node-port,
+body.mode-edit .node.is-selected .node-port { display: block; }
+
+/* ---- Floating toolbars ---- */
+.ft {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-toolbar);
+  z-index: 10;
+}
+/* iOS home-indicator clearance: env(safe-area-inset-bottom) is ~34px on
+   iPhones with the gesture bar, 0 elsewhere. Keeps the zoom controls out
+   of the OS gesture-handle zone where taps would otherwise be ambiguous. */
+.ft-bottom-left  {
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  left: var(--space-4);
+}
+.ft-left-center  {
+  top: 50%;
+  left: var(--space-4);
+  transform: translateY(-50%);
+  flex-direction: column;
+  padding: 4px;
+  gap: 4px;
+}
+.ft-btn-icon {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+}
+
+.ft-btn-icon:hover {
+  color: var(--color-bg-accent-strong);
+  background: var(--color-bg-accent);
+}
+.ft-btn-icon[draggable="true"] { cursor: grab; }
+.ft-btn-icon[draggable="true"]:active { cursor: grabbing; }
+
+.palette-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-edge-active);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ft-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: var(--text-small);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+}
+.ft-btn:hover { background: var(--color-bg-surface-hover); }
+.ft-btn-primary {
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  padding: 6px 12px;
+}
+.ft-btn-primary:hover { background: var(--color-bg-accent-strong-hover); }
+.ft-sep { width: 1px; height: 16px; background: var(--color-border-subtle); }
+.ft-label { font-size: var(--text-small); color: var(--color-text-secondary); padding: 0 6px; min-width: 38px; text-align: center; }
+/* Zoom indicator carries an LOD descriptor at far/low ("30% · Karte") so
+   it can grow up to ~120 px. Tabular-nums stops the percentage column
+   from dancing as the integer width changes. */
+.ft-label--zoom {
+  min-width: 120px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ---- Minimap (bottom-right overview panel) ----
+   180×120 SVG window mounted in the canvas viewport. Coloured rects per
+   node (one fill per type), a faint outline per system frame, and a draggable
+   viewport rectangle that pans the main canvas. Hidden outside diagram view. */
+.minimap {
+  position: absolute;
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  right: var(--space-4);
+  width: 240px;
+  height: 160px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-toolbar);
+  overflow: hidden;
+  z-index: 10;
+  /* Smooth nudge when the info panel slides in */
+  transition: right 200ms ease;
+  /* Visible only in diagram view; toggled by body[data-view] (panel.js). */
+  display: none;
+}
+body[data-view="diagram"] .minimap { display: block; }
+/* Push the minimap left when the info panel is open — same logic the
+   bottom-right zoom toolbar used to use. */
+body[data-panel="open"][data-view="diagram"] .minimap {
+  right: calc(var(--info-panel-width, 360px) + var(--space-4));
+}
+.minimap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  /* Default cursor: pointer (click anywhere = one-shot pan to that point).
+     JS swaps to `move` when hovering inside the viewport rectangle (drag
+     mode available) and `grabbing` while a drag is in progress. */
+  cursor: pointer;
+  /* Page background hint so the empty letterbox area reads as "off-canvas". */
+  background: var(--color-bg-page);
+}
+.minimap svg.is-over-viewport { cursor: move; }
+.minimap svg.is-dragging       { cursor: grabbing; }
+.minimap-system-rect {
+  fill: var(--color-bg-accent);
+  fill-opacity: 0.55;
+  stroke: var(--color-border-default);
+  stroke-width: 0.5;
+}
+.minimap-node-rect {
+  fill: var(--color-type-table);
+  /* Crisp 1-pixel-ish stroke regardless of viewBox scaling. */
+  vector-effect: non-scaling-stroke;
+}
+.minimap-node-rect--table    { fill: var(--color-type-table); }
+.minimap-node-rect--view     { fill: var(--color-type-view); }
+.minimap-node-rect--api      { fill: var(--color-type-api); }
+.minimap-node-rect--file     { fill: var(--color-type-file); }
+.minimap-node-rect--codelist { fill: var(--color-type-codelist); }
+#minimap-viewport {
+  fill: var(--color-bg-accent-strong);
+  fill-opacity: 0.10;
+  stroke: var(--color-bg-accent-strong);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+  /* Solid stroke. Was dashed for a "draggable thing" cue, but at zoom-
+     extent the rectangle covers nearly the whole minimap and the dashes
+     read as visual noise rather than affordance. The cursor change
+     (move / grabbing on hover / drag) still signals draggability. */
+  transition: stroke-width 120ms ease, fill-opacity 120ms ease;
+}
+/* Hover / drag → bolder stroke + slightly heavier fill, signalling
+   "you've engaged the handle". Driven by classes that minimap.js already
+   toggles on the SVG wrapper for cursor styling. */
+.minimap svg.is-over-viewport #minimap-viewport,
+.minimap svg.is-dragging #minimap-viewport {
+  stroke-width: 2;
+  fill-opacity: 0.18;
+}
+
+body.mode-view .edit-only { display: none; }
+body.mode-edit .view-only { display: none; }
+body:not(.is-signed-in) .auth-only { display: none; }
+body.is-signed-in .noauth-only { display: none; }
+
+/* Header sign-in entry point — replaces the avatar visually when signed-out
+   so the affordance is explicit text, not a generic person icon. */
+.header-signin-btn {
+  height: 32px;
+  padding: 0 14px;
+  background: var(--color-bg-accent-strong);
+  color: var(--color-text-on-accent);
+  border: none;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.header-signin-btn:hover { background: var(--color-bg-accent-strong-hover); }
+
+/* Canvas-visibility pill in the toolbar breadcrumb. Sits next to the canvas
+   label so users always see whether the current canvas is anon-readable.
+   The whole toolbar is display:none on the overview, so no separate
+   overview-hide rule is needed. */
+.toolbar-canvas-visibility {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.toolbar-canvas-visibility[hidden] { display: none; }
+.toolbar-canvas-visibility.is-public {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+}
+.toolbar-canvas-visibility.is-restricted {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+}
+/* Icon (globe / lock) sits at currentColor — picks up the variant tint. */
+.toolbar-canvas-visibility svg {
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+
+/* ---- Overview (landing) chrome ----
+   The overview view has no canvas, so the per-canvas chrome (toolbar, view
+   tabs, info panel, minimap) hides while it's active. */
+body[data-view="overview"] .app-toolbar,
+body[data-view="overview"] .filter-pill-bar,
+body[data-view="overview"] .info-panel,
+body[data-view="overview"] .minimap { display: none; }
+
+/* The #app grid normally has 5 rows (header / toolbar / pill-bar / main /
+   footer). On overview the toolbar and pill-bar are display:none which
+   *removes* them from the grid — the remaining 3 items would otherwise snap
+   into the first 3 rows. Match the row count to the visible items so each
+   lands in the right cell. */
+body[data-view="overview"] #app {
+  grid-template-rows: var(--header-height) 1fr var(--footer-height);
+}
+
+/* ---- Toolbar breadcrumb ----
+   Lives in the left cell of .app-toolbar's 3-column grid. The toolbar
+   itself is display:none on the overview view, so the breadcrumb only
+   shows once a canvas is loaded — no per-element override needed. */
+.toolbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.toolbar-breadcrumb-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease;
+}
+.toolbar-breadcrumb-home:hover {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+.toolbar-breadcrumb-sep {
+  color: var(--color-text-placeholder);
+  font-size: var(--text-small);
+  user-select: none;
+}
+.toolbar-breadcrumb-current {
+  font-size: var(--text-small);
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Constrain so a long canvas name can't push the centre column off-axis. */
+  max-width: 320px;
+}
+
+/* ---- Overview view ---- */
+.view-overview {
+  display: none;
+  overflow-y: auto;
+  background: var(--color-bg-page);
+}
+.view-overview.is-active { display: block; }
+.overview-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6) var(--space-8);
+}
+.overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+.overview-header-text { flex: 1; min-width: 0; }
+#overview-new-canvas-btn { flex-shrink: 0; }
+.overview-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-display);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.overview-sub {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--text-body);
+}
+.overview-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+/* Single-canvas case: a 280-min grid containing one card reads as
+   "rest didn't load". Switch to a single column constrained to a
+   reasonable max so the card has presence without filling the screen. */
+.overview-list.is-single-card {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.overview-card-wrap {
+  position: relative;
+}
+.overview-card {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  font: inherit;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.06s;
+}
+/* Reserve room in the title row for the absolute-positioned hamburger so
+   the "Nur intern" badge can't sit underneath it. Only matters when
+   signed-in; signed-out the menu wrap is hidden via auth-only. */
+body.is-signed-in .overview-card-head { padding-right: 32px; }
+
+/* ---- Card hamburger menu ---- */
+.overview-card-menu-wrap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+}
+.overview-card-menu-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.overview-card-menu-btn:hover {
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+.card-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  padding: 4px;
+  z-index: 50;
+}
+.card-menu[hidden] { display: none; }
+.card-menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: var(--text-small);
+  text-align: left;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.card-menu-item:hover { background: var(--color-bg-surface-hover); }
+.card-menu-item-danger { color: var(--color-error); }
+.card-menu-item-danger:hover { background: var(--color-error-bg); }
+.overview-card:hover {
+  border-color: var(--color-border-accent);
+  box-shadow: var(--shadow-card);
+}
+.overview-card:active { transform: translateY(1px); }
+.overview-card:focus-visible {
+  outline: 2px solid var(--color-bg-accent-strong);
+  outline-offset: 2px;
+}
+.overview-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.overview-card-title {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+.overview-card-badge {
+  font-size: var(--text-label);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  white-space: nowrap;
+  font-weight: 500;
+}
+.overview-card-desc {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: 1.45;
+  color: var(--color-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.overview-card-desc-empty { color: var(--color-text-placeholder); font-style: italic; }
+.overview-card-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--space-2);
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  border-top: 1px solid var(--color-border-subtle);
+}
+.overview-card-slug {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-placeholder);
+}
+.overview-empty {
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  color: var(--color-text-secondary);
+}
+.overview-empty-title {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: var(--text-heading-m);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.overview-empty-sub { margin: 0; font-size: var(--text-small); }
+
+/* Floating action bar (appears above the selected node in edit mode) */
+.node-action-bar {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  z-index: 50;
+  font-family: var(--font-sans);
+}
+.node-action-bar button {
+  background: none;
+  border: none;
+  padding: 5px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.node-action-bar button:hover {
+  color: var(--color-bg-accent-strong);
+  background: var(--color-bg-accent);
+}
+.node-action-bar button[data-action="delete-node"]:hover {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* ---- Inline edit (nodes) ---- */
+[contenteditable="true"]:focus { outline: none; }
+body.mode-edit [contenteditable="true"] {
+  cursor: text;
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
+  /* Persistent affordance — a faint dotted underline shows that the text
+     is editable, without waiting for hover. The previous hover-only cue
+     made first-time users miss inline edit altogether ("how do I rename
+     this?"). text-underline-offset pulls it 2 px below the baseline so
+     it sits on the line, not through the descenders. */
+  text-decoration: underline dotted var(--color-text-placeholder);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: background-color 120ms ease;
+}
+body.mode-edit [contenteditable="true"]:hover {
+  background: var(--color-bg-page);
+  /* Slightly stronger underline on hover to confirm "this is the
+     thing you'd be editing if you click". */
+  text-decoration-color: var(--color-text-secondary);
+}
+body.mode-edit [contenteditable="true"]:focus {
+  background: var(--color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border-accent);
+  /* Drop the underline once focused — the focus ring + caret carry the
+     "you're editing this" signal, no need for the affordance hint. */
+  text-decoration: none;
+}
+
+.node-delete {
+  position: relative;
+  background: none; border: none; padding: 2px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  line-height: 0;
+}
+/* Invisible 24×24 hit pad — the visual icon stays 12 × 12 + 2 px padding
+   (~16 px) so the header chrome stays quiet, but the click target meets
+   the WCAG 2.5.5 (Level AAA) and platform-touch (24 CSS px) minimum. */
+.node-delete::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.node-delete:hover { color: var(--color-error); background: var(--color-error-bg); }
+
+.node-col-key { cursor: default; }
+body.mode-edit .node-col-key {
+  cursor: pointer;
+  user-select: none;
+}
+body.mode-edit .node-col-key:hover {
+  background: var(--color-bg-page);
+  border-radius: 2px;
+}
+
+/* Absolutely positioned in the row's right-padding zone so its presence
+   doesn't shift the rest of the row's layout between view and edit
+   modes. Same pattern as .node-col-handle. */
+.node-col-del {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; padding: 2px;
+  line-height: 0;
+  color: var(--color-text-placeholder);
+  visibility: hidden;
+  z-index: 1;
+}
+/* Hit-area extender — visible icon stays small but the click target
+   reaches WCAG 2.5.5 (24 px). */
+.node-col-del::before {
+  content: '';
+  position: absolute;
+  inset: -5px;
+}
+body.mode-edit .node-col:hover .node-col-del { visibility: visible; }
+.node-col-del:hover { color: var(--color-error); }
+
+/* Codelist (Werteliste) reference badge — small list icon at the right
+   of an attribute row, indicating the column's values are constrained by
+   a codelist. Click selects the codelist; info-panel renders its codes.
+   Reuses the codelist-type accent palette so the same icon meaning the
+   same thing in the same colour is visually consistent across the app. */
+.node-col-codelist {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  padding: 0;
+  background: var(--color-type-codelist-bg);
+  color: var(--color-type-codelist);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.node-col-codelist:hover {
+  background: var(--color-type-codelist);
+  color: var(--color-type-codelist-bg);
+}
+.node-col-codelist:focus-visible {
+  outline: 2px solid var(--color-border-accent);
+  outline-offset: 1px;
+}
+
+/* Drag handle — visible on row hover in edit mode. Absolutely
+   positioned in the row's left-padding zone so it doesn't take up
+   flex-flow space; that way view and edit mode rows have identical
+   left-edge alignment for the key badge / column name. */
+.node-col-handle {
+  position: absolute;
+  left: 1px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 14px;
+  color: var(--color-text-placeholder);
+  cursor: grab;
+  visibility: hidden;
+  z-index: 1;
+}
+/* Hit-area extender — keeps the visible grip dots small (10 × 14) but the
+   actual grab target reaches WCAG 2.5.5 (24 × 24 px). Important because
+   the handle initiates a HTML5 drag — a fiddly miss-click drops the row
+   into the wrong set. */
+.node-col-handle::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  left: -7px;
+  right: -7px;
+}
+body.mode-edit .node-col:hover .node-col-handle { visibility: visible; }
+.node-col-handle:hover { color: var(--color-text-secondary); }
+.node-col-handle:active { cursor: grabbing; }
+
+.node-col.is-dragging { opacity: 0.4; }
+
+/* Drop indicators */
+.node-col.is-drop-target {
+  box-shadow: inset 0 2px 0 0 var(--color-bg-accent-strong);
+}
+.node-col.is-drop-target.drop-after {
+  box-shadow: inset 0 -2px 0 0 var(--color-bg-accent-strong);
+}
+.node-set.is-drop-target {
+  box-shadow: inset 0 0 0 2px var(--color-bg-accent-strong);
+}
+.node-cols.is-drop-target {
+  box-shadow: inset 0 0 0 2px var(--color-bg-accent-strong);
+  border-radius: var(--radius-sm);
+}
+
+.node-col-add {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+  margin: 0 8px 4px;
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.node-col-add:hover { border-color: var(--color-border-accent); color: var(--color-text-primary); }
+
+/* ---- Property sets ---- */
+.node-set { border-top: 1px solid var(--color-border-subtle); }
+.node-set-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+.node-set-header:hover { background: var(--color-bg-surface-hover); }
+.node-set-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  color: var(--color-text-secondary);
+  transition: transform 120ms ease;
+  flex-shrink: 0;
+}
+.node-set.is-expanded .node-set-toggle { transform: rotate(90deg); }
+.node-set-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-text-primary);
+}
+.node-set-sep {
+  color: var(--color-text-placeholder);
+  font-size: var(--text-small);
+}
+.node-set-label {
+  flex: 1;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.node-set-label[contenteditable="true"]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-text-placeholder);
+}
+.node-set-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.node-set-delete {
+  background: none; border: none; padding: 2px;
+  color: var(--color-text-placeholder);
+  border-radius: var(--radius-sm);
+  line-height: 0;
+  flex-shrink: 0;
+}
+.node-set-delete:hover { color: var(--color-error); background: var(--color-error-bg); }
+.node-set-content { display: none; padding-bottom: 4px; }
+.node-set.is-expanded .node-set-content { display: block; }
+.node-set .node-cols { padding: 0; }
+
+.node-add-set {
+  display: flex;
+  justify-content: center;
+  padding: 4px;
+  margin: 4px 8px 6px;
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  border: 1px dashed var(--color-border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.node-add-set:hover { border-color: var(--color-border-accent); color: var(--color-text-primary); }
+
+/* ---- Table view ---- */
+.view-table { padding: 0; }
+.table-toolbar {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-subtle);
+  flex-wrap: wrap;
+}
+.seg-tabs .seg-btn { font-size: var(--text-small); padding: 4px 12px; }
+.table-count {
+  margin-left: auto;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.cell-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  color: var(--color-text-primary);
+}
+.table-wrap {
+  overflow: auto;
+  height: calc(100% - 60px);
+  background: var(--color-bg-surface);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+}
+.data-table th, .data-table td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.data-table th {
+  font-weight: 500;
+  background: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky; top: 0;
+}
+.data-table tbody tr { cursor: pointer; }
+.data-table tbody tr:hover { background: var(--color-bg-surface-hover); }
+.data-table .cell-name {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 500;
+}
+.tag {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  font-size: var(--text-mono-xs);
+  margin-right: 4px;
+}
+.row-del-btn {
+  background: none; border: none;
+  color: var(--color-text-placeholder);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  line-height: 0;
+}
+.row-del-btn:hover { color: var(--color-error); background: var(--color-error-bg); }
+body.mode-view .row-del-btn { visibility: hidden; }
+
+body.mode-edit .data-table tbody [contenteditable="true"] {
+  cursor: text;
+}
+body.mode-edit .data-table tbody [contenteditable="true"]:hover {
+  background: var(--color-bg-page);
+  border-radius: 2px;
+}
+body.mode-edit .data-table tbody [contenteditable="true"]:focus {
+  background: var(--color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--color-border-accent);
+  outline: none;
+  border-radius: 2px;
+}
+.cell-select {
+  font: inherit;
+  font-size: var(--text-small);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  padding: 1px 4px;
+  cursor: pointer;
+}
+body.mode-view .cell-select { pointer-events: none; appearance: none; padding-right: 4px; }
+body.mode-edit .cell-select:hover { background: var(--color-bg-page); }
+body.mode-edit .cell-select:focus {
+  border-color: var(--color-border-accent);
+  background: var(--color-bg-surface);
+  outline: none;
+}
+
+/* ---- Graph view ----
+   Read-only force-laid-out network — sister of Diagramm. Same parent
+   slot in #app-main (one of the .view sections); only one view is .is-active
+   at a time, driven by app.js's applyViewVisibility. */
+/* Position + inset:0 are inherited from `.view` so the section fills its
+   slot. Overriding to `position: relative` here collapses the section to
+   0×0 (its only child, .graph-canvas, is absolutely positioned and so
+   doesn't contribute to flow height) — and the SVG renders invisibly. */
+.view-graph {
+  background: var(--color-bg-page);
+  overflow: hidden;
+}
+.graph-canvas {
+  position: absolute;
+  inset: 0;
+  /* Cursor flips to grabbing during a pan; rootEl gets .is-panning. */
+  cursor: grab;
+  background-color: var(--color-bg-page);
+  background-image: radial-gradient(var(--color-bg-grid-dot) 1px, transparent 1px);
+  background-size: 24px 24px;
+  /* Mobile: claim every touch gesture as our own. Same reasoning as
+     .canvas — without this, browsers turn pan attempts into scroll
+     attempts and we never see the pointer stream. */
+  touch-action: none;
+  user-select: none;
+}
+.graph-canvas.is-panning { cursor: grabbing; }
+.graph-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* The transform group is what we pan/zoom. Children are absolute in graph
+   world coords (laid out by ELK). */
+.graph-transform { transform-origin: 0 0; }
+
+/* Edges */
+.graph-edge {
+  fill: none;
+  stroke: var(--color-edge);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+/* System → entity edges are quieter than entity → entity flows; the
+   "publishes" relationship is structural ("X belongs to system Y"),
+   not dataflow. Convey the secondary status with a lighter colour
+   (no dashed/dotted strokes anywhere — solid lines read cleaner at
+   every zoom level and don't shimmer during simulation).
+
+   Was --color-border-subtle (#EFEFED) at 0.75 px which read as 100 %
+   transparent against the page background. Bumped to --color-border-strong
+   (#A3A39E) at 1 px so the lines are unambiguously visible while still
+   reading as clearly less prominent than the flow edges (--color-edge
+   #8A8A85). */
+.graph-edge--publishes {
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+}
+.graph-edge--flows {
+  stroke: var(--color-edge);
+}
+
+/* Nodes */
+.graph-node { cursor: pointer; }
+.graph-node-circle {
+  stroke: var(--color-bg-surface);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  transition: stroke-width 120ms ease, filter 120ms ease;
+}
+.graph-node:hover .graph-node-circle { stroke-width: 3; }
+
+/* Selection: brand-red outline + soft halo + bold label so the active
+   node reads instantly even against a dense neighbourhood. We use red
+   (not the accent blue Diagramm uses) because entity circles are filled
+   with the same dark blue as --color-bg-accent-strong — a blue selection
+   stroke is invisible against a blue fill. Brand red gives maximum
+   contrast and is already part of the design system. */
+.graph-node.is-selected .graph-node-circle {
+  stroke: var(--color-brand-red);
+  stroke-width: 4;
+  filter:
+    drop-shadow(0 0 0 2px rgba(var(--color-brand-red-rgb), 0.45))
+    drop-shadow(0 0 8px rgba(var(--color-brand-red-rgb), 0.7));
+}
+.graph-node.is-selected .graph-node-label {
+  font-weight: 700;
+  fill: var(--color-brand-red);
+}
+
+/* System node — bigger, light-blue solid. The single "anchor" for its
+   cluster of entities. Solid fill (no transparency) reads more clearly
+   against the page than the previous 12 %-tinted hub, especially when
+   the hub overlaps publish edges. Stroke keeps the dark accent so the
+   shape still has a defined edge. */
+.graph-node-circle--system {
+  fill: var(--color-bg-accent);
+  fill-opacity: 1;
+  stroke: var(--color-bg-accent-strong);
+  stroke-width: 1.5;
+}
+.graph-node--system:hover .graph-node-circle--system {
+  /* Slightly darker tint on hover — same blue family, just more weight. */
+  fill: var(--color-type-table-bg);
+}
+/* When a system hub is the selection, swap to brand red — same reasoning
+   as entity nodes: the hub already wears blue, so a blue selection halo
+   would vanish. Solid light-red fill (no transparency) mirrors the
+   non-selected hub's solid fill style — selection state changes colour,
+   not opacity. */
+.graph-node--system.is-selected .graph-node-circle--system {
+  fill: #FCE7E8;
+  fill-opacity: 1;
+  stroke: var(--color-brand-red);
+  stroke-width: 4;
+  filter: drop-shadow(0 0 10px rgba(var(--color-brand-red-rgb), 0.7));
+}
+.graph-node--system.is-selected .graph-node-label--system {
+  fill: var(--color-brand-red);
+}
+
+/* Entity nodes — coloured per data type. Same palette as the Diagramm
+   card type-tints, so the two views read as the same data. */
+.graph-node--type-table    .graph-node-circle { fill: var(--color-type-table); }
+.graph-node--type-view     .graph-node-circle { fill: var(--color-type-view); }
+.graph-node--type-file     .graph-node-circle { fill: var(--color-type-file); }
+.graph-node--type-codelist .graph-node-circle { fill: var(--color-type-codelist); }
+.graph-node--type-api      .graph-node-circle { fill: var(--color-type-api); }
+
+/* Labels — hide at low zoom would take a JS counter-scale; for v1 we
+   just keep them on. SVG handles the per-node positioning via the
+   <text>'s y offset set in graph.js. */
+.graph-node-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  fill: var(--color-text-primary);
+  pointer-events: none;
+  user-select: none;
+}
+.graph-node-label--system {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  fill: var(--color-bg-accent-strong);
+}
+
+/* ==================================================================
+   Spotlight selection — fade everything except the selected node
+   and its 1st-degree neighbours, so a click on any entity instantly
+   reveals what it connects to. Applied to both Diagramm (.canvas)
+   and Graph (.graph-canvas) when a node or system is selected.
+
+   Class hierarchy:
+     .is-spotlighting   on the canvas root   → mode active
+     .is-selected       on the focal node    → existing styles win
+     .is-neighbour      on connected nodes   → softer accent ring
+     .is-related        on connecting edges  → accent colour, full opacity
+   Anything not flagged fades out.
+================================================================== */
+
+/* ---- Diagramm view ---- */
+
+.canvas.is-spotlighting .node {
+  transition: opacity 180ms ease, box-shadow 180ms ease;
+}
+.canvas.is-spotlighting .node:not(.is-selected):not(.is-neighbour) {
+  opacity: 0.28;
+}
+/* Red ring on neighbours — softer than .is-selected's bolder halo
+   (2 px @ 35 % vs 3 px @ 35 % w/ red border), keeping the focal node
+   the loudest element while giving connected nodes clear "related"
+   feedback. Same red as Graph view → unified focus story. */
+.canvas.is-spotlighting .node.is-neighbour {
+  box-shadow: 0 0 0 2px rgba(var(--color-brand-red-rgb), 0.45),
+              var(--shadow-card);
+}
+.canvas.is-spotlighting .edge-group {
+  transition: opacity 180ms ease;
+}
+/* :not(.is-selected) preserves a directly-clicked edge at full opacity
+   when the user has both an edge AND a node selected at once (rare but
+   possible — info panel can show edge metadata while spotlight is on). */
+.canvas.is-spotlighting .edge-group:not(.is-related):not(.is-selected) {
+  opacity: 0.12;
+}
+.canvas.is-spotlighting .edge-group.is-related .edge-path {
+  stroke: var(--color-brand-red);
+  stroke-width: 2;
+}
+.canvas.is-spotlighting .edge-group.is-related .edge-cardinality line,
+.canvas.is-spotlighting .edge-group.is-related .edge-cardinality circle {
+  stroke: var(--color-brand-red);
+}
+/* Group boxes pull back a touch too — keeps focus on the node, not the
+   ambient cluster. */
+.canvas.is-spotlighting .group-box:not(.is-selected) {
+  opacity: 0.4;
+  transition: opacity 180ms ease;
+}
+
+/* ---- Graph view ---- */
+
+.graph-canvas.is-spotlighting .graph-node,
+.graph-canvas.is-spotlighting .graph-edge {
+  transition: opacity 180ms ease, stroke 180ms ease, stroke-width 180ms ease;
+}
+.graph-canvas.is-spotlighting .graph-node:not(.is-selected):not(.is-neighbour) {
+  opacity: 0.22;
+}
+.graph-canvas.is-spotlighting .graph-edge:not(.is-related) {
+  opacity: 0.1;
+}
+/* Neighbour ring — visible red stroke + red label, but lighter than the
+   selected node's halo + bold label so the hierarchy reads. Same red as
+   the selection accent (see above) for visual coherence — selected node
+   is the loud red, neighbours echo it more softly. */
+.graph-canvas.is-spotlighting .graph-node.is-neighbour .graph-node-circle {
+  stroke: var(--color-brand-red);
+  stroke-width: 2.5;
+}
+.graph-canvas.is-spotlighting .graph-node.is-neighbour .graph-node-label {
+  fill: var(--color-brand-red);
+  font-weight: 600;
+}
+.graph-canvas.is-spotlighting .graph-edge.is-related {
+  stroke: var(--color-brand-red);
+  stroke-width: 2;
+  opacity: 1;
+}
+
+/* ---- Filter hide ----
+   Mirrors Canvas/Diagramm's data-filtered behaviour: nodes/edges that
+   don't pass the active filters are hidden entirely (display: none)
+   rather than dimmed. The earlier "ghost" treatment (opacity 0.12 / 0.05)
+   left a noisy backdrop of unrelated nodes that competed with the
+   matches for attention; hiding makes the filter result unambiguous.
+   Layout stays stable across filter changes — the simulation runs once
+   with all nodes, then this rule simply removes the unmatched ones from
+   the visual tree, so re-applying filters doesn't re-trigger layout. */
+.graph-canvas.has-filters .graph-node.is-filtered-out,
+.graph-canvas.has-filters .graph-edge.is-filtered-out {
+  display: none;
+}
+
+/* Tooltip — absolutely-positioned div following the cursor. */
+.graph-tooltip {
+  position: absolute;
+  background: var(--color-text-primary);
+  color: var(--color-text-on-accent);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-label);
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: var(--shadow-popover);
+  white-space: nowrap;
+}
+.graph-tooltip[hidden] { display: none; }
+
+/* Loading + empty overlays — same shape as canvas-loading / canvas-empty. */
+.graph-loading,
+.graph-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  pointer-events: none;
+  z-index: 5;
+}
+.graph-loading[hidden],
+.graph-empty[hidden] { display: none; }
+.graph-empty {
+  text-align: center;
+}
+
+/* Floating zoom toolbar — reuses .ft styles. Match Diagramm's bottom-left
+   anchor so users find the controls in the same spot across both views. */
+.graph-zoom { position: absolute; }
+
+/* Minimap stays hidden in graph view — its bbox math is tied to the
+   Diagramm canvas's world coords, not the SVG's, and a graph-view
+   minimap would need its own bbox calc. The info-panel still works
+   (selecting a graph node shows its details on the right edge). */
+body[data-view="graph"] .minimap {
+  display: none;
+}
+
+/* ---- API view ---- */
+.view-api { overflow: auto; padding: var(--space-5) var(--space-6); background: var(--color-bg-page); }
+.api-header {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.api-title { font-size: var(--text-heading-l); font-weight: 600; }
+.api-base { font-size: var(--text-small); color: var(--color-text-secondary); margin-top: 4px; }
+.api-base code {
+  font-family: var(--font-mono); font-size: var(--text-mono-sm);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  padding: 1px 6px; border-radius: var(--radius-sm);
+}
+.api-meta { display: flex; align-items: center; gap: 8px; }
+.api-pill {
+  display: inline-block;
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: var(--text-small);
+}
+.api-tagline {
+  margin-top: 6px;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  max-width: 720px;
+}
+.api-list { display: flex; flex-direction: column; gap: 4px; }
+.api-section-divider {
+  margin: var(--space-5) 0 var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.api-section-divider:first-child { margin-top: 0; }
+.api-section-title {
+  font-size: var(--text-heading-s);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.api-section-desc {
+  margin-top: 4px;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  max-width: 720px;
+}
+.api-param-list {
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  font-size: var(--text-small);
+}
+.api-param-list li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.api-param-list li:last-child { border-bottom: none; }
+.api-param-list code {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+.api-param-req {
+  display: inline-block;
+  padding: 0 6px;
+  font-size: var(--text-mono-xs);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border-radius: 8px;
+  margin-left: 4px;
+  font-weight: 500;
+}
+.api-param-ex {
+  color: var(--color-text-placeholder);
+  margin-left: 6px;
+  font-size: var(--text-label);
+}
+.api-desc {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+.api-endpoint {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.api-endpoint-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+}
+.api-endpoint-header:hover { background: var(--color-bg-surface-hover); }
+.api-method {
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: var(--text-label);
+  letter-spacing: 0.04em;
+  min-width: 50px;
+  text-align: center;
+}
+.api-method.get    { background: var(--color-type-table-bg); color: var(--color-type-table); }
+.api-method.post   { background: var(--color-type-view-bg);  color: var(--color-type-view); }
+.api-method.put    { background: var(--color-warning-bg);    color: var(--color-warning); }
+.api-method.patch  { background: var(--color-uk-bg);         color: var(--color-uk); }
+.api-method.delete { background: var(--color-error-bg);      color: var(--color-error); }
+.api-path { color: var(--color-text-primary); }
+.api-summary { color: var(--color-text-secondary); margin-left: auto; font-family: var(--font-sans); }
+.api-endpoint-body {
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-small);
+  display: none;
+}
+.api-endpoint.is-open .api-endpoint-body { display: block; }
+.api-endpoint .chev { transition: transform 150ms ease; color: var(--color-text-secondary); }
+.api-endpoint.is-open .chev { transform: rotate(90deg); }
+.api-section-label {
+  font-size: var(--text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+.api-section-label:first-child { margin-top: 0; }
+.api-code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  background: var(--color-bg-page);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+/* ---- Footer ---- */
+.app-footer {
+  position: relative;
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: 0 var(--space-5);
+  background: var(--color-bg-surface);
+  border-top: 1px solid var(--color-border-subtle);
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.footer-version { font-weight: 500; color: var(--color-text-primary); }
+.footer-hint {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.footer-links { margin-left: auto; display: flex; gap: var(--space-3); }
+.footer-links a { color: var(--color-text-link); text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
+
+/* ---- Info panel (right slide-in) ---- */
+.info-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--info-panel-width, 360px);
+  min-width: 280px;
+  max-width: 640px;
+  background: var(--color-bg-surface);
+  border-left: 1px solid var(--color-border-default);
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.04);
+  transform: translateX(100%);
+  transition: transform 200ms ease;
+  z-index: 30;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.info-panel-resize {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -3px;
+  width: 6px;
+  cursor: ew-resize;
+  z-index: 31;
+  user-select: none;
+}
+.info-panel-resize::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 120ms ease;
+}
+.info-panel-resize:hover::before,
+.info-panel.is-resizing .info-panel-resize::before {
+  background: var(--color-border-strong);
+}
+.info-panel.is-resizing { transition: none; }
+.info-panel.is-resizing ~ * .minimap,
+body.is-resizing-panel .minimap { transition: none; }
+.info-panel.is-open { transform: translateX(0); }
+.info-panel-content { padding: 0; }
+
+.info-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.info-header-icon {
+  width: 32px; height: 32px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+.info-header-text { flex: 1; min-width: 0; }
+.info-header-title {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+.info-header-sub {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+  display: flex; align-items: center; gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.info-header-close {
+  background: none;
+  border: none;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.info-header-close:hover { background: var(--color-bg-surface-hover); color: var(--color-text-primary); }
+
+.info-section {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.info-section:last-child { border-bottom: none; }
+.info-section-label {
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.info-section-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.info-meta {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 8px 12px;
+  font-size: var(--text-small);
+}
+.info-meta dt {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  margin: 0;
+}
+.info-meta dd {
+  color: var(--color-text-primary);
+  margin: 0;
+  word-break: break-word;
+}
+.info-meta a.info-link {
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+.info-meta a.info-link:hover { text-decoration: underline; }
+
+/* Link-styled button used inside the info panel — e.g. "Alle 84 Attribute
+   anzeigen →" on the Datenpaket detail. Looks like a link, behaves like a
+   button (so screen readers announce the action correctly). */
+.info-link-btn {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: 4px 0;
+  background: none;
+  border: none;
+  color: var(--color-text-link);
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+}
+.info-link-btn:hover { text-decoration: underline; }
+.info-link-btn:focus { outline: 2px solid var(--color-border-accent); outline-offset: 2px; }
+
+/* Edit-mode set picker on the attribute detail panel. Compact, panel-tinted,
+   doesn't fight the surrounding <dl> rhythm. */
+.info-meta-select {
+  font: inherit;
+  font-size: var(--text-small);
+  max-width: 100%;
+  padding: 4px 6px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+}
+.info-meta-select:focus {
+  outline: none;
+  border-color: var(--color-border-accent);
+}
+
+.info-meta dd .info-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+  border-radius: 999px;
+  font-size: var(--text-mono-xs);
+  margin-right: 4px;
+  margin-bottom: 2px;
+}
+
+/* DB UUIDs are 36 chars and don't break naturally — `break-all` lets the
+   line wrap without overflowing the panel; the smaller font matches the
+   ID code style without leaving the row at a different visual weight.
+   Selectable text so users can copy/paste into DB queries. */
+.info-uuid {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  word-break: break-all;
+  user-select: all;
+}
+
+/* ---- Beschreibung block ----
+   Free-text description rendered as its own section beneath Metadaten on
+   every panel kind. The line-height is loose so multi-paragraph
+   definitions stay readable; preserves whitespace so authors can break
+   into paragraphs with blank lines. */
+.info-description {
+  font-size: var(--text-small);
+  line-height: 1.55;
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- Header pills ----
+   Compact governance pills (classification, lifecycle, PII) shown below
+   the header subtitle. Same shape across every panel kind so the user
+   learns one visual idiom for "this thing's metadata at a glance".
+   Variant-specific colours via [data-value] attribute selectors —
+   semantic, not duplicated per kind. */
+.info-header-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.info-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: var(--text-mono-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+/* Classification — colour intensifies with confidentiality. */
+.info-pill--classification[data-value="oeffentlich"] {
+  background: #EDFAF3;
+  color: var(--color-type-view);
+  border-color: transparent;
+}
+.info-pill--classification[data-value="intern"] {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-color: transparent;
+}
+.info-pill--classification[data-value="vertraulich"],
+.info-pill--classification[data-value="geheim"] {
+  background: rgba(var(--color-brand-red-rgb), 0.12);
+  color: var(--color-brand-red);
+  border-color: transparent;
+}
+/* Lifecycle — Entwurf is muted, Produktiv is the most active green. */
+.info-pill--lifecycle[data-value="entwurf"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-secondary);
+}
+.info-pill--lifecycle[data-value="standardisiert"] {
+  background: var(--color-bg-accent);
+  color: var(--color-bg-accent-strong);
+  border-color: transparent;
+}
+.info-pill--lifecycle[data-value="produktiv"] {
+  background: #EDFAF3;
+  color: var(--color-type-view);
+  border-color: transparent;
+}
+.info-pill--lifecycle[data-value="abgeloest"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-placeholder);
+  text-decoration: line-through;
+}
+/* PII — DSG concern, the only pill that really needs to shout. The
+   "besonders schützenswert" variant gets the loud red treatment;
+   "personenbezogen" stays warning-amber. */
+.info-pill--pii[data-value="keine"] {
+  background: var(--color-bg-page);
+  color: var(--color-text-placeholder);
+}
+.info-pill--pii[data-value="personenbezogen"] {
+  background: #FEF7E8;
+  color: #8A5A00;
+  border-color: transparent;
+}
+.info-pill--pii[data-value="besonders_schuetzenswert"],
+.info-pill--pii[data-value="besonders schützenswert"] {
+  background: rgba(var(--color-brand-red-rgb), 0.14);
+  color: var(--color-brand-red);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.info-set-list, .info-rel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.info-set-list li, .info-rel-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+.info-set-list li:hover, .info-rel-list li:hover { background: var(--color-bg-surface-hover); }
+/* Codelist values share the .info-set-list shape but aren't clickable —
+   strip cursor + hover so the row doesn't suggest a navigation target.
+   Title link in the section label is the navigation affordance. */
+.info-codelist-list li         { cursor: default; }
+.info-codelist-list li:hover   { background: transparent; }
+.info-set-list .info-set-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.info-set-list .info-set-label {
+  flex: 1;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.info-set-list .info-set-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-xs);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-page);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+.info-rel-list .info-rel-arrow {
+  color: var(--color-text-placeholder);
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.info-rel-list .info-rel-target {
+  flex: 1;
+  color: var(--color-text-link);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.info-rel-list .info-rel-label {
+  font-size: var(--text-label);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.info-key-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+.info-key-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.info-key-stat .info-key-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  /* 9 px raw was below the readable threshold for distinguishing PK / FK /
+     UK glyphs — the panel renders these at full canvas zoom (not the LOD
+     silhouette path), so they should sit at the label scale. */
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 3px;
+  color: var(--color-text-on-accent);
+}
+.info-key-stat .info-key-badge.pk { background: var(--color-pk); }
+.info-key-stat .info-key-badge.fk { background: var(--color-fk); }
+.info-key-stat .info-key-badge.uk { background: var(--color-uk); }
+
+.info-empty {
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+}
+
+/* The panel only makes sense in views that have selection (diagram + table). */
+body[data-view="api"] .info-panel { display: none; }
+
+/* When panel is open, give the table view a right margin so rows aren't
+   hidden behind it. The diagram canvas is fine — pan/zoom compensates. */
+body[data-view="table"] .view-table.is-active .table-toolbar,
+body[data-view="table"] .view-table.is-active .table-wrap {
+  transition: margin-right 200ms ease;
+}
+body[data-panel="open"][data-view="table"] .view-table.is-active .table-toolbar,
+body[data-panel="open"][data-view="table"] .view-table.is-active .table-wrap {
+  margin-right: var(--info-panel-width, 360px);
+}
+
+/* ---- Toast (import feedback) ---- */
+.toast {
+  position: fixed;
+  bottom: 60px;
+  /* Centre on the visible canvas area — when the info panel is open, the
+     panel-width custom property shifts the toast left of the panel. */
+  left: calc(50% - (var(--info-panel-offset, 0px) / 2));
+  transform: translateX(-50%);
+  background: var(--color-text-primary);
+  color: var(--color-text-on-accent);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-small);
+  box-shadow: var(--shadow-popover);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease, left 200ms ease;
+}
+body[data-panel="open"]:not([data-view="api"]) .toast {
+  --info-panel-offset: var(--info-panel-width, 360px);
+}
+.toast.is-visible { opacity: 1; }
+.toast.is-error { background: var(--color-error); }
+.toast.is-success { background: var(--color-success); }
+/* Icon + text layout — flex row so the SVG sits on the same baseline as the
+   message. The icon variants are added by toast(kind) in app.js so the
+   error/success state isn't conveyed by colour alone (WCAG 1.4.1). */
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toast-icon {
+  flex-shrink: 0;
+}
+.toast-text {
+  /* Allow long messages to wrap rather than overflow off-screen. */
+  word-break: break-word;
+}
+
+/* ---- Modal confirm dialog (Excel import, destructive replace) ---- */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-backdrop);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+.confirm-overlay.is-visible { opacity: 1; pointer-events: auto; }
+.confirm-card {
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  width: 420px;
+  max-width: 90vw;
+  padding: var(--space-5);
+  transform: translateY(-8px);
+  transition: transform 150ms ease;
+}
+.confirm-overlay.is-visible .confirm-card { transform: translateY(0); }
+.confirm-title {
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2);
+}
+.confirm-body {
+  font-size: var(--text-small);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+  line-height: 1.5;
+}
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.confirm-card .tb-btn {
+  padding: 7px 14px;
+  font-size: var(--text-body);
+}
+.confirm-card .tb-btn-danger {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: var(--color-text-on-accent);
+}
+.confirm-card .tb-btn-danger:hover {
+  background: var(--color-error-hover);
+  border-color: var(--color-error-hover);
+}
+
+/* ============================================================
+   Mobile breakpoint (≤ 640px) — view-mode polish.
+   Edit-mode UX on touch is intentionally modest in this prototype.
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Tighter chrome heights; the footer is decorative on mobile, drop it. */
+  :root {
+    --header-height: 48px;
+    --toolbar-height: 44px;
+    --footer-height: 0px;
+  }
+  /* 4 rows for 4 active grid items (footer is display:none on mobile,
+     removed from grid). Auto row in slot 3 is for the filter-pill-bar
+     — it must stay an explicit grid item even when [hidden] uses
+     display:flex (see the .filter-pill-bar[hidden] rule), otherwise
+     auto-placement would shift app-main one row up and the canvas
+     would render at zero height. Same fix shape as the desktop grid;
+     see the comment on the desktop rule for the full story. */
+  #app {
+    grid-template-rows: var(--header-height) var(--toolbar-height) auto 1fr;
+  }
+  .app-footer { display: none; }
+
+  /* Header: drop the lang marker + "/" hint, let the search fill remaining
+     space. The avatar dropdown is placeholder-only, hide it too. */
+  .app-header { padding: 0 var(--space-3); gap: var(--space-2); }
+  .header-logo { font-size: 14px; }
+  .lang-marker,
+  .header-search-hint,
+  .user-menu { display: none; }
+  .header-search { flex: 1; min-width: 0; }
+  .header-search input {
+    width: 100%;
+    min-width: 0;
+    padding: 8px 12px 8px 30px;
+    /* iOS Safari auto-zooms when an input has computed font-size < 16px on
+       focus. Bumping the inputs is the standard escape hatch. */
+    font-size: 16px;
+  }
+
+  /* Toolbar: tighten and collapse to icon-only. font-size:0 on the button
+     shrinks trailing text nodes ("Import", "Sichtbarkeit", etc) while the
+     SVG width attributes (set in HTML) keep the icons at full size. */
+  .app-toolbar { padding: 0 var(--space-2); gap: var(--space-1); }
+  .toolbar-right { gap: 4px; }
+  .toolbar-right .tb-btn {
+    font-size: 0;
+    padding: 8px 10px;
+    gap: 0;
+  }
+  .toolbar-sep { margin: 0 4px; }
+  .seg-btn { padding: 6px 10px; font-size: 13px; }
+
+  /* Table-tab filter input — same iOS auto-zoom prevention. */
+  .toolbar-input { min-width: 0; flex: 1; font-size: 16px; }
+
+  /* Info panel slides in as a near-full-width sheet, leaving a 48 px strip
+     of canvas peeking on the left. The strip is both a visual reminder
+     ("the canvas is still behind this") and a tap target the eye can find
+     when reaching for the × close. The 6px-wide resize handle has no use
+     under touch, drop it. */
+  .info-panel {
+    width: calc(100vw - 48px) !important;
+    max-width: calc(100vw - 48px) !important;
+  }
+  .info-panel-resize { display: none; }
+
+  /* When the full-width sheet is open it covers the canvas, so the bottom-
+     right minimap would be hidden behind it. The desktop "shift left by
+     panel width" rule produces a negative offset on a 100vw panel; just
+     hide the minimap while the sheet is up. */
+  body[data-panel="open"][data-view="diagram"] .minimap {
+    display: none;
+  }
+
+  /* Edge-label input is one of the few view-time touch targets we care
+     about. (The user can read existing edge labels without ever opening
+     edit mode, but tapping a relation still selects it for inspection.) */
+  .edge-label-input input { font-size: 16px; }
+
+  /* Search dropdown: stretch to fit the now-fluid header search. */
+  .search-dropdown { min-width: 0; max-width: none; }
+}
+
+/* ============================================================
+   Print stylesheet — used by the PDF export (window.print()).
+   Strips chrome and lets the active view occupy the page.
+   ============================================================ */
+@media print {
+  @page { margin: 12mm; }
+
+  html, body {
+    background: #fff !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* Hide global chrome — header, toolbar, footer, floating toolbars,
+     palette, info panel resize handle, action bar, and toasts. */
+  .app-header,
+  .app-toolbar,
+  .app-footer,
+  .ft,
+  .info-panel-resize,
+  .node-action-bar,
+  .toast,
+  .confirm-overlay,
+  .export-dropdown,
+  .search-dropdown,
+  .header-search-hint,
+  .node-port,
+  .node-col-handle,
+  .node-col-del,
+  .node-col-add,
+  .node-add-set,
+  .node-set-delete,
+  .row-del-btn {
+    display: none !important;
+  }
+
+  #app {
+    display: block !important;
+    height: auto !important;
+  }
+  .app-main {
+    overflow: visible !important;
+    background: #fff !important;
+    position: static !important;
+  }
+  .view {
+    position: static !important;
+    inset: auto !important;
+  }
+  .view:not(.is-active) { display: none !important; }
+  .view.is-active { display: block !important; }
+
+  /* Diagram view: the canvas-transform sits at fixed coordinates. Force
+     it visible at scale 1 with no overflow clipping so all nodes/edges
+     end up on the printed page (browser will paginate). */
+  .canvas {
+    position: static !important;
+    background: #fff !important;
+    overflow: visible !important;
+    page-break-inside: avoid;
+  }
+  .canvas-transform {
+    position: relative !important;
+    transform: none !important;
+  }
+  .group-layer { display: block !important; }
+  .group-box { box-shadow: none !important; }
+  .node {
+    box-shadow: none !important;
+    border: 1px solid #999 !important;
+    page-break-inside: avoid;
+  }
+  .node:hover, .node.is-selected {
+    box-shadow: none !important;
+    border-color: #999 !important;
+  }
+  .edge-layer, .edge-overlay {
+    overflow: visible !important;
+  }
+
+  /* Info panel — only show its content if it's currently visible (selected
+     entity). Anchor inline rather than as an absolute overlay. */
+  .info-panel {
+    position: static !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    page-break-before: always;
+  }
+  .info-panel:not(.is-open) { display: none !important; }
+
+  /* Table view: drop sticky headers (multi-page sticky doesn't work in print) */
+  .data-table th { position: static !important; }
+  .table-wrap { overflow: visible !important; height: auto !important; }
+
+  /* API view: expand all collapsed endpoints for print */
+  .api-endpoint .api-endpoint-body { display: block !important; }
+  .api-endpoint .chev { display: none !important; }
+
+  /* Force colour-printing of background tints (browsers strip by default).
+     Without this, the type-tinted node headers print white. */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

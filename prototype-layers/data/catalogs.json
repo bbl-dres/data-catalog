@@ -1,0 +1,176 @@
+[
+  {
+    "id": "cat-bundesimmobilien",
+    "type": "catalog",
+    "name": {
+      "de": "Bundesimmobilien Katalog",
+      "en": "Federal Real Estate Catalog",
+      "fr": "Catalogue immobilier fédéral",
+      "it": "Catalogo immobili federali"
+    },
+    "description": {
+      "de": "Metadatenkatalog für das Immobilienportfolio des Bundes, einschliesslich aller Gebäude, Grundstücke und Mietobjekte",
+      "en": "Metadata catalog for the federal real estate portfolio, including all buildings, plots, and rental units",
+      "fr": "Catalogue de métadonnées pour le portefeuille immobilier de la Confédération, y compris tous les bâtiments, terrains et objets locatifs",
+      "it": "Catalogo dei metadati per il portafoglio immobiliare della Confederazione, compresi tutti gli edifici, i terreni e le unità in affitto"
+    },
+    "status": "active",
+    "currentVersionId": "ver-bundesimmobilien-1.2.0",
+    "owner": {
+      "de": "BBL - Bundesamt für Bauten und Logistik",
+      "en": "FOBL - Federal Office for Buildings and Logistics",
+      "fr": "OFCL - Office fédéral des constructions et de la logistique",
+      "it": "UFCL - Ufficio federale delle costruzioni e della logistica"
+    },
+    "created": "2024-01-15",
+    "updated": "2026-01-20",
+    "color": "#3B82F6",
+    "icon": "building",
+    "domains": ["dom-immo", "dom-project"],
+    "lastActivity": "2026-01-20",
+    "members": [
+      { "id": "agent-001", "name": "Anna Müller", "role": "admin", "email": "anna.mueller@admin.ch", "status": "active", "joinedAt": "2024-01-15" },
+      { "id": "agent-002", "name": "Peter Schmidt", "role": "editor", "email": "peter.schmidt@admin.ch", "status": "active", "joinedAt": "2024-01-20" },
+      { "id": "agent-003", "name": "Lisa Weber", "role": "editor", "email": "lisa.weber@admin.ch", "status": "active", "joinedAt": "2024-02-01" },
+      { "id": "agent-004", "name": "Thomas Brunner", "role": "viewer", "email": "thomas.brunner@admin.ch", "status": "active", "joinedAt": "2024-03-15" },
+      { "id": "agent-005", "name": "Sarah Keller", "role": "viewer", "email": "sarah.keller@admin.ch", "status": "active", "joinedAt": "2024-04-01" }
+    ]
+  },
+  {
+    "id": "cat-geodaten",
+    "type": "catalog",
+    "name": {
+      "de": "Geodaten Schweiz",
+      "en": "Swiss Geodata",
+      "fr": "Géodonnées Suisse",
+      "it": "Geodati Svizzera"
+    },
+    "description": {
+      "de": "Nationale Geodateninfrastruktur mit räumlichen Basisdaten und thematischen Geodaten",
+      "en": "National geodata infrastructure with spatial base data and thematic geodata",
+      "fr": "Infrastructure nationale de géodonnées avec données spatiales de base et géodonnées thématiques",
+      "it": "Infrastruttura nazionale di geodati con dati spaziali di base e geodati tematici"
+    },
+    "status": "active",
+    "currentVersionId": "ver-geodaten-2.0.0",
+    "owner": {
+      "de": "swisstopo - Bundesamt für Landestopografie",
+      "en": "swisstopo - Federal Office of Topography",
+      "fr": "swisstopo - Office fédéral de topographie",
+      "it": "swisstopo - Ufficio federale di topografia"
+    },
+    "created": "2024-03-10",
+    "updated": "2026-01-15",
+    "color": "#10B981",
+    "icon": "map",
+    "domains": ["dom-immo"],
+    "lastActivity": "2026-01-17",
+    "members": [
+      { "id": "agent-006", "name": "Marco Rossi", "role": "admin", "email": "marco.rossi@swisstopo.ch", "status": "active", "joinedAt": "2024-03-10" },
+      { "id": "agent-007", "name": "Sophie Berger", "role": "editor", "email": "sophie.berger@swisstopo.ch", "status": "active", "joinedAt": "2024-03-15" },
+      { "id": "agent-008", "name": "Jean-Pierre Favre", "role": "editor", "email": "jean-pierre.favre@swisstopo.ch", "status": "active", "joinedAt": "2024-04-01" }
+    ]
+  },
+  {
+    "id": "cat-finanzen",
+    "type": "catalog",
+    "name": {
+      "de": "Finanzwesen Bund",
+      "en": "Federal Finance",
+      "fr": "Finances fédérales",
+      "it": "Finanze federali"
+    },
+    "description": {
+      "de": "Metadatenkatalog für Finanzdaten des Bundes, Budget, Rechnungswesen und Controlling",
+      "en": "Metadata catalog for federal financial data, budget, accounting and controlling",
+      "fr": "Catalogue de métadonnées pour les données financières fédérales, budget, comptabilité et contrôle de gestion",
+      "it": "Catalogo dei metadati per i dati finanziari federali, budget, contabilità e controlling"
+    },
+    "status": "active",
+    "currentVersionId": "ver-finanzen-1.0.0",
+    "owner": {
+      "de": "EFV - Eidgenössische Finanzverwaltung",
+      "en": "FFA - Federal Finance Administration",
+      "fr": "AFF - Administration fédérale des finances",
+      "it": "AFF - Amministrazione federale delle finanze"
+    },
+    "created": "2024-02-20",
+    "updated": "2025-12-01",
+    "color": "#F59E0B",
+    "icon": "chart",
+    "domains": ["dom-project"],
+    "lastActivity": "2026-01-15",
+    "members": [
+      { "id": "agent-009", "name": "Daniel Meier", "role": "admin", "email": "daniel.meier@efv.admin.ch", "status": "active", "joinedAt": "2024-02-20" },
+      { "id": "agent-010", "name": "Claudia Huber", "role": "viewer", "email": "claudia.huber@efv.admin.ch", "status": "active", "joinedAt": "2024-03-01" }
+    ]
+  },
+  {
+    "id": "cat-personal",
+    "type": "catalog",
+    "name": {
+      "de": "Personalwesen",
+      "en": "Human Resources",
+      "fr": "Ressources humaines",
+      "it": "Risorse umane"
+    },
+    "description": {
+      "de": "HR-Metadatenkatalog für Personalstammdaten, Lohndaten und Organisationsstruktur",
+      "en": "HR metadata catalog for employee master data, salary data and organizational structure",
+      "fr": "Catalogue de métadonnées RH pour les données de base du personnel, les données salariales et la structure organisationnelle",
+      "it": "Catalogo dei metadati HR per i dati anagrafici del personale, i dati salariali e la struttura organizzativa"
+    },
+    "status": "draft",
+    "currentVersionId": null,
+    "owner": {
+      "de": "EPA - Eidgenössisches Personalamt",
+      "en": "FOPER - Federal Office of Personnel",
+      "fr": "OFPER - Office fédéral du personnel",
+      "it": "UFPER - Ufficio federale del personale"
+    },
+    "created": "2024-06-01",
+    "updated": "2025-11-30",
+    "color": "#8B5CF6",
+    "icon": "users",
+    "domains": [],
+    "lastActivity": "2026-01-10",
+    "members": [
+      { "id": "agent-011", "name": "Eva Fischer", "role": "admin", "email": "eva.fischer@epa.admin.ch", "status": "active", "joinedAt": "2024-06-01" }
+    ]
+  },
+  {
+    "id": "cat-bauprojekte",
+    "type": "catalog",
+    "name": {
+      "de": "Bauprojekte Management",
+      "en": "Construction Projects Management",
+      "fr": "Gestion des projets de construction",
+      "it": "Gestione progetti di costruzione"
+    },
+    "description": {
+      "de": "Projektmanagement-Katalog für Bauprojekte, Renovationen und Sanierungen des Bundes",
+      "en": "Project management catalog for federal construction projects, renovations and refurbishments",
+      "fr": "Catalogue de gestion de projets pour les projets de construction, rénovations et assainissements de la Confédération",
+      "it": "Catalogo di gestione progetti per i progetti di costruzione, ristrutturazioni e risanamenti della Confederazione"
+    },
+    "status": "active",
+    "currentVersionId": "ver-bauprojekte-1.1.0",
+    "owner": {
+      "de": "BBL - Projektabteilung",
+      "en": "FOBL - Project Department",
+      "fr": "OFCL - Département des projets",
+      "it": "UFCL - Dipartimento progetti"
+    },
+    "created": "2024-04-15",
+    "updated": "2026-01-10",
+    "color": "#EF4444",
+    "icon": "hammer",
+    "domains": ["dom-project"],
+    "lastActivity": "2026-01-19",
+    "members": [
+      { "id": "agent-012", "name": "Michael Bauer", "role": "admin", "email": "michael.bauer@bbl.admin.ch", "status": "active", "joinedAt": "2024-04-15" },
+      { "id": "agent-013", "name": "Nina Keller", "role": "editor", "email": "nina.keller@bbl.admin.ch", "status": "active", "joinedAt": "2024-04-20" },
+      { "id": "agent-014", "name": "Reto Zimmermann", "role": "editor", "email": "reto.zimmermann@bbl.admin.ch", "status": "active", "joinedAt": "2024-05-01" }
+    ]
+  }
+]

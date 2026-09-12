@@ -1,0 +1,28 @@
+{
+  "sourceUrl": "https://api3.geo.admin.ch/rest/services/ech/MapServer?lang=de",
+  "layers": [
+    {
+      "attributes": {
+        "dataOwner": "Amtliche Vermessung Schweiz",
+        "dataStatus": "20260905 21:26",
+        "inspireUpperAbstract": "Basisdaten",
+        "abstract": "Die amtliche Vermessung (AV) beschreibt die Lage, die Form und den Inhalt eines Grundstückes. Die digitalen AV-Daten sind in mehreren thematischen Informationsebenen gegliedert, die frei miteinander kombiniert werden können. OpenData AV basiert auf dem Darstellungsdienst der amtlichen Vermessung welcher mit den Daten des AV-Geoportals des Bundes kreiert wird.",
+        "downloadUrl": "https://data.geo.admin.ch/ch.swisstopo-vd.amtliche-vermessung/data.zip",
+        "inspireUpperName": "Basisdaten",
+        "inspireAbstract": "Katasterparzellen",
+        "fullTextSearch": "Amtliche Vermessung (OpenData) | Die amtliche Vermessung (AV) beschreibt die Lage, die Form und den Inhalt eines Grundstückes. Die digitalen AV-Daten sind in mehreren thematischen Informationsebenen gegliedert, die frei miteinander kombiniert werden können. OpenData AV basiert auf dem Darstellungsdienst der amtlichen Vermessung welcher mit den Daten des AV-Geoportals des Bundes kreiert wird. | swisstopo | Bundesamt für Landestopografie swisstopo | Amtliche Vermessung Schweiz",
+        "inspireName": "Katasterparzellen",
+        "wmsContactAbbreviation": "swisstopo",
+        "bundCollectionNumber": "",
+        "wmsContactName": "Bundesamt für Landestopografie swisstopo",
+        "maps": "api,cadastre,ech,inspire,service-wms,swisstopo",
+        "wmsUrlResource": "https://wms.geo.admin.ch/?REQUEST=GetCapabilities&SERVICE=WMS&VERSION=1.3.0",
+        "scaleLimit": "-"
+      },
+      "layerBodId": "ch.swisstopo-vd.amtliche-vermessung",
+      "idGeoCat": "a3c0f7fb-1be0-4385-9c54-33b65ae3e1ae",
+      "name": "OpenData-AV",
+      "fullName": "Amtliche Vermessung (OpenData)"
+    }
+  ]
+}

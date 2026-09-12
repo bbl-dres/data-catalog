@@ -1,0 +1,2109 @@
+[
+  {
+    "entity": "domains:bau",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "domains:bau",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "domains:bau",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "domains:bau",
+    "date": "2024-03-12",
+    "action": "Geschäftsobjekte ergänzt",
+    "detail": "9 Geschäftsobjekte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "domains:bau",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Domäne im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "domains:energie",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "domains:energie",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "domains:energie",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "domains:energie",
+    "date": "2024-03-12",
+    "action": "Geschäftsobjekte ergänzt",
+    "detail": "3 Geschäftsobjekte erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "domains:energie",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Domäne im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "domains:finanzen",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "domains:finanzen",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "domains:finanzen",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "domains:finanzen",
+    "date": "2024-03-12",
+    "action": "Geschäftsobjekte ergänzt",
+    "detail": "2 Geschäftsobjekte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "domains:finanzen",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Domäne im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "domains:partner",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "domains:partner",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "domains:partner",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Corinne Marti"
+  },
+  {
+    "entity": "domains:partner",
+    "date": "2024-03-12",
+    "action": "Geschäftsobjekte ergänzt",
+    "detail": "3 Geschäftsobjekte erfasst",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "domains:partner",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Domäne im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "domains:miete",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "domains:miete",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "domains:miete",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "domains:miete",
+    "date": "2024-03-12",
+    "action": "Geschäftsobjekte ergänzt",
+    "detail": "4 Geschäftsobjekte erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "domains:miete",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Domäne im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "systems:sap",
+    "date": "2025-12-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "systems:sap",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "systems:sap",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "systems:sap",
+    "date": "2024-03-12",
+    "action": "Datentabellen ergänzt",
+    "detail": "5 Datentabellen erfasst",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "systems:sap",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "System im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2025-12-02",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2024-03-12",
+    "action": "Datentabellen ergänzt",
+    "detail": "5 Datentabellen erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "systems:gis",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "System im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:areal",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:areal",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:areal",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:areal",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:areal",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:kampus",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:kampus",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:kampus",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:kampus",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:kampus",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:grundstueck",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:grundstueck",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:grundstueck",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:grundstueck",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:grundstueck",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:gebaeude",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:gebaeude",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:gebaeude",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:gebaeude",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "7 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:gebaeude",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:nutzungseinheit",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:nutzungseinheit",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:nutzungseinheit",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:nutzungseinheit",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:nutzungseinheit",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:geschoss",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:geschoss",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:geschoss",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:geschoss",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:geschoss",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:raum",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:raum",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:raum",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:raum",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:raum",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:bodenbedeckung",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:bodenbedeckung",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:bodenbedeckung",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:bodenbedeckung",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:bodenbedeckung",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:bemessung",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:bemessung",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:bemessung",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:bemessung",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:bemessung",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:heizzentrale",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:heizzentrale",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:heizzentrale",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "objects:heizzentrale",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:heizzentrale",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:stromzaehler",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:stromzaehler",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:stromzaehler",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "objects:stromzaehler",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:stromzaehler",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:betriebsmesswert",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:betriebsmesswert",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:betriebsmesswert",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "objects:betriebsmesswert",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "objects:betriebsmesswert",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:wirtschaftseinheit",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:wirtschaftseinheit",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:wirtschaftseinheit",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:wirtschaftseinheit",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:wirtschaftseinheit",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:buchungskreis",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:buchungskreis",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:buchungskreis",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "objects:buchungskreis",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "objects:buchungskreis",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:person",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:person",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:person",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Corinne Marti"
+  },
+  {
+    "entity": "objects:person",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "6 Attribute erfasst",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:person",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:kontakt",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:kontakt",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:kontakt",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Corinne Marti"
+  },
+  {
+    "entity": "objects:kontakt",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:kontakt",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:unternehmen",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:unternehmen",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:unternehmen",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Corinne Marti"
+  },
+  {
+    "entity": "objects:unternehmen",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Pascal Rüegg"
+  },
+  {
+    "entity": "objects:unternehmen",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:mietobjekt",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:mietobjekt",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:mietobjekt",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "objects:mietobjekt",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:mietobjekt",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:wohnung",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:wohnung",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:wohnung",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "objects:wohnung",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:wohnung",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:mietvertrag",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:mietvertrag",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:mietvertrag",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "objects:mietvertrag",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:mietvertrag",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "objects:kondition",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "objects:kondition",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:kondition",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "objects:kondition",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "3 Attribute erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "objects:kondition",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Geschäftsobjekt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-we",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-we",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-we",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-we",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "9 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-we",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-geb-sap",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-geb-sap",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-geb-sap",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-geb-sap",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "12 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-geb-sap",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-bem",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-bem",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-bem",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-bem",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "9 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-bem",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-mo",
+    "date": "2026-03-12",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-mo",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "tables:t-mo",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "tables:t-mo",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "10 Felder erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "tables:t-mo",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-mv",
+    "date": "2026-03-12",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-mv",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "tables:t-mv",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "tables:t-mv",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "9 Felder erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "tables:t-mv",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "12 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-geb-gis",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "12 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-huelle",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "10 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-proj",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "9 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-boden",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Metadaten im Architektur-Repository aktualisiert",
+    "user": "System"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2024-03-12",
+    "action": "Felder ergänzt",
+    "detail": "10 Felder erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "tables:t-parzelle",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datentabelle im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "6 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-gwr-kat",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "7 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-gwr-status",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-gwr-heiz",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-gwr-heiz",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "refs:r-gwr-heiz",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "refs:r-gwr-heiz",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "12 Werte erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "refs:r-gwr-heiz",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-kanton",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-kanton",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-kanton",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-kanton",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "26 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-kanton",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-sia-nutz",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-sia-nutz",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-sia-nutz",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-sia-nutz",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "9 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-sia-nutz",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-sia-flaeche",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-sia-flaeche",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-sia-flaeche",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-sia-flaeche",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "8 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-sia-flaeche",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-geak",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-geak",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-geak",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-geak",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "7 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-geak",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-kond",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-kond",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "refs:r-kond",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "refs:r-kond",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "5 Werte erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "refs:r-kond",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-vertrag",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-vertrag",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "refs:r-vertrag",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "refs:r-vertrag",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-zaehler",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-zaehler",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "refs:r-zaehler",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "refs:r-zaehler",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-geschoss",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-geschoss",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-geschoss",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-geschoss",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "6 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-geschoss",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-raum",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-raum",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-raum",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-raum",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "11 Werte erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-raum",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-eigentum",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-eigentum",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "refs:r-eigentum",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "refs:r-eigentum",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-energie",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-energie",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "refs:r-energie",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "refs:r-energie",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "6 Werte erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "refs:r-energie",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "refs:r-waehrung",
+    "date": "2024-06-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "refs:r-waehrung",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "refs:r-waehrung",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "refs:r-waehrung",
+    "date": "2024-03-12",
+    "action": "Werte ergänzt",
+    "detail": "3 Werte erfasst",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "refs:r-waehrung",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Werteliste im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "products:p-gebaeudebestand",
+    "date": "2026-04-15",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "products:p-gebaeudebestand",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "products:p-gebaeudebestand",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "products:p-gebaeudebestand",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "5 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "products:p-gebaeudebestand",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datenprodukt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "products:p-flaechen",
+    "date": "2026-04-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "products:p-flaechen",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "products:p-flaechen",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "products:p-flaechen",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datenprodukt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "products:p-energie",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "products:p-energie",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "products:p-energie",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "products:p-energie",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "4 Attribute erfasst",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "products:p-energie",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datenprodukt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "products:p-mietportfolio",
+    "date": "2026-03-12",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "products:p-mietportfolio",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Thomas Wyss"
+  },
+  {
+    "entity": "products:p-mietportfolio",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Andrea Kaufmann"
+  },
+  {
+    "entity": "products:p-mietportfolio",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datenprodukt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "products:p-opendata",
+    "date": "2026-04-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "products:p-opendata",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "products:p-opendata",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "products:p-opendata",
+    "date": "2024-03-12",
+    "action": "Attribute ergänzt",
+    "detail": "3 Attribute erfasst",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "products:p-opendata",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "Datenprodukt im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "apis:api-immo",
+    "date": "2026-04-20",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "apis:api-immo",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "apis:api-immo",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "apis:api-immo",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "API im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "apis:api-geo",
+    "date": "2025-12-02",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "apis:api-geo",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "apis:api-geo",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "apis:api-geo",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "API im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "apis:api-energie",
+    "date": "2026-02-03",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "apis:api-energie",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Simon Bürki"
+  },
+  {
+    "entity": "apis:api-energie",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Entwurf",
+    "user": "Rahel Gasser"
+  },
+  {
+    "entity": "apis:api-energie",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "API im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  },
+  {
+    "entity": "apis:api-opendata",
+    "date": "2026-04-01",
+    "action": "Abgeglichen",
+    "detail": "Abgleich mit Architektur-Repository (Innovator / smartfacts)",
+    "user": "System"
+  },
+  {
+    "entity": "apis:api-opendata",
+    "date": "2026-02-03",
+    "action": "Beschreibung geändert",
+    "detail": "Beschreibung präzisiert und Normreferenz ergänzt",
+    "user": "Lukas Zbinden"
+  },
+  {
+    "entity": "apis:api-opendata",
+    "date": "2024-06-01",
+    "action": "Status geändert",
+    "detail": "Entwurf → Gültig",
+    "user": "Martina Aebischer"
+  },
+  {
+    "entity": "apis:api-opendata",
+    "date": "2024-02-01",
+    "action": "Erstellt",
+    "detail": "API im Katalog angelegt",
+    "user": "Nadia Ferrari"
+  }
+]

@@ -1,0 +1,3399 @@
+{
+ "captured": "2026-09-07",
+ "source": "KBOB-IPB Anhang C – Dokumenttypenkatalog Version 2016-01 (Bauwerksdokumentation im Hochbau, Dokumentationsmodell BWD); Tabellenextraktion aus dem offiziellen PDF vom 7. September 2026",
+ "purpose": "Vollständiger Dokumenttypenkatalog (DTC) als Grundlage der Referenzliste KBOB Dokumenttyp. Die Format-, Aufbewahrungs- und Phasenspalten des Katalogs sind nicht übernommen.",
+ "groups": [
+  {
+   "code": "O",
+   "label": "Organisation",
+   "subgroups": [
+    {
+     "code": "O01",
+     "label": "Stammorganisation",
+     "types": [
+      {
+       "code": "O01001",
+       "name": "Immobilienhandbuch",
+       "description": "Das Immobilienhandbuch regelt die Abläufe, Zuständigkeiten, Kompetenzen sowie die Formen der Zusammenarbeit im Immobilienmanagement"
+      },
+      {
+       "code": "O01002",
+       "name": "Organigramm Stammorganisation",
+       "description": "Grafische Darstellung des logischen Aufbaus einer Stammorganisation"
+      },
+      {
+       "code": "O01003",
+       "name": "Adressverzeichnis Stammorganisation",
+       "description": "Verzeichnis aller Namen und Adressen einer Stammorganisation"
+      }
+     ]
+    },
+    {
+     "code": "O02",
+     "label": "Projektmananagement",
+     "types": [
+      {
+       "code": "O02001",
+       "name": "Projektauftrag",
+       "description": "Beinhaltet Kosten, Termine, Leistungen, Qualität, Organisationsform für die kommende Phase"
+      },
+      {
+       "code": "O02002",
+       "name": "Projekthandbuch",
+       "description": "Das Projekthandbuch regelt die Abläufe, Zuständigkeiten, Kompetenzen, sowie die Formen der Zusammenarbeit im Projektmanagement"
+      },
+      {
+       "code": "O02003",
+       "name": "Organigramm Projektorganisation",
+       "description": "Grafische Darstellung des logischen Aufbaus einer Projektorganisation"
+      },
+      {
+       "code": "O02004",
+       "name": "Adressverzeichnis Projektorganisation",
+       "description": "Verzeichnis aller Namen und Adressen einer Projektorganisation (inkl. Unternehmerliste)"
+      },
+      {
+       "code": "O02005",
+       "name": "Projektmanagementkonzept",
+       "description": "Konzept zum Planen, Steuern und Kontrollieren von Projekten"
+      },
+      {
+       "code": "O02006",
+       "name": "Vorgehenskonzept",
+       "description": "Beschreibung über das Vorgehen bei der Umsetzung von Bau- und Planungsleitungen der kommenden Projektphasen"
+      },
+      {
+       "code": "O02007",
+       "name": "Projektstatusbericht",
+       "description": "Bericht über den aktuellen Stand des Projektes und die weiteren Schritte"
+      },
+      {
+       "code": "O02008",
+       "name": "Funktionendiagramm",
+       "description": "Aufstellung aller Aufgaben, Verantwortungen und Kompetenzen"
+      },
+      {
+       "code": "O02009",
+       "name": "Projektantrag",
+       "description": "Antrag an eine übergeordnete Stelle für die Freigabe von weiteren Projektphasen"
+      },
+      {
+       "code": "O02010",
+       "name": "Projektänderungsantrag",
+       "description": "Antrag an eine übergeordnete Stelle für die Freigabe von Projektänderungen"
+      }
+     ]
+    },
+    {
+     "code": "O03",
+     "label": "Betriebsorganisation",
+     "types": [
+      {
+       "code": "O03001",
+       "name": "Betriebsführungshandbuch",
+       "description": "Regelt die Abläufe, Zuständigkeiten, Kompetenzen sowie die Formen der Zusammenarbeit im Facility Management"
+      },
+      {
+       "code": "O03002",
+       "name": "Organigramm Betriebsorganisation",
+       "description": "Grafische Darstellung des logischen Aufbaus einer Betriebsorganisation"
+      },
+      {
+       "code": "O03003",
+       "name": "Adressverzeichnis Betriebsorganisation",
+       "description": "Verzeichnis aller Namen und Adressen einer Betriebsorganisation"
+      }
+     ]
+    },
+    {
+     "code": "O04",
+     "label": "Qualitätsmanagement",
+     "types": [
+      {
+       "code": "O04001",
+       "name": "Risikoanalyse",
+       "description": "Risikoanalyse (Top-Down (erst Bauherrschaft, dann Planungsteam, Fachplaner, Unternehmer) wird bei jedem Phasenstart wiederholt revidiert"
+      },
+      {
+       "code": "O04002",
+       "name": "PQM-Konzept/Handbuch",
+       "description": "Beschrieb wie das PQM System in diesem spezifischen Projekt gehandhabt wird"
+      },
+      {
+       "code": "O04003",
+       "name": "PQM-Vereinbarung",
+       "description": "PQM wird zwischen Bauherrschaft und Auftragnehmer vereinbart"
+      },
+      {
+       "code": "O04004",
+       "name": "QM-Plan/Kontrollplan",
+       "description": "Wird aus der Risikoanalyse entwickelt und soll die Risiken minimieren"
+      },
+      {
+       "code": "O04005",
+       "name": "PQM-Prüfnachweis",
+       "description": "Jeder Beteiligte liefert seine Nachweisdokumente ans PQM"
+      },
+      {
+       "code": "O04006",
+       "name": "PQM-Überwachung",
+       "description": "Festgelegte Massnahmen aus der Überprüfung des Kontrollplans"
+      },
+      {
+       "code": "O04051",
+       "name": "Checkliste",
+       "description": "Checkliste für die Überprüfung von Qualität und Abläufen im Allgemeinen"
+      },
+      {
+       "code": "O04052",
+       "name": "Wartungscheckliste",
+       "description": "Checkliste für die Wartung von Anlagen"
+      },
+      {
+       "code": "O04101",
+       "name": "Regulatorienhandbuch",
+       "description": "Handbuch/Sammlung aller wichtigen Regulatorien, welche das Bauwerk und deren Anlagen betreffen"
+      }
+     ]
+    },
+    {
+     "code": "O05",
+     "label": "Informationsmanagement",
+     "types": [
+      {
+       "code": "O05001",
+       "name": "Informationskonzept",
+       "description": "Konzept zur Festlegung der Verbreitung von Informationen über Bauwerke und Projekte"
+      },
+      {
+       "code": "O05002",
+       "name": "Kommunikationskonzept",
+       "description": "Konzept über die Art und Form Kommunikation innerhalb einer Organisation und gegen Aussen"
+      },
+      {
+       "code": "O05003",
+       "name": "Datenaustauschvereinbarung",
+       "description": "Vereinbarung über den projektspezifischen Datenaustausch"
+      },
+      {
+       "code": "O05004",
+       "name": "Dokumentationskonzept",
+       "description": "Beschreibt die Anforderungen an die Bauwerksdokumentation"
+      },
+      {
+       "code": "O05005",
+       "name": "DM-Handbuch",
+       "description": "Regelt die Datenmanagement-Prozesse sowie Inhalte und Formen der Bauwerksdokumentation"
+      },
+      {
+       "code": "O05006",
+       "name": "DM-Prüfprotokoll",
+       "description": "Qualitätsprüfprotokoll für die Bauwerksdokumentation"
+      }
+     ]
+    },
+    {
+     "code": "O06",
+     "label": "Termine",
+     "types": [
+      {
+       "code": "O06001",
+       "name": "Terminplan",
+       "description": "Auflistung von Start- und Endterminen von Aufgaben und Meilensteinen"
+      },
+      {
+       "code": "O06002",
+       "name": "Netzplan",
+       "description": "Darstellung aller planerischen und baulichen Abhängigkeiten"
+      }
+     ]
+    },
+    {
+     "code": "O07",
+     "label": "Einsatzpläne",
+     "types": [
+      {
+       "code": "O07001",
+       "name": "Piketteinsatzplan",
+       "description": "Organisation der Piketteinsätze über einen bestimmten Zeitraum"
+      },
+      {
+       "code": "O07002",
+       "name": "Reinigungseinsatzplan",
+       "description": "Organisation der Reinigungseinsätze über einen bestimmten Zeitraum"
+      },
+      {
+       "code": "O07003",
+       "name": "Wartungsplan",
+       "description": "Übersicht der geplanten bzw. der zu planenden Wartungen"
+      }
+     ]
+    },
+    {
+     "code": "O08",
+     "label": "Dokumentenverzeichnisse",
+     "types": [
+      {
+       "code": "O08001",
+       "name": "Dokumentenverzeichnis",
+       "description": "Verzeichnis aller relevanten Dokumente gemäss KBOB/IPB - Empfehlung"
+      },
+      {
+       "code": "O08002",
+       "name": "Planverzeichnis",
+       "description": "Verzeichnis aller relevanten Pläne gemäss KBOB/IPB - Empfehlung"
+      }
+     ]
+    },
+    {
+     "code": "O09",
+     "label": "Verzeichnisse",
+     "types": [
+      {
+       "code": "O09001",
+       "name": "Telefonverzeichnis",
+       "description": "Verzeichnis mit Mitarbeitern und Telefonnummern"
+      },
+      {
+       "code": "O09002",
+       "name": "Mieter-/Eigentümerverzeichnis",
+       "description": "Verzeichnis der Mieter und Eigentümer"
+      }
+     ]
+    },
+    {
+     "code": "O10",
+     "label": "Korrespondenz und Protokolle",
+     "types": [
+      {
+       "code": "O10001",
+       "name": "Sitzungs- und Beschlussprotokoll",
+       "description": "Dokumentation von relevanten Vorgängen und deren Reihenfolge, Zeitpunkt, Auftraggeber und Verantwortliche im Rahmen von Besprechungen"
+      },
+      {
+       "code": "O10002",
+       "name": "Übergabeprotokoll Bewirtschaftung",
+       "description": "Protokoll der Übergabe der Bewirtschaftung an den Bewirtschafter oder einen Betreiber"
+      },
+      {
+       "code": "O10003",
+       "name": "Übergabeprotokoll Mietvertrag",
+       "description": "Protokoll der Übergabe/Übernahme eines Mietobjekts"
+      },
+      {
+       "code": "O10004",
+       "name": "Aktennotiz",
+       "description": "Schriftlich festgehaltene relevante und kurze Information"
+      },
+      {
+       "code": "O10005",
+       "name": "Pendenzenliste",
+       "description": "Zusammenstellung aller schwebenden, unerledigten Angelegenheiten"
+      },
+      {
+       "code": "O10006",
+       "name": "Projektänderungsverzeichnis",
+       "description": "Verzeichnis aller Projektänderungen"
+      },
+      {
+       "code": "O10007",
+       "name": "Behördenkorrespondenz",
+       "description": "Korrespondenzdokumente an und von Behörden mit wichtigen aufbewahrungsrelevanten Informationen"
+      },
+      {
+       "code": "O10008",
+       "name": "Interne Korrespondenz",
+       "description": "Korrespondenz innerhalb des Unternehmens mit wichtigen aufbewahrungsrelevanten Informationen"
+      },
+      {
+       "code": "O10009",
+       "name": "Korrespondenz mit Beauftragten",
+       "description": "Korrespondenz an und von Beauftragten mit wichtigen aufbewahrungsrelevanten Informationen"
+      },
+      {
+       "code": "O10010",
+       "name": "Korrespondenz mit Mietern",
+       "description": "Sämtliche Korrespondenz an und von Mietvertragspartnern"
+      },
+      {
+       "code": "O10011",
+       "name": "Allgemeine Korrespondenz",
+       "description": "Weitere allgemeine Korrespondenz mit wichtigen aufbewahrungsrelevanten Informationen"
+      },
+      {
+       "code": "O10012",
+       "name": "Mängelrüge",
+       "description": "Schriftliche Meldung von Mängeln an einem Mietobjekt"
+      },
+      {
+       "code": "O10013",
+       "name": "Kündigungsschreiben",
+       "description": "Kündigungsschreiben eines Mietverhältnisses"
+      },
+      {
+       "code": "O10014",
+       "name": "Beschlussverzeichnis",
+       "description": "Verzeichnis aller Beschlüsse aus den Beschlussprotokollen"
+      },
+      {
+       "code": "O10015",
+       "name": "Schadensmeldung",
+       "description": "Offizielle Meldung eines Schadens an den Bewirtschafter/Eigentümer"
+      },
+      {
+       "code": "O10016",
+       "name": "Wartungsmeldung",
+       "description": "Offizielle Meldung einer Wartungsmassnahme"
+      },
+      {
+       "code": "O10017",
+       "name": "Störungsmeldung",
+       "description": "Offizielle Meldung einer Störung einer Anlage"
+      },
+      {
+       "code": "O10018",
+       "name": "Politischer Vorstoss",
+       "description": "Anfragen aus der Politik zur Stellungnahme durch den Bauherren"
+      },
+      {
+       "code": "O10019",
+       "name": "Rechtsfall",
+       "description": "Dokumente zu einem Rechtsfall"
+      },
+      {
+       "code": "O10020",
+       "name": "Korrespondenz Dritte",
+       "description": "Korrespondenz mit weiteren Rollen rund um ein Bauwerk"
+      }
+     ]
+    },
+    {
+     "code": "O11",
+     "label": "Quittungen",
+     "types": [
+      {
+       "code": "O11001",
+       "name": "Schlüssel- und Kartenquittung",
+       "description": "Bestätigung für den Erhalt von Schlüsseln und Karten"
+      }
+     ]
+    },
+    {
+     "code": "O12",
+     "label": "Veröffentlichungen",
+     "types": [
+      {
+       "code": "O12001",
+       "name": "Publikation",
+       "description": "Veröffentlichung von Informationen zu Bauwerken und Bauprojekten"
+      },
+      {
+       "code": "O12002",
+       "name": "Öffentlichkeitsarbeit",
+       "description": "Korrespondenz, Artikel etc. für die Öffentlichkeitsarbeit (inkl. Präsentationen und Anlässe)"
+      }
+     ]
+    },
+    {
+     "code": "O13",
+     "label": "Gesuche",
+     "types": [
+      {
+       "code": "O13001",
+       "name": "Gesuch",
+       "description": "Antragsformular"
+      },
+      {
+       "code": "O13002",
+       "name": "Gesuch Kanalisation",
+       "description": "Antragsformular für den Anschluss eines Bauwerks an die Kanalisation"
+      },
+      {
+       "code": "O13003",
+       "name": "Gesuch Elektrizität",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung einer elektrischen Anlage an das Elektrizitätsnetz"
+      },
+      {
+       "code": "O13004",
+       "name": "Gesuch Kabelfernsehen",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Kabelfernseh-Netz"
+      },
+      {
+       "code": "O13005",
+       "name": "Gesuch Gas",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Gasnetz"
+      },
+      {
+       "code": "O13006",
+       "name": "Gesuch Wasser",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung eines Bauwerks an die Wasserversorgung"
+      },
+      {
+       "code": "O13007",
+       "name": "Gesuch Fernheizung",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung eines Bauwerks an die Fernheizung"
+      },
+      {
+       "code": "O13008",
+       "name": "Gesuch Erdsondennutzung",
+       "description": "Antragsformular zur Nutzung von Erdwärme mittels Erdsonden"
+      },
+      {
+       "code": "O13009",
+       "name": "Gesuch Grundwassernutzung",
+       "description": "Antragsformular zur Nutzung von Grundwasser zu Heiz- oder Kühlzwecken"
+      },
+      {
+       "code": "O13010",
+       "name": "Gesuch Oberflächengewässernutzung",
+       "description": "Antragsformular zur Nutzung von Oberflächengewässer (Fluss oder See) zu Heiz- oder Kühlzwecken"
+      },
+      {
+       "code": "O13011",
+       "name": "Gesuch Bedarfsnachweiskühlung",
+       "description": "Antragsformular zur Bewilligung von Kältenutzung (Bedarfsnachweis nach Kühlung)"
+      },
+      {
+       "code": "O13012",
+       "name": "Gesuch Telekommunikation",
+       "description": "Antragsformular für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Telekommunikationsnetz"
+      },
+      {
+       "code": "O13013",
+       "name": "Gesuch für Spezialbewilligungen",
+       "description": "Antragsformular für weitere Bewilligungen"
+      },
+      {
+       "code": "O13014",
+       "name": "Gesuch Feuerpolizei",
+       "description": "Antragsformular an die Feuerpolizei"
+      },
+      {
+       "code": "O13015",
+       "name": "Baugesuch",
+       "description": "Antragsformular für die Baubewilligung"
+      },
+      {
+       "code": "O13016",
+       "name": "Konzessionsgesuch",
+       "description": "Antragsformular zum Erhalt von Konzessionen"
+      },
+      {
+       "code": "O13017",
+       "name": "Subventionsantrag",
+       "description": "Antragsformular für Subventionsleistungen"
+      },
+      {
+       "code": "O13018",
+       "name": "Gesuch Werbung",
+       "description": "Antragsformular zur Präsentation von Werbung"
+      },
+      {
+       "code": "O13019",
+       "name": "Gesuch Bahntechnik",
+       "description": "Antragsformular für die Bahntechnik im Plangenehmigungsverfahren (PGV)"
+      },
+      {
+       "code": "O13020",
+       "name": "Gesuch Denkmalpflege",
+       "description": "Antragsformular für die Denkmalpflege"
+      },
+      {
+       "code": "O13101",
+       "name": "Mietformular",
+       "description": "Antragsformular für die Miete einer Räumlichkeit"
+      }
+     ]
+    },
+    {
+     "code": "O14",
+     "label": "Bewilligungen",
+     "types": [
+      {
+       "code": "O14001",
+       "name": "Bewilligung",
+       "description": "Bewilligung/Entscheid"
+      },
+      {
+       "code": "O14002",
+       "name": "Bewilligung Kanalisation",
+       "description": "Bewilligung für den Anschluss eines Bauwerks an die Kanalisation"
+      },
+      {
+       "code": "O14003",
+       "name": "Bewilligung Elektrizität",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung einer elektrischen Anlage an das Elektrizitätsnetz"
+      },
+      {
+       "code": "O14004",
+       "name": "Bewilligung Kabelfernsehen",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Kabelfernseh-Netz"
+      },
+      {
+       "code": "O14005",
+       "name": "Bewilligung Gas",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Gasnetz"
+      },
+      {
+       "code": "O14006",
+       "name": "Bewilligung Wasser",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung eines Bauwerks an die Wasserversorgung"
+      },
+      {
+       "code": "O14007",
+       "name": "Bewilligung Fernheizung",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung eines Bauwerks an die Fernheizung"
+      },
+      {
+       "code": "O14008",
+       "name": "Bewilligung Erdsondennutzung",
+       "description": "Bewilligung zur Nutzung von Erdwärme mittels Erdsonden"
+      },
+      {
+       "code": "O14009",
+       "name": "Bewilligung Grundwassernutzung",
+       "description": "Bewilligung zur Nutzung von Grundwasser zu Heiz- oder Kühlzwecken"
+      },
+      {
+       "code": "O14010",
+       "name": "Bewilligung Oberflächengewässernutzung",
+       "description": "Bewilligung zur Nutzung von Oberflächengewässer (Fluss oder See) zu Heiz- oder Kühlzwecken"
+      },
+      {
+       "code": "O14011",
+       "name": "Bewilligung Bedarfsnachweiskühlung",
+       "description": "Bewilligung von Kältenutzung (Bedarfsnachweis nach Kühlung)"
+      },
+      {
+       "code": "O14012",
+       "name": "Bewilligung Telekommunikation",
+       "description": "Bewilligung für den Anschluss, Stilllegung, Änderung eines Bauwerks an das Telekommunikationsnetz"
+      },
+      {
+       "code": "O14013",
+       "name": "Spezialbewilligung",
+       "description": "Bewilligung für weitere Themenbereiche"
+      },
+      {
+       "code": "O14014",
+       "name": "Entscheid Feuerpolizei",
+       "description": "Baubewilligung von der Feuerpolizei"
+      },
+      {
+       "code": "O14015",
+       "name": "Baubewilligung",
+       "description": "Baubewilligung inkl. unterzeichnete Pläne"
+      },
+      {
+       "code": "O14016",
+       "name": "Baurechtsentscheid",
+       "description": "Baurechtsentscheid (Erstinstanzliches Organ bei Baurechtsfällen)"
+      },
+      {
+       "code": "O14017",
+       "name": "Entscheid Umweltbehörde",
+       "description": "Entscheid über die Baubewilligung von der Umweltbehörde"
+      },
+      {
+       "code": "O14018",
+       "name": "Behördenentscheid (Diverse)",
+       "description": "Weitere Behördenentscheide"
+      },
+      {
+       "code": "O14019",
+       "name": "Betriebsbewilligung",
+       "description": "Bewilligung für die Inbetriebnahme eines Bauwerks"
+      },
+      {
+       "code": "O14020",
+       "name": "Konzessionsbewilligung",
+       "description": "Bewilligung für eine Konzession"
+      },
+      {
+       "code": "O14021",
+       "name": "Subventionszusage",
+       "description": "Zusage eines Subventionsantrages"
+      },
+      {
+       "code": "O14022",
+       "name": "Bewilligung Werbung",
+       "description": "Bewilligung zur Präsentation von Werbung"
+      },
+      {
+       "code": "O14023",
+       "name": "Bewilligung Bahntechnik",
+       "description": "Bewilligung für die Bahntechnik im Plangenehmigungsverfahren (PGV)"
+      },
+      {
+       "code": "O14024",
+       "name": "Bewilligung Denkmalpflege",
+       "description": "Bewilligung der Denkmalpflege"
+      },
+      {
+       "code": "O14050",
+       "name": "Behördliche Auflagen",
+       "description": "Von einer Behörde vorgeschriebene Auflagen im Rahmen einer Bewilligung"
+      },
+      {
+       "code": "O14101",
+       "name": "Zutrittsbewilligung",
+       "description": "Bewilligung für den Zutritt in eine Baustelle oder ein bestehendes Bauwerk"
+      },
+      {
+       "code": "O14102",
+       "name": "Parkkarte",
+       "description": "Parkbewilligung"
+      }
+     ]
+    },
+    {
+     "code": "O15",
+     "label": "Technische Protokolle",
+     "types": [
+      {
+       "code": "O15001",
+       "name": "Vorabnahmeprotokoll",
+       "description": "Vorabnahmeprotokoll wird im Rahmen einer Abnahme während der Objektfertigstellung geführt"
+      },
+      {
+       "code": "O15002",
+       "name": "Abnahmeprotokoll",
+       "description": "Das Abnahmeprotokoll wird bei der Abnahme nach Abschluss der Objektfertigstellung geführt und wird zum Festhalten des Sachverhaltes benötigt. Wird das Ab"
+      },
+      {
+       "code": "O15003",
+       "name": "Protokoll integrale Tests",
+       "description": "Abnahmeprotokoll der integralen Tests"
+      },
+      {
+       "code": "O15004",
+       "name": "Inbetriebnahmeprotokoll",
+       "description": "Inbetriebnahmeprotokoll wird bei der Inbetriebnahme eines Objektes oder Anlage geführt"
+      },
+      {
+       "code": "O15005",
+       "name": "Mängelliste",
+       "description": "Verzeichnis aller Mängel"
+      },
+      {
+       "code": "O15006",
+       "name": "Inspektionsprotokoll",
+       "description": "Protokoll mit Ergebnissen und Massnahmen im Rahmen einer Inspektion"
+      },
+      {
+       "code": "O15008",
+       "name": "Ereignisprotokoll",
+       "description": "Liste von meldepflichtigen Ereignissen im Rahmen eines Prozesses."
+      },
+      {
+       "code": "O15009",
+       "name": "Rissprotokoll",
+       "description": "Dokumentation über Risse/Schäden an den Bestandsbauten während der Bauzeit"
+      },
+      {
+       "code": "O15010",
+       "name": "Schlussprotokoll",
+       "description": "Festhalten der abschliessenden Prüfung des Bauwerk nach Ablauf der Garantiefrist (SIA118, Art. 177)"
+      },
+      {
+       "code": "O15011",
+       "name": "M assnahmenkatalog",
+       "description": "Liste geplanter Massnahmen"
+      },
+      {
+       "code": "O15012",
+       "name": "Instandsetzungsprotokoll",
+       "description": "Protokoll einer Reparatur"
+      },
+      {
+       "code": "O15013",
+       "name": "Installationsattest",
+       "description": "Anzeige für die Fertigstellung bzw. Prüfung von Gefahrenmeldeanlagen"
+      }
+     ]
+    },
+    {
+     "code": "O16",
+     "label": "Journale",
+     "types": [
+      {
+       "code": "O16001",
+       "name": "Baujournal",
+       "description": "Zusammenstellung aller während der Bauzeit relevanten Ereignisse, Entscheide, Aufgaben etc. in zeitlicher Abfolge"
+      },
+      {
+       "code": "O16002",
+       "name": "Betriebsjournal",
+       "description": "Journal zum Festhalten von Ereignissen, Veränderungen etc. in einem Bauwerk während der Betriebsphase"
+      },
+      {
+       "code": "O16003",
+       "name": "Besucherjournal",
+       "description": "Registration der angemeldeten Besucher inkl. weiteren Angaben zum Aufenthalt und Dauer"
+      },
+      {
+       "code": "O16004",
+       "name": "Parkplatzjournal",
+       "description": "Registration der angemeldeten Parkplatznutzer inkl. weiteren Angaben zum Aufenthalt und Dauer"
+      },
+      {
+       "code": "O16005",
+       "name": "Ereignisjournal",
+       "description": "Registration aller wichtigen Ereignisse in und um ein Bauwerk"
+      },
+      {
+       "code": "O16006",
+       "name": "Logbuch",
+       "description": "Automatische Registration aller wichtigen Ereignisse einer Anlage"
+      },
+      {
+       "code": "O16007",
+       "name": "Wartungsjournal",
+       "description": "Liste der durchgeführten Wartungen"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "K",
+   "label": "Verträge und Kosten",
+   "subgroups": [
+    {
+     "code": "K01",
+     "label": "Kostenplanung",
+     "types": [
+      {
+       "code": "K01001",
+       "name": "Grobkostenschätzung (GKS)",
+       "description": "Kostenaufstellung mit einer Genauigkeit von +/- 25%"
+      },
+      {
+       "code": "K01002",
+       "name": "Kostenschätzung (KS)",
+       "description": "Kostenaufstellung mit einer Genauigkeit von +/- 10%"
+      },
+      {
+       "code": "K01003",
+       "name": "Kostenvoranschlag (KV)",
+       "description": "Kostenaufstellung mit einer Genauigkeit von +/- 5%"
+      },
+      {
+       "code": "K01004",
+       "name": "Budgetänderungen / KV-Mutationen",
+       "description": "Anträge, Bewilligungen, Notizen zu Budgetänderungen/KV-Mutationen"
+      },
+      {
+       "code": "K01005",
+       "name": "Kostenstudie",
+       "description": "Studie über die Ermittlung der wahrscheinlichen Kosten eines Projekts"
+      },
+      {
+       "code": "K01006",
+       "name": "Investitionsplan",
+       "description": "Auflistung von mittel- und langfristigen Investitionen in und um ein Bauwerk"
+      },
+      {
+       "code": "K01007",
+       "name": "Betriebs-/Nutzungskostenplan",
+       "description": "Übersicht aller Ausgaben für den Betrieb und die Nutzung eines Bauwerks und dessen Anlagen"
+      },
+      {
+       "code": "K01008",
+       "name": "Projektierungskostenplan",
+       "description": "Übersicht aller Ausgaben für Projektierungstätigkeiten"
+      },
+      {
+       "code": "K01009",
+       "name": "Kreditbewilligung",
+       "description": "Bewilligung eines Kredites"
+      },
+      {
+       "code": "K01012",
+       "name": "Investitionsantrag",
+       "description": "Antrag für eine Investition"
+      },
+      {
+       "code": "K01013",
+       "name": "Budgetantrag",
+       "description": "Anträge für die Aufnahmen von Leistungen und Lieferungen ins Budget"
+      },
+      {
+       "code": "K01014",
+       "name": "Budget",
+       "description": "Aufstellung aller geplanten Kosten pro Jahr"
+      },
+      {
+       "code": "K01015",
+       "name": "Kreditantrag",
+       "description": "Antrag für einen Kredit"
+      },
+      {
+       "code": "K01016",
+       "name": "Verpflichtungskredit",
+       "description": "Freigabeantrag für einen Baukredit gegenüber dem Bund (Nach Bundesbeschluss)"
+      },
+      {
+       "code": "K01017",
+       "name": "Wirtschaftlichkeitsnachweis",
+       "description": "Nachweis über die Wirtschaftlichkeit der Bauwerke und deren Anlagen"
+      },
+      {
+       "code": "K01018",
+       "name": "Finanzierbarkeitsnachweis",
+       "description": "Nachweis über die Finanzierbarkeit von Bauwerken und Projekten"
+      },
+      {
+       "code": "K01019",
+       "name": "Mietkostenplan",
+       "description": "Berechnung der künftigen Mietkosten"
+      },
+      {
+       "code": "K01020",
+       "name": "Kostenoptimierung",
+       "description": "Berechnungen/Nachweise zur Kostenoptimierungen"
+      },
+      {
+       "code": "K01021",
+       "name": "Lebenszykluskostenberechnung",
+       "description": "Berechnungen der geplanten Lebenszykluskosten"
+      },
+      {
+       "code": "K01050",
+       "name": "Studienkreditbewilligung",
+       "description": "Bewilligung des Studienkredites"
+      },
+      {
+       "code": "K01051",
+       "name": "Projektkreditbewilligung",
+       "description": "Bewilligung des Projektkredites"
+      },
+      {
+       "code": "K01052",
+       "name": "Baukreditbewilligung",
+       "description": "Bewilligung des Baukredites"
+      },
+      {
+       "code": "K01053",
+       "name": "Objektbewilligung",
+       "description": "Bewilligung des Objektkredites"
+      },
+      {
+       "code": "K01081",
+       "name": "Kostenstellenverzeichnis",
+       "description": "Verzeichnis aller Kostenstellen"
+      }
+     ]
+    },
+    {
+     "code": "K02",
+     "label": "Ausschreibungsunterlagen",
+     "types": [
+      {
+       "code": "K02001",
+       "name": "Ausschreibung",
+       "description": "Ausschreibungsunterlagen (Leistungsverzeichnis) ohne/mit Planunterlagen"
+      },
+      {
+       "code": "K02002",
+       "name": "Submitentenliste",
+       "description": "Unternehmer, welche zur Offertstellung eingeladen werden"
+      },
+      {
+       "code": "K02003",
+       "name": "Angebot",
+       "description": "Angebote für Bau- und Dienstleistungen"
+      },
+      {
+       "code": "K02004",
+       "name": "Angebotsbewertung",
+       "description": "Prüfung und Bewertung der Angebote nach Eignungs- und Zuschlagskrieterien"
+      },
+      {
+       "code": "K02005",
+       "name": "Angebotsvergleich",
+       "description": "Vergleiche der Angebote"
+      },
+      {
+       "code": "K02006",
+       "name": "Vergabedokument",
+       "description": "Vergabeantrag und Zuschlag"
+      },
+      {
+       "code": "K02007",
+       "name": "Zusage-/Absageschreiben",
+       "description": "Dankesschreiben auf die abgelehnten Angebote"
+      },
+      {
+       "code": "K02008",
+       "name": "Bonitätsnachweis",
+       "description": "Nachweis über die Bonität bzw. Kreditwürdigkeit"
+      },
+      {
+       "code": "K02009",
+       "name": "Ausschreibungspublikation",
+       "description": "Publikation einer Ausschreibung"
+      },
+      {
+       "code": "K02010",
+       "name": "Öffnungsprotokoll",
+       "description": "Öffnungsprotokoll für Ausschreibungen und Wettbewerbe"
+      },
+      {
+       "code": "K02011",
+       "name": "Submissionsprogramm",
+       "description": "Ablaufplan für alle Submissionen"
+      }
+     ]
+    },
+    {
+     "code": "K03",
+     "label": "Vertragsunterlagen",
+     "types": [
+      {
+       "code": "K03001",
+       "name": "Bestellung",
+       "description": "Aufforderung des Kunden zur Bereitstellung eines Produktes oder einer Dienstleistung"
+      },
+      {
+       "code": "K03002",
+       "name": "Auftrag",
+       "description": "Mitteilung an den Kunden über die Annahme eines Auftrages"
+      },
+      {
+       "code": "K03003",
+       "name": "Werkvertrag",
+       "description": "Vertrag über die Erbringung eines Werkes"
+      },
+      {
+       "code": "K03004",
+       "name": "Nachtrag",
+       "description": "Anträge und Bewilligungen der Nachträge"
+      },
+      {
+       "code": "K03005",
+       "name": "Service Level Agreement",
+       "description": "Vereinbarung über zu erbringende Leistungen"
+      },
+      {
+       "code": "K03006",
+       "name": "Erfüllungsgarantie",
+       "description": "Schriftliche Garantie zur Erfüllung der Leistungen und Lieferungen"
+      },
+      {
+       "code": "K03007",
+       "name": "Service-/Wartungsvertrag",
+       "description": "Unterzeichnete Vertragsunterlagen für Service- und Wartungsleistungen"
+      },
+      {
+       "code": "K03008",
+       "name": "Solidarbürgschaft",
+       "description": "Vertrag für eine Solidarbürgschaft"
+      },
+      {
+       "code": "K03009",
+       "name": "Mietvertrag",
+       "description": "Vertrag für ein Mietverhältnis"
+      },
+      {
+       "code": "K03010",
+       "name": "Liefervertrag",
+       "description": "Vertrag für die Lieferung von Produkten"
+      },
+      {
+       "code": "K03011",
+       "name": "Planervertrag",
+       "description": "Vertrag für Planerleistungen"
+      },
+      {
+       "code": "K03012",
+       "name": "Kaufvertrag",
+       "description": "Vertrag über einen Kauf einer Immobilie"
+      },
+      {
+       "code": "K03013",
+       "name": "Leasingvertrag",
+       "description": "Vertrag über ein Leasing eines Anlageteils"
+      },
+      {
+       "code": "K03014",
+       "name": "Auftragsmeldung",
+       "description": "Unterzeichnete Verträge, Bestellungen, Aufträge für Planungs- und Erstellungsleistungen"
+      },
+      {
+       "code": "K03015",
+       "name": "Dienstbarkeitsvertrag",
+       "description": "Vertrag über das Nutzungsrecht einer fremden Sache"
+      },
+      {
+       "code": "K03016",
+       "name": "Baurechtsvertrag",
+       "description": "Vertrag über die Berechtigung, auf einem fremden Land zu bauen"
+      },
+      {
+       "code": "K03017",
+       "name": "Verfügung",
+       "description": "Vorbestellung eines Leistung"
+      },
+      {
+       "code": "K03018",
+       "name": "Vertrag",
+       "description": "Neutraler Dokumenttyp für Verträge aller Art"
+      }
+     ]
+    },
+    {
+     "code": "K04",
+     "label": "Kostenüberwachung",
+     "types": [
+      {
+       "code": "K04001",
+       "name": "Finanzrapport Planer",
+       "description": "Zusammenstellung der aktuellen leistungsbezogenen Kosten für Planungen"
+      },
+      {
+       "code": "K04002",
+       "name": "Finanzrapport Bauherr",
+       "description": "Zusammenstellung der aktuellen leistungsbezogenen Kosten für alle Aufwendungen"
+      },
+      {
+       "code": "K04003",
+       "name": "Zahlungsplan",
+       "description": "Zusammenstellung der geplanten Zahlungen"
+      }
+     ]
+    },
+    {
+     "code": "K05",
+     "label": "Rechnungsunterlagen",
+     "types": [
+      {
+       "code": "K05001",
+       "name": "Rechnung",
+       "description": "Kopie der bezahlten Rechnungen"
+      },
+      {
+       "code": "K05002",
+       "name": "Leistungsrapport",
+       "description": "Nachweis für erbrachte Leistungen"
+      },
+      {
+       "code": "K05003",
+       "name": "Lieferschein",
+       "description": "Nachweis für gelieferte Produkte"
+      },
+      {
+       "code": "K05004",
+       "name": "Ausmassurkunde",
+       "description": "Nachweis für verarbeitete Produkte"
+      },
+      {
+       "code": "K05005",
+       "name": "Zahlungsbeleg",
+       "description": "Buchungsbeleg einer Zahlung"
+      },
+      {
+       "code": "K05006",
+       "name": "Zahlungsanweisung",
+       "description": "Schriftliche Aufforderung zur Zahlung"
+      }
+     ]
+    },
+    {
+     "code": "K06",
+     "label": "Kostenabrechnung",
+     "types": [
+      {
+       "code": "K06001",
+       "name": "Subventionsabrechnung",
+       "description": "Abrechnung von Subventionszahlungen"
+      },
+      {
+       "code": "K06002",
+       "name": "Abrechnung Bauprojektphase",
+       "description": "Abrechnung von Planungs- und Baukosten pro Projektphase"
+      },
+      {
+       "code": "K06003",
+       "name": "Kreditabrechnung",
+       "description": "Abrechnung der Projektkredite"
+      },
+      {
+       "code": "K06004",
+       "name": "Objektbuchhaltung",
+       "description": "Buchhaltung über die objektspezifischen Betriebs- und Instandhaltungskosten"
+      },
+      {
+       "code": "K06005",
+       "name": "Nebenkostenabrechnung",
+       "description": "Abrechnung/Aufstellung der Mietnebenkosten"
+      },
+      {
+       "code": "K06006",
+       "name": "Buchhaltungsabschluss",
+       "description": "Buchhaltungsabschluss Objektbuchhaltung"
+      },
+      {
+       "code": "K06007",
+       "name": "Abrechnung",
+       "description": "Abrechnung von weiteren Geschäften"
+      },
+      {
+       "code": "K06008",
+       "name": "Mietkostenabrechnung",
+       "description": "Abrechnung/Aufstellung der Mietkosten"
+      },
+      {
+       "code": "K06009",
+       "name": "Unternehmerschlussabrechnung",
+       "description": "Schlussabrechnung des Unternehmers"
+      }
+     ]
+    },
+    {
+     "code": "K07",
+     "label": "Garantieunterlagen",
+     "types": [
+      {
+       "code": "K07001",
+       "name": "Garantieschein",
+       "description": "Garantie über erbrachte Leistungen und Lieferungen"
+      },
+      {
+       "code": "K07002",
+       "name": "Systemgarantie",
+       "description": "Garantie über ein gesamtes System und dessen Funktionstüchtigkeit"
+      },
+      {
+       "code": "K07003",
+       "name": "Garantieverlängerung",
+       "description": "Bestätigung über die Verlängerung einer Garantie"
+      },
+      {
+       "code": "K07004",
+       "name": "Garantiemanagementliste",
+       "description": "Verzeichnis zur Verwaltung und Überwachung aller Garantien"
+      }
+     ]
+    },
+    {
+     "code": "K08",
+     "label": "Bewertungen",
+     "types": [
+      {
+       "code": "K08001",
+       "name": "Immobilienschätzung",
+       "description": "Schätzung einer Immobilie"
+      }
+     ]
+    },
+    {
+     "code": "K09",
+     "label": "Versicherungspolicen",
+     "types": [
+      {
+       "code": "K09001",
+       "name": "Bauzeitversicherungspolice",
+       "description": "Gesetzlich obligatorische Versicherung für Neubauten sowie wesentliche An- und Umbauten mit einer Wertvermehrung."
+      },
+      {
+       "code": "K09002",
+       "name": "Bauherrenhaftpflichtspolice",
+       "description": "Versicherung gegen gesetzliche Haftpflichtansprüche aufgrund der Verletzung von Verkehrssicherungspflichten bei der Durchführung eines Bauvorhabens"
+      },
+      {
+       "code": "K09003",
+       "name": "Bauwesenversicherungspolice",
+       "description": "Versicherung für den Schutz der Bauunternehmer oder des Bauherrn vor unvorhersehbaren Schäden während der Bauzeit"
+      },
+      {
+       "code": "K09004",
+       "name": "Gebäudeversicherungspolice",
+       "description": "Versicherung gegen Feuer- und Elementarschäden, Wasserschäden, Bruch der Gebäudeverglasung sowie der Gebäudehaftpflicht"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "B",
+   "label": "Konzepte und Beschriebe",
+   "subgroups": [
+    {
+     "code": "B01",
+     "label": "Rahmenbedingungen",
+     "types": [
+      {
+       "code": "B01001",
+       "name": "Vision",
+       "description": "Vision eines Unternehmens"
+      },
+      {
+       "code": "B01002",
+       "name": "Leitbild",
+       "description": "Leitbild eines Unternehmens"
+      },
+      {
+       "code": "B01003",
+       "name": "Strategische Ziele",
+       "description": "Aus der Vision und dem Leitbild abgeleitete strategische Ziele des Immobilienunternehmens"
+      },
+      {
+       "code": "B01011",
+       "name": "Gesetzliche Anforderungen",
+       "description": "Anforderungen, welche vom Gesetz vorgegeben sind"
+      },
+      {
+       "code": "B01012",
+       "name": "Hygienevorschriften",
+       "description": "Spezifische Hygienevorschriften für den Umgang mit Lebensmitteln und Gebrauchsgegenständen gemäss der Hygieneverordnung"
+      },
+      {
+       "code": "B01013",
+       "name": "Strahlenschutzvorschriften",
+       "description": "Spezifische Strahlenvorschriften für Anlagen zur Erzeugung ionisierender Strahlen gemäss Strahlenschutzverordnung"
+      },
+      {
+       "code": "B01014",
+       "name": "Schallschutzvorschriften",
+       "description": "Spezifische Vorschriften zum Schallschutz"
+      }
+     ]
+    },
+    {
+     "code": "B02",
+     "label": "Grundstücksinformationen",
+     "types": [
+      {
+       "code": "B02101",
+       "name": "Grundbuchauszug",
+       "description": "Abschrift aller Eintragungen aus dem Grundbuch zu einem Grundstück"
+      },
+      {
+       "code": "B02102",
+       "name": "Altlastenkataster",
+       "description": "Verzeichnis/Kataster aller Altlasten auf einem Grundstück"
+      },
+      {
+       "code": "B02103",
+       "name": "Baureglement",
+       "description": "Auszug oder Kopie des Baureglementes"
+      },
+      {
+       "code": "B02104",
+       "name": "Gefahrenkataster",
+       "description": "Verzeichnis/Kataster aller störfall- und betriebsrelevanten Einheiten auf einem Grundstück"
+      },
+      {
+       "code": "B02201",
+       "name": "Objektstammblatt",
+       "description": "Dokument mit allen wichtigen Informationen über ein Gebäude oder einen Standort"
+      },
+      {
+       "code": "B02202",
+       "name": "Gebäude- und Geschossverzeichnis",
+       "description": "Verzeichnis aller Gebäude und Geschosse mit ergänzenden Informationen (z.B. Geschossfläche etc.)"
+      }
+     ]
+    },
+    {
+     "code": "B03",
+     "label": "Pflichtenhefter",
+     "types": [
+      {
+       "code": "B03001",
+       "name": "Projektdefinition",
+       "description": "Definition und Beschreibung des Projektauftrags"
+      },
+      {
+       "code": "B03002",
+       "name": "Pflichtenheft",
+       "description": "Zusammenstellung aller geforderten Leistungen im Rahmen einer Ausschreibung"
+      },
+      {
+       "code": "B03003",
+       "name": "Projektpflichtenheft",
+       "description": "Beschreibt Umzusetzende Bedürfnisse auf technischen und betrieblichen Anforderungen für die Projektierung und Ausführung"
+      },
+      {
+       "code": "B03004",
+       "name": "Wettbewerbsprogramm",
+       "description": "Programm im Rahmen einer Wettbewerbsausschreibung"
+      }
+     ]
+    },
+    {
+     "code": "B04",
+     "label": "Strategien",
+     "types": [
+      {
+       "code": "B04001",
+       "name": "Immobilienstrategie",
+       "description": "Beschreibt welche Schwerpunkte im Immobilienportfolio angestrebt werden sollten"
+      },
+      {
+       "code": "B04002",
+       "name": "Objektstrategie",
+       "description": "Beschreibt die strategischen Vorgaben für ein Bauwerk. Zudem bildet sie allfällige übergeordnete strategische Vorgaben und Portfoliostrategien ab."
+      },
+      {
+       "code": "B04003",
+       "name": "Instandhaltungsstrategie",
+       "description": "Beschreibt die strategischen Vorgaben für die Instandhaltung des Bauwerks"
+      },
+      {
+       "code": "B04004",
+       "name": "Flächenbedarf",
+       "description": "Beschreibt die strategischen Vorgaben für den zukünftigen Flächenbedarf und die Nutzungsanforderungen"
+      },
+      {
+       "code": "B04005",
+       "name": "Umweltstrategie",
+       "description": "Beschreibt die strategischen Vorgaben und Ziele für einen nachhaltigen und umweltfreundlichen Betrieb"
+      },
+      {
+       "code": "B04006",
+       "name": "Lösungsstrategie",
+       "description": "Beschreibt strategische Lösungsansätze im Zusammenhang mit der geplanten Immobilie"
+      },
+      {
+       "code": "B04007",
+       "name": "Vergabestrategie",
+       "description": "Beschreibt strategische Vorgaben, wie eine Leistung vergeben werden soll"
+      }
+     ]
+    },
+    {
+     "code": "B05",
+     "label": "Analysen und Studien",
+     "types": [
+      {
+       "code": "B05001",
+       "name": "Umweltanalyse",
+       "description": "Bericht einer systematischen Untersuchung über das Umfeld des Bauprojektes"
+      },
+      {
+       "code": "B05002",
+       "name": "Branchenanalyse",
+       "description": "Bericht einer systematischen Untersuchung über die Attraktivität der Bauprojektes"
+      },
+      {
+       "code": "B05003",
+       "name": "Marktanalyse",
+       "description": "Bericht einer systematischen Untersuchung über die Marktsituation"
+      },
+      {
+       "code": "B05004",
+       "name": "Konkurrenzanalyse",
+       "description": "Bericht einer systematischen Untersuchung über potentielle Konkurrenzen des geplanten Bauprojektes"
+      },
+      {
+       "code": "B05005",
+       "name": "Unternehmensanalyse",
+       "description": "Bericht einer systematischen Untersuchung über die Stärken und Schwächen des eigenen Unternehmens"
+      },
+      {
+       "code": "B05006",
+       "name": "Bedürfnisanalyse",
+       "description": "Bericht einer systematischen Untersuchung über die Nutzung und Betrieb, Bau- und Gesamtanlage sowie menschliche Bedürfnisse"
+      },
+      {
+       "code": "B05007",
+       "name": "Schadstoffanalyse",
+       "description": "Bericht einer systematischen Untersuchung über mögliche Schadstoffe in Bauteilen"
+      },
+      {
+       "code": "B05008",
+       "name": "Altlastenanalyse",
+       "description": "Bericht einer systematischen Untersuchung über mögliche Altlasten in Grundstücken"
+      },
+      {
+       "code": "B05009",
+       "name": "Zustandsanalyse",
+       "description": "Bericht einer systematischen Untersuchung über den Zustand eines Bauwerks oder einer Anlage (auch Immobilienbewertung genannt)"
+      },
+      {
+       "code": "B05011",
+       "name": "Störfallanalyse",
+       "description": "Bericht einer systematischen Untersuchung im Zuzsammenhang mit dem Strahlenquellen"
+      },
+      {
+       "code": "B05050",
+       "name": "Machbarkeitsstudie",
+       "description": "Bericht einer Studie und Risikobeurteilung über die finanzielle, technische, gesetzliche und politisch-gesellschaftliche Machbarkeit"
+      },
+      {
+       "code": "B05101",
+       "name": "Ökobilanz",
+       "description": "Bericht einer systematischen Untersuchung über die ökologischen Auswirkungen der verwendeten Materialen und Bauprodukte"
+      },
+      {
+       "code": "B05102",
+       "name": "Energiebilanz",
+       "description": "Bericht einer systematischen Untersuchung über die energetischen Auswirkungen der verwendeten Materialen und Bauprodukte"
+      }
+     ]
+    },
+    {
+     "code": "B06",
+     "label": "Gutachten",
+     "types": [
+      {
+       "code": "B06000",
+       "name": "Gutachten",
+       "description": "Allgemeiner Dokumenttyp für Gutachten"
+      },
+      {
+       "code": "B06001",
+       "name": "Geologisches Gutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über die geologische Beschaffenheit des Grundstücks gegenüber dem anwendbaren Recht"
+      },
+      {
+       "code": "B06002",
+       "name": "Lärmschutzgutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über den Lärm/Schallschutz und die Massnahmen zu dessen Bekämpfung gegenüber dem anwendbaren Recht und gegen"
+      },
+      {
+       "code": "B06003",
+       "name": "Hydrologisches Gutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über das Grundwasser gegenüber dem anwendbaren Recht"
+      },
+      {
+       "code": "B06004",
+       "name": "Glaziologisches Gutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über Gletscher gegenüber dem anwendbaren Recht"
+      },
+      {
+       "code": "B06005",
+       "name": "Erdbebengutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über Erdbebensicherheit gegenüber dem anwendbaren Recht"
+      },
+      {
+       "code": "B06006",
+       "name": "Denkmalpflegerisches Gutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über denkmalpflegerische Aspekte gegenüber dem anwendbaren Recht"
+      },
+      {
+       "code": "B06007",
+       "name": "Kunstgutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über künstlerische Elemente am Bauwerk"
+      },
+      {
+       "code": "B06008",
+       "name": "Bauphysikalisches Gutachten",
+       "description": "Gutachten/Untersuchungsergebnisse über die Bauphysik von bestehenden Gebäude"
+      }
+     ]
+    },
+    {
+     "code": "B07",
+     "label": "Nachweise",
+     "types": [
+      {
+       "code": "B07001",
+       "name": "Energienachweis",
+       "description": "Nachweis der energetischen Massnahmen"
+      },
+      {
+       "code": "B07002",
+       "name": "Statischer Nachweis",
+       "description": "Nachweis über die Standsicherheit"
+      },
+      {
+       "code": "B07003",
+       "name": "Objektspezifischer Nachweis",
+       "description": "Nachweise über objektspezifische Anforderungen"
+      },
+      {
+       "code": "B07004",
+       "name": "Brandschutznachweis",
+       "description": "Nachweis über die Einhaltung der Brandschutzverordnung in einem Bauwerk"
+      },
+      {
+       "code": "B07005",
+       "name": "Funktionsnachweis / Zertifikat",
+       "description": "Zertifikate / Nachweise für die Funktionalitäten einer Anlage"
+      },
+      {
+       "code": "B07006",
+       "name": "Nachhaltigkeitsnachweis",
+       "description": "Nachweis über die vereinbarten Nachhaltigkeitsaspekte eines Bauwerks"
+      },
+      {
+       "code": "B07007",
+       "name": "Akkustiknachweis",
+       "description": "Nachweis über das akkustische Verhalten von Raum und Bauwerk"
+      },
+      {
+       "code": "B07008",
+       "name": "Schulungsnachweis",
+       "description": "Nachweis über die erfolgte Schulung des Personals"
+      }
+     ]
+    },
+    {
+     "code": "B10",
+     "label": "Nutzungskonzepte",
+     "types": [
+      {
+       "code": "B10001",
+       "name": "Nutzungskonzept",
+       "description": "Beschreibt die globalen Anforderungen an die künftige Nutzung eines Bauwerks"
+      },
+      {
+       "code": "B10002",
+       "name": "Raumprogramm",
+       "description": "Stellt einen ersten detaillierten Überblick der Bauaufgabe dar (Raumliste, Raumfunktionsdiagramm, Raumlayouts, spezifischen Anmerkungen) inkl. Pläne"
+      },
+      {
+       "code": "B10003",
+       "name": "Konzept Raumbezug",
+       "description": "Stellt eine volumetrische Betrachtungen aus städtebaulicher Sicht da, meist aus Testplanungen inkl. Pläne"
+      }
+     ]
+    },
+    {
+     "code": "B11",
+     "label": "Betriebskonzepte",
+     "types": [
+      {
+       "code": "B11001",
+       "name": "Betriebsführungskonzept",
+       "description": "Beschreibt die Anforderungen aus Sicht Facility Management an das Bauprojekt und den Betrieb"
+      },
+      {
+       "code": "B11002",
+       "name": "Betriebskonzept",
+       "description": "Beschreibt die Anforderungen aus Sicht Nutzer und Mieter an das Bauprojekt und den Betrieb"
+      },
+      {
+       "code": "B11003",
+       "name": "Kennzeichnungskonzept",
+       "description": "Definition der Kennzeichnung von Objekten, Elementen, Räumen, etc. inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11004",
+       "name": "Qualitätskonzept",
+       "description": "Beschreibt die Anforderungen an die Qualität von Leistungen und Produkten"
+      },
+      {
+       "code": "B11101",
+       "name": "IGM-Konzept",
+       "description": "Beschreibt die Anforderungen an das infrastrukturelle Gebäudemanagement"
+      },
+      {
+       "code": "B11102",
+       "name": "Logistikkonzept",
+       "description": "Beschreibt die Anforderungen an die Logistik in und um ein Bauwerk"
+      },
+      {
+       "code": "B11103",
+       "name": "Anlieferungskonzept",
+       "description": "Beschreibt die Anforderungen an die Anlieferung von Materialen in ein Bauwerk"
+      },
+      {
+       "code": "B11104",
+       "name": "Ver-/Entsorgungskonzept",
+       "description": "Beschreibt die Anforderungen an die Ver- und Entsorgung eines Bauwerks während dem Betrieb"
+      },
+      {
+       "code": "B11105",
+       "name": "Signaletikkonzept",
+       "description": "Konzept für die Beschilderung und Besuchernavigation im und um das Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11106",
+       "name": "Raumbezeichnungskonzept",
+       "description": "Konzept für die Beschriftung und Nummerierung von Räumen inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11107",
+       "name": "Parkingkonzept",
+       "description": "Beschreibt die Anforderungen an das Parkingsystem/modell in und um ein Bauwerk"
+      },
+      {
+       "code": "B11108",
+       "name": "Reinigungskonzept",
+       "description": "Beschreibt die Anforderungen an die Reinigung eines Bauwerks"
+      },
+      {
+       "code": "B11109",
+       "name": "Besucherbetreuungskonzept",
+       "description": "Beschreibt die Anforderungen an die Betreuung von Besuchern (Empfang, Information)"
+      },
+      {
+       "code": "B11110",
+       "name": "Sicherheitskonzept",
+       "description": "Beschreibt konkrete Ansätze über die globale Sicherheit (Safety + Security) von Personen und Sachen"
+      },
+      {
+       "code": "B11111",
+       "name": "Zutritts- und Schliesskonzept",
+       "description": "Beschreibt konkrete Ansätze über die Kontrolle von Personenzutritten und -austritten (inkl. Schliessung)"
+      },
+      {
+       "code": "B11112",
+       "name": "Evakuationskonzept",
+       "description": "Beschreibt konkrete Ansätze über die Evakuierung eines Bauwerks"
+      },
+      {
+       "code": "B11113",
+       "name": "Gastronomiekonzept",
+       "description": "Beschreibt die Anforderungen an die Gastronomie in einem Bauwerk"
+      },
+      {
+       "code": "B11114",
+       "name": "Grünraumkonzept",
+       "description": "Beschreibt die Anforderungen an die Natur und Landschaft rund um das Bauwerk"
+      },
+      {
+       "code": "B11115",
+       "name": "Personenzählkonzept",
+       "description": "Beschreibt die Anforderungen an die Zählung von Personen in und um ein Bauwerk"
+      },
+      {
+       "code": "B11116",
+       "name": "Fuhrparkkonzept",
+       "description": "Beschreibt die Anforderungen an die Verwaltung und Pflege des Fuhrparks"
+      },
+      {
+       "code": "B11117",
+       "name": "Archivierungskonzept",
+       "description": "Beschreibt die Anforderungen an die Archivierung der Projekt- und Objektdokumentation"
+      },
+      {
+       "code": "B11118",
+       "name": "Fahrdienstkonzept",
+       "description": "Beschreibt die Anforderungen an den Fahrdienst"
+      },
+      {
+       "code": "B11119",
+       "name": "Erschliessungskonzept",
+       "description": "Beschreibt die Anforderungen und Lösungswege für die Erschliessungswege eines Bauwerks inkl. Pläne"
+      },
+      {
+       "code": "B11120",
+       "name": "Unterhaltskonzept",
+       "description": "Beschreibt die Anforderungen an den Unterhalt von Gebäude Umgebung"
+      },
+      {
+       "code": "B11121",
+       "name": "Nachhaltigkeitskonzept",
+       "description": "Beschreibt eine 360 Grad Betrachtung einer Immobilie (Gesellschaft, Umwelt, Wirtschaft) des Objektes"
+      },
+      {
+       "code": "B11122",
+       "name": "Brandschutzkonzept",
+       "description": "Beschreibt konkrete Ansätze über den ganzheitlichen Brandschutz eines Bauwerks"
+      },
+      {
+       "code": "B11123",
+       "name": "Schutzkonzept Schock und Nemp",
+       "description": "Beschreibt konkrete Ansätze für die Schutz des Bauwerks vor Schock- und Nemp Einwirkungen"
+      },
+      {
+       "code": "B11124",
+       "name": "Energiekonzept",
+       "description": "Übergeordnetes Energiekonzept inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11125",
+       "name": "Klimakonzept",
+       "description": "Beschreibt die Anforderungen an das Klima in einem Bauwerk"
+      },
+      {
+       "code": "B11126",
+       "name": "Parkraumbewirtschaftungskonzept",
+       "description": "Beschreibt die Anforderungen an die Bewirtschaftung von Parkräumen"
+      },
+      {
+       "code": "B11127",
+       "name": "Umgebungskonzept",
+       "description": "Beschreibt die Grundsätze und Anforderungen für die Gestaltung, Nutzung, Bewirtschaftung und Pflege der Umgebung"
+      },
+      {
+       "code": "B11128",
+       "name": "Medizintechnikkonzept",
+       "description": "Beschreibt die Anforderungen an die Medizintechnik"
+      },
+      {
+       "code": "B11129",
+       "name": "Verkehrskonzept",
+       "description": "Beschreibt die Anforderungen an die Verkehrsführung"
+      },
+      {
+       "code": "B11130",
+       "name": "Umzugskonzept",
+       "description": "Beschreibt Konzepte für Umzüge"
+      },
+      {
+       "code": "B11131",
+       "name": "Wasserkonzept",
+       "description": "Beschreibt die Anforderungen an den Umgang mit der Ressource Wasser in und um ein Bauwerk"
+      },
+      {
+       "code": "B11132",
+       "name": "Informationssicherheit- und Datenschutzkonzept",
+       "description": "Beschreibt die Anforderungen an den Umgang mit der Ressource Daten und Informationen"
+      },
+      {
+       "code": "B11133",
+       "name": "Werbekonzept",
+       "description": "Konzept für die Anbringung von Werbung"
+      },
+      {
+       "code": "B11201",
+       "name": "KGM-Konzept",
+       "description": "Beschreibt die Anforderungen an das kaufmännische Gebäudemanagement"
+      },
+      {
+       "code": "B11202",
+       "name": "Nebenkostenkonzept",
+       "description": "Beschreibt die Anforderungen an den Aufbau und den Umfang mit Nebenkosten"
+      },
+      {
+       "code": "B11203",
+       "name": "Erstvermietungskonzept",
+       "description": "Beschreibt die Anforderungen an die Erstvermietung"
+      },
+      {
+       "code": "B11204",
+       "name": "Mietervereinigungskonzept",
+       "description": "Beschreibt die Anforderungen wie Mietervereinigungen aufgebaut und geführt werden"
+      },
+      {
+       "code": "B11205",
+       "name": "Mieterbetreuungskonzept",
+       "description": "Beschreibt die Anforderungen an die Mieterbetreuung"
+      },
+      {
+       "code": "B11206",
+       "name": "Hausordnung",
+       "description": "Liste der Regeln zur Nutzung des Bauwerks"
+      },
+      {
+       "code": "B11207",
+       "name": "Kennzahlenkonzept",
+       "description": "Definition der erwarteten Kennzahlen und Energiekennzahlen einer Liegenschaft inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11301",
+       "name": "TGM-Konzept",
+       "description": "Beschreibt die Anforderungen an das technische Gebäudemanagement"
+      },
+      {
+       "code": "B11302",
+       "name": "Gebäudetechnikkonzept",
+       "description": "Beschreibt die Anforderungen an die Gebäudetechnik allgemein"
+      },
+      {
+       "code": "B11303",
+       "name": "Gebäudeautomationskonzept",
+       "description": "Spezifisches Konzept Gebäudeautomation im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11304",
+       "name": "Installationskonzept",
+       "description": "Darstellung der horizontalen und vertikalen Installationen der Gebäudetechnik inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B11305",
+       "name": "Wartungs- und Instandhaltungskonzept",
+       "description": "Beschreibt die Anforderungen an die Wartung und Instandhaltung von Anlagen"
+      },
+      {
+       "code": "B11306",
+       "name": "Inbetriebnahmekonzept",
+       "description": "Ein Konzept für die Durchführung der Inbetriebnahme"
+      },
+      {
+       "code": "B11307",
+       "name": "Betriebsoptimierungskonzept",
+       "description": "Beschreibt Lösungen und Massnahmen zur Optimierung des Betrieb eines Bauwerks"
+      },
+      {
+       "code": "B11308",
+       "name": "Messkonzept",
+       "description": "Definition der Messung zur Optimierung der Energie- und Medienverbräuche inkl. Definition der Messstellen und Pläne"
+      }
+     ]
+    },
+    {
+     "code": "B12",
+     "label": "Fachkonzepte",
+     "types": [
+      {
+       "code": "B12001",
+       "name": "Fachkonzept",
+       "description": "Beschreibt fachspezifische Massnahmen zur Realisierung eines Bauwerks inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12002",
+       "name": "Bodenschutzkonzept",
+       "description": "Beschreibt konkrete Ansätze über den Schutz vom Boden bezüglich Verschmutzung während der Realisierung"
+      },
+      {
+       "code": "B12003",
+       "name": "Raumbuch",
+       "description": "Beschreibt jeden Raum bzw. Raumtyp in seiner Ausführung und Ausstattung"
+      },
+      {
+       "code": "B12004",
+       "name": "Materialkonzept",
+       "description": "Beschreibt die einzusetzenden Materialien im Detail inkl. deren Vor- und Nachteile"
+      },
+      {
+       "code": "B12005",
+       "name": "Bauteilbeschrieb",
+       "description": "Beschreibt und spezifiziert einzelne Bauteile"
+      },
+      {
+       "code": "B12006",
+       "name": "Anlage- und Gebäudetechnikkonzept",
+       "description": "Gesamtes Anlage- und Gebäudetechnikkonzept aller Gewerke inkl. Strategie bezüglich Betrieb, Wartung und Unterhalt inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12007",
+       "name": "Einbringungskonzept",
+       "description": "Konzept zur Überprüfung und Machbarkeit der Einbringung aller Komponenten der Gebäudetechnik inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12008",
+       "name": "Rückbaukonzept",
+       "description": "Konzept über den Rückbau eines Gebäudes oder einer Anlage inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12009",
+       "name": "Etappierungskonzept",
+       "description": "Beschreibt konkrete Ansätze über die Etappierung der Realisierung von Bauwerken (inkl. grobe Visualisierung)"
+      },
+      {
+       "code": "B12010",
+       "name": "Schnittstellenpapier",
+       "description": "Beschreibt die Abgrenzung der Eigentumsverhältnisse und Verantwortungen von Bauteilen und Anlagen"
+      },
+      {
+       "code": "B12011",
+       "name": "Konzept Baustellenlogistik",
+       "description": "Beschreibt den logistischen Aufbau und Veränderung einer Baustelle inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12012",
+       "name": "Drehbuch integrale Tests",
+       "description": "Drehbuch für den Ablauf und die Durchführung der integralen Tests"
+      },
+      {
+       "code": "B12013",
+       "name": "Wettbewerbsunterlagen",
+       "description": "Ergebnisse aus einem Wettbewerb"
+      },
+      {
+       "code": "B12101",
+       "name": "Landschaftskonzept",
+       "description": "Beschreibt die geplante Umgebung"
+      },
+      {
+       "code": "B12201",
+       "name": "Raumplanungskonzept",
+       "description": "Beschreibt eine Ableitung von Gebietsentwicklungsstudien mit oder ohne Testplanungen inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12202",
+       "name": "Städtebaukonzept",
+       "description": "Beschreibt die allgemeinen städtebaulichen Ansätze eines Bauvorhabens inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12203",
+       "name": "Baubeschrieb",
+       "description": "Beschreibt das geplante Bauwerk (Materialisierung, Ausbau etc.) inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12204",
+       "name": "Farbkonzept",
+       "description": "Beschreibt die anzuwendenden Farben und argumentiert diese inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12205",
+       "name": "Beleuchtungskonzept",
+       "description": "Beschreibt die Ansätze der Bauwerks- und Umgebungsbeleuchtung und spezifiziert diese inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12208",
+       "name": "Architekturkonzept",
+       "description": "Beschreibt die allgemeinen architektonischen Ansätze eines Bauvorhabens inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12209",
+       "name": "Mobiliarkonzept",
+       "description": "Beschreibt die Anforderungen an das Mobiliar eines Bauwerks"
+      },
+      {
+       "code": "B12210",
+       "name": "Konzept Barrierefreiheit",
+       "description": "Beschreibt die Anforderungen an die Barrierefreiheit eines Bauwerks"
+      },
+      {
+       "code": "B12301",
+       "name": "Statik-/Konstruktionskonzept",
+       "description": "Beschreibt die Statik und Konstruktion eines Bauwerks inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12302",
+       "name": "Pflichtschutzraumkonzept",
+       "description": "Beschreibt konkrete Ansätze über die Gestaltung und Realisierung von Pflichtschutzräumen im Bauwerk"
+      },
+      {
+       "code": "B12303",
+       "name": "Erdbebenkonzept",
+       "description": "Beschreibt die vorsorglichen Massnahmen bezüglich Erdbebensicherheit"
+      },
+      {
+       "code": "B12304",
+       "name": "Projektbasis",
+       "description": "Fachbezogene Beschreibung der bauwerksspezifischen Umsetzung der Nutzungsvereinbarung"
+      },
+      {
+       "code": "B12401",
+       "name": "Heizungskonzept",
+       "description": "Spezifisches Konzept für die Heizung im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12402",
+       "name": "Lüftungskonzept",
+       "description": "Spezifisches Konzept für die Lüftung im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12403",
+       "name": "Kältekonzept",
+       "description": "Spezifisches Konzept für die Kälte im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12404",
+       "name": "HLK-Konzept",
+       "description": "Spezifisches Konzept für die Heizung/Lüftung/Kälte im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12405",
+       "name": "Sanitärkonzept",
+       "description": "Spezifisches Konzept für die Wasserversorgung im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12406",
+       "name": "Entwässerungskonzept",
+       "description": "Entwässerungskonzept mit Regenwassernutzung pro Baufeld"
+      },
+      {
+       "code": "B12407",
+       "name": "System-/Variantenvergleich Heizung",
+       "description": "System-/ Variantenvergleich von z.B. Erzeuger- oder Abgabesystem inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12408",
+       "name": "System-/Variantenvergleich Lüftung/Klima",
+       "description": "System-/ Variantenvergleich von z.B. Lüftungssystem oder WRG inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12409",
+       "name": "System-/Variantenvergleich Kälte",
+       "description": "System-/ Variantenvergleich von z.B. Erzeuger- oder Abgabesystem"
+      },
+      {
+       "code": "B12410",
+       "name": "System-/Variantenvergleich Sanitär",
+       "description": "System-/ Variantenvergleich von z.B. Wasseraufbereitung oder -erwärmung"
+      },
+      {
+       "code": "B12501",
+       "name": "Sprinklerkonzept",
+       "description": "Spezifisches Konzept für die Sprinkleranlage im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12502",
+       "name": "System-/Variantenvergleich Sprinkler",
+       "description": "System-/ Variantenvergleich von z.B. Nass- oder Trockenlöschsystem"
+      },
+      {
+       "code": "B12601",
+       "name": "Elektrokonzept",
+       "description": "Spezifisches Konzept für die Stromversorgung im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12602",
+       "name": "Notlichtkonzept",
+       "description": "Spezifisches Konzept über die Notlichtversorgung im Gebäude"
+      },
+      {
+       "code": "B12603",
+       "name": "Gebäudeversorgungskonzept",
+       "description": "Spezifisches Konzept über die elektrische Versorgung (Stark- und Schwachstrom) des Gebäudes"
+      },
+      {
+       "code": "B12604",
+       "name": "Ersatzstromversorgungskonzept",
+       "description": "Spezifisches Konzept über die Notstromversorgung des Gebäudes"
+      },
+      {
+       "code": "B12605",
+       "name": "Blitzschutzkonzept",
+       "description": "Spezifisches Konzept über den Blitzschutz des Gebäudes"
+      },
+      {
+       "code": "B12606",
+       "name": "Erdungskonzept",
+       "description": "Spezifisches Konzept über die Anordnung und Ausführung der Erdung des Gebäudes"
+      },
+      {
+       "code": "B12607",
+       "name": "EMV Konzept",
+       "description": "Spezifisches Konzept über den Potentialausgleich im Gebäude"
+      },
+      {
+       "code": "B12608",
+       "name": "UKV Konzept",
+       "description": "Spezifisches Konzept über die Universelle Kommunikations-Verkabelung im Gebäudes"
+      },
+      {
+       "code": "B12609",
+       "name": "Telefonkonzept",
+       "description": "Spezifisches Konzept über die Telefonanlage"
+      },
+      {
+       "code": "B12610",
+       "name": "Alarmanlagenkonzept",
+       "description": "Spezifisches Konzept über die Alarmanlage"
+      },
+      {
+       "code": "B12611",
+       "name": "Pholovoltaikkonzept",
+       "description": "Spezifisches Konzept über die Photovoltaikanlage"
+      },
+      {
+       "code": "B12612",
+       "name": "WLAN-Konzept",
+       "description": "Spezifisches Konzept über Wireless LAN"
+      },
+      {
+       "code": "B12701",
+       "name": "MSRL-Konzept",
+       "description": "Spezifisches Konzept für MSRL-Anlagen im Bauwerk inkl. grobe Visualisierung"
+      },
+      {
+       "code": "B12702",
+       "name": "Mess- und Datenloggingkonzept",
+       "description": "Spezifisches Konzept über die Messungen und Datenaufzeichnung der Gebäudetechnikanlagen"
+      },
+      {
+       "code": "B12703",
+       "name": "Alarmierungskonzept",
+       "description": "Spezifisches Konzept über die Alarmierung und Visualisierung der Gebäudetechnikanlagen"
+      },
+      {
+       "code": "B12801",
+       "name": "Videoüberwachungskonzept (CCTV)",
+       "description": "Beschreibt konkrete Ansätze über die Videoüberwachung eines Bauwerks"
+      },
+      {
+       "code": "B12803",
+       "name": "Intrusionskonzept",
+       "description": "Beschreibt konkrete Ansätze über den Objektschutz"
+      },
+      {
+       "code": "B12804",
+       "name": "Brandmeldekonzept BMA",
+       "description": "Beschreibt konkrete Ansätze über die Brandmeldung"
+      },
+      {
+       "code": "B12805",
+       "name": "Entrauchungskonzept",
+       "description": "Beschreibt konkrete Ansätze über die Entrauchung von Gebäuden"
+      },
+      {
+       "code": "B12806",
+       "name": "Konzept Brandsicherheit Baustelle",
+       "description": "Konzept zur Brandsicherheit auf der Baustelle (auf Verlangen der Behörde, wenn Umbau unter Weiternutzung)"
+      }
+     ]
+    },
+    {
+     "code": "B13",
+     "label": "Vereinbarungen und Erklärungen",
+     "types": [
+      {
+       "code": "B13001",
+       "name": "Nutzungsvereinbarung",
+       "description": "Vereinbarung zwischen Planer und Bauherr bezüglich Nutzungs- und Schutzziele der Bauherrschaft sowie der grundlegenden Bedingungen, Anforderungen und"
+      },
+      {
+       "code": "B13002",
+       "name": "Konformitätserklärung",
+       "description": "Bestätigung für die Richtigkeit einer Sache gegenüber einer Verordnung"
+      },
+      {
+       "code": "B13003",
+       "name": "Vereinbarung",
+       "description": "Allgemeiner Dokumenttyp für Vereinbarungen"
+      }
+     ]
+    },
+    {
+     "code": "B14",
+     "label": "Kennzahlen und Statistiken",
+     "types": [
+      {
+       "code": "B14000",
+       "name": "Kennzahlen",
+       "description": "Allgemeiner Dokumenttyp bei Kennzahlen"
+      },
+      {
+       "code": "B14001",
+       "name": "Flächenkennzahlen",
+       "description": "Kennzahlen über die Flächen eines Bauwerks"
+      },
+      {
+       "code": "B14002",
+       "name": "Kostenkennzahlen",
+       "description": "Kennzahlen über die Betriebs und Instandhaltungskosten eines Bauwerks"
+      },
+      {
+       "code": "B14003",
+       "name": "Energiekennzahlen",
+       "description": "Kennzahlen über den Energiebedarf eines Bauwerks"
+      },
+      {
+       "code": "B14004",
+       "name": "Abfallkennzahlen",
+       "description": "Kennzahlen über den Entsorgungsaufwand in Bauwerken"
+      },
+      {
+       "code": "B14005",
+       "name": "Flächen/Volumenberechnung",
+       "description": "Flächen- und Volumenberechnung für die Kostenermittlung, Flächenermittlung für die Nutzflächenkosten, z.B. für die Ermittlung der Ausnützungsziffer"
+      },
+      {
+       "code": "B14006",
+       "name": "Thermische Kennzahlen",
+       "description": "Kennzahlen über die Thermik in einem Bauwerk"
+      },
+      {
+       "code": "B14100",
+       "name": "Statistik",
+       "description": "Statistik allgemein"
+      },
+      {
+       "code": "B14101",
+       "name": "Flächenstatistik",
+       "description": "Statistik über die Flächen eines Bauwerks"
+      },
+      {
+       "code": "B14102",
+       "name": "Kostenstatistik",
+       "description": "Statistik über die Betriebs und Instandhaltungskosten eines Bauwerks"
+      },
+      {
+       "code": "B14103",
+       "name": "Energiestatistik",
+       "description": "Statistik über den Energiebedarf eines Bauwerks"
+      },
+      {
+       "code": "B14104",
+       "name": "Abfallstatistik",
+       "description": "Statistik über den Entsorgungsaufwand in Bauwerken"
+      },
+      {
+       "code": "B14105",
+       "name": "Alarmstatistik",
+       "description": "Statistik über ausgelösten Alarme"
+      },
+      {
+       "code": "B14106",
+       "name": "Thermische Statistik",
+       "description": "Statistik über die Thermik in einem Bauwerk"
+      }
+     ]
+    },
+    {
+     "code": "B15",
+     "label": "Simulationen und Messungen",
+     "types": [
+      {
+       "code": "B15000",
+       "name": "Simulationsbericht",
+       "description": "Allgemeiner Dokumenttyp bei Simulationen"
+      },
+      {
+       "code": "B15002",
+       "name": "Simulationsbericht Kosten",
+       "description": "Simulation von Flächen eines Bauwerks"
+      },
+      {
+       "code": "B15003",
+       "name": "Simulationsbericht Energie",
+       "description": "Simulation von Energiebedarf eines Bauwerks"
+      },
+      {
+       "code": "B15006",
+       "name": "Simulationsbericht Themik",
+       "description": "Simulation von Thermik in einem Bauwerk"
+      },
+      {
+       "code": "B15007",
+       "name": "Simulationsbericht Licht",
+       "description": "Simulation von Licht in einem Bauwerk"
+      },
+      {
+       "code": "B15100",
+       "name": "Messprotokoll",
+       "description": "Protokollierung von Messdaten der einzelnen Messpunkte"
+      }
+     ]
+    },
+    {
+     "code": "B17",
+     "label": "Berichte",
+     "types": [
+      {
+       "code": "B17003",
+       "name": "Flächenbericht",
+       "description": "Bericht/Report über die Flächen eines Bauwerks"
+      },
+      {
+       "code": "B17004",
+       "name": "Kostenbericht",
+       "description": "Bericht/Report über die Betriebs und Instandhaltungskosten eines Bauwerks"
+      },
+      {
+       "code": "B17005",
+       "name": "Energiebericht",
+       "description": "Bericht/Report über den Energiebedarf eines Bauwerks"
+      },
+      {
+       "code": "B17006",
+       "name": "Abfallbericht",
+       "description": "Bericht/Report über den Entsorgungsaufwand in Bauwerken"
+      },
+      {
+       "code": "B17007",
+       "name": "Bericht Mieterbetreuung",
+       "description": "Informationen über das Mietverhältnis"
+      },
+      {
+       "code": "B17008",
+       "name": "Kontrollbericht",
+       "description": "Bericht im Rahmen des Qualitätsmanagements"
+      },
+      {
+       "code": "B17009",
+       "name": "Benchmark",
+       "description": "Vergleiche von Kennzahlen und Statistiken mit anderen Bauwerken"
+      },
+      {
+       "code": "B17011",
+       "name": "Umweltverträglichkeitsbericht",
+       "description": "Bericht über die Überprüfung der Umweltverträglichkeit"
+      },
+      {
+       "code": "B17012",
+       "name": "Fotodokumentation",
+       "description": "Zusammenstellung aller relevanten Fotos"
+      },
+      {
+       "code": "B17013",
+       "name": "Prüfbericht",
+       "description": "Funktionsprüfungsberichte von technischen Anlagen"
+      },
+      {
+       "code": "B17014",
+       "name": "Jurybericht",
+       "description": "Bericht im Rahmen einer Jurierung eines Wettbewerbs"
+      },
+      {
+       "code": "B17015",
+       "name": "Testplanungsbericht",
+       "description": "Bericht aus einer Testplanung"
+      },
+      {
+       "code": "B17016",
+       "name": "Bauwerksvermessung",
+       "description": "Bericht der Bauwerksvermessung inkl. Messprotokolle"
+      },
+      {
+       "code": "B17017",
+       "name": "Vorprüfungsbericht",
+       "description": "Vorprüfungsbericht im Rahmen eines Wettbewerbs"
+      },
+      {
+       "code": "B17018",
+       "name": "Sicherheitsbericht",
+       "description": "Sicherheitsbereich im Rahmen eines Plangenehmigungsverfahrens"
+      },
+      {
+       "code": "B17019",
+       "name": "Simulationsbericht",
+       "description": "Bericht mit Ergebnissen aus einer Simulation"
+      },
+      {
+       "code": "B17101",
+       "name": "Schlussbericht",
+       "description": "Zusammenfassung eines Projektes"
+      }
+     ]
+    },
+    {
+     "code": "B18",
+     "label": "Anleitungen",
+     "types": [
+      {
+       "code": "B18001",
+       "name": "Bauanleitung",
+       "description": "Eine Bauanleitung ist eine chronologische Sammlung von Anweisungen oder Informationen"
+      },
+      {
+       "code": "B18002",
+       "name": "Montageanleitung",
+       "description": "Schritt für Schritt beschriebene Anleitung für die Montage einer Anlage oder Anlageteils"
+      },
+      {
+       "code": "B18003",
+       "name": "Betriebsanleitung",
+       "description": "Angaben des Herstellers zum sachgerechten, bestimmungsgemäßen und sicheren Betreiben bzw. Verwenden (auch Bedienungsanleitung genannt)"
+      },
+      {
+       "code": "B18004",
+       "name": "Wartungsanleitung",
+       "description": "In der Wartungsanleitung ist der Vorgang der Wartung und der Zyklus der Wartung beschrieben"
+      },
+      {
+       "code": "B18005",
+       "name": "Pflegeanleitung",
+       "description": "Anleitung für die Pflege von eingebauten Materialien"
+      },
+      {
+       "code": "B18006",
+       "name": "Anlagen- und Funktionsbeschrieb",
+       "description": "Beschrieb einer Anlage und deren Funktionen"
+      },
+      {
+       "code": "B18007",
+       "name": "Hersteller- und Lieferantenangaben",
+       "description": "Detaillierte Angaben über den Lieferanten und Hersteller einer Anlage oder eines Produktes"
+      },
+      {
+       "code": "B18008",
+       "name": "Apparatebeschrieb",
+       "description": "Detaillierte Angaben über einzelne Apparate"
+      },
+      {
+       "code": "B18009",
+       "name": "Betriebsvorschriften",
+       "description": "Vorschriften über den Betrieb einer Anlage"
+      },
+      {
+       "code": "B18010",
+       "name": "Wartungsvorschriften",
+       "description": "Vorschriften über die Wartung einer Anlage"
+      },
+      {
+       "code": "B18011",
+       "name": "Störungsbehebungsanleitung",
+       "description": "Anleitung für die Erkennung und Behebung von Störungen"
+      },
+      {
+       "code": "B18051",
+       "name": "Anlagedokumentation",
+       "description": "Dokumentation einer Anlage"
+      },
+      {
+       "code": "B18071",
+       "name": "Nutzerhandbuch",
+       "description": "Dokumentation für den Nutzer des Bauwerks und deren Rechten und Pflichten"
+      }
+     ]
+    },
+    {
+     "code": "B19",
+     "label": "Technische Verzeichnisse",
+     "types": [
+      {
+       "code": "B19001",
+       "name": "Raumverzeichnis",
+       "description": "Verzeichnis/Liste aller vorhandener Räume inkl. Spezifikationen gemäss Vorgaben"
+      },
+      {
+       "code": "B19002",
+       "name": "Türverzeichnis",
+       "description": "Verzeichnis/Liste aller vorhandener Türen inkl. Spezifikationen gemäss Vorgaben"
+      },
+      {
+       "code": "B19003",
+       "name": "Fensterverzeichnis",
+       "description": "Verzeichnis/Liste aller vorhandener Fenster inkl. Spezifikationen gemäss Vorgaben"
+      },
+      {
+       "code": "B19004",
+       "name": "Anlagenverzeichnis",
+       "description": "Verzeichnis/Liste aller vorhandener Anlagen inkl. Spezifikationen gemäss Vorgaben"
+      },
+      {
+       "code": "B19005",
+       "name": "Mobiliarverzeichnis",
+       "description": "Verzeichnis/Liste der verwendeten und verfügbaren Mobilien (Stühle, Tische, etc.)"
+      },
+      {
+       "code": "B19006",
+       "name": "Ersatzteilliste",
+       "description": "Verzeichnis/Liste der wichtigsten Einzelteile, Baugruppen oder vollständigen Erzeugnisse"
+      },
+      {
+       "code": "B19007",
+       "name": "Schliessplan",
+       "description": "Matrix für die genaue Funktionsweise einer Schließanlage und inkl. Zuordnung der Schließzylinder die Schlüssel, die diese schließen"
+      },
+      {
+       "code": "B19008",
+       "name": "Datenpunktliste",
+       "description": "Matrix aller Datenpunkte der Gebäudetechnik"
+      },
+      {
+       "code": "B19009",
+       "name": "Datenblatt",
+       "description": "Beschreibung aller Eigenschaften und Ersatzmöglichkeiten von Anlagebauteilen und Produkten"
+      },
+      {
+       "code": "B19010",
+       "name": "Apparateliste",
+       "description": "Liste von Apparaten (z.B. Sanitärapparate)"
+      },
+      {
+       "code": "B19011",
+       "name": "Brandschottverzeichnis",
+       "description": "Liste aller Brandabschottungen"
+      },
+      {
+       "code": "B19012",
+       "name": "Betriebsmittelverzeichnis",
+       "description": "Liste der verwendeten Betriebsmittel inkl. Mengenbedarf"
+      },
+      {
+       "code": "B19013",
+       "name": "Gefahrenstoffliste",
+       "description": "Liste der im Bauwerk befindlichen gefährlichen Stoffe"
+      },
+      {
+       "code": "B19014",
+       "name": "Produktdeklaration",
+       "description": "Deklaration der Produkteeigenschaften"
+      },
+      {
+       "code": "B19015",
+       "name": "Türblatt",
+       "description": "Datenblatt für eine gesamte Türe"
+      },
+      {
+       "code": "B19016",
+       "name": "Raumblatt",
+       "description": "Datenblatt für einen Raum"
+      }
+     ]
+    },
+    {
+     "code": "B20",
+     "label": "Software-Anwendungen",
+     "types": [
+      {
+       "code": "B20001",
+       "name": "Software",
+       "description": "Softwarepakete zu technischen Anlagen Gebäudetechnik allgemein"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "code": "V",
+   "label": "Visualisierungen",
+   "subgroups": [
+    {
+     "code": "V01",
+     "label": "Kommunale Pläne",
+     "types": [
+      {
+       "code": "V01001",
+       "name": "Zonenplan",
+       "description": "Bestimmt die Zonenzugehörigkeit der einzelnen Parzellen und die zulässige Nutzungsart (z.B. Wohnen, Gewerbe)"
+      },
+      {
+       "code": "V01002",
+       "name": "Nutzungsplan",
+       "description": "Legt die zulässige Bodennutzung flächendeckend für das ganze Gemeindegebiet grundeigentümerverbindlich fest"
+      },
+      {
+       "code": "V01003",
+       "name": "Erschliessungsplan",
+       "description": "Legt fristgerecht die Erschliessung der Bauzonen durch das Gemeinwesen fest"
+      },
+      {
+       "code": "V01004",
+       "name": "Gestaltungsplan",
+       "description": "Verfeinert die Vorgaben des Zonenplanes mit zusätzlichen Aussagen über die Nutzung, Erschliessung, Bebauung und Ausstattung"
+      },
+      {
+       "code": "V01005",
+       "name": "Entwässerungsplan",
+       "description": "Visualisiert die wichtigsten Grundlagen der Entwässerung im Gemeindegebiet"
+      },
+      {
+       "code": "V01006",
+       "name": "Gefahrenplan",
+       "description": "Visualisiert die Gefahren (Wasser, Rutschung, Stutz, Erdbeben) für das Grundstück"
+      },
+      {
+       "code": "V01007",
+       "name": "Auflageplan",
+       "description": "Visualisiert Veränderungen an kommunalen Plänen"
+      }
+     ]
+    },
+    {
+     "code": "V02",
+     "label": "übergeordnete Pläne",
+     "types": [
+      {
+       "code": "V02001",
+       "name": "Bestandsplan",
+       "description": "stellt das zum Zeitpunkt des Projektes bestehende Bauwerk oder die Umgebungssituation dar"
+      },
+      {
+       "code": "V02002",
+       "name": "Katasterplan",
+       "description": "Der Katasterplan ist die grafische, genau maßstäbliche Darstellung der Grundstücke des Katasters"
+      },
+      {
+       "code": "V02003",
+       "name": "Vermessungsplan",
+       "description": "Visualisiert eine zum Zeitpunkt des Projektes neu vermessene grafische Darstellung der bestehenden Bauwerke oder der Situation"
+      },
+      {
+       "code": "V02004",
+       "name": "Masterplan",
+       "description": "Visualisiert die übergeordnete Planung eines Bauwerks oder Areals"
+      },
+      {
+       "code": "V02005",
+       "name": "Situationsplan",
+       "description": "Visualisiert die aktuelle Situation des Areals"
+      },
+      {
+       "code": "V02006",
+       "name": "Publikationsplan",
+       "description": "Globaler Dokumenttyp für Publikationspläne"
+      },
+      {
+       "code": "V02007",
+       "name": "Basisplan CAFM",
+       "description": "Grundlage für den Import in ein CAFM-System. Enthält Flächenpolygone, eine Raum ID und weitere CAFM-relevante grafische Informationen"
+      },
+      {
+       "code": "V02011",
+       "name": "Modelldaten",
+       "description": "Dreidimensionale Modellinformationen über das Bauwerk"
+      }
+     ]
+    },
+    {
+     "code": "V03",
+     "label": "Studienpläne",
+     "types": [
+      {
+       "code": "V03001",
+       "name": "Studienplan",
+       "description": "Visualisiert das Ergebnis der verschiedenen Projektstudien (Situation, Grundrisse, Schnitte, Fassaden)"
+      },
+      {
+       "code": "V03002",
+       "name": "Wettbewerbsplan",
+       "description": "Visualisiert die Wettbewerbsergebnisse"
+      }
+     ]
+    },
+    {
+     "code": "V04",
+     "label": "Vorprojektpläne",
+     "types": [
+      {
+       "code": "V04001",
+       "name": "Vorprojektplan",
+       "description": "Visualisiert das Ergebnis des Vorprojektes"
+      },
+      {
+       "code": "V04002",
+       "name": "Vorprojektplan Architektur",
+       "description": "Visualisiert das Ergebnis des Vorprojektes bezogen auf das Gebäude"
+      },
+      {
+       "code": "V04003",
+       "name": "Vorprojektplan Statik",
+       "description": "Visualisiert das Ergebnis des Vorprojektes bezogen auf die Statik"
+      },
+      {
+       "code": "V04004",
+       "name": "Vorprojektplan Umgebung",
+       "description": "Visualisiert das Ergebnis des Vorprojektes bezogen auf die Umgebung"
+      },
+      {
+       "code": "V04005",
+       "name": "Vorprojektplan Anlagen",
+       "description": "Visualisiert das Ergebnis des Vorprojektes bezogen auf die Anlagen inkl. Grobkoordination"
+      },
+      {
+       "code": "V04006",
+       "name": "PGV-Plan",
+       "description": "Pläne im Rahmen eines Plangenehmigungsverfahrens"
+      }
+     ]
+    },
+    {
+     "code": "V05",
+     "label": "Bauprojektpläne",
+     "types": [
+      {
+       "code": "V05001",
+       "name": "Bauprojektplan",
+       "description": "Visualisiert das Ergebnis des Bauprojektes"
+      },
+      {
+       "code": "V05002",
+       "name": "Bauprojektplan Architektur",
+       "description": "Visualisiert das Ergebnis des Bauprojektes bezogen auf die Statik"
+      },
+      {
+       "code": "V05003",
+       "name": "Bauprojektplan Statik",
+       "description": "Visualisiert das Ergebnis des Bauprojektes bezogen auf das Gebäude"
+      },
+      {
+       "code": "V05004",
+       "name": "Bauprojektplan Umgebung",
+       "description": "Visualisiert das Ergebnis des Bauprojektes bezogen auf die Umgebung"
+      },
+      {
+       "code": "V05005",
+       "name": "Bauprojektplan Anlagen",
+       "description": "Visualisiert das Ergebnis des Bauprojektes bezogen auf die Anlagen inkl. Koordination"
+      },
+      {
+       "code": "V05008",
+       "name": "Brandschutzplan Bauprojekt",
+       "description": "Visualisiert die Massnahmen zum Schutz vor Brandausbruch und -Ausdehnung"
+      },
+      {
+       "code": "V05009",
+       "name": "Baueingabeplan",
+       "description": "Visuelle Beilage zur Baueingabe (ohne Unterschrift)"
+      }
+     ]
+    },
+    {
+     "code": "V06",
+     "label": "Ausschreibungspläne",
+     "types": [
+      {
+       "code": "V06001",
+       "name": "Ausschreibungsplan",
+       "description": "Visualisiert alle für den Mengenauszug und den Beschrieb der Arbeiten notwendigen Angaben"
+      },
+      {
+       "code": "V06002",
+       "name": "Ausschreibungsplan Architektur",
+       "description": "Visualisiert alle für den Mengenauszug und den Beschrieb der Arbeiten notwendigen Angaben bezogen auf ein Gebäude"
+      },
+      {
+       "code": "V06003",
+       "name": "Ausschreibungsplan Statik",
+       "description": "Visualisiert alle für den Mengenauszug und den Beschrieb der Arbeiten notwendigen Angaben bezogen auf die Statik"
+      },
+      {
+       "code": "V06004",
+       "name": "Ausschreibungsplan Umgebung",
+       "description": "Visualisiert alle für den Mengenauszug und den Beschrieb der Arbeiten notwendigen Angaben bezogen auf die Umgebung"
+      },
+      {
+       "code": "V06005",
+       "name": "Ausschreibungsplan Anlagen",
+       "description": "Visualisiert das Ergebnis des Ausschreibungsprojektes bezogen auf die Anlagen inkl. Koordination"
+      }
+     ]
+    },
+    {
+     "code": "V07",
+     "label": "Pläne Architektur und Konstruktion",
+     "types": [
+      {
+       "code": "V07001",
+       "name": "Umgebungsplan",
+       "description": "Der Umgebungsplan visualisiert die Umgebungsgestaltung"
+      },
+      {
+       "code": "V07002",
+       "name": "Werkleitungsplan",
+       "description": "Der Werkleitungsplan visualisiert die Erschliessung der Bauwerke mit Gas, Wasser, Elektrizität etc."
+      },
+      {
+       "code": "V07003",
+       "name": "Entwässerungsplan",
+       "description": "Visualisiert die Entwässerungsmassnahmen der Umgebung"
+      },
+      {
+       "code": "V07100",
+       "name": "Architekturplan",
+       "description": "visualisiert architektorische Bauteile (Globaler Dokumenttyp)"
+      },
+      {
+       "code": "V07102",
+       "name": "Grundrissplan",
+       "description": "Visualisiert alle für die Ausführung erforderlichen Angaben, wie Abmessungen, Materialien und deren Behandlung im Grundriss"
+      },
+      {
+       "code": "V07103",
+       "name": "Schnittplan",
+       "description": "Visualisiert alle für die Ausführung erforderlichen Angaben, wie Abmessungen, Materialien und deren Behandlung im Schnitt"
+      },
+      {
+       "code": "V07104",
+       "name": "Ansichtsplan",
+       "description": "Visualisiert alle für die Ausführung erforderlichen Angaben, wie Abmessungen, Materialien und deren Behandlung in der Ansicht (Fassade)"
+      },
+      {
+       "code": "V07105",
+       "name": "Detailplan",
+       "description": "Ausschnitte aus Werkplänen mit einem detaillierterem Massstab und Inhalt"
+      },
+      {
+       "code": "V07106",
+       "name": "Fassadendetailplan",
+       "description": "Visualisiert Details einer Fassade"
+      },
+      {
+       "code": "V07107",
+       "name": "Kanalisationsplan",
+       "description": "Visualisiert die Kanalisation unterhalb der Bodenplatte und in der Umgebung bis zum Abschluss ans Kanalisationsnetz"
+      },
+      {
+       "code": "V07108",
+       "name": "Sparrenlage",
+       "description": "Visualisiert die Sparrenlage eines Holzdaches"
+      },
+      {
+       "code": "V07109",
+       "name": "Küchenplan",
+       "description": "Detaillierte Darstellung einer Kücheneinrichtung"
+      },
+      {
+       "code": "V07110",
+       "name": "Baugrubenplan",
+       "description": "Dient zum Aushub der Baugrube"
+      },
+      {
+       "code": "V07111",
+       "name": "Baustellenlogistikplan",
+       "description": "Visualisiert die Baustellenlogistik"
+      },
+      {
+       "code": "V07112",
+       "name": "Möblierungs- und Einrichtungsplan",
+       "description": "Visualisiert die Möblierung bzw. Einrichtung eines Bauwerks"
+      },
+      {
+       "code": "V07113",
+       "name": "Deckenspiegel",
+       "description": "Visualisiert den Deckenspiegel der Räume"
+      },
+      {
+       "code": "V07200",
+       "name": "Konstruktionsplan",
+       "description": "Visualisiert statische und konstruktive Bauteile (Globaler Dokumenttyp)"
+      },
+      {
+       "code": "V07201",
+       "name": "Fundationsplan",
+       "description": "Visualisiert die Fundation eines Bauwerks"
+      },
+      {
+       "code": "V07202",
+       "name": "Bewehrungsplan",
+       "description": "Stellt die Bewehrung aus Betonstahl eines Stahlbetonbauteils dar"
+      },
+      {
+       "code": "V07203",
+       "name": "Bewehrungsplan Ansicht / Schnitt",
+       "description": "Stellt die Bewehrung aus Betonstahl eines Stahlbetonbauteils dar im Schnitt oder Ansicht"
+      },
+      {
+       "code": "V07204",
+       "name": "Bewehrungsplan Detail",
+       "description": "Stellt die Bewehrung aus Betonstahl eines Stahlbetonbauteils dar im Detail"
+      },
+      {
+       "code": "V07205",
+       "name": "Schalungsplan",
+       "description": "Stellt die Schalung eines Stahlbetonbauteils dar"
+      },
+      {
+       "code": "V07206",
+       "name": "Schalungsplan Schnitt",
+       "description": "Stellt die Schalung eines Stahlbetonbauteils dar im Schnitt"
+      },
+      {
+       "code": "V07207",
+       "name": "Schalungsplan Detail",
+       "description": "Stellt die Schalung eines Stahlbetonbauteils dar im Detail"
+      },
+      {
+       "code": "V07208",
+       "name": "Stahlbauplan",
+       "description": "Stellt die Stahlbauteile eines Bauwerks dar"
+      },
+      {
+       "code": "V07209",
+       "name": "Stahlbauplan Schnitt",
+       "description": "Stellt die Stahlbauteile eines Bauwerks dar im Schnitt"
+      },
+      {
+       "code": "V07210",
+       "name": "Stahlbauplan Detail",
+       "description": "Stellt die Stahlbauteile eines Bauwerks dar im Detail"
+      },
+      {
+       "code": "V07211",
+       "name": "Eisenliste",
+       "description": "Ausstellung aller Eisen inkl. Angaben zu Position, Dimensionierung etc."
+      },
+      {
+       "code": "V07212",
+       "name": "Spezialplan Statik und Konstruktion",
+       "description": "Spezialpläne"
+      },
+      {
+       "code": "V07213",
+       "name": "Nutzungsplan",
+       "description": "Pläne mit Angaben zu Nutzlasten"
+      }
+     ]
+    },
+    {
+     "code": "V08",
+     "label": "Pläne Technik",
+     "types": [
+      {
+       "code": "V08001",
+       "name": "Koordinationsplan",
+       "description": "Visualisiert die koordinierte Anlage- und Gebäudetechnik pro Geschoss"
+      },
+      {
+       "code": "V08002",
+       "name": "Aussparungsplan",
+       "description": "Visualisiert die koordinierten Aussparungen der Anlage- und Gebäudetechnik pro Geschoss"
+      },
+      {
+       "code": "V08003",
+       "name": "Apparateplan",
+       "description": "Visualisiert alle relevanten Apparate einer Anlage"
+      },
+      {
+       "code": "V08004",
+       "name": "Installationsplan",
+       "description": "Visualisiert alle relevanten Installationen und Apparate einer Anlage"
+      },
+      {
+       "code": "V08005",
+       "name": "Einlegeplan",
+       "description": "Visualisiert die Einlagen der Gebäudetechnik in den Beton"
+      },
+      {
+       "code": "V08006",
+       "name": "Detailplan",
+       "description": "Visualisiert Details"
+      },
+      {
+       "code": "V08007",
+       "name": "Layoutplan",
+       "description": "Visualisiert das Layout eines Raumes oder eine Anlage"
+      },
+      {
+       "code": "V08008",
+       "name": "Technikzonenplan",
+       "description": "Visualisiert Technikzonen"
+      },
+      {
+       "code": "V08011",
+       "name": "Disposition",
+       "description": "Visualisiert die Disposition von elektrotechnischen Anlagen"
+      },
+      {
+       "code": "V08021",
+       "name": "Prinzipschema",
+       "description": "Visualisiert den schematischen Aufbau eines Anlage"
+      },
+      {
+       "code": "V08022",
+       "name": "Stromlaufschema",
+       "description": "Visualisiert den schematischen Aufbau einer Elektroverteilung"
+      },
+      {
+       "code": "V08023",
+       "name": "Apparateschema",
+       "description": "Globaler Dokumenttyp für Apparateschema"
+      },
+      {
+       "code": "V08024",
+       "name": "R+I Schema",
+       "description": "Globaler Dokumenttyp für Rohrleitungs- und Instrumentenfliess-Schema"
+      },
+      {
+       "code": "V08025",
+       "name": "Funktionsmatrix",
+       "description": "Visualisiert schematisch den Funktionsabhängigkeiten zwischen den Anlagen"
+      },
+      {
+       "code": "V08026",
+       "name": "Verdrahtungsschema",
+       "description": "Visualisiert die Verkabelung und Einzelkomponenten von Elektroverteilungen"
+      },
+      {
+       "code": "V08027",
+       "name": "Strangschema",
+       "description": "Visualisiert alle Steigstränge inkl. Dimensionierung"
+      },
+      {
+       "code": "V08101",
+       "name": "Installationsplan Heizung",
+       "description": "Visualisiert die Heizungsinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08102",
+       "name": "Prinzipschema Heizung",
+       "description": "Visualisiert schematisch den Aufbau der Heizungsanlage"
+      },
+      {
+       "code": "V08103",
+       "name": "Strangschema Heizung",
+       "description": "Visualisiert alle Steigstränge inkl. Dimensionierung"
+      },
+      {
+       "code": "V08104",
+       "name": "Disposition Heizung",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08105",
+       "name": "Detailplan Heizung",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08106",
+       "name": "Einlegeplan Heizung",
+       "description": "Visualisiert die eingelegten Heizngsinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08201",
+       "name": "Installationsplan Lüftung/Klima",
+       "description": "Visualisiert die Lüftungsinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08202",
+       "name": "Einlegeplan Lüftung/Klima",
+       "description": "Visualisiert die eingelegten Lüftungs-/Klimainstallationen pro Geschoss"
+      },
+      {
+       "code": "V08203",
+       "name": "Prinzipschema Lüftung/Klima",
+       "description": "Visualisiert schematisch den Aufbau der Lüftungsanlage"
+      },
+      {
+       "code": "V08204",
+       "name": "Disposition Lüftung/Klima",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08205",
+       "name": "Detailplan Lüftung/Klima",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08301",
+       "name": "Installationsplan Kälte",
+       "description": "Visualisiert die Kälteinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08302",
+       "name": "Prinzipschema Kälte",
+       "description": "Visualisiert schematisch den Aufbau der Kälteanlage"
+      },
+      {
+       "code": "V08303",
+       "name": "Strangschema Kälte",
+       "description": "Visualisiert alle Steigstränge inkl. Dimensionierung"
+      },
+      {
+       "code": "V08304",
+       "name": "Disposition Kälte",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08305",
+       "name": "Detailplan Kälte",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08401",
+       "name": "Installationsplan Sanitär",
+       "description": "Visualisiert die Sanitärinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08402",
+       "name": "Einlegeplan Sanitär",
+       "description": "Visualisiert schematisch den Aufbau der Sanitäranlage"
+      },
+      {
+       "code": "V08403",
+       "name": "Prinzipschema Sanitär",
+       "description": "Visualisiert die hydraulischen Elemente"
+      },
+      {
+       "code": "V08404",
+       "name": "Sanitärschema",
+       "description": "Visualisiert alle Steigstränge inkl. Dimensionierung"
+      },
+      {
+       "code": "V08405",
+       "name": "Disposition Sanitär",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08406",
+       "name": "Detailplan Sanitär",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08501",
+       "name": "Installationsplan Sprinkler",
+       "description": "Visualisiert die Sprinklerinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08502",
+       "name": "Sprinklerschema",
+       "description": "Visualisiert schematisch den Aufbau der Sprinkleranlage"
+      },
+      {
+       "code": "V08503",
+       "name": "Disposition Sprinkler",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08504",
+       "name": "Detailplan Sprinkler",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08601",
+       "name": "Installationsplan Elektro",
+       "description": "Visualisiert die Stark- und Schwachstrominstallationen (Apparate und Leitungen) pro Geschoss"
+      },
+      {
+       "code": "V08602",
+       "name": "Einlegeplan Elektro",
+       "description": "Visualisiert die eingelegten Elektroinstallationen pro Geschoss"
+      },
+      {
+       "code": "V08603",
+       "name": "Prinzipschema Elektro",
+       "description": "Visualisiert schematisch den Aufbau der Elektroanlage (Stark- und Schwachstrom)"
+      },
+      {
+       "code": "V08604",
+       "name": "Stromlaufschema",
+       "description": "Visualisiert die Komponenten und Verdrahtung von Elektroverteilungen"
+      },
+      {
+       "code": "V08605",
+       "name": "Disposition Elektro",
+       "description": "Visualisiert die Aufteilung bzw. den Aufbau von Anlageteilen"
+      },
+      {
+       "code": "V08606",
+       "name": "Detailplan Elektro",
+       "description": "Visualisiert wichtige Details der Anlage"
+      },
+      {
+       "code": "V08607",
+       "name": "Verdrahtungsschema",
+       "description": "Visualisiert die Verkabelung und Einzelkomponenten von Elektroverteilungen"
+      },
+      {
+       "code": "V08701",
+       "name": "Verdrahtungsschema MSRL/GA",
+       "description": "Visualisiert die Verkabelung und Einzelkomponenten der MSRL/Gebäudeautomationsanlage"
+      },
+      {
+       "code": "V08702",
+       "name": "Prinzipschema MSRL/GA",
+       "description": "Visualisiert schematisch den Aufbau der MSRL/Gebäudeautomationsanlage"
+      },
+      {
+       "code": "V08703",
+       "name": "Funktionsmatrix MSRL/GA",
+       "description": "Visualisiert schematisch den Funktionsabhängigkeiten zwischen den Anlagen"
+      },
+      {
+       "code": "V08801",
+       "name": "Installationsplan Medizinalgase",
+       "description": "Visualisiert die Installationen von Medizinalgasanlagen"
+      },
+      {
+       "code": "V08802",
+       "name": "Prinzipschema Medizinalgase",
+       "description": "Visualisiert schematisch den Aufbau der Medizinalgasanlagen"
+      }
+     ]
+    },
+    {
+     "code": "V09",
+     "label": "Pläne Sicherheit",
+     "types": [
+      {
+       "code": "V09001",
+       "name": "Brandabschnittzonenplan",
+       "description": "Visualisiert die Zonen der verschiedenen Brandabschnitte"
+      },
+      {
+       "code": "V09002",
+       "name": "Sicherheitszonenplan",
+       "description": "Visualisiert die Sicherheitszonen"
+      },
+      {
+       "code": "V09003",
+       "name": "Sprinklerzonenplan",
+       "description": "Visualisiert die Sprinklerzonen"
+      },
+      {
+       "code": "V09004",
+       "name": "Brandschutzplan",
+       "description": "Visualisiert die baulichen Brandschutzmassnahmen"
+      },
+      {
+       "code": "V09005",
+       "name": "Brandmeldezonenplan",
+       "description": "Visualisiert die Brandmeldezonen/gruppen auf dem Grundriss"
+      },
+      {
+       "code": "V09006",
+       "name": "Brandfallmatrix",
+       "description": "Visualisiert schematisch den Funktionsabhängigkeiten zwischen den brandschutztechnischen Anlagen"
+      },
+      {
+       "code": "V09007",
+       "name": "Brandschottplan",
+       "description": "Visualisiert die Brandabschottungen in einem Gebäude"
+      },
+      {
+       "code": "V09008",
+       "name": "Brandfallzonenplan",
+       "description": "Visualisiert die Anlagen und Bauteile, welche von der Brandfallsteuerung angesteuert werden (siehe VKF-Vorschriften)"
+      },
+      {
+       "code": "V09009",
+       "name": "Feuerwehreinsatzplan",
+       "description": "Visualisiert die Brandschutzmassnahmen und dient als Grundlage für die Feuerwehr"
+      },
+      {
+       "code": "V09010",
+       "name": "Kulturgüterschutzplan",
+       "description": "Visualisiert die verschiedenen Kulturgüter in einem Bauwerk und dient der Feuerwehr zur Rettung dieser"
+      },
+      {
+       "code": "V09101",
+       "name": "Fluchtwegplan",
+       "description": "Visualisiert die Fluchtwege"
+      },
+      {
+       "code": "V09102",
+       "name": "Evakuationsplan",
+       "description": "Visualisiert die Evakuierungsmassnahmen und Wege eines Bauwerks"
+      },
+      {
+       "code": "V09104",
+       "name": "Zivilschutzplan",
+       "description": "Visualisiert die Zivilschutzeinrichtungen- und Massnahmen in einer Zivilschutzanlage/keller"
+      },
+      {
+       "code": "V09201",
+       "name": "Spezialplan Sicherheit",
+       "description": "Allgemeiner Dokumenttyp für weitere Sicherheitspläne"
+      },
+      {
+       "code": "V09202",
+       "name": "Baustellen-Sicherheitsplan",
+       "description": "Visualisiert die getroffenen Sicherheitsvorkehrungen für die Baustelle"
+      }
+     ]
+    },
+    {
+     "code": "V10",
+     "label": "Weitere Pläne",
+     "types": [
+      {
+       "code": "V10101",
+       "name": "Transportanlagenplan",
+       "description": "Detailplan für Transportanlagen"
+      },
+      {
+       "code": "V10102",
+       "name": "Schachtplan Aufzugsanlagen",
+       "description": "Visualisiert den Aufzugsanagenschacht inkl. allen wichtigen Informationen"
+      },
+      {
+       "code": "V10201",
+       "name": "Ausführungsplan Betriebsausrüstung",
+       "description": "Visualisiert die Betriebsausrüstung"
+      },
+      {
+       "code": "V10202",
+       "name": "Ausführungsplan Bahntechnik",
+       "description": "Visualisiert die Bahntechnik"
+      }
+     ]
+    },
+    {
+     "code": "V11",
+     "label": "Bewirtschaftungspläne",
+     "types": [
+      {
+       "code": "V11001",
+       "name": "Basisplan CAFM",
+       "description": "Grundlage für den Import in ein CAFM-System. Enthält Flächenpolygone, eine Raum ID und weitere CAFM-relevante grafische Informationen"
+      },
+      {
+       "code": "V11002",
+       "name": "Bewirtschaftungsplan",
+       "description": "Allgemeiner Dokumenttyp für Bewirtschaftungspläne"
+      },
+      {
+       "code": "V11101",
+       "name": "Bewirtschaftungsplan Umgebung",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Umgebung und Situation"
+      },
+      {
+       "code": "V11102",
+       "name": "Bewirtschaftungsplan Architektur",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Architektur"
+      },
+      {
+       "code": "V11103",
+       "name": "Bewirtschaftungsplan Statik",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Stahlbau- und Gebäudekonstruktion"
+      },
+      {
+       "code": "V11201",
+       "name": "Bewirtschaftungsplan Gebäudetechnik",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Gebäudetechnik"
+      },
+      {
+       "code": "V11202",
+       "name": "Bewirtschaftungsplan Heizung",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Heizungsinstallation und -anlage"
+      },
+      {
+       "code": "V11203",
+       "name": "Bewirtschaftungsplan Lüftung",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Lüftungsinstallation und -anlage"
+      },
+      {
+       "code": "V11204",
+       "name": "Bewirtschaftungsplan Kälte",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Kälteinstallation und -anlage"
+      },
+      {
+       "code": "V11205",
+       "name": "Bewirtschaftungsplan Sanitär",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Sanitärinstallation und -anlage"
+      },
+      {
+       "code": "V11206",
+       "name": "Bewirtschaftungsplan Elektro",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Elektroinstallation und -anlage"
+      },
+      {
+       "code": "V11207",
+       "name": "Bewirtschaftungsplan MSRL",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Gebäudeleitsysteminstallation und -anlage"
+      },
+      {
+       "code": "V11208",
+       "name": "Bewirtschaftungsplan Medizinalgase",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zu den Medizinalgasanlagen"
+      },
+      {
+       "code": "V11301",
+       "name": "Bewirtschaftungsplan Sicherheit",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Sicherheit (Objekt- und Personenschutz)"
+      },
+      {
+       "code": "V11302",
+       "name": "Feuerwehreinsatzplan",
+       "description": "Visualisiert die Brandschutzmassnahmen und dient als Grundlage für die Feuerwehr"
+      },
+      {
+       "code": "V11303",
+       "name": "Fluchtwegplan",
+       "description": "Visualisiert die Fluchtwege"
+      },
+      {
+       "code": "V11304",
+       "name": "Brandmeldezonenplan",
+       "description": "Visualisiert die Brandmeldezonen/gruppen auf dem Grundriss"
+      },
+      {
+       "code": "V11305",
+       "name": "Sprinklerzonenplan",
+       "description": "Visualisiert die Sprinklerzonen"
+      },
+      {
+       "code": "V11306",
+       "name": "Evakuationsplan",
+       "description": "Visualisiert die Evakuierungsmassnahmen und Wege eines Bauwerks"
+      },
+      {
+       "code": "V11307",
+       "name": "Kulturgüterschutzplan",
+       "description": "Visualisiert die verschiedenen Kulturgüter in einem Bauwerk und dient der Feuerwehr zur Rettung dieser"
+      },
+      {
+       "code": "V11308",
+       "name": "Zivilschutzplan",
+       "description": "Visualisiert die Zivilschutzeinrichtungen- und Massnahmen in einer Zivilschutzanlage/keller"
+      },
+      {
+       "code": "V11403",
+       "name": "Bewirtschaftungsplan Transportanlagen",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zu den Transportanlagen"
+      },
+      {
+       "code": "V11404",
+       "name": "Bewirtschaftungsplan Betriebsausrüstung",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Betriebsausrüstung"
+      },
+      {
+       "code": "V11405",
+       "name": "Vermietungsplan",
+       "description": "Einfacher Plan mit den wichtigsten Informationen zur Vermietung von Flächen"
+      },
+      {
+       "code": "V11406",
+       "name": "Belegungsplan",
+       "description": "Einfacher Plan mit den wichtigsten Informationen über die Belegung der Flächen"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

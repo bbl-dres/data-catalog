@@ -1,0 +1,67 @@
+name: Deploy chat worker
+
+# Runs when the worker code changes or when the catalog DB the worker
+# bundles is updated. Manual re-runs via the "Run workflow" button.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chat-worker/**'
+      - 'prototype-sqlite/data/catalog.db'
+      - '.github/workflows/deploy-chat-worker.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: chat-worker/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: chat-worker
+        run: npm ci
+
+      - name: Sync catalog DB into worker bundle
+        working-directory: chat-worker
+        run: npm run sync-db
+
+      - name: Deploy to Cloudflare + sync secrets
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: chat-worker
+          secrets: |
+            ANTHROPIC_API_KEY
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      # Smoke test: GET / hits the health endpoint, which doesn't call
+      # Anthropic (so no API spend) and doesn't load the catalog DB (so
+      # no WASM init either). It only confirms the worker booted and is
+      # routing requests. Fails the build if the worker returns non-200.
+      - name: Smoke test deployed worker
+        env:
+          WORKER_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          set -euo pipefail
+          URL="${WORKER_URL:-https://bbl-datenkatalog-chat.dav-ras.workers.dev}"
+          echo "Pinging $URL ..."
+          for i in 1 2 3; do
+            if curl -fsS --max-time 10 "$URL" | tee /tmp/health.json | grep -q '"ok":true'; then
+              echo "Health check passed."
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          echo "Health check failed after 3 attempts."
+          cat /tmp/health.json || true
+          exit 1

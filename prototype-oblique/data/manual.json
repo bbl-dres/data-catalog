@@ -1,0 +1,411 @@
+{
+  "chapters": [
+    {
+      "id": "introduction",
+      "legacyId": "einleitung",
+      "title": "Einleitung"
+    },
+    {
+      "id": "governance",
+      "legacyId": "gouvernanz",
+      "title": "Gouvernanz und Rollen"
+    },
+    {
+      "id": "model",
+      "legacyId": "modell",
+      "title": "Informationsmodell"
+    },
+    {
+      "id": "usage",
+      "legacyId": "nutzen",
+      "title": "Katalog nutzen"
+    },
+    {
+      "id": "retrieval",
+      "legacyId": "abrufen",
+      "title": "Metadaten abrufen"
+    },
+    {
+      "id": "faq",
+      "title": "Oft gestellte Fragen"
+    },
+    {
+      "id": "glossary",
+      "legacyId": "glossar",
+      "title": "Glossar"
+    },
+    {
+      "id": "references",
+      "legacyId": "grundlagen",
+      "title": "Quellen und Verweise"
+    }
+  ],
+  "introduction": {
+    "intro": "Der Datenkatalog des [Bundesamts für Bauten und Logistik (BBL)][bbl] macht Informationen über Daten im Immobilienmanagement auffindbar. Er richtet sich an Fachpersonen, Datenverantwortliche sowie Entwicklerinnen und Entwickler. Er hilft bei folgenden Fragen:",
+    "questions": [
+      "Was bedeutet ein Begriff wie «Gebäude», unabhängig vom Quellsystem?",
+      "Welche Tabellen und Felder bilden diesen Begriff ab?",
+      "Wer ist für die fachliche Bedeutung und die technische Bereitstellung verantwortlich?",
+      "Welche Wertelisten gelten, und auf welche Quellen stützen sich die Definitionen?"
+    ],
+    "sections": [
+      {
+        "title": "Metadaten verstehen",
+        "text": "Metadaten beschreiben Daten: ihre Bedeutung, Struktur, Herkunft, Zuständigkeit und Nutzungsmöglichkeiten. Ein Gebäudesteckbrief im Katalog beschreibt beispielsweise die Attribute eines Gebäudes. Die einzelnen Gebäude- oder Vertragsdatensätze bleiben in den Quellsystemen. Referenzdaten ergänzen diese Beschreibungen mit den zulässigen Codes und ihren Bedeutungen."
+      },
+      {
+        "title": "Stand des Prototyps",
+        "text": "Der Katalog dient zur Demonstration. Er enthält Beispielinhalte und aufbereitete Metadaten aus Fachquellen, etwa dem [eidgenössischen Gebäude- und Wohnungsregister (GWR)][gwr]. Die Oberfläche bietet eine Lesesicht. Für die Architekturmodellierung verwenden wir [Innovator][innovator]. Ein automatischer täglicher Abgleich mit Innovator ist im Prototyp derzeit nicht eingerichtet. Angaben zu Herkunft, Stand und Verantwortlichen sind beim jeweiligen Eintrag zu prüfen."
+      },
+      {
+        "title": "Standards und gemeinsame Begriffe",
+        "text": "[DCAT-AP CH (eCH-0200)][dcat-ap-ch] beschreibt, wie Metadaten zu Datensätzen und Datendiensten zwischen Katalogen ausgetauscht werden können. [SKOS][skos] dient zur Beschreibung von Begriffen, Bezeichnungen und kontrollierten Vokabularen. Diese Standards geben Orientierung für den Katalog. Ein geprüfter DCAT-AP-CH-Export und eine automatische Publikation auf anderen Plattformen sind noch nicht umgesetzt."
+      },
+      {
+        "title": "Einordnung in die Datenbewirtschaftung",
+        "text": "Die [Nationale Datenbewirtschaftung (NaDB)][nadb] des [Bundesamts für Statistik (BFS)][bfs] fördert die Mehrfachnutzung von Daten. Auf der [Interoperabilitätsplattform I14Y][i14y] werden Metadaten zu Datensätzen, Schnittstellen und Behördenleistungen zugänglich gemacht. [opendata.swiss][opendata] unterstützt die Publikation offener Daten. Der BBL-Katalog beschreibt den fachlichen und technischen Kontext des Immobilienmanagements; ein Eintrag bedeutet noch keine Veröffentlichung oder Zugriffsberechtigung auf die beschriebenen Daten."
+      }
+    ],
+    "video": {
+      "title": "Der BBL-Datenkatalog",
+      "src": "assets/bbl-datenkatalog-70s-clean.mp4",
+      "caption": "Der BBL-Datenkatalog kurz erklärt.",
+      "fallbackLabel": "Video als MP4 öffnen"
+    }
+  },
+  "governance": {
+    "intro": "Die beschriebenen Aufgaben orientieren sich an der [Nationalen Datenbewirtschaftung (NaDB)][nadb] und am [Rollenmodell im I14Y-Handbuch][roles]. Im Abschnitt «Verantwortlich» eines Steckbriefs finden Sie die dokumentierten Ansprechpersonen und Organisationen. Datentabellen übernehmen den Datenhalter ihres Systems, sofern kein eigener angegeben ist. Eine Rollenangabe im Prototyp erteilt keine Zugriffsrechte.",
+    "roles": [
+      {
+        "label": "Organisation",
+        "nadb": "Verantwortliche Organisationseinheit",
+        "en": "Organisation",
+        "task": "Ordnet den Eintrag organisatorisch zu und hilft, die zuständige Fachstelle zu finden."
+      },
+      {
+        "label": "Dateneigner",
+        "nadb": "Dateninhaber / Data Owner",
+        "en": "Data Owner",
+        "task": "Verantwortet Inhalt und Zweck der Daten und entscheidet über die fachliche Freigabe."
+      },
+      {
+        "label": "Datenverwalter",
+        "nadb": "Lokaler Datenverwalter / Local Data Steward",
+        "en": "Local Data Steward",
+        "task": "Koordiniert Definitionen, Datenqualität und Harmonisierung; pflegt die fachlichen Metadaten."
+      },
+      {
+        "label": "Datenhalter",
+        "nadb": "Datenhalter / Data Custodian",
+        "en": "Data Custodian",
+        "task": "Betreut die technische Speicherung und Bereitstellung im Quellsystem."
+      },
+      {
+        "label": "Nutzende",
+        "nadb": "Datennutzer / Data Consumer",
+        "en": "Data Consumer",
+        "task": "Verwenden die beschriebenen Daten für ihre Aufgaben und melden Unklarheiten."
+      }
+    ],
+    "workflowTitle": "Vorgeschlagener Pflegeablauf",
+    "workflowIntro": "Für die fachliche Pflege ist folgender Ablauf vorgesehen. Die Freigabe und ein automatischer Abgleich sind im Prototyp nicht als Arbeitsablauf umgesetzt:",
+    "workflow": [
+      {
+        "title": "Melden",
+        "who": "Fachbereich",
+        "text": "Fehlende Begriffe, Korrekturen oder geänderte Zuständigkeiten mit einer Quelle und einem konkreten Vorschlag melden."
+      },
+      {
+        "title": "Prüfen",
+        "who": "Datenverwalter",
+        "text": "Definition, Attribute, Wertelisten und Beziehungen mit den zuständigen Fachpersonen abstimmen."
+      },
+      {
+        "title": "Freigeben",
+        "who": "Dateneigner",
+        "text": "Den geprüften Inhalt und seinen Geltungsbereich bestätigen."
+      },
+      {
+        "title": "Übernehmen",
+        "who": "Katalogbetreuung",
+        "text": "Die abgestimmten Metadaten aktualisieren und ihren Stand dokumentieren."
+      }
+    ],
+    "reportTitle": "Änderungen melden",
+    "reportText": "Melden Sie eine falsche oder fehlende Angabe an die im Steckbrief dokumentierte Fachstelle. Fehlt eine Zuständigkeit oder betrifft die Frage den Katalog selbst, verwenden Sie «Hilfe und Kontakt»."
+  },
+  "model": {
+    "intro": "Der Katalog verbindet fachliche Definitionen mit ihren technischen Umsetzungen. [ArchiMate][archimate] und das [Referenzmodell für die Informatikarchitektur Bund (RIAB, R001)][riab] bieten einen Architekturkontext. [DCAT-AP CH][dcat-ap-ch] unterstützt den Austausch von Katalogmetadaten, [SKOS][skos] die Beschreibung von Vokabularen. Die folgenden Eintragsarten sind das Modell dieses Katalogs; sie lassen sich nicht pauschal mit Klassen dieser Standards gleichsetzen.",
+    "layers": [
+      {
+        "layer": "fachliche Definition",
+        "title": "Geschäftsobjekte",
+        "text": "Systemneutrale Begriffe mit Beschreibungen und Attributen, gegliedert nach Domänen. Beziehungen zeigen dokumentierte Zusammenhänge.",
+        "example": "Gebäude, Mietvertrag"
+      },
+      {
+        "layer": "technische Struktur",
+        "title": "Datentabellen",
+        "text": "Beschreiben Tabellen oder vergleichbare Datenstrukturen eines Systems und ihre Felder. Verknüpfungen zeigen, welche Geschäftsobjekte sie umsetzen, soweit diese Zuordnung dokumentiert ist.",
+        "example": "Gebäudetabelle in SAP RE-FX"
+      },
+      {
+        "layer": "kontrolliertes Vokabular",
+        "title": "Referenzdaten",
+        "text": "Wertelisten mit Codes und ihren Bedeutungen. Attribute und Felder verlinken die zugehörige Werteliste, sofern eine hinterlegt ist. In SKOS lassen sich solche Listen als Begriffsschemata beschreiben.",
+        "example": "Gebäudekategorie des [GWR][gwr]"
+      },
+      {
+        "layer": "Datenangebot",
+        "title": "Datenprodukte",
+        "text": "Beschreiben nutzbare Angebote mit Zuständigkeit, Zugang, Format und Aktualisierung. Die dokumentierten Beziehungen führen zu Geschäftsobjekten, Datentabellen und Schnittstellen. Für eine DCAT-Publikation ist eine gesonderte Zuordnung nötig.",
+        "example": "Gebäudebestand Bund"
+      },
+      {
+        "layer": "Datenschnittstelle",
+        "title": "API-Verzeichnis",
+        "text": "Beschreibt Schnittstellen mit Protokoll, Zugang und Dokumentationslink. Die dort verzeichneten Fachschnittstellen sind von der API dieses Katalogs zu unterscheiden.",
+        "example": "Immobilien-API"
+      }
+    ],
+    "coreTitle": "Gemeinsame Kernattribute",
+    "coreIntro": "Viele Einträge teilen Angaben zu Bezeichnung, Beschreibung, Status, Verantwortung und Herkunft. Die Übersicht nennt die Feldnamen der Katalogdarstellung; sie ist kein Austauschprofil. Attribute und Felder übernehmen bestimmte Angaben vom übergeordneten Eintrag. Die tatsächlich abrufbaren API-Felder sind in der API-Dokumentation beschrieben.",
+    "extTitle": "Typspezifische Attribute",
+    "statusTitle": "Status",
+    "statusNote": "Der Status beschreibt den dokumentierten Bearbeitungsstand. Im Prototyp belegt die Anzeige «Gültig» keine produktive Freigabe."
+  },
+  "usage": {
+    "steps": [
+      {
+        "title": "Suchen",
+        "text": "Geben Sie einen Begriff in die globale Suche ein und bestätigen Sie mit Enter. In Listen können Sie zusätzlich mit «In dieser Liste suchen…» filtern."
+      },
+      {
+        "title": "Navigieren",
+        "text": "Der Baum gliedert Geschäftsobjekte nach Domäne und Datentabellen nach System. Ein Klick auf einen Eintrag öffnet seine Übersicht. Auf kleinen Bildschirmen erreichen Sie den Baum über das Navigationsmenü."
+      },
+      {
+        "title": "Ansicht wählen",
+        "text": "Wechseln Sie zwischen Kacheln und Tabelle. Je nach Liste stehen Gruppierungen zur Verfügung. Mit «Ansicht» wählen Sie die sichtbaren Angaben; bei wenig Platz werden Tabellen als beschriftete Karten dargestellt."
+      },
+      {
+        "title": "Steckbrief lesen",
+        "text": "«Kerndaten» beschreibt den Eintrag, «Verantwortlich» nennt die Zuständigkeiten. Weitere Register zeigen Attribute oder Felder, Beziehungen und Verlauf. In den Attribut- und Feldlisten sehen Sie standardmässig Name, Format, Schlüssel und Werteliste. Ein Strich kennzeichnet eine fehlende Angabe."
+      },
+      {
+        "title": "Weiterführende Informationen öffnen",
+        "text": "Folgen Sie einer verknüpften Werteliste zu den Referenzdaten. Quellenlinks führen zu den herausgebenden Stellen oder zur Dokumentation des jeweiligen Standards. Die Links im Handbuch öffnen sich in einem neuen Tab."
+      },
+      {
+        "title": "Exportieren und drucken",
+        "text": "«Exportieren» erstellt eine Excel-Arbeitsmappe. Über «Drucken» öffnen Sie die PDF-Vorschau für die unterstützten Katalogansichten und wählen dort Umfang und Darstellung. Die Katalog-API stellt Metadaten maschinell bereit."
+      }
+    ]
+  },
+  "retrieval": {
+    "export": "«Exportieren» bietet Excel für die aktuelle Auswahl oder den gesamten Katalog. Bei Listen umfasst die aktuelle Auswahl alle passenden Einträge, auch ausserhalb der sichtbaren Seite. Ein Export aus einem Steckbrief enthält dessen vollständige dokumentierte Struktur. Die Arbeitsmappe gliedert die Inhalte nach Einträgen, Attributen, Feldern, Werten und weiteren Metadaten. Der separate Schalter «Drucken» öffnet die PDF-Vorschau; deren Auswahl bestimmt den Druckumfang.",
+    "api": "Die lesende Katalog-API liefert Metadaten als JSON. Ihre Dokumentation verwendet [OpenAPI][openapi] und erlaubt in der verbundenen Anwendung das Ausprobieren von Lesezugriffen. Im aktuellen Prototyp ist dafür kein persönlicher Login nötig; die API-Seite ergänzt den öffentlichen Anwendungsschlüssel. DCAT-AP-CH-Export und eIAM-Anmeldung sind nicht umgesetzt. Für den Zugriff auf die beschriebenen Fachdaten gelten die Angaben beim jeweiligen Datenangebot."
+  },
+  "faq": [
+    {
+      "q": "Kann ich im Katalog etwas ändern?",
+      "a": "Die Oberfläche ist eine Lesesicht. Melden Sie Änderungen an die dokumentierte Fachstelle oder über «Hilfe und Kontakt». Die Katalogbetreuung übernimmt abgestimmte Anpassungen."
+    },
+    {
+      "q": "Wie aktuell sind die Inhalte?",
+      "a": "Prüfen Sie die dokumentierten Änderungs- und Quelldaten im Steckbrief. «Letzter Abgleich» bezeichnet einen erfassten Übernahmestand, sofern vorhanden. Daraus folgt keine tägliche Aktualisierung und keine Aussage über die Aktualität der Fachdaten."
+    },
+    {
+      "q": "Warum erscheint «Gebäude» in mehreren Bereichen?",
+      "a": "Das Geschäftsobjekt beschreibt die fachliche Bedeutung. Datentabellen beschreiben die Umsetzung in Systemen wie SAP RE-FX oder GIS IMMO. Beziehungen verbinden diese Einträge, soweit die Zuordnung dokumentiert ist."
+    },
+    {
+      "q": "Was bedeuten leere Angaben und Striche?",
+      "a": "Die Information ist im Katalog nicht dokumentiert. Beispielsweise bedeutet eine leere Werteliste, dass keine Referenzdaten verknüpft sind. Daraus lässt sich nicht ableiten, ob das Quellsystem die Angabe benötigt oder eigene Regeln verwendet."
+    },
+    {
+      "q": "Berechtigt mich ein Eintrag zum Zugriff auf Daten?",
+      "a": "Ein Katalogeintrag dokumentiert ein Datenangebot. Die tatsächlichen Zugangsbedingungen stehen beim Datenprodukt oder bei der Schnittstelle. Eine öffentliche Beschreibung, auch auf [I14Y][i14y], bedeutet nicht automatisch freien Zugriff auf die Daten."
+    },
+    {
+      "q": "Welche Inhalte kann ich herunterladen?",
+      "a": "Excel und PDF enthalten Katalogmetadaten und dokumentierte Referenzwerte. Einzelne Gebäude-, Vertrags- oder andere operative Datensätze sind nicht Bestandteil dieser Exporte; sie bleiben in den Quellsystemen."
+    }
+  ],
+  "glossary": [
+    {
+      "term": "Metadaten",
+      "text": "Informationen über Daten, zum Beispiel ihre Bedeutung, Struktur, Herkunft, Qualität und Zuständigkeit."
+    },
+    {
+      "term": "Domäne",
+      "text": "Fachlicher Bereich, der zusammengehörige Geschäftsobjekte gliedert, zum Beispiel Energie oder Finanzen."
+    },
+    {
+      "term": "Geschäftsobjekt",
+      "text": "Systemneutraler fachlicher Begriff mit Definition, Attributen und Beziehungen."
+    },
+    {
+      "term": "Attribut / Feld",
+      "text": "Ein Attribut beschreibt eine fachliche Eigenschaft. Ein Feld beschreibt die entsprechende Angabe in einer technischen Datenstruktur. «Format» bezeichnet in der Oberfläche den Wert- beziehungsweise Datentyp."
+    },
+    {
+      "term": "Datentabelle",
+      "text": "Dokumentierte technische Datenstruktur eines Systems mit Feldern und gegebenenfalls Beziehungen zu Geschäftsobjekten."
+    },
+    {
+      "term": "Referenzdaten",
+      "text": "Kontrollierte Werte mit Codes und Bedeutungen, zum Beispiel eine Liste von Gebäudekategorien. Sie helfen, Angaben einheitlich zu erfassen und auszutauschen."
+    },
+    {
+      "term": "Führendes System",
+      "text": "Die für eine bestimmte Information massgebliche Quelle. Diese kann je nach Eintrag unterschiedlich sein."
+    },
+    {
+      "term": "[BBL][bbl]",
+      "text": "Bundesamt für Bauten und Logistik. Der Katalogprototyp behandelt das Immobilienmanagement in diesem Kontext."
+    },
+    {
+      "term": "[BFS][bfs]",
+      "text": "Bundesamt für Statistik; zuständige Stelle für das Programm NaDB und die Interoperabilitätsplattform I14Y."
+    },
+    {
+      "term": "[NaDB][nadb]",
+      "text": "Nationale Datenbewirtschaftung. Das Programm unterstützt die Mehrfachnutzung von Daten durch gemeinsame Beschreibungen und Harmonisierung."
+    },
+    {
+      "term": "[I14Y][i14y]",
+      "text": "Interoperabilitätsplattform der Schweiz. Sie macht Metadaten zu Datensätzen, elektronischen Schnittstellen und Behördenleistungen auffindbar. Die eigentlichen Daten bleiben bei den zuständigen Stellen."
+    },
+    {
+      "term": "[DCAT-AP CH][dcat-ap-ch]",
+      "text": "Schweizer Anwendungsprofil des Data Catalog Vocabulary, standardisiert als eCH-0200. Es legt Regeln für den Austausch von Metadaten zu Datensätzen und Datendiensten fest."
+    },
+    {
+      "term": "[SKOS][skos]",
+      "text": "Simple Knowledge Organization System. W3C-Standard für Begriffe, ihre Bezeichnungen und Beziehungen sowie kontrollierte Vokabulare. Ein Concept Scheme bündelt zusammengehörige Begriffe."
+    },
+    {
+      "term": "[ArchiMate][archimate]",
+      "text": "Modellierungssprache für Unternehmensarchitektur. Sie hilft, fachliche Konzepte, Anwendungen und technische Strukturen zusammenhängend zu beschreiben."
+    },
+    {
+      "term": "[RIAB][riab]",
+      "text": "Referenzmodell für die Informatikarchitektur Bund, veröffentlicht als IKT-Standard R001."
+    },
+    {
+      "term": "[Innovator][innovator]",
+      "text": "Modellierungswerkzeug der MID für Prozesse, Daten und Architekturen. Wir verwenden es für die Architekturmodellierung."
+    },
+    {
+      "term": "[GWR][gwr]",
+      "text": "Eidgenössisches Gebäude- und Wohnungsregister. Seine Dokumentation enthält Definitionen, Merkmale und Codes für Gebäude und Wohnungen in der Schweiz."
+    },
+    {
+      "term": "[OpenAPI][openapi]",
+      "text": "Standard zur maschinenlesbaren Beschreibung von HTTP-Schnittstellen. Darauf basiert die interaktive API-Dokumentation des Katalogs."
+    },
+    {
+      "term": "Letzter Abgleich",
+      "text": "Dokumentierter Zeitpunkt einer Datenübernahme. Ein fehlender Wert oder ein älterer Stand erlaubt keine Annahme über einen laufenden Abgleich."
+    }
+  ],
+  "references": [
+    {
+      "id": "innovator",
+      "title": "Innovator – Modellierungswerkzeug",
+      "source": "MID",
+      "url": "https://innovator.de/"
+    },
+    {
+      "id": "bbl",
+      "title": "Bundesamt für Bauten und Logistik (BBL)",
+      "source": "BBL",
+      "url": "https://www.bbl.admin.ch/de"
+    },
+    {
+      "id": "bfs",
+      "title": "Bundesamt für Statistik (BFS)",
+      "source": "BFS",
+      "url": "https://www.bfs.admin.ch/bfs/de/home.html"
+    },
+    {
+      "id": "nadb",
+      "title": "Nationale Datenbewirtschaftung (NaDB)",
+      "source": "BFS",
+      "url": "https://www.bfs.admin.ch/bfs/de/home/nadb/nadb.html"
+    },
+    {
+      "id": "i14y",
+      "title": "Interoperabilitätsplattform I14Y",
+      "source": "BFS",
+      "url": "https://www.i14y.admin.ch/de/home"
+    },
+    {
+      "id": "i14y-handbook",
+      "title": "Handbuch Interoperabilitätsplattform I14Y",
+      "source": "BFS",
+      "url": "https://handbook.i14y.admin.ch/de/"
+    },
+    {
+      "id": "roles",
+      "title": "Rollen in der Datenbewirtschaftung",
+      "source": "I14Y-Handbuch, BFS",
+      "url": "https://handbook.i14y.admin.ch/de/gouvernanz/rollen/"
+    },
+    {
+      "id": "dcat-ap-ch",
+      "title": "DCAT-AP CH – Schweizer Anwendungsprofil (eCH-0200)",
+      "source": "eCH-Fachgruppe Open Government Data",
+      "url": "https://www.dcat-ap.ch/"
+    },
+    {
+      "id": "skos",
+      "title": "SKOS Simple Knowledge Organization System Reference",
+      "source": "W3C",
+      "url": "https://www.w3.org/TR/skos-reference/"
+    },
+    {
+      "id": "opendata",
+      "title": "Handbuch opendata.swiss",
+      "source": "BFS",
+      "url": "https://handbook.opendata.swiss/de/"
+    },
+    {
+      "id": "archimate",
+      "title": "ArchiMate 101 – Einführung in die Modellierungssprache",
+      "source": "The Open Group, ArchiMate Community",
+      "url": "https://archimate-community.pages.opengroup.org/workgroups/archimate-101/"
+    },
+    {
+      "id": "riab",
+      "title": "R001 – Referenzmodell für die Informatikarchitektur Bund (RIAB)",
+      "source": "Bundeskanzlei, Bereich DTI",
+      "url": "https://www.bk.admin.ch/de/r001-referenzmodell-fuer-die-informatikarchitektur-bund-riab"
+    },
+    {
+      "id": "data-management",
+      "title": "Daten- und Informationsmanagement",
+      "source": "Bundeskanzlei, Bereich DTI",
+      "url": "https://www.bk.admin.ch/de/daten-und-informationsmanagement"
+    },
+    {
+      "id": "a736",
+      "title": "A736 – Prozess- und Architekturmodellierungswerkzeuge",
+      "source": "Bundeskanzlei, Bereich DTI",
+      "url": "https://www.bk.admin.ch/de/a736-prozess-und-architekturmodellierungswerkzeuge"
+    },
+    {
+      "id": "gwr",
+      "title": "Eidgenössisches Gebäude- und Wohnungsregister – Dokumentation",
+      "source": "BFS",
+      "url": "https://www.housing-stat.ch/de/home.html"
+    },
+    {
+      "id": "openapi",
+      "title": "What is OpenAPI? – Einführung",
+      "source": "OpenAPI Initiative",
+      "url": "https://www.openapis.org/what-is-openapi"
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+<h3>Il modello di metadati</h3>
+<p>Il modello di metadati del catalogo immobiliare dell'UFCL si basa sul profilo di applicazione svizzero DCAT (DCAT-AP CH v3.0.0) e lo amplia in modo minimale con componenti specifici per la gestione dei dati immobiliari della Confederazione.</p>
+
+<h3>Architettura di base</h3>
+<p>Il modello si compone di cinque classi principali DCAT e di un'estensione specifica dell'UFCL:</p>
+
+<p><strong>Classi standard DCAT:</strong></p>
+<ul>
+    <li><strong>dcat:Catalog</strong> - Catalogo immobiliare dell'UFCL come registro complessivo</li>
+    <li><strong>dcat:Dataset</strong> - Raccolte di dati immobiliari (dati di base degli edifici, dati energetici)</li>
+    <li><strong>dcat:DatasetSeries</strong> - Serie temporali (rapporti annuali, evoluzioni dei costi)</li>
+    <li><strong>dcat:Distribution</strong> - Forme di messa a disposizione (Excel, API, PDF)</li>
+    <li><strong>dcat:DataService</strong> - Servizi di dati (interfacce SAP, REST-APIs)</li>
+</ul>
+
+<p><strong>Modellazione di schemi (conforme DCAT):</strong></p>
+<ul>
+    <li><strong>dct:Standard</strong> - Schema di oggetto aziendale (edificio, terreno, contratto di locazione)</li>
+    <li><strong>skos:ConceptScheme</strong> - Vocabolari controllati e liste di valori (tipi di edifici, Cantoni)</li>
+    <li><strong>skos:Concept</strong> - Valori singoli nelle liste di valori</li>
+</ul>
+
+<p><strong>Estensione specifica dell'UFCL:</strong></p>
+<ul>
+    <li><strong>bv:Attribute</strong> - Campi dati con definizioni di tipo, regole di validazione e riferimenti alle liste di valori</li>
+</ul>
+
+<img src="assets/BBL DCAT-AP CH.avif" alt="Diagramma del modello di metadati BBL DCAT-AP CH" class="manual-img">
+
+<h3>Modellazione degli oggetti aziendali</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+dct:Standard "Gebäude-Schema"
+├── dct:identifier: "STD-001"
+├── dct:title: "Gebäude"@de, "Bâtiment"@fr, "Edificio"@it
+├── dct:description: Definition gemäss KBOB/TERMDAT
+├── bv:hasAttribute:
+│   ├── bv:Attribute "Baujahr"
+│   │   ├── dct:type: "xsd:gYear"
+│   │   ├── dct:required: true
+│   │   └── dct:conformsTo → skos:ConceptScheme "Jahre"
+│   └── bv:Attribute "Gebäudetyp"
+│       └── dct:conformsTo → skos:ConceptScheme "Gebäudetypen"
+└── dcat:version: "3.0.0"
+</pre>
+
+<h3>Gestione delle versioni</h3>
+<p>Tutti gli elementi supportano un controllo completo delle versioni:</p>
+<ul>
+    <li><strong>dcat:version</strong> - Versionamento semantico (MAJOR.MINOR.PATCH)</li>
+    <li><strong>dct:issued</strong> - Prima pubblicazione</li>
+    <li><strong>dct:modified</strong> - Ultima modifica</li>
+    <li><strong>adms:versionNotes</strong> - Descrizione delle modifiche</li>
+    <li><strong>dcat:previousVersion</strong> - Riferimento alla versione precedente</li>
+</ul>
+
+<h3>Governance e controllo degli accessi</h3>
+<p><strong>Modello dei ruoli:</strong></p>
+<ul>
+    <li><strong>bv:dataOwner</strong> (foaf:Agent) - Responsabile specialistico della gestione immobiliare</li>
+    <li><strong>bv:dataSteward</strong> (foaf:Agent) - Architetto dei dati / gestore dei dati</li>
+    <li><strong>bv:dataCustodian</strong> (foaf:Agent) - Responsabile tecnico del sistema</li>
+</ul>
+
+<p><strong>Diritti di accesso e conformità:</strong></p>
+<ul>
+    <li><strong>dct:accessRights</strong> - Restrizioni di accesso (pubblico/interno/confidenziale)</li>
+    <li><strong>dct:license</strong> - Condizioni di utilizzo</li>
+    <li><strong>bv:dsgCategory</strong> - Classificazione LPD</li>
+    <li><strong>bv:isgClassification</strong> - Livello di sicurezza delle informazioni</li>
+    <li><strong>dcatap:applicableLegislation</strong> - Basi legali (EMBAG, LPD)</li>
+</ul>
+
+<h3>Esempio di struttura</h3>
+<pre style="background:#f2f2f2; padding:15px; border:1px solid #ddd; font-size:14px; overflow-x:auto; color:#444;">
+BBL Immobilienkatalog (dcat:Catalog)
+├── Geschäftsobjekt-Schemas (Konzeptuelle Ebene)
+│   ├── dct:Standard "Gebäude-Schema" v3.0.0
+│   └── dct:Standard "Grundstück-Schema" v2.1.0
+│
+├── Datenattribute (Logische Ebene)
+│   ├── bv:Attribute "EGID" (required, unique)
+│   └── bv:Attribute "Nutzfläche" (decimal, m²)
+│
+├── Wertelisten (Referenzdaten)
+│   ├── skos:ConceptScheme "Gebäudetypen" v2.1.0
+│   └── skos:ConceptScheme "Kantone" v1.0.0
+│
+└── Datasets (Physische Ebene)
+    ├── dcat:Dataset "Gebäudestammdaten 2025"
+    │   └── dcat:Distribution (SAP-Export, REST-API)
+    └── dcat:DataService "IMMO-API v2"
+</pre>
+<p>Questa struttura consente la completa tracciabilità dell'origine dei dati, responsabilità chiaramente definite e soddisfa tutti i requisiti normativi dell'Amministrazione federale.</p>
+
+<h3>Informazioni e standard supplementari</h3>
+<p><strong>Standard e specifiche utilizzati:</strong></p>
+<ul>
+    <li><strong>DCAT v3 (W3C Recommendation)</strong><br>La base del nostro modello di metadati. Particolarmente rilevanti sono le Qualified Forms per le relazioni estese:<br><a href="https://www.w3.org/TR/vocab-dcat-3/#qualified-forms" target="_blank">https://www.w3.org/TR/vocab-dcat-3/#qualified-forms</a></li>
+
+    <li><strong>Dublin Core Metadata Terms</strong><br>Definisce le proprietà centrali come dct:Standard, dct:conformsTo e dct:identifier:<br><a href="https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard" target="_blank">https://www.dublincore.org/specifications/dublin-core/dcmi-terms/#Standard</a></li>
+
+    <li><strong>DCAT-AP CH (eCH-0200)</strong><br>Lo standard di applicazione svizzero per i portali dati dell'Amministrazione federale:<br><a href="https://ech.ch/de/ech/ech-0200/3.0" target="_blank">https://ech.ch/de/ech/ech-0200/3.0</a><br><a href="https://www.dcat-ap.ch/" target="_blank">https://www.dcat-ap.ch/</a></li>
+
+    <li><strong>SKOS (Simple Knowledge Organization System)</strong><br>Per la modellazione delle liste di valori e dei vocabolari controllati:<br><a href="https://www.w3.org/TR/skos-reference/" target="_blank">https://www.w3.org/TR/skos-reference/</a></li>
+</ul>
+
+<p><strong>Ruoli di governance secondo la NaDB</strong></p>
+<p>Le definizioni dei ruoli si basano sulla Gestione nazionale dei dati dell'UST:</p>
+<ul>
+    <li><strong>Data Owner</strong> - Responsabilità specialistica</li>
+    <li><strong>Data Steward</strong> - Architettura e qualità dei dati</li>
+    <li><strong>Data Custodian</strong> - Esercizio tecnico</li>
+</ul>

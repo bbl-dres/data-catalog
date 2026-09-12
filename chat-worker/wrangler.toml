@@ -1,0 +1,28 @@
+name = "bbl-datenkatalog-chat"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Bundle sql.js WebAssembly + the catalog SQLite file into the Worker.
+# Both are accessed as imports in src/index.js.
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+
+[[rules]]
+type = "Data"
+globs = ["**/*.db"]
+fallthrough = true
+
+# Origins allowed to call this worker (comma-separated). Use "*" to
+# accept any origin (not recommended for production). The browser blocks
+# responses to other origins; this isn't real auth, just abuse deterrence.
+[vars]
+ALLOWED_ORIGINS = "https://bbl-dres.github.io,http://localhost:8000"
+ANTHROPIC_MODEL = "claude-sonnet-4-6"
+
+# Secrets (set with: wrangler secret put ANTHROPIC_API_KEY):
+#   ANTHROPIC_API_KEY
+#
+# Optional: set DEBUG=1 (via `wrangler secret put DEBUG`) to echo full
+# stack traces to error responses. Leave unset in production.

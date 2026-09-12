@@ -1,0 +1,355 @@
+/* ==========================================================================
+   Datenkatalog BBL – design tokens
+   --------------------------------------------------------------------------
+   Hand-written CSS custom properties derived from the Oblique design system
+   (FOITT, MIT): palette from projects/oblique/src/styles/scss/core/_palette.scss,
+   type/spacing/radius/shadow/z-index from projects/design-system tokens.css and
+   the legacy _variables.scss. Only the values this app uses are kept.
+
+   Tiers
+     1. Primitives   --ob-<hue>-<step>, --ob-font-*, --ob-space-*, …
+     2. Semantic     --ob-color-*, --ob-shadow-*, --ob-z-*
+     3. Component    --ob-header-*, --ob-control-*, …
+   Use semantic colours and component dimensions in component styles.
+   Shared spacing, typography, borders and radii may use primitives directly.
+   Compact app additions are identified below; they are not Oblique defaults.
+   ========================================================================== */
+
+:root {
+  /* ---- 1. Primitives: colour ------------------------------------------- */
+  --ob-white: #ffffff;
+  --ob-black: #000000;
+
+  /* Federal red (accent) */
+  --ob-red-50: #ffedee;
+  --ob-red-100: #fae1e2;
+  --ob-red-200: #ffccce;
+  --ob-red-300: #fa9da1;
+  --ob-red-400: #fc656b;
+  --ob-red-500: #e53940;
+  --ob-red-600: #d8232a;
+  --ob-red-700: #bf1f25;
+  --ob-red-800: #99191e;
+  --ob-red-900: #801519;
+
+  /* Blue-grey neutral ramp ("secondary") */
+  --ob-secondary-50: #f0f4f7;
+  --ob-secondary-100: #dfe4e9;
+  --ob-secondary-200: #acb4bd;
+  --ob-secondary-300: #828e9a;
+  --ob-secondary-400: #596978;
+  --ob-secondary-500: #46596b;
+  --ob-secondary-600: #2f4356;
+  --ob-secondary-700: #263645;
+  --ob-secondary-800: #1c2834;
+  --ob-secondary-900: #131b22;
+
+  /* Green */
+  --ob-green-50: #ecfdf5;
+  --ob-green-100: #d1fae5;
+  --ob-green-700: #047857;
+  --ob-green-800: #065f46;
+
+  /* Orange */
+  --ob-orange-50: #fff7ed;
+  --ob-orange-100: #ffedd5;
+  --ob-orange-600: #ea580c;
+  --ob-orange-700: #c2410c;
+
+  /* Blue */
+  --ob-blue-50: #eff6ff;
+  --ob-blue-100: #dbeafe;
+  --ob-blue-700: #1d4ed8;
+  --ob-blue-800: #1e40af;
+  --ob-blue-900: #1e3a8a;
+
+  /* Purple (focus ring, visited links) */
+  --ob-purple-500: #8655f6;
+  --ob-purple-700: #6d28d9;
+
+  /* ---- 1. Primitives: typography --------------------------------------- */
+  --ob-font-family-body: "Noto Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ob-font-family-code: "Noto Sans Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+
+  --ob-font-size-xs: 0.75rem;     /* 12px */
+  --ob-font-size-sm: .8125rem;    /* 13px */
+  --ob-font-size-md: .875rem;    /* 14px */
+  --ob-font-size-lg: var(--ob-font-size-md); /* compact h3 */
+  --ob-font-size-xl: 1.0625rem;  /* 17px – h2 */
+  --ob-font-size-2xl: 1.5rem;    /* 24px – h1 */
+  --ob-font-size-body-lg: .9375rem; /* 15px – compact app reading text */
+  --ob-font-size-input: 1rem;    /* 16px – hero and touch inputs, avoids iOS auto-zoom */
+
+  --ob-line-height-xs: 1rem;
+  --ob-line-height-tight: 1.125rem; /* 18px – compact labels */
+  --ob-line-height-sm: 1.25rem;
+  --ob-line-height-md: 1.25rem;
+  --ob-line-height-lg: 1.5rem;
+  --ob-line-height-xl: 2rem;
+  --ob-line-height-body: 1.42857;
+  --ob-line-height-table: 1.42857;
+  /* Icon sizes: xs 12, sm 14, md 16, lg 18, xl 20, 2xl 22, 3xl 28 */
+  --ob-icon-size-xs: 12px;
+  --ob-icon-size-sm: 14px;
+  --ob-icon-size-md: 16px;
+  --ob-icon-size-lg: 18px;
+  --ob-icon-size-xl: 20px;
+  --ob-icon-size-2xl: 22px;
+  --ob-icon-size-3xl: 28px;
+
+  --ob-font-weight-light: 300;
+  --ob-font-weight-regular: 400;
+  --ob-font-weight-medium: 500;
+  --ob-font-weight-semibold: 600;
+  --ob-font-weight-bold: 700;
+
+  --ob-letter-spacing-narrow: -0.5px;
+  --ob-letter-spacing-normal: 0;
+  --ob-letter-spacing-wide: 0.25px;
+  --ob-letter-spacing-table: 0.15px; /* compact app table tracking */
+  --ob-letter-spacing-wider: 0.5px;
+  --ob-letter-spacing-caps: 1px;
+
+  /* ---- 1. Primitives: spacing (legacy $ob-spacing-*) -------------------- */
+  --ob-space-2xs: 2px;
+  --ob-space-xs: 4px;
+  --ob-space-compact: 6px; /* app addition for dense diagram controls */
+  --ob-space-sm: 8px;
+  --ob-space-md: 12px;
+  --ob-space-default: 16px;
+  --ob-space-lg: 24px;
+  --ob-space-xl: 32px;
+  --ob-space-2xl: 40px;
+  --ob-space-3xl: 48px;
+
+  /* ---- 1. Primitives: radius & borders --------------------------------- */
+  --ob-radius-none: 0;
+  --ob-radius-sm: 2px;    /* buttons, controls */
+  --ob-radius-md: 3px;    /* focus ring on links */
+  --ob-radius-lg: 4px;    /* inputs */
+  --ob-radius-pill: 999px;
+
+  --ob-border-width-xs: 1px;
+  --ob-border-width-sm: 2px;
+  --ob-border-width-md: 3px;
+  --ob-border-width-lg: 4px;
+
+  /* ---- 1. Primitives: shadows (legacy _shadow.scss, valid CSS) --------- */
+  --ob-color-scroll-shadow: rgba(0, 0, 0, 0.12);         /* hidden side of a sideways-scrolling table */
+  --ob-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ob-shadow-md: 0 1px 2px rgba(0, 0, 0, 0.06), 0 1px 5px rgba(0, 0, 0, 0.08);
+  --ob-shadow-default: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 10px rgba(0, 0, 0, 0.08);
+  --ob-shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.05), 0 5px 20px rgba(0, 0, 0, 0.08);
+  --ob-shadow-menu: 0 3px 4px 1px var(--ob-secondary-300);
+  --ob-shadow-popover: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+
+  /* ---- 1. Primitives: z-index (legacy) --------------------------------- */
+  --ob-z-controls: 10;
+  --ob-z-layout: 101;
+  --ob-z-widget: 200;
+  --ob-z-overlay: 1005;
+  --ob-z-toast: 1400;
+
+  /* ---- 1. Primitives: motion ------------------------------------------- */
+  --ob-duration-micro: 100ms;
+  --ob-duration-smooth: 200ms;
+  --ob-duration-fast: 250ms;
+  --ob-easing-standard: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ---- 2. Semantic colours --------------------------------------------- */
+  --ob-color-text: var(--ob-secondary-800);            /* body text          */
+  --ob-color-text-secondary: var(--ob-secondary-600);  /* labels, subtitles  */
+  --ob-color-text-tertiary: var(--ob-secondary-400);   /* hints, counts      */
+  --ob-color-text-disabled: var(--ob-secondary-300);
+  --ob-color-text-inverse: var(--ob-white);
+
+  --ob-color-bg: var(--ob-white);
+  --ob-color-surface: var(--ob-secondary-50);          /* panels, zebra rows */
+  --ob-color-ancestor: #f7f9fb;
+  --ob-color-surface-hover: var(--ob-secondary-100);
+  --ob-color-border: var(--ob-secondary-100);
+  --ob-color-border-strong: var(--ob-secondary-200);
+  --ob-color-border-input: var(--ob-secondary-400);      /* Figma text/select: 1px #596978 */
+  --ob-color-border-control: var(--ob-secondary-600);
+  --ob-color-graphic: var(--ob-secondary-300);          /* essential neutral graphics: >= 3:1 on bg/surface */
+  --ob-color-footer-bg: var(--ob-secondary-700);
+  --ob-color-code-bg: var(--ob-secondary-900);         /* contrast for the API's syntax-highlighted examples */
+
+  --ob-color-accent: var(--ob-red-500);                /* active markers      */
+  --ob-color-accent-strong: var(--ob-red-600);         /* tab underline       */
+  --ob-color-link: var(--ob-blue-700);
+  --ob-color-link-hover: var(--ob-blue-800);
+  --ob-color-link-active: var(--ob-blue-900);
+  --ob-color-link-visited: var(--ob-purple-700);      /* prose links only (core/_type.scss) */
+  --ob-color-focus: var(--ob-purple-500);
+  --ob-color-placeholder: var(--ob-color-text-tertiary); /* 5.65:1 on white, distinct from typed text */
+  --ob-color-tab-text: var(--ob-black);                  /* material/mixins/_mat-tab.scss */
+  --ob-color-backdrop: rgba(19, 27, 34, 0.42);           /* secondary-900 at 42 % behind the drawer */
+
+  --ob-color-success: var(--ob-green-700);
+  --ob-color-success-bg: var(--ob-green-100);
+  --ob-color-warning: var(--ob-orange-700);
+  --ob-color-warning-bg: var(--ob-orange-100);
+  --ob-color-error: var(--ob-red-800);
+  --ob-color-error-bg: var(--ob-red-100);
+  --ob-color-info: var(--ob-blue-800);
+  --ob-color-info-bg: var(--ob-blue-100);
+  --ob-color-neutral: var(--ob-secondary-600);
+  --ob-color-action: var(--ob-secondary-600);
+  --ob-color-action-hover: var(--ob-secondary-700);
+  --ob-color-action-active: var(--ob-secondary-800);
+
+  --ob-color-avatar-bg: var(--ob-secondary-600);
+  --ob-color-graph-halo: rgba(47, 67, 86, 0.08);
+
+  /* ---- 3. Component tokens --------------------------------------------- */
+  --ob-panel-padding: var(--ob-space-lg);
+  --ob-visual-viewport-height: 100dvh;                  /* app.js updates these while the keyboard resizes the visible area */
+  --ob-visual-viewport-top: 0px;
+  --ob-content-max-width: 1600px;
+  --ob-home-max-width: 1120px;                         /* shared by summary cards and both tables */
+  --ob-sidebar-default-width: 360px;
+  --ob-sidebar-width: var(--ob-sidebar-default-width);
+  --ob-sidebar-min-width: 240px;
+  --ob-sidebar-max-width: 480px;
+  --ob-sidebar-content-min-width: 600px;
+  --ob-sidebar-resize-hit-width: var(--ob-space-md);
+  --ob-sidebar-resize-grip-width: var(--ob-space-compact);
+  --ob-sidebar-resize-grip-height: var(--ob-space-default);
+  --ob-sidebar-rail-width: 56px;
+  --ob-sidebar-flyout-width: 300px;
+  --ob-sidebar-heading-height: 36px;
+  --ob-tree-indent: var(--ob-space-default);
+  --ob-tree-padding-inline: var(--ob-space-default);
+  --ob-tree-toggle-width: 24px;
+  --ob-header-identity-height: 56px;                    /* includes the header's bottom border; grows with the logo */
+  --ob-header-notice-height: 0px;
+  --ob-header-navigation-height: calc(var(--ob-touch-target) + var(--ob-border-width-xs)); /* zero in drawer mode */
+  --ob-header-height: calc(var(--ob-header-identity-height) + var(--ob-header-notice-height) + var(--ob-header-navigation-height));
+  --ob-content-padding-x: var(--ob-space-xl);            /* Figma grid: desktop margin 32, mobile 16 */
+  /* Compact header brand typography and spacing. */
+  --ob-logo-gap: var(--ob-space-default);
+  --ob-logo-title-font-size: var(--ob-font-size-sm);
+  --ob-logo-title-line-height: 1.375;                    /* leading-snug */
+  --ob-logo-title-trim: 0.16rem;                         /* optical title adjustment from the federal logo reference */
+  --ob-control-height: 32px;
+  --ob-control-height-lg: var(--ob-control-height);
+  --ob-touch-target: 44px;
+  --ob-control-height-sm: var(--ob-control-height);       /* icon buttons inside controls, tree toggles */
+  --ob-avatar-size: 28px;
+  --ob-language-select-min-width: 64px;
+  --ob-drawer-width: 320px;
+  --ob-drawer-header-height: 56px;
+  --ob-footer-height: calc(var(--ob-line-height-md) + 2 * var(--ob-space-xs)); /* single-row footer band (28px); sticky panels and the last handbook chapter keep clear of it */
+  --ob-search-min-width: 260px;
+  --ob-search-max-width: 480px;
+  --ob-header-search-width: 400px;
+  --ob-collection-search-width: 280px;
+  --ob-hero-search-max-width: 880px;
+  --ob-hero-control-height: 48px;
+  --ob-hero-suggest-max-height: 360px;
+  --ob-suggest-max-height: 420px;
+  --ob-menu-offset: var(--ob-space-xs);                  /* gap between a trigger and its dropdown surface: catalog menus, select menus and print popovers */
+  --ob-menu-min-width: 240px;
+  --ob-menu-min-width-wide: 260px;
+  --ob-menu-min-width-narrow: 200px;
+  --ob-popover-width: 395px;                             /* Oblique service navigation popover (empiric) */
+  --ob-field-picker-max-height: 560px;
+  --ob-breadcrumb-item-max-width: 240px;
+  --ob-breadcrumb-current-max-width: 320px;
+  --ob-kpi-count-font-size-small: 1.375rem;               /* 22px, stacked summary cards */
+  --ob-kpi-compact-min-height: calc(var(--ob-touch-target) + var(--ob-space-sm));
+  --ob-tab-min-height: var(--ob-space-2xl);
+  --ob-graph-min-height: 380px;                           /* inline diagram shell floor; graph.js raises it to the remaining viewport height */
+  --ob-graph-viewport-min-height: 160px;
+  --ob-graph-control-size: var(--ob-control-height);      /* diagram toolbar follows the shared 32/44px control scale */
+  --ob-graph-zoom-min-width: 54px;
+  --ob-graph-fit-min-zoom: 0.75;                          /* auto-fit floor keeps 12px node labels at 9px or more; smaller windows pan instead */
+  --ob-facts-label-width: 176px;                          /* fits the longest standard label ("Weitere Informationen") plus its 12px gap */
+  --ob-facts-row-min-height: 36px;
+  --ob-facts-row-padding: var(--ob-space-sm);
+  --ob-tile-min-width: 300px;
+  --ob-tile-min-height: 180px;
+  --ob-tile-gap: var(--ob-space-lg);
+  --ob-toast-max-width: 420px;
+  --ob-spinner-size: var(--ob-space-2xl);
+  --ob-spinner-duration: 800ms;
+  --ob-export-inset: var(--ob-space-lg);                  /* print header/toolbar/filter bands share this edge inset; export.css narrows it to 16px in compact mode and centres the bands within --ob-content-max-width */
+  --ob-export-settings-width: 320px;                      /* print scope column; widens with the viewport below like the catalog sidebar */
+  --ob-export-popover-width: 380px;
+  --ob-export-facets-height: 320px;                       /* facet list and compact scope tree; grows with the visible height below */
+  --ob-export-preview-min-height: 280px;
+  --ob-table-scroll-shadow-width: 24px;                  /* edge shadow of a sideways-scrolling table */
+  --ob-card-summary-lines: 3;
+  --ob-table-summary-lines: 2;
+  --ob-api-max-width: 1200px;
+  --ob-api-table-min-width: 600px;                      /* local scrolling preserves API parameter/response columns */
+  --ob-prose-max-width: 72ch;
+  --ob-manual-max-width: 1120px;
+  --ob-manual-prose-max-width: 100ch;
+  --ob-table-row-padding: var(--ob-space-sm);
+  --ob-table-row-min-height: 36px;
+  --ob-focus-width: var(--ob-border-width-md);
+  --ob-focus-ring: 0 0 0 var(--ob-focus-width) var(--ob-color-focus);
+  --ob-focus-ring-inset: inset 0 0 0 var(--ob-focus-width) var(--ob-color-focus); /* controls inside overflow containers */
+}
+
+/* Compact tables (config.compactTables) */
+.ob-density-compact {
+  --ob-table-row-padding: var(--ob-space-xs);
+  --ob-table-row-min-height: 28px;
+}
+
+/* Centralised responsive token values. Native @media/@container conditions
+   cannot reference custom properties; component layout queries stay literal.
+   The logo type grows with the viewport (13px up to 1279px, 14px from 1280px). */
+@media (min-width: 768px) {
+  :root { --ob-header-identity-height: 72px; }
+}
+@media (min-width: 1280px) {
+  :root { --ob-logo-title-font-size: var(--ob-font-size-md); --ob-export-settings-width: 360px; }
+}
+@media (min-width: 1920px) {
+  :root { --ob-header-identity-height: 86px; --ob-export-settings-width: 480px; }
+}
+/* Tall viewports show more facet rows and compact tree rows before scrolling. */
+@media (min-height: 900px) {
+  :root { --ob-export-facets-height: 480px; }
+}
+@media (min-height: 1200px) {
+  :root { --ob-export-facets-height: 560px; }
+}
+/* Short viewports (landscape phones, 615–720px laptops) keep the 56px identity
+   row and 13px logo type so the sticky header stays below a fifth of the height. */
+@media (min-width: 768px) and (max-height: 720px) {
+  :root { --ob-header-identity-height: 56px; --ob-logo-title-font-size: var(--ob-font-size-sm); }
+}
+@media (max-width: 1200px) {
+  :root { --ob-facts-label-width: 144px; }
+}
+@media (max-width: 960px) {
+  :root { --ob-content-padding-x: var(--ob-space-default); --ob-header-navigation-height: 0px; --ob-header-notice-height: calc(var(--ob-line-height-md) + var(--ob-space-sm)); --ob-tree-padding-inline: var(--ob-space-sm); }
+  /* Phones and tablets: the diagram shell fills the visible height below the sticky header once scrolled into view. */
+  :root { --ob-graph-min-height: calc(100dvh - var(--ob-header-height) - var(--ob-space-default)); }
+}
+@media (max-width: 600px) {
+  :root { --ob-facts-row-min-height: 32px; }
+}
+/* Shared control geometry, including search clearances on touch laptops.
+   Footer links grow to touch targets, so the band is 44px plus 8px padding. */
+@media (any-pointer: coarse), (max-width: 960px) {
+  :root { --ob-control-height: var(--ob-touch-target); --ob-footer-height: calc(var(--ob-touch-target) + 2 * var(--ob-space-sm)); }
+}
+/* Touch screens keep diagram nodes and pagers at their unscaled target size; the canvas pans. */
+@media (any-pointer: coarse) {
+  :root { --ob-graph-fit-min-zoom: 1; }
+}
+/* Short drawers (landscape phones, open keyboards) trade header height for tree rows. */
+@media (max-height: 500px) {
+  :root { --ob-drawer-header-height: var(--ob-touch-target); }
+}
+/* Phone-width content columns; the 600px minimum the sidebar reserves keeps the desktop values. */
+@container workspace (width < 600px) {
+  .ob-panel { --ob-panel-padding: var(--ob-space-default); }
+  .ob-facts { --ob-facts-label-width: 128px; }
+}

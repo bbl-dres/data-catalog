@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>BBL Datenkatalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.11.0/sql-wasm.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
+</head>
+<body>
+
+<div class="loading-screen" id="loading-screen">
+  <div style="display:flex;width:100%;height:100%;">
+    <div class="loading-skeleton-sidebar" style="width:260px;background:var(--color-bg-surface);border-right:1px solid var(--color-border-subtle);">
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div class="skeleton-nav-item"></div>
+      <div style="height:var(--space-6);"></div>
+      <div class="skeleton-bar skeleton-bar-sm" style="width:60%;"></div>
+      <div class="skeleton-bar" style="width:80%;"></div>
+      <div class="skeleton-bar" style="width:70%;"></div>
+    </div>
+    <div class="loading-skeleton-main" style="flex:1;">
+      <div class="skeleton-bar skeleton-bar-sm" style="width:30%;"></div>
+      <div class="skeleton-bar skeleton-bar-lg"></div>
+      <div class="skeleton-bar skeleton-bar-md"></div>
+      <div style="height:var(--space-6);"></div>
+      <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-6);">
+        <div class="skeleton-bar" style="width:80px;"></div>
+        <div class="skeleton-bar" style="width:80px;"></div>
+        <div class="skeleton-bar" style="width:80px;"></div>
+      </div>
+      <div class="skeleton-bar" style="width:90%;"></div>
+      <div class="skeleton-bar" style="width:85%;"></div>
+      <div class="skeleton-bar" style="width:75%;"></div>
+      <div class="skeleton-bar" style="width:60%;"></div>
+      <div style="height:var(--space-4);"></div>
+      <div class="skeleton-bar" style="width:90%;"></div>
+      <div class="skeleton-bar" style="width:80%;"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <header class="app-header">
+    <button type="button" class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Navigation öffnen" aria-controls="sidebar" aria-expanded="false">
+      <i data-lucide="menu" style="width:20px;height:20px;"></i>
+    </button>
+    <a class="header-logo" id="header-logo">
+      <div class="header-logo-icon"><i data-lucide="network" style="width:16px;height:16px;"></i></div>
+      <span>BBL Datenkatalog</span>
+    </a>
+    <div class="header-search">
+      <div class="search-bar">
+        <i data-lucide="search" class="search-bar-icon" style="width:16px;height:16px;"></i>
+        <input type="text" class="search-bar-input" id="search-input" placeholder="Katalog durchsuchen..." aria-label="Katalog durchsuchen" autocomplete="off">
+        <button type="button" class="search-bar-clear" id="search-clear" aria-label="Suche löschen" hidden>
+          <i data-lucide="x" style="width:14px;height:14px;"></i>
+        </button>
+        <span class="search-bar-shortcut" id="search-shortcut">Ctrl+K</span>
+      </div>
+      <div class="search-dropdown" id="search-dropdown" role="listbox" hidden></div>
+    </div>
+    <div class="prototype-hint">Prototyp, fiktive Inhalte – nur zur Demonstration</div>
+    <div class="header-actions">
+      <div class="lang-switcher">
+        <button class="lang-btn" id="lang-btn" aria-label="Sprache wechseln" aria-haspopup="menu" aria-expanded="false" aria-controls="lang-dropdown">
+          <span id="lang-label">DE</span>
+          <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown" role="menu" aria-labelledby="lang-btn">
+          <button type="button" class="lang-option" data-lang="de" role="menuitemradio"><span class="dot"></span> DE</button>
+          <button type="button" class="lang-option" data-lang="fr" role="menuitemradio"><span class="dot"></span> FR</button>
+          <button type="button" class="lang-option" data-lang="it" role="menuitemradio"><span class="dot"></span> IT</button>
+          <button type="button" class="lang-option" data-lang="en" role="menuitemradio"><span class="dot"></span> EN</button>
+        </div>
+      </div>
+      <div class="user-avatar" title="User" role="button" aria-label="Benutzermenu">DR</div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <nav class="sidebar" id="sidebar" aria-label="Hauptnavigation"></nav>
+    <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
+    <main class="main-content" id="main-content" tabindex="-1"></main>
+  </div>
+  <div id="sr-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+  <footer class="app-footer">
+    <span class="app-footer-version">BBL Datenkatalog v0.1.0</span>
+    <span class="prototype-hint-footer">Prototyp, fiktive Inhalte – nur zur Demonstration</span>
+    <div class="app-footer-links">
+      <a href="https://github.com/bbl-dres/data-catalog" target="_blank" rel="noopener">Quellencode</a>
+      <a href="https://www.admin.ch/gov/de/start/rechtliches.html" target="_blank" rel="noopener">Rechtliches</a>
+      <a href="https://www.bbl.admin.ch/de/hilfe" target="_blank" rel="noopener">Hilfe</a>
+      <a href="https://www.bbl.admin.ch/de/kontakt" target="_blank" rel="noopener">Kontakt</a>
+    </div>
+  </footer>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/db.js"></script>
+<script src="js/components.js"></script>
+<script src="js/filters.js"></script>
+<script src="js/xlsx_io.js"></script>
+<script src="js/views/home.js"></script>
+<script src="js/views/search.js"></script>
+<script src="js/views/graph.js"></script>
+<script src="js/views/export.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+  "kinds": {
+    "domains":  { "singular": "Domäne",         "plural": "Domänen",          "description": "Domänen gliedern den Datenkatalog nach fachlichen Verantwortungsbereichen und bündeln die zugehörigen Geschäftsobjekte.", "en": "Domain",                         "icon": "folder",    "file": "domains.json",   "rows": "Geschäftsobjekte" },
+    "systems":  { "singular": "System",         "plural": "Systeme",          "description": "Systeme sind Anwendungen, in denen Datentabellen geführt oder bereitgestellt werden.", "en": "Application Component",          "icon": "apps",      "file": "systems.json",   "rows": "Datentabellen" },
+    "objects":  { "singular": "Geschäftsobjekt","plural": "Geschäftsobjekte", "description": "Geschäftsobjekte beschreiben fachliche Begriffe und ihre Eigenschaften unabhängig von konkreten IT-Systemen.", "en": "Business Object",                "icon": "stack",     "file": "objects.json",   "rows": "Attribute" },
+    "attrs":    { "singular": "Attribut",       "plural": "Attribute",        "description": "Attribute beschreiben fachliche Eigenschaften eines Geschäftsobjekts.", "en": "Attribute",                      "icon": "tag",       "file": null,             "rows": "" },
+    "tables":   { "singular": "Datentabelle",   "plural": "Datentabellen",    "description": "Datentabellen zeigen, in welchen Systemen Geschäftsobjekte technisch gespeichert und durch welche Felder sie umgesetzt werden.", "en": "Data Object",                    "icon": "database",  "file": "tables.json",    "rows": "Felder" },
+    "refs":     { "singular": "Werteliste",     "plural": "Referenzdaten",    "description": "Referenzdaten sind abgestimmte Wertelisten und Codes für die einheitliche Verwendung von Attributwerten.", "en": "Code List / skos:ConceptScheme", "icon": "file_list", "file": "codelists.json", "rows": "Werte" },
+    "products": { "singular": "Datenprodukt",   "plural": "Datenprodukte",    "description": "Datenprodukte bündeln dokumentierte Daten für einen definierten fachlichen Zweck, einschliesslich Zugang, Format und Aktualisierung.", "en": "dcat:Dataset",                   "icon": "briefcase", "file": "products.json",  "rows": "Attribute" },
+    "apis":     { "singular": "API",            "plural": "API-Verzeichnis",  "description": "Das API-Verzeichnis beschreibt Schnittstellen, über die Datenprodukte und weitere Datenbestände maschinell bereitgestellt werden.", "en": "dcat:DataService",               "icon": "branch",    "file": "apis.json",      "rows": "" }
+  },
+  "navModels": {
+    "entity":    ["objects", "tables", "refs", "products", "apis"],
+    "container": ["domains", "systems", "refs", "products", "apis"]
+  },
+  "core": [
+    { "field": "identifier",     "label": "ID",                         "dcat": "dct:identifier",                                         "archimate": "id",                    "dmbok": "Identifier" },
+    { "field": "name",           "label": "Bezeichnung (de/fr/it/en)",  "dcat": "dct:title @lang",                                        "archimate": "name",                  "dmbok": "Business name" },
+    { "field": "description",    "label": "Beschreibung (de/fr/it/en)", "dcat": "dct:description @lang",                                  "archimate": "documentation",         "dmbok": "Definition" },
+    { "field": "type",           "label": "Typ",                        "dcat": "rdf:type",                                               "archimate": "element type",          "dmbok": "Asset type" },
+    { "field": "status",         "label": "Status",                     "dcat": "adms:status (I14Y: Entwurf · Gültig · Zurückgezogen)",   "archimate": "lifecycle property",    "dmbok": "Lifecycle status" },
+    { "field": "version",        "label": "Version",                    "dcat": "owl:versionInfo",                                        "archimate": "version",               "dmbok": "Version" },
+    { "field": "created",        "label": "Erstellt",                   "dcat": "dct:issued",                                             "archimate": "—",                     "dmbok": "Created" },
+    { "field": "modified",       "label": "Geändert",                   "dcat": "dct:modified",                                           "archimate": "—",                     "dmbok": "Last changed" },
+    { "field": "responsibleOrg", "label": "Verantwortung",              "dcat": "dct:publisher (I14Y: Verantwortliche Organisation)",     "archimate": "Business Actor",        "dmbok": "Accountable organisation" },
+    { "field": "dataOwner",      "label": "Dateneigner",                "dcat": "dcat:contactPoint role=owner",                           "archimate": "Business Role",         "dmbok": "Data Owner" },
+    { "field": "dataSteward",    "label": "Datenverwalter",             "dcat": "dcat:contactPoint role=steward",                         "archimate": "Business Role",         "dmbok": "Data Steward" },
+    { "field": "classification", "label": "Klassifizierung",            "dcat": "dct:accessRights (ISchV: intern · vertraulich · geheim)","archimate": "property",              "dmbok": "Security classification" },
+    { "field": "personalData",   "label": "Personendaten",              "dcat": "dcat-ap-ch: personal data flag (DSG)",                   "archimate": "property",              "dmbok": "Sensitivity" },
+    { "field": "source",         "label": "Führendes System",           "dcat": "prov:wasDerivedFrom",                                    "archimate": "Application Component", "dmbok": "System of record" },
+    { "field": "synced",         "label": "Letzter Abgleich",           "dcat": "prov:generatedAtTime",                                   "archimate": "—",                     "dmbok": "Last harvested" }
+  ],
+  "extensions": {
+    "domains":  [["subDomains", "Untergeordnete Domänen"], ["businessObjects", "Geschäftsobjekte"], ["normReference", "Normreferenz"]],
+    "systems":  [["technology", "Technologie"], ["dataCustodian", "Datenhalter"], ["informationUrl", "Weitere Informationen (optional)"], ["dataTables", "Datentabellen"]],
+    "objects":  [["domain", "Domäne"], ["attributes", "Attribute"], ["normReference", "Normreferenz"], ["termdat", "TERMDAT-Begriffe"]],
+    "attrs":    [["businessObject", "Geschäftsobjekt"], ["valueType", "Werttyp"], ["keyRole", "Schlüssel (PK · FK)"], ["mandatory", "Pflichtfeld"], ["codeList", "Werteliste"], ["position", "Position"]],
+    "tables":   [["system", "System"], ["dataCustodian", "Datenhalter (optional; sonst vom System)"], ["technicalName", "Technischer Name"], ["realizes", "Realisiert Geschäftsobjekt"], ["fields", "Felder"]],
+    "refs":     [["sourceAuthority", "Quelle (Normgeber)"], ["businessObject", "Geschäftsobjekt"], ["values", "Werte"], ["sourceDocument", "Quelldokument"]],
+    "products": [["domain", "Domäne"], ["accessRights", "Zugang"], ["license", "Lizenz"], ["format", "Format"], ["accrualPeriodicity", "Aktualisierung"], ["attributes", "Attribute (optional)"], ["basedOn", "Basiert auf Geschäftsobjekten"], ["sourcedFrom", "Gespeist aus Datentabellen"], ["servedBy", "Bereitgestellt über API"]],
+    "apis":     [["domain", "Domäne"], ["system", "System"], ["protocol", "Protokoll"], ["endpointURL", "Basis-URL"], ["accessRights", "Zugang"], ["documentation", "Dokumentation"], ["serves", "Bereitgestellte Datenprodukte"]]
+  },
+  "statuses": {
+    "Gültig":             { "tone": "success", "text": "Vom Dateneigner freigegeben; verbindlich für Fachbereich und Systeme." },
+    "Entwurf":            { "tone": "warning", "text": "In Bearbeitung, noch nicht freigegeben." },
+    "Zurückgezogen":      { "tone": "neutral", "text": "Nicht mehr gültig; nur noch zur Nachvollziehbarkeit im Katalog." }
+  },
+  "accessOrder": ["öffentlich", "intern (eIAM)", "eingeschränkt (Rollen)"],
+  "sourceAuthorities": ["GWR / eCH", "SIA", "GEAK", "BBL intern"],
+  "responsibilities": ["Immobilienmanagement", "Energiemanagement", "Portfoliomanagement", "Vertragsmanagement", "Liegenschaftsmanagement"]
+}

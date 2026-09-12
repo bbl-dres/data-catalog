@@ -1,0 +1,58 @@
+{
+  "checked": "2026-09-05",
+  "checks": [
+    {
+      "layer": "LCSF",
+      "url": "https://geodienste.ch/db/av_0/deu/ogcapi/collections/LCSF/items?f=json&limit=2&bbox=7.44,46.94,7.45,46.95",
+      "httpStatus": 403,
+      "geometryVerified": false
+    },
+    {
+      "layer": "RESF",
+      "url": "https://geodienste.ch/db/av_0/deu/ogcapi/collections/RESF/items?f=json&limit=2&bbox=7.44,46.94,7.45,46.95",
+      "httpStatus": 403,
+      "geometryVerified": false
+    },
+    {
+      "layer": "ch.kantone.cadastralwebmap-farbe",
+      "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.kantone.cadastralwebmap-farbe/2483448?sr=2056&geometryFormat=geojson&returnGeometry=true",
+      "httpStatus": 200,
+      "responseSha256": "4f71e7f5e35b6eedfd8477827a6e17b4a3b10c1fe9631ffafca9049fd724ce0f",
+      "featureCount": 1,
+      "geometryTypes": [
+        "Polygon"
+      ],
+      "propertyNames": [
+        "ak",
+        "egris_egrid",
+        "geoportal_url",
+        "identnd",
+        "label",
+        "number",
+        "realestate_type"
+      ]
+    },
+    {
+      "layer": "ch.swisstopo-vd.amtliche-vermessung",
+      "url": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo-vd.amtliche-vermessung/2554787?sr=2056&geometryFormat=geojson&returnGeometry=true",
+      "httpStatus": 200,
+      "responseSha256": "8420d8dcd84f17bef5afa3ccb8aaab5adb1750ed3e722abef591dffcfef5c327",
+      "featureCount": 1,
+      "geometryTypes": [
+        "Polygon"
+      ],
+      "propertyNames": [
+        "ak",
+        "bfsnr",
+        "egris_egrid",
+        "geoportal_url",
+        "identnd",
+        "label",
+        "name",
+        "number",
+        "realestate_type"
+      ]
+    }
+  ],
+  "limitation": "Small response samples confirm delivery only, not national completeness, survey accuracy or legal currency."
+}

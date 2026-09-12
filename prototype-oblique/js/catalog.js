@@ -1,0 +1,166 @@
+/* Supabase transport and read-only projection into the existing catalog UI contract. */
+(function (DK) {
+  'use strict';
+  const tables = ['actor', 'domain', 'system', 'business_object', 'business_attribute', 'data_table', 'data_field', 'code_list', 'code_value', 'data_product', 'product_attribute', 'data_service', 'service_endpoint', 'quality_requirement', 'business_attribute_quality_requirement', 'data_field_quality_requirement', 'relationship', 'lineage_relation', 'change_event'];
+  const kinds = { domains: 'domain', systems: 'system', objects: 'business_object', tables: 'data_table', refs: 'code_list', products: 'data_product', apis: 'data_service' };
+  const labels = (record, base = 'name') => Object.fromEntries(['de', 'it', 'fr', 'en'].filter(lang => record[`${base}_${lang}`]).map(lang => [lang, record[`${base}_${lang}`]]));
+  const text = (record, base) => DK.ui.localized(record, base + '_');
+  const status = { draft: 'Entwurf', valid: 'Gültig', retired: 'Archiviert' };
+  const classification = { internal: 'intern', public: 'öffentlich', confidential: 'vertraulich', secret: 'geheim' };
+  /* Non-technical display formats; identifiers, codes and structured values read as text.
+     Bounded vocabularies stay visible through the separate Werteliste reference. */
+  const valueTypes = { text: 'Text', identifier: 'Text', integer: 'Ganzzahl', decimal: 'Dezimalzahl', date: 'Datum', dateTime: 'Datum / Zeit', year: 'Jahr', code: 'Text', geometry: 'Geometrie', boolean: 'Ja / Nein', structured: 'Text' };
+  const frequencies = { continuous: 'kontinuierlich', daily: 'täglich', weekly: 'wöchentlich', monthly: 'monatlich', quarterly: 'quartalsweise', annually: 'jährlich', onChange: 'bei Änderung', onDemand: 'bei Bedarf', irregular: 'unregelmässig' };
+  const localized = (value, getters) => Object.defineProperties(value, Object.fromEntries(Object.entries(getters).map(([key, get]) => [key, { enumerable: true, configurable: true, get }])));
+
+  function project(snapshot) {
+    if (snapshot?.schemaVersion !== 1) throw new Error('Unsupported catalog schema version');
+    const maps = {};
+    for (const table of tables) {
+      if (!Array.isArray(snapshot[table])) throw new Error(`Catalog snapshot is missing ${table}`);
+      maps[table] = new Map();
+      for (const record of snapshot[table]) {
+        if (!record || typeof record !== 'object') throw new Error(`Invalid ${table} record`);
+        if (record.id) {
+          if (maps[table].has(record.id)) throw new Error(`Duplicate ${table} ID`);
+          maps[table].set(record.id, record);
+        }
+      }
+    }
+    const resolve = (table, id) => {
+      if (!id) return null;
+      const record = maps[table].get(id);
+      if (!record) throw new Error(`Broken ${table} reference: ${id}`);
+      return record;
+    };
+    const ref = (table, id) => resolve(table, id)?.identifier;
+    const visibleRef = (table, id) => {
+      const record = resolve(table, id);
+      return record && !record.is_archived ? record.identifier : undefined;
+    };
+    // Snapshot-local indexes keep projection linear as fields and relationships grow.
+    const index = (records, keys) => {
+      const grouped = new Map();
+      for (const record of records) for (const key of new Set(keys(record).filter(Boolean))) {
+        if (!grouped.has(key)) grouped.set(key, []);
+        grouped.get(key).push(record);
+      }
+      return grouped;
+    };
+    const relationshipIndex = index(snapshot.relationship.filter(r=>!r.is_archived), link => Object.entries(link)
+      .filter(([key]) => /^(source|target)_.+_id$/.test(key)).map(([, value]) => value));
+    const requirementIndex = index(snapshot.business_attribute_quality_requirement, r => [r.business_attribute_id]);
+    const endpointIndex = index(snapshot.service_endpoint.filter(r => !r.is_archived).slice().sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)), r => [r.data_service_id]);
+    const actor = id => {
+      const a = resolve('actor', id);
+      return a ? { name: text(a, 'name'), type: a.actor_type, url: a.website_url } : undefined;
+    };
+    const base = r => localized({ identifier: r.identifier, labels: labels(r), _record: r,
+      _relationships: (relationshipIndex.get(r.id) || []).slice(),
+      status: status[r.status], version: r.version, versionDate: r.version_date, created: r.created_on, modified: r.modified_on,
+      comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
+      informationUrls: (r.documentation_links || []).filter(l => l.purpose !== 'terminology').map(l => l.url),
+      documentationLinks: r.documentation_links || [], contact: { url: (r.responsible_organisation || r.authority_organisation)?.websiteUrl },
+      domain: visibleRef('domain', r.domain_id), system: visibleRef('system', r.system_id), normReference: r.normative_references?.join('; ')
+    }, { name: () => text(r, 'name'), description: () => text(r, 'description'),
+      responsibleOrg: () => text(r.responsible_organisation || r.authority_organisation || {}, 'name'),
+      dataOwner: () => actor(r.data_owner_id), dataSteward: () => actor(r.data_steward_id), dataCustodian: () => actor(r.data_custodian_id) });
+    const childId = (r, parent) => r.identifier.startsWith(parent.identifier + '/') ? r.identifier.slice(parent.identifier.length + 1) : r.identifier;
+    const active = r => {
+      if (r.is_archived) return false;
+      if (!['candidate', 'confirmed'].includes(r.verification_status)) return false;
+      for (const [key, id] of Object.entries(r)) if (/^(source|target)_.+_id$/.test(key) && key !== 'source_endpoint_id' && id) {
+        const target = resolve(key.replace(/^(source|target)_/, '').replace(/_id$/, ''), id);
+        if (target.status === 'retired' || target.is_archived) return false;
+      }
+      return true;
+    };
+    const sourceIndex = index(snapshot.relationship.filter(active), link => [link.source_data_product_id, link.source_data_table_id]);
+    const linked = (r, type, targetTable) => (sourceIndex.get(r.id) || []).filter(link => link.relationship_type === type).map(link => ref(targetTable, link[`target_${targetTable}_id`])).filter(Boolean);
+    const result = { catalogSnapshot: snapshot };
+    for (const [kind, table] of Object.entries(kinds)) result[kind] = snapshot[table].map(base);
+    const byId = Object.fromEntries(Object.entries(kinds).map(([kind, table]) => [table, new Map(result[kind].map(e => [e._record.id, e]))]));
+    const owner = (table, id) => {
+      const entity = byId[table].get(id);
+      if (!entity) throw new Error(`Missing ${table} owner`);
+      return entity;
+    };
+    result.systems.forEach(e => Object.assign(e, { technology: e._record.technology, informationUrl: e.informationUrls[0] }));
+    result.objects.forEach(e => Object.assign(e, { attributes: [], termdat: e.documentationLinks.filter(l => l.purpose === 'terminology').map(l => localized({ id: l.externalIdentifier, url: l.url }, { name: () => text(l, 'title') || l.url })) }));
+    result.tables.forEach(e => Object.assign(e, { fields: [], technicalName: e._record.technical_name, realizes: linked(e._record, 'realizes', 'business_object')[0] }));
+    result.refs.forEach(e => Object.assign(e, { values: [], businessObject: visibleRef('business_object', e._record.business_object_id) }));
+    result.products.forEach(e => Object.assign(e, { attributes: [], basedOn: linked(e._record, 'basedOn', 'business_object'), sourcedFrom: linked(e._record, 'sourcedFrom', 'data_table'), servedBy: linked(e._record, 'servedBy', 'data_service'),
+      accessRights: e._record.access_notes || e._record.access_mode, license: e._record.license_notes || e._record.license_uri, format: e._record.formats.join(', '), accrualPeriodicity: frequencies[e._record.update_frequency] }));
+    const ownedRows = table => snapshot[table].filter(r => !r.is_archived).slice().sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0));
+    for (const r of ownedRows('business_attribute')) {
+      const parent = owner('business_object', r.business_object_id), e = base(r);
+      const requirements = (requirementIndex.get(r.id) || []).map(a => resolve('quality_requirement', a.quality_requirement_id));
+      /* One PK per object via is_identifier; FK/UK come from the documented Schlüsselrolle comment line. */
+      Object.assign(e, { identifier: childId(r, parent), valueType: valueTypes[r.value_specification?.valueType],
+        keyRole: r.is_identifier ? 'PK' : (/(?:^|\n)Schlüsselrolle: (FK|UK)(?:\n|$)/.exec(r.comment || '')?.[1] ?? null),
+        mandatory: requirements.some(q => q.rule_type === 'required' && q.status !== 'retired') ? true : null, qualityRequirements: requirements, codeList: visibleRef('code_list', r.code_list_id) });
+      parent.attributes.push(e);
+    }
+    for (const r of ownedRows('data_field')) {
+      const parent = owner('data_table', r.data_table_id), e = base(r);
+      Object.assign(e, { identifier: childId(r, parent), technicalName: r.technical_name, dataType: r.source_data_type, technicalNameKind: r.technical_name_kind, dataTypeKind: r.data_type_scope,
+        keyRoles: r.key_roles, keyRole: r.key_roles?.includes('primary') ? 'PK' : r.key_roles?.includes('foreign') ? 'FK' : null, mandatory: r.is_required, codeList: visibleRef('code_list', r.code_list_id), appliesToObjectTypes: r.applies_to_type_names });
+      parent.fields.push(e);
+    }
+    for (const r of ownedRows('code_value')) {
+      const parent = owner('code_list', r.code_list_id), e = base(r);
+      Object.assign(e, { code: r.code, shortLabels: labels(r, 'short_name'), note: r.comment });
+      localized(e, { label: () => text(r, 'name') });
+      parent.values.push(e);
+    }
+    for (const r of ownedRows('product_attribute')) {
+      const parent = owner('data_product', r.data_product_id), e = base(r);
+      Object.assign(e, { valueType: valueTypes[r.value_specification?.valueType], mandatory: r.is_required });
+      parent.attributes.push(e);
+    }
+    result.apis.forEach(e => {
+      const endpoints = (endpointIndex.get(e._record.id) || []).slice();
+      const endpoint = endpoints.find(x => x.identifier === 'primary') || endpoints[0];
+      Object.assign(e, { endpoints, version: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
+    });
+    result.changelog = snapshot.change_event.map(r => {
+      const target = Object.entries(kinds).find(([, table]) => r[`record_${table}_id`]);
+      const [kind, table] = target || ['other', Object.keys(r).find(key => key.startsWith('record_') && r[key])?.slice(7, -3)];
+      let identifier = ref(table, r[`record_${table}_id`]), historyKind = kind;
+      const parent = { business_attribute:['business_object','objects'],data_field:['data_table','tables'],code_value:['code_list','refs'],product_attribute:['data_product','products'] }[table];
+      if (parent) { const child = resolve(table,r[`record_${table}_id`]); identifier = ref(parent[0],child[parent[0]+'_id']); historyKind = parent[1]; }
+      return localized({ identifier: r.identifier, entity: `${historyKind}:${identifier}`, date: r.occurred_on, action: { created: 'Erstellt', updated: 'Geändert', imported: 'Importiert', retired: 'Archiviert', restored: 'Wiederhergestellt' }[r.action], importId: r.import_id, _record: r }, { detail: () => text(r, 'summary'), user: () => text(r, 'actor_name') });
+    });
+    for (const kind of Object.keys(kinds)) result[kind]=result[kind].filter(e=>!e._record.is_archived);
+    return result;
+  }
+
+  function connection(config) {
+    const url = new URL(config.url);
+    const localHttp = url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !localHttp) throw new Error('Supabase requires HTTPS');
+    if (url.username || url.password || typeof config.publishableKey !== 'string' || !config.publishableKey.startsWith('sb_publishable_')) throw new Error('Use a Supabase publishable key in the browser configuration');
+    return { base: new URL('/rest/v1/', url), key: config.publishableKey };
+  }
+
+  async function load(config) {
+    const target = connection(config);
+    const url = new URL('rpc/read_snapshot', target.base);
+    const early = DK.boot?.take(url); // boot.js sends the same request before the application scripts
+    const controller = early?.controller || new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
+    try {
+      const response = await (early?.response || fetch(url, { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal,
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' }));
+      if (!response.ok) {
+        const detail = await response.json().catch(() => ({}));
+        const hint = detail.code === 'PGRST106' ? 'Expose the catalog schema in Supabase Data API settings.' : detail.code === 'PGRST202' ? 'Apply the catalog public-read and import migrations.' : 'Check the catalog migrations and read policies.';
+        throw new Error(`Supabase HTTP ${response.status}. ${hint}`);
+      }
+      return project(await response.json());
+    } catch (error) {
+      if (error.name === 'AbortError') throw new Error('Supabase did not respond within 20 seconds. Please retry.');
+      throw error;
+    } finally { clearTimeout(timeout); }
+  }
+  DK.catalog = { load, project, connection };
+})(window.DK);

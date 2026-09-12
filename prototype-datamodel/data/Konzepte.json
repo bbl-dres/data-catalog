@@ -1,0 +1,2091 @@
+{
+  "metadata": {
+    "title": "BBL Immobilienmanagement - Konsolidierte Geschäftsobjekte",
+    "description": "Konzeptuelles Datenmodell für das Immobilienmanagement des Bundesamts für Bauten und Logistik (BBL)",
+    "version": "1.0",
+    "lastUpdated": "2026-02-04"
+  },
+  "domains": [
+    {
+      "id": "architektonische-sicht",
+      "name": "Architektonische Sicht",
+      "shortName": "Architektur Sicht",
+      "description": "Gesetzliche Grundlagen wie Grundbuchverordnung, Zivilgesetzbuch, VGWR und ISO 16739",
+      "priority": "Muss",
+      "isCore": true,
+      "standards": [
+        "ZGB",
+        "GBV",
+        "VGWR",
+        "IFC ISO 16739",
+        "eCH-0129"
+      ],
+      "groups": [
+        {
+          "name": "Räumliche Objekte",
+          "concepts": [
+            {
+              "name": "Standort",
+              "priority": "Kann",
+              "description": "Geografische Gruppierung mehrerer Grundstücke und Gebäude für Verwaltungszwecke",
+              "standards": "IFC (IfcSite), IBPDI (Site)",
+              "comment": "Bildet Areale oder ein Campus"
+            },
+            {
+              "name": "Grundstück",
+              "priority": "Muss",
+              "description": "Räumlich abgrenzbare Bodeneinheit mit eigenständigen Eigentumsrechten",
+              "standards": "ZGB, GBV, eCH-0129, eGRISDM",
+              "comment": "Rechtliche Grundlage, global"
+            },
+            {
+              "name": "Bodenabdeckung",
+              "priority": "Soll",
+              "description": "Versiegelte und unversiegelte Flächen gemäss amtlicher Vermessung",
+              "standards": "DM.01-AV-CH, eGRISDM",
+              "comment": "Für Umgebungsflächenmanagement"
+            },
+            {
+              "name": "Gebäude",
+              "priority": "Muss",
+              "description": "Mit dem Boden fest verbundenes Bauwerk mit eindeutiger Identifikation",
+              "standards": "VGWR, eCH-0129, IFC, IBPDI",
+              "comment": "Zentrale Verwaltungseinheit, global"
+            },
+            {
+              "name": "Geschoss",
+              "priority": "Muss",
+              "description": "Horizontale Gliederungsebene innerhalb eines Gebäudes",
+              "standards": "VGWR, IFC, SIA 416",
+              "comment": "Für Flächenmanagement"
+            },
+            {
+              "name": "Raum",
+              "priority": "Soll",
+              "description": "Funktional definierter Bereich innerhalb eines Geschosses",
+              "standards": "IFC, IBPDI, SIA 416",
+              "comment": "Detaillierteste Verwaltungseinheit"
+            },
+            {
+              "name": "Fläche / Bemessung",
+              "priority": "Muss",
+              "description": "2D Darstellung von Räumlichen Objekten",
+              "standards": "SIA 416",
+              "comment": ""
+            },
+            {
+              "name": "Gebäudeeingang",
+              "priority": "Soll",
+              "description": "Physischer Zugang zu einem Gebäude",
+              "standards": "VGWR, eCH-0129",
+              "comment": "Für Adressierung und Zugang"
+            },
+            {
+              "name": "Zone",
+              "priority": "Soll",
+              "description": "Funktionale oder technische Bereiche (Brandabschnitte, Klimazonen)",
+              "standards": "Bauen Digital CH, IFC",
+              "comment": "Für spezialisierte Anwendungen"
+            },
+            {
+              "name": "Nutzungseinheit",
+              "priority": "Soll",
+              "description": "Bauliche Einheit mit eigenem Zugang (Wohnung, Gewerbe, sonstige Nutzung)",
+              "standards": "VGWR, eCH-0129",
+              "comment": "Erweitert Wohnung um alle Nutzungsarten"
+            },
+            {
+              "name": "Parkplatz",
+              "priority": "Soll",
+              "description": "Stellfläche für Fahrzeuge, Velos, oder Sonstiges",
+              "standards": "-",
+              "comment": "Werden in Reservierungssystemen genutzt"
+            }
+          ]
+        },
+        {
+          "name": "Rechtliche Objekte",
+          "concepts": [
+            {
+              "name": "Eigentumsrecht",
+              "priority": "Soll",
+              "description": "Rechtliche Zuordnung von Eigentum an Grundstücken/Gebäuden",
+              "standards": "ZGB, eGRISDM",
+              "comment": "Rechtliche Grundlage"
+            },
+            {
+              "name": "Baurecht",
+              "priority": "Kann",
+              "description": "Selbständiges und dauerndes Recht auf fremdem Grundstück",
+              "standards": "ZGB, eGRISDM",
+              "comment": "Für komplexe Rechtsverhältnisse"
+            },
+            {
+              "name": "Dienstbarkeit",
+              "priority": "Kann",
+              "description": "Beschränkung des Eigentums zugunsten eines berechtigten Grundstücks",
+              "standards": "ZGB, eGRISDM",
+              "comment": "Für Zugangs- und Leitungsrechte"
+            }
+          ]
+        },
+        {
+          "name": "Technische Objekte",
+          "concepts": [
+            {
+              "name": "System",
+              "priority": "Kann",
+              "description": "Funktionale Gruppierung technischer Anlagen (HLK, Elektro, Sanitär)",
+              "standards": "IFC, IBPDI",
+              "comment": "Auch Fassaden, Tragwerke"
+            },
+            {
+              "name": "Technische Anlage",
+              "priority": "Muss",
+              "description": "HLK Gebäudetechnische Anlage (Heizung, Klima, Lüftung)",
+              "standards": "SIA, GEFMA",
+              "comment": "Typ von System"
+            },
+            {
+              "name": "Heizungsanlage",
+              "priority": "Soll",
+              "description": "Wärmeerzeugung, -verteilung und -abgabe",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D05)",
+              "comment": "Zentral für Wärmeversorgung"
+            },
+            {
+              "name": "Lüftungsanlage",
+              "priority": "Soll",
+              "description": "Luftaufbereitung, -verteilung und Luftwechsel",
+              "standards": "IFC, IBPDI, REC, ASHRAE, eBKP-H (D07)",
+              "comment": "Wichtig für Luftqualität"
+            },
+            {
+              "name": "Kälteanlage",
+              "priority": "Soll",
+              "description": "Kälteerzeugung, -verteilung und Klimatisierung",
+              "standards": "IFC, IBPDI, REC, ASHRAE, eBKP-H (D06)",
+              "comment": "Kühlung und Klimatisierung"
+            },
+            {
+              "name": "Elektroanlage",
+              "priority": "Soll",
+              "description": "Elektrische Versorgungssysteme inkl. Stark- und Schwachstrom",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D01)",
+              "comment": "Kritisch für Gebäudebetrieb"
+            },
+            {
+              "name": "Beleuchtungsanlage",
+              "priority": "Soll",
+              "description": "Beleuchtungssysteme inkl. Steuerung und Notbeleuchtung",
+              "standards": "IFC, IBPDI, REC, DALI",
+              "comment": "Energieeffizienz und Komfort"
+            },
+            {
+              "name": "Sanitäranlage",
+              "priority": "Soll",
+              "description": "Wasser- und Abwassersysteme inkl. aller sanitären Installationen",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D08/D09)",
+              "comment": "Grundversorgung"
+            },
+            {
+              "name": "Aufzugsanlage",
+              "priority": "Soll",
+              "description": "Vertikale Beförderungsanlagen (Aufzüge, Fahrtreppen)",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D12)",
+              "comment": "Wichtig für Barrierefreiheit"
+            },
+            {
+              "name": "Brandschutzanlage",
+              "priority": "Soll",
+              "description": "Technische Brandschutzeinrichtungen (Sprinkler, Brandmelder, RWA)",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D04), VKF",
+              "comment": "Sicherheitskritisch"
+            },
+            {
+              "name": "Sicherheitsanlage",
+              "priority": "Soll",
+              "description": "Einbruch-, Zutritts- und Überwachungssysteme",
+              "standards": "IFC, IBPDI, REC, eBKP-H (D03)",
+              "comment": "Schutz von Personen und Sachwerten"
+            },
+            {
+              "name": "Kommunikationsanlage",
+              "priority": "Soll",
+              "description": "IT-Netzwerke, Telefonie, Datenübertragung",
+              "standards": "IFC, IBPDI, REC",
+              "comment": "Digitale Infrastruktur"
+            },
+            {
+              "name": "Gebäudeautomation",
+              "priority": "Soll",
+              "description": "Mess-, Steuer- und Regelungssysteme für Gebäudetechnik",
+              "standards": "IFC, IBPDI, REC, BACnet, eBKP-H (D02)",
+              "comment": "Basis für Smart Building"
+            },
+            {
+              "name": "Energieerzeugungsanlage",
+              "priority": "Soll",
+              "description": "Photovoltaik, BHKW, Wärmepumpen zur Eigenproduktion",
+              "standards": "IFC, IBPDI, REC",
+              "comment": "Nachhaltigkeit und Autarkie"
+            },
+            {
+              "name": "Komponente",
+              "priority": "Muss",
+              "description": "Einzelne technische Bauteile und Geräte",
+              "standards": "IFC, IBPDI, Bauen Digital CH",
+              "comment": "Für Wartung und Betrieb"
+            },
+            {
+              "name": "Sensor",
+              "priority": "Soll",
+              "description": "IoT-Geräte zur Performance-Überwachung",
+              "standards": "IBPDI",
+              "comment": "Für IoT und Smart Building"
+            }
+          ]
+        },
+        {
+          "name": "Konstruktive Objekte",
+          "concepts": [
+            {
+              "name": "Bauteil",
+              "priority": "Soll",
+              "description": "Physische Bauteile der Gebäudestruktur",
+              "standards": "IFC, Bauen Digital CH",
+              "comment": "Übergeordnete Klasse"
+            },
+            {
+              "name": "Wand",
+              "priority": "Soll",
+              "description": "Vertikale raumabschliessende oder tragende Konstruktion",
+              "standards": "IFC (IfcWall), eBKP-H, SIA 416",
+              "comment": "Tragend/Nichttragend, Aussen/Innen"
+            },
+            {
+              "name": "Decke/Bodenplatte",
+              "priority": "Soll",
+              "description": "Horizontale tragende Konstruktion",
+              "standards": "IFC (IfcSlab), eBKP-H (C3), SIA 260",
+              "comment": "Inkl. Bodenplatten"
+            },
+            {
+              "name": "Dach",
+              "priority": "Soll",
+              "description": "Oberer Gebäudeabschluss mit Witterungsschutz",
+              "standards": "IFC (IfcRoof), eBKP-H (F), SIA 232",
+              "comment": "Flach-/Steildach"
+            },
+            {
+              "name": "Stütze",
+              "priority": "Soll",
+              "description": "Vertikales Tragelement",
+              "standards": "IFC (IfcColumn), eBKP-H (C2.2)",
+              "comment": ""
+            },
+            {
+              "name": "Träger/Balken",
+              "priority": "Soll",
+              "description": "Horizontales Tragelement",
+              "standards": "IFC (IfcBeam), eBKP-H (C2.3)",
+              "comment": ""
+            },
+            {
+              "name": "Fundament",
+              "priority": "Soll",
+              "description": "Gründungskonstruktion des Gebäudes",
+              "standards": "IFC (IfcFooting), eBKP-H (C1), SIA 267",
+              "comment": "Basis des Tragwerks"
+            },
+            {
+              "name": "Treppe",
+              "priority": "Soll",
+              "description": "Vertikale Erschliessung zwischen Geschossen",
+              "standards": "IFC (IfcStair), eBKP-H (G4), SIA 500",
+              "comment": "Sicherheitsrelevant"
+            },
+            {
+              "name": "Tür",
+              "priority": "Soll",
+              "description": "Bewegliches Element für Raumzugang",
+              "standards": "IFC (IfcDoor), eBKP-H (G2.1), SIA 343",
+              "comment": "Inkl. Brandschutztüren"
+            },
+            {
+              "name": "Fenster",
+              "priority": "Soll",
+              "description": "Öffnung in Aussenwand für Belichtung/Lüftung",
+              "standards": "IFC (IfcWindow), eBKP-H (E3), SIA 331",
+              "comment": "Energierelevant"
+            },
+            {
+              "name": "Fassade",
+              "priority": "Soll",
+              "description": "Aussenhaut des Gebäudes",
+              "standards": "IFC (IfcCurtainWall), eBKP-H (E), SIA 243",
+              "comment": "Vorhangfassade oder massive Fassade"
+            }
+          ]
+        },
+        {
+          "name": "Bauprodukte und Materialien",
+          "concepts": [
+            {
+              "name": "Bauprodukt",
+              "priority": "Muss",
+              "description": "Vorgefertigtes oder katalogisiertes Produkt für den Einbau",
+              "standards": "IFC (IfcProduct), NPK, CRB",
+              "comment": "Basis für Produktkataloge"
+            },
+            {
+              "name": "Material",
+              "priority": "Soll",
+              "description": "Werkstoff mit physikalischen und ökologischen Eigenschaften",
+              "standards": "IFC (IfcMaterial), KBOB, Minergie-ECO",
+              "comment": "Zentral für Nachhaltigkeit"
+            },
+            {
+              "name": "Materialschicht",
+              "priority": "Kann",
+              "description": "Einzelne Schicht in einem Schichtaufbau",
+              "standards": "IFC (IfcMaterialLayer), SIA 180",
+              "comment": "Für bauphysikalische Berechnungen"
+            },
+            {
+              "name": "Schichtaufbau",
+              "priority": "Kann",
+              "description": "Mehrschichtiger Materialverbund eines Bauteils",
+              "standards": "IFC (IfcMaterialLayerSet), SIA 279",
+              "comment": "U-Wert, Schallschutz, Brandschutz"
+            }
+          ]
+        },
+        {
+          "name": "Messungen/Performance",
+          "concepts": [
+            {
+              "name": "Bemessung",
+              "priority": "Muss",
+              "description": "Flächen, Volumen, Längen, Stückzahlen nach SIA 416",
+              "standards": "SIA 416, IBPDI",
+              "comment": "Flexibel für alle Messgrössen"
+            },
+            {
+              "name": "Sensormessung",
+              "priority": "Soll",
+              "description": "Zeitreihen-Messwerte von IoT-Sensoren",
+              "standards": "IBPDI",
+              "comment": "Für Performance-Monitoring"
+            },
+            {
+              "name": "Zertifikat",
+              "priority": "Soll",
+              "description": "Zertifikate für Gebäude, Anlagen, Bauprodukte",
+              "standards": "IBPDI, Bauen Digital CH",
+              "comment": "MINERGIE, CE, etc."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "projektmanagement",
+      "name": "Projektmanagement",
+      "shortName": "Projektmanagement",
+      "subtitle": "(Bauprojektmanagement)",
+      "description": "ISO 16739, ERP IMMO, interne und Domänenspezifische fachliche Standards",
+      "priority": "Muss",
+      "isCore": false,
+      "standards": [
+        "SAP EPPM",
+        "SAP PS",
+        "SIA 112",
+        "BöB",
+        "VöB",
+        "SIMAP"
+      ],
+      "groups": [
+        {
+          "name": "Portfolioverwaltung",
+          "concepts": [
+            {
+              "name": "Portfolio",
+              "priority": "Muss",
+              "description": "Oberste Organisationsstruktur für strategische Projekt- und Programmverwaltung",
+              "standards": "SAP EPPM",
+              "comment": "Parent für Initiativen"
+            },
+            {
+              "name": "Initiative (Programm)",
+              "priority": "Muss",
+              "description": "Programm-Ebene zur Bündelung mehrerer zusammenhängender Projekte",
+              "standards": "SAP EPPM",
+              "comment": "Container für Elemente"
+            },
+            {
+              "name": "Element",
+              "priority": "Muss",
+              "description": "Einzelnes Portfolio-Item, das ein konkretes Projekt oder Vorhaben repräsentiert",
+              "standards": "SAP EPPM",
+              "comment": "Zentrale Entität"
+            }
+          ]
+        },
+        {
+          "name": "Projektstruktur",
+          "concepts": [
+            {
+              "name": "Projektdefinition",
+              "priority": "Muss",
+              "description": "Hauptprojektebene mit Stammdaten, Terminen und Verantwortlichkeiten",
+              "standards": "SAP EPPM, SAP PS",
+              "comment": "Kernobjekt für beide Systeme"
+            },
+            {
+              "name": "Phase",
+              "priority": "Muss",
+              "description": "Projektphasen gemäss SIA 112 (Strategische Planung bis Bewirtschaftung)",
+              "standards": "SAP EPPM, SIA 112",
+              "comment": "SIA-konform"
+            },
+            {
+              "name": "Aufgabe",
+              "priority": "Muss",
+              "description": "Detaillierte Arbeitspakete mit Aufwand, Dauer und Terminen",
+              "standards": "SAP EPPM",
+              "comment": "Hierarchisch strukturiert"
+            },
+            {
+              "name": "PSP-Element",
+              "priority": "Soll",
+              "description": "Strukturelemente zur hierarchischen Gliederung des Projekts",
+              "standards": "SAP PS",
+              "comment": "Integration mit SAP PS"
+            }
+          ]
+        },
+        {
+          "name": "Klassifizierung",
+          "concepts": [
+            {
+              "name": "Klassifizierungshierarchie",
+              "priority": "Muss",
+              "description": "Strukturierte Kategorisierungsebene für Portfolioelemente",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Bereich",
+              "priority": "Muss",
+              "description": "Thematische oder organisatorische Gruppierung",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Entscheidungspunkt",
+              "priority": "Muss",
+              "description": "Definierte Gates/Meilensteine für Projektfreigaben",
+              "standards": "SAP EPPM",
+              "comment": "Steuert Lebenszyklus"
+            }
+          ]
+        },
+        {
+          "name": "Finanzierung",
+          "concepts": [
+            {
+              "name": "Finanzgruppe",
+              "priority": "Muss",
+              "description": "Übergeordnete Gruppierung für Finanzplanungskategorien",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Finanzkategorie",
+              "priority": "Muss",
+              "description": "Kategorien für Budgetierung und Kostenplanung",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Finanzsicht",
+              "priority": "Muss",
+              "description": "Aggregierte Plan- und Ist-Werte aus finanzieller Perspektive",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Finanz-/Kapazitätsplanung",
+              "priority": "Muss",
+              "description": "Periodische Plan- und Kapazitätswerte mit Zeitbezug",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Projektbudget",
+              "priority": "Soll",
+              "description": "Kostenplanung auf PSP-Element-Ebene",
+              "standards": "SAP PS",
+              "comment": "PS-Integration"
+            }
+          ]
+        },
+        {
+          "name": "Qualität und Risiko",
+          "concepts": [
+            {
+              "name": "Checkliste",
+              "priority": "Muss",
+              "description": "Container für Qualitätssicherungs- und Compliance-Prüfungen",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Checklistenpunkt",
+              "priority": "Muss",
+              "description": "Einzelne Prüfpunkte innerhalb einer Checkliste",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Risiko",
+              "priority": "Muss",
+              "description": "Identifizierte Projektrisiken mit Bewertung",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Massnahme",
+              "priority": "Muss",
+              "description": "Definierte Aktionen zur Risikomitigation",
+              "standards": "SAP EPPM",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Termine und Meilensteine",
+          "concepts": [
+            {
+              "name": "Meilenstein",
+              "priority": "Muss",
+              "description": "Wichtige Projektereignisse ohne Dauer",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Ergebnis",
+              "priority": "Muss",
+              "description": "Definierte Projektergebnisse/Deliverables",
+              "standards": "SAP EPPM",
+              "comment": ""
+            },
+            {
+              "name": "Netzplan",
+              "priority": "Kann",
+              "description": "Container für Vorgänge mit Anordnungsbeziehungen",
+              "standards": "SAP PS",
+              "comment": "Bei PS-Nutzung relevant"
+            },
+            {
+              "name": "Vorgang",
+              "priority": "Kann",
+              "description": "Ausführbare Arbeitseinheit in Netzplan",
+              "standards": "SAP PS",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Vergabe",
+          "concepts": [
+            {
+              "name": "Öffentlicher Auftrag",
+              "priority": "Soll",
+              "description": "Vertrag zwischen BBL und Anbieterin",
+              "standards": "BöB, VöB",
+              "comment": "Rechtlich relevant"
+            },
+            {
+              "name": "Ausschreibung",
+              "priority": "Soll",
+              "description": "Öffentliche Bekanntmachung eines Vergabeverfahrens",
+              "standards": "SIMAP, BöB",
+              "comment": "Vergabepflicht"
+            },
+            {
+              "name": "Los",
+              "priority": "Kann",
+              "description": "Teillos einer Ausschreibung",
+              "standards": "SIMAP",
+              "comment": "Bei grossen Vergaben"
+            }
+          ]
+        },
+        {
+          "name": "Dokumentation",
+          "concepts": [
+            {
+              "name": "Projektdokument",
+              "priority": "Soll",
+              "description": "Alle projektbezogenen Dokumente und Unterlagen",
+              "standards": "ActaNova, SIMAP",
+              "comment": "Dokumentationspflicht"
+            },
+            {
+              "name": "Projektpflichtenheft",
+              "priority": "Soll",
+              "description": "Dokument mit Funktionen und Eigenschaften des Bauwerks",
+              "standards": "SIA 112",
+              "comment": "SIA-Standard"
+            }
+          ]
+        },
+        {
+          "name": "Beteiligte",
+          "concepts": [
+            {
+              "name": "Bauherr",
+              "priority": "Soll",
+              "description": "Oberster Entscheidungsträger eines Bauvorhabens (BBL)",
+              "standards": "SIA 112, BöB",
+              "comment": "BBL als Bauherr"
+            },
+            {
+              "name": "Planer",
+              "priority": "Soll",
+              "description": "Architekt/Ingenieur für Planung",
+              "standards": "SIA 112",
+              "comment": "Vertragspartner"
+            },
+            {
+              "name": "Anbieter",
+              "priority": "Soll",
+              "description": "Unternehmen in Vergabeverfahren",
+              "standards": "BöB, VöB, SIMAP",
+              "comment": "Vergaberelevant"
+            }
+          ]
+        },
+        {
+          "name": "Systemtechnisch",
+          "concepts": [
+            {
+              "name": "Objektverknüpfung",
+              "priority": "Muss",
+              "description": "Generische Verknüpfungstabelle für flexible Objekt-Beziehungen",
+              "standards": "SAP EPPM",
+              "comment": "Ermöglicht Integration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dokumentenmanagement",
+      "name": "Dokumentenmanagement",
+      "shortName": "Dokumentation",
+      "description": "eCH-0039, KBOB/IPB",
+      "priority": "Muss",
+      "isCore": false,
+      "standards": [
+        "eCH-0039",
+        "KBOB BWD",
+        "ISO 15489",
+        "ArchG"
+      ],
+      "groups": [
+        {
+          "name": "Dokumentstruktur",
+          "concepts": [
+            {
+              "name": "Dokument",
+              "priority": "Muss",
+              "description": "Einzelne aufgezeichnete Information unabhängig vom Informationsträger (Pläne, Verträge, Berichte, E-Mails)",
+              "standards": "eCH-0039, KBOB BWD, ISO 15489",
+              "comment": "Zentrale Verwaltungseinheit"
+            },
+            {
+              "name": "Dossier",
+              "priority": "Muss",
+              "description": "Zusammengehörige Dokumente zu einem Geschäft oder Vorgang als strukturierte Einheit",
+              "standards": "eCH-0039, ArchG, GEVER",
+              "comment": "Organisationseinheit für Geschäftsfälle"
+            },
+            {
+              "name": "Version",
+              "priority": "Muss",
+              "description": "Versionierte Instanz eines Dokuments mit Änderungshistorie",
+              "standards": "eCH-0039, ISO 15489",
+              "comment": "Für Nachvollziehbarkeit"
+            },
+            {
+              "name": "Dokumenttyp",
+              "priority": "Soll",
+              "description": "Katalogentität für die Klassifikation ähnlicher Dokumente mit spezifischem Informationsgehalt",
+              "standards": "KBOB BWD",
+              "comment": "Strukturiert Dokumentablage"
+            }
+          ]
+        },
+        {
+          "name": "Metadaten",
+          "concepts": [
+            {
+              "name": "Metadatensatz",
+              "priority": "Soll",
+              "description": "Eigenständige Entität für strukturierte Beschreibungsinformationen zu Dokumenten",
+              "standards": "Dublin Core, ISO 23081, eCH-0039",
+              "comment": "Flexibles Metadatenmanagement"
+            }
+          ]
+        },
+        {
+          "name": "Prozesse",
+          "concepts": [
+            {
+              "name": "Workflow",
+              "priority": "Soll",
+              "description": "Definierter Ablauf für Dokumentenbearbeitung mit Status und Übergängen",
+              "standards": "eCH-0039, ISO 15489",
+              "comment": "Steuert Dokumentenlebenszyklen"
+            },
+            {
+              "name": "Anweisung",
+              "priority": "Kann",
+              "description": "Strukturierte Handlungsanweisung für Dokumentenbearbeitung",
+              "standards": "eCH-0039",
+              "comment": "Directive gemäss eCH-0039"
+            }
+          ]
+        },
+        {
+          "name": "Archivierung",
+          "concepts": [
+            {
+              "name": "Archivgut",
+              "priority": "Muss",
+              "description": "Dokumente mit bleibendem Wert, die dauerhaft aufbewahrt werden",
+              "standards": "ArchG, ISAD(G)",
+              "comment": "Endstatus wertvoller Dokumente"
+            },
+            {
+              "name": "Vorarchiv",
+              "priority": "Kann",
+              "description": "Zwischenlager für Dokumente vor der definitiven Archivierung",
+              "standards": "ArchG",
+              "comment": "Übergangsbereich"
+            }
+          ]
+        },
+        {
+          "name": "Organisation",
+          "concepts": [
+            {
+              "name": "Registraturplan",
+              "priority": "Soll",
+              "description": "Systematisches Ordnungssystem für die strukturierte Ablage",
+              "standards": "ArchG, eCH-0002",
+              "comment": "Basis für Ablagestruktur"
+            },
+            {
+              "name": "Nachricht",
+              "priority": "Kann",
+              "description": "Standardisierte Struktur für Dokumentenaustausch zwischen Systemen",
+              "standards": "eCH-0039",
+              "comment": "Transportcontainer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mietermanagement",
+      "name": "Mietermanagement (Nutzungssicht)",
+      "shortName": "Mietermanagement",
+      "subtitle": "(Nutzungssicht)",
+      "description": "ERP IMMO, interne und Domänenspezifische fachliche Standards",
+      "priority": "Muss",
+      "isCore": false,
+      "standards": [
+        "OR Art. 253-274",
+        "SAP RE-FX",
+        "IBPDI",
+        "SIA 416"
+      ],
+      "groups": [
+        {
+          "name": "Vertragswesen",
+          "concepts": [
+            {
+              "name": "Mietvertrag",
+              "priority": "Muss",
+              "description": "Rechtliche Vereinbarung zwischen Vermieter und Mieter über die Gebrauchsüberlassung einer Mietsache",
+              "standards": "OR Art. 253-274, SAP RE-FX, IBPDI, RICS",
+              "comment": "Zentrales Geschäftsobjekt"
+            },
+            {
+              "name": "Pachtvertrag",
+              "priority": "Soll",
+              "description": "Vertrag über die Überlassung einer ertragsfähigen Sache",
+              "standards": "OR, SAP RE-FX",
+              "comment": "Für spezielle Nutzungen"
+            },
+            {
+              "name": "Untermietvertrag",
+              "priority": "Soll",
+              "description": "Vereinbarung über die teilweise oder vollständige Weitergabe der Mietsache",
+              "standards": "OR Art. 262",
+              "comment": ""
+            },
+            {
+              "name": "Vertragszusatz",
+              "priority": "Kann",
+              "description": "Ergänzungen und Nachträge zum Hauptvertrag",
+              "standards": "SAP RE-FX",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Mietobjekte",
+          "concepts": [
+            {
+              "name": "Mietobjekt",
+              "priority": "Muss",
+              "description": "Vermietbare Einheit (übergeordnet)",
+              "standards": "SAP RE-FX, VGWR",
+              "comment": "Abstrakte Oberklasse"
+            },
+            {
+              "name": "Mietfläche",
+              "priority": "Muss",
+              "description": "Konkrete vermietbare Fläche innerhalb eines Gebäudes",
+              "standards": "SAP RE-FX, SIA 416",
+              "comment": "Spezifische Flächeneinheit"
+            },
+            {
+              "name": "Mieteinheit",
+              "priority": "Kann",
+              "description": "Abgeschlossene bauliche Einheit mit eigenem Zugang",
+              "standards": "VGWR, SAP RE-FX, IBPDI",
+              "comment": "Wohnung, Büro, Gewerbeeinheit"
+            },
+            {
+              "name": "Flächenpool",
+              "priority": "Kann",
+              "description": "Flexible Sammlung vermietbarer Flächen",
+              "standards": "SAP RE-FX",
+              "comment": ""
+            },
+            {
+              "name": "Stellplatz",
+              "priority": "Kann",
+              "description": "Parkplatz oder Abstellfläche",
+              "standards": "SAP RE-FX",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Vertragsparteien",
+          "concepts": [
+            {
+              "name": "Mieter",
+              "priority": "Muss",
+              "description": "Vertragspartei, die die Mietsache nutzt",
+              "standards": "OR, SAP RE-FX, IBPDI",
+              "comment": "Natürliche oder juristische Person"
+            },
+            {
+              "name": "Vermieter",
+              "priority": "Muss",
+              "description": "Vertragspartei, die die Mietsache überlässt",
+              "standards": "OR, SAP RE-FX",
+              "comment": "BBL als Vermieter"
+            },
+            {
+              "name": "Hauptmieter",
+              "priority": "Soll",
+              "description": "Primärer Vertragspartner bei Untermietverhältnissen",
+              "standards": "OR",
+              "comment": ""
+            },
+            {
+              "name": "Bürge",
+              "priority": "Kann",
+              "description": "Person, die für Mietverbindlichkeiten haftet",
+              "standards": "OR",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Finanzielle Objekte",
+          "concepts": [
+            {
+              "name": "Mietzins",
+              "priority": "Muss",
+              "description": "Vereinbarte Gegenleistung für die Gebrauchsüberlassung",
+              "standards": "OR, SAP RE-FX, RICS",
+              "comment": "Attribut des Mietvertrags"
+            },
+            {
+              "name": "Nebenkosten",
+              "priority": "Muss",
+              "description": "Betriebskosten und Zusatzleistungen",
+              "standards": "OR, SVIT, SAP RE-FX",
+              "comment": "Heizung, Wasser, etc."
+            },
+            {
+              "name": "Kaution",
+              "priority": "Soll",
+              "description": "Sicherheitsleistung des Mieters",
+              "standards": "OR Art. 257e",
+              "comment": "Max. 3 Monatszinse"
+            },
+            {
+              "name": "Mietzinsanpassung",
+              "priority": "Soll",
+              "description": "Dokumentierte Änderung des Mietzinses",
+              "standards": "OR, SAP RE-FX",
+              "comment": ""
+            },
+            {
+              "name": "Nebenkostenabrechnung",
+              "priority": "Muss",
+              "description": "Periodische Abrechnung der Nebenkosten",
+              "standards": "SVIT, HEV, SAP RE-FX",
+              "comment": "Jährliche Abrechnung"
+            }
+          ]
+        },
+        {
+          "name": "Prozessobjekte",
+          "concepts": [
+            {
+              "name": "Kündigung",
+              "priority": "Muss",
+              "description": "Beendigung des Mietverhältnisses",
+              "standards": "OR Art. 266a-266o",
+              "comment": ""
+            },
+            {
+              "name": "Mahnung",
+              "priority": "Soll",
+              "description": "Zahlungserinnerung bei ausstehenden Forderungen",
+              "standards": "OR, IBPDI",
+              "comment": ""
+            },
+            {
+              "name": "Übergabeprotokoll",
+              "priority": "Soll",
+              "description": "Dokumentation des Zustands bei Ein-/Auszug",
+              "standards": "OR",
+              "comment": ""
+            },
+            {
+              "name": "Schlichtungsverfahren",
+              "priority": "Kann",
+              "description": "Verfahren bei Streitigkeiten",
+              "standards": "OR",
+              "comment": ""
+            }
+          ]
+        },
+        {
+          "name": "Bemessungen",
+          "concepts": [
+            {
+              "name": "Flächenmessung",
+              "priority": "Muss",
+              "description": "Verschiedene Flächenkennzahlen nach SIA 416",
+              "standards": "SIA 416, IBPDI",
+              "comment": "VMF, HNF, NNF, NGF"
+            },
+            {
+              "name": "Arbeitsplatz",
+              "priority": "Soll",
+              "description": "Anzahl und Typ der Arbeitsplätze",
+              "standards": "KBOB",
+              "comment": "Für Bundesnutzung"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "energie-ressourcen",
+      "name": "Energie und Ressourcen",
+      "shortName": "Energie und Ressourcen",
+      "description": "IBPDI, interne und Domänenspezifische fachliche Standards",
+      "priority": "Muss",
+      "isCore": false,
+      "standards": [
+        "KlG",
+        "GHG Protocol",
+        "PACTA",
+        "CRREM",
+        "SIA 2040",
+        "InterWatt EDM"
+      ],
+      "groups": [
+        {
+          "name": "Energie-Infrastruktur",
+          "concepts": [
+            {
+              "name": "Energieträger",
+              "priority": "Muss",
+              "description": "Art der eingesetzten Energie (Öl, Gas, Fernwärme, Strom, erneuerbare)",
+              "standards": "PACTA, EnG, CO2-Gesetz",
+              "comment": "Basis für Emissionsberechnung"
+            },
+            {
+              "name": "Zähler/Messpunkt",
+              "priority": "Muss",
+              "description": "Erfassungspunkt für Energie- und Ressourcenverbrauch",
+              "standards": "InterWatt EDM, IBPDI, SAP PM",
+              "comment": "Zentral für Verbrauchserfassung"
+            },
+            {
+              "name": "Zählwert/Messwert",
+              "priority": "Muss",
+              "description": "Gemessene Verbrauchsdaten zu definiertem Zeitpunkt",
+              "standards": "InterWatt EDM, IBPDI",
+              "comment": "Basis für alle Berechnungen"
+            }
+          ]
+        },
+        {
+          "name": "Emissionen & Klimadaten",
+          "concepts": [
+            {
+              "name": "THG-Emission Scope 1",
+              "priority": "Muss",
+              "description": "Direkte Emissionen aus eigenen Quellen",
+              "standards": "GHG Protocol, PACTA, KlG",
+              "comment": "Kernindikator Klimaziele"
+            },
+            {
+              "name": "THG-Emission Scope 2",
+              "priority": "Muss",
+              "description": "Indirekte Emissionen aus eingekaufter Energie",
+              "standards": "GHG Protocol, PACTA, KlG",
+              "comment": "Emissionen Strombezug"
+            },
+            {
+              "name": "THG-Emission Scope 3",
+              "priority": "Soll",
+              "description": "Vor-/nachgelagerte Emissionen (graue Energie)",
+              "standards": "GHG Protocol, PACTA, KlG",
+              "comment": "Vollständige Klimabilanz"
+            },
+            {
+              "name": "Emissionsfaktor",
+              "priority": "Muss",
+              "description": "Umrechnungsfaktor Energie zu CO2-Äquivalenten",
+              "standards": "BAFU, GHG Protocol",
+              "comment": "Grundlage Emissionsberechnung"
+            },
+            {
+              "name": "Dekarbonisierungspfad",
+              "priority": "Muss",
+              "description": "Zeitlicher Verlauf der Ziel-CO2-Intensität",
+              "standards": "CRREM, SIA 2040, KlG",
+              "comment": "Benchmark für Zielerreichung"
+            }
+          ]
+        },
+        {
+          "name": "Kennzahlen & Benchmarks",
+          "concepts": [
+            {
+              "name": "Energiebezugsfläche",
+              "priority": "Muss",
+              "description": "Beheizte Fläche innerhalb thermischer Hülle",
+              "standards": "SIA 380/1, PACTA",
+              "comment": "Bezugsgröße für KPIs"
+            },
+            {
+              "name": "Energieintensität",
+              "priority": "Muss",
+              "description": "Energieverbrauch pro m² und Jahr",
+              "standards": "CRREM, SIA 2040",
+              "comment": "Effizienz-Benchmark"
+            },
+            {
+              "name": "CO2-Intensität",
+              "priority": "Muss",
+              "description": "THG-Emissionen pro m² und Jahr",
+              "standards": "CRREM, PACTA",
+              "comment": "Klimaverträglichkeits-KPI"
+            },
+            {
+              "name": "Absenkpfad",
+              "priority": "Muss",
+              "description": "Gebäudespezifischer Reduktionspfad bis 2040/2050",
+              "standards": "PACTA, KlG",
+              "comment": "Individueller Zielpfad"
+            },
+            {
+              "name": "Wasserverbrauch",
+              "priority": "Soll",
+              "description": "Verbrauch von Trink- und Brauchwasser",
+              "standards": "IBPDI, RUMBA",
+              "comment": "Ressourcenmanagement"
+            },
+            {
+              "name": "Abfallaufkommen",
+              "priority": "Kann",
+              "description": "Art und Menge anfallender Abfälle",
+              "standards": "RUMBA, USG",
+              "comment": "Kreislaufwirtschaft"
+            }
+          ]
+        },
+        {
+          "name": "Zertifizierungen",
+          "concepts": [
+            {
+              "name": "Energieausweis",
+              "priority": "Soll",
+              "description": "Offizielle Energieeffizienz-Bewertung",
+              "standards": "GEAK, Minergie",
+              "comment": "Nachweis Energiestandard"
+            },
+            {
+              "name": "Nachhaltigkeitszertifikat",
+              "priority": "Kann",
+              "description": "Umfassende Nachhaltigkeitsbewertung",
+              "standards": "SNBS, LEED, BREEAM",
+              "comment": "Erweiterte ESG-Bewertung"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "organisatorische-daten",
+      "name": "Organisatorische Daten (MDM)",
+      "shortName": "Organisationsmanagement",
+      "subtitle": "(Master Data Management)",
+      "description": "Interne und Domänenspezifische fachliche Standards",
+      "priority": "Sollte",
+      "isCore": false,
+      "standards": [
+        "UIDG/V",
+        "eCH-0108",
+        "eCH-0044",
+        "eCH-0010",
+        "IBPDI CDM"
+      ],
+      "groups": [
+        {
+          "name": "Akteur",
+          "concepts": [
+            {
+              "name": "Organisation",
+              "priority": "Muss",
+              "description": "Juristische Personen und Organisationseinheiten (Mieter, Dienstleister, Behörden, Bundesstellen)",
+              "standards": "UIDG/V, eCH-0108, eCH-0098, IBPDI CDM",
+              "comment": "Gesetzlich verpflichtend gemäss UIDG"
+            },
+            {
+              "name": "Person",
+              "priority": "Muss",
+              "description": "Natürliche Personen als Ansprechpartner, Einzelunternehmer oder Verantwortliche",
+              "standards": "eCH-0044, eCH-0011, revDSG",
+              "comment": "Datenschutzkonform gemäss revDSG"
+            },
+            {
+              "name": "Kontakt",
+              "priority": "Soll",
+              "description": "Kommunikationskanäle (Telefon, E-Mail, elektronische Services)",
+              "standards": "eCH-0046, IBPDI CDM",
+              "comment": "Best Practice"
+            },
+            {
+              "name": "Rolle",
+              "priority": "Muss",
+              "description": "Definition von Verantwortlichkeiten (Eigentümer, Mieter, FM-Verantwortlicher, Projektleiter)",
+              "standards": "IBPDI CDM, OR Art. 253ff",
+              "comment": "Rechtlich erforderlich für Verträge"
+            }
+          ]
+        },
+        {
+          "name": "Verortung",
+          "concepts": [
+            {
+              "name": "Adresse",
+              "priority": "Muss",
+              "description": "Lokalisierungs- und Korrespondenzadressen",
+              "standards": "eCH-0010, GWR, VGWR",
+              "comment": "GWR-Pflicht für Bundesgebäude"
+            },
+            {
+              "name": "Geokoordinate",
+              "priority": "Soll",
+              "description": "Geografische Koordinaten für räumliche Verortung",
+              "standards": "GeoIG, GeoIV, swisstopo",
+              "comment": "Best Practice für GIS-Integration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workspace-management",
+      "name": "Workspace Management",
+      "shortName": "Workspace Management",
+      "subtitle": "(Benutzer- und Kundenerfahrung)",
+      "description": "Interne und Domänenspezifische fachliche Standards",
+      "priority": "Sollte",
+      "isCore": false,
+      "standards": [
+        "SAP RE-FX WSM",
+        "GEFMA",
+        "DIN EN 15221",
+        "ISO 41001"
+      ],
+      "groups": []
+    },
+    {
+      "id": "finanzen",
+      "name": "Finanzen",
+      "shortName": "Finanzen",
+      "description": "SAP FI/CO, IPSAS, FHG/FHV",
+      "priority": "Sollte",
+      "isCore": false,
+      "standards": [
+        "FHG",
+        "FHV",
+        "IPSAS",
+        "SAP FI/CO",
+        "SAP RE-FX"
+      ],
+      "groups": []
+    },
+    {
+      "id": "portfoliomanagement",
+      "name": "Portfoliomanagement",
+      "shortName": "Portfolio und Asset-Management",
+      "description": "ISO 16739, interne und Domänenspezifische fachliche Standards",
+      "priority": "Könnte",
+      "isCore": false,
+      "standards": [
+        "ISO 55000",
+        "VILB",
+        "KBOB",
+        "SIA 480",
+        "SNBS"
+      ],
+      "groups": []
+    },
+    {
+      "id": "controlling-analytics",
+      "name": "Controlling, Analytics und Reporting",
+      "shortName": "Controlling, Analytics und Reporting",
+      "description": "Interne und Domänenspezifische fachliche Standards",
+      "priority": "Sollte",
+      "isCore": false,
+      "standards": [
+        "SAP BW",
+        "Power BI"
+      ],
+      "groups": []
+    },
+    {
+      "id": "objektmanagement",
+      "name": "Objektmanagement",
+      "shortName": "Objektmanagement",
+      "description": "Interne und Domänenspezifische fachliche Standards",
+      "priority": "Könnte",
+      "isCore": false,
+      "standards": [
+        "SAP PM",
+        "GEFMA",
+        "CAFM"
+      ],
+      "groups": [
+        {
+          "name": "GFB6 (Garantiemanagement) - VERTRAGSGRUNDLAGEN",
+          "concepts": [
+            {
+              "name": "Werkvertrag",
+              "priority": "Muss",
+              "description": "Vertrag zur Herstellung eines Werkes gegen Vergütung, Basis für Garantieansprüche",
+              "standards": "OR Art. 363-379, SIA 118",
+              "comment": "Identifikatoren: Vertragsnummer, Vertragsdatum; Geschäftsobjekt: Eigenständige Entität"
+            },
+            {
+              "name": "Garantievereinbarung",
+              "priority": "Muss",
+              "description": "Spezifische Vereinbarung über Garantieumfang und -dauer",
+              "standards": "OR Art. 371, SIA-Normen",
+              "comment": "Identifikatoren: Garantienummer, Vertragsreferenz; Geschäftsobjekttyp von Werkvertrag oder separates Geschäftsobjekt"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - AKTEURE",
+          "concepts": [
+            {
+              "name": "Unternehmen / Organisation",
+              "priority": "Muss",
+              "description": "Garantieverpflichteter Vertragspartner",
+              "standards": "OR Art. 364, UC128.4",
+              "comment": "Identifikatoren: UID/MWST-Nr., Firmenname; Geschäftsobjekt: Vertragspartei"
+            },
+            {
+              "name": "Hersteller",
+              "priority": "Soll",
+              "description": "Produkthersteller für Herstellergarantien",
+              "standards": "UC128.4, UC038.4",
+              "comment": "Identifikatoren: UID/MWST-Nr., Firmenname; Geschäftsobjekttyp von Adresse/Akteur"
+            },
+            {
+              "name": "Servicestelle",
+              "priority": "Soll",
+              "description": "Dienstleister für Mängelbehebung",
+              "standards": "UC038.4",
+              "comment": "Identifikatoren: UID/MWST-Nr., Firmenname; Geschäftsobjekttyp von Adresse/Akteur"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - GARANTIEOBJEKTE",
+          "concepts": [
+            {
+              "name": "Liegenschaft/Standort",
+              "priority": "Muss",
+              "description": "Oberste Hierarchieebene des Immobilienportfolios",
+              "standards": "UC128.4, UC038.4",
+              "comment": "Identifikatoren: Standort-ID, EGID; Geschäftsobjekt: Portfolio-Ebene"
+            },
+            {
+              "name": "Bauwerk",
+              "priority": "Muss",
+              "description": "Unbewegliches Werk als Garantieobjekt",
+              "standards": "OR Art. 371, SIA 469",
+              "comment": "Identifikatoren: Bauwerk-ID, Standortreferenz; Geschäftsobjekt: Hat 5 Jahre Garantiefrist als Attribut"
+            },
+            {
+              "name": "Produkt",
+              "priority": "Soll",
+              "description": "Eingebaute Produkte mit Herstellergarantie",
+              "standards": "UC128.4",
+              "comment": "Identifikatoren: Produkt-ID, Artikelnummer; Geschäftsobjekt: Artikelnummer ist Attribut"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - MÄNGELMANAGEMENT",
+          "concepts": [
+            {
+              "name": "Mangel",
+              "priority": "Muss",
+              "description": "Abweichung vom vertraglich geschuldeten Zustand",
+              "standards": "OR Art. 368, BUW 1.4.21",
+              "comment": "Identifikatoren: Mangel-ID, Mangelart; Geschäftsobjekt: Mangelart ist Attribut"
+            },
+            {
+              "name": "Erhebliche Mängel",
+              "priority": "Soll",
+              "description": "Werk unbrauchbar/Annahme unzumutbar",
+              "standards": "OR Art. 368 Abs. 1",
+              "comment": "Identifikatoren: Mangel-ID, Kategorie; Geschäftsobjekttyp von Mangel"
+            },
+            {
+              "name": "Mindere Mängel",
+              "priority": "Soll",
+              "description": "Werk brauchbar mit Einschränkungen",
+              "standards": "OR Art. 368 Abs. 2",
+              "comment": "Identifikatoren: Mangel-ID, Kategorie; Geschäftsobjekttyp von Mangel"
+            },
+            {
+              "name": "Verdeckte Mängel",
+              "priority": "Soll",
+              "description": "Bei Abnahme nicht erkennbare Mängel",
+              "standards": "OR Art. 370",
+              "comment": "Identifikatoren: Mangel-ID, Entdeckungsdatum; Geschäftsobjekttyp von Mangel"
+            },
+            {
+              "name": "Aufgabe/Pendenz",
+              "priority": "Muss",
+              "description": "Arbeitsauftrag zur Mängelbehebung",
+              "standards": "UC038.4, BUW 1.4.47",
+              "comment": "Identifikatoren: Aufgaben-ID, Status; Geschäftsobjekt: Status ist Attribut, Priorität ist Attribut"
+            },
+            {
+              "name": "Mängelanzeige",
+              "priority": "Muss",
+              "description": "Formelle Mitteilung über festgestellte Mängel",
+              "standards": "OR Art. 367",
+              "comment": "Identifikatoren: Anzeige-ID, Datum; Geschäftsobjekt: Dokument"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - ZEITMANAGEMENT",
+          "concepts": [
+            {
+              "name": "Garantiefrist",
+              "priority": "Muss",
+              "description": "Zeitliche Begrenzung der Garantieansprüche",
+              "standards": "OR Art. 371, SIA 118",
+              "comment": "Identifikatoren: Beginn, Ende, Fristtyp; Attribut von Anlage/Bauteil/Produkt"
+            },
+            {
+              "name": "Verjährungsfrist",
+              "priority": "Muss",
+              "description": "Maximale Frist für Mängelansprüche",
+              "standards": "OR Art. 370-371",
+              "comment": "Identifikatoren: Beginn, Ende; Attribut von Werkvertrag/Mangel"
+            },
+            {
+              "name": "Rügefrist",
+              "priority": "Muss",
+              "description": "Frist zur Mängelanzeige nach Entdeckung",
+              "standards": "OR Art. 367",
+              "comment": "Identifikatoren: Entdeckungsdatum, Ablaufdatum; Attribut von Mangel"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - PROZESSOBJEKTE",
+          "concepts": [
+            {
+              "name": "Abnahme",
+              "priority": "Muss",
+              "description": "Prüfung und Entgegennahme des Werkes",
+              "standards": "OR Art. 370, BUW 1.4.21",
+              "comment": "Identifikatoren: Abnahmedatum, Protokoll-ID; Geschäftsobjekt: Abnahmedatum ist Attribut"
+            },
+            {
+              "name": "Endabnahme",
+              "priority": "Soll",
+              "description": "Finale Prüfung nach Ablauf der Garantiefrist",
+              "standards": "BUW 1.4.48",
+              "comment": "Identifikatoren: Datum, Protokoll-ID; Geschäftsobjekttyp von Abnahme"
+            },
+            {
+              "name": "Mängelbehebung",
+              "priority": "Muss",
+              "description": "Prozess der Mangelbeseitigung",
+              "standards": "BUW 1.4.47",
+              "comment": "Identifikatoren: Behebungs-ID, Status; Geschäftsobjekt: Behebungsfrist ist Attribut"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - FINANZOBJEKTE",
+          "concepts": [
+            {
+              "name": "Garantierückbehalt",
+              "priority": "Soll",
+              "description": "Einbehaltene Sicherheitsleistung",
+              "standards": "BUW 1.4.48, KBOB",
+              "comment": "Identifikatoren: Betrag, Freigabedatum; Geschäftsobjekt: Betrag ist Attribut"
+            },
+            {
+              "name": "Bankgarantie",
+              "priority": "Kann",
+              "description": "Alternative Sicherheitsleistung",
+              "standards": "SIA 118, KBOB",
+              "comment": "Identifikatoren: Garantienummer, Gültigkeit; Geschäftsobjekttyp von Sicherheitsleistung"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - DOKUMENTATION",
+          "concepts": [
+            {
+              "name": "Garantiedokument",
+              "priority": "Muss",
+              "description": "Garantieschein, -zertifikat oder -urkunde",
+              "standards": "UC128.4, DMS-Integration",
+              "comment": "Identifikatoren: Dokument-ID, Dokumenttyp; Geschäftsobjekt: Dokumenttyp ist Attribut"
+            },
+            {
+              "name": "Mängelfoto/-video",
+              "priority": "Soll",
+              "description": "Visuelle Dokumentation von Mängeln",
+              "standards": "UC038.4, BUW 1.4.46",
+              "comment": "Identifikatoren: Medien-ID, Aufnahmedatum; Geschäftsobjekttyp von Dokument"
+            }
+          ]
+        },
+        {
+          "name": "GFB6 (Garantiemanagement) - ZUSÄTZLICHE ATTRIBUTE",
+          "concepts": [
+            {
+              "name": "Priorität",
+              "priority": "Muss",
+              "description": "Dringlichkeitsstufe (Tief/Mittel/Hoch)",
+              "standards": "UC038.4",
+              "comment": "Attribut von Aufgabe/Mangel"
+            },
+            {
+              "name": "Status",
+              "priority": "Muss",
+              "description": "Bearbeitungszustand",
+              "standards": "UC038.4, SAP PM",
+              "comment": "Attribut von Aufgabe/Mängelbehebung"
+            },
+            {
+              "name": "Anlageart",
+              "priority": "Muss",
+              "description": "Klassifikation der Anlage (z.B. Lüftung)",
+              "standards": "UC128.4",
+              "comment": "Attribut von Technische Anlage"
+            },
+            {
+              "name": "IFC-Klasse",
+              "priority": "Soll",
+              "description": "BIM-Klassifikation (z.B. IFCwall)",
+              "standards": "UC128.4",
+              "comment": "Attribut von Bauteil"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Räumliche Strukturierung",
+          "concepts": [
+            {
+              "name": "Liegenschaft",
+              "priority": "Kann",
+              "description": "Grundstück mit Eigentumsverhältnissen",
+              "standards": "OR Art. 58",
+              "comment": "Identifikatoren: Grundbuch-Nr, Parzellen-Nr; Nur bei Immobilien relevant"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Instandhaltungsobjekte",
+          "concepts": [
+            {
+              "name": "Komponente (Equipment)",
+              "priority": "Muss",
+              "description": "Individuelle wartbare technische Einheit",
+              "standards": "SAP PM:Equipment, DIN 31051",
+              "comment": "Identifikatoren: Equipment-Nr, Seriennummer, Typ; Träger der Wartungshistorie"
+            },
+            {
+              "name": "Messpunkt (Sensor, Zähler)",
+              "priority": "Muss",
+              "description": "Punkt für Zustandserfassung",
+              "standards": "SAP PM, IFC:IfcSensor",
+              "comment": "Identifikatoren: Messpunkt-ID, Equipment-ID, Messart; Condition Monitoring"
+            },
+            {
+              "name": "Betriebsmesswert (Messbeleg)",
+              "priority": "Soll",
+              "description": "Dokumentierte Messwerte",
+              "standards": "SAP PM",
+              "comment": "Identifikatoren: Messwert-ID, Messpunkt-ID, Wert, Zeitstempel; Trendanalysen, kann IH-Aufträge auslösen"
+            },
+            {
+              "name": "Ersatzteil",
+              "priority": "Soll",
+              "description": "Lagerhaltiges Material für IH",
+              "standards": "SAP PM:QMAT",
+              "comment": "Identifikatoren: Material-Nr, Lagerort, Bestand; Verfügbarkeitskritisch"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Instandhaltungssteuerung",
+          "concepts": [
+            {
+              "name": "IH-Auftrag",
+              "priority": "Muss",
+              "description": "Arbeitsauftrag für Instandhaltung",
+              "standards": "SAP PM, DIN 31051",
+              "comment": "Identifikatoren: Auftrags-Nr, Typ, Status; Zentrales Steuerungselement"
+            },
+            {
+              "name": "IH-Meldung",
+              "priority": "Muss",
+              "description": "Störungs-/Wartungsbedarf",
+              "standards": "SAP PM, ProLeMo",
+              "comment": "Identifikatoren: Meldungs-Nr, Priorität, Status; Eingangskanal"
+            },
+            {
+              "name": "Wartungsplan",
+              "priority": "Muss",
+              "description": "Zyklische Wartungsaktivitäten",
+              "standards": "SAP PM, DIN 31051",
+              "comment": "Identifikatoren: Plan-Nr, Zyklus, Equipment-ID; Präventive IH"
+            },
+            {
+              "name": "Inspektionsplan",
+              "priority": "Muss",
+              "description": "Zustandsfeststellungen",
+              "standards": "SIA 469, SAP PM",
+              "comment": "Identifikatoren: Plan-Nr, Intervall, Objekt-ID; Zustandsorientierte IH"
+            },
+            {
+              "name": "Störung",
+              "priority": "Soll",
+              "description": "Dokumentierter Ausfall",
+              "standards": "DIN 31051",
+              "comment": "Identifikatoren: Störungs-Nr, Zeitstempel, Ursache; Ausfallanalyse"
+            },
+            {
+              "name": "Arbeitsplan",
+              "priority": "Soll",
+              "description": "Standardisierte Arbeitsabläufe",
+              "standards": "SAP PM",
+              "comment": "Identifikatoren: Arbeitsplan-Nr, Vorgänge; Effizienzsteigerung"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Compliance & Dokumentation",
+          "concepts": [
+            {
+              "name": "Betreiberpflichten",
+              "priority": "Muss",
+              "description": "Rechtliche Pflichten je Objekt",
+              "standards": "OR Art. 58/59, SUVA",
+              "comment": "Identifikatoren: Pflichten-ID, Objekt-ID, Rechtsgrundlage; Haftungsrelevant"
+            },
+            {
+              "name": "Prüfplan",
+              "priority": "Muss",
+              "description": "Plan für gesetzliche Prüfungen",
+              "standards": "Aufzugsverordnung, EKAS",
+              "comment": "Identifikatoren: Prüfplan-Nr, Prüfart, Frist; SV/SK-Prüfungen"
+            },
+            {
+              "name": "Wartungsprotokoll",
+              "priority": "Muss",
+              "description": "Nachweis durchgeführter Wartung",
+              "standards": "DIN 31051",
+              "comment": "Identifikatoren: Protokoll-Nr, Datum, Auftrag-Nr; Compliance-Nachweis"
+            },
+            {
+              "name": "Inspektionsprotokoll",
+              "priority": "Muss",
+              "description": "Zustandsdokumentation",
+              "standards": "SIA 469, NS-INSTA 610",
+              "comment": "Identifikatoren: Protokoll-Nr, Zustandsklasse; Zustandshistorie"
+            },
+            {
+              "name": "Prüfbescheinigung",
+              "priority": "Muss",
+              "description": "Nachweis gesetzlicher Prüfungen",
+              "standards": "Behördliche Vorschriften",
+              "comment": "Identifikatoren: Bescheinigungs-Nr, Gültigkeit; Pflichtnachweis"
+            },
+            {
+              "name": "Risiko / Gefährdungsbeurteilung",
+              "priority": "Soll",
+              "description": "Risikoanalyse",
+              "standards": "EKAS 6512",
+              "comment": "Identifikatoren: Beurteilungs-ID, Gefährdungen; Arbeitsschutz"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Vertrags- & Lieferantenmanagement",
+          "concepts": [
+            {
+              "name": "Wartungsvertrag",
+              "priority": "Muss",
+              "description": "Rahmenvertrag IH-Leistungen",
+              "standards": "BUW 1.1.10",
+              "comment": "Identifikatoren: Vertrags-Nr, Laufzeit, Umfang; Dienstleistersteuerung"
+            },
+            {
+              "name": "Dienstleister",
+              "priority": "Soll",
+              "description": "Externe Wartungsfirma",
+              "standards": "EKAS, SUVA",
+              "comment": "Identifikatoren: Firma-ID, Qualifikationen; Geschäftsobjekttyp: Akteur"
+            },
+            {
+              "name": "Garantie",
+              "priority": "Kann",
+              "description": "Gewährleistungsansprüche",
+              "standards": "HBA UC128.4",
+              "comment": "Identifikatoren: Garantie-Nr, Ablaufdatum; Kostenoptimierung"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Organisatorisches",
+          "concepts": [
+            {
+              "name": "Betreiberkonzept",
+              "priority": "Muss",
+              "description": "Umfassendes Betreiberverantwortungskonzept",
+              "standards": "ProLeMo, OR Art. 58",
+              "comment": "Identifikatoren: Konzept-ID, Version, Stand; Zentrale Referenz"
+            },
+            {
+              "name": "Anlagenverzeichnis",
+              "priority": "Soll",
+              "description": "Strukturierte IH-Objektliste",
+              "standards": "GEFMA 110",
+              "comment": "Identifikatoren: Verzeichnis-ID, Stand; Basis für Ausschreibungen, wird aus GO Technische Anlage erstellt"
+            },
+            {
+              "name": "Verantwortlicher",
+              "priority": "Soll",
+              "description": "Zuständige Person/Rolle",
+              "standards": "ProLeMo",
+              "comment": "Identifikatoren: Person-ID, Rolle, Bereich; Geschäftsobjekttyp: Rolle"
+            }
+          ]
+        },
+        {
+          "name": "GFW9 (Instandhaltung) - Dokumentenverwaltung",
+          "concepts": [
+            {
+              "name": "Anlagendossier",
+              "priority": "Muss",
+              "description": "Gesamtdokumentation einer Anlage/Komponente",
+              "standards": "SIA 469:Bauwerksakten, IFC:IfcDocumentInformation",
+              "comment": "Identifikatoren: Dossier-ID, Equipment-ID, Version; Container für alle Dokumente einer Anlage"
+            },
+            {
+              "name": "Foto",
+              "priority": "Kann",
+              "description": "Bilddokumentation aus Inspektionen",
+              "standards": "EXIF-Standard",
+              "comment": "Identifikatoren: Foto-ID, Aufnahmedatum, GPS, Objekt-ID; Geschäftsobjekttyp von Dokument"
+            },
+            {
+              "name": "Technisches Datenblatt",
+              "priority": "Soll",
+              "description": "Herstellerdokumentation",
+              "standards": "VDI 2770",
+              "comment": "Identifikatoren: Datenblatt-ID, Hersteller, Version; Geschäftsobjekttyp von Dokument"
+            },
+            {
+              "name": "Plan/Zeichnung",
+              "priority": "Soll",
+              "description": "Technische Zeichnungen, Schemas",
+              "standards": "IFC:IfcDocumentReference",
+              "comment": "Identifikatoren: Plan-ID, Planart, Maßstab; Geschäftsobjekttyp von Dokument"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - ARCHITEKTONISCHE STRUKTUR",
+          "concepts": [
+            {
+              "name": "Standort / Wirtschaftseinheit",
+              "priority": "Muss",
+              "description": "Oberste Organisationseinheit - kann Standort, Liegenschaft, Portfolio oder andere organisatorische Einheit sein",
+              "standards": "SAP RE-FX, CAFM-Richtlinie",
+              "comment": "Identifikatoren: WE\\_ID, Standort\\_ID; Flexibles Konzept; wird von SAP RE-FX als Wirtschaftseinheit bereitgestellt; BBL nutzt oft als Standort/Liegenschaft"
+            },
+            {
+              "name": "Ausstattung",
+              "priority": "Soll",
+              "description": "Inventar und Einrichtungsgegenstände",
+              "standards": "IFC (IfcFurnishingElement), Stadt ZH UC008.1",
+              "comment": "Identifikatoren: Ausstattung\\_ID, IFC-GUID; Möbel, Sanitärobjekte, Geräte"
+            },
+            {
+              "name": "Aussenfläche",
+              "priority": "Soll",
+              "description": "Nicht-überdachte Flächen",
+              "standards": "CAFM-Richtlinie, SIA 416",
+              "comment": "Identifikatoren: Aussenfläche\\_ID; Strassen, Parkplätze, Terrassen, Wege, Grünflächen"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - REINIGUNGSSTRUKTUR",
+          "concepts": [
+            {
+              "name": "Reinigungsobjekt",
+              "priority": "Muss",
+              "description": "Zentrale Abstraktion: Alles, was gereinigt werden kann - referenziert Raum, Bauteil, Ausstattung oder Aussenfläche",
+              "standards": "ProLeMo GFW12, buildingSMART UCM",
+              "comment": "Identifikatoren: Reinigungsobjekt\\_ID, Objekttyp, Referenz\\_ID; Kernentität: Objekttyp ∈ {Raum, Bauteil, Ausstattung, Aussenfläche}; verweist auf entsprechendes Objekt; hat Materialisierung, Fläche/Menge, Zugänglichkeit, Pflegeanforderungen"
+            },
+            {
+              "name": "Reinigungszone",
+              "priority": "Soll",
+              "description": "Gruppierung nach Hygieneanforderungen und Schutzbedarf",
+              "standards": "LMG SR 817.0, HyV SR 817.024.1, ProLeMo",
+              "comment": "Identifikatoren: Zone\\_ID, Hygienetyp; Z.B. Reinraum, Lebensmittelbereich, Normalbereich, Aussenbereich; definiert spezielle Hygiene- und Reinigungsprotokolle"
+            },
+            {
+              "name": "Reinigungsrevier",
+              "priority": "Muss",
+              "description": "Operative Gruppierung für Tourenplanung und Personaleinsatz",
+              "standards": "BUW 1.1.14, Stadt ZH UC029.1, Korasoft",
+              "comment": "Identifikatoren: Revier\\_ID, Reviercode; Fasst Reinigungsobjekte zusammen für effiziente Arbeitsabläufe; grafisch in Korasoft verwaltet; Zuordnung zu Personal"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - PLANUNG UND KONZEPTION",
+          "concepts": [
+            {
+              "name": "Reinigungskonzept",
+              "priority": "Muss",
+              "description": "Gesamtstrategie und Rahmenvorgaben für Reinigung",
+              "standards": "BUW 1.1.14, ProLeMo, BBL Betreiberkonzept",
+              "comment": "Identifikatoren: Konzept\\_ID, Version, Gültigkeitsdatum; Definiert Qualitätsstufen, Frequenzen, Nachhaltigkeitsvorgaben, Ressourcen; strategische Grundlage"
+            },
+            {
+              "name": "AIM (Asset Information Model)",
+              "priority": "Muss",
+              "description": "Gebäudedatenmodell für Betrieb mit allen relevanten Eigenschaften",
+              "standards": "buildingSMART UCM, SIA 112 Phase 53",
+              "comment": "Liefert Eigenschaften (Materialisierung, Flächen, Zugänglichkeit, Produktdaten) für Reinigungsobjekte; aus BIM übergeben"
+            },
+            {
+              "name": "Mengenauszug Reinigung",
+              "priority": "Muss",
+              "description": "Strukturierte Aufstellung aller zu reinigenden Objekte mit Mengen und Eigenschaften",
+              "standards": "buildingSMART UCM, Stadt ZH UC051.1",
+              "comment": "Identifikatoren: Mengenauszug\\_ID, Erstellungsdatum, Version; Aus AIM generiert; enthält alle Flächen, Materialien, Stückzahlen; Grundlage für Kostenberechnung und LV"
+            },
+            {
+              "name": "Leistungsverzeichnis (LV)",
+              "priority": "Muss",
+              "description": "Strukturierte Leistungsbeschreibung für Ausschreibung",
+              "standards": "GEFMA 220:2023, SIA 184:2013, BUW 1.1.14",
+              "comment": "Identifikatoren: LV\\_ID, Version, Status; 400+ Positionen mit Mengen, Einheitspreisen, Qualitätsstufen; basiert auf Mengenauszug und Reinigungskonzept"
+            },
+            {
+              "name": "Reinigungsleistung",
+              "priority": "Muss",
+              "description": "Katalogisierte, definierte Reinigungstätigkeit",
+              "standards": "GEFMA 220:2023, DIN 77400:2015, SIA 184, ProLeMo LOPB 09.01",
+              "comment": "Identifikatoren: Leistung\\_ID, GEFMA-Position, LeKas-Position; Z.B. \"Unterhaltsreinigung Büro\", \"Glasreinigung beidseitig\"; mit Zeitrichtwerten, Materialvorgaben, Verfahrensbeschreibung"
+            },
+            {
+              "name": "Qualitätsprofil",
+              "priority": "Muss",
+              "description": "Anforderungen an Reinigungsqualität",
+              "standards": "NS-INSTA 800-1:2018, GEFMA 220, BBL Standards Büroarbeitsplätze",
+              "comment": "Identifikatoren: Profil\\_ID, Qualitätsstufe, Kriterien; Level 0-5 nach NS-INSTA; definiert Sauberkeitsniveau und Prüfkriterien; zugeordnet zu Reinigungsobjekten/Zonen/Leistungen"
+            },
+            {
+              "name": "Pflegeanleitung",
+              "priority": "Soll",
+              "description": "Herstellerspezifische Reinigungs- und Pflegehinweise",
+              "standards": "Stadt ZH UC008.1 (E434), Herstellerdokumentation",
+              "comment": "Identifikatoren: Pflegeanleitung\\_ID, Produkt\\_ID, Bauteiltyp\\_ID; Für spezielle Oberflächen und Materialien (Naturstein, Parkett, Spezialoberflächen); aus BIM-Library oder Produktdatenblättern"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - OPERATIVE DURCHFÜHRUNG",
+          "concepts": [
+            {
+              "name": "Reinigungsplan",
+              "priority": "Muss",
+              "description": "Zeitliche und räumliche Planung mit Zyklen",
+              "standards": "ProLeMo GFW12, BUW 1.1.14, Stadt ZH UC008.1",
+              "comment": "Identifikatoren: Reinigungsplan\\_ID, Gültigkeit\\_von, Gültigkeit\\_bis; Definiert wann welche Reviere/Objekte mit welcher Leistung gereinigt werden; Frequenzen: täglich/wöchentlich/monatlich/quartalsweise/jährlich"
+            },
+            {
+              "name": "Reinigungsauftrag",
+              "priority": "Muss",
+              "description": "Operative Arbeitsanweisung für konkrete Durchführung",
+              "standards": "BUW 1.4.10, ProLeMo D0.21.40.20.10",
+              "comment": "Identifikatoren: Auftrag\\_ID, Auftragsnummer, Typ, Status; Typ ∈ {Routine, Sonder}; Status ∈ {geplant, freigegeben, in Arbeit, abgeschlossen}; verweist auf Revier, Leistung, Personal, Zeitfenster, Kostenstelle"
+            },
+            {
+              "name": "Sonderreinigung",
+              "priority": "Soll",
+              "description": "Ereignisbasierte, nicht-routinemässige Reinigung",
+              "standards": "GEFMA 220, BUW 1.4.2",
+              "comment": "Identifikatoren: Sonderreinigung\\_ID, Anlass, Priorität, Auslöser; Ausgelöst durch Störung, Veranstaltung, Verschmutzung, Baumassnahme; mit Dringlichkeit, Begründung, Freigabe"
+            },
+            {
+              "name": "Störungsmeldung",
+              "priority": "Soll",
+              "description": "Gemeldeter Mangel oder Vorfall als Auslöser",
+              "standards": "CAFM/Ticketing-System",
+              "comment": "Identifikatoren: Störung\\_ID, Melder, Beschreibung; Kann Sonderreinigung auslösen; Verknüpfung zu Facility-Management-Prozessen"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - QUALITÄT UND DOKUMENTATION",
+          "concepts": [
+            {
+              "name": "Qualitätskontrolle",
+              "priority": "Muss",
+              "description": "Systematische, dokumentierte Qualitätsprüfung",
+              "standards": "NS-INSTA 800-1:2018, BUW 1.4.2, BBL Weisungen Betrieb",
+              "comment": "Identifikatoren: Kontrolle\\_ID, Kontrolldatum, Prüfer, Methode, Ergebnis; Bewertung 0-5 nach NS-INSTA; Stichprobe oder Vollprüfung; mit Fotos, Mängelliste, Massnahmen; prüft gegen SLA und Qualitätsprofil"
+            },
+            {
+              "name": "Aufzeichnungen Reinigung",
+              "priority": "Muss",
+              "description": "Protokolle als Leistungsnachweis und Compliance-Dokumentation",
+              "standards": "ArGV 3 Art. 37, BUW 1.4.10, ProLeMo",
+              "comment": "Identifikatoren: Aufzeichnung\\_ID, Datum, Uhrzeit, Objekt\\_ID; Dokumentiert: Personal, Dauer, gereinigte Objekte, verwendete Mittel, Besonderheiten; Basis für Abrechnung, Qualitätskontrolle, rechtlichen Nachweis"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - VERTRÄGE UND STEUERUNG",
+          "concepts": [
+            {
+              "name": "Reinigungsvertrag",
+              "priority": "Muss",
+              "description": "Rahmenvertrag mit Dienstleister",
+              "standards": "BUW 1.1.14, BöB, BBL Vergaberichtlinien",
+              "comment": "Identifikatoren: Vertrag\\_ID, Vertragsnummer, Laufzeit, Vertragspartner; AVB, BVB, Leistungsbeschreibung; umfasst Reviere, Leistungen, Preise, Eskalation; regelt Verantwortlichkeiten und Haftung"
+            },
+            {
+              "name": "Service Level Agreement (SLA)",
+              "priority": "Muss",
+              "description": "Messbare Qualitäts- und Leistungsvereinbarung",
+              "standards": "GEFMA 200, BBL Weisungen Betrieb",
+              "comment": "Identifikatoren: SLA\\_ID, Kennzahl, Zielwert, Toleranz, Messfrequenz; Konkrete KPIs (z.B. Sauberkeitsindex, Reaktionszeit, Verfügbarkeit); Messmethode; Bonus/Malus-Regelungen; prüft gegen Qualitätskontrollen"
+            },
+            {
+              "name": "Kostenstelle",
+              "priority": "Muss",
+              "description": "Kostenverantwortliche Organisationseinheit",
+              "standards": "SAP Kostenrechnung",
+              "comment": "Identifikatoren: Kostenstelle\\_ID, Bezeichnung; Für Leistungsverrechnung an Nutzer/Mieter; Zuordnung zu Räumen/Objekten; Integration mit SAP"
+            }
+          ]
+        },
+        {
+          "name": "GFW12 (Reinigung) - RESSOURCEN",
+          "concepts": [
+            {
+              "name": "Reinigungspersonal",
+              "priority": "Muss",
+              "description": "Mitarbeitende des Dienstleisters mit Qualifikationen",
+              "standards": "ArGV 3 Art. 5, BUW 1.2.8, 1.2.54",
+              "comment": "Identifikatoren: Personal\\_ID, Name, Dienstleister\\_ID, Unterweisungsstatus; Qualifikationen, Zertifikate, Unterweisungsnachweise, zugeordnete Reviere; führt Aufträge aus, bestätigt Aufzeichnungen; Zugriffsberechtigungen"
+            },
+            {
+              "name": "Unterweisungsnachweis",
+              "priority": "Muss",
+              "description": "Dokumentation der gesetzlich vorgeschriebenen Sicherheitsunterweisung",
+              "standards": "ArGV 3 Art. 5, BUW 1.2.8/1.2.54, EKAS 6512",
+              "comment": "Identifikatoren: Unterweisung\\_ID, Datum, Teilnehmer, Unterweiser, Themen; Rechtlich vorgeschrieben; enthält Unterschriften, Unterweisungsinhalte (Sicherheit, Objekt, Gefahrstoffe); Archivierungspflicht; Haftungsabgrenzung"
+            }
+          ]
+        },
+        {
+          "name": "Reinigungsmanagement (Archiv) - PLANUNGSOBJEKTE",
+          "concepts": [
+            {
+              "name": "Leistungsverzeichnis",
+              "priority": "Muss",
+              "description": "Strukturierte Leistungsbeschreibung für Ausschreibung",
+              "standards": "GEFMA 220, NPK 641",
+              "comment": "Identifikatoren: LV-ID, Version; Basis für Vergabe"
+            }
+          ]
+        },
+        {
+          "name": "Reinigungsmanagement (Archiv) - VERWALTUNGSOBJEKTE",
+          "concepts": [
+            {
+              "name": "Service Level Agreement",
+              "priority": "Soll",
+              "description": "Qualitäts- und Leistungsvereinbarung",
+              "standards": "BBL-Weisungen Anhang I",
+              "comment": "Identifikatoren: SLA-ID, KPIs; Messbare Kriterien"
+            }
+          ]
+        },
+        {
+          "name": "Reinigungsmanagement (Archiv) - RESSOURCENOBJEKTE",
+          "concepts": [
+            {
+              "name": "Reinigungsmittel",
+              "priority": "Soll",
+              "description": "Chemikalien und Verbrauchsmaterial",
+              "standards": "CLP-Verordnung, EU Ecolabel",
+              "comment": "Identifikatoren: Artikel-ID, CAS-Nummer; Sicherheitsdatenblätter"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "baustellenmanagement",
+      "name": "Baustellenmanagement",
+      "shortName": "Baustellenmanagement",
+      "subtitle": "(Baumanagement)",
+      "description": "ISO 16739, IBPDI, interne und Domänenspezifische fachliche Standards",
+      "priority": "Könnte",
+      "isCore": false,
+      "standards": [
+        "SIA 118",
+        "KBOB",
+        "eBKP-H"
+      ],
+      "groups": []
+    }
+  ],
+  "connections": [
+    {
+      "from": "architektonische-sicht",
+      "to": "projektmanagement",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "dokumentenmanagement",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "mietermanagement",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "energie-ressourcen",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "organisatorische-daten",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "workspace-management",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "finanzen",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "portfoliomanagement",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "controlling-analytics",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "objektmanagement",
+      "type": "bidirectional"
+    },
+    {
+      "from": "architektonische-sicht",
+      "to": "baustellenmanagement",
+      "type": "bidirectional"
+    }
+  ]
+}

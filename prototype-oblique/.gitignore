@@ -1,0 +1,17 @@
+# Local tooling; runtime dependencies are the pinned files in vendor/.
+node_modules/
+
+# Browser/test output (the checked-in review evidence stays in docs/).
+/test-results/
+/playwright-report/
+/coverage/
+
+# Supabase CLI state and local credentials; keep example configuration tracked.
+/supabase/.temp/
+/supabase/.branches/
+/.env
+/.env.local
+/supabase/.env
+/supabase/.env.local
+/supabase/functions/.env
+/supabase/functions/.env.local

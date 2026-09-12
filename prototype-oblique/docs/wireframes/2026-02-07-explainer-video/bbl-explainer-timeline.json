@@ -1,0 +1,183 @@
+{
+  "title": "Der Datenkatalog in 2 Minuten",
+  "durationSeconds": 120,
+  "status": "Production draft — narration, animation and final MP4 not yet produced",
+  "language": "de-CH",
+  "voice": "Warm female voice, Swiss Standard German, off-screen",
+  "format": {
+    "width": 1920,
+    "height": 1080,
+    "fps": 25
+  },
+  "scenes": [
+    {
+      "number": 1,
+      "start": 0,
+      "end": 20,
+      "title": "Worum geht es?",
+      "narration": "Wo finde ich Daten zu einem Gebäude? Was bedeuten die Angaben? Und wer beantwortet meine Fragen? Der Datenkatalog des BBL hilft Ihnen dabei. Er macht Informationen über Daten im Immobilienmanagement auffindbar und verbindet ihre Bedeutung mit Struktur, Quellen und Zuständigkeiten.",
+      "overlays": [
+        "Der Datenkatalog in 2 Minuten",
+        "Finden · Verstehen · Zuständigkeiten klären"
+      ],
+      "shots": [
+        {
+          "start": 0,
+          "end": 6,
+          "visual": "Langsame Kamerafahrt durch das helle Foyer. Der Presenter blickt auf sein Tablet. Ein Gebäude erscheint als illustrierte Karte."
+        },
+        {
+          "start": 6,
+          "end": 12,
+          "visual": "Drei Fragekarten erscheinen nacheinander: Gebäude, Bedeutung, Ansprechperson. Der Presenter blickt von einer zur nächsten."
+        },
+        {
+          "start": 12,
+          "end": 20,
+          "visual": "Die Karten ordnen sich um einen klaren Katalogeintrag. Dezenter Titel und die drei Nutzenbegriffe erscheinen."
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "start": 20,
+      "end": 40,
+      "title": "Eine gemeinsame Sprache",
+      "narration": "Geschäftsobjekte erklären Begriffe wie Gebäude, Grundstück oder Raum – unabhängig vom Quellsystem. Ihre Attribute beschreiben Eigenschaften, etwa eine Gebäude-ID oder eine Fläche. So entsteht ein gemeinsames Verständnis, auch wenn verschiedene Teams mit unterschiedlichen Anwendungen arbeiten. Der fachliche Begriff verbindet diese Perspektiven.",
+      "overlays": [
+        "Geschäftsobjekt: Gebäude",
+        "Attribute: Gebäude-ID · Fläche"
+      ],
+      "shots": [
+        {
+          "start": 20,
+          "end": 26,
+          "visual": "Drei Karten zeigen Gebäude, Grundstück und Raum. Der Presenter führt mit einer kleinen Handbewegung zu den Begriffen."
+        },
+        {
+          "start": 26,
+          "end": 33,
+          "visual": "Die Gebäudekarte rückt in den Vordergrund. Darunter erscheinen Gebäude-ID und Fläche als beschreibende Eigenschaften."
+        },
+        {
+          "start": 33,
+          "end": 40,
+          "visual": "Zwei unterschiedlich gestaltete Anwendungskarten rahmen denselben fachlichen Begriff. Die gemeinsame Gebäudekarte bleibt unverändert."
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "start": 40,
+      "end": 60,
+      "title": "Vom Begriff zum System",
+      "narration": "Datentabellen und Felder beschreiben die technische Struktur in den Quellsystemen. Verknüpfungen zeigen die dokumentierten Zuordnungen zu den Geschäftsobjekten. So wird nachvollziehbar, wie ein fachlicher Begriff in verschiedenen Systemen abgebildet ist. Die eigentlichen Gebäude- und Vertragsdaten bleiben dabei in den Quellsystemen.",
+      "overlays": [
+        "Geschäftsobjekt ↔ Datentabelle ↔ Feld",
+        "Die eigentlichen Daten bleiben im Quellsystem"
+      ],
+      "shots": [
+        {
+          "start": 40,
+          "end": 46,
+          "visual": "Das Geschäftsobjekt Gebäude steht links. Rechts erscheinen zwei schematische Quellsysteme mit je einer Datentabelle."
+        },
+        {
+          "start": 46,
+          "end": 53,
+          "visual": "Verbindungslinien werden aufgebaut. Ein dokumentiertes Feld und das zugehörige fachliche Attribut werden gleichzeitig hervorgehoben."
+        },
+        {
+          "start": 53,
+          "end": 60,
+          "visual": "Leichte Nahaufnahme der beiden Systemcontainer. Die operativen Datensätze bleiben sichtbar darin; keine Datenbewegung zum Katalog darstellen."
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "start": 60,
+      "end": 80,
+      "title": "Bedeutung und Verantwortung",
+      "narration": "Wertelisten erläutern zulässige Codes und ihre Bedeutung. Quellenlinks führen zu weiterführenden Definitionen. Im Abschnitt «Verantwortlich» finden Sie die dokumentierten Fachstellen und Ansprechpersonen. So können Sie Angaben einordnen und offene Fragen gezielt klären. Ein Katalogeintrag allein gewährt noch keinen Zugriff auf die beschriebenen Daten.",
+      "overlays": [
+        "Wertelisten · Quellen · Verantwortlich",
+        "Ein Eintrag ist keine Zugriffsberechtigung"
+      ],
+      "shots": [
+        {
+          "start": 60,
+          "end": 67,
+          "visual": "Ein schematischer Code wird hervorgehoben, seine Bedeutung erscheint daneben. Keine ungeprüften realen Codes erfinden."
+        },
+        {
+          "start": 67,
+          "end": 74,
+          "visual": "Eine Quellenkarte klappt auf; anschliessend rückt eine Kontaktkarte mit dem Titel Verantwortlich in den Vordergrund."
+        },
+        {
+          "start": 74,
+          "end": 80,
+          "visual": "Die Kontaktkarte verbindet sich mit einer Frageblase. Ein kurzer Hinweis zur Zugriffsberechtigung erscheint ohne Warninszenierung."
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "start": 80,
+      "end": 100,
+      "title": "Finden und weiterverwenden",
+      "narration": "Starten Sie mit einem Suchbegriff oder navigieren Sie durch den Katalog. Öffnen Sie einen Steckbrief und folgen Sie den Beziehungen. Mit Excel, PDF und der Katalog-API können Sie die Metadaten weiterverwenden. Exportiert werden Beschreibungen und dokumentierte Referenzwerte – keine einzelnen Gebäude- oder Vertragsdatensätze.",
+      "overlays": [
+        "Suchen → Steckbrief → Beziehungen",
+        "Metadaten weiterverwenden: Excel · PDF · API"
+      ],
+      "shots": [
+        {
+          "start": 80,
+          "end": 86,
+          "visual": "Nahaufnahme des Tablets. Der Suchbegriff Gebäude erscheint, gefolgt von einem schematischen Treffer."
+        },
+        {
+          "start": 86,
+          "end": 93,
+          "visual": "Der Treffer öffnet einen Steckbrief. Ein Beziehungsausschnitt wird hervorgehoben. Reale UI-Ausschnitte nur aus dem aktuellen Katalog übernehmen."
+        },
+        {
+          "start": 93,
+          "end": 100,
+          "visual": "Drei separat gesetzte Symbole erscheinen: Excel, PDF, API. Dokumentkarten mit Beschreibungen verdeutlichen den Metadatenexport."
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "start": 100,
+      "end": 120,
+      "title": "Gemeinsam verbessern",
+      "narration": "Der Katalog ist ein Prototyp. Probieren Sie ihn aus und melden Sie fehlende Definitionen oder unklare Zuständigkeiten: an die dokumentierte Fachstelle oder über «Hilfe und Kontakt». Ihr Feedback hilft, den Katalog gemeinsam zu verbessern.",
+      "overlays": [
+        "Prototyp – nur zur Demonstration",
+        "Katalog entdecken",
+        "Feedback über «Hilfe und Kontakt»"
+      ],
+      "shots": [
+        {
+          "start": 100,
+          "end": 106,
+          "visual": "Zurück ins Foyer. Der Presenter hält das Tablet und lädt mit einer offenen Handbewegung zum Ausprobieren ein."
+        },
+        {
+          "start": 106,
+          "end": 114,
+          "visual": "Eine Feedbackkarte erscheint; ein unklarer Katalogeintrag wird als überarbeitete Beschreibung dargestellt, ohne einen nicht implementierten Freigabeworkflow zu zeigen."
+        },
+        {
+          "start": 114,
+          "end": 120,
+          "visual": "Ruhige Schlusskarte mit Katalog entdecken, BBL Datenkatalog und Prototyp-Hinweis. Letzte zwei Sekunden nur Schlusskarte, wenn die eingesprochene Fassung dafür Raum lässt."
+        }
+      ]
+    }
+  ]
+}

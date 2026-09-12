@@ -1,0 +1,64 @@
+---
+config:
+  layout: dagre
+
+title: Architektonische Sicht (Vereinfachte Darstellung)
+---
+flowchart TB
+    STANDORT["Standort"] -- "enthält<br>[1..*]" --> GRUNDSTUECK["Grundstück"]
+    GRUNDSTUECK -- "enthält<br>[1..*]" --> GEBAEUDE["Gebäude"]
+    GRUNDSTUECK -- "unterliegt<br>[1..*]" --> EIGENTUMSRECHT["Eigentumsrecht"]
+    GRUNDSTUECK -- "umfasst<br>[0..*]" --> BODENABDECKUNG["Bodenabdeckung"]
+    GEBAEUDE -- "enthält<br>[1..*]" --> GESCHOSS["Geschoss"] & GEBAEUDEEINGANG["Gebäudeeingang"] & EINHEIT["Einheit"] & SYSTEM["System"]
+    GESCHOSS -- "enthält<br>[1..*]" --> RAUM["Raum"] & ZONE["Zone"]
+    ZONE -- "ordnet zu<br>[1..*]" --> RAUM
+    EINHEIT -- "nutzt<br>[*..*]" --> RAUM
+    SYSTEM -- "besteht aus<br>[1..*]" --> KOMPONENTE["Komponente"]
+    SENSOR["Sensor"] -. ist Typ von<br>[1] .-> KOMPONENTE
+    SENSOR -- "liefert<br>[1..*]" --> SENSORMESSUNG["Sensormessung"]
+    BODENABDECKUNG -. definiert Grundriss von<br>[1] .-> GEBAEUDE
+    KOMPONENTE -. "befindet sich in<br>[0..1]" .-> RAUM
+    BAUTEIL["Bauteil"] -. ist Teil von<br>[1] .-> GESCHOSS
+    BAUTEIL -. "befindet sich in<br>[0..1]" .-> RAUM
+    SENSOR -. "überwacht<br>[0..1]" .-> RAUM & KOMPONENTE
+    SENSOR -. gehört zu System<br>[1] .-> SYSTEM
+    ADRESSE["Adresse"] -. "ist Adresse von<br>[0..*]" .-> GRUNDSTUECK & GEBAEUDE & GEBAEUDEEINGANG
+    KOORDINATEN["Koordinaten"] -. "verortet<br>[0..*]" .-> GRUNDSTUECK & GEBAEUDE & GEBAEUDEEINGANG & BODENABDECKUNG & EINHEIT & RAUM & KOMPONENTE & SENSOR & BAUTEIL
+    BEMESSUNG["Bemessung"] -. "bemisst<br>[0..*]" .-> GRUNDSTUECK & GEBAEUDE & GESCHOSS & RAUM & BODENABDECKUNG & EINHEIT & BAUTEIL
+    ZERTIFIKAT["Zertifikat"] -. "zertifiziert<br>[0..*]" .-> GEBAEUDE & SYSTEM & KOMPONENTE
+     STANDORT:::uebergreifend
+     GRUNDSTUECK:::raeumlichHell
+     GEBAEUDE:::raeumlichHell
+     EIGENTUMSRECHT:::rechtlich
+     BODENABDECKUNG:::raeumlichHell
+     GESCHOSS:::raeumlichMittel
+     GEBAEUDEEINGANG:::raeumlichHell
+     EINHEIT:::raeumlichMittel
+     SYSTEM:::technisch
+     RAUM:::raeumlichDunkel
+     ZONE:::raeumlichDunkel
+     KOMPONENTE:::technisch
+     SENSOR:::technisch
+     SENSORMESSUNG:::messung
+     BAUTEIL:::konstruktiv
+     ADRESSE:::uebergreifend
+     KOORDINATEN:::uebergreifend
+     BEMESSUNG:::messung
+     ZERTIFIKAT:::uebergreifend
+    classDef uebergreifend fill:#E0E0E0,stroke:#666,stroke-width:2px
+    classDef rechtlich fill:#B3D9FF,stroke:#4682B4,stroke-width:2px
+    classDef raeumlichHell fill:#A8E6A8,stroke:#5D8A2E,stroke-width:2px
+    classDef raeumlichMittel fill:#7FCD7F,stroke:#5D8A2E,stroke-width:2px
+    classDef raeumlichDunkel fill:#5CB85C,stroke:#3E7E3E,stroke-width:2px,color:#FFF
+    classDef technisch fill:#FFD4A3,stroke:#D2691E,stroke-width:2px
+    classDef messung fill:#FFB3BA,stroke:#DC143C,stroke-width:2px
+    classDef konstruktiv fill:#D9CCFF,stroke:#6B5FB3,stroke-width:2px
+    linkStyle 26 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 27 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 28 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 29 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 30 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 31 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 32 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 33 stroke:#C5C5C5,stroke-width:2px,color:#888,fill:none
+    linkStyle 34 stroke:#000000

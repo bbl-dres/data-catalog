@@ -1,0 +1,45 @@
+---
+config:
+  layout: dagre
+title: Dokumentenmanagement (Vereinfachte Darstellung)
+---
+flowchart TB
+    REGISTRATURPLAN["Registraturplan"] -- "1..*" --> DOSSIER["Dossier"]
+    DOSSIER -- "1..*" --> DOKUMENT["Dokument"]
+    DOKUMENT -- "1..*" --> VERSION["Version"] & METADATENSATZ["Metadatensatz"]
+    DOKUMENT -- "1..1" --> DOKUMENTTYP["Dokumenttyp"]
+    WORKFLOW["Workflow"] -- "*..*" --> DOKUMENT
+    DOSSIER -- "0..*" --> SUBDOSSIER["Subdossier"]
+    SUBDOSSIER -- "1..*" --> DOKUMENT
+    ARCHIVGUT["Archivgut"] -- "*..*" --> DOKUMENT
+    DOKUMENT -. classified_by .-> KLASSIFIZIERUNG["Klassifizierung"]
+    DOKUMENT -. status .-> DOKUMENTSTATUS["Dokumentstatus"]
+    DOSSIER -. status .-> DOSSIERSTATUS["Dossierstatus"]
+    DOKUMENT -. linked_to .-> GEBAEUDE["Gebäude"] & PROJEKT["Projekt"] & SYSTEM["System"]
+    VERSION -. created_by .-> PERSON["Person"]
+    WORKFLOW -. assigned_to .-> PERSON
+    DOKUMENT -. retention_period .-> AUFBEWAHRUNGSFRIST["Aufbewahrungsfrist"]
+    ARCHIVGUT -. protected_until .-> SCHUTZFRIST["Schutzfrist"]
+     REGISTRATURPLAN:::sollte
+     DOSSIER:::muss
+     DOKUMENT:::muss
+     VERSION:::muss
+     METADATENSATZ:::sollte
+     DOKUMENTTYP:::sollte
+     WORKFLOW:::sollte
+     SUBDOSSIER:::muss
+     ARCHIVGUT:::muss
+     KLASSIFIZIERUNG:::attribut
+     DOKUMENTSTATUS:::attribut
+     DOSSIERSTATUS:::attribut
+     GEBAEUDE:::referenz
+     PROJEKT:::referenz
+     SYSTEM:::referenz
+     PERSON:::akteur
+     AUFBEWAHRUNGSFRIST:::attribut
+     SCHUTZFRIST:::attribut
+    classDef muss fill:#B8E986,stroke:#5D8A2E,stroke-width:3px
+    classDef sollte fill:#87CEEB,stroke:#4682B4,stroke-width:2px
+    classDef attribut fill:#D3D3D3,stroke:#696969,stroke-width:1px
+    classDef referenz fill:#E0FFFF,stroke:#5F9EA0,stroke-width:1px
+    classDef akteur fill:#FFDAB9,stroke:#FF8C00,stroke-width:1px

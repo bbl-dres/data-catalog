@@ -1,0 +1,20 @@
+{
+  "captured": "2026-09-05",
+  "urls": {
+    "DM.01-AV-CH_LV95_24d_ili1.ili": "https://models.geo.admin.ch/V_D/DM.01-AV-CH_LV95_24d_ili1.ili",
+    "av-wfs-schema.xsd": "https://geodienste.ch/db/av_0/deu?REQUEST=DescribeFeatureType&SERVICE=WFS&VERSION=1.1.0",
+    "av-wfs-capabilities.xml": "https://geodienste.ch/db/av_0/deu?REQUEST=GetCapabilities&SERVICE=WFS&VERSION=2.0.0",
+    "av-wms-capabilities.xml": "https://geodienste.ch/db/av_0/deu?REQUEST=GetCapabilities&SERVICE=WMS",
+    "av-collections.json": "https://geodienste.ch/db/av_0/deu/ogcapi/collections?f=json",
+    "model-record.json": "https://models.geo.admin.ch/ilimodels.xml",
+    "geoadmin-metadata.json": "https://api3.geo.admin.ch/rest/services/ech/MapServer?lang=de",
+    "ch.kantone.cadastralwebmap-farbe.json": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.kantone.cadastralwebmap-farbe?lang=de",
+    "ch.swisstopo-vd.amtliche-vermessung.json": "https://api3.geo.admin.ch/rest/services/ech/MapServer/ch.swisstopo-vd.amtliche-vermessung?lang=de"
+  },
+  "derivedFiles": [
+    "model-record.json",
+    "geoadmin-metadata.json",
+    "service-checks.json"
+  ],
+  "note": "The model record and GeoAdmin metadata retain only the relevant entries from their source indexes. Service checks retain response summaries and hashes, not parcel geometries."
+}

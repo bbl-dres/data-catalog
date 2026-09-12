@@ -1,0 +1,138 @@
+:root {
+  /* Lock the page to a light theme. Without this declaration Chrome
+     Android's auto dark mode and iOS Safari's form-control darkening
+     invert parts of the UI on mobile devices set to system dark mode —
+     producing a half-light, half-dark canvas. */
+  color-scheme: light;
+
+  --color-bg-page: #F5F5F4;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-surface-hover: #F7F7F6;
+  --color-bg-accent: #E8EEF6;
+  --color-bg-accent-strong: #1F4E8A;
+  --color-bg-accent-strong-rgb: 31, 78, 138;
+  /* Darker shade of --color-bg-accent-strong used by primary-button hovers
+     across the toolbar, floating zoom toolbar, and sign-in button. Was
+     repeated as a literal #183C6B in three rules — tokenised so a brand
+     accent change only edits one place. */
+  --color-bg-accent-strong-hover: #183C6B;
+  --color-bg-grid: #ECECEA;
+  --color-bg-grid-dot: #D8D8D5;
+
+  --color-border-subtle: #EFEFED;
+  --color-border-default: #D8D8D5;
+  --color-border-strong: #A3A39E;
+  --color-border-accent: #1F4E8A;
+
+  --color-text-primary: #2C2C29;
+  --color-text-secondary: #5F5F5A;
+  --color-text-placeholder: #767672;
+  --color-text-link: #1F4E8A;
+  --color-text-on-accent: #FFFFFF;
+
+  --color-edge: #8A8A85;
+  --color-edge-active: #1F4E8A;
+
+  --color-focus-ring: #1F4E8A;
+
+  --color-type-table: #1F4E8A;
+  --color-type-table-bg: #E8EEF6;
+  --color-type-view: #157A42;
+  --color-type-view-bg: #EDFAF3;
+  --color-type-api: #A16800;
+  --color-type-api-bg: #FEF7E8;
+  --color-type-file: #5F5F5A;
+  --color-type-file-bg: #EFEFED;
+  --color-type-codelist: #0F766E;
+  --color-type-codelist-bg: #CCFBF1;
+
+  /* Saturated card tints — used at low canvas zoom (LOD = far / low) where
+     the regular -bg shades are too pale to read against the page background.
+     Each tint hits ≥3:1 against `--color-bg-page` (the WCAG UI-element
+     minimum) and ≥1.5:1 against its neighbours so the type identification
+     remains legible — including for users with deuteranopia / protanopia,
+     where the previous lighter tints collapsed into near-identical greys. */
+  --color-type-table-tint:    #8FA8C9;
+  --color-type-view-tint:     #82BEA0;
+  --color-type-api-tint:      #D9B560;
+  --color-type-file-tint:     #A8A8A2;
+  --color-type-codelist-tint: #5FC2B0;
+
+  /* Key-badge palette. --color-fk shares its hex with --color-warning and
+     --color-type-api by design — three uses of the same amber, each in a
+     different context (column-row badge / unsaved-changes indicator /
+     API node tint). On any single screen they're disambiguated by
+     placement and adjacent iconography (e.g. the unsaved-indicator's
+     leading dot pseudo-element); the shared hex keeps the brand palette
+     compact without introducing a near-duplicate amber. */
+  --color-pk: #1F4E8A;
+  --color-fk: #A16800;
+  --color-uk: #6B46C1;
+  --color-uk-bg: #F3EDFA;       /* lighter UK shade — used by .api-method.patch */
+
+  /* Modal backdrop — used by both confirmDialog overlay and any future
+     full-screen blocking overlay. Single token avoids the two existing
+     literals drifting apart. */
+  --color-overlay-backdrop: rgba(17, 24, 39, 0.32);
+
+  /* Translucent surface used for the big system-overlay labels at low
+     zoom — the labels need to "stencil" through the canvas dot grid. */
+  --color-bg-surface-translucent: rgba(255, 255, 255, 0.88);
+
+  --color-error: #B02A1F;
+  --color-error-bg: #FEF0EE;
+  --color-error-hover: #8E1F16;
+  --color-success: #15803D;
+  --color-success-bg: #DCFCE7;
+  --color-warning: #A16800;
+  --color-warning-bg: #FEF7E8;
+
+  /* Swiss Federal red — used as a brand accent (logo tile, footer mark)
+     to family-bind prototype-canvas to the rest of the data-catalog.
+     Also serves as the selection / focus colour in the Graph view, where
+     entity circles are filled with --color-type-table (same hex as
+     --color-bg-accent-strong) — the blue selection halo would be
+     invisible against the same-blue fill, so Graph swaps to red. */
+  --color-brand-red:     #E53940;
+  --color-brand-red-rgb: 229, 57, 64;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  --text-display: 22px;
+  --text-heading-l: 18px;
+  --text-heading-m: 16px;
+  --text-heading-s: 14px;
+  /* Body bumped from 14 → 15 px so long German compounds
+     ("PortfolioAndAssetManagement", "objektnummer_extern") read without
+     hyphenation stress. Mobile inputs already lifted to 16 px in styles.css
+     to dodge iOS auto-zoom; desktop now meets the 15 px ergonomic floor. */
+  --text-body: 15px;
+  --text-small: 12px;
+  --text-label: 11px;
+  --text-mono: 13px;
+  --text-mono-sm: 12px;
+  --text-mono-xs: 10px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --shadow-header: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-popover: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --shadow-toolbar: 0 1px 4px rgba(0, 0, 0, 0.08);
+
+  --header-height: 56px;
+  --toolbar-height: 48px;
+  --footer-height: 40px;
+}
