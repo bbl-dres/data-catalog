@@ -1,6 +1,8 @@
 # Catalog data model
 
-**Model reference · reviewed 12 September 2026.** This document defines the catalog's meaning, entities, attributes and editorial rules, checked against the repository's seven SQL migrations and generated API contract. PostgreSQL mappings, application coverage and migration are maintained in the [implementation guide](data-model-implementation.md). The latest editing/REST migrations and Edge Function still require [hosted activation](api.md#activation); this review does not certify a deployed database or the factual completeness of its catalog entries.
+**Canonical specification · review baseline: 12 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
+
+**Review status:** the repository schema has been reconciled with this specification; your review of its business sufficiency is still pending. All 19 public tables and 472 columns are accounted for. Deployment and the factual completeness of catalog entries must be verified separately; neither is certified by this document.
 
 ## Vision and purpose
 
@@ -16,11 +18,66 @@ The scope includes reusable quality requirements, documented lineage, controlled
 |---|---|
 | What does the catalog describe? | [Conceptual model](#conceptual-model) and [entity overview](#entity-overview) |
 | What are the exact attributes and relationships? | [Conventions](#conventions), [entity definitions](#entity-definitions) and [owned value types](#reusable-value-types) |
+| What should I review before launch? | [Review checklist and known gaps](#review-before-launch) |
+| Is every stored field and key accounted for? | [Schema baseline and mapping](#physical-schema-and-constraints), [ER diagram](#physical-er-review-diagram) and [key constraints](#key-and-constraint-review) |
 | What should editors know before using it? | [Editing, archiving and history](#editing-archiving-and-history) |
 | How does it align with standards? | [Standards alignment](#standards-alignment) |
-| How is it stored, displayed or migrated? | [Implementation guide](data-model-implementation.md) |
+| How do the app, API and migration implement it? | [Implementation guide](data-model-implementation.md) |
 
-Each entity dictionary is complete. Keep conceptual changes here and implementation-specific decisions in the companion guide; neither document should redefine the other's rules.
+Each entity dictionary lists its complete canonical attributes. Review one entity at a time, then its shared conventions, owned values and cross-record constraints. A field being documented and implemented does not establish that the model contains every business concept you need.
+
+### Authority and change control
+
+Change model meaning, fields, cardinalities, controlled values and integrity rules here first. Implement an accepted change through a new migration, corresponding API/app changes and verification. Existing applied migrations remain historical records; do not edit them to conceal a model change.
+
+| Artifact | Role |
+|---|---|
+| This document | Canonical model and schema contract, including explicitly labelled review gaps and deferred proposals. |
+| [Implementation guide](data-model-implementation.md) | App coverage, storage implementation, write/read behavior, migration and verification procedures. It must follow this model. |
+| [SQL migrations](../supabase/migrations/) and [generated OpenAPI](../data/swagger.json) | Evidence of the implemented repository schema and wire format. A mismatch is a documented implementation gap or a model change to review, not an automatic redefinition of the model. |
+| [Business-object proposal](business-object-attribute-proposal.md), source captures and wireframes | Content/design evidence. They do not add catalog entities or fields until a model change is recorded here. |
+
+## Review before launch
+
+### Schema review checklist
+
+The checks below are for your review of the specification. They are intentionally open; automated schema reconciliation does not approve these decisions.
+
+- [ ] **Scope:** the [16 core entities](#entity-overview) cover the required catalog metadata. Operational building/parcel records, source observations and execution results remain outside this schema.
+- [ ] **Attributes:** each [entity dictionary](#entity-definitions) has the required facts, formats, optionality and controlled values; unknown values and four-language completeness rules are acceptable.
+- [ ] **Identity and ownership:** required parents, scoped uniqueness, hierarchical codes/domains and retained identifiers match the intended lifecycle. Use the [key review](#key-and-constraint-review).
+- [ ] **Business versus source constraints:** [BusinessAttribute](#businessattribute), [DataField](#datafield), [ProductAttribute](#productattribute) and [QualityRequirement](#qualityrequirement) keep their distinct meanings. The five rule types and prose-only custom requirements are sufficient for initial use.
+- [ ] **Relationships:** the [nine allowed signatures](#relationship-types), verification, coverage and endpoint scope cover the associations needed at launch. Business-instance cardinalities and arbitrary new relationship types are not implied by these signatures.
+- [ ] **Governance and visibility:** responsibility, authority, inheritance and sensitivity have the right scope. [Public metadata and history](#editing-archiving-and-history) may include names and comments; internal classification does not make those records private.
+- [ ] **Retention and audit:** independent archive/status flags, retained references and the current audit limitations below meet the review and recovery needs.
+- [ ] **Content readiness:** review the actual object/attribute definitions, vocabularies, source inventories and candidate mappings separately. A structurally valid catalog entry is not necessarily factually complete or approved.
+
+### Known gaps and deferred work
+
+These items distinguish the model contract from current app/tooling coverage. Decide which gaps matter for launch before treating the review as complete; this document does not silently waive a requirement.
+
+| Area | Current state / review consequence |
+|---|---|
+| Audit completeness | REST quality changes retain full assignment IDs. The browser Required shortcut records a boolean and may create a shared rule without a separate creation event. Endpoint history targets its service, with the endpoint row in the snapshot; complete owner-aggregate snapshots are not implemented. Review whether this is sufficient before editing begins. |
+| Browser field coverage | Forms cover a subset of the schema. Actor/rule management, full quality assignments, relationship/lineage editing and service verification changes use REST. The [coverage matrix](data-model-implementation.md#prototype-coverage) identifies available editors; stored support does not promise a dedicated screen. |
+| Review evidence | The database checks shapes, tokens and selected evidence requirements. It does not verify that a source statement is true or that an endpoint check actually occurred. Generic change history is not a test report; review evidence must identify its scope. |
+| Derived relationship views | The complete confirmation-aware, multi-domain read model remains a target. The current projection may show a candidate realization and reduce a table's mappings to one. Do not treat that display as proof of complete or confirmed coverage. |
+| Additional tooling | General batch/source-refresh merging, automatic impact review, quality execution, lineage ingestion/visualization and standards export remain later work. Their absence does not remove QualityRequirement or LineageRelation from the model. |
+| Publication extension | Catalog, Dataset and Distribution are [deferred proposals](#optional-publication-extension), outside the 16-entity baseline. Introduce them through an explicit model decision when an exchange profile requires them. |
+| Hosted activation and recovery | This audit executes the repository schema locally. Before user access, verify the deployed migrations, API function, disabled public signup and intended permissions using the [database](../supabase/README.md) and [API activation](api.md#activation) guides, and validate a current backup/recovery path. Hosted state was not checked in this review. |
+
+### Maintaining this baseline
+
+After an accepted model change, reconcile every SQL column with a dictionary attribute or explicit collection/reference expansion; review all FK targets, enum tokens, conditional requirements and owned JSON shapes. Update the ER diagram, schema inventory and implementation coverage together. Record the new review date and outstanding gaps here; retain source evidence and applied migrations.
+
+Using the [local SQL test setup](../supabase/README.md#validation), run these commands from the repository root:
+
+```powershell
+node prototype-oblique/tests/catalog-schema.cjs
+node prototype-oblique/supabase/generate-openapi.cjs --check
+```
+
+The first checks every current column against the dictionaries, nullability and table inventory before exercising the original schema's constraints. The second detects drift in the generated API contract; regenerate OpenAPI when migrations intentionally change it. Run the affected editing/API suites for any corresponding behavior change. Neither command replaces review of meaning, evidence, enum definitions or the ER diagram.
 
 ## Conceptual model
 
@@ -30,7 +87,7 @@ Relationship records explicitly documented associations, correspondences and ser
 
 ### Relationship overview
 
-This overview shows the main conceptual connections. The dictionaries define complete cardinalities and permitted relationship endpoints. The implementation guide contains the single detailed [physical ER review diagram](data-model-implementation.md#physical-er-review-diagram).
+This overview shows the main conceptual connections. The dictionaries define complete cardinalities and permitted relationship endpoints. The detailed [physical ER review diagram](#physical-er-review-diagram) below shows the repository schema.
 
 ```mermaid
 flowchart LR
@@ -91,7 +148,7 @@ Documentation, entity names, attribute bases and controlled application tokens a
 
 | Convention | Meaning |
 |---|---|
-| `1` | Exactly one value is required. |
+| `1` | Exactly one persisted value is required; the server may supply a documented default or maintained value on creation. |
 | `0..1` | Optional value; absence is unknown or undocumented unless stated otherwise. |
 | `0..*` / `1..*` | Zero or more / one or more values. Reference collections contain no duplicates. |
 | Unknown values | Do not substitute false, zero, blank text or invented dates for missing information. |
@@ -113,29 +170,27 @@ Each dictionary is complete. Alias (EN) is the English human-readable label, not
 | FK (composite) | Reference constrained by its owner, such as a parent code in the same list. |
 | — | No identity or reference role. |
 
-The implementation guide defines [physical storage](data-model-implementation.md#postgresql-persistence), [prototype coverage](data-model-implementation.md#prototype-coverage) and [current presentation](data-model-implementation.md#current-presentation-mapping). Those concerns do not change the conceptual attributes.
+The [physical schema mapping](#physical-schema-and-constraints) belongs to this specification. The companion guide describes [storage implementation](data-model-implementation.md#postgresql-persistence), [prototype coverage](data-model-implementation.md#prototype-coverage) and [current presentation](data-model-implementation.md#current-presentation-mapping).
 
 ### Primitive formats
 
-| Format | Meaning |
+| Format | Representation and constraints |
 |---|---|
-| UUID | Immutable internal identity, independent of labels or source identifiers. |
-| Identifier | Non-empty, case-sensitive catalog identifier without leading/trailing whitespace; never reused for another record. |
-| Text | Non-empty plain Unicode text when present; preserve meaningful punctuation and line breaks. |
-| Boolean | True or false; absence remains unknown. |
-| Integer | Whole number, subject to the attribute's bounds. |
-| Decimal | Exact finite decimal value. |
-| Date | Calendar date without an artificial time of day. |
-| Timestamp | Exact instant with a defined timezone/UTC offset; a date alone does not establish one. |
-| LanguageCode | One of de, it, fr or en. |
-| LanguageTag | BCP 47 language tag for source/destination content, which can differ from the supported translations. |
-| HttpUrl | Absolute HTTP or HTTPS URL without embedded credentials. |
-| Enum | One documented application token; display labels may be translated. |
-| Object | Owned structured value with a documented shape. |
-| <Format>[] | Collection of values of that format; element constraints apply to every member. |
-| RecordReference | Existing record identified by both entity kind and internal UUID. |
-
-Serialization and database limits are defined in the [implementation guide](data-model-implementation.md#primitive-formats).
+| `UUID` | Internal database identifier, generated once on creation and immutable; not a source identifier or translated label. |
+| `Identifier` | Non-empty Unicode string; no leading/trailing whitespace. Case-sensitive and never reused for another record. |
+| `Text` | Non-empty, not whitespace-only Unicode text when present. Reject U+0000 and unpaired surrogates at the UTF8 boundary. Preserve meaningful source punctuation and line breaks. Escape at rendering; no embedded HTML. |
+| `Boolean` | `true` or `false`; absence remains a third, unknown state. |
+| `Integer` | Whole JSON number in the safe range -9007199254740991 through 9007199254740991, subject to tighter per-attribute bounds. Digit-only source identifiers remain strings. |
+| `Decimal` | Exact finite decimal. The precision-preserving input/owned-JSONB representation is a base-10 string, for example `"0"` or `"123.45"`; scalar SQL storage uses numeric. See [constraint and serialization contract](#constraint-and-serialization-contract). |
+| `Date` | Calendar date in `YYYY-MM-DD` form. No artificial time of day. |
+| `Timestamp` | [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) date-time with `Z` or an explicit UTC offset. Date-only evidence does not establish an exact timestamp. |
+| `LanguageCode` | Exactly `de`, `it`, `fr` or `en`; supported content/UI languages and suffixes. |
+| `LanguageTag` | Valid [BCP 47 tag](https://www.w3.org/International/articles/language-tags/) for source, destination or dataset-content language, which may differ from the four supported translation languages. |
+| `HttpUrl` | Absolute HTTP or HTTPS URL without embedded credentials. Validate schemes before rendering links. |
+| `Enum` | Documented English application token with a translated UI label. Official source codes are not translated. |
+| `Object` | JSON object constrained by its documented owned shape; not an arbitrary replacement for entity attributes. |
+| `<Format>[]` | Array of values of the stated format; member constraints also apply to every element. |
+| `RecordReference` | Conceptual kind plus UUID; REST exposes concrete UUID FK columns. |
 
 ### Internationalisation
 
@@ -277,7 +332,7 @@ Derived `kind = businessAttribute`. The table lists its complete attributes and 
 | `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
 | `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Non-negative display order within the owner; defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
 | `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
 | `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
 | `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -427,7 +482,7 @@ Derived `kind = codeValue`. The table lists its complete attributes and identity
 | `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
 | `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Non-negative display order within the owner; defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
 | `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
 | `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
 | `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -448,7 +503,7 @@ Derived `kind = codeValue`. The table lists its complete attributes and identity
 | `shortName_en` | Short name (EN) | — | Text | 0..1 | English. Official abbreviations where available. |
 | `parentCodeValueId` | Parent code value | FK (composite) | UUID → CodeValue | 0..1 | Broader member in the same vocabulary; enforce the composite FK with codeListId. No self-reference or cycles. Do not invent selectable parent codes from source headings. |
 
-If a code changes meaning while existing references must retain its old definition, use a separately identified CodeList. Do not silently relabel historical references. Status is inherited from CodeList; version and edit history record changes without validity periods.
+If a code changes meaning while existing references must retain its old definition, use a separately identified CodeList. Do not silently relabel historical references. Status and catalog definition version belong to CodeList; CodeValue has its own edit revision and history, without a separate version field or validity period.
 
 Derived context: status, authority and domain from CodeList. CodeList/CodeValue have no sensitivity classification or personal-data flag, including inherited values.
 
@@ -463,7 +518,7 @@ Derived `kind = dataField`. The table lists its complete attributes and identity
 | `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
 | `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Non-negative display order within the owner; defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
 | `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
 | `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
 | `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -712,7 +767,7 @@ Derived `kind = productAttribute`. The table lists its complete attributes and i
 | `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
 | `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Non-negative display order within the owner; defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
 | `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
 | `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
 | `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -1004,7 +1059,7 @@ An owned technical interface record describing documented capabilities. Its sepa
 | `modifiedOn` | Last modified | — | Date | 0..1 | Catalog modification date, not source freshness. |
 | `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the app/REST edit; may be unknown for older records. |
 | `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the endpoint from the normal endpoint list without deleting its identity or references. |
-| `sortOrder` | Row order | — | Integer | 1 | Non-negative display order within the service, default 0. Ties are permitted. |
+| `sortOrder` | Row order | — | Integer | 1 | Display order within the service, from 0 through 2147483647 (SQL integer); default 0. Ties are permitted. |
 | `url` | URL | — | HttpUrl | 0..1 | Documented base or operation URL; unknown hosts are not invented. |
 | `relativePath` | Relative path | — | Text | 0..1 | Documented path where the base is unavailable or separately specified. |
 | `protocol` | Protocol | — | Text | 0..1 | Official protocol name/version, such as `SOAP`, `REST`, `WMS`, `WFS`. |
@@ -1019,6 +1074,493 @@ An owned technical interface record describing documented capabilities. Its sepa
 An endpoint belongs to one DataService and has a stable identifier within that service. At least one of URL, relative path or operation name is known. Supporting links belong to the DataService; their title or the check summary identifies the operation. Referenced endpoints remain available for their assertion history.
 
 Request/response inventories are not automatically physical DataFields.
+
+## Physical schema and constraints
+
+### Reviewed schema baseline
+
+The seven migrations in [supabase/migrations](../supabase/migrations/), ending with `20260912010000_catalog_rest_crud.sql`, define **19 public `catalog` tables, 472 columns and 83 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 472 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 12 September 2026.
+
+These counts describe the repository schema. They do not establish which migrations are deployed, how many catalog entries exist, or whether the source inventories are complete. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
+
+| Dictionary / collection | SQL table | Columns |
+|---|---|---:|
+| [Actor](#actor) | `actor` | 18 |
+| [BusinessAttribute](#businessattribute) | `business_attribute` | 32 |
+| BusinessAttribute.qualityRequirementIds | `business_attribute_quality_requirement` | 2 |
+| [BusinessObject](#businessobject) | `business_object` | 28 |
+| [ChangeEvent](#changeevent) | `change_event` | 33 |
+| [CodeList](#codelist) | `code_list` | 24 |
+| [CodeValue](#codevalue) | `code_value` | 25 |
+| [DataField](#datafield) | `data_field` | 39 |
+| DataField.qualityRequirementIds | `data_field_quality_requirement` | 2 |
+| [DataProduct](#dataproduct) | `data_product` | 34 |
+| [DataService](#dataservice) | `data_service` | 35 |
+| [DataTable](#datatable) | `data_table` | 32 |
+| [Domain](#domain) | `domain` | 25 |
+| [LineageRelation](#lineagerelation) | `lineage_relation` | 18 |
+| [ProductAttribute](#productattribute) | `product_attribute` | 23 |
+| [QualityRequirement](#qualityrequirement) | `quality_requirement` | 25 |
+| [Relationship](#relationship) | `relationship` | 29 |
+| [ServiceEndpoint](#serviceendpoint) | `service_endpoint` | 19 |
+| [System](#system) | `system` | 29 |
+| **Total** | **19 tables** | **472** |
+
+### Dictionary-to-storage mapping
+
+A dictionary describes persisted values, not the required keys of a create request. The server supplies defaults and maintained fields where documented. Core UUIDs and `rowVersion` remain required on persisted records even when a caller does not submit them on creation.
+
+- Ordinary attributes map to one snake_case column: `businessObjectId` becomes `business_object_id`, and `shortName_fr` becomes `short_name_fr`. Enum values retain their documented case. SQL FK columns contain UUIDs, not public identifiers or display labels.
+- OrganisationDetails and ValueSpecification are validated JSONB objects. DocumentationLink collections are JSONB arrays. Their nested keys stay exactly as written in their dictionaries; they do not become snake_case or additional SQL columns. Unknown optional nested keys are omitted; unknown top-level optional values use SQL NULL.
+- Ordinary `0..*` collections are non-null empty arrays when no members are recorded. Cardinality counts members, not SQL nullability. DataField.keyRoles is the explicit exception: SQL NULL means unknown, `[]` means reviewed with no key role. Null array members and duplicate members are rejected; documentation links are unique by URL/purpose.
+- `DataService.endpoints` is the inverse collection of ServiceEndpoint rows selected by `data_service_id`, not a column or a second copy of endpoint JSON. Owned rows retain their own UUIDs, revisions, ordering and archive flags.
+- `qualityRequirementIds` on BusinessAttribute/DataField is the collection stored in the corresponding junction, not a SQL array column. The REST write/read-result collection is a projection over that store.
+- Relationship.source/target, LineageRelation.source/target and ChangeEvent.record expand into concrete nullable FK columns. Exactly one FK in each required group must be set; each permitted kind below creates a column named `<group>_<snake_case_kind>_id`. A named FK such as `sourceEndpointId` stays a separate column with its own scope checks.
+
+| Conceptual reference group | Permitted concrete FK targets |
+|---|---|
+| Relationship.source | BusinessObject, DataProduct, DataTable, DataField, DataService |
+| Relationship.target | BusinessObject, BusinessAttribute, DataTable, DataField, DataService |
+| LineageRelation.source / target | DataTable, DataField; both ends must be the same kind |
+| ChangeEvent.record | All 15 [RecordReference kinds](#recordreference); never ChangeEvent or ServiceEndpoint |
+
+The [relationship signatures](#relationship-types) further restrict combinations; the table above does not permit arbitrary pairs. Endpoint history targets the owning DataService and identifies the endpoint in the snapshot. `ChangeEvent.actorId` identifies an optional recorded editor; `record_actor_id` instead means that an Actor record was edited.
+
+### Quality-assignment junctions
+
+Both tables implement reference collections rather than additional catalog entities. Each row consists of exactly the two required UUIDs below; together they are the primary key. There is no assignment ID, revision, status, threshold or per-assignment override. Assignment changes through app/REST commands revise and audit their attribute/field owner, with the [browser Required limitation](#known-gaps-and-deferred-work) noted above. Removing an assignment unlinks the pair while retaining the shared rule and the recorded history; it is not archival of the rule.
+
+| SQL table | Column | Key / required reference |
+|---|---|---|
+| `business_attribute_quality_requirement` | `business_attribute_id` | PK member, FK to BusinessAttribute.id, required |
+| `business_attribute_quality_requirement` | `quality_requirement_id` | PK member, FK to QualityRequirement.id, required |
+| `data_field_quality_requirement` | `data_field_id` | PK member, FK to DataField.id, required |
+| `data_field_quality_requirement` | `quality_requirement_id` | PK member, FK to QualityRequirement.id, required |
+
+### Physical ER review diagram
+
+The diagram includes all 19 public tables and every foreign-key column. Lines emphasize structural ownership and selected connections; role and typed-reference columns identify their targets inside the tables. Two quality junctions and the owned service_endpoint table implement collections without adding catalog entities. Mutable records also have `is_archived` and `edited_at`; the five owned row tables have `sort_order`. These repeated fields are omitted from the diagram but included in the [complete dictionaries](#entity-definitions). Use the dictionaries and reference-expansion rules above for completeness; the diagram intentionally omits repeated non-key attributes.
+
+<details>
+<summary>Expand the ER diagram — 19 tables, including owned and junction tables</summary>
+
+```mermaid
+erDiagram
+    direction TB
+    actor {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text actor_type
+    }
+    business_attribute {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid business_object_id FK, UK "business_object.id; U1"
+        text semantic_name UK "U1"
+        jsonb value_specification "NULL"
+        boolean is_identifier "NULL"
+        uuid code_list_id FK "NULL; code_list.id"
+    }
+    business_object {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid domain_id FK "domain.id"
+    }
+    change_event {
+        uuid id PK
+        text identifier UK
+        uuid record_actor_id FK "NULL; actor.id"
+        uuid record_business_attribute_id FK "NULL; business_attribute.id"
+        uuid record_business_object_id FK "NULL; business_object.id"
+        uuid record_code_list_id FK "NULL; code_list.id"
+        uuid record_code_value_id FK "NULL; code_value.id"
+        uuid record_data_field_id FK "NULL; data_field.id"
+        uuid record_data_product_id FK "NULL; data_product.id"
+        uuid record_data_service_id FK "NULL; data_service.id"
+        uuid record_data_table_id FK "NULL; data_table.id"
+        uuid record_domain_id FK "NULL; domain.id"
+        uuid record_lineage_relation_id FK "NULL; lineage_relation.id"
+        uuid record_relationship_id FK "NULL; relationship.id"
+        uuid record_product_attribute_id FK "NULL; product_attribute.id"
+        uuid record_quality_requirement_id FK "NULL; quality_requirement.id"
+        uuid record_system_id FK "NULL; system.id"
+        date occurred_on
+        timestamptz occurred_at "NULL"
+        text action
+        uuid actor_id FK "NULL; actor.id"
+        jsonb before "NULL"
+        jsonb after "NULL"
+        text import_id "NULL"
+    }
+    code_list {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        uuid domain_id FK "NULL; domain.id"
+        uuid business_object_id FK "NULL; business_object.id"
+        jsonb authority_organisation "NULL"
+    }
+    code_value {
+        uuid id PK, UK "U2"
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        uuid code_list_id FK, UK "code_list.id; U1/U2"
+        text code UK "U1"
+        uuid parent_code_value_id FK "NULL; code_value.id"
+    }
+    data_field {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid data_custodian_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid data_table_id FK "data_table.id"
+        text technical_name
+        text technical_name_kind
+        text source_path "NULL"
+        text source_data_type "NULL"
+        text data_type_scope "NULL"
+        boolean is_required "NULL"
+        boolean is_nullable "NULL"
+        text[] key_roles "NULL; source keys"
+        uuid code_list_id FK "NULL; code_list.id"
+    }
+    data_product {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid domain_id FK "NULL; domain.id"
+        text access_mode "NULL"
+        text access_notes "NULL; one authored value"
+        text license_uri "NULL"
+        text license_notes "NULL; one authored value"
+    }
+    data_service {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid data_custodian_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid system_id FK "NULL; system.id"
+        uuid domain_id FK "NULL; domain.id"
+        text technical_name "NULL"
+        text service_version "NULL"
+        text purpose "NULL"
+        text access_mode "NULL"
+        text access_notes "NULL; one authored value"
+    }
+    data_table {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid data_custodian_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid system_id FK "system.id"
+        uuid domain_id FK "NULL; domain.id"
+        text technical_name "NULL"
+        text database_name "NULL"
+        text schema_name "NULL"
+    }
+    domain {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        uuid parent_domain_id FK "NULL; domain.id"
+    }
+    lineage_relation {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        uuid source_data_table_id FK "NULL; data_table.id"
+        uuid source_data_field_id FK "NULL; data_field.id"
+        uuid target_data_table_id FK "NULL; data_table.id"
+        uuid target_data_field_id FK "NULL; data_field.id"
+        text operation
+        text transformation_notes_de "NULL; also _it _fr _en"
+        text verification_status
+        jsonb documentation_links "supporting links"
+    }
+    product_attribute {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        uuid data_product_id FK, UK "data_product.id; U1"
+        text semantic_name UK "U1"
+        uuid business_attribute_id FK "NULL; business_attribute.id"
+        jsonb value_specification "NULL"
+        boolean is_required "NULL"
+    }
+    quality_requirement {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid contact_actor_id FK "NULL; actor.id"
+        text rule_type
+        numeric comparison_value "NULL; greaterThan only"
+        text dimension
+    }
+    relationship {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        uuid source_business_object_id FK "NULL; business_object.id"
+        uuid source_data_product_id FK "NULL; data_product.id"
+        uuid source_data_table_id FK "NULL; data_table.id"
+        uuid source_data_field_id FK "NULL; data_field.id"
+        uuid source_data_service_id FK "NULL; data_service.id"
+        uuid target_business_object_id FK "NULL; business_object.id"
+        uuid target_business_attribute_id FK "NULL; business_attribute.id"
+        uuid target_data_table_id FK "NULL; data_table.id"
+        uuid target_data_field_id FK "NULL; data_field.id"
+        uuid target_data_service_id FK "NULL; data_service.id"
+        text relationship_type
+        text comment "NULL"
+        uuid source_endpoint_id FK "NULL; service_endpoint.id"
+        text verification_status
+        text coverage "NULL"
+        text support_status "NULL"
+        text assessed_service_version "NULL"
+        text rule_notes_de "NULL; also _it _fr _en"
+        jsonb documentation_links "supporting links"
+    }
+    system {
+        uuid id PK
+        text identifier UK
+        bigint row_version
+        text name_de "NULL"
+        text name_it "NULL"
+        text name_fr "NULL"
+        text name_en "NULL"
+        text description_de "NULL; also _it _fr _en"
+        text comment "NULL"
+        text status
+        text version "NULL; catalog definition"
+        date version_date "NULL; date of version"
+        jsonb responsible_organisation "NULL; inline; no FK"
+        uuid data_owner_id FK "NULL; actor.id"
+        uuid data_steward_id FK "NULL; actor.id"
+        uuid data_custodian_id FK "NULL; actor.id"
+        uuid contact_actor_id FK "NULL; actor.id"
+        text system_type "NULL"
+        text technology "NULL"
+    }
+    service_endpoint {
+        uuid id PK, UK "U2"
+        uuid data_service_id FK, UK "data_service.id; U1/U2"
+        text identifier UK "U1"
+        text url "NULL"
+        text relative_path "NULL"
+        text protocol "NULL"
+        text http_method "NULL"
+        text operation_name "NULL"
+        text environment "NULL"
+        text verification_status
+    }
+    business_attribute_quality_requirement {
+        uuid business_attribute_id PK, FK "business_attribute.id"
+        uuid quality_requirement_id PK, FK "quality_requirement.id"
+    }
+    data_field_quality_requirement {
+        uuid data_field_id PK, FK "data_field.id"
+        uuid quality_requirement_id PK, FK "quality_requirement.id"
+    }
+
+    domain o|..o{ domain : parent
+    domain ||..o{ business_object : groups
+    domain o|..o{ data_table : classifies
+    domain o|..o{ code_list : classifies
+    domain o|..o{ data_product : classifies
+    domain o|..o{ data_service : classifies
+    business_object ||..o{ business_attribute : defines
+    system ||..o{ data_table : contains
+    system o|..o{ data_service : provides
+    data_table ||..o{ data_field : describes
+    code_list ||..o{ code_value : contains
+    code_value o|..o{ code_value : parent_in_same_list
+    code_list o|..o{ business_attribute : constrains
+    code_list o|..o{ data_field : constrains
+    data_product ||..o{ product_attribute : promises
+    business_attribute o|..o{ product_attribute : reuses
+    data_service ||..o{ service_endpoint : owns
+    service_endpoint o|..o{ relationship : scopes_service_source
+    data_product o|..o{ relationship : source_product
+    business_object o|..o{ relationship : target_concept
+    actor o|..o{ change_event : edited_by
+    business_attribute ||--o{ business_attribute_quality_requirement : assigns
+    quality_requirement ||--o{ business_attribute_quality_requirement : referenced_by
+    data_field ||--o{ data_field_quality_requirement : assigns
+    quality_requirement ||--o{ data_field_quality_requirement : referenced_by
+```
+
+</details>
+
+### Key and constraint review
+
+| Structure | Required constraint |
+|---|---|
+| Version/date pair | version_date requires version. New or changed versions require a date through the write contract; unknown legacy version dates remain allowed. Neither modifiedOn nor an import time substitutes for the version date. |
+| Core identity | Each core table has id as UUID PK and identifier as a separate unique public identity. Every mutable record has row_version; ChangeEvent is append-only. |
+| BusinessAttribute U1 | Unique (business_object_id, semantic_name). |
+| ProductAttribute U1 | Unique (data_product_id, semantic_name). |
+| CodeValue U1 / U2 | Unique (code_list_id, code) and (code_list_id, id). Composite parent FK (code_list_id, parent_code_value_id) references the same CodeList using MATCH SIMPLE, allowing a null parent. Retain the ordinary code_list_id FK for roots. |
+| ServiceEndpoint U1 / U2 | Unique (data_service_id, identifier) and (data_service_id, id). Relationship's (source_data_service_id, source_endpoint_id) FK uses MATCH SIMPLE; separate signature checks enforce required/allowed endpoint scope. Keep the standalone DataService FK when the endpoint is absent. |
+| Two quality junctions | Each two-column PK consists of two FKs. No assignment identifier or duplicate writable JSONB reference array. |
+| Relationship | Exactly one source and one target; allowed signatures, coverage and endpoint scope follow its dictionary. One assertion per type, endpoints and optional endpoint scope, enforced with signature-specific uniqueness including absent scope. |
+| LineageRelation | Exactly one source and target of the same technical kind, with distinct UUIDs and unique directed pairs. Endpoints alone do not prove flow. |
+| ChangeEvent | Exactly one of the 15 record_* target FKs. Optional actor_id records a catalog Actor attribution; record_actor_id means an Actor was edited. Current command user attribution is private. Snapshot contents follow the [command-specific audit formats](data-model-implementation.md#audit-snapshots-and-event-grouping). |
+| QualityRequirement | comparison_value is required only for greaterThan; zero is valid. Rule assignments and changes validate compatibility transactionally; joined users read the current rule without copied requirements. |
+| Ownership and links | Actor role FKs are optional where documented; external organisations require no Actor. Organisation values and documentationLinks use owned JSONB; Actor keeps only websiteUrl for contact navigation. |
+| Cycles and retention | Domain and CodeValue hierarchies reject cycles transactionally. Referenced records and audit targets are retained; deleting referenced endpoints is restricted. |
+
+Technical names and source key_roles are metadata about a source, never catalog PKs. Table/field technical-name uniqueness needs known source namespace/scope and must not merge separately documented draft structures. The [PostgreSQL implementation acceptance cases](data-model-implementation.md#postgresql-implementation-acceptance-cases) cover the behavior that diagram syntax alone cannot validate.
+
+### Constraint and serialization contract
+
+Use UTF8 storage and exact, case-sensitive comparison for catalog identifiers, semantic names and official code strings. Choose deterministic `COLLATE "C"` for these identity/uniqueness columns; never lowercase, unaccent or Unicode-normalize them when matching references. User-facing names use the requested locale's collation separately. Provider/locale names must be pinned and verified in the deployed database. PostgreSQL permits collation choices independently of the database default; see [collation support](https://www.postgresql.org/docs/18/collation.html).
+
+| Boundary | Required behavior |
+|---|---|
+| Required/conditional values | Apply NOT NULL to required scalars and explicit row checks to enum/conditional requirements. A positive-value check alone does not reject NULL. Require the family-level name/description rules, not a name in every language. |
+| Owned JSONB | Validate shape, types, allowed keys, enum values, bounds, language suffixes and owner-local identifiers. Reject unknown canonical keys rather than silently losing them. Keep unmodeled upstream properties in the external import archive. An optional absent object uses SQL NULL; collection arrays may be empty only when their minimum cardinality is zero. Reject null array members. |
+| Optional owned properties | Omit unknown scalar keys inside JSONB. Replace an owned object without an optional key to clear that nested property; top-level null clears an optional column. Do not persist JSON null as a substitute for an unknown canonical value. Original import captures may retain upstream nulls. |
+| Integer | JSON integer within the documented safe range; tighter domain bounds still apply. Keep rowVersion positive. Converting a bigint to a JavaScript Number must never silently round it. |
+| Decimal | Owned JSONB Decimal values require canonical decimal strings under their SQL validator. Scalar comparison_value accepts finite JSON numbers or numeric strings through REST; send a decimal string to preserve precision. The snapshot returns comparison values as strings, while ordinary REST reads return PostgreSQL numeric JSON tokens. Use a decimal-aware client for those reads; no NaN or infinity. |
+| Decimal storage | Scalar Decimal properties use finite numeric columns; Decimal properties inside JSONB stay strings and are validated/cast as exact numerics for comparisons. Do not run either representation through binary floating point. Original source number tokens remain in their capture. |
+| Constraints on other rows | Use native FK/unique constraints for identity and ownership, plus transactional checks for hierarchy cycles, current rule state and applicable assertion scope. These are not safe as CHECK functions querying other tables. |
+
+The canonical Decimal text `"0"` becomes numeric zero in SQL; a missing comparisonValue stays SQL NULL. The rule examples' unquoted zero describes the mathematical value. PostgreSQL offers exact numeric storage but also special numeric values, which this contract excludes; see [numeric types](https://www.postgresql.org/docs/18/datatype-numeric.html). Row checks must treat unknown explicitly and native constraints should express relational invariants; see [constraint behavior](https://www.postgresql.org/docs/18/ddl-constraints.html). The UTF8 text boundary also excludes the zero character; see [character types](https://www.postgresql.org/docs/18/datatype-character.html).
+
+### Numeric source declarations
+
+PostgreSQL permits negative scales and scales above precision; see its [numeric type rules](https://www.postgresql.org/docs/18/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL). Such declarations describe source rounding/representation and do not change this catalog's exact Decimal transport format.
 
 ## Standards alignment
 
@@ -1066,7 +1608,21 @@ Use DCMI for reusable metadata and SKOS for vocabularies. DCAT 3 guides DataServ
 
 For example, Building, a documented SAP table, a published building collection, a file representation and its access API describe different subjects. A source field named EGID does not by itself prove a business-attribute mapping. A building-to-parcel association is not a SKOS hierarchy. A reviewed application data structure may correspond to an ArchiMate Data Object and an application System to an Application Component; a distributed inventory need not be an application component.
 
-Publication extensions and profile validation are defined in the [implementation guide](data-model-implementation.md#optional-publication-extension). They are not required core entities.
+The extension below is a deferred model proposal; it adds no required core entities or empty records to the current baseline. [Publication acceptance](data-model-implementation.md#publication-acceptance) describes the later implementation checks.
+
+### Optional publication extension
+
+The core catalog can work without these three entities. Introduce them only when publishing to a selected DCAT consumer or managing independently identifiable collections and representations. Standards alignment does not require every standard class to become an internal table.
+
+| Deferred concept | Introduce when | Minimum information to define then |
+|---|---|---|
+| Catalog (`dcat:Catalog`) | A catalog publication needs managed identity, membership and publisher metadata. A single deployment may initially use an export configuration. | Stable publication URI, four-language titles/descriptions, explicit publisher organisation, metadata licence, homepage, theme scheme and selected resource membership. |
+| Dataset (`dcat:Dataset`) | A data collection has its own release, coverage or access identity beyond a product contract/table description. | Stable identity, four-language names/descriptions, domains, schema-table links, publisher, language/coverage, release/version/cadence and information/access page. |
+| Distribution (`dcat:Distribution`) | One collection has a documented accessible representation, such as a downloadable file or service access. | Owning dataset, access URL, optional direct download URL/service references, format, licence and usage terms; size only when meaningful. |
+
+Dataset-to-Distribution ownership, product-to-dataset membership and service-to-dataset links would be added together with their validation. Confirm the exact exchange profile first; these are deferred concepts, not incomplete core records requiring empty rows now. Do not automatically create a dataset for every table or product. Keep product commitments on DataProduct; move representation-specific assertions only when their subject has been reviewed, preserving original evidence.
+
+A WMS image does not establish downloadable parcel polygons. The application's Excel export publishes catalog metadata, not the operational data described by each entry. Publication URIs, dataset release dates, spatial/temporal coverage and licence terms must be documented before export; no production namespace or URL is invented.
 
 ## References
 

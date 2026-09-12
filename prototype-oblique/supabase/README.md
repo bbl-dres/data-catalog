@@ -196,7 +196,7 @@ node prototype-oblique/tests/catalog-migration.cjs
 node prototype-oblique/tests/catalog-browser.cjs
 ```
 
-The first two suites test the original migrations independently. The migration suite reconstructs the historical SQL Editor bundle from the committed migrations in memory and verifies records, child URLs, translations, codes, repeat imports, anonymous reads, denied writes, duplicate-key rejection, Excel completeness and snapshots beyond 1,000 fields. It also checks that a refused import rolls back access changes and preserves existing data.
+The schema suite first reconciles the [canonical model](../docs/data-model.md) with all current migrations, including dictionary coverage, nullability and table/column counts. It then tests the original schema independently; the RLS suite tests the original member policies. The migration suite reconstructs the historical SQL Editor bundle from the committed migrations in memory and verifies records, child URLs, translations, codes, repeat imports, anonymous reads, denied writes, duplicate-key rejection, Excel completeness and snapshots beyond 1,000 fields. It also checks that a refused import rolls back access changes and preserves existing data.
 
 Browser tests normally use real PostgreSQL output through mocked REST responses. They cover search, links, bubbles, responsibility, mobile and failed loads. Set `CATALOG_LIVE_READ=1` to run the same checks against the live project, comparing every returned record with the initial import. This optional baseline check was run successfully; it will need updating after intentional database edits. Hosted testing performs reads only; write-denial checks execute locally.
 

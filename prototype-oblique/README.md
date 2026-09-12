@@ -51,7 +51,7 @@ Start with the [documentation index](docs/README.md).
 The running app uses `index.html`, `js/`, `css/`, runtime configuration/content in `data/`, `assets/` and the pinned `vendor/` files. The older catalog JSON in `data/` remains necessary for reproducible imports and test fixtures. Keep `supabase/`, `scripts/` and `tests/` for deployment, recovery and maintenance; `docs/wireframes/`, `docs/review/` and `docs/sources/` preserve design history and evidence. Generated test output and local dependencies belong outside version control.
 
 - [Architecture](docs/architecture.md), [design system](docs/design-system.md) and [behavior](docs/behavior.md) describe the current prototype.
-- [Catalog data model](docs/data-model.md) defines the conceptual target; [implementation and migration](docs/data-model-implementation.md) covers PostgreSQL, current mappings and validation.
+- [Canonical catalog data model](docs/data-model.md) contains the complete specification, schema diagram and review checklist for launch; [implementation and migration](docs/data-model-implementation.md) covers app/API behavior, storage procedures and validation.
 - [Business-object attributes](docs/business-object-attribute-proposal.md) are separate proposals for later content updates.
 - [Imports and source evidence](docs/imports/README.md) preserve source instructions, curation decisions and unresolved gaps.
 - [Test setup](tests/README.md) provides repeatable checks.

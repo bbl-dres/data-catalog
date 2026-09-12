@@ -1,16 +1,68 @@
-/* Execute the actual migration in an isolated PostgreSQL engine; no hosted credentials. */
+/* Check the canonical model against current SQL, then exercise the original migration in isolation. */
 'use strict';
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
+const { database } = require('../supabase/local-database.cjs');
 const migration = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20260906000000_catalog_schema.sql'), 'utf8');
 const model = fs.readFileSync(path.join(__dirname, '../docs/data-model.md'), 'utf8');
 const snake = value => value.replace(/(?<!^)[A-Z]/g, letter => '_' + letter).toLowerCase();
 const id = number => `'00000000-0000-0000-0000-${String(number).padStart(12, '0')}'`;
 
+async function checkCanonicalModel() {
+  const current = await database({ includeData: false });
+  try {
+    const actual = (await current.query("SELECT table_name, column_name, is_nullable FROM information_schema.columns WHERE table_schema='catalog'")).rows;
+    const covered = new Set(), dictionaries = new Set();
+    const owned = new Set(['LocalizedTextFields', 'RecordReference', 'OrganisationDetails', 'DocumentationLink', 'ValueSpecification']);
+    for (const [, section, body] of model.matchAll(/^### (\w+)\n([\s\S]*?)(?=^### |^## |$(?![\s\S]))/gm)) {
+      if (owned.has(section)) continue;
+      const dictionary = body.match(/^\| Attribute \|[^\n]+\n(?:^\|[^\n]+\n)+/m);
+      if (!dictionary) continue;
+      const table = snake(section);
+      assert.ok(actual.some(column => column.table_name === table), section + ' has a physical table');
+      dictionaries.add(table);
+      const columns = actual.filter(column => column.table_name === table);
+      for (const line of dictionary[0].split('\n').filter(line => line.startsWith('| `'))) {
+        const cells = line.trim().slice(1, -1).split('|').map(cell => cell.trim());
+        assert.equal(cells.length, 6, section + ' dictionary shape');
+        const property = cells[0].replaceAll('`', '');
+        let mapped;
+        if (['source', 'target', 'record'].includes(property)) {
+          mapped = columns.filter(column => column.column_name.startsWith(property + '_') && column.column_name !== 'source_endpoint_id');
+          assert.ok(mapped.length, section + '.' + property);
+        } else if (property === 'qualityRequirementIds') {
+          const junction = table + '_quality_requirement';
+          mapped = actual.filter(column => column.table_name === junction);
+          assert.equal(mapped.length, 2, section + ' quality junction');
+          for (const column of mapped) assert.ok(model.includes(`| \`${junction}\` | \`${column.column_name}\` |`), 'Documented junction key');
+        } else if (property === 'endpoints') {
+          assert.ok(actual.some(column => column.table_name === 'service_endpoint' && column.column_name === 'data_service_id'));
+          continue; // The ServiceEndpoint dictionary covers the inverse collection's columns.
+        } else {
+          const column = columns.find(column => column.column_name === snake(property));
+          assert.ok(column, section + '.' + property);
+          const required = cells[4].endsWith('*') ? property !== 'keyRoles' : cells[4] === '1';
+          assert.equal(column.is_nullable, required ? 'NO' : 'YES', section + '.' + property + ' null/collection semantics');
+          mapped = [column];
+        }
+        for (const column of mapped) covered.add(column.table_name + '.' + column.column_name);
+      }
+    }
+    assert.equal(dictionaries.size, 17, '16 core dictionaries plus owned ServiceEndpoint');
+    assert.deepEqual([...covered].sort(), actual.map(column => column.table_name + '.' + column.column_name).sort(), 'Every current SQL column is documented');
+    const inventory = Object.fromEntries([...model.matchAll(/^\|[^\n]+\| `([a-z_]+)` \| (\d+) \|$/gm)].map(([, table, count]) => [table, Number(count)]));
+    const expected = {};
+    for (const column of actual) expected[column.table_name] = (expected[column.table_name] || 0) + 1;
+    assert.deepEqual(inventory, expected, 'Canonical table inventory matches the executed migrations');
+    console.log(`Canonical model: ${dictionaries.size} dictionaries cover all ${actual.length} columns in ${Object.keys(expected).length} current tables.`);
+  } finally { await current.close(); }
+}
+
 async function main() {
+  await checkCanonicalModel();
   const db = new PGlite();
   let passed = 0;
   const run = async (label, sql) => {
@@ -36,33 +88,6 @@ async function main() {
     await run('fresh migration', migration);
     await check('19 physical tables', "SELECT count(*)::int AS count FROM information_schema.tables WHERE table_schema='catalog'", [{ count: 19 }]);
     await check('RLS enabled on every table', "SELECT bool_and(relrowsecurity) AS enabled FROM pg_class WHERE relnamespace='catalog'::regnamespace AND relkind='r'", [{ enabled: true }]);
-
-    const actual = (await db.query("SELECT table_name, column_name, is_nullable FROM information_schema.columns WHERE table_schema='catalog'")).rows;
-    let section;
-    let dictionaries = 0;
-    const owned = new Set(['LocalizedTextFields', 'RecordReference', 'OrganisationDetails', 'DocumentationLink', 'ValueSpecification']);
-    for (const line of model.split('\n')) {
-      if (line.startsWith('### ')) section = line.slice(4).trim();
-      if (!line.startsWith('| `') || owned.has(section)) continue;
-      const cells = line.trim().slice(1, -1).split('|').map(cell => cell.trim());
-      if (cells.length !== 6) continue;
-      const property = cells[0].replaceAll('`', '');
-      if (property === 'id') dictionaries++;
-      const table = snake(section);
-      if (['source', 'target', 'record'].includes(property)) {
-        assert.ok(actual.some(c => c.table_name === table && c.column_name.startsWith(property + '_')), section + '.' + property);
-      } else if (property === 'qualityRequirementIds') {
-        assert.ok(actual.some(c => c.table_name === table + '_quality_requirement'));
-      } else if (property === 'endpoints') {
-        assert.ok(actual.some(c => c.table_name === 'service_endpoint' && c.column_name === 'data_service_id'));
-      } else {
-        const column = actual.find(c => c.table_name === table && c.column_name === snake(property));
-        assert.ok(column, section + '.' + property);
-        if (cells[4] === '1') assert.equal(column.is_nullable, 'NO', section + '.' + property + ' required');
-      }
-    }
-    assert.equal(dictionaries, 16);
-    passed++;
 
     await run('four languages and organisation-only responsibility', `
       INSERT INTO catalog.actor(id,identifier,name_en,actor_type) VALUES (${id(1)},'editor','Editor','person');

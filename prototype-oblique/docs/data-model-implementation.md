@@ -1,17 +1,17 @@
 # Catalog model implementation guide
 
-**Implementation contract and migration · reviewed 12 September 2026.** The [conceptual data model](data-model.md) is authoritative for entities, attributes and semantics. This guide maps it to PostgreSQL, the current app/API and the frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
+**Implementation companion · reviewed 12 September 2026.** The [canonical data model](data-model.md) owns entities, attributes, semantics, physical schema mapping, keys, constraints and the ER diagram. This guide explains the current app/API, storage implementation and frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
 
-The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. The initial import/public reads were verified on the hosted project on 6 September; the later editing/CRUD implementation was verified locally on 12 September. Its migrations and Edge Function still require [hosted activation](api.md#activation). Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
+The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. The initial import/public reads were verified on the hosted project on 6 September; the later editing/CRUD implementation was verified locally on 12 September. Verify current deployment separately with [hosted activation](api.md#activation); this documentation review did not inspect the hosted state. Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
 
 ## Purpose and reading guide
 
-Implementation details may evolve without changing the conceptual model. A change to entity meaning or attributes belongs in data-model.md first. This guide owns storage layout, technical constraints, serialization, application projections, prototype coverage and migration.
+Implementation details may evolve without changing the model. A change to entity meaning, attributes, keys or validation belongs in data-model.md first. This companion owns implementation procedures, application projections, prototype coverage and migration. It links to the canonical schema contract rather than maintaining a second diagram or rule set.
 
 | Task | Section |
 |---|---|
 | Understand the current starting point | [Prototype coverage](#prototype-coverage), [presentation mapping](#current-presentation-mapping) and [source inventory](#source-inventory) |
-| Design PostgreSQL storage | [Physical ER diagram](#physical-er-review-diagram) and [persistence](#postgresql-persistence) |
+| Review the PostgreSQL schema | [Canonical schema and ER diagram](data-model.md#physical-schema-and-constraints); [persistence implementation](#postgresql-persistence) |
 | Implement editing and reads | [Write rules](#editing-review-and-imports), [read models](#read-models) and [language handling](#display-fallback-and-language-handling) |
 | Migrate and verify | [Migration](#migration-from-the-current-prototype), [property appendix](#appendix-json-property-migration) and [acceptance checks](#implementation-acceptance) |
 | Plan standards publication | [Publication](#standards-publication) |
@@ -53,388 +53,7 @@ ServiceEndpoint is stored in `service_endpoint` with its own UUID, revision, ord
 
 ## Physical ER review diagram
 
-The diagram shows all 16 core entities, their PK/FK connections and selected attributes. Two quality junctions and the owned service_endpoint table implement collections without adding catalog entities. Mutable records also have `is_archived` and `edited_at`; the five owned row tables have `sort_order`. These repeated fields are omitted from the diagram but included in the [complete dictionaries](data-model.md#entity-definitions). The generated [API schemas](../data/swagger.json) list every physical column.
-
-<details>
-<summary>Expand the ER diagram — 19 tables, including owned and junction tables</summary>
-
-```mermaid
-erDiagram
-    direction TB
-    actor {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text actor_type
-    }
-    business_attribute {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid business_object_id FK, UK "business_object.id; U1"
-        text semantic_name UK "U1"
-        jsonb value_specification "NULL"
-        boolean is_identifier "NULL"
-        uuid code_list_id FK "NULL; code_list.id"
-    }
-    business_object {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid domain_id FK "domain.id"
-    }
-    change_event {
-        uuid id PK
-        text identifier UK
-        uuid record_actor_id FK "NULL; actor.id"
-        uuid record_business_attribute_id FK "NULL; business_attribute.id"
-        uuid record_business_object_id FK "NULL; business_object.id"
-        uuid record_code_list_id FK "NULL; code_list.id"
-        uuid record_code_value_id FK "NULL; code_value.id"
-        uuid record_data_field_id FK "NULL; data_field.id"
-        uuid record_data_product_id FK "NULL; data_product.id"
-        uuid record_data_service_id FK "NULL; data_service.id"
-        uuid record_data_table_id FK "NULL; data_table.id"
-        uuid record_domain_id FK "NULL; domain.id"
-        uuid record_lineage_relation_id FK "NULL; lineage_relation.id"
-        uuid record_relationship_id FK "NULL; relationship.id"
-        uuid record_product_attribute_id FK "NULL; product_attribute.id"
-        uuid record_quality_requirement_id FK "NULL; quality_requirement.id"
-        uuid record_system_id FK "NULL; system.id"
-        date occurred_on
-        timestamptz occurred_at "NULL"
-        text action
-        uuid actor_id FK "NULL; actor.id"
-        jsonb before "NULL"
-        jsonb after "NULL"
-        text import_id "NULL"
-    }
-    code_list {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        uuid domain_id FK "NULL; domain.id"
-        uuid business_object_id FK "NULL; business_object.id"
-        jsonb authority_organisation "NULL"
-    }
-    code_value {
-        uuid id PK, UK "U2"
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        uuid code_list_id FK, UK "code_list.id; U1/U2"
-        text code UK "U1"
-        uuid parent_code_value_id FK "NULL; code_value.id"
-    }
-    data_field {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid data_custodian_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid data_table_id FK "data_table.id"
-        text technical_name
-        text technical_name_kind
-        text source_path "NULL"
-        text source_data_type "NULL"
-        text data_type_scope "NULL"
-        boolean is_required "NULL"
-        boolean is_nullable "NULL"
-        text[] key_roles "NULL; source keys"
-        uuid code_list_id FK "NULL; code_list.id"
-    }
-    data_product {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid domain_id FK "NULL; domain.id"
-        text access_mode "NULL"
-        text access_notes "NULL; one authored value"
-        text license_uri "NULL"
-        text license_notes "NULL; one authored value"
-    }
-    data_service {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid data_custodian_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid system_id FK "NULL; system.id"
-        uuid domain_id FK "NULL; domain.id"
-        text technical_name "NULL"
-        text service_version "NULL"
-        text purpose "NULL"
-        text access_mode "NULL"
-        text access_notes "NULL; one authored value"
-    }
-    data_table {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid data_custodian_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid system_id FK "system.id"
-        uuid domain_id FK "NULL; domain.id"
-        text technical_name "NULL"
-        text database_name "NULL"
-        text schema_name "NULL"
-    }
-    domain {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        uuid parent_domain_id FK "NULL; domain.id"
-    }
-    lineage_relation {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        uuid source_data_table_id FK "NULL; data_table.id"
-        uuid source_data_field_id FK "NULL; data_field.id"
-        uuid target_data_table_id FK "NULL; data_table.id"
-        uuid target_data_field_id FK "NULL; data_field.id"
-        text operation
-        text transformation_notes_de "NULL; also _it _fr _en"
-        text verification_status
-        jsonb documentation_links "supporting links"
-    }
-    product_attribute {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        uuid data_product_id FK, UK "data_product.id; U1"
-        text semantic_name UK "U1"
-        uuid business_attribute_id FK "NULL; business_attribute.id"
-        jsonb value_specification "NULL"
-        boolean is_required "NULL"
-    }
-    quality_requirement {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid contact_actor_id FK "NULL; actor.id"
-        text rule_type
-        numeric comparison_value "NULL; greaterThan only"
-        text dimension
-    }
-    relationship {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        uuid source_business_object_id FK "NULL; business_object.id"
-        uuid source_data_product_id FK "NULL; data_product.id"
-        uuid source_data_table_id FK "NULL; data_table.id"
-        uuid source_data_field_id FK "NULL; data_field.id"
-        uuid source_data_service_id FK "NULL; data_service.id"
-        uuid target_business_object_id FK "NULL; business_object.id"
-        uuid target_business_attribute_id FK "NULL; business_attribute.id"
-        uuid target_data_table_id FK "NULL; data_table.id"
-        uuid target_data_field_id FK "NULL; data_field.id"
-        uuid target_data_service_id FK "NULL; data_service.id"
-        text relationship_type
-        text comment "NULL"
-        uuid source_endpoint_id FK "NULL; service_endpoint.id"
-        text verification_status
-        text coverage "NULL"
-        text support_status "NULL"
-        text assessed_service_version "NULL"
-        text rule_notes_de "NULL; also _it _fr _en"
-        jsonb documentation_links "supporting links"
-    }
-    system {
-        uuid id PK
-        text identifier UK
-        bigint row_version
-        text name_de "NULL"
-        text name_it "NULL"
-        text name_fr "NULL"
-        text name_en "NULL"
-        text description_de "NULL; also _it _fr _en"
-        text comment "NULL"
-        text status
-        text version "NULL; catalog definition"
-        date version_date "NULL; date of version"
-        jsonb responsible_organisation "NULL; inline; no FK"
-        uuid data_owner_id FK "NULL; actor.id"
-        uuid data_steward_id FK "NULL; actor.id"
-        uuid data_custodian_id FK "NULL; actor.id"
-        uuid contact_actor_id FK "NULL; actor.id"
-        text system_type "NULL"
-        text technology "NULL"
-    }
-    service_endpoint {
-        uuid id PK, UK "U2"
-        uuid data_service_id FK, UK "data_service.id; U1/U2"
-        text identifier UK "U1"
-        text url "NULL"
-        text relative_path "NULL"
-        text protocol "NULL"
-        text http_method "NULL"
-        text operation_name "NULL"
-        text environment "NULL"
-        text verification_status
-    }
-    business_attribute_quality_requirement {
-        uuid business_attribute_id PK, FK "business_attribute.id"
-        uuid quality_requirement_id PK, FK "quality_requirement.id"
-    }
-    data_field_quality_requirement {
-        uuid data_field_id PK, FK "data_field.id"
-        uuid quality_requirement_id PK, FK "quality_requirement.id"
-    }
-
-    domain o|..o{ domain : parent
-    domain ||..o{ business_object : groups
-    domain o|..o{ data_table : classifies
-    domain o|..o{ code_list : classifies
-    domain o|..o{ data_product : classifies
-    domain o|..o{ data_service : classifies
-    business_object ||..o{ business_attribute : defines
-    system ||..o{ data_table : contains
-    system o|..o{ data_service : provides
-    data_table ||..o{ data_field : describes
-    code_list ||..o{ code_value : contains
-    code_value o|..o{ code_value : parent_in_same_list
-    code_list o|..o{ business_attribute : constrains
-    code_list o|..o{ data_field : constrains
-    data_product ||..o{ product_attribute : promises
-    business_attribute o|..o{ product_attribute : reuses
-    data_service ||..o{ service_endpoint : owns
-    service_endpoint o|..o{ relationship : scopes_service_source
-    data_product o|..o{ relationship : source_product
-    business_object o|..o{ relationship : target_concept
-    actor o|..o{ change_event : edited_by
-    business_attribute ||--o{ business_attribute_quality_requirement : assigns
-    quality_requirement ||--o{ business_attribute_quality_requirement : referenced_by
-    data_field ||--o{ data_field_quality_requirement : assigns
-    quality_requirement ||--o{ data_field_quality_requirement : referenced_by
-```
-
-</details>
+The single authoritative [physical ER review diagram](data-model.md#physical-er-review-diagram) is now part of the canonical model, beside its dictionaries, reference mappings and key constraints.
 
 ## PostgreSQL persistence
 
@@ -513,23 +132,11 @@ Import tools must reject duplicate JSON keys before JSONB conversion and hash th
 
 ### Constraint and serialization contract
 
-Use UTF8 storage and exact, case-sensitive comparison for catalog identifiers, semantic names and official code strings. Choose deterministic `COLLATE "C"` for these identity/uniqueness columns; never lowercase, unaccent or Unicode-normalize them when matching references. User-facing names use the requested locale's collation separately. Provider/locale names must be pinned and verified in the deployed database. PostgreSQL permits collation choices independently of the database default; see [collation support](https://www.postgresql.org/docs/18/collation.html).
-
-| Boundary | Required behavior |
-|---|---|
-| Required/conditional values | Apply NOT NULL to required scalars and explicit row checks to enum/conditional requirements. A positive-value check alone does not reject NULL. Require the family-level name/description rules, not a name in every language. |
-| Owned JSONB | Validate shape, types, allowed keys, enum values, bounds, language suffixes and owner-local identifiers. Reject unknown canonical keys rather than silently losing them. Keep unmodeled upstream properties in the external import archive. An optional absent object uses SQL NULL; collection arrays may be empty only when their minimum cardinality is zero. Reject null array members. |
-| Optional owned properties | Omit unknown scalar keys inside JSONB. Replace an owned object without an optional key to clear that nested property; top-level null clears an optional column. Do not persist JSON null as a substitute for an unknown canonical value. Original import captures may retain upstream nulls. |
-| Integer | JSON integer within the documented safe range; tighter domain bounds still apply. Keep rowVersion positive. Converting a bigint to a JavaScript Number must never silently round it. |
-| Decimal | Owned JSONB Decimal values require canonical decimal strings under their SQL validator. Scalar comparison_value accepts finite JSON numbers or numeric strings through REST; send a decimal string to preserve precision. The snapshot returns comparison values as strings, while ordinary REST reads return PostgreSQL numeric JSON tokens. Use a decimal-aware client for those reads; no NaN or infinity. |
-| Decimal storage | Scalar Decimal properties use finite numeric columns; Decimal properties inside JSONB stay strings and are validated/cast as exact numerics for comparisons. Do not run either representation through binary floating point. Original source number tokens remain in their capture. |
-| Constraints on other rows | Use native FK/unique constraints for identity and ownership, plus transactional checks for hierarchy cycles, current rule state and applicable assertion scope. These are not safe as CHECK functions querying other tables. |
-
-The canonical Decimal text `"0"` becomes numeric zero in SQL; a missing comparisonValue stays SQL NULL. The rule examples' unquoted zero describes the mathematical value. PostgreSQL offers exact numeric storage but also special numeric values, which this contract excludes; see [numeric types](https://www.postgresql.org/docs/18/datatype-numeric.html). Row checks must treat unknown explicitly and native constraints should express relational invariants; see [constraint behavior](https://www.postgresql.org/docs/18/ddl-constraints.html). The UTF8 text boundary also excludes the zero character; see [character types](https://www.postgresql.org/docs/18/datatype-character.html).
+The canonical model owns the [constraint and serialization contract](data-model.md#constraint-and-serialization-contract), including null/empty semantics, exact decimal transport and conditional requirements.
 
 ### Numeric source declarations
 
-PostgreSQL permits negative scales and scales above precision; see its [numeric type rules](https://www.postgresql.org/docs/18/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL). Such declarations describe source rounding/representation and do not change this catalog's exact Decimal transport format.
+See the canonical [numeric source declarations](data-model.md#numeric-source-declarations). Preserve documented types without normalizing their meaning.
 
 ### Integrity and access
 
@@ -541,45 +148,13 @@ Index FK/owner lookups and actual locale-aware search paths. Add JSONB indexes o
 
 ### Key and constraint review
 
-| Structure | Required constraint |
-|---|---|
-| Version/date pair | version_date requires version. New or changed versions require a date through the write contract; unknown legacy version dates remain allowed. Neither modifiedOn nor an import time substitutes for the version date. |
-| Core identity | Each core table has id as UUID PK and identifier as a separate unique public identity. Every mutable record has row_version; ChangeEvent is append-only. |
-| BusinessAttribute U1 | Unique (business_object_id, semantic_name). |
-| ProductAttribute U1 | Unique (data_product_id, semantic_name). |
-| CodeValue U1 / U2 | Unique (code_list_id, code) and (code_list_id, id). Composite parent FK (code_list_id, parent_code_value_id) references the same CodeList using MATCH SIMPLE, allowing a null parent. Retain the ordinary code_list_id FK for roots. |
-| ServiceEndpoint U1 / U2 | Unique (data_service_id, identifier) and (data_service_id, id). Relationship's (source_data_service_id, source_endpoint_id) FK uses MATCH SIMPLE; separate signature checks enforce required/allowed endpoint scope. Keep the standalone DataService FK when the endpoint is absent. |
-| Two quality junctions | Each two-column PK consists of two FKs. No assignment identifier or duplicate writable JSONB reference array. |
-| Relationship | Exactly one source and one target; allowed signatures, coverage and endpoint scope follow its dictionary. One assertion per type, endpoints and optional endpoint scope, enforced with signature-specific uniqueness including absent scope. |
-| LineageRelation | Exactly one source and target of the same technical kind, with distinct UUIDs and unique directed pairs. Endpoints alone do not prove flow. |
-| ChangeEvent | Exactly one of the 15 record_* target FKs. Optional actor_id records a catalog Actor attribution; record_actor_id means an Actor was edited. Current command user attribution is private. Snapshot contents follow the command-specific audit formats below. |
-| QualityRequirement | comparison_value is required only for greaterThan; zero is valid. Rule assignments and changes validate compatibility transactionally; joined users read the current rule without copied requirements. |
-| Ownership and links | Actor role FKs are optional where documented; external organisations require no Actor. Organisation values and documentationLinks use owned JSONB; Actor keeps only websiteUrl for contact navigation. |
-| Cycles and retention | Domain and CodeValue hierarchies reject cycles transactionally. Referenced records and audit targets are retained; deleting referenced endpoints is restricted. |
-
-Technical names and source key_roles are metadata about a source, never catalog PKs. Table/field technical-name uniqueness needs known source namespace/scope and must not merge separately documented draft structures. The [PostgreSQL implementation acceptance cases](#postgresql-implementation-acceptance-cases) cover the behavior that diagram syntax alone cannot validate.
+The canonical [key and constraint review](data-model.md#key-and-constraint-review) defines these invariants. The [SQL acceptance cases](#postgresql-implementation-acceptance-cases) explain their verification.
 
 ## Serialization and presentation
 
 ### Primitive formats
 
-| Format | Representation and constraints |
-|---|---|
-| `UUID` | Internal database identifier, generated once on creation and immutable; not a source identifier or translated label. |
-| `Identifier` | Non-empty Unicode string; no leading/trailing whitespace. Case-sensitive and never reused for another record. |
-| `Text` | Non-empty, not whitespace-only Unicode text when present. Reject U+0000 and unpaired surrogates at the UTF8 boundary. Preserve meaningful source punctuation and line breaks. Escape at rendering; no embedded HTML. |
-| `Boolean` | `true` or `false`; absence remains a third, unknown state. |
-| `Integer` | Whole JSON number in the safe range -9007199254740991 through 9007199254740991, subject to tighter per-attribute bounds. Digit-only source identifiers remain strings. |
-| `Decimal` | Exact finite decimal. The precision-preserving input/owned-JSONB representation is a base-10 string, for example `"0"` or `"123.45"`; scalar SQL storage uses numeric. See the numeric boundary below. |
-| `Date` | Calendar date in `YYYY-MM-DD` form. No artificial time of day. |
-| `Timestamp` | [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) date-time with `Z` or an explicit UTC offset. Date-only evidence does not establish an exact timestamp. |
-| `LanguageCode` | Exactly `de`, `it`, `fr` or `en`; supported content/UI languages and suffixes. |
-| `LanguageTag` | Valid [BCP 47 tag](https://www.w3.org/International/articles/language-tags/) for source, destination or dataset-content language, which may differ from the four supported translation languages. |
-| `HttpUrl` | Absolute HTTP or HTTPS URL without embedded credentials. Validate schemes before rendering links. |
-| `Enum` | Documented English application token with a translated UI label. Official source codes are not translated. |
-| `Object` | JSON object constrained by its documented owned shape; not an arbitrary replacement for entity attributes. |
-| `<Format>[]` | Array of values of the stated format; member constraints also apply to every element. |
-| `RecordReference` | Conceptual kind plus UUID; REST exposes concrete UUID FK columns. |
+Use the canonical [primitive formats](data-model.md#primitive-formats) and [constraint and serialization contract](data-model.md#constraint-and-serialization-contract). This guide does not define a second set of formats.
 
 ### Display fallback and language handling
 
@@ -1151,7 +726,7 @@ Use the current SQL/REST/browser suites for implemented behavior. Rows involving
 
 ### Document consistency checks
 
-Run these specification checks whenever the model changes:
+Run `node prototype-oblique/tests/catalog-schema.cjs` with the [local SQL test setup](../supabase/README.md#validation) to compare the canonical dictionaries, nullability and table inventory with the complete current migration chain. Review the remaining semantic and presentation checks whenever the model changes:
 
 | Check | Required outcome |
 |---|---|
@@ -1174,17 +749,7 @@ A resource URI identifies the described subject; a UI route identifies a page. W
 
 ### Optional publication extension
 
-The core catalog can work without these three entities. Introduce them only when publishing to a selected DCAT consumer or managing independently identifiable collections and representations. Standards alignment does not require every standard class to become an internal table.
-
-| Deferred concept | Introduce when | Minimum information to define then |
-|---|---|---|
-| Catalog (`dcat:Catalog`) | A catalog publication needs managed identity, membership and publisher metadata. A single deployment may initially use an export configuration. | Stable publication URI, four-language titles/descriptions, explicit publisher organisation, metadata licence, homepage, theme scheme and selected resource membership. |
-| Dataset (`dcat:Dataset`) | A data collection has its own release, coverage or access identity beyond a product contract/table description. | Stable identity, four-language names/descriptions, domains, schema-table links, publisher, language/coverage, release/version/cadence and information/access page. |
-| Distribution (`dcat:Distribution`) | One collection has a documented accessible representation, such as a downloadable file or service access. | Owning dataset, access URL, optional direct download URL/service references, format, licence and usage terms; size only when meaningful. |
-
-Dataset-to-Distribution ownership, product-to-dataset membership and service-to-dataset links would be added together with their validation. Confirm the exact exchange profile first; these are deferred concepts, not incomplete core records requiring empty rows now. Do not automatically create a dataset for every table or product. Keep product commitments on DataProduct; move representation-specific assertions only when their subject has been reviewed, preserving original evidence.
-
-A WMS image does not establish downloadable parcel polygons. The application's Excel export publishes catalog metadata, not the operational data described by each entry. Publication URIs, dataset release dates, spatial/temporal coverage and licence terms must be documented before export; no production namespace or URL is invented.
+The deferred Catalog, Dataset and Distribution proposal is maintained in the [canonical model](data-model.md#optional-publication-extension). It requires a model decision before introducing tables or publication mappings. This guide owns the implementation acceptance procedure below.
 
 ### Publication acceptance
 

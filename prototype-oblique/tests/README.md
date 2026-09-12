@@ -1,6 +1,6 @@
 # Prototype checks
 
-The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response, including both Excel export scopes, complete workbook row counts, mobile menu layout and navigation/duplicate guards during export. These checks do not need a hosted administrator credential.
+The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-schema.cjs` first checks the canonical model's dictionaries, nullability and complete table/column inventory against the current migration chain, then exercises the original schema migration independently. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response, including both Excel export scopes, complete workbook row counts, mobile menu layout and navigation/duplicate guards during export. These checks do not need a hosted administrator credential.
 
 The runtime still has no build step or package installation requirement. The core checks need Node; browser checks additionally need Playwright and a browser. Verified with Node 24.16.0, Playwright 1.62.1 and Microsoft Edge on Windows. The [API guide](../docs/api.md#verification) covers PGlite/JSON Schema contract checks and optional hosted read verification.
 
