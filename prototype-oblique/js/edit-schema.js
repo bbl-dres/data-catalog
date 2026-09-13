@@ -26,6 +26,7 @@
   };
   const endpointFields = [field('url','edit.endpointUrl','url'),field('relative_path','edit.relativePath'),field('operation_name','edit.operationName'),field('protocol','edit.protocol'),select('http_method','edit.httpMethod',['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS']),select('environment','edit.environment',['production','test','development']),field('is_read_only','edit.readOnly','boolean'),field('supports_bulk','edit.bulk','boolean'),field('authentication_methods','edit.authenticationMethods','lines')];
   function groups(table) {
+    if (table === 'access_option') return [['access.title', [select('status','fact.status',['draft','valid','retired'],{required:true}),field('format','access.format'),field('accessUrl','access.accessUrl','url'),field('downloadUrl','access.downloadUrl','url'),field('accessNotes','access.accessNotes','textarea'),field('license','access.license'),field('comment','fact.comment','textarea')]]];
     if (table === 'service_endpoint') return [['detail.facts',endpointFields]];
     const status = !['code_value','product_attribute'].includes(table);
     const controlled = !['code_list','code_value','product_attribute'].includes(table);
@@ -66,6 +67,11 @@
   const blank = value => value.trim() || null;
   function write(r, f, value, lang, table) {
     const key = f.key;
+    if (table === 'access_option') {
+      const property = key === 'name' ? 'name_' + lang : key;
+      if (blank(value)) r[property] = blank(value); else delete r[property];
+      return;
+    }
     if (['name','description','shortName'].includes(key)) { r[(key === 'shortName' ? 'short_name' : key)+'_'+lang] = blank(value); return; }
     if (['organisationName','organisationUrl'].includes(key)) {
       const prop = table === 'code_list' ? 'authority_organisation' : 'responsible_organisation';

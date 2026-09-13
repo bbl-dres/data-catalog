@@ -1,0 +1,624 @@
+{
+  "checkedAt": "2026-09-13T14:20:37.347Z",
+  "projectRef": "zicluerzbevodlmtbxow",
+  "migrations": [
+    {
+      "version": "20260913141504",
+      "name": "catalog_reconcile_existing_table_grants"
+    },
+    {
+      "version": "20260913141505",
+      "name": "catalog_security"
+    },
+    {
+      "version": "20260913141506",
+      "name": "catalog_editing"
+    },
+    {
+      "version": "20260913141507",
+      "name": "catalog_rest_crud"
+    },
+    {
+      "version": "20260913141508",
+      "name": "catalog_system_of_record"
+    },
+    {
+      "version": "20260913141509",
+      "name": "catalog_row_order"
+    },
+    {
+      "version": "20260913141510",
+      "name": "catalog_aliases"
+    },
+    {
+      "version": "20260913141511",
+      "name": "catalog_required_rules"
+    },
+    {
+      "version": "20260913141728",
+      "name": "catalog_access_options"
+    }
+  ],
+  "application": [
+    {
+      "name": "catalog_reconcile_existing_table_grants",
+      "file": "supabase/repairs/2026-09-13-catalog-table-grants.sql",
+      "sha256": "6b02bc08fd343f0fd81893f63810a6e514a4566a3240527dc40417b822e74b0e"
+    },
+    {
+      "name": "catalog_security",
+      "file": "supabase/migrations/20260907000000_catalog_security.sql",
+      "sha256": "60624215a5e2b3a54c0fe3f4c588bd221f750ef36b90300283bafb5e50cbfb02"
+    },
+    {
+      "name": "catalog_editing",
+      "file": "supabase/migrations/20260912000000_catalog_editing.sql",
+      "sha256": "eeb3564a79b05ec0c49a0a197ef71e315b9bb552d704307ed6456834e601cef5"
+    },
+    {
+      "name": "catalog_rest_crud",
+      "file": "supabase/migrations/20260912010000_catalog_rest_crud.sql",
+      "sha256": "45fbb3fc29579a5eaa8cb7b5f590e93c85e0bc4f741d37f9ccd1bb9a8ba1e393"
+    },
+    {
+      "name": "catalog_system_of_record",
+      "file": "supabase/migrations/20260913000000_catalog_system_of_record.sql",
+      "sha256": "0130b32685c56e0f97c16598b98d851fd7b24645e23f8ce274410a48999c40ef"
+    },
+    {
+      "name": "catalog_row_order",
+      "file": "supabase/migrations/20260913010000_catalog_row_order.sql",
+      "sha256": "bffa12e9dc3db2981f2fe9be17b0855708c98ad50329a271caebebf4487aedfc"
+    },
+    {
+      "name": "catalog_aliases",
+      "file": "supabase/migrations/20260913020000_catalog_aliases.sql",
+      "sha256": "cd88fff33c72796c7c71d6c9721298031703e239dd417e501ecf47f59fd306b0"
+    },
+    {
+      "name": "catalog_required_rules",
+      "file": "supabase/migrations/20260913030000_catalog_required_rules.sql",
+      "sha256": "66a584226ca9b2aafb173c18cd9f7adcc31fcf4ff03c760500bea284b7b5844f"
+    },
+    {
+      "name": "catalog_access_options",
+      "file": "supabase/migrations/20260913040000_catalog_access_options.sql",
+      "sha256": "985362f2a52531edcee4312b575de19d1e4353f1ac7ae04d9b19f243940aaff1"
+    }
+  ],
+  "schema": {
+    "tables": 19,
+    "columns": 477,
+    "constraints": 335,
+    "triggers": 48,
+    "functions": 25,
+    "columnCommentsMatchCanonical": true
+  },
+  "preActivationDataPreserved": true,
+  "initialRowCount": 3918,
+  "finalRowCount": 3920,
+  "browser": {
+    "url": "https://bbl-dres.github.io/data-catalog/prototype-oblique/#/objects/archivgut?tab=history",
+    "identifier": "archivgut",
+    "originalCommentRestored": true,
+    "revisionBefore": 2,
+    "revisionAfter": 4,
+    "historyEntries": 2,
+    "privateAttributionEntries": 2,
+    "changedRecordFields": [
+      "edited_at",
+      "modified_on",
+      "row_version"
+    ],
+    "events": [
+      {
+        "id": "103e2ca8-35e3-42e7-8913-8e080d25daef",
+        "occurred_at": "2026-09-13T14:18:28.448938+00:00",
+        "changed_properties": [
+          "comment"
+        ]
+      },
+      {
+        "id": "4f727297-a1aa-48be-8117-3cb49d99848a",
+        "occurred_at": "2026-09-13T14:18:58.402446+00:00",
+        "changed_properties": [
+          "comment"
+        ]
+      }
+    ]
+  },
+  "publicReads": 200,
+  "signupDisabled": true,
+  "anonymousCapabilityStatus": 401,
+  "anonymousCapabilityCode": "42501",
+  "permissions": [
+    {
+      "schema": "catalog",
+      "function": "catalog.api_write(text,text,uuid,bigint,jsonb,uuid)",
+      "definer": true,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "anon_execute": false,
+      "authenticated_execute": true,
+      "service_execute": false
+    },
+    {
+      "schema": "catalog",
+      "function": "catalog.edit_capabilities()",
+      "definer": false,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "anon_execute": false,
+      "authenticated_execute": true,
+      "service_execute": false
+    },
+    {
+      "schema": "catalog",
+      "function": "catalog.read_snapshot()",
+      "definer": false,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "anon_execute": true,
+      "authenticated_execute": true,
+      "service_execute": true
+    },
+    {
+      "schema": "catalog",
+      "function": "catalog.save_entry(uuid,text,uuid,bigint,jsonb,jsonb)",
+      "definer": true,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "anon_execute": false,
+      "authenticated_execute": true,
+      "service_execute": false
+    }
+  ],
+  "privateTables": [
+    {
+      "rls": true,
+      "table": "user_access",
+      "anon_read": false,
+      "service_read": false,
+      "authenticated_read": false
+    },
+    {
+      "rls": true,
+      "table": "import_batch",
+      "anon_read": false,
+      "service_read": false,
+      "authenticated_read": false
+    },
+    {
+      "rls": true,
+      "table": "edit_receipt",
+      "anon_read": false,
+      "service_read": false,
+      "authenticated_read": false
+    },
+    {
+      "rls": true,
+      "table": "edit_event_actor",
+      "anon_read": false,
+      "service_read": false,
+      "authenticated_read": false
+    }
+  ],
+  "denialCheck": "PASS: anonymous Auth save denied; anonymous RPC denied; direct table writes denied; public browsing retained",
+  "securityAdvisors": {
+    "lints": [
+      {
+        "name": "rls_enabled_no_policy",
+        "title": "RLS Enabled No Policy",
+        "level": "INFO",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects cases where row level security (RLS) has been enabled on a table but no RLS policies have been created.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+        "count": 4,
+        "findings": [
+          {
+            "detail": "Table \\`catalog_private.edit_event_actor\\` has RLS enabled, but no policies exist",
+            "metadata": {
+              "name": "edit_event_actor",
+              "type": "table",
+              "schema": "catalog_private"
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          },
+          {
+            "detail": "Table \\`catalog_private.edit_receipt\\` has RLS enabled, but no policies exist",
+            "metadata": {
+              "name": "edit_receipt",
+              "type": "table",
+              "schema": "catalog_private"
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          },
+          {
+            "detail": "Table \\`catalog_private.import_batch\\` has RLS enabled, but no policies exist",
+            "metadata": {
+              "name": "import_batch",
+              "type": "table",
+              "schema": "catalog_private"
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          },
+          {
+            "detail": "Table \\`catalog_private.user_access\\` has RLS enabled, but no policies exist",
+            "metadata": {
+              "name": "user_access",
+              "type": "table",
+              "schema": "catalog_private"
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          }
+        ]
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+        "count": 2,
+        "findings": [
+          {
+            "detail": "Function `catalog.api_write(p_operation text, p_table text, p_id uuid, p_expected_version bigint, p_body jsonb, p_command_id uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/api_write`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "api_write",
+              "schema": "catalog",
+              "language": "plpgsql",
+              "arguments": "p_operation text, p_table text, p_id uuid, p_expected_version bigint, p_body jsonb, p_command_id uuid",
+              "security_definer": true
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          },
+          {
+            "detail": "Function `catalog.save_entry(p_command_id uuid, p_table text, p_id uuid, p_expected_version bigint, p_patch jsonb, p_children jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/save_entry`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "save_entry",
+              "schema": "catalog",
+              "language": "plpgsql",
+              "arguments": "p_command_id uuid, p_table text, p_id uuid, p_expected_version bigint, p_patch jsonb, p_children jsonb",
+              "security_definer": true
+            },
+            "observed_at": "2026-09-13T14:16:16.045Z"
+          }
+        ]
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "title": "Leaked Password Protection Disabled",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Leaked password protection is currently disabled.",
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+        "count": 1,
+        "findings": [
+          {
+            "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+            "metadata": {
+              "type": "auth",
+              "entity": "Auth"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "dataHashes": {
+    "before": [
+      {
+        "table_name": "actor",
+        "row_count": 11,
+        "content_hash": "6f329b21a0cbce46fed1731981ad8157"
+      },
+      {
+        "table_name": "business_attribute",
+        "row_count": 215,
+        "content_hash": "7cdc2fd27f487bfa39fc2d12c5c15db1"
+      },
+      {
+        "table_name": "business_attribute_quality_requirement",
+        "row_count": 179,
+        "content_hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "business_object",
+        "row_count": 40,
+        "content_hash": "9e7a9f19f53b13a6e5e439d0c5e83ab7"
+      },
+      {
+        "table_name": "change_event",
+        "row_count": 470,
+        "content_hash": "68359b205a785c4befa7c68d6f8379bf"
+      },
+      {
+        "table_name": "code_list",
+        "row_count": 90,
+        "content_hash": "0a18c309d95624fe196e1055d5c62cbe"
+      },
+      {
+        "table_name": "code_value",
+        "row_count": 2080,
+        "content_hash": "e4555d5f3950184d3ad79560b2767a44"
+      },
+      {
+        "table_name": "data_field",
+        "row_count": 621,
+        "content_hash": "25df937bcdee97a5843bc13a5eafb841"
+      },
+      {
+        "table_name": "data_field_quality_requirement",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "data_product",
+        "row_count": 5,
+        "content_hash": "26033a1fde458272b4db24115f7ad74f"
+      },
+      {
+        "table_name": "data_service",
+        "row_count": 7,
+        "content_hash": "4a28364aa7ddcae7a538c3404887ae54"
+      },
+      {
+        "table_name": "data_table",
+        "row_count": 30,
+        "content_hash": "c859b86b18ea19d28dd45aadc555edc2"
+      },
+      {
+        "table_name": "domain",
+        "row_count": 7,
+        "content_hash": "f546ae027837ae27e1defbeb845719fd"
+      },
+      {
+        "table_name": "lineage_relation",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "product_attribute",
+        "row_count": 12,
+        "content_hash": "1954bdb2d2a6b41b311e1b58e46d6509"
+      },
+      {
+        "table_name": "quality_requirement",
+        "row_count": 28,
+        "content_hash": "69a7cef7e638d25ccb6751e5207dff52"
+      },
+      {
+        "table_name": "relationship",
+        "row_count": 112,
+        "content_hash": "14fb701f623cb58a6e57fde269ea8cb7"
+      },
+      {
+        "table_name": "service_endpoint",
+        "row_count": 7,
+        "content_hash": "2932038a96058fd54ffadc55b2dd2bb5"
+      },
+      {
+        "table_name": "system",
+        "row_count": 4,
+        "content_hash": "5f3bcb13649b3d03adc4d4022012f327"
+      }
+    ],
+    "afterMigrations": [
+      {
+        "table_name": "actor",
+        "row_count": 11,
+        "content_hash": "6f329b21a0cbce46fed1731981ad8157"
+      },
+      {
+        "table_name": "business_attribute",
+        "row_count": 215,
+        "content_hash": "7cdc2fd27f487bfa39fc2d12c5c15db1"
+      },
+      {
+        "table_name": "business_attribute_quality_requirement",
+        "row_count": 179,
+        "content_hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "business_object",
+        "row_count": 40,
+        "content_hash": "9e7a9f19f53b13a6e5e439d0c5e83ab7"
+      },
+      {
+        "table_name": "change_event",
+        "row_count": 470,
+        "content_hash": "68359b205a785c4befa7c68d6f8379bf"
+      },
+      {
+        "table_name": "code_list",
+        "row_count": 90,
+        "content_hash": "0a18c309d95624fe196e1055d5c62cbe"
+      },
+      {
+        "table_name": "code_value",
+        "row_count": 2080,
+        "content_hash": "e4555d5f3950184d3ad79560b2767a44"
+      },
+      {
+        "table_name": "data_field",
+        "row_count": 621,
+        "content_hash": "25df937bcdee97a5843bc13a5eafb841"
+      },
+      {
+        "table_name": "data_field_quality_requirement",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "data_product",
+        "row_count": 5,
+        "content_hash": "26033a1fde458272b4db24115f7ad74f"
+      },
+      {
+        "table_name": "data_service",
+        "row_count": 7,
+        "content_hash": "4a28364aa7ddcae7a538c3404887ae54"
+      },
+      {
+        "table_name": "data_table",
+        "row_count": 30,
+        "content_hash": "c859b86b18ea19d28dd45aadc555edc2"
+      },
+      {
+        "table_name": "domain",
+        "row_count": 7,
+        "content_hash": "f546ae027837ae27e1defbeb845719fd"
+      },
+      {
+        "table_name": "lineage_relation",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "product_attribute",
+        "row_count": 12,
+        "content_hash": "1954bdb2d2a6b41b311e1b58e46d6509"
+      },
+      {
+        "table_name": "quality_requirement",
+        "row_count": 28,
+        "content_hash": "69a7cef7e638d25ccb6751e5207dff52"
+      },
+      {
+        "table_name": "relationship",
+        "row_count": 112,
+        "content_hash": "14fb701f623cb58a6e57fde269ea8cb7"
+      },
+      {
+        "table_name": "service_endpoint",
+        "row_count": 7,
+        "content_hash": "2932038a96058fd54ffadc55b2dd2bb5"
+      },
+      {
+        "table_name": "system",
+        "row_count": 4,
+        "content_hash": "5f3bcb13649b3d03adc4d4022012f327"
+      }
+    ],
+    "afterBrowser": [
+      {
+        "table_name": "actor",
+        "row_count": 11,
+        "content_hash": "6f329b21a0cbce46fed1731981ad8157"
+      },
+      {
+        "table_name": "business_attribute",
+        "row_count": 215,
+        "content_hash": "7cdc2fd27f487bfa39fc2d12c5c15db1"
+      },
+      {
+        "table_name": "business_attribute_quality_requirement",
+        "row_count": 179,
+        "content_hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "business_object",
+        "row_count": 40,
+        "content_hash": "32541139a5dedd8eae7e0483a9b053d7"
+      },
+      {
+        "table_name": "change_event",
+        "row_count": 472,
+        "content_hash": "23826c5b0f1f0fd9f8cec8e8f6cf8863"
+      },
+      {
+        "table_name": "code_list",
+        "row_count": 90,
+        "content_hash": "0a18c309d95624fe196e1055d5c62cbe"
+      },
+      {
+        "table_name": "code_value",
+        "row_count": 2080,
+        "content_hash": "e4555d5f3950184d3ad79560b2767a44"
+      },
+      {
+        "table_name": "data_field",
+        "row_count": 621,
+        "content_hash": "25df937bcdee97a5843bc13a5eafb841"
+      },
+      {
+        "table_name": "data_field_quality_requirement",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "data_product",
+        "row_count": 5,
+        "content_hash": "26033a1fde458272b4db24115f7ad74f"
+      },
+      {
+        "table_name": "data_service",
+        "row_count": 7,
+        "content_hash": "4a28364aa7ddcae7a538c3404887ae54"
+      },
+      {
+        "table_name": "data_table",
+        "row_count": 30,
+        "content_hash": "c859b86b18ea19d28dd45aadc555edc2"
+      },
+      {
+        "table_name": "domain",
+        "row_count": 7,
+        "content_hash": "f546ae027837ae27e1defbeb845719fd"
+      },
+      {
+        "table_name": "lineage_relation",
+        "row_count": 0,
+        "content_hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "product_attribute",
+        "row_count": 12,
+        "content_hash": "1954bdb2d2a6b41b311e1b58e46d6509"
+      },
+      {
+        "table_name": "quality_requirement",
+        "row_count": 28,
+        "content_hash": "69a7cef7e638d25ccb6751e5207dff52"
+      },
+      {
+        "table_name": "relationship",
+        "row_count": 112,
+        "content_hash": "14fb701f623cb58a6e57fde269ea8cb7"
+      },
+      {
+        "table_name": "service_endpoint",
+        "row_count": 7,
+        "content_hash": "2932038a96058fd54ffadc55b2dd2bb5"
+      },
+      {
+        "table_name": "system",
+        "row_count": 4,
+        "content_hash": "5f3bcb13649b3d03adc4d4022012f327"
+      }
+    ]
+  },
+  "ledgerRepair": {
+    "version": "20260913141728",
+    "name": "catalog_access_options",
+    "source_md5": "c9029ca18caf6f8910024354a3a9487d"
+  }
+}

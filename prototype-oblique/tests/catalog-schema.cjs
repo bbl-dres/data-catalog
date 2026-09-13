@@ -16,7 +16,7 @@ async function checkCanonicalModel() {
   try {
     const actual = (await current.query("SELECT table_name, column_name, is_nullable FROM information_schema.columns WHERE table_schema='catalog'")).rows;
     const covered = new Set(), dictionaries = new Set();
-    const owned = new Set(['LocalizedTextFields', 'RecordReference', 'OrganisationDetails', 'DocumentationLink', 'ValueSpecification']);
+    const owned = new Set(['LocalizedTextFields', 'RecordReference', 'OrganisationDetails', 'DocumentationLink', 'ValueSpecification', 'AccessOption']);
     for (const [, section, body] of model.matchAll(/^### (\w+)\n([\s\S]*?)(?=^### |^## |$(?![\s\S]))/gm)) {
       if (owned.has(section)) continue;
       const dictionary = body.match(/^\| Attribute \|[^\n]+\n(?:^\|[^\n]+\n)+/m);

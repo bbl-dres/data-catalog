@@ -20,6 +20,8 @@ An Overview sheet leads every workbook. Empty dependent sheets are omitted; an e
 
 Entire catalog ignores the originating view. It exports all browsable top-level entries, their owned rows and profile relationships. Top-level entries are alphabetical in the export language; child rows use their saved sequence. Archived records excluded from normal browsing remain excluded. Status alone is not archival.
 
+An **Access options / Bereitstellungsformen** sheet accompanies exported tables, products or APIs that have authored, unarchived access entries. It follows their saved list order and contains hidden owner/item UUIDs, readable owner identity/name, the display title and all four stored title languages, format, status, access/download URLs, instructions, terms, comment and feedback. It does not synthesize entries from product formats or endpoint URLs; endpoints remain on their existing sheet. See [AccessOption](data-model.md#accessoption).
+
 ## Fields and formatting
 
 Technical keys occupy row 1 and translated labels row 2. English/German labels follow the [canonical alias contract](data-model.md#alias-contract-across-surfaces). Name columns use Name; language suffixes remain on parallel stored translations. Reference context uses the referenced property alias, and derived relationship/feedback labels are defined in the canonical document. Keys, column order and widths stay identical across languages and scopes. Column blocks are context, identity/order, responsibility, content, status/dates and feedback. The source-link column is part of content. Headers and identifying columns are frozen. Filters start on row 2. UUID columns used for identity and context are initially hidden to keep the visible sheet readable; users can unhide them.
@@ -46,7 +48,7 @@ Numbers retain numeric cell types. Booleans use translated Yes/No labels. Dates 
 
 ## Completeness and limits
 
-The review workbook deliberately omits audit history, flattened metadata, imported source-document sections, unused language variants outside Values, detailed quality assignments and private operational data. History and canonical records remain in the catalog/API; imported source payloads remain in the retained archives. It is not a database backup or a full canonical-schema serialization. The Overview states this boundary.
+The review workbook deliberately omits audit history, flattened metadata, imported source-document sections, unused language variants outside Values and Access options, detailed quality assignments and private operational data. History and canonical records remain in the catalog/API; imported source payloads remain in the retained archives. It is not a database backup or a full canonical-schema serialization. The Overview states this boundary.
 
 Long exported values are never silently truncated. If a value exceeds Excel's cell limit, a readable excerpt points to a continuation sheet holding every part, the source sheet, row and technical column key. This sheet appears only when needed. Worksheet names are sanitized and deduplicated. Files are named `datenkatalog_<scope>_<YYYY-MM-DD>.xlsx` using the UTC export date.
 

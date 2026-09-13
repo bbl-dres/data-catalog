@@ -121,9 +121,9 @@
     const rootKind=ctx.kind || route.kind, state={...ctx.state,tableSorts:ctx.state?.tableSorts || {}};
     const roots=catalog?data.kinds.flatMap(kind=>alpha(kind,data.list(kind)).map(e=>({...e,kind})))
       :!collection&&route.entity?[{...route.entity,kind:route.entity.kind || route.kind}]:(ctx.groups || []).flatMap(g=>DK.presentation.sort(rootKind,g.items,DK.presentation.sortOptions(state,`list:${rootKind}`,rootKind).sort).map(e=>({...e,kind:rootKind})));
-    const byKind=new Map(), relationSources=new Map();
+    const byKind=new Map(), relationSources=new Map(), accessOwners=new Map();
     const relate=(kind,e)=>relationSources.set(`${kind}:${canonicalId(e)}`,{...e,kind});
-    const add=(kind,e,parent)=>{if(!byKind.has(kind))byKind.set(kind,[]);byKind.get(kind).push(rowValues(kind,e,parent));};
+    const add=(kind,e,parent)=>{if(!byKind.has(kind))byKind.set(kind,[]);byKind.get(kind).push(rowValues(kind,e,parent));if(DK.accessOptions?.supports(kind))accessOwners.set(kind+':'+identity(e),{...e,kind});};
     const children=(e)=> {
       const items=e.kind==='domains'?alpha('objects',data.membersOfDomain('objects',e)):e.kind==='systems'?alpha('tables',data.tablesOfSystem(e))
         :e.kind==='objects'||e.kind==='products'?e.attributes:e.kind==='tables'?e.fields:e.kind==='refs'?e.values:e.kind==='apis'?e.endpoints || []:[];
@@ -148,6 +148,15 @@
     kinds.forEach(kind=>{if(!byKind.has(kind))return;const cols=columns(kind),rows=byKind.get(kind).map(r=>cols.map(c=>empty(c.type==='boolean'?typeof r[c.key]==='boolean'?t(r[c.key]?'yes':'no'):null:r[c.key])));
       sheets.push({kind,name:sheetName(kind),color:colours[kind],columns:cols,rows});overview.rows.push([sheetName(kind),definition(kind)]);
     });
+    const accessColumns = [{...col('ownerId','excel.internalId',36),hidden:true},col('ownerIdentifier','fact.identifier',30),{...col('ownerName','access.parent',30),freeze:true},
+      {...col('id','excel.internalId',36),hidden:true},col('name','col.name',30),...['de','fr','it','en'].map(lang=>col('name_'+lang,'excel.label'+lang[0].toUpperCase()+lang.slice(1),30)),
+      col('format','access.format',20),col('status','fact.status',16),col('accessUrl','access.accessUrl',50,'link'),col('downloadUrl','access.downloadUrl',50,'link'),
+      col('accessNotes','access.accessNotes',50),col('license','access.license',40),col('comment','fact.comment',45),{...col('remark','excel.remark',36),block:'feedback'}];
+    const accessRows = [...accessOwners.values()].flatMap(owner=>DK.accessOptions.authored(owner).map(option=>{
+      const values={...option,ownerId:identity(owner),ownerIdentifier:canonicalId(owner),ownerName:data.displayName(owner.kind,owner),name:ui.localized(option,'name_'),status:t('edit.value.'+option.status),remark:''};
+      return accessColumns.map(column=>values[column.key] ?? '');
+    }));
+    if(accessRows.length){const sheet={kind:'accessOptions',name:t('access.title'),color:colours.tables,columns:accessColumns,rows:accessRows};sheets.push(sheet);overview.rows.push([sheet.name,t('access.exportDescription')]);}
     const relations={kind:'relations',name:t('detail.tab.relations'),color:'828E9A',columns:[col('sourceKind','excel.sourceType'),col('sourceId','excel.sourceId',36),col('sourceIdentifier','excel.sourceIdentifier',32),col('sourceName','excel.sourceName',30),col('relationship','excel.relationship',30),col('targetKind','excel.targetType'),col('targetId','excel.targetId',36),col('targetIdentifier','excel.targetIdentifier',32),col('targetName','excel.targetName',30),col('comment','fact.comment',45),{...col('remark','excel.remark',36),block:'feedback'}],rows:[]};
     relations.columns.forEach(c=>{if(['sourceId','targetId'].includes(c.key))c.hidden=true;if(c.key==='sourceName')c.freeze=true;});
     relationSources.forEach(e=>data.relations(e.kind,e).forEach(g=>g.items.forEach(item=>{const targetRoute=router.parse(item.href),target=lookup(targetRoute.kind,targetRoute.id);relations.rows.push([t(nameLabel[e.kind]),identity(e),canonicalId(e),e.name,g.title,targetRoute.kind?t(nameLabel[targetRoute.kind]):null,identity(target),canonicalId(target) || targetRoute.id,item.name,item.sub,'']);})));

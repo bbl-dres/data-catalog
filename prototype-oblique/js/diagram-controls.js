@@ -5,8 +5,8 @@
   const controls = {};
   controls.compact = () => innerWidth <= 960 || (window.visualViewport?.scale === 1 ? visualViewport.height : innerHeight) <= 500;
   controls.button = (action, label, icon, extra = '', variant = '') => `<button type="button" class="ob-button${icon ? ' ob-button--icon' : ''}${variant ? ' ob-button--' + esc(variant) : ''}" data-diagram-action="${action}"${icon ? ` aria-label="${esc(label)}" title="${esc(label)}"` : ''} ${extra}>${icon ? ui.icon(icon, 'lg') : esc(label)}</button>`;
-  controls.field = (caption, content) => `<label class="ob-export-control"><span>${esc(caption)}</span>${content}</label>`;
-  controls.choice = (caption, content, icon = '') => `<div class="ob-export-control"><span>${esc(caption)}</span><div class="ob-select-menu" data-select-label="${esc(caption)}" data-select-icon="${esc(icon)}">${content}</div></div>`;
+  controls.field = (caption, content) => `<label class="ob-form-field ob-export-control"><span>${esc(caption)}</span>${content}</label>`;
+  controls.choice = (caption, content, icon = '') => `<div class="ob-form-field ob-export-control"><span>${esc(caption)}</span><div class="ob-select-menu" data-select-label="${esc(caption)}" data-select-icon="${esc(icon)}">${content}</div></div>`;
   controls.select = (name, caption, entries, value, icon) => controls.choice(caption, `<select class="ob-select" data-diagram-setting="${name}">${entries.map(([key, title]) => `<option value="${esc(key)}"${String(key) === String(value) ? ' selected' : ''}>${esc(title)}</option>`).join('')}</select>`, icon);
   controls.menu = (action, label, icon, extra = '') => `<button type="button" class="ob-button ob-button--menu" data-diagram-action="${action}" aria-haspopup="dialog" aria-expanded="false" ${extra}>${ui.buttonContent(label, { icon, menu: true })}</button>`;
   const tFor = session => (key, params) => diagram.t(session.snapshot, key, params);
@@ -17,14 +17,14 @@
       ${button('close', t('diagram.cancel'))}${button('download', t('diagram.download'), null, '', 'primary')}
       </div></header>
       <details class="ob-disclosure ob-export-tools-panel"${controls.compact() ? '' : ' open'}><summary>${esc(t('toolbar.view'))}</summary><div class="ob-export-toolbar"><div class="ob-export-toolbar-start">
-        <div class="ob-export-control ob-export-document-control"><span>${esc(t('print.document'))}</span>${controls.menu('document', settings.title, '', 'id="diagram-document-button"')}</div>
+        <div class="ob-form-field ob-export-control ob-export-document-control"><span>${esc(t('print.document'))}</span>${controls.menu('document', settings.title, '', 'id="diagram-document-button"')}</div>
         ${select('paper', t('diagram.paper'), Object.keys(diagram.papers).map(p => [p, p]), settings.paper)}
         <div class="ob-export-toolbar-divider">${select('orientation', t('diagram.orientation'), ['portrait', 'landscape'].map(p => [p, t('diagram.' + p)]), settings.orientation)}</div>
         <div class="ob-export-preview-tools">${controls.choice(t('diagram.preview'), `<select class="ob-select" id="diagram-zoom-mode"><option value="fit">${esc(t('print.fitPage'))}</option><option value="width">${esc(t('print.fitWidth'))}</option>${[50, 75, 100, 150, 200].map(n => `<option value="${n}">${n}%</option>`).join('')}<option value="custom" hidden></option></select>`)}
           ${button('zoom-out', t('diagram.zoomOut'), 'zoom_out')}<output id="diagram-zoom">—</output>${button('zoom-in', t('diagram.zoomIn'), 'zoom_in')}</div>
       </div><div class="ob-export-toolbar-end">
-        <div class="ob-export-control ob-export-toolbar-divider"><span id="diagram-layout-label">${esc(t('print.layout'))}</span><div class="ob-export-layout" role="group" aria-labelledby="diagram-layout-label">${[['tiles', 'grid'], ['list', 'list']].map(([layout, icon]) => `<button type="button" class="ob-button" data-diagram-layout="${layout}" aria-pressed="${settings.layout === layout}">${ui.buttonContent(t('print.' + layout), { icon })}</button>`).join('')}</div></div>
-        <div class="ob-export-control" id="diagram-columns-host"><span>${esc(t('visibility.label'))}</span>${controls.menu('columns', t('print.columnCount', diagram.visibilityCount(session.snapshot, settings)))}</div>
+        <div class="ob-form-field ob-export-control ob-export-toolbar-divider"><span id="diagram-layout-label">${esc(t('print.layout'))}</span><div class="ob-export-layout" role="group" aria-labelledby="diagram-layout-label">${[['tiles', 'grid'], ['list', 'list']].map(([layout, icon]) => `<button type="button" class="ob-button" data-diagram-layout="${layout}" aria-pressed="${settings.layout === layout}">${ui.buttonContent(t('print.' + layout), { icon })}</button>`).join('')}</div></div>
+        <div class="ob-form-field ob-export-control" id="diagram-columns-host"><span>${esc(t('visibility.label'))}</span>${controls.menu('columns', t('print.columnCount', diagram.visibilityCount(session.snapshot, settings)))}</div>
         <div id="diagram-grouping"></div>
       </div>
       </div></details>
@@ -37,7 +37,7 @@
       </div><p class="ob-sr-only" id="diagram-summary" role="status" aria-live="polite"></p>
       <div class="ob-export-error" id="diagram-error" hidden><p id="diagram-error-message" role="alert"></p>${button('retry', t('diagram.retry'), null, 'hidden')}</div>
       <footer class="ob-footer" lang="${esc(DK.app.state.lang)}">${DK.views.footer()}</footer>
-      <div class="ob-export-popover" id="diagram-popover" popover="auto" role="dialog" aria-labelledby="diagram-popover-title"></div>`;
+      <div class="ob-export-popover ob-choice-popover" id="diagram-popover" popover="auto" role="dialog" aria-labelledby="diagram-popover-title"></div>`;
   };
   controls.tree = session => {
     const { scope, catalogs, language } = session, selected = new Set(session.settings.selected), t = tFor(session);
@@ -108,7 +108,7 @@
     const actions = mode === 'columns' ? `${button('reset-columns', t('visibility.reset'))}${button('dismiss', t('visibility.close'))}`
       : mode === 'filters' ? button('dismiss', t('visibility.close'))
       : `${button('dismiss', t('diagram.cancel'))}<button type="submit" class="ob-button">${esc(t('print.apply'))}</button>`;
-    return `<h3 id="diagram-popover-title">${esc(t(mode === 'columns' ? 'visibility.title' : 'print.' + (mode === 'filters' ? 'addFilter' : mode)))}</h3><form id="diagram-settings-form"><div class="ob-export-popover-body">${body}</div><div class="ob-export-popover-actions">${actions}</div></form>`;
+    return `<h3 id="diagram-popover-title">${esc(t(mode === 'columns' ? 'visibility.title' : 'print.' + (mode === 'filters' ? 'addFilter' : mode)))}</h3><form id="diagram-settings-form"><div class="ob-export-popover-body ob-choice-popover-body">${body}</div><div class="ob-export-popover-actions ob-choice-popover-actions">${actions}</div></form>`;
   };
   DK.diagramControls = controls;
 })(window.DK);

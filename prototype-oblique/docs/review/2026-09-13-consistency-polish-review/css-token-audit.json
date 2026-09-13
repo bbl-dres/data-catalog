@@ -1,0 +1,542 @@
+{
+  "baselineCommit": "817c33af494367d6424b764406b8937ad9d21ed3",
+  "method": "Non-custom-property CSS declarations after removing comments; values containing literal px/rem, hex/rgb colors or direct palette references. Query thresholds are excluded. Counts are inventory, not lint violations.",
+  "files": [
+    {
+      "file": "css/auth.css",
+      "before": {
+        "count": 5,
+        "declarations": [
+          [
+            "width",
+            "min(440px, calc(100% - 32px))"
+          ],
+          [
+            "max-height",
+            "calc(var(--ob-visual-viewport-height) - 32px)"
+          ],
+          [
+            "background",
+            "rgb(19 27 34 / 50%)"
+          ],
+          [
+            "border-left",
+            "4px solid var(--ob-color-success)"
+          ],
+          [
+            "border-top",
+            "1px solid var(--ob-color-border-control)"
+          ]
+        ]
+      },
+      "after": {
+        "count": 0,
+        "declarations": []
+      }
+    },
+    {
+      "file": "css/components.css",
+      "before": {
+        "count": 1,
+        "declarations": [
+          [
+            "padding",
+            "1px var(--ob-space-sm)"
+          ]
+        ]
+      },
+      "after": {
+        "count": 0,
+        "declarations": []
+      }
+    },
+    {
+      "file": "css/editor.css",
+      "before": {
+        "count": 71,
+        "declarations": [
+          [
+            "padding-bottom",
+            "24px"
+          ],
+          [
+            "gap",
+            "16px"
+          ],
+          [
+            "margin-bottom",
+            "24px"
+          ],
+          [
+            "padding",
+            "12px 0"
+          ],
+          [
+            "border-bottom",
+            "2px solid var(--ob-red-500)"
+          ],
+          [
+            "gap",
+            "12px"
+          ],
+          [
+            "color",
+            "var(--ob-secondary-600)"
+          ],
+          [
+            "gap",
+            "12px"
+          ],
+          [
+            "margin-bottom",
+            "24px"
+          ],
+          [
+            "width",
+            "90px"
+          ],
+          [
+            "color",
+            "var(--ob-secondary-600)"
+          ],
+          [
+            "max-width",
+            "880px"
+          ],
+          [
+            "margin-bottom",
+            "24px"
+          ],
+          [
+            "grid-template-columns",
+            "minmax(0, 2fr) minmax(230px, 1fr)"
+          ],
+          [
+            "gap",
+            "24px 40px"
+          ],
+          [
+            "padding-top",
+            "24px"
+          ],
+          [
+            "margin",
+            "0 0 16px"
+          ],
+          [
+            "gap",
+            "6px"
+          ],
+          [
+            "margin-bottom",
+            "16px"
+          ],
+          [
+            "gap",
+            "8px"
+          ],
+          [
+            "color",
+            "var(--ob-secondary-600)"
+          ],
+          [
+            "padding",
+            "6px 10px"
+          ],
+          [
+            "min-height",
+            "70px"
+          ],
+          [
+            "width",
+            "20px"
+          ],
+          [
+            "height",
+            "20px"
+          ],
+          [
+            "accent-color",
+            "var(--ob-secondary-600)"
+          ],
+          [
+            "background",
+            "var(--ob-blue-50)"
+          ],
+          [
+            "color",
+            "var(--ob-blue-800)"
+          ],
+          [
+            "border-radius",
+            "2px"
+          ],
+          [
+            "padding",
+            "1px 6px"
+          ],
+          [
+            "border-left",
+            "3px solid var(--ob-blue-700)"
+          ],
+          [
+            "border",
+            "2px solid var(--ob-red-800) !important"
+          ],
+          [
+            "color",
+            "var(--ob-red-800)"
+          ],
+          [
+            "padding",
+            "12px 16px"
+          ],
+          [
+            "background",
+            "var(--ob-orange-50)"
+          ],
+          [
+            "border-left",
+            "3px solid var(--ob-orange-700)"
+          ],
+          [
+            "padding",
+            "20px 0"
+          ],
+          [
+            "gap",
+            "8px"
+          ],
+          [
+            "border",
+            "1px solid var(--ob-secondary-100)"
+          ],
+          [
+            "min-width",
+            "800px"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-50)"
+          ],
+          [
+            "padding",
+            "12px"
+          ],
+          [
+            "border-bottom",
+            "1px solid var(--ob-secondary-100)"
+          ],
+          [
+            "min-width",
+            "115px"
+          ],
+          [
+            "min-width",
+            "24px"
+          ],
+          [
+            "padding-top",
+            "6px"
+          ],
+          [
+            "min-width",
+            "150px"
+          ],
+          [
+            "min-width",
+            "190px"
+          ],
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-50)"
+          ],
+          [
+            "gap",
+            "4px"
+          ],
+          [
+            "font-size",
+            "20px"
+          ],
+          [
+            "padding",
+            "4px 8px"
+          ],
+          [
+            "min-height",
+            "36px"
+          ],
+          [
+            "min-width",
+            "32px"
+          ],
+          [
+            "gap",
+            "16px 24px"
+          ],
+          [
+            "padding",
+            "16px"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-50)"
+          ],
+          [
+            "padding-top",
+            "16px"
+          ],
+          [
+            "border",
+            "1px solid var(--ob-secondary-100)"
+          ],
+          [
+            "border-radius",
+            "4px"
+          ],
+          [
+            "padding",
+            "24px"
+          ],
+          [
+            "width",
+            "480px"
+          ],
+          [
+            "max-width",
+            "calc(100vw - 32px)"
+          ],
+          [
+            "color",
+            "var(--ob-secondary-800)"
+          ],
+          [
+            "background",
+            "rgba(19,27,34,.5)"
+          ],
+          [
+            "margin",
+            "0 0 12px"
+          ],
+          [
+            "gap",
+            "12px"
+          ],
+          [
+            "margin-top",
+            "24px"
+          ],
+          [
+            "font-size",
+            "16px"
+          ]
+        ]
+      },
+      "after": {
+        "count": 2,
+        "declarations": [
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ]
+        ]
+      }
+    },
+    {
+      "file": "css/export.css",
+      "before": {
+        "count": 3,
+        "declarations": [
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ],
+          [
+            "left",
+            "-100000px"
+          ]
+        ]
+      },
+      "after": {
+        "count": 3,
+        "declarations": [
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ],
+          [
+            "left",
+            "-100000px"
+          ]
+        ]
+      }
+    },
+    {
+      "file": "css/main.css",
+      "before": {
+        "count": 14,
+        "declarations": [
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ],
+          [
+            "margin",
+            "-1px"
+          ],
+          [
+            "top",
+            "-100px"
+          ],
+          [
+            "max-height",
+            "max(0px, min(var(--ob-suggest-max-height), calc(var(--ob-suggest-available-height, 100dvh) - var(--ob-space-sm))))"
+          ],
+          [
+            "padding",
+            "1px var(--ob-space-sm)"
+          ],
+          [
+            "background",
+            "var(--ob-white)"
+          ],
+          [
+            "color",
+            "var(--ob-black)"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-100) !important"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-50) !important"
+          ],
+          [
+            "border",
+            "var(--ob-border-width-xs) solid var(--ob-black)"
+          ],
+          [
+            "color",
+            "var(--ob-black) !important"
+          ],
+          [
+            "color",
+            "var(--ob-black)"
+          ],
+          [
+            "outline-offset",
+            "-1px"
+          ]
+        ]
+      },
+      "after": {
+        "count": 14,
+        "declarations": [
+          [
+            "width",
+            "1px"
+          ],
+          [
+            "height",
+            "1px"
+          ],
+          [
+            "margin",
+            "-1px"
+          ],
+          [
+            "top",
+            "-100px"
+          ],
+          [
+            "max-height",
+            "max(0px, min(var(--ob-suggest-max-height), calc(var(--ob-suggest-available-height, 100dvh) - var(--ob-space-sm))))"
+          ],
+          [
+            "background",
+            "var(--ob-white)"
+          ],
+          [
+            "color",
+            "var(--ob-black)"
+          ],
+          [
+            "color",
+            "var(--ob-black)"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-100) !important"
+          ],
+          [
+            "background",
+            "var(--ob-secondary-50) !important"
+          ],
+          [
+            "border",
+            "var(--ob-border-width-xs) solid var(--ob-black)"
+          ],
+          [
+            "color",
+            "var(--ob-black) !important"
+          ],
+          [
+            "color",
+            "var(--ob-black)"
+          ],
+          [
+            "outline-offset",
+            "-1px"
+          ]
+        ]
+      }
+    },
+    {
+      "file": "css/graph.css",
+      "before": {
+        "count": 1,
+        "declarations": [
+          [
+            "outline-offset",
+            "-1px"
+          ]
+        ]
+      },
+      "after": {
+        "count": 1,
+        "declarations": [
+          [
+            "outline-offset",
+            "-1px"
+          ]
+        ]
+      }
+    }
+  ]
+}

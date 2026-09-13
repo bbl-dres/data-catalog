@@ -99,4 +99,7 @@ for (const key of ['sourceType','sourceId','sourceIdentifier','sourceName','targ
 
 const core = { identifier:'fact.identifier',name:'col.name',description:'col.description',type:'fact.type',status:'fact.status',version:'fact.version',created:'fact.created',modified:'fact.modified',responsibleOrg:'col.responsibility',dataOwner:'detail.owner',dataSteward:'detail.steward',classification:'fact.classification',personalData:'fact.personalData',systemOfRecord:'fact.systemOfRecord' };
 const extensions = { domain:'fact.domain',system:'fact.system',businessObject:'fact.object',table:'fact.table',dataCustodian:'detail.dataCustodian',technicalName:'fact.technicalName',normReference:'fact.normReference',valueType:'col.valueType',dataType:'col.dataType',keyRole:'fact.businessKey',mandatory:'fact.mandatory',codeList:'col.codeList',sortOrder:'excel.sortOrder',informationUrls:'fact.moreInformation',accessRights:'fact.access',license:'fact.license',format:'fact.format',accrualPeriodicity:'fact.refresh',protocol:'fact.protocol',endpointURL:'fact.baseUrl',documentation:'fact.documentation' };
+bind('DataTable.accessOptions', 'access.title');
+for (const key of ['format','accessUrl','downloadUrl','accessNotes','license']) bind('AccessOption.' + key, 'access.' + key);
+
 module.exports = { bindings, core, extensions };

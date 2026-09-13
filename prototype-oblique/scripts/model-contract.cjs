@@ -44,7 +44,7 @@ function read(text = fs.readFileSync(source, 'utf8')) {
     if (junction) return get(`${byTable[junction[1]]}.qualityRequirementIds`);
     throw new Error(`Unmapped SQL column: ${table}.${name}`);
   }
-  const owned = { responsible_organisation: 'OrganisationDetails', authority_organisation: 'OrganisationDetails', documentation_links: 'DocumentationLink', value_specification: 'ValueSpecification' };
+  const owned = { responsible_organisation: 'OrganisationDetails', authority_organisation: 'OrganisationDetails', documentation_links: 'DocumentationLink', access_options: 'AccessOption', value_specification: 'ValueSpecification' };
   return { definitions, projections, get, label, column, byTable, owned };
 }
 module.exports = { read, root, source, snake };

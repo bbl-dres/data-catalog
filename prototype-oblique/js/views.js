@@ -133,6 +133,7 @@
       route, state, entity: route.entity, kind: isDomain ? 'objects' : route.kind, mode, isDomain,
       isList: route.view === 'list' || (isDomain && mode !== 'overview'),
       isRows: route.view === 'detail' && !isDomain && DK.detail.resolveTab(route.entity, route.params.tab) === 'rows',
+      isHistory: route.view === 'detail' && !isDomain && DK.detail.resolveTab(route.entity, route.params.tab) === 'history',
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
       filter: isDomain && mode === 'overview' ? '' : (route.params.filter || '').trim(), total: 0, matched: 0,
       domain: isDomain ? route.entity : route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
@@ -166,6 +167,12 @@
       ctx.rowList = DK.detail.rowsContext(route.entity, route, state);
       ctx.total = ctx.rowList.total;
       ctx.matched = ctx.rowList.matched;
+    }
+    if (ctx.isHistory) {
+      ctx.historyList = DK.detail.historyContext(route.entity, route, state);
+      ctx.filter = ctx.historyList.filter;
+      ctx.total = ctx.historyList.total;
+      ctx.matched = ctx.historyList.matched;
     }
     if (route.view === 'search') {
       ctx.searchGroups = DK.search.results((route.params.q || '').trim(), state.searchOptions);

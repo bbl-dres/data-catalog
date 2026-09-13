@@ -159,7 +159,7 @@
   }
 
   function field(id, label, type, autocomplete) {
-    return `<label class="ob-auth-field" for="${id}"><span>${esc(t(label))}</span><input class="ob-input" id="${id}" name="${id}" type="${type}" autocomplete="${autocomplete}" required${type === 'email' ? ' autocapitalize="none" spellcheck="false"' : ''}></label>`;
+    return `<label class="ob-auth-field ob-form-field" for="${id}"><span>${esc(t(label))}</span><input class="ob-input" id="${id}" name="${id}" type="${type}" autocomplete="${autocomplete}" required${type === 'email' ? ' autocapitalize="none" spellcheck="false"' : ''}></label>`;
   }
 
   function show(nextMode) {
@@ -264,7 +264,7 @@
       refreshHeader = onChange;
       dialog = document.createElement('dialog');
       dialog.id = 'auth-dialog';
-      dialog.className = 'ob-auth-dialog';
+      dialog.className = 'ob-auth-dialog ob-dialog';
       dialog.setAttribute('aria-labelledby', 'auth-title');
       dialog.setAttribute('aria-describedby', 'auth-description');
       document.body.append(dialog);

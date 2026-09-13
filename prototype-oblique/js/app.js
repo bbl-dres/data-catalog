@@ -183,7 +183,7 @@
       // Explicit links win on both cold loads and history traversal. Snapshot implicit defaults below.
       const requested = route.params.tab || (previous?.view === 'detail' ? state.detailTab : 'overview');
       state.detailTab = detail.resolveTab(route.entity, requested);
-      router.replaceParams({ tab: state.detailTab, ...(state.detailTab !== 'rows' ? { page: null } : {}) });
+      router.replaceParams({ tab: state.detailTab, ...(!['rows', 'history'].includes(state.detailTab) ? { page: null } : {}) });
     } else {
       state.detailTab = 'overview';
     }
@@ -231,10 +231,12 @@
     const flyoutScroll = $('sidebar-flyout')?.scrollTop || 0;
     route = resolveRoute(); // re-read: replaceParams() may have changed tab/page/view/group
     const visibleKind = DK.presentation.routeKind(route);
-    if (visibleKind && Object.hasOwn(route.params, 'fields')) DK.presentation.save(visibleKind, route.params.fields.split(','));
-    if (visibleKind && (navigated || Object.hasOwn(route.params, 'sort'))) {
-      const key = route.view === 'list' || route.kind === 'domains' ? `list:${visibleKind}` : `detail:${route.kind}:rows`;
-      const sort = router.sort(route.params.sort);
+    const fieldsParam = visibleKind === 'history' ? 'historyFields' : 'fields';
+    const sortParam = visibleKind === 'history' ? 'historySort' : 'sort';
+    if (visibleKind && Object.hasOwn(route.params, fieldsParam)) DK.presentation.save(visibleKind, route.params[fieldsParam].split(','));
+    if (visibleKind && (navigated || Object.hasOwn(route.params, sortParam))) {
+      const key = route.view === 'list' || route.kind === 'domains' ? `list:${visibleKind}` : `detail:${route.kind}:${visibleKind === 'history' ? 'history' : 'rows'}`;
+      const sort = router.sort(route.params[sortParam]);
       delete state.tableSorts[key];
       if (sort && DK.presentation.fields(visibleKind).some(field => field.id === sort.field && field.type !== 'links')) state.tableSorts[key] = sort;
     }
@@ -243,7 +245,7 @@
     const page = views.page(route, state);
     ctx = page.ctx;
     normalizeSearchPage();
-    if (ctx.isList || ctx.isRows) syncVisibilityUrl();
+    if (ctx.isList || ctx.isRows || ctx.isHistory) syncVisibilityUrl();
     // Snapshot resolved defaults in this history entry. Back must restore this
     // page's layout/grouping, even after another collection changes the preference.
     if (navigated && ctx.isList) {
@@ -467,27 +469,30 @@
     ctx = views.context(route, state);
     syncVisibilityUrl();
     if (ctx.isRows) $('panel-rows').innerHTML = detail.rows(route.entity, route, state, ctx.rowList);
+    else if (ctx.isHistory) $('panel-history').innerHTML = detail.history(route.entity, state, ctx.historyList);
     else if (ctx.isList) $('collection-view-panel').innerHTML = views.list(ctx);
     observeTables();
   }
   function syncVisibilityUrl() {
     const kind = DK.presentation.routeKind(resolveRoute());
     if (kind) {
-      const sort = ctx?.isList ? ctx.tableOptions?.sort : ctx?.isRows ? ctx.rowList?.options.sort : null;
-      router.replaceParams({ fields: DK.presentation.selected(kind).join(','), sort: sort?.field ? `${sort.field}:${sort.direction}` : null,
-        ...(ctx?.isRows ? ui.pageParams(ctx.rowList.paging) : {}) });
+      const list = ctx?.isRows ? ctx.rowList : ctx?.isHistory ? ctx.historyList : null;
+      const sort = ctx?.isList ? ctx.tableOptions?.sort : list?.options.sort;
+      router.replaceParams({ [kind === 'history' ? 'historyFields' : 'fields']: DK.presentation.selected(kind).join(','),
+        [kind === 'history' ? 'historySort' : 'sort']: sort?.field ? `${sort.field}:${sort.direction}` : null,
+        ...(list ? ui.pageParams(list.paging) : {}) });
       route = resolveRoute(); ctx.route = route;
     }
   }
   app.refreshVisibility = () => { syncVisibilityUrl(); app.render(); };
   /** Update only results: keeping the input node preserves focus, selection and IME composition. */
   function filterCollection(value) {
-    if (!ctx.isList && !ctx.isRows) return;
+    if (!ctx.isList && !ctx.isRows && !ctx.isHistory) return;
     const q = value.trim();
     $('collection-filter-clear').hidden = !value;
     if (q === ctx.filter) return;
     state.filteredClosed = {};
-    router.replaceParams({ filter: q || null, ...(ctx.isRows ? { page: null } : {}) });
+    router.replaceParams({ [ctx.isHistory ? 'historyFilter' : 'filter']: q || null, ...(ctx.isRows || ctx.isHistory ? { page: null } : {}) });
     renderCollectionResults();
     const status = $('collection-filter-status');
     status.className = q ? 'ob-collection-status' : 'ob-sr-only';
@@ -694,7 +699,7 @@
         const current = state.tableSorts[sortKey] || (headerDirection ? { column, field, direction: headerDirection === 'ascending' ? 'asc' : 'desc' } : null);
         const direction = current && (field ? current.field === field : current.column === column) && current.direction === 'asc' ? 'desc' : 'asc';
         state.tableSorts[sortKey] = field ? { field, direction } : { column, direction };
-        if ((ctx.isList || ctx.isRows) && field) router.replaceParams({ sort: `${field}:${direction}` });
+        if ((ctx.isList || ctx.isRows || ctx.isHistory) && field) router.replaceParams({ [ctx.isHistory ? 'historySort' : 'sort']: `${field}:${direction}` });
         if (['detail', 'search'].includes(route.view) && route.params.page) router.replaceParams({ page: null });
         app.render();
         return;
@@ -832,6 +837,8 @@
     DK.preferences.write('language', state.lang);
     ui.setDictionary(data.i18n, state.lang, 'de');
     document.documentElement.lang = state.lang;
+    $('prototype-banner-title').textContent = t('banner.prototype.title');
+    $('header-notice').textContent = t('banner.prototype.text');
     $('skip-link').textContent = t('skip');
     $('brand-link').setAttribute('aria-label', `${cfg.app.organisation} – ${cfg.app.name} – ${t('nav.home')}`);
     $('main-nav').setAttribute('aria-label', t('nav.main'));
@@ -865,8 +872,12 @@
     $('brand-acronym').textContent = cfg.app.organisationShort || '';
     $('brand-org').textContent = cfg.app.organisation;
     $('brand-app').textContent = cfg.app.name;
-    $('header-notice').textContent = cfg.app.footerNote;
     setLanguage(DK.preferences.read('language') || cfg.app.language || 'de');
+    // Wrapped translations and text zoom must also move sticky content below the banner.
+    const banner = $('prototype-banner');
+    const syncBannerHeight = () => rootProperty('--ob-header-notice-height', banner.getBoundingClientRect().height + 'px');
+    syncBannerHeight();
+    new ResizeObserver(syncBannerHeight).observe(banner);
 
     document.addEventListener('click', onClick);
     document.addEventListener('input', onInput);

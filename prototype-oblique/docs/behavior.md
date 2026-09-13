@@ -36,18 +36,19 @@ Supported explicit profile tabs survive direct links and reloads. A new profile 
 
 ### Local search
 
-Collection controls place search before grouping/actions. Detail row tabs use the same input for a system's tables, a table's fields, business-object/product attributes and code-list values. On narrow workspaces, controls wrap below the tabs.
+Collection controls place search before grouping/actions. Detail row tabs use the same input for a system's tables, a table's fields, business-object/product attributes and code-list values. The History tab uses the same search, result status and pagination. On narrow workspaces, controls wrap below the tabs.
 
-- `filter` is local to the current collection or detail list; global search uses `q`.
+- `filter` is local to the current collection or detail row list; history uses a separate `historyFilter`, and global search uses `q`.
 - Match names, technical names, descriptions, identifiers and applicable table/context values, ignoring case and supporting umlaut alternatives; highlighted hits use the same foldings, so a hit found by search is also marked.
 - Filter the complete list before sorting and pagination. Changing the query returns to page one; tab counts retain the full count and the search status reports matches.
 - Update results without replacing the input, caret or IME composition. Escape and the clear action reset the filter.
 - Preserve the query through view/group changes and browser history. Bookmarked row tabs reopen on reload, with or without a filter.
+- History searches date, change, details and actor, including hidden columns. It sorts newest first by default and offers 50/100/200 rows per page, with a top pager for multiple pages and a bottom pager. Pagination and sorting apply to all matched events, not just the visible page.
 - Collection exports use the filtered collection. An entity export includes its complete schema regardless of local row filtering or pagination.
 
 ## Key facts
 
-Detail overviews stack **Key facts**, **Protection and privacy** (*Schutz und Datenschutz*) and **System** in that order. Classification and personal-data handling belong to Protection and privacy. System shows identifiers, version, creation/modification dates and the existing source/synchronization metadata. All three sections remain expanded, with dashes for unknown values. Responsibility stays alongside on wide screens and follows them on narrow screens. This grouping does not change the catalog records or export contents.
+Detail overviews stack **Key facts**, **Protection and privacy** (*Schutz und Datenschutz*) and **System** in that order. Classification and personal-data handling belong to Protection and privacy. System shows identifiers, version, creation/modification dates and the existing source/synchronization metadata. Each section can be collapsed using its heading; System starts collapsed, and the other sections start expanded. Unknown values display dashes. System also contains Kommentar. Native print reveals the sections. Responsibility stays alongside on wide screens and follows them on narrow screens. This grouping does not change the catalog records or export contents.
 
 Business objects, data tables and reference data share a **More information** list backed by `informationUrls`. Keep the row visible when empty; deduplicate links and accept only safe HTTP(S) URLs. Existing source links remain available in this list. Data-table and reference-data profiles omit separate source-document, source-context and definition-source rows; their provenance remains in the retained source data; review exports include the documented links.
 
@@ -55,7 +56,9 @@ Reference-data profiles and collection tables use **Standard reference**, backed
 
 ## Visible information
 
-The **View** (German: **Ansicht**) control sits between collection search and grouping, and beside search on detail row tabs. Its choices apply to Tiles and Table together, per displayed entity kind. Domain business-object collections share business-object preferences; system table lists share data-table preferences. Attribute, field, code-value and product-attribute lists each have their own selection. The `fields` URL parameter records ordered field IDs; `sort` records `field:direction`. These take precedence over browser preferences on reload. Existing `view`/`tab`, `group` and `filter` parameters restore layout and scope. Global search results and dashboard tables retain their fixed columns.
+The **View** (German: **Ansicht**) control sits between collection search and grouping, and beside search on detail row and History tabs. Its choices apply to Tiles and Table together, per displayed entity kind. Domain business-object collections share business-object preferences; system table lists share data-table preferences. Attribute, field, code-value and product-attribute lists each have their own selection. The `fields` URL parameter records ordered field IDs; `sort` records `field:direction`. These take precedence over browser preferences on reload. Existing `view`/`tab`, `group` and `filter` parameters restore layout and scope. Global search results and dashboard tables retain their fixed columns.
+
+History has its own four-column picker: Date, Change, Details and Edited by. Date is mandatory and all four columns are initially visible. `historyFields` and `historySort` preserve visibility and sorting independently of detail rows, with browser preferences as the fallback for column visibility. Hiding the active optional sort column restores newest-date-first ordering. These choices do not change generated document or Excel contents, and the editor retains its full read-only history table.
 
 Names are mandatory; code values also retain their code. Web and print use the same compact choices for each entity type: descriptions, status, ownership, domain/system context, versions, counts and essential type-specific facts. Fields and attributes also offer data type, keys, required/nullability and value lists where applicable. Owned rows also offer **Zeilenreihenfolge / Row order**, hidden by default, showing the saved rank and supporting column sorting. Audit dates, internal IDs, comments, information links and other detailed metadata remain outside the picker, available through detail pages and the API. Empty selected values remain `—`, and zero/false remain meaningful values. Names retain alias/technical-name formatting. Tiles show descriptions, labeled facts and count/status footers; tables show the same selection as columns. Labels remain translated in DE/FR/IT/EN.
 
@@ -64,6 +67,16 @@ Checkbox changes and Reset take effect immediately, including the toolbar count.
 The print **View** picker is one list. Shared properties such as description, responsibility and version have one checkbox controlling both the entry and its child rows. Their values remain distinct in the output. Entry and child names remain separate, mandatory choices. Protocol and endpoint URL use shared choices even where their internal field IDs differ. Both dropdowns show a simple `(count)`; print counts unique choices, not physical PDF columns.
 
 A mixed checkbox means a property is visible at only one level. Untouched mixed choices preserve existing independent preferences; clicking selects both levels, and unchecking hides both immediately. Reset immediately restores both types' defaults, including mixed defaults. Grid and List synchronize selections back to the corresponding main views. Tiles expose and reset entry fields only. These browser presentation preferences never write catalog records. Document identity/status and branding remain independent from entity column visibility.
+
+## Access options / Bereitstellungsformen
+
+Data-table, data-product and API profiles show **Bereitstellungsformen** beneath the overview facts. Each entry expands independently using the shared heading button and chevron; entries start collapsed and support keyboard activation. Details describe format, status, access/download links, access instructions, terms and comments. Missing values remain dashes. On narrow workspaces, labels sit above their values so long labels and URLs remain readable. Empty lists show a short message.
+
+Signed-in editors manage authored entries in the **Bereitstellungsformen** tab: add, translate the title, edit, move, archive and restore. A title in at least one language is required. An entry marked valid also needs an access link, download link or access instructions. Unsaved drafts may be removed; saved identities are retained when archived. Changes save atomically with the owner, using its revision and history. The tab reports unavailable editing until the [database migration](../supabase/README.md#access-options-bereitstellungsformen) is applied.
+
+API profiles additionally show documented endpoint operations from their existing records, editable under **Zeilen**. No endpoint URL is copied into the authored list. Existing product formats, landing pages and licences remain separate metadata; no access entries or demonstration URLs are invented. Links open without catalog credentials and only safe HTTP(S) targets become clickable.
+
+The three collection/print field pickers offer Access options, hidden by default. It contains the same localized descriptions. Native browser print reveals collapsed descriptions. Excel adds an Access options sheet for authored, unarchived entries belonging to the exported scope, with owner context and all four title languages; existing endpoint exports remain unchanged.
 
 ## Responsibility
 

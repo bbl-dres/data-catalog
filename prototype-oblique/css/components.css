@@ -49,7 +49,7 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 .ob-chip--info { background: var(--ob-color-info); }
 .ob-chip--neutral { background: var(--ob-color-neutral); }
 
-.ob-chip { padding: 1px var(--ob-space-sm); letter-spacing: var(--ob-letter-spacing-wide); } /* optical vertical inset */
+.ob-chip { padding: var(--ob-chip-padding-block) var(--ob-space-sm); letter-spacing: var(--ob-letter-spacing-wide); }
 /* The outline is drawn inside the box, so every chip shares the 18px height and the same line box. */
 .ob-chip--outline { color: var(--ob-color-text-secondary); background: var(--ob-color-bg); box-shadow: inset 0 0 0 var(--ob-border-width-xs) var(--ob-color-border-strong); font-weight: var(--ob-font-weight-regular); }
 
@@ -66,12 +66,45 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
   background: var(--ob-color-bg); color: var(--ob-color-text);
   font-family: var(--ob-font-family-body); font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md);
 }
-.ob-input { border-radius: var(--ob-radius-lg); }
+.ob-input { border-radius: var(--ob-radius-lg); padding-inline: var(--ob-space-sm); }
 .ob-select { border-radius: var(--ob-radius-sm); padding: 0 var(--ob-space-sm); }
 .ob-select-menu { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 .ob-select-menu > * { grid-area: 1 / 1; min-width: 0; width: 100%; }
 /* The native control sizes the field by its options and remains the single value store. */
 .ob-select-menu > select[aria-hidden] { visibility: hidden; pointer-events: none; }
+
+/* Label/control rhythm. The containing block also keeps clipped labels local. */
+.ob-form-field { position: relative; display: flex; flex-direction: column; gap: var(--ob-form-field-gap); min-width: 0; }
+
+/* Small native modals share their surface, viewport bounds and responsive inset. */
+.ob-dialog {
+  position: fixed; inset: auto 0;
+  top: calc(var(--ob-visual-viewport-top) + var(--ob-visual-viewport-height) / 2);
+  transform: translateY(-50%); margin: 0 auto;
+  width: var(--ob-dialog-width); max-width: calc(100% - 2 * var(--ob-dialog-gutter));
+  max-height: calc(var(--ob-visual-viewport-height) - 2 * var(--ob-dialog-gutter));
+  padding: var(--ob-dialog-padding); overflow: auto; overscroll-behavior: contain;
+  border: var(--ob-border-width-xs) solid var(--ob-color-border-strong);
+  border-radius: var(--ob-radius-lg); box-shadow: var(--ob-shadow-lg);
+  background: var(--ob-color-bg); color: var(--ob-color-text); font: inherit; letter-spacing: inherit;
+}
+.ob-dialog::backdrop { background: var(--ob-color-modal-backdrop); }
+
+/* Choice popovers share a fixed surface and a scrolling body above their actions.
+   Positioning, available height and focus behavior remain with each controller. */
+.ob-choice-popover {
+  position: fixed; inset: auto; margin: 0;
+  width: min(var(--ob-choice-popover-width, var(--ob-popover-width)), calc(100vw - var(--ob-space-default)));
+  max-height: calc(var(--ob-visual-viewport-height) - var(--ob-space-default));
+  padding: var(--ob-space-default); border: var(--ob-border-width-xs) solid var(--ob-color-border);
+  background: var(--ob-color-bg); color: var(--ob-color-text); box-shadow: var(--ob-shadow-lg); overflow: hidden;
+}
+.ob-choice-popover:popover-open, .ob-choice-popover form { display: flex; flex-direction: column; min-height: 0; }
+.ob-choice-popover h3 { flex: none; font-size: var(--ob-font-size-md); margin-bottom: var(--ob-space-default); }
+.ob-choice-popover-body { display: flex; flex-direction: column; gap: var(--ob-space-sm); min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--ob-space-xs); }
+.ob-choice-popover-body > * { flex: none; }
+.ob-choice-popover-actions { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: var(--ob-space-sm); padding-top: var(--ob-space-default); }
+.ob-choice-popover-actions .ob-button { height: auto; min-height: var(--ob-control-height); white-space: normal; }
 
 /* Native checkboxes share spacing and touch sizing across filter groups. */
 .ob-check { display: flex; align-items: center; gap: var(--ob-space-sm); min-height: var(--ob-control-height); padding-block: var(--ob-space-xs); cursor: pointer; }

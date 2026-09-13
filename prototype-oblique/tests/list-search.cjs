@@ -13,6 +13,14 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     page.setDefaultTimeout(10000);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
+    await page.route('**/data/changelog.json', async route => {
+      const response = await route.fetch();
+      const history = (await response.json()).filter(row => row.entity !== 'tables:t-sap-building');
+      for (let n = 0; n < 150; n++) history.push({ entity: 'tables:t-sap-building',
+        date: new Date(Date.UTC(2024, 0, n + 1)).toISOString().slice(0, 10),
+        action: 'Geändert', detail: n === 0 ? 'Older unique record' : `Change ${n}`, user: n === 0 ? 'Müller' : 'System' });
+      await route.fulfill({ response, json: history });
+    });
     // Large and empty schemas remain covered independently of catalog curation.
     await page.route('**/data/tables.json', async route => {
       const response = await route.fetch();
@@ -131,6 +139,77 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.equal(await rows.count(), 0);
     assert(await page.locator('#panel-rows .ob-empty').isVisible());
     await input.press('Escape');
+
+    await visit('#/tables/t-sap-building?tab=history&page=2');
+    const historyRows = page.locator('#panel-history tbody tr');
+    assert.equal(await historyRows.count(), 50);
+    assert.equal(params().get('page'), '2', 'history reload keeps its page');
+    assert.equal(await input.getAttribute('aria-controls'), 'panel-history');
+    assert(await page.locator('.ob-detail-controls #collection-filter').isVisible());
+    await input.evaluate(el => { window.historySearchNode = el; });
+    await input.fill('Mueller');
+    assert.equal(await historyRows.count(), 1, 'history searches all pages and matches actor umlauts');
+    assert((await historyRows.innerText()).includes('Older unique record'));
+    assert.equal(params().has('page'), false);
+    assert.equal(await page.locator('#tab-history').innerText(), 'Verlauf (150)');
+    assert.equal(await page.locator('#collection-filter-status').innerText(), '1 von 150 Einträgen');
+    assert(await input.evaluate(el => el === window.historySearchNode && el === document.activeElement));
+    await page.reload(); await input.waitFor();
+    assert.equal(await input.inputValue(), 'Mueller');
+    assert.equal(await historyRows.count(), 1);
+    await input.fill('<script>missing</script>');
+    assert(await page.locator('#panel-history .ob-empty').isVisible());
+    assert.equal(await page.locator('#panel-history .ob-pager').count(), 0);
+    await page.locator('#panel-history [data-action="clear-collection-filter"]').click();
+    assert.equal(await historyRows.count(), 50);
+    await page.locator('#panel-history .ob-table-sort').first().click();
+    assert((await historyRows.first().innerText()).includes('Older unique record'), 'sort applies to the full history');
+    await page.locator('#panel-history [data-action="set-page-size"]').selectOption('100');
+    assert.equal(await historyRows.count(), 100);
+    await page.locator('[data-focus="page-next-top"]').click();
+    assert.equal(await historyRows.count(), 50);
+    await visit('#/tables/t-sap-building?tab=history&page=99');
+    assert.equal(params().get('page'), '3', 'history clamps and normalizes out-of-range pages');
+    await visit('#/tables/t-sap-building?tab=rows&filter=COMP_CODE');
+    await page.locator('#tab-history').click();
+    assert.equal(await input.inputValue(), '', 'row query does not filter history');
+    await input.fill('Older unique record');
+    await page.locator('#tab-rows').click();
+    assert.equal(await input.inputValue(), 'COMP_CODE');
+    await page.locator('#tab-history').click();
+    assert.equal(await input.inputValue(), 'Older unique record');
+    const historyPicker = page.locator('[data-field-picker="history"]');
+    assert.equal(await historyPicker.innerText(), 'Ansicht (4)');
+    await historyPicker.click();
+    assert(await page.locator('.ob-field-picker input[value="date"]').isDisabled());
+    await page.locator('.ob-field-picker input[value="user"]').uncheck();
+    assert.equal(await historyPicker.innerText(), 'Ansicht (3)');
+    assert.equal(await page.locator('#panel-history th').count(), 3);
+    assert.equal(await page.locator('.ob-field-picker').count(), 1, 'picker stays open while the table updates');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.fieldPicker), 'history');
+    await input.fill('Mueller');
+    assert.equal(await historyRows.count(), 1, 'hidden actor remains searchable');
+    await page.reload(); await input.waitFor();
+    assert.equal(await historyPicker.innerText(), 'Ansicht (3)');
+    assert.equal(await page.locator('#panel-history th').count(), 3);
+    await historyPicker.click();
+    await page.locator('[data-fields-reset]').click();
+    assert.equal(await historyPicker.innerText(), 'Ansicht (4)');
+    await page.keyboard.press('Escape');
+    await input.press('Escape');
+    await page.locator('#panel-history [data-sort-field="user"]').click();
+    await historyPicker.click();
+    await page.locator('.ob-field-picker input[value="user"]').uncheck();
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#panel-history th[aria-sort="descending"]').innerText(), 'Datum', 'hiding the sorted field restores newest-first date ordering');
+    await historyPicker.click(); await page.locator('[data-fields-reset]').click(); await page.keyboard.press('Escape');
+    for (const width of [320, 390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      await settle(page);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `history overflow at ${width}`);
+    }
+    console.log('PASS history search, independent query/columns/sort, pagination, picker/reset, hidden-value matching, focus, reload, page bounds and mobile controls');
 
     await visit('#/tables/t-sap-building?tab=rows&filter=COMP_CODE');
     await page.click('[data-menu="actions"]');

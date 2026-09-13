@@ -14,7 +14,7 @@
 .ob-export-toolbar { flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding-bottom: var(--ob-space-default); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
 .ob-export-tools-panel { flex: none; min-height: 0; }
 .ob-export-tools-panel > summary { display: none; padding: var(--ob-space-sm) var(--ob-space-default); }
-.ob-export-control { display: flex; flex-direction: column; gap: var(--ob-space-xs); min-width: 0; font-size: var(--ob-font-size-sm); }
+.ob-export-control { font-size: var(--ob-font-size-sm); }
 .ob-export-control :is(.ob-input, .ob-select) { min-width: 0; width: 100%; }
 .ob-export-document-control { max-width: var(--ob-export-popover-width); } /* sizes to the document title; longer titles ellipsize at the popover width */
 .ob-export-preview-tools { display: flex; align-items: flex-end; gap: var(--ob-space-xs); }
@@ -64,13 +64,7 @@ button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
 .ob-export-busy[hidden], .ob-export-dialog [hidden] { display: none; }
 .ob-export-dialog > .ob-footer { flex: none; }
 .ob-export-error { display: flex; flex: none; align-items: center; flex-wrap: wrap; gap: var(--ob-space-md); padding: var(--ob-space-sm) var(--ob-space-lg); color: var(--ob-color-error); }
-.ob-export-popover { position: fixed; inset: auto; margin: 0; width: min(var(--ob-export-popover-width), calc(100vw - var(--ob-space-default))); max-height: calc(var(--ob-visual-viewport-height) - var(--ob-space-default)); padding: var(--ob-space-default); border: var(--ob-border-width-xs) solid var(--ob-color-border); background: var(--ob-color-bg); color: var(--ob-color-text); box-shadow: var(--ob-shadow-lg); overflow: hidden; }
-.ob-export-popover:popover-open { display: flex; flex-direction: column; }
-.ob-export-popover h3 { flex: none; margin-bottom: var(--ob-space-default); font-size: var(--ob-font-size-md); }
-.ob-export-popover form { display: flex; flex-direction: column; min-height: 0; }
-.ob-export-popover-body { display: flex; flex-direction: column; gap: var(--ob-space-sm); min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--ob-space-xs); }
-.ob-export-popover-body > * { flex: none; }
-.ob-export-popover-actions { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: var(--ob-space-sm); padding-top: var(--ob-space-default); }
+.ob-export-popover { --ob-choice-popover-width: var(--ob-export-popover-width); }
 .ob-export-facet-list { max-height: var(--ob-export-facets-height); overflow: auto; overscroll-behavior: contain; }
 .ob-export-facet-list fieldset { border: 0; padding: var(--ob-space-sm) 0; min-width: 0; }
 .ob-export-facet-list legend { font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-semibold); color: var(--ob-color-text-secondary); }

@@ -50,7 +50,17 @@ async function generate(db) {
       const businessSpec = field.table_name === 'business_attribute' && owned === 'ValueSpecification';
       const properties = Object.fromEntries(Object.values(model.definitions).filter(d => d.entity === owned && (!businessSpec || ['valueType','format','unit','geometryType','coordinateReferenceSystem'].includes(d.property)))
         .map(d => [d.property, { ...aliases(d), description: d.description }]));
-      if (field.name === 'documentation_links') schema.items = { properties };
+      if (field.name === 'access_options') {
+        for (const [key, property] of Object.entries(properties)) Object.assign(property, key === 'isArchived' ? { type: 'boolean' } : { type: 'string', minLength: 1, pattern: '\\S' });
+        Object.assign(properties.id, { format: 'uuid', pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' });
+        properties.status.enum = ['draft', 'valid', 'retired'];
+        properties.accessUrl.format = properties.downloadUrl.format = 'uri';
+        schema.type = 'array';
+        schema.items = { type: 'object', additionalProperties: false, properties, required: ['id','status','isArchived'],
+          anyOf: ['de','fr','it','en'].map(language => ({ required: ['name_' + language] })),
+          allOf: [{ if: { properties: { status: { const: 'valid' } }, required: ['status'] }, then: { anyOf: ['accessUrl','downloadUrl','accessNotes'].map(key => ({ required: [key] })) } }] };
+      }
+      else if (field.name === 'documentation_links') schema.items = { properties };
       else schema.properties = properties;
     }
     return schema;

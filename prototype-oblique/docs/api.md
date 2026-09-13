@@ -64,6 +64,14 @@ curl --fail-with-body -X PATCH "$API/domain/$ID" \
 
 For retryable scripts, generate the command UUID once and retain it with the request until success; the example generates new commands on each execution. Never put access tokens in URLs, commits or shared logs.
 
+## Access options
+
+After the [access-options migration](../supabase/README.md#access-options-bereitstellungsformen), `data_table`, `data_product` and `data_service` accept `access_options` on POST/PATCH. This is the complete ordered JSON array of [AccessOption](data-model.md#accessoption) values, not a separate resource. Read the current owner first, preserve existing item IDs, modify the list and PATCH it with the owner's current If-Match revision and a fresh Idempotency-Key. Concurrent changes receive the ordinary conflict response.
+
+Each item needs a lowercase UUID `id`, a title in at least one of `name_de`, `name_fr`, `name_it`, `name_en`, `status` and boolean `isArchived`. Optional fields are `format`, `accessUrl`, `downloadUrl`, `accessNotes`, `license` and `comment`. Omit blank optional values; nulls and unknown keys are rejected. Status `valid` requires an access/download URL or access notes. URLs must be HTTP(S) without embedded credentials. List order is display order.
+
+Set an existing item's `isArchived` to true to archive it, or false to restore it; retain it in the array. Removing saved IDs is rejected. Omitted `access_options` leaves it unchanged on PATCH and defaults to an empty array on POST. History records the owner change. Existing `service_endpoint` CRUD remains separate.
+
 ## Access
 
 Public reads need **no user login or bearer token**. Supabase still requires the application's public `apikey` header. The API page supplies the configured `sb_publishable_…` key automatically; other clients supply their own copy of that public key. Requests also select the exposed `catalog` schema.
@@ -117,7 +125,7 @@ Regenerate after schema, access or configured endpoint changes, review the diff 
 
 This is a maintained read/CRUD contract generated from **repository SQL**, not a downloaded hosted PostgREST specification. CRUD input schemas use the same private SQL property inventory as the command. Hosted root OpenAPI discovery rejects publishable keys, while regular reads remain available. Schema changes made only in the SQL Editor must also become repository migrations or this contract will drift.
 
-SQL checks, defaults and keys are descriptive `x-postgresql-*` annotations. The generator does not translate every SQL check, domain or trigger into JSON Schema. JSONB columns remain unconstrained JSON; the snapshot envelope and its numeric serialization are maintained explicitly. Response properties are optional because callers can project subsets with `select`; SQL nullability is recorded separately. The contract describes a supported subset of PostgREST, not every possible query operator or response representation.
+SQL checks, defaults and keys are descriptive `x-postgresql-*` annotations. The generator does not translate every SQL check, domain or trigger into JSON Schema. Most JSONB columns remain unconstrained JSON; `access_options` has an explicit item schema derived from the canonical dictionary. SQL additionally enforces unique/retained item IDs and exact value validation. The snapshot envelope and its numeric serialization are maintained explicitly. Response properties are optional because callers can project subsets with `select`; SQL nullability is recorded separately. The contract describes a supported subset of PostgREST, not every possible query operator or response representation.
 
 ## Verification
 

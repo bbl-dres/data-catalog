@@ -17,7 +17,7 @@ function runtime(change = () => {}, globals = {}) {
       return change(name, value) ?? value;
     } }),
   });
-  for (const file of ['resources', 'ui', 'preferences', 'data', 'router', 'presentation', 'field-picker', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
+  for (const file of ['resources', 'ui', 'preferences', 'data', 'router', 'access-options', 'presentation', 'field-picker', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context, { filename: file + '.js' });
   }
   return { ...context.window.DK, warnings };

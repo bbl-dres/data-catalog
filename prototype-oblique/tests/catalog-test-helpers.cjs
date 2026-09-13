@@ -10,7 +10,7 @@ function runtime(snapshot, config = { provider: 'supabase', url: 'https://catalo
       return { ok: true, json: async () => String(url).includes('/rpc/') ? snapshot : JSON.parse(fs.readFileSync(path.join(root, String(url)), 'utf8')) };
     } };
   vm.createContext(context);
-  for (const file of ['resources', 'ui', 'catalog', 'data', 'router', 'presentation', 'detail', 'excel']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context);
+  for (const file of ['resources', 'ui', 'catalog', 'data', 'router', 'access-options', 'presentation', 'detail', 'excel']) vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context);
   context.window.DK.catalogConfig = config;
   return { DK: context.window.DK, context, requests };
 }

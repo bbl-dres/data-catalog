@@ -14,6 +14,7 @@ async function database({ bundle = false, setupOnly = false, includeData = true 
       CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT NULL::uuid $$;
       CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $$ SELECT '{}'::jsonb $$;
+      GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;
       ALTER DEFAULT PRIVILEGES GRANT ALL ON TABLES TO anon, authenticated, service_role;`);
     let files = migrationFiles();
     if (bundle || setupOnly) files = files.slice(0, 2);

@@ -100,8 +100,12 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 
 /* ---- Oblique header with the federal logo lockup ------------------------ */
 .ob-header { background: var(--ob-color-bg); position: sticky; top: 0; z-index: var(--ob-z-layout); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
-.ob-header-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; column-gap: var(--ob-space-lg); height: calc(var(--ob-header-identity-height) + var(--ob-header-notice-height) - var(--ob-border-width-xs)); max-width: var(--ob-content-max-width); margin: 0 auto; padding: 0 var(--ob-space-xl) 0 var(--ob-space-default); }
-.ob-header-notice { text-align: center; white-space: nowrap; color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-md); }
+.prototype-banner { display: flex; align-items: center; justify-content: center; padding: var(--ob-space-sm) var(--ob-space-default); background: var(--ob-color-prototype-banner); color: var(--ob-color-text-inverse); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-md); text-align: center; }
+.prototype-banner strong { text-transform: uppercase; letter-spacing: var(--ob-letter-spacing-wider); margin-right: var(--ob-space-xs); }
+@media (max-width: 767px) {
+  .prototype-banner { padding: var(--ob-space-xs) var(--ob-space-md); font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); }
+}
+.ob-header-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--ob-space-lg); height: calc(var(--ob-header-identity-height) - var(--ob-border-width-xs)); max-width: var(--ob-content-max-width); margin: 0 auto; padding: 0 var(--ob-space-xl) 0 var(--ob-space-default); }
 .ob-logo { display: flex; align-items: center; gap: var(--ob-logo-gap); justify-self: start; min-width: 0; color: var(--ob-color-text); text-decoration: none; } /* the home link ends with the lockup, not the grid column */
 .ob-logo:hover, .ob-logo:focus { color: var(--ob-color-text); }
 .ob-logo-icon { align-self: center; color: var(--ob-color-text-secondary); }
@@ -121,19 +125,8 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-header-search .ob-search-clear { width: var(--ob-control-height-sm); height: var(--ob-control-height); }
 .ob-header-search .ob-suggest { min-width: 100%; }
 .ob-navigation-toggle.ob-button { display: none; }
-@media (min-width: 961px) {
-  /* The opened search field stretches across the centered notice; hide the covered text. */
-  .ob-header-bar:has(#header-search-field:not([hidden])) .ob-header-notice { visibility: hidden; }
-}
-@media (min-width: 961px) and (max-width: 1200px) {
-  /* Just above the drawer threshold the notice centers in the free space between lockup and tools. */
-  .ob-header-bar { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .ob-header-notice { justify-self: center; }
-}
 @media (max-width: 960px) {
-  .ob-header-bar { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: calc(var(--ob-header-identity-height) - var(--ob-border-width-xs)) var(--ob-header-notice-height); column-gap: 0; }
-  .ob-header-notice { grid-column: 1 / -1; grid-row: 2; align-self: start; }
-  .ob-header-tools { grid-column: 2; grid-row: 1; }
+  .ob-header-bar { column-gap: 0; }
 }
 
 /* Logo-only breakpoints from designsystem/app/tailwind.config.js. The app shell keeps its own breakpoints. */
@@ -153,7 +146,7 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
   position: absolute; top: calc(100% + var(--ob-space-md)); right: 0;
   width: var(--ob-popover-width); max-width: calc(100vw - var(--ob-space-xl));
   background: var(--ob-color-bg); display: flex; flex-direction: column;
-  max-height: calc(100dvh - var(--ob-header-identity-height) - var(--ob-space-xl));
+  max-height: calc(100dvh - var(--ob-header-identity-height) - var(--ob-header-notice-height) - var(--ob-space-xl));
   z-index: var(--ob-z-widget); filter: var(--ob-shadow-popover);
   font-size: var(--ob-font-size-md); font-weight: var(--ob-font-weight-regular); text-align: left;
 }
@@ -480,12 +473,6 @@ button.ob-tree-link { width: 100%; }
 .ob-tile-facts dd { margin: 0; }
 .ob-cell-summary > .ob-cell-value { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--ob-table-summary-lines); overflow: hidden; }
 .ob-field-links { overflow-wrap: anywhere; }
-.ob-field-picker { position: fixed; inset: auto; margin: 0; width: min(var(--ob-popover-width), calc(100vw - var(--ob-space-default))); max-height: calc(var(--ob-visual-viewport-height) - var(--ob-space-default)); padding: var(--ob-space-default); border: var(--ob-border-width-xs) solid var(--ob-color-border); background: var(--ob-color-bg); color: var(--ob-color-text); box-shadow: var(--ob-shadow-lg); overflow: hidden; }
-.ob-field-picker:popover-open { display: flex; flex-direction: column; min-height: 0; }
-.ob-field-picker h3 { font-size: var(--ob-font-size-md); margin-bottom: var(--ob-space-default); }
-.ob-field-picker-body { display: flex; flex-direction: column; gap: var(--ob-space-sm); min-height: 0; overflow: auto; padding: var(--ob-space-xs); }
-.ob-field-picker-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--ob-space-sm); padding-top: var(--ob-space-default); }
-.ob-field-picker-actions .ob-button { height: auto; min-height: var(--ob-control-height); white-space: normal; }
 .ob-field-required { color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); }
 .ob-tile-footer { font-size: var(--ob-font-size-xs); line-height: var(--ob-line-height-xs); color: var(--ob-color-text-tertiary); }
 .ob-tile-sub { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: var(--ob-card-summary-lines); overflow: hidden; text-wrap: pretty; font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md); color: var(--ob-color-text-secondary); }
@@ -557,6 +544,21 @@ button.ob-tree-link { width: 100%; }
 .ob-detail-section-toggle:hover { background: var(--ob-color-surface); }
 .ob-detail-section-toggle > .ob-icon { flex-shrink: 0; }
 .ob-detail-section-toggle[aria-expanded="true"] > .ob-icon { transform: rotate(180deg); }
+.ob-access-options { margin-top: var(--ob-space-xl); min-width: 0; }
+.ob-access-options > h2 { margin-bottom: var(--ob-space-default); }
+.ob-access-options-list { border-top: var(--ob-border-width-xs) solid var(--ob-color-border); }
+.ob-access-option { border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+.ob-access-option h3 { margin: 0; }
+.ob-access-option .ob-detail-section-toggle { padding: var(--ob-space-md); }
+.ob-access-option-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ob-access-option-format { max-width: 40%; font-size: var(--ob-font-size-sm); font-weight: var(--ob-font-weight-regular); color: var(--ob-color-text-secondary); overflow-wrap: anywhere; }
+.ob-access-option .ob-facts { margin: 0 var(--ob-space-md) var(--ob-space-lg); }
+.ob-access-option dd { white-space: pre-line; overflow-wrap: anywhere; }
+@container workspace (width < 600px) {
+  .ob-access-option .ob-facts { grid-template-columns: minmax(0, 1fr); }
+  .ob-access-option .ob-facts dt { min-height: 0; padding-bottom: 0; border-bottom: 0; }
+  .ob-access-option .ob-facts dd { padding-top: var(--ob-space-xs); }
+}
 .ob-detail-facts { grid-area: facts; display: grid; gap: inherit; align-content: start; }
 .ob-responsibility { grid-area: responsibility; }
 .ob-facts { display: grid; grid-template-columns: var(--ob-facts-label-width) minmax(0, 1fr); gap: 0; margin: 0; font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md); }
@@ -637,7 +639,7 @@ button.ob-tree-link { width: 100%; }
 /* The version badges wrap together as a pair beside the title and use the .ob-chip metrics. */
 .ob-swagger .swagger-ui .info .title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); font-size: var(--ob-font-size-2xl); line-height: var(--ob-line-height-xl); }
 .ob-swagger .swagger-ui .info .title > span { display: flex; flex-wrap: wrap; gap: var(--ob-space-sm); }
-.ob-swagger .swagger-ui .info .title small { position: static; margin: 0; padding: 1px var(--ob-space-sm); border-radius: var(--ob-radius-pill); font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-medium); line-height: var(--ob-line-height-xs); letter-spacing: var(--ob-letter-spacing-wide); white-space: nowrap; }
+.ob-swagger .swagger-ui .info .title small { position: static; margin: 0; padding: var(--ob-chip-padding-block) var(--ob-space-sm); border-radius: var(--ob-radius-pill); font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-medium); line-height: var(--ob-line-height-xs); letter-spacing: var(--ob-letter-spacing-wide); white-space: nowrap; }
 .ob-swagger .swagger-ui .info .title small pre { font: inherit; white-space: nowrap; }
 /* Reading measure of the API and operation descriptions (the wrappers' paragraphs share the 14px ch unit); tables and operation rows keep the full width. */
 .ob-swagger .swagger-ui :is(.info .description, .opblock-description-wrapper p, .opblock-external-docs-wrapper p) { max-width: var(--ob-prose-max-width); margin-inline: 0; } /* the vendor's auto margins would centre the capped paragraph */
@@ -862,6 +864,7 @@ button.ob-tree-link { width: 100%; }
 /* ---- Print ------------------------------------------------------------------- */
 @media print {
   .ob-detail-sections .ob-facts[hidden] { display: grid !important; }
+  .ob-access-options .ob-facts[hidden] { display: grid !important; }
   .ob-detail-section-toggle { min-height: 0; padding: 0; background: transparent; }
   .ob-detail-section-toggle > .ob-icon { display: none; }
   .ob-page-search { display: none; }
@@ -874,6 +877,7 @@ button.ob-tree-link { width: 100%; }
   .ob-workspace, .ob-workspace.is-collapsed { display: block; }
   .ob-sidebar-slot { display: none; }
   .ob-header { position: static; }
+  .prototype-banner { background: none; color: var(--ob-black); }
   .ob-detail-rows th { position: static; }
   .ob-content { width: 100%; padding: var(--ob-space-default) 0; }
   .ob-table-scroll-hint { display: none !important; }

@@ -30,14 +30,14 @@
   const count = (id, label, kind) => field(id, label, e => data.sizeOf(kind, e), 'number');
   const custom = {
     objects: [count('attributeCount', 'col.attributes', 'objects')],
-    tables: [count('fieldCount', 'col.fields', 'tables'), field('businessObject', 'fact.realizes', e => e.realizes ? data.nameOf('objects', e.realizes) : null),
+    tables: [field('accessOptions', 'access.title', (e, kind) => DK.accessOptions?.summary(e, kind), 'long'), count('fieldCount', 'col.fields', 'tables'), field('businessObject', 'fact.realizes', e => e.realizes ? data.nameOf('objects', e.realizes) : null),
       record('databaseName', 'visibility.database', 'database_name'), record('schemaName', 'visibility.schema', 'schema_name')],
     domains: [count('objectCount', 'col.object', 'domains'), field('parentDomain', 'visibility.parentDomain', e => e._record?.parent_domain_id ? data.domains.find(d => d._record?.id === e._record.parent_domain_id)?.name : null)],
     systems: [property('technology', 'fact.technology'), count('tableCount', 'col.tables', 'systems'), record('systemType', 'visibility.systemType', 'system_type'), field('apiCount', 'unit.apis', e => data.apisOfSystem(e).length, 'number')],
     refs: [count('valueCount', 'col.values', 'refs'), field('businessObject', 'fact.object', e => e.businessObject ? data.nameOf('objects', e.businessObject) : null)],
-    products: [property('accessRights', 'fact.access'), property('format', 'fact.format'), count('attributeCount', 'col.attributes', 'products'),
+    products: [field('accessOptions', 'access.title', (e, kind) => DK.accessOptions?.summary(e, kind), 'long'), property('accessRights', 'fact.access'), property('format', 'fact.format'), count('attributeCount', 'col.attributes', 'products'),
       property('accrualPeriodicity', 'fact.refresh'), property('license', 'fact.license'), field('landingPage', 'visibility.landingPage', e => e._record?.landing_page_url ? [e._record.landing_page_url] : [], 'links')],
-    apis: [field('serviceVersion', 'visibility.serviceVersion', e => data.serviceVersionOf(e)), property('protocol', 'fact.protocol'), property('accessRights', 'fact.access'),
+    apis: [field('accessOptions', 'access.title', (e, kind) => DK.accessOptions?.summary(e, kind), 'long'), field('serviceVersion', 'visibility.serviceVersion', e => data.serviceVersionOf(e)), property('protocol', 'fact.protocol'), property('accessRights', 'fact.access'),
       property('endpointURL', 'fact.baseUrl'), field('documentation', 'fact.documentation', e => e.documentation ? [e.documentation] : [], 'links'), field('endpointCount', 'visibility.endpoints', e => e.endpoints?.length ?? (e.endpointURL ? 1 : 0), 'number')],
   };
   const defaults = {
@@ -51,6 +51,7 @@
     attrs: ['name', 'type', 'key', 'codeList'],
     fields: ['name', 'type', 'key', 'codeList'],
     values: ['code', 'name'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
+    history: ['date', 'action', 'detail', 'user'],
   };
   const extras = {
     objects: ['domain', 'systemOfRecord', 'normReference', ...responsibility, ...protection],
@@ -84,12 +85,12 @@
   // Keep browsing choices compact; full definitions still support search and source snapshots.
   const optionalChoices = {
     objects: ['domain', 'systemOfRecord', 'normReference', 'dataOwner', 'dataSteward', 'version'],
-    tables: ['domain', ...responsibility, 'dataCustodian', 'businessObject', 'version'],
+    tables: ['domain', ...responsibility, 'dataCustodian', 'businessObject', 'version', 'accessOptions'],
     domains: ['dataOwner', 'dataSteward', 'version'],
     systems: [...responsibility, 'dataCustodian', 'version'],
     refs: ['domain', 'responsibleOrg', 'version'],
-    products: ['domain', ...responsibility, 'version'],
-    apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL'],
+    products: ['domain', ...responsibility, 'version', 'accessOptions'],
+    apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL', 'accessOptions'],
     attrs: ['sortOrder', 'description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
     fields: ['sortOrder', 'description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
     values: ['sortOrder', 'description'], productAttrs: ['sortOrder', 'required', 'code'],
@@ -97,7 +98,7 @@
   };
   const fieldOrder = ['name', 'sortOrder', 'description', 'domain', 'parentDomain', 'system', 'systemOfRecord', 'businessObject', ...responsibility, 'dataCustodian',
     'normReference', 'technology', 'systemType', 'serviceVersion', 'protocol', 'http_method', 'relative_path', 'endpointURL', 'url',
-    'format', 'accessRights', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
+    'format', 'accessRights', 'accessOptions', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
     'attributeCount', 'fieldCount', 'objectCount', 'tableCount', 'apiCount', 'valueCount', 'endpointCount', 'status'];
   // Relative widths carry the same reading priorities into CSS tables and physical PDF columns.
   // Short enumerated values (organisations, systems, norm references) reserve 14 em so compounds
@@ -111,6 +112,13 @@
   function definitions(kind) {
     if (!Object.hasOwn(defaults, kind)) return [];
     if (definitionCache.has(kind)) return definitionCache.get(kind);
+    if (kind === 'history') {
+      const result = [property('date', 'col.date', 'date'), property('action', 'col.change'),
+        property('detail', 'col.details', 'long'), property('user', 'col.editedBy')]
+        .map((f, order) => ({ ...f, order, required: f.id === 'date', primary: f.id === 'date', defaultVisible: true }));
+      definitionCache.set(kind, result);
+      return result;
+    }
     const child = !custom[kind];
     const title = field('name', nameLabels[kind], e => kind === 'values' ? e.label || e.name : kind === 'endpoints' ? ui.localized(e, 'name_') || e.name || e.operation_name || e.identifier || e.url : kind === 'apis' ? e.name : data.displayName(kind === 'productAttrs' ? 'attrs' : kind, e), 'text', { required: true, primary: true });
     const available = { ...byId, name: title, ...Object.fromEntries((custom[kind] || rowFields(kind)).map(f => [f.id, f])) };
@@ -135,7 +143,7 @@
   const normalize = (kind, ids) => choices(kind).filter(f => f.required || (Array.isArray(ids) ? ids.includes(f.id) : f.defaultVisible)).map(f => f.id);
   const selected = kind => normalize(kind, Object.hasOwn(stored(), kind) ? stored()[kind] : null);
   const routeKind = route => route.view === 'list' ? route.kind : route.view === 'detail'
-    ? route.kind === 'domains' ? 'objects' : childOf[route.kind] : null;
+    ? route.kind === 'domains' ? 'objects' : route.params?.tab === 'history' ? 'history' : childOf[route.kind] : null;
   function save(kind, ids) {
     if (!Object.hasOwn(defaults, kind)) return;
     const next = normalize(kind, ids);
@@ -178,9 +186,11 @@
   }
   function sortOptions(state, key, kind) {
     const visible = fields(kind), old = state.tableSorts[key];
-    const id = old?.field || definitions(kind)[old?.column ?? 0]?.id || 'name';
-    const field = visible.find(f => f.id === id && f.type !== 'links')?.id || 'name';
-    const sort = { field, direction: field === id && old?.direction === 'desc' ? 'desc' : 'asc' };
+    const fallback = kind === 'history' ? 'date' : 'name';
+    const id = old?.field || definitions(kind)[old?.column ?? 0]?.id || fallback;
+    const field = visible.find(f => f.id === id && f.type !== 'links')?.id || fallback;
+    const direction = field === id && old ? (old.direction === 'desc' ? 'desc' : 'asc') : kind === 'history' ? 'desc' : 'asc';
+    const sort = { field, direction };
     if (old && old.field && field !== old.field) state.tableSorts[key] = sort;
     return { key, sort };
   }

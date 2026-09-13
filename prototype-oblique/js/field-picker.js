@@ -18,8 +18,8 @@
     close();
     const definitions = presentation.choices(kind), node = document.createElement('div'), events = new AbortController();
     const listen = (target, type, callback) => target.addEventListener(type, callback, { signal: events.signal });
-    node.className = 'ob-field-picker'; node.popover = 'auto'; node.setAttribute('role', 'dialog'); node.setAttribute('aria-labelledby', 'field-picker-title');
-    node.innerHTML = `<h3 id="field-picker-title">${esc(ui.t('visibility.title'))}</h3><div class="ob-field-picker-body">${checklist(definitions, presentation.selected(kind))}</div><div class="ob-field-picker-actions"><button type="button" class="ob-button" data-fields-reset>${esc(ui.t('visibility.reset'))}</button><button type="button" class="ob-button" data-fields-close>${esc(ui.t('visibility.close'))}</button></div>`;
+    node.className = 'ob-field-picker ob-choice-popover'; node.popover = 'auto'; node.setAttribute('role', 'dialog'); node.setAttribute('aria-labelledby', 'field-picker-title');
+    node.innerHTML = `<h3 id="field-picker-title">${esc(ui.t('visibility.title'))}</h3><div class="ob-field-picker-body ob-choice-popover-body">${checklist(definitions, presentation.selected(kind))}</div><div class="ob-field-picker-actions ob-choice-popover-actions"><button type="button" class="ob-button" data-fields-reset>${esc(ui.t('visibility.reset'))}</button><button type="button" class="ob-button" data-fields-close>${esc(ui.t('visibility.close'))}</button></div>`;
     active = { node, trigger, events }; document.body.appendChild(node); trigger.setAttribute('aria-expanded', 'true');
     const update = () => {
       presentation.save(kind, [...node.querySelectorAll('input:checked')].map(input => input.value));

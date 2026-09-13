@@ -4,6 +4,9 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [13 September 2026 — Editing activation](2026-09-13-editing-activation.md) | Live deployment diagnosis, guarded activation from maintained migrations, atomic rollback and preservation checks; hosted application pending. |
+| [13 September 2026 — Bereitstellungsformen](2026-09-13-access-options.md) | Editable access descriptions for tables, products and APIs; canonical model, SQL migration, shared profile/export rendering and browser evidence. |
+| [13 September 2026 — Consistency, responsiveness and polish](2026-09-13-consistency-polish-review.md) | Whole-prototype measurements and screenshots; editor overflow/layout fixes, shared form/dialog/popover CSS, token cleanup, history controls and prominent prototype banner. |
 | [13 September 2026 — Detail pages and tabs: design/UX](2026-09-13-detail-page-ux-review.md) | Analysis only: live desktop/mobile profiles, tab navigation, disclosures, rows, relationships, history, export scope and locally simulated editing; prioritized findings, screenshots, acceptance criteria and user-validation tasks. |
 | [13 September 2026 — Canonical aliases](2026-09-13-model-alias-review.md) | EN/DE model aliases across SQL/API metadata, forms, profile/collection labels, print/PDF and Excel; generated bindings, version separation and verification. |
 | [7 September 2026 — Code: bugs and performance](2026-09-07-code-review.md) | Loader, routing, views, diagram, search, exports: load and reactivity measured under a real request waterfall before and after; early catalog requests, inline icons, local menu/tree updates, batched table layout, cached collators, lazy print capture, and 18 defect fixes with regression checks. |

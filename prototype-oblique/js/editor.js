@@ -4,6 +4,7 @@
   const ui = DK.ui, t = ui.t, esc = ui.esc, schema = DK.editSchema;
   let draft = null, capability = false, capabilityUser = null, checking = null, confirmDialog = null;
   let opening = false, capabilityGeneration = 0;
+  let accessCapability = false;
   const clone = value => JSON.parse(JSON.stringify(value));
   const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
   const snapshot = () => DK.data.catalogSnapshot;
@@ -26,16 +27,17 @@
   }
   const rootForRoute = route => route.kind && schema.kinds[route.kind];
   const routeKey = route => `${route.view}:${route.kind}:${route.id || ''}`;
+  const controlId = (row,key) => `edit-${row.table === 'access_option' ? 'access-' : ''}${row.value.id}-${key}`;
   function render(focus) { DK.app.render(); if (focus) document.getElementById(focus)?.focus({preventScroll:true}); }
   function stop() { draft = null; render(); document.querySelector('[data-edit="start"], [data-edit="create"]')?.focus({preventScroll:true}); }
   async function checkCapability(force = false) {
     const id = DK.auth.user?.id || null;
     if (!force && id === capabilityUser) return checking;
     const generation = ++capabilityGeneration;
-    capabilityUser = id; capability = false;
+    capabilityUser = id; capability = false; accessCapability = false;
     if (!id) { if (DK.app && DK.data.config) render(); return; }
     checking = (async()=>{
-      try { const result = await DK.auth.editRequest('edit_capabilities'); if (generation === capabilityGeneration && DK.auth.user?.id === id) capability = result.version === 1 && result.can_edit === true; }
+      try { const result = await DK.auth.editRequest('edit_capabilities'); if (generation === capabilityGeneration && DK.auth.user?.id === id) { capability = result.version === 1 && result.can_edit === true; accessCapability = result.access_options === true; } }
       catch { /* Missing migration or lost session must never enable editing. */ }
       finally { if (DK.app && DK.data.config) render(); }
     })();
@@ -57,6 +59,7 @@
       if (!table || !snapshot()) return;
       const original = create ? schema.defaults(table,ui.language(), route.params.domain ? snapshot().domain.find(x=>x.identifier === route.params.domain) : null) : route.entity?._record;
       if (!original) return;
+      if (create && accessCapability && DK.accessOptions.supports(route.kind)) original.access_options = [];
       const child = schema.children[table], requiredIds = DK.catalog.requiredAttributeIds(snapshot());
       draft = {root:row(table,original,!create,requiredIds),rows:child ? DK.catalog.orderRows(snapshot()[child[0]].filter(x=>x[child[1]] === original.id)).map(x=>row(child[0],x,true,requiredIds)) : [],
         routeKey:routeKey(route),hash:location.hash,kind:route.kind,entity:create ? null : route.entity,lang:ui.language(),tab:'overview',page:0,filter:'',showArchived:false,expanded:new Set(),errors:{},busy:false,saved:null,request:null,userId:DK.auth.user.id};
@@ -65,11 +68,11 @@
   }
   function optionLabel(value) { const key = 'edit.value.'+value; return t(key) === key ? value : t(key); }
   function control(row,f) {
-    const r = row.value, id = `edit-${r.id}-${f.key}`, value = schema.read(r,f.key,draft.lang,row.table);
+    const r = row.value, id = controlId(row,f.key), value = schema.read(r,f.key,draft.lang,row.table);
     const changed = !row.original || !same(value,schema.read(row.original,f.key,draft.lang,row.table));
     const error = draft.errors[id];
     const hint = ['lines','urls'].includes(f.type), describedBy = [error && `${id}-error`,hint && `${id}-hint`].filter(Boolean).join(' ');
-    const attrs = `id="${id}" data-edit-record="${r.id}" data-edit-field="${f.key}" data-edit-lang="${draft.lang}" aria-invalid="${!!error}"${describedBy ? ` aria-describedby="${describedBy}"` : ''}`;
+    const attrs = `id="${id}" data-edit-record="${r.id}" data-edit-table="${row.table}" data-edit-field="${f.key}" data-edit-lang="${draft.lang}" aria-invalid="${!!error}"${describedBy ? ` aria-describedby="${describedBy}"` : ''}`;
     let input;
     if (['select','reference','boolean','keys'].includes(f.type)) {
       let options = f.type === 'reference' ? snapshot()[f.table].filter(x=>x.id !== r.id && (!x.is_archived || x.id === value)).map(x=>[x.id,label(x)])
@@ -79,10 +82,10 @@
       if (value !== '' && !options.some(([v])=>String(v) === String(value))) options.push([value,String(value)]);
       const emptyLabel = f.key === 'system_of_record_id' && row.table === 'business_attribute' ? 'systemOfRecord.inherit' : 'edit.unspecified';
       input = `<select class="ob-select" ${attrs}><option value="">${esc(t(emptyLabel))}</option>${options.map(([v,l])=>`<option value="${esc(v)}"${String(value) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
-    } else if (f.type === 'checkbox') input = `<input type="checkbox" ${attrs}${value ? ' checked' : ''}>`;
+    } else if (f.type === 'checkbox') input = `<input class="ob-check-input" type="checkbox" ${attrs}${value ? ' checked' : ''}>`;
     else if (['textarea','lines','urls'].includes(f.type)) input = `<textarea class="ob-input" rows="${f.key === 'description' ? 3 : 2}" ${attrs}>${esc(value)}</textarea>`;
     else input = `<input class="ob-input" type="${['date','url'].includes(f.type) ? f.type : 'text'}" value="${esc(value)}" ${attrs}>`;
-    return `<div class="ob-edit-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
+    return `<div class="ob-edit-field ob-form-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
   }
   const titleFields = row => [schema.field('name','edit.name','text',{required:true}),schema.field('description','edit.description','textarea')].map(f=>control(row,f)).join('');
   function overview(row) {
@@ -100,7 +103,7 @@
     const matches = matchingRows(), pages = Math.max(1,Math.ceil(matches.length/25)); draft.page = Math.min(draft.page,pages-1);
     const childTable = schema.children[draft.root.table][0], fields = rowFields(childTable);
     const rows = matches.slice(draft.page*25,(draft.page+1)*25);
-    return `<div class="ob-edit-row-tools"><label>${esc(t('edit.searchRows'))}<input class="ob-input" type="search" id="edit-row-search" value="${esc(draft.filter)}" data-edit-filter></label><label><input type="checkbox" data-edit-archived${draft.showArchived ? ' checked' : ''}> ${esc(t('edit.showArchived'))}</label>${button('add-row','edit.addRow')}</div>
+    return `<div class="ob-edit-row-tools"><label>${esc(t('edit.searchRows'))}<input class="ob-input" type="search" id="edit-row-search" value="${esc(draft.filter)}" data-edit-filter></label><label class="ob-check"><input type="checkbox" data-edit-archived${draft.showArchived ? ' checked' : ''}> ${esc(t('edit.showArchived'))}</label>${button('add-row','edit.addRow')}</div>
       <div class="ob-edit-table-scroll" tabindex="0" role="region" aria-label="${esc(t('edit.rows'))}"><table class="ob-edit-table"><thead><tr><th>${esc(t('edit.order'))}</th>${fields.map(f=>`<th>${esc(t(f.label))}</th>`).join('')}<th>${esc(t('edit.actions'))}</th></tr></thead><tbody>${rows.map(r=>{
         const pos = matches.indexOf(r), archived = r.value.is_archived;
         return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === matches.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="${!draft.filter}" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
@@ -108,10 +111,41 @@
       }).join('')}</tbody></table></div>${!rows.length ? `<p>${esc(t('edit.noRows'))}</p>` : ''}
       <div class="ob-edit-pagination">${button('previous','edit.previous',draft.page === 0 ? 'disabled' : '')}<span>${draft.page+1} / ${pages} · ${matches.length} ${esc(t('edit.rows'))}</span>${button('next','edit.next',draft.page+1 >= pages ? 'disabled' : '')}</div><p class="ob-edit-hint">${esc(t('edit.archiveHint'))}</p>`;
   }
+  const accessRows = () => (draft.root.value.access_options || []).map(value => ({ table: 'access_option', value,
+    original: draft.root.original?.access_options?.find(item => item.id === value.id) || null }));
+  function accessPanel() {
+    if (!Object.hasOwn(draft.root.value,'access_options')) return `<p class="ob-edit-hint">${esc(t('access.unavailable'))}</p>`;
+    const rows = accessRows().filter(row => draft.showArchivedAccess || !row.value.isArchived);
+    return `<div class="ob-edit-access-tools">${button('access-add','access.add')}${button('access-show-archived',draft.showArchivedAccess ? 'access.hideArchived' : 'access.showArchived')}${draft.kind === 'apis' ? `<p class="ob-edit-hint">${esc(t('access.endpointHint'))}</p>` : ''}</div>${rows.map((row,index) => `<section class="ob-edit-access-option"><div class="ob-edit-access-tools"><h3>${esc(label(row.value) || t('access.new'))}</h3>${iconButton('access-up','edit.up','↑',`data-row="${row.value.id}"${index === 0 ? ' disabled' : ''}`)}${iconButton('access-down','edit.down','↓',`data-row="${row.value.id}"${index === rows.length-1 ? ' disabled' : ''}`)}${button(row.value.isArchived ? 'access-restore' : 'access-archive',row.value.isArchived ? 'edit.restore' : 'access.archive',`data-row="${row.value.id}"`)}</div>${row.value.isArchived ? `<p class="ob-edit-hint">${esc(t('access.archived'))}</p>` : `<div class="ob-edit-access-fields">${control(row,schema.field('name','edit.name','text',{required:true}))}${schema.groups(row.table).flatMap(([,fields])=>fields).map(f=>control(row,f)).join('')}</div>`}</section>`).join('') || `<p class="ob-edit-hint">${esc(t('access.empty'))}</p>`}`;
+  }
+  function editAccess(action,id) {
+    const values = draft.root.value.access_options;
+    if (!Array.isArray(values) || draft.saved) return;
+    let focus = '[data-edit="access-add"]';
+    if (action === 'access-show-archived') draft.showArchivedAccess = !draft.showArchivedAccess;
+    else if (action === 'access-add') {
+      const value = {id:crypto.randomUUID(),status:'draft',isArchived:false}; values.push(value);
+      focus = `#edit-access-${value.id}-name`;
+    } else {
+      const index = values.findIndex(value => value.id === id), value = values[index];
+      if (!value) return;
+      if (action === 'access-archive') {
+        if (draft.root.original?.access_options?.some(item=>item.id === id)) value.isArchived = true;
+        else values.splice(index,1);
+      } else if (action === 'access-restore') value.isArchived = false;
+      else if (['access-up','access-down'].includes(action)) {
+        const visible = values.filter(value=>draft.showArchivedAccess || !value.isArchived), target = visible[visible.indexOf(value)+(action === 'access-up' ? -1 : 1)];
+        if (!target) return;
+        const other = values.indexOf(target); [values[index],values[other]] = [values[other],values[index]];
+        focus = `#edit-access-${id}-name`;
+      }
+    }
+    refreshPatch(draft.root); draft.request = null; draft.message = null; render(); document.querySelector(focus)?.focus({preventScroll:true});
+  }
   function renderEditor(route,state) {
     const count = dirtyCount(), canSave = capability && DK.auth.user?.id === draft.userId;
-    const tabs = [['overview','detail.tab.overview'],...(schema.children[draft.root.table] ? [['rows','edit.rows']] : []),...(draft.entity ? [['relations','detail.tab.relations'],['history','detail.tab.history']] : [])];
-    const panel = draft.tab === 'overview' ? overview(draft.root) : draft.tab === 'rows' ? rowsPanel() : draft.tab === 'relations' ? `<p class="ob-edit-hint">${esc(t('edit.relationsReadOnly'))}</p>${DK.detail.relations(draft.entity,state)}` : DK.detail.history(draft.entity,state);
+    const tabs = [['overview','detail.tab.overview'],...(schema.children[draft.root.table] ? [['rows','edit.rows']] : []),...(DK.accessOptions.supports(draft.kind) ? [['access','access.title']] : []),...(draft.entity ? [['relations','detail.tab.relations'],['history','detail.tab.history']] : [])];
+    const panel = draft.tab === 'overview' ? overview(draft.root) : draft.tab === 'rows' ? rowsPanel() : draft.tab === 'access' ? accessPanel() : draft.tab === 'relations' ? `<p class="ob-edit-hint">${esc(t('edit.relationsReadOnly'))}</p>${DK.detail.relations(draft.entity,state)}` : DK.detail.history(draft.entity,state);
     return `<div id="catalog-editor" class="ob-editor" aria-busy="${draft.busy}"><div class="ob-edit-toolbar"><h1>${esc(t(draft.root.original ? 'edit.editEntry' : 'edit.createEntry'))}</h1><div class="ob-edit-save-actions"><span id="edit-unsaved" role="status" aria-live="polite">${esc(t('edit.unsaved',{count}))}</span>${button('discard','edit.discard',draft.busy ? 'disabled' : '')}${button(draft.saved ? 'reload' : 'save',draft.saved ? 'edit.reload' : draft.busy ? 'edit.saving' : 'edit.save',draft.busy || !canSave || (!count && !draft.saved) ? 'disabled' : '',true)}</div></div>
       ${!canSave ? `<p class="ob-edit-notice" role="alert">${esc(t('edit.sessionLost'))} ${button('login','auth.signIn')}</p>` : ''}
       <p id="edit-message" class="ob-edit-notice" role="alert"${draft.message ? '' : ' hidden'}>${draft.message ? esc(t(draft.message)) : ''}</p>
@@ -122,27 +156,37 @@
   function fieldFor(row,key) { return ['name','description'].includes(key) ? schema.field(key,'edit.'+key,key === 'description' ? 'textarea' : 'text') : schema.groups(row.table).flatMap(([,f])=>f).find(f=>f.key === key); }
   function updateControl(input) {
     if (!draft || draft.busy || draft.saved || !input.isConnected) return;
-    const r = [draft.root,...draft.rows].find(x=>x.value.id === input.dataset.editRecord), f = r && fieldFor(r,input.dataset.editField);
+    const r = [draft.root,...draft.rows,...accessRows()].find(x=>x.value.id === input.dataset.editRecord && x.table === input.dataset.editTable), f = r && fieldFor(r,input.dataset.editField);
     if (!f) return;
     const language = input.dataset.editLang;
     schema.write(r.value,f,input.type === 'checkbox' ? input.checked : input.value,language,r.table);
     refreshPatch(r);
+    if (r.table === 'access_option') refreshPatch(draft.root);
     draft.request = null; draft.message = null;
     const wrapper = input.closest('.ob-edit-field'), changed = !r.original || !same(schema.read(r.value,f.key,language,r.table),schema.read(r.original,f.key,language,r.table));
     wrapper.classList.toggle('is-changed',changed); wrapper.querySelector('.ob-edit-changed').hidden = !changed;
     delete draft.errors[input.id]; input.setAttribute('aria-invalid','false'); wrapper.querySelector('.ob-edit-field-error').hidden = true;
+    if (r.table === 'access_option') {
+      const id = controlId(r,'accessUrl');
+      if (draft.errors[id] === 'access.locationRequired' && (r.value.status !== 'valid' || [r.value.accessUrl,r.value.downloadUrl,r.value.accessNotes].some(value=>value?.trim()))) {
+        delete draft.errors[id];
+        const field = document.getElementById(id); field?.setAttribute('aria-invalid','false');
+        field?.closest('.ob-edit-field').querySelector('.ob-edit-field-error').setAttribute('hidden','');
+      }
+    }
     const count = dirtyCount();
     document.getElementById('edit-unsaved').textContent = t('edit.unsaved',{count});
     const save = document.querySelector('[data-edit="save"]'); if (save) save.disabled = !count || !capability || draft.userId !== DK.auth.user?.id;
   }
   function validate() {
     draft.errors = {};
-    const error = (r,key,msg='edit.required') => { draft.errors[`edit-${r.value.id}-${key}`] = msg; };
-    const all = [draft.root,...draft.rows];
+    const error = (r,key,msg='edit.required') => { draft.errors[controlId(r,key)] = msg; };
+    const all = [draft.root,...draft.rows,...accessRows()];
     for (const r of all) {
-      if (r.value.is_archived) continue;
+      if (r.value.is_archived || r.value.isArchived) continue;
       if (r.table !== 'service_endpoint' && !schema.languages.some(l=>r.value['name_'+l]?.trim())) error(r,'name');
       if (r.table === 'service_endpoint' && ![r.value.url,r.value.relative_path,r.value.operation_name].some(x=>x?.trim())) error(r,'url','edit.endpointRequired');
+      if (r.table === 'access_option' && r.value.status === 'valid' && ![r.value.accessUrl,r.value.downloadUrl,r.value.accessNotes].some(x=>x?.trim())) error(r,'accessUrl','access.locationRequired');
       for (const [,fields] of schema.groups(r.table)) for (const f of fields) {
         const value = schema.read(r.value,f.key,draft.lang,r.table);
         if (f.required && !String(value).trim()) error(r,f.key);
@@ -164,8 +208,9 @@
     }
     const first = Object.keys(draft.errors)[0];
     if (!first) return true;
-    const target = all.find(r=>first.startsWith('edit-'+r.value.id+'-'));
-    if (target !== draft.root) { draft.tab = 'rows'; draft.filter=''; draft.showArchived=true; draft.page=Math.floor(draft.rows.indexOf(target)/25); draft.expanded.add(target.value.id); }
+    const target = all.find(r=>first.startsWith(controlId(r,'')));
+    if (target?.table === 'access_option') draft.tab = 'access';
+    else if (target !== draft.root) { draft.tab = 'rows'; draft.filter=''; draft.showArchived=true; draft.page=Math.floor(draft.rows.indexOf(target)/25); draft.expanded.add(target.value.id); }
     else draft.tab='overview';
     draft.message='edit.validation'; render(first); return false;
   }
@@ -203,7 +248,7 @@
     if (!dirtyCount() || draft.saved) { next(); return; }
     if (confirmDialog?.open) return;
     const focus = document.activeElement;
-    confirmDialog = document.createElement('dialog'); confirmDialog.className='ob-edit-confirm';confirmDialog.setAttribute('aria-labelledby','edit-discard-title');
+    confirmDialog = document.createElement('dialog'); confirmDialog.className='ob-edit-confirm ob-dialog';confirmDialog.setAttribute('aria-labelledby','edit-discard-title');
     confirmDialog.innerHTML=`<h2 id="edit-discard-title">${esc(t('edit.discardTitle'))}</h2><p>${esc(t('edit.discardHint',{count:dirtyCount()}))}</p><div>${button('keep','edit.keepEditing')}${button('confirm','edit.discard','',true)}</div>`;
     document.body.append(confirmDialog);
     const close = accepted => {confirmDialog.close();confirmDialog.remove();confirmDialog=null;if (accepted) next();else focus?.focus({preventScroll:true});};
@@ -237,6 +282,7 @@
     else if(action==='discard')confirmDiscard();
     else if(action==='login')DK.auth.open();
     else if(action==='tab'){draft.tab=el.dataset.tab;render('edit-tab-'+draft.tab);}
+    else if(action.startsWith('access-')) editAccess(action,el.dataset.row);
     else if(action==='add-row'){
       const table=schema.children[draft.root.table][0],value=schema.defaults(table,draft.lang);value.sort_order=draft.rows.length ? Math.max(...draft.rows.map(x=>x.value.sort_order||0))+1 : 1;
       if(value.sort_order>2147483647){ui.toast(t('edit.orderLimit'));return;}

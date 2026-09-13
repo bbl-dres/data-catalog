@@ -1,0 +1,17 @@
+[
+  {
+    "kind": "tables",
+    "pages": 3,
+    "accessMetadataPresent": true
+  },
+  {
+    "kind": "products",
+    "pages": 4,
+    "accessMetadataPresent": true
+  },
+  {
+    "kind": "apis",
+    "pages": 3,
+    "accessMetadataPresent": true
+  }
+]

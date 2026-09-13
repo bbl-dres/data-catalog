@@ -3543,6 +3543,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "access_options",
+            "in": "query",
+            "description": "Filter access_options: operator.value (for example eq.value or is.null). Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataProduct.accessOptions.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -4034,6 +4043,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "access_options",
+            "in": "query",
+            "description": "Filter access_options: operator.value (for example eq.value or is.null). Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataService.accessOptions.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -4494,6 +4512,15 @@
             "name": "is_archived",
             "in": "query",
             "description": "Filter is_archived: operator.value (for example eq.value or is.null). Archived. Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. Alias (DE): Archiviert. Canonical: DataTable.isArchived.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "access_options",
+            "in": "query",
+            "description": "Filter access_options: operator.value (for example eq.value or is.null). Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataTable.accessOptions.",
             "required": false,
             "schema": {
               "type": "string"
@@ -16580,6 +16607,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataProduct.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataProduct.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataProduct.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -16624,6 +16892,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_product_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_product_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -17368,6 +17640,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataService.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataService.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataService.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -17430,6 +17943,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_service_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_service_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -18133,6 +18650,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataTable.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataTable.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataTable.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -18195,6 +18953,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_table_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_table_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -33440,6 +34202,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataProduct.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataProduct.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataProduct.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -33484,6 +34487,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_product_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_product_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -33570,6 +34577,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataProduct.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataProduct.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -34201,6 +35449,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataProduct.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataProduct.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "name_de": {
             "type": [
               "string",
@@ -35417,6 +36906,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataService.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataService.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataService.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -35479,6 +37209,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_service_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_service_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -35573,6 +37307,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataService.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataService.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -36220,6 +38195,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataService.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataService.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "name_de": {
             "type": [
               "string",
@@ -37403,6 +39619,247 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataTable.isArchived"
+          },
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataTable.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataTable.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         "x-postgresql-primary-key": [
@@ -37465,6 +39922,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_table_access_options_check",
+            "definition": "CHECK (catalog_private.valid_access_options(access_options))"
+          },
           {
             "name": "data_table_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -37547,6 +40008,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataTable.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataTable.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "id": {
             "type": "string",
             "format": "uuid",
@@ -38148,6 +40850,247 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "access_options": {
+            "description": "Access options. Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. Alias (DE): Bereitstellungsformen. Canonical: DataTable.accessOptions.",
+            "x-postgresql-type": "jsonb",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'[]'::jsonb",
+            "title": "Access options",
+            "x-aliases": {
+              "en": "Access options",
+              "de": "Bereitstellungsformen"
+            },
+            "x-canonical-property": "DataTable.accessOptions",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "AccessOption.id",
+                  "description": "Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+                  "format": "uuid"
+                },
+                "name_de": {
+                  "title": "Name (DE)",
+                  "x-aliases": {
+                    "en": "Name (DE)",
+                    "de": "Name (DE)"
+                  },
+                  "x-canonical-property": "AccessOption.name_de",
+                  "description": "German title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_it": {
+                  "title": "Name (IT)",
+                  "x-aliases": {
+                    "en": "Name (IT)",
+                    "de": "Name (IT)"
+                  },
+                  "x-canonical-property": "AccessOption.name_it",
+                  "description": "Italian title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_fr": {
+                  "title": "Name (FR)",
+                  "x-aliases": {
+                    "en": "Name (FR)",
+                    "de": "Name (FR)"
+                  },
+                  "x-canonical-property": "AccessOption.name_fr",
+                  "description": "French title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "name_en": {
+                  "title": "Name (EN)",
+                  "x-aliases": {
+                    "en": "Name (EN)",
+                    "de": "Name (EN)"
+                  },
+                  "x-canonical-property": "AccessOption.name_en",
+                  "description": "English title; at least one title language is required.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "status": {
+                  "title": "Status",
+                  "x-aliases": {
+                    "en": "Status",
+                    "de": "Status"
+                  },
+                  "x-canonical-property": "AccessOption.status",
+                  "description": "`draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "enum": [
+                    "draft",
+                    "valid",
+                    "retired"
+                  ]
+                },
+                "isArchived": {
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "AccessOption.isArchived",
+                  "description": "Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode.",
+                  "type": "boolean"
+                },
+                "format": {
+                  "title": "Format",
+                  "x-aliases": {
+                    "en": "Format",
+                    "de": "Format"
+                  },
+                  "x-canonical-property": "AccessOption.format",
+                  "description": "Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "accessUrl": {
+                  "title": "Access URL",
+                  "x-aliases": {
+                    "en": "Access URL",
+                    "de": "Zugriffs-URL"
+                  },
+                  "x-canonical-property": "AccessOption.accessUrl",
+                  "description": "Page or application through which users obtain the data. Does not imply public or anonymous access.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "downloadUrl": {
+                  "title": "Download URL",
+                  "x-aliases": {
+                    "en": "Download URL",
+                    "de": "Download-URL"
+                  },
+                  "x-canonical-property": "AccessOption.downloadUrl",
+                  "description": "Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S",
+                  "format": "uri"
+                },
+                "accessNotes": {
+                  "title": "Access notes",
+                  "x-aliases": {
+                    "en": "Access notes",
+                    "de": "Zugangshinweise"
+                  },
+                  "x-canonical-property": "AccessOption.accessNotes",
+                  "description": "Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "license": {
+                  "title": "Licence / terms",
+                  "x-aliases": {
+                    "en": "Licence / terms",
+                    "de": "Lizenz / Nutzungsbedingungen"
+                  },
+                  "x-canonical-property": "AccessOption.license",
+                  "description": "Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                },
+                "comment": {
+                  "title": "Comment",
+                  "x-aliases": {
+                    "en": "Comment",
+                    "de": "Kommentar"
+                  },
+                  "x-canonical-property": "AccessOption.comment",
+                  "description": "Additional catalog notes in their authored language.",
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "isArchived"
+              ],
+              "anyOf": [
+                {
+                  "required": [
+                    "name_de"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_fr"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_it"
+                  ]
+                },
+                {
+                  "required": [
+                    "name_en"
+                  ]
+                }
+              ],
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "status": {
+                        "const": "valid"
+                      }
+                    },
+                    "required": [
+                      "status"
+                    ]
+                  },
+                  "then": {
+                    "anyOf": [
+                      {
+                        "required": [
+                          "accessUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "downloadUrl"
+                        ]
+                      },
+                      {
+                        "required": [
+                          "accessNotes"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
           "name_de": {
             "type": [
               "string",
@@ -48247,7 +51190,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "eba34136a8e3c54ae2def9ef93da91b6cefe6827b336bbd943dc24dcb024fb61"
+      "sha256": "5fc14e43a4756576352433e5c207d521d4140bafebe3b1cec3b06fafc189f864"
     },
     "schema": "catalog",
     "readRole": "anon",
@@ -48293,6 +51236,10 @@
       {
         "file": "20260913030000_catalog_required_rules.sql",
         "sha256": "66a584226ca9b2aafb173c18cd9f7adcc31fcf4ff03c760500bea284b7b5844f"
+      },
+      {
+        "file": "20260913040000_catalog_access_options.sql",
+        "sha256": "985362f2a52531edcee4312b575de19d1e4353f1ac7ae04d9b19f243940aaff1"
       }
     ]
   }

@@ -84,7 +84,8 @@ These items distinguish the model contract from current app/tooling coverage. De
 | Public catalog and descriptions | 16 core entities, owned endpoints and two quality junctions | All 19 collections returned by `read_snapshot`; older column shape | Seven main collections, nested rows and attribute/field profiles | Selected fields have browser forms; remaining mutable resources have REST support after activation |
 | Archive flags, edit timestamps and row ordering | Complete in the ten-migration, 474-column baseline | 40 columns missing across 16 tables; exact groups below | Filtering/order code exists; retired records still appear with the label Archiviert | Owned-row removal/order in forms; root archive/restore via REST; deployment incomplete |
 | Endpoint revisions and CRUD API | Endpoint revisions and audited CRUD implemented | Endpoint revision fields absent; `GET /functions/v1/catalog-api/domain?limit=1` returned 404, `NOT_FOUND`, “Requested function was not found” | Account token and API documentation UI do not establish backend readiness | Browser edits require the editing migration; REST CRUD also requires its migration and deployed Edge Function |
-| Endpoint descriptions | Owned endpoint operations, paths, methods, capabilities and verification | 7 services and 7 endpoint records | Endpoint count and primary/first protocol/base URL shown; no normal endpoint rows tab | Owned endpoint form exists; verification changes use REST after activation |
+| Endpoint descriptions | Owned endpoint operations, paths, methods, capabilities and verification | 7 services and 7 endpoint records | Existing endpoints also appear as expandable access descriptions; no normal endpoint rows tab | Owned endpoint form exists; verification changes use REST after activation |
+| Access options / Bereitstellungsformen | Owned AccessOption arrays on DataTable, DataProduct and DataService; three additional columns in the 477-column repository baseline | New migration tested locally only; hosted activation not verified | Expandable descriptions on the three profiles; optional web/PDF column and dedicated Excel sheet | Add, translate titles, edit links/notes, reorder, archive and restore in browser; complete list via owner PATCH, with parent revision/history |
 | System of record | Typed System references on BusinessObject and BusinessAttribute; object default with attribute override | Public reads returned 42703 (undefined column) for both new columns on 13 September; activation pending, no values backfilled | Linked system in object/attribute profiles and optional columns; inheritance labelled | System dropdown on both forms; UUID writes through browser/REST commands after activation |
 | Property sets | Proposed next revision below; currently only authored notes | 106 attributes have `Property Set (vorgeschlagen): …` comments | Comment text, without structured grouping | Comment editing only; no group field |
 | Business keys and reference targets | Current `isIdentifier`; structured key/reference definitions proposed below | Comment roles include 7 PK and 17 FK markers; no structured composition or target store | PK/FK/UK selector and key labels use `is_identifier` plus comment parsing | Selector writes `is_identifier` and rewrites FK/UK comment lines; no component/target editor |
@@ -105,7 +106,7 @@ The missing-column inventory is grouped by identical shape. Each of the 40 named
 | `business_attribute`, `data_field`, `code_value`, `product_attribute` | `edited_at`, `sort_order`, `is_archived` | 12 |
 | `service_endpoint` | `sort_order`, `is_archived`, `row_version`, `created_on`, `modified_on`, `edited_at` | 6 |
 
-This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/474 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
+This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/477 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
 
 ### System of record
 
@@ -133,7 +134,7 @@ Top-level entities have no manual order in this revision. Future property sets n
 
 ### Property sets and business keys
 
-**Decision for the next model revision:** represent property-set membership, business-key composition and business-reference targets as explicit metadata. The following defines the proposed meaning for owner review. It is outside the current 19-table/474-column baseline: no new SQL columns, REST properties or frontend behavior are implied by this documentation change. The physical design, dictionaries, migration and API/editor changes must be delivered together after that review.
+**Decision for the next model revision:** represent property-set membership, business-key composition and business-reference targets as explicit metadata. The following defines the proposed meaning for owner review. It is outside the current 19-table/477-column baseline: no new SQL columns, REST properties or frontend behavior are implied by this documentation change. The physical design, dictionaries, migration and API/editor changes must be delivered together after that review.
 
 | Topic | Proposed decision | Integrity and review boundary |
 |---|---|---|
@@ -721,6 +722,7 @@ Derived `kind = dataProduct`. The table lists its complete attributes and identi
 | `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
 | `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
 | `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `accessOptions` | Access options | Bereitstellungsformen | — | AccessOption[] | 0..* | Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. |
 | `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
 | `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
 | `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
@@ -766,6 +768,7 @@ Derived `kind = dataService`. The table lists its complete attributes and identi
 | `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
 | `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
 | `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `accessOptions` | Access options | Bereitstellungsformen | — | AccessOption[] | 0..* | Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. |
 | `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
 | `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
 | `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
@@ -811,6 +814,7 @@ Derived `kind = dataTable`. The table lists its complete attributes and identity
 | `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
 | `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
 | `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `accessOptions` | Access options | Bereitstellungsformen | — | AccessOption[] | 0..* | Ordered, explicitly authored ways to obtain the data. Stored as an owned JSON list, initially empty. No inheritance or automatic conversion from documentation, product formats or endpoint URLs. Edits use the owner revision and history. |
 | `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
 | `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
 | `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
@@ -1185,6 +1189,32 @@ Describes business values and product-contract values. The containing entity det
 
 Only applicable constraints may be supplied: numeric bounds for numbers, geometric constraints for geometry, and so on. A year remains a year; do not fabricate month/day. Requiredness, nullability and multiplicity are represented only where the containing entity dictionary declares them; absence of a counterpart implies no constraint. Preserve unsupported product constraints in explanatory rule notes. Field source declarations remain in sourceDataType and linked documentation. Precision and scale follow the documented specification; they do not establish a physical schema.
 
+### AccessOption
+
+An owned access description on DataTable, DataProduct or DataService, displayed as **Bereitstellungsformen**. This local value describes where and in what form users can obtain data; it does not introduce a Dataset or assert a DCAT Distribution. Existing ServiceEndpoint records remain the source of API operation URLs and appear alongside authored access options in the service profile. Do not copy those endpoints merely to make them visible.
+
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | UQ (owner) | UUID | 1 | Stable lowercase UUID within the owner. Once saved, retain the entry and archive it instead of removing its identity. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German title; at least one title language is required. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian title; at least one title language is required. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French title; at least one title language is required. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English title; at least one title language is required. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`. New entries start as draft. A valid entry requires an access URL, direct download URL or access notes. This describes the access option, independently of the owner status. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Initially false. Archived entries remain in the owner list and audit history, but are hidden from normal browsing and exports. They can be restored in edit mode. |
+| `format` | Format | Format | — | Text | 0..1 | Documented file format or media type, for example XLSX or application/json. A service protocol alone is not a file format. |
+| `accessUrl` | Access URL | Zugriffs-URL | — | HttpUrl | 0..1 | Page or application through which users obtain the data. Does not imply public or anonymous access. |
+| `downloadUrl` | Download URL | Download-URL | — | HttpUrl | 0..1 | Explicit direct-download location. Do not infer it from the access URL. Opening the link does not send catalog credentials. |
+| `accessNotes` | Access notes | Zugangshinweise | — | Text | 0..1 | Instructions, prerequisites or a documented system/path when no web link exists. One authored language; no inferred permissions or availability. |
+| `license` | Licence / terms | Lizenz / Nutzungsbedingungen | — | Text | 0..1 | Explicit terms for this representation. No automatic inheritance from the product contract and no inferred licence. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Additional catalog notes in their authored language. |
+
+Physical representation: `access_options jsonb NOT NULL DEFAULT '[]'` on the three owners. JSON property names follow this dictionary exactly. Optional blank values are omitted; nulls and unknown properties are rejected. List position defines display order; it does not redefine the `sortOrder` of attributes, fields or endpoints. There is no independent CRUD resource or foreign-key target: replace the complete list through the owner's authenticated PATCH/save command, supplying its current revision. This makes edits atomic with the parent and includes the list in its change snapshot. Saved IDs cannot disappear; set `isArchived` instead. Unsaved draft items may be removed locally.
+
+No historical access options are synthesized from the other prototype's demonstration URLs. Product-level formats/licence and ServiceEndpoint remain distinct properties. The authored list starts empty. Public readers see the same metadata access policy as the parent; this list is documentation, not a credential store or access grant.
+
+Profiles show active access options as expandable descriptions; DataService profiles additionally project their active ServiceEndpoint records without copying their URLs into AccessOption. The optional web/PDF field uses the same localized descriptions. Excel exports authored entries on a separate Access options sheet, retaining owner identity and all title languages; endpoint records keep their existing sheet. The [activation guide](../supabase/README.md#access-options-bereitstellungsformen) tracks the new migration separately from the earlier hosted comparison.
+
 ### ServiceEndpoint
 
 An owned technical interface record describing documented capabilities. Its separate persistence/API identity supports stable references and edits; it remains owned by one DataService and is not a seventeenth core entity.
@@ -1219,7 +1249,7 @@ Request/response inventories are not automatically physical DataFields.
 
 ### Reviewed schema baseline
 
-The eleven migrations in [supabase/migrations](../supabase/migrations/), ending with `20260913030000_catalog_required_rules.sql`, define **19 public `catalog` tables, 474 columns and 85 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 474 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 13 September 2026.
+The twelve migrations in [supabase/migrations](../supabase/migrations/), ending with `20260913040000_catalog_access_options.sql`, define **19 public `catalog` tables, 477 columns and 85 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 477 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 13 September 2026.
 
 These counts describe the repository schema. The [13 September hosted comparison](#documented-deployed-visible-and-editable) identified 40 missing columns from the earlier baseline, and the two new system-of-record columns are also absent. These counts do not establish deployed completeness or source-content readiness. Proposed property-set/business-key extensions are excluded from this inventory and diagram until their physical design is implemented. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
 
@@ -1234,9 +1264,9 @@ These counts describe the repository schema. The [13 September hosted comparison
 | [CodeValue](#codevalue) | `code_value` | 25 |
 | [DataField](#datafield) | `data_field` | 39 |
 | DataField.qualityRequirementIds | `data_field_quality_requirement` | 2 |
-| [DataProduct](#dataproduct) | `data_product` | 34 |
-| [DataService](#dataservice) | `data_service` | 35 |
-| [DataTable](#datatable) | `data_table` | 32 |
+| [DataProduct](#dataproduct) | `data_product` | 35 |
+| [DataService](#dataservice) | `data_service` | 36 |
+| [DataTable](#datatable) | `data_table` | 33 |
 | [Domain](#domain) | `domain` | 25 |
 | [LineageRelation](#lineagerelation) | `lineage_relation` | 18 |
 | [ProductAttribute](#productattribute) | `product_attribute` | 23 |
@@ -1244,7 +1274,7 @@ These counts describe the repository schema. The [13 September hosted comparison
 | [Relationship](#relationship) | `relationship` | 29 |
 | [ServiceEndpoint](#serviceendpoint) | `service_endpoint` | 19 |
 | [System](#system) | `system` | 29 |
-| **Total** | **19 tables** | **474** |
+| **Total** | **19 tables** | **477** |
 
 ### Dictionary-to-storage mapping
 
@@ -1253,6 +1283,7 @@ A dictionary describes persisted values, not the required keys of a create reque
 - Ordinary attributes map to one snake_case column: `businessObjectId` becomes `business_object_id`, and `shortName_fr` becomes `short_name_fr`. Enum values retain their documented case. SQL FK columns contain UUIDs, not public identifiers or display labels.
 - OrganisationDetails and ValueSpecification are validated JSONB objects. DocumentationLink collections are JSONB arrays. Their nested keys stay exactly as written in their dictionaries; they do not become snake_case or additional SQL columns. Unknown optional nested keys are omitted; unknown top-level optional values use SQL NULL.
 - Ordinary `0..*` collections are non-null empty arrays when no members are recorded. Cardinality counts members, not SQL nullability. DataField.keyRoles is the explicit exception: SQL NULL means unknown, `[]` means reviewed with no key role. Null array members and duplicate members are rejected; documentation links are unique by URL/purpose.
+- `DataTable.accessOptions`, `DataProduct.accessOptions` and `DataService.accessOptions` are owned JSON arrays in `access_options`, validated against AccessOption; they add no public tables or foreign keys.
 - `DataService.endpoints` is the inverse collection of ServiceEndpoint rows selected by `data_service_id`, not a column or a second copy of endpoint JSON. Owned rows retain their own UUIDs, revisions, ordering and archive flags.
 - `qualityRequirementIds` on BusinessAttribute/DataField is the collection stored in the corresponding junction, not a SQL array column. The REST write/read-result collection is a projection over that store.
 - Relationship.source/target, LineageRelation.source/target and ChangeEvent.record expand into concrete nullable FK columns. Exactly one FK in each required group must be set; each permitted kind below creates a column named `<group>_<snake_case_kind>_id`. A named FK such as `sourceEndpointId` stays a separate column with its own scope checks.
@@ -1451,6 +1482,7 @@ erDiagram
         text access_notes "NULL; one authored value"
         text license_uri "NULL"
         text license_notes "NULL; one authored value"
+        jsonb access_options "NOT NULL; ordered AccessOption[]"
     }
     data_service {
         uuid id PK
@@ -1477,6 +1509,7 @@ erDiagram
         text purpose "NULL"
         text access_mode "NULL"
         text access_notes "NULL; one authored value"
+        jsonb access_options "NOT NULL; ordered AccessOption[]"
     }
     data_table {
         uuid id PK
@@ -1501,6 +1534,7 @@ erDiagram
         text technical_name "NULL"
         text database_name "NULL"
         text schema_name "NULL"
+        jsonb access_options "NOT NULL; ordered AccessOption[]"
     }
     domain {
         uuid id PK
@@ -1756,7 +1790,7 @@ The extension below is a deferred model proposal; it adds no required core entit
 
 ### Optional publication extension
 
-The core catalog can work without these three entities. Introduce them only when publishing to a selected DCAT consumer or managing independently identifiable collections and representations. Standards alignment does not require every standard class to become an internal table.
+The local AccessOption value above provides internal access descriptions without these publication entities. The core catalog can work without these three entities. Introduce them only when publishing to a selected DCAT consumer or managing independently identifiable collections and representations. Standards alignment does not require every standard class to become an internal table.
 
 | Deferred concept | Introduce when | Minimum information to define then |
 |---|---|---|
