@@ -854,6 +854,19 @@
 
   /* init */
   app.init = async function () {
+    // GitHub Pages cannot supply frame-ancestors headers. Do not initialize
+    // sessions or editing controls inside a frame, including sandboxed frames.
+    // A hosting-level framing policy remains the primary deployment protection.
+    if (window.self !== window.top) {
+      const message = document.createElement('p'), link = document.createElement('a');
+      message.textContent = 'Bitte öffnen Sie den Datenkatalog in einem eigenen Tab. ';
+      link.textContent = 'Datenkatalog öffnen';
+      link.href = window.location.origin + window.location.pathname;
+      link.target = '_blank'; link.rel = 'noopener noreferrer';
+      message.append(link); $('main').replaceChildren(message);
+      $('main').setAttribute('aria-busy', 'false'); ui.setLoading();
+      return;
+    }
     try {
       if (!DK.catalogConfig) throw new Error('Missing catalog connection configuration');
       await data.load('data/');

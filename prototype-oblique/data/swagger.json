@@ -40,14 +40,11 @@
       "name": "Snapshot"
     }
   ],
-  "security": [
-    {
-      "PublishableKey": []
-    }
-  ],
+  "security": [],
   "paths": {
     "/actor": {
       "get": {
+        "security": [],
         "tags": [
           "Governance"
         ],
@@ -55,6 +52,9 @@
         "summary": "Read actor",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -386,6 +386,7 @@
     },
     "/business_attribute": {
       "get": {
+        "security": [],
         "tags": [
           "Business objects"
         ],
@@ -393,6 +394,9 @@
         "summary": "Read business_attribute",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -859,6 +863,7 @@
     },
     "/business_attribute_quality_requirement": {
       "get": {
+        "security": [],
         "tags": [
           "Business objects"
         ],
@@ -866,6 +871,9 @@
         "summary": "Read business_attribute_quality_requirement",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -964,6 +972,7 @@
     },
     "/business_object": {
       "get": {
+        "security": [],
         "tags": [
           "Business objects"
         ],
@@ -971,6 +980,9 @@
         "summary": "Read business_object",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -1401,6 +1413,7 @@
     },
     "/change_event": {
       "get": {
+        "security": [],
         "tags": [
           "Governance"
         ],
@@ -1408,6 +1421,9 @@
         "summary": "Read change_event",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -1785,6 +1801,7 @@
     },
     "/code_list": {
       "get": {
+        "security": [],
         "tags": [
           "Reference data"
         ],
@@ -1792,6 +1809,9 @@
         "summary": "Read code_list",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -2177,6 +2197,7 @@
     },
     "/code_value": {
       "get": {
+        "security": [],
         "tags": [
           "Reference data"
         ],
@@ -2184,6 +2205,9 @@
         "summary": "Read code_value",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -2578,6 +2602,7 @@
     },
     "/data_field": {
       "get": {
+        "security": [],
         "tags": [
           "Data tables"
         ],
@@ -2585,6 +2610,9 @@
         "summary": "Read data_field",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -3105,6 +3133,7 @@
     },
     "/data_field_quality_requirement": {
       "get": {
+        "security": [],
         "tags": [
           "Data tables"
         ],
@@ -3112,6 +3141,9 @@
         "summary": "Read data_field_quality_requirement",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -3210,6 +3242,7 @@
     },
     "/data_product": {
       "get": {
+        "security": [],
         "tags": [
           "Data products"
         ],
@@ -3217,6 +3250,9 @@
         "summary": "Read data_product",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -3701,6 +3737,7 @@
     },
     "/data_service": {
       "get": {
+        "security": [],
         "tags": [
           "APIs"
         ],
@@ -3708,6 +3745,9 @@
         "summary": "Read data_service",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -4201,6 +4241,7 @@
     },
     "/data_table": {
       "get": {
+        "security": [],
         "tags": [
           "Data tables"
         ],
@@ -4208,6 +4249,9 @@
         "summary": "Read data_table",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -4674,6 +4718,7 @@
     },
     "/domain": {
       "get": {
+        "security": [],
         "tags": [
           "Domains"
         ],
@@ -4681,6 +4726,9 @@
         "summary": "Read domain",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -5075,6 +5123,7 @@
     },
     "/lineage_relation": {
       "get": {
+        "security": [],
         "tags": [
           "Governance"
         ],
@@ -5082,6 +5131,9 @@
         "summary": "Read lineage_relation",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -5413,6 +5465,7 @@
     },
     "/product_attribute": {
       "get": {
+        "security": [],
         "tags": [
           "Data products"
         ],
@@ -5420,6 +5473,9 @@
         "summary": "Read product_attribute",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -5796,6 +5852,7 @@
     },
     "/quality_requirement": {
       "get": {
+        "security": [],
         "tags": [
           "Governance"
         ],
@@ -5803,6 +5860,9 @@
         "summary": "Read quality_requirement",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -6197,6 +6257,7 @@
     },
     "/relationship": {
       "get": {
+        "security": [],
         "tags": [
           "Governance"
         ],
@@ -6204,6 +6265,9 @@
         "summary": "Read relationship",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -6634,6 +6698,7 @@
     },
     "/service_endpoint": {
       "get": {
+        "security": [],
         "tags": [
           "APIs"
         ],
@@ -6641,6 +6706,9 @@
         "summary": "Read service_endpoint",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -6981,6 +7049,7 @@
     },
     "/system": {
       "get": {
+        "security": [],
         "tags": [
           "Systems"
         ],
@@ -6988,6 +7057,9 @@
         "summary": "Read system",
         "description": "Read public catalog metadata. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/AcceptProfile"
           },
@@ -7418,6 +7490,7 @@
     },
     "/rpc/read_snapshot": {
       "post": {
+        "security": [],
         "tags": [
           "Snapshot"
         ],
@@ -7425,6 +7498,9 @@
         "summary": "Read a consistent catalog snapshot",
         "description": "Read-only SQL STABLE function used by the prototype. Returns all catalog collections in one statement under the caller’s RLS permissions. It accepts no arguments and does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
           {
             "$ref": "#/components/parameters/ContentProfile"
           }
@@ -11036,12 +11112,6 @@
   },
   "components": {
     "securitySchemes": {
-      "PublishableKey": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "apikey",
-        "description": "Supabase publishable key (sb_publishable_…). The app supplies its configured public key. Do not enter a secret or service-role key."
-      },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
@@ -11138,6 +11208,16 @@
             "count=planned",
             "count=estimated"
           ]
+        }
+      },
+      "PublishableKey": {
+        "name": "apikey",
+        "in": "header",
+        "required": true,
+        "description": "Public project key, not a user credential. This page supplies it automatically; no login or user token is required.",
+        "schema": {
+          "type": "string",
+          "pattern": "^sb_publishable_"
         }
       },
       "RecordId": {
@@ -51240,6 +51320,10 @@
       {
         "file": "20260913040000_catalog_access_options.sql",
         "sha256": "985362f2a52531edcee4312b575de19d1e4353f1ac7ae04d9b19f243940aaff1"
+      },
+      {
+        "file": "20260913050000_catalog_session_security.sql",
+        "sha256": "0a9bd1380a7c99d827e73a8ba8809ab3289f2b6663837923ad76e762cd4e6f6f"
       }
     ]
   }

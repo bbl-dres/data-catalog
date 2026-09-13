@@ -65,6 +65,8 @@ The local invitation callback and error-message tests pass with the real SDK and
 
 ## Apply to the existing project
 
+All numbered schema changes through `catalog_session_security` are already applied to Data Catalog. The sections below describe their dependencies for recovery or a fresh project; they are not a pending deployment queue. Current status: [security review](../docs/review/2026-09-13-security-review.md).
+
 ### Required-rule correction
 
 Apply [catalog_required_rules](migrations/20260913030000_catalog_required_rules.sql) after the alias migration. Archived or retired quality rules no longer activate the editor's required checkbox. Re-enabling the checkbox selects or creates an active editor rule; historical assignments stay intact. This function-only correction changes no table/column inventory and was tested locally. It was applied to the hosted project on 13 September 2026 as part of the verified editing activation.
@@ -161,24 +163,13 @@ Expected: **30 tables, 621 fields, 25 business objects, 119 business attributes,
 
 ## Fixing editing unavailable
 
-Before activation on 13 September 2026, the hosted catalog lacked the editing columns and RPC deployment. Public reads matched the original schema in all populated collections; public signup was already disabled. This explains the editor's administration message. [Investigation and verification](../docs/review/2026-09-13-editing-activation.md).
+Resolved on 13 September 2026: [deployment record](../docs/review/2026-09-13-editing-activation.md#completed-hosted-activation). The hosted project has all editing migrations and the subsequent [session security migration](migrations/20260913050000_catalog_session_security.sql). A real signed-in localhost save/history/restore passed after hardening.
 
-**Resolved on 13 September 2026.** An authenticated MCP inspection found the original 432-column schema plus unexpected existing table write grants. After the tested [grant repair](repairs/2026-09-13-catalog-table-grants.sql), all eight pending migrations were applied individually in order. The exact 477-column target, preserved catalog data, public reads, RLS and denied direct writes were verified, followed by a successful signed-in browser save/history/restore. [Completed deployment and ledger details](../docs/review/2026-09-13-editing-activation.md#completed-hosted-activation). The instructions below remain a recovery procedure for a qualifying unactivated database; do not run them on this activated project.
+If this message recurs, first check that the account is permanent, not banned/deleted, and has a live session; sign in again after server-side revocation. Then compare the deployed migration ledger, function permissions and schema with this repository. Apply only missing migrations in order. Keep signup disabled and direct table writes denied.
 
-For this **original, pre-editing database only**, generate a single activation script from the eight pending migrations:
+The one-off activation generator, its dedicated bundle test and the disposable generated activation/seed SQL have been retired. They target a superseded pre-editing baseline. Use the numbered migrations for a fresh database; never rerun the initial schema/import on this populated project. Git history retains the original activation procedure and evidence.
 
-```powershell
-# From prototype-oblique, with the existing local SQL test dependency:
-$env:PGLITE_MODULE = Join-Path $env:TEMP 'oblique-sql-test-tools/node_modules/@electric-sql/pglite'
-node supabase/prepare-editing-activation.cjs
-node tests/editing-activation.cjs
-```
-
-Open `supabase/.temp/activate-editing.sql`, copy the **complete file** into the Data Catalog project's SQL Editor, select the `postgres` role and run it. The expected result is `Editing database ready. Reload the app and sign in.` with `catalog_columns = 477`. Reload the app, sign in, edit an entry and verify its history. End users need only their app accounts.
-
-The script checks the exact original column inventory and refuses an already or partly activated database. It wraps the maintained migrations in one transaction, preserves existing content and never reruns the initial schema or import. A failure rolls back the activation; inspect the error before retrying. The repeatable security prerequisite also removes implicit grants on future `postgres` objects, as documented under [database permissions](../docs/security.md#database-permissions). Do not apply the included migrations again individually after success; record their application before introducing CLI migration tracking.
-
-Generated SQL stays in ignored `.temp` storage; the generator and regression test are maintained. A partially updated database needs an inventory review and only its missing migrations. This script does not deploy the catalog-api Edge Function; that separate [REST activation](../docs/api.md#activation) is unnecessary for browser editing.
+MCP assigned deployment timestamps different from source filenames, and the initial SQL Editor setup has no original ledger entries. **Do not run an unreviewed CLI db push against this project.** Reconcile the ledger with the verified schema before adopting CLI deployment; a timestamp mismatch is not evidence that DDL is missing.
 
 ## Access options (Bereitstellungsformen)
 
@@ -206,9 +197,12 @@ The migration adds `access_options` JSONB lists to `data_table`, `data_product` 
 | [20260913040000_catalog_access_options.sql](migrations/20260913040000_catalog_access_options.sql) | Owned access descriptions on tables, products and APIs; validation, identity retention and audited browser/REST editing. |
 | [import-catalog.cjs](import-catalog.cjs) | Deterministic offline importer and bundle generator. |
 | [import-manifest.json](import-manifest.json) | Source SHA-256 hashes, all allocated identities and expected counts. Retain with backups. |
+| [20260913050000_catalog_session_security.sql](migrations/20260913050000_catalog_session_security.sql) | Current account/session checks for both write RPCs, retired membership-helper execution and closed future public-schema grants. Applied through MCP on 13 September 2026. |
 | [archive/](archive/README.md) | The 22 content updates applied on 7 September 2026, preserved unchanged with their original replay order and evidence. |
 
-For a **fresh project**, apply all twelve numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
+For a **fresh project**, apply all thirteen numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
+
+Cleanup review: every numbered SQL migration remains required by the rebuild chain; the 22 archived content operations are also used by regression tests. Applying a migration does not make its source obsolete. The repair remains a tested tool for existing grant drift.
 
 Keep the numbered migrations intact: later migrations depend on earlier ones, even when they replace a policy. The Supabase CLI applies `migrations/`; `archive/` is historical, manual recovery material. The duplicate `seed.sql` is generated only on request into ignored CLI scratch space (`.temp/`), and is never needed after applying the numbered migrations.
 

@@ -1,8 +1,9 @@
 const assert=require('node:assert/strict'),crypto=require('node:crypto');
 const {database}=require('../supabase/local-database.cjs');
-const {configureIdentity,uid}=require('./editing-sql.cjs');
+const {configureIdentity,registerIdentity,uid}=require('./editing-sql.cjs');
 async function write(db,args,{user=uid,role='authenticated',anonymous=false}={}){
- await db.query("SELECT set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claims',$2,false)",[user||'',JSON.stringify({is_anonymous:anonymous})]);await db.exec('SET ROLE '+role);
+ await registerIdentity(db,user);
+ await db.query("SELECT set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claims',$2,false)",[user||'',JSON.stringify({role,session_id:user,is_anonymous:anonymous})]);await db.exec('SET ROLE '+role);
  try{return(await db.query('SELECT catalog.api_write($1,$2,$3,$4,$5,$6) AS result',[args.p_operation,args.p_table,args.p_id,args.p_expected_version,args.p_body,args.p_command_id])).rows[0].result;}finally{await db.exec('RESET ROLE');}
 }
 const command=(table,body={},record=null,operation=record?'update':'create')=>({p_table:table,p_operation:operation,p_id:record?.id||null,p_expected_version:record?.row_version||0,p_body:body,p_command_id:crypto.randomUUID()});

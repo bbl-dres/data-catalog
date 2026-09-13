@@ -115,10 +115,10 @@ async function generate(db) {
       'x-postgresql-constraints': rules.map(rule => ({ name: rule.name, definition: rule.definition }))
     };
     const response = { description: 'Array of catalog records. Selected columns and embedded resources can change its shape.', headers: { 'Content-Range': { description: 'Returned row range and requested total (or *).', schema: { type: 'string' } } }, content: { 'application/json': { schema: { type: 'array', items: ref(table.name) } } } };
-    paths['/' + table.name] = { get: {
+    paths['/' + table.name] = { get: { security: [],
       tags: [tags[table.name]], operationId: 'list_' + table.name, summary: `Read ${table.name}`,
       description: `${table.description || 'Read public catalog metadata.'} Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.`,
-      parameters: [param('AcceptProfile'), ...['Select', 'Order', 'Limit', 'Offset', 'Or', 'Prefer'].map(param), ...fields.map(field => query(field.name, `Filter ${field.name}: operator.value (for example eq.value or is.null). ${field.description || ''}`, { type: 'string' }))],
+      parameters: [param('PublishableKey'), param('AcceptProfile'), ...['Select', 'Order', 'Limit', 'Offset', 'Or', 'Prefer'].map(param), ...fields.map(field => query(field.name, `Filter ${field.name}: operator.value (for example eq.value or is.null). ${field.description || ''}`, { type: 'string' }))],
       responses: { '200': response, '206': response, ...errors }
     } };
   }
@@ -127,12 +127,13 @@ async function generate(db) {
   schemas.CatalogSnapshot = { type: 'object', required: ['schemaVersion', ...tables.map(table => table.name)], properties: {
     schemaVersion: { type: 'integer', const: 1 }, ...Object.fromEntries(tables.map(table => [table.name, { type: 'array', items: ref(table.name === 'quality_requirement' ? 'SnapshotQualityRequirement' : table.name) }]))
   } };
-  paths['/rpc/read_snapshot'] = { post: {
+  paths['/rpc/read_snapshot'] = { post: { security: [],
     tags: ['Snapshot'], operationId: 'read_snapshot', summary: 'Read a consistent catalog snapshot',
     description: 'Read-only SQL STABLE function used by the prototype. Returns all catalog collections in one statement under the caller’s RLS permissions. It accepts no arguments and does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.',
-    parameters: [param('ContentProfile')], requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', additionalProperties: false }, example: {} } } },
+    parameters: [param('PublishableKey'), param('ContentProfile')], requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', additionalProperties: false }, example: {} } } },
     responses: { '200': { description: 'One snapshot object; numeric quality thresholds are exact decimal strings.', content: { 'application/json': { schema: ref('CatalogSnapshot') } } }, ...errors }
   } };
+  parameters.PublishableKey = {name:'apikey',in:'header',required:true,description:'Public project key, not a user credential. This page supplies it automatically; no login or user token is required.',schema:{type:'string',pattern:'^sb_publishable_'}};
   const restServer = [{url:new URL('/functions/v1/catalog-api',config().url).href,description:'Catalog REST API'}];
   parameters.RecordId = {name:'id',in:'path',required:true,description:'Internal UUID returned by the read/create operation.',schema:{type:'string',format:'uuid'}};
   parameters.IfMatch = {name:'If-Match',in:'header',required:true,description:'Quoted current row_version, for example "3". A stale revision returns 412; read and reconcile before issuing a new command.',schema:{type:'string',pattern:'^"[1-9][0-9]*"$'},example:'"1"'};
@@ -165,8 +166,8 @@ async function generate(db) {
     title: 'BBL Catalog API', version: '2.0.0',
     description: 'Browse the catalog. Sign in to create, edit or archive entries.',
   }, servers: [{ url: new URL('/rest/v1', config().url).href, description: 'Supabase catalog Data API' }],
-  tags: [...new Set(Object.values(tags)), 'Snapshot'].map(name => ({ name })), security: [{ PublishableKey: [] }],
-  paths, components: { securitySchemes: { PublishableKey: { type: 'apiKey', in: 'header', name: 'apikey', description: 'Supabase publishable key (sb_publishable_…). The app supplies its configured public key. Do not enter a secret or service-role key.' },BearerAuth:{type:'http',scheme:'bearer',bearerFormat:'JWT',description:'Current app access token from Account. Never enter a refresh token, database password, secret key or service-role key.'} }, parameters, schemas },
+  tags: [...new Set(Object.values(tags)), 'Snapshot'].map(name => ({ name })), security: [],
+  paths, components: { securitySchemes: { BearerAuth:{type:'http',scheme:'bearer',bearerFormat:'JWT',description:'Current app access token from Account. Never enter a refresh token, database password, secret key or service-role key.'} }, parameters, schemas },
   'x-generated-from': { generator: 'supabase/generate-openapi.cjs', canonicalModel: { file:'docs/data-model.md', sha256:createHash('sha256').update(fs.readFileSync(modelSource,'utf8').replace(/\r\n/g,'\n')).digest('hex') }, schema: 'catalog', readRole: 'anon', writeRole:'authenticated', snapshotSchemaVersion: 1, migrations: sources }
   };
 }

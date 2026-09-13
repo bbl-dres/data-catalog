@@ -80,6 +80,24 @@ const { readWorkbook } = require('./excel-helpers.cjs');
       try { await DK.catalog.load(DK.catalogConfig); return false; } catch { return true; }
     }), true);
     assert.equal(redirectedRequests, 0, 'Key-bearing snapshot requests must not follow redirects');
+    // A cross-origin parent must not be able to clickjack a signed-in editor.
+    // No session SDK or catalog request is initialized in either frame mode.
+    const framedPage = await browser.newPage();
+    const framedRequests=[];
+    framedPage.on('request', request=>{if(request.url().includes('supabase.co') || request.url().includes('/vendor/supabase/'))framedRequests.push(request.url());});
+    const parentServer = require('node:http').createServer((request,response)=>{response.writeHead(200,{'Content-Type':'text/html'});response.end('<iframe src="'+base+'#/objects/gebaeude"></iframe>');});
+    await new Promise(resolve=>parentServer.listen(0,'127.0.0.1',resolve));
+    for(const sandbox of [null,'allow-scripts allow-same-origin','allow-scripts']){
+      await framedPage.goto('http://127.0.0.1:'+parentServer.address().port+'/');
+      if(sandbox!==null)await framedPage.locator('iframe').evaluate((frame,value)=>{frame.setAttribute('sandbox',value);frame.src=frame.src;},sandbox);
+      const framed=framedPage.frameLocator('iframe');
+      await framed.getByRole('link',{name:'Datenkatalog öffnen',exact:true}).waitFor();
+      assert.equal(await framed.locator('[data-action="auth-open"], [data-action="edit-entry"], #auth-dialog').count(),0);
+      assert.equal(await framed.getByRole('link',{name:'Datenkatalog öffnen',exact:true}).getAttribute('rel'),'noopener noreferrer');
+    }
+    assert.deepEqual(framedRequests,[],'Framing initializes no Auth session or API request');
+    await framedPage.close();
+    await new Promise(resolve=>parentServer.close(resolve));
     const originalBase = await page.evaluate(() => document.baseURI);
     await page.evaluate(async () => {
       const script = document.createElement('script'); script.textContent = 'window.catalogXss=1'; document.head.append(script);

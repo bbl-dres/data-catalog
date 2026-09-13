@@ -2,6 +2,8 @@
 
 13 September 2026. Project `zicluerzbevodlmtbxow`. **Hosted activation and signed-in browser save/history/restore completed.** The initial investigation and connection setup below are historical; see [completed activation](#completed-hosted-activation).
 
+The baseline-only activation generator and its test were retired after the completed deployment and subsequent [security review](2026-09-13-security-review.md). The historical procedure below is not the current setup path.
+
 ## Finding
 
 The hosted database still has the original catalog schema, without the editing migrations. The app checks `catalog.edit_capabilities()` before creating a draft. Any failed/unsupported capability response keeps editing disabled and produces the reported message: “Bearbeiten ist derzeit nicht verfügbar. Bitte die Administration kontaktieren.” There is no per-user editor allowlist in the implemented model; permanent signed-in users can edit after activation.
@@ -24,7 +26,7 @@ The anonymous RPC check alone would not establish function absence, because func
 
 ## Prepared correction
 
-[prepare-editing-activation.cjs](../../supabase/prepare-editing-activation.cjs) generates `supabase/.temp/activate-editing.sql` from the existing security, editing, REST command, system-of-record, row-order, alias, required-rule and access-option migrations. It records source hashes and removes only their outer transaction boundaries so the complete activation commits atomically.
+[prepare-editing-activation.cjs](https://github.com/bbl-dres/data-catalog/blob/032f894ec2dfa5a6e9ef3d009ded0158c294d1df/prototype-oblique/supabase/prepare-editing-activation.cjs) generates `supabase/.temp/activate-editing.sql` from the existing security, editing, REST command, system-of-record, row-order, alias, required-rule and access-option migrations. It records source hashes and removes only their outer transaction boundaries so the complete activation commits atomically.
 
 The generated SQL requires `postgres`, the original column inventory and absence of existing editing commands. It refuses partial activation and reruns. The original schema, import and curated catalog values are not replayed. Postconditions check the 477-column inventory, authenticated command grants, denied anonymous editing and denied direct table writes. Schema-cache reload notifications are delivered on commit. No test users or sample records are created by the activation.
 

@@ -4,6 +4,7 @@
    no early one exists. */
 (function (DK) {
   'use strict';
+  if (window.self !== window.top) return;
   const pending = new Map();
   const key = url => new URL(url, document.baseURI).href;
   const start = (url, init) => {

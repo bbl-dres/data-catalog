@@ -11,7 +11,11 @@ async function database({ bundle = false, setupOnly = false, includeData = true 
   const db = new PGlite();
   try {
     await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role BYPASSRLS;
-      CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY);
+      CREATE SCHEMA auth;
+      CREATE TABLE auth.users(id uuid PRIMARY KEY, is_anonymous boolean DEFAULT false,
+        banned_until timestamptz, deleted_at timestamptz);
+      CREATE TABLE auth.sessions(id uuid PRIMARY KEY, user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
+        not_after timestamptz);
       CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT NULL::uuid $$;
       CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $$ SELECT '{}'::jsonb $$;
       GRANT USAGE ON SCHEMA auth TO anon, authenticated, service_role;

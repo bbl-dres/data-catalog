@@ -21,6 +21,8 @@
     const config = DK.catalogConfig;
     if (config?.provider !== 'supabase') return null;
     const target = DK.catalog.connection(config);
+    // A public project key is routing configuration, not user authorization.
+    spec.components.parameters.PublishableKey.schema.default = target.key;
     spec.servers = [{ url: target.base.href.replace(/\/$/, ''), description: 'Supabase catalog Data API' }];
     for (const item of Object.values(spec.paths)) for (const operation of Object.values(item)) {
       if (operation.servers) operation.servers = [{url:new URL('/functions/v1/catalog-api',target.base.origin).href,description:'Catalog REST API'}];
@@ -83,7 +85,7 @@
         const [, spec] = await Promise.all([load(), loadSpec()]);
         if (!host.isConnected) return;
         const target = connection(spec);
-        const swagger = window.SwaggerUIBundle({
+        window.SwaggerUIBundle({
           spec, domNode: content, deepLinking: false, queryConfigEnabled: false,
           docExpansion: 'list', defaultModelsExpandDepth: 0, filter: true,
           supportedSubmitMethods: target ? ['get', 'post', 'patch', 'delete'] : [], validatorUrl: null,
@@ -98,7 +100,7 @@
           presets: [window.SwaggerUIBundle.presets.apis],
           onComplete: () => queueMicrotask(() => {
             if (!host.isConnected) return;
-            if (target) swagger.preauthorizeApiKey('PublishableKey', target.key);
+
             host.querySelector('.ob-loading')?.remove();
             content.setAttribute('aria-busy', 'false');
             content.hidden = false;

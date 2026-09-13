@@ -124,9 +124,9 @@
     return { primary, protection, metadata };
   };
 
-  /** Each overview section is independent; only System starts collapsed. */
+  /** Each overview section is independent and starts expanded. */
   function section(className, heading, rows, state) {
-    const expanded = state.detailSections?.[className] ?? (className !== 'ob-system-facts');
+    const expanded = state.detailSections?.[className] ?? true;
     const id = `${className}-content`;
     return `<section class="${className}"><h2><button type="button" id="${className}-toggle" class="ob-detail-section-toggle" data-action="toggle-detail-section" data-section="${className}" aria-expanded="${expanded}" aria-controls="${id}">${esc(t(heading))}${icon('chevron_down', 'sm')}</button></h2><dl id="${id}" class="ob-facts"${expanded ? '' : ' hidden'}>${rows}</dl></section>`;
   }
@@ -153,9 +153,9 @@
         <div class="ob-detail-facts">
           ${section('ob-core-facts', 'detail.facts', renderFacts(facts.primary), state)}
           ${section('ob-protection-facts', 'detail.protection', renderFacts(facts.protection), state)}
-          ${section('ob-system-facts', 'detail.system', renderFacts(facts.metadata), state)}
         </div>
-      </div>${DK.accessOptions?.render(e, state) || ''}`;
+      </div>${DK.accessOptions?.render(e, state) || ''}
+      ${section('ob-system-facts', 'detail.system', renderFacts(facts.metadata), state)}`;
   };
 
   /** Keep responsibility rows stable when a contact or role is not documented. */

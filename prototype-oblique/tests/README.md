@@ -1,6 +1,6 @@
 # Prototype checks
 
-`catalog-table-grants.cjs` reproduces the direct table write grants found during hosted activation, applies the scoped repair twice, verifies preserved content and SELECT access, and then applies all eight pending editing migrations with 477 resulting columns and no direct API-role writes. It uses the same PGlite setup as the SQL suites.
+`catalog-table-grants.cjs` reproduces the direct table write grants found during hosted activation, applies the scoped repair twice, verifies preserved content and SELECT access, and then applies all current incremental migrations with 477 resulting columns and no direct API-role writes. It uses the same PGlite setup as the SQL suites.
 
 The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-schema.cjs` first checks the canonical model's dictionaries, nullability and complete table/column inventory against the current migration chain, then exercises the original schema migration independently. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response, including both Excel export scopes, complete workbook row counts, mobile menu layout and navigation/duplicate guards during export. These checks do not need a hosted administrator credential.
 
@@ -36,6 +36,7 @@ node prototype-oblique/tests/fields.cjs
 node prototype-oblique/tests/excel.cjs
 node prototype-oblique/tests/loading.cjs
 node prototype-oblique/tests/auth.cjs
+node prototype-oblique/tests/session-security.cjs
 node prototype-oblique/tests/editing-sql.cjs
 node prototype-oblique/tests/editing.cjs
 node prototype-oblique/tests/rest-crud.cjs
@@ -59,7 +60,6 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 
 | Suite | Purpose |
 |---|---|
-| `editing-activation.cjs` | Upgrade the original imported database with the generated SQL Editor bundle; baseline/role/rerun guards, full DDL rollback, preservation of every existing value and identity, real authenticated capability/save/history and public reads; requires PGlite |
 | `resources.cjs` | Shared loading: early promise rejection, response-body deadlines, single-flight assets, late callbacks, failure/retry, destination validation and immediate callback URL cleanup |
 | `review-regressions.cjs` | Archived required-rule behavior in real SQL, precision-preserving REST number tokens and malformed UTF-8 rejection; requires PGlite |
 | `review-browser.cjs` | Public rendering during delayed Auth SDK loading, failed Swagger CSS/retry, duplicate editor opening, 1,000-row draft keystroke work and stale capability responses; requires Playwright, PGlite and `DIAGRAM_SUPABASE=1` |
@@ -105,6 +105,7 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `design-review.cjs` | Diagnostic capture of 18 states from 320 px phones to 2560 px desktops (title row, controls, tables, profile, diagram, print workspace, drawer, footer, search, handbook, API) with screenshots and layout measurements in `oblique-design-review` in the OS temporary directory; compare two runs by their `measurements.json`. See the [mobile design review](../docs/review/2026-09-07-mobile-design-review.md) |
 | `print-menus.cjs` | Main-app/print dropdown appearance, four widths/languages, keyboard navigation/typeahead, nested/outside dismissal, custom zoom, disabled states, forced colors, simplified controls and the shared footer |
 | `core.test.cjs` | Real and deliberately invalid fixtures; handbook chapter aliases, preference compatibility/failures, domain integrity, routing, loading, safe URLs, workbook round-trips, types/long text and sorting |
+| `session-security.cjs` | Current account/session checks through both RPCs, revoked receipt replay, account bans/deletion, wrong/missing sessions, private Auth/audit isolation and future grants in catalog/private/public; requires PGlite |
 | `security-sql.cjs` | Reproduces permissive future-object grants; tests the security migration, 19 public read-only tables, private/DDL denial, new table/sequence/function denial and preserved unrelated grants |
 | `security-browser.cjs` | Hostile SQL metadata, unsafe links, literal Excel formulas, vector PDF under CSP, blocked executable content/connections/base changes and refused snapshot redirects; requires PGlite and Playwright |
 | `routing.cjs` | Cold detail links/reloads, history restoration, strict sorts, canonical search scopes and detail pagination, handbook history/scroll/modified clicks, navigation-context links, outer hosting query preservation, hostile inputs and restored URL-to-print ordering. Uses the shared print fixture; `REPORT_ONLY=1` records failures without failing. Reports: `oblique-diagram-export/routing-{before,after}.json` in the OS temporary directory. |

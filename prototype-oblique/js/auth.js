@@ -76,6 +76,7 @@
   }
 
   async function initialize() {
+    if (window.self !== window.top) { ready = true; return; }
     if (DK.catalogConfig?.provider !== 'supabase') { ready = true; return; }
     const url = new URL(location.href);
     const code = url.searchParams.get('code');

@@ -2,12 +2,19 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const { database } = require('./catalog-test-helpers.cjs');
 const uid = '8c965b13-447c-4a66-bb17-7b9e0b791cb0';
+async function registerIdentity(db,user=uid) {
+  if (!user) return;
+  await db.query('INSERT INTO auth.users(id) VALUES($1) ON CONFLICT DO NOTHING',[user]);
+  await db.query('INSERT INTO auth.sessions(id,user_id) VALUES($1,$1) ON CONFLICT DO NOTHING',[user]);
+}
 async function configureIdentity(db) {
+  await registerIdentity(db);
   await db.exec(`CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     CREATE OR REPLACE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $$ SELECT coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;`);
 }
 async function request(db, args, {role='authenticated',user=uid,anonymous=false}={}) {
-  await db.query("SELECT set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claims',$2,false)",[user || '',JSON.stringify({is_anonymous:anonymous})]);
+  await registerIdentity(db,user);
+  await db.query("SELECT set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claims',$2,false)",[user || '',JSON.stringify({role,session_id:user,is_anonymous:anonymous})]);
   await db.exec('SET ROLE '+role);
   try { return (await db.query('SELECT catalog.save_entry($1,$2,$3,$4,$5,$6) AS result',[args.p_command_id,args.p_table,args.p_id,args.p_expected_version,args.p_patch,args.p_children || []])).rows[0].result; }
   finally { await db.exec('RESET ROLE'); }
@@ -96,4 +103,4 @@ async function run() {
  }finally{await db.close();}
 }
 if(require.main===module)run().catch(e=>{console.error(e);process.exitCode=1;});
-module.exports={configureIdentity,request,command,uid};
+module.exports={configureIdentity,registerIdentity,request,command,uid};

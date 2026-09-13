@@ -36,7 +36,12 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
     };
     walk(spec);
     assert(!JSON.stringify(spec).includes(config().publishableKey), 'Keys are runtime configuration, not part of the contract');
-    assert.equal(spec.components.securitySchemes.PublishableKey.name, 'apikey');
+    assert.deepEqual(spec.security, []);
+    assert.deepEqual(Object.keys(spec.components.securitySchemes), ['BearerAuth']);
+    assert.equal(spec.components.parameters.PublishableKey.name, 'apikey');
+    for (const operations of Object.values(spec.paths)) for (const operation of Object.values(operations)) {
+      assert.deepEqual(operation.security, operation['x-catalog-write'] ? [{BearerAuth:[]}] : [], operation.operationId+' authentication');
+    }
     assert.equal(spec.components.securitySchemes.BearerAuth.scheme,'bearer');
     for (const table of tables) {
       const model = spec.components.schemas[table];
