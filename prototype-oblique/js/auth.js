@@ -84,14 +84,16 @@
     const emailType = fragment.get('type');
     const fragmentError = fragment.has('error');
     const callbackError = url.searchParams.has('error') || fragmentError;
-    if (fragmentError || emailCallback) {
-      // Dashboard invitations use an implicit email callback, not the app's PKCE reset flow.
-      // Remove credentials before the router or an export can capture the page URL.
-      url.hash = '#/';
+    // Keep callback credentials in this scope while the SDK loads. The router
+    // and exports must never capture them from the now-interactive page URL.
+    if (fragmentError || emailCallback) url.hash = '#/';
+    if (code || callbackError) ['code', 'sb_flow_id', 'error', 'error_code', 'error_description'].forEach(key => url.searchParams.delete(key));
+    if (code || callbackError || emailCallback) {
       history.replaceState(history.state, '', url.pathname + url.search + url.hash);
     }
     try {
       const target = DK.catalog.connection(DK.catalogConfig);
+      await DK.resources.asset('vendor/supabase/supabase.js', { ready: () => typeof window.supabase?.createClient === 'function' });
       client = window.supabase.createClient(target.base.origin, target.key, {
         auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' },
         global: { fetch: authFetch },
@@ -116,11 +118,6 @@
       else unavailable = true;
     }
     finally {
-      if (code || callbackError) {
-        ['code', 'sb_flow_id', 'error', 'error_code', 'error_description'].forEach(key => url.searchParams.delete(key));
-        if (fragmentError) url.hash = '#/';
-        history.replaceState(history.state, '', url.pathname + url.search + url.hash);
-      }
       ready = true;
       refreshHeader();
     }

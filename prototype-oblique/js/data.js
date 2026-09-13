@@ -26,10 +26,8 @@
     const files = Object.entries(FILES).filter(([key]) => provider === 'json' || ['config', 'i18n', 'model', 'manual'].includes(key));
     const [entries, catalog] = await Promise.all([Promise.all(files.map(async ([key, file]) => {
       // boot.js may have requested the UI files already; the HTTP cache policy is the same as for scripts and styles.
-      const res = await (DK.boot?.take(base + file)?.response || fetch(base + file));
-      if (!res.ok) throw new Error(file + ' → HTTP ' + res.status);
-      try { return [key, await res.json()]; }
-      catch (err) { throw new Error(file + ': invalid JSON (' + err.message + ')'); }
+      try { return [key, await (DK.boot?.take(base + file) || DK.resources.read(base + file))]; }
+      catch (err) { throw new Error(file + ': ' + (err.name === 'SyntaxError' ? 'invalid JSON: ' : '') + err.message); }
     })), provider === 'supabase' ? DK.catalog.load(DK.catalogConfig) : null]);
     // Validate a complete snapshot before publishing it; a failed reload keeps the old catalog usable.
     const next = { ...Object.fromEntries(entries), ...catalog, catalogSnapshot: catalog?.catalogSnapshot || null };
@@ -156,17 +154,29 @@
       const label = ui.localized(e.labels);
       return label && label !== e.technicalName ? `${label} (${e.technicalName})` : e.technicalName;
     }
-    if (kind === 'apis') return [e.name, e.version].filter(Boolean).join(' ');
+    if (kind === 'apis') return [e.name, data.serviceVersionOf(e)].filter(Boolean).join(' ');
     return e.name;
+  };
+  data.serviceVersionOf = e => e?._record ? e._record.service_version : e?.serviceVersion ?? e?.version;
+  // Escape the owning identifier inside a compound key; a slash in a parent
+  // must not become the separator between the parent and its child.
+  data.childId = (parent, child) => encodeURIComponent(parent) + '/' + child;
+  data.splitChildId = id => {
+    if (typeof id !== 'string' || !id.includes('/')) return null;
+    const at = id.indexOf('/');
+    try { return [decodeURIComponent(id.slice(0, at)), id.slice(at + 1)]; } catch { return null; }
   };
   /** Attribute as a first-class entity: id = "<objectId>/<attributeId>". */
   data.attr = function (id) {
-    const i = id.indexOf('/');
-    if (i < 0) return null;
-    const o = data.get('objects', id.slice(0, i));
+    const parts = data.splitChildId(id);
+    if (!parts) return null;
+    const o = data.get('objects', parts[0]);
     if (!o) return null;
-    const a = o.attributes.find(x => x.identifier === id.slice(i + 1));
-    if (!a) return null;
+    const a = o.attributes.find(x => x.identifier === parts[1]);
+    return a ? data.attributeEntity(o, a) : null;
+  };
+  data.attributeEntity = function (o, a) {
+    const id = data.childId(o.identifier, a.identifier);
     if (a._record) return {
       ...a, identifier: id, attrId: a.identifier, object: o.identifier, domain: o.domain, normReference: o.normReference,
       responsibleOrg: a.responsibleOrg || o.responsibleOrg, contact: a.responsibleOrg ? a.contact : o.contact,
@@ -184,14 +194,16 @@
   /** Fields are addressed by an explicit stable identifier, falling back to their exact technical name. */
   data.fieldId = f => f.identifier ?? f.technicalName;
   data.field = function (id) {
-    if (typeof id !== 'string') return null;
-    const i = id.indexOf('/');
-    if (i < 0) return null;
-    const table = data.get('tables', id.slice(0, i));
+    const parts = data.splitChildId(id);
+    if (!parts) return null;
+    const table = data.get('tables', parts[0]);
     if (!table) return null;
-    const position = table.fields.findIndex(f => data.fieldId(f) === id.slice(i + 1));
+    const position = table.fields.findIndex(f => data.fieldId(f) === parts[1]);
     if (position < 0) return null;
-    const f = table.fields[position];
+    return data.fieldEntity(table, table.fields[position], position);
+  };
+  data.fieldEntity = function (table, f, position) {
+    const id = data.childId(table.identifier, data.fieldId(f));
     if (f._record) return {
       ...f, identifier: id, fieldId: data.fieldId(f), table: table.identifier, position: position + 1,
       label: ui.localized(f.labels), name: data.displayName('fields', f), system: table.system, domain: data.domainForEntity('tables', table)?.identifier,
@@ -209,6 +221,14 @@
   };
   data.objOf = id => data.get('objects', id);
   data.sysOf = id => data.get('systems', id);
+  // Retain the label of an archived designation without linking to a hidden profile.
+  data.systemOfRecordOf = e => {
+    if (!e.systemOfRecord) return null;
+    const visible = data.sysOf(e.systemOfRecord);
+    if (visible) return visible;
+    const record = data.catalogSnapshot?.system.find(s => s.identifier === e.systemOfRecord);
+    return record ? { identifier: record.identifier, name: ui.localized(record, 'name_'), _record: record } : null;
+  };
   data.supportsCustodian = kind => ['systems', 'tables', 'fields', 'apis'].includes(kind);
   data.custodianOf = function (kind, e) {
     if (!data.supportsCustodian(kind)) return '';
@@ -281,7 +301,7 @@
       case 'domains': return [e.responsibleOrg, e.description, String(data.objectsOfDomain(e).length)];
       case 'systems': return [e.technology, e.description, String(data.tablesOfSystem(e).length)];
       case 'products': return [e.accessRights, e.description, e.format];
-      case 'apis': return [[data.nameOf('systems', e.system), e.version].filter(Boolean).join(' · '), e.description, e.protocol];
+      case 'apis': return [[data.nameOf('systems', e.system), data.serviceVersionOf(e)].filter(Boolean).join(' · '), e.description, e.protocol];
       default: return [e.normReference, e.description, e.values.length ? String(e.values.length) : '–'];
     }
   };
@@ -318,7 +338,7 @@
     return { tables: 'system', refs: 'domain' }[kind] || 'none';
   };
   data.groupOptions = function (kind) {
-    return (GROUP_IDS[kind] || []).map(id => ({ id, label: t('group.' + id) }));
+    return (GROUP_IDS[kind] || []).map(id => ({ id, label: t(id === 'resp' && kind === 'refs' ? 'fact.authorityOrganisation' : 'group.' + id) }));
   };
   /** The container entity a grouping refers to ({ kind, entity }), or null for value groupings. */
   data.groupEntity = function (kind, e, g) {
@@ -431,7 +451,7 @@
       if (e._record) {
         const assertions = (e._relationships || []).filter(r => r.relationship_type === 'represents' && r.target_business_attribute_id === e._record.id && ['candidate', 'confirmed'].includes(r.verification_status));
         const fields = data.tables.filter(table => table.status !== 'Archiviert').flatMap(table => table.fields.filter(f => f.status !== 'Archiviert' && assertions.some(r => r.source_data_field_id === f._record.id)).map(f => ({
-          name: data.displayName('fields', f), sub: data.displayName('tables', table), href: href('fields', `${table.identifier}/${data.fieldId(f)}`),
+          name: data.displayName('fields', f), sub: data.displayName('tables', table), href: href('fields', data.childId(table.identifier, data.fieldId(f))),
         })));
         return [mk('object', 'stack', 'objects', [o]),
           { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: e.status === 'Archiviert' ? [] : fields },
@@ -471,8 +491,7 @@
   /* Matching is case-insensitive and tolerant of umlaut spellings: "Gebäude" is found by
      "gebäu", "gebau" and "gebaeu". Two foldings are tried: diacritics stripped (keeps the
      string length, used for highlighting too) and ä→ae / ö→oe / ü→ue / ß→ss. */
-  const foldMarks = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  const foldUmlauts = s => s.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  const [foldMarks, foldUmlauts] = ui.searchFoldings;
   const WORD_BOUNDARY = /[\s\-–—(/.,:;«»"']/;
   /** First occurrence of `q` in `text` under either folding: { index, folded } or null. */
   const find = (text, q) => {
@@ -541,7 +560,7 @@
 
   /* history */
   data.history = function (kind, id) {
-    const key = kind === 'attrs' ? 'objects:' + id.split('/')[0] : kind === 'fields' ? 'tables:' + id.split('/')[0] : `${kind}:${id}`;
+    const key = kind === 'attrs' ? 'objects:' + data.splitChildId(id)?.[0] : kind === 'fields' ? 'tables:' + data.splitChildId(id)?.[0] : `${kind}:${id}`;
     const time = h => h._record?.occurred_at || h.date;
     return data.changelog.filter(h => h.entity === key).slice().sort((a, b) => (time(b) > time(a) ? 1 : time(b) < time(a) ? -1 : 0));
   };

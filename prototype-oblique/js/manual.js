@@ -44,8 +44,8 @@
         return `<div><p>${text(chapter.intro)}</p>${roles}</div><div><h3>${esc(chapter.workflowTitle)}</h3><p>${text(chapter.workflowIntro)}</p><ol class="ob-list">${join(chapter.workflow.map(step => `<li><strong>${esc(step.title)}</strong> (${esc(step.who)}): ${text(step.text)}</li>`))}</ol></div><div><h3>${esc(chapter.reportTitle)}</h3><p>${text(chapter.reportText)}</p></div>`;
       },
       model: chapter => {
-        const extensions = Object.keys(model.kinds).map(kind => ({ type: model.kinds[kind].singular, en: model.kinds[kind].en, fields: (model.extensions[kind] || []).map(([field, label]) => `${field} (${['valueType', 'dataType'].includes(field) ? t('fact.format') : label})`).join(', ') }));
-        const core = ui.table(coreColumns, join(model.core.map(field => ui.tr([{ html: esc(field.field), cls: 'ob-cell-nowrap' }, esc(field.label)], null, coreColumns))));
+        const extensions = Object.keys(model.kinds).map(kind => ({ type: model.kinds[kind].singular, en: model.kinds[kind].en, fields: (model.extensions[kind] || []).map(([field, label, labelKey]) => `${field} (${labelKey ? t(labelKey) : label})`).join(', ') }));
+        const core = ui.table(coreColumns, join(model.core.map(field => ui.tr([{ html: esc(field.field), cls: 'ob-cell-nowrap' }, esc(field.labelKey ? t(field.labelKey) : field.label)], null, coreColumns))));
         return `<div><p>${text(chapter.intro)}</p><ul class="ob-list">${join(chapter.layers.map(layer => `<li><strong>${esc(layer.title)}</strong> (${esc(layer.layer)}): ${text(layer.text)} ${esc(t('manual.example'))}: ${text(layer.example)}.</li>`))}</ul></div>
           <div><h3>${esc(chapter.coreTitle)}</h3><p>${text(chapter.coreIntro)}</p>${core}</div>
           <div><h3>${esc(chapter.extTitle)}</h3><ul class="ob-list">${join(extensions.map(extension => `<li><strong>${esc(extension.type)}</strong> (${esc(extension.en)}): ${esc(extension.fields)}</li>`))}</ul></div>

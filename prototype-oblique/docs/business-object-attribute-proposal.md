@@ -6,6 +6,8 @@
 
 The [source review](review/2026-09-07-building-attribute-review.md) preserves the GIS IMMO, BBL RE-FX and GWR evidence. Its earlier attribute counts and SQL conclusions are historical; this document governs the current proposed content. Source-specific inventories and technical mappings remain separate. **Gebäudehülle (AO) remains in the GIS IMMO catalog.**
 
+The [canonical property-set and business-key decisions](data-model.md#property-sets-and-business-keys) govern the proposed structured representation of this content. Current SQL still stores group/key-role markers in comments; the component lists and reference descriptions here do not establish deployed structured fields or physical foreign-key constraints. Review this proposal using the canonical [content-readiness checklist](data-model.md#content-readiness-review).
+
 ## Reading the list
 
 **Benennung und Formatierung:** Attributnamen werden einheitlich auf Deutsch geführt, insbesondere **Gebäude-ID**. Die Herkunft aus SAP oder BBL steht in der Definition, ohne entsprechenden Namenszusatz. Fachlich unterscheidende Zusätze wie **(GWR)** und **(amtlich)** bleiben erhalten. Die sieben Attributtabellen verwenden dieselben Spalten und dieselbe Schreibweise für **Property Set**.

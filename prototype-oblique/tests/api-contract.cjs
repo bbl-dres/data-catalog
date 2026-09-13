@@ -50,6 +50,7 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
       for (const row of rows) assert.equal(model.properties[row.column_name]['x-postgresql-not-null'], row.is_nullable === 'NO');
     }
     const context = { window: { DK: {} }, URL, Headers };
+    vm.runInNewContext(fs.readFileSync(path.join(root, 'js/resources.js'), 'utf8'), context);
     vm.runInNewContext(fs.readFileSync(path.join(root, 'js/catalog.js'), 'utf8'), context);
     vm.runInNewContext(fs.readFileSync(path.join(root, 'js/api.js'), 'utf8'), context);
     const connect = context.window.DK.catalog.connection;

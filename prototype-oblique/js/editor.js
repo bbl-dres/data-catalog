@@ -3,22 +3,26 @@
   'use strict';
   const ui = DK.ui, t = ui.t, esc = ui.esc, schema = DK.editSchema;
   let draft = null, capability = false, capabilityUser = null, checking = null, confirmDialog = null;
+  let opening = false, capabilityGeneration = 0;
   const clone = value => JSON.parse(JSON.stringify(value));
   const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
   const snapshot = () => DK.data.catalogSnapshot;
   const label = record => ui.localized(record,'name_') || record.identifier || '';
   const button = (action,text,attrs = '',primary = false) => `<button type="button" class="ob-button${primary ? ' ob-button--primary' : ''}" data-edit="${action}" ${attrs}>${esc(t(text))}</button>`;
   const iconButton = (action,text,glyph,attrs = '') => `<button type="button" class="ob-button ob-edit-icon" data-edit="${action}" title="${esc(t(text))}" aria-label="${esc(t(text))}" ${attrs}>${glyph}</button>`;
-  function patch(row) {
+  function computePatch(row) {
     return Object.fromEntries(Object.entries(row.value).filter(([key,value])=>key !== 'id' && key !== 'identifier' && !['row_version','created_on','modified_on','edited_at'].includes(key) &&
       !['business_object_id','data_table_id','data_product_id','data_service_id'].includes(key) && !(key === 'code_list_id' && row.table === 'code_value') &&
       (row.original ? !same(value,row.original[key]) : value != null)));
   }
+  const refreshPatch = row => { row.changes = computePatch(row); };
+  const patch = row => row.changes;
   function dirtyCount() { return draft ? [draft.root,...draft.rows].reduce((n,row)=>n + (row.original ? Object.keys(patch(row)).length : 1),0) : 0; }
-  function row(table,value,original = true) {
+  function row(table,value,original = true,requiredIds = null) {
     const r = clone(value);
-    if (table === 'business_attribute') r.required = snapshot().business_attribute_quality_requirement.some(a=>a.business_attribute_id === r.id && snapshot().quality_requirement.some(q=>q.id === a.quality_requirement_id && q.rule_type === 'required' && q.status !== 'retired'));
-    return {table,value:r,original:original ? clone(r) : null};
+    if (table === 'business_attribute') r.required = (requiredIds || DK.catalog.requiredAttributeIds(snapshot())).has(r.id);
+    const result = {table,value:r,original:original ? clone(r) : null};
+    refreshPatch(result); return result;
   }
   const rootForRoute = route => route.kind && schema.kinds[route.kind];
   const routeKey = route => `${route.view}:${route.kind}:${route.id || ''}`;
@@ -27,39 +31,45 @@
   async function checkCapability(force = false) {
     const id = DK.auth.user?.id || null;
     if (!force && id === capabilityUser) return checking;
+    const generation = ++capabilityGeneration;
     capabilityUser = id; capability = false;
     if (!id) { if (DK.app && DK.data.config) render(); return; }
     checking = (async()=>{
-      try { const result = await DK.auth.editRequest('edit_capabilities'); if (DK.auth.user?.id === id) capability = result.version === 1 && result.can_edit === true; }
+      try { const result = await DK.auth.editRequest('edit_capabilities'); if (generation === capabilityGeneration && DK.auth.user?.id === id) capability = result.version === 1 && result.can_edit === true; }
       catch { /* Missing migration or lost session must never enable editing. */ }
       finally { if (DK.app && DK.data.config) render(); }
     })();
     return checking;
   }
   async function start(create) {
-    if (draft) return;
-    const requestedRoute = routeKey(DK.app.route), requestedUser = DK.auth.user?.id;
-    await checkCapability(true);
-    if (!capability) { ui.toast(t('edit.unavailable')); return; }
-    try { await DK.data.load('data/'); }
-    catch { ui.toast(t('edit.network')); return; }
-    if (draft || requestedRoute !== routeKey(DK.app.route) || requestedUser !== DK.auth.user?.id) return;
-    DK.app.render();
-    const route = DK.app.route, table = rootForRoute(route);
-    if (!table || !snapshot()) return;
-    const original = create ? schema.defaults(table,ui.language(), route.params.domain ? snapshot().domain.find(x=>x.identifier === route.params.domain) : null) : route.entity?._record;
-    if (!original) return;
-    const child = schema.children[table];
-    draft = {root:row(table,original,!create),rows:child ? snapshot()[child[0]].filter(x=>x[child[1]] === original.id).map(x=>row(child[0],x)).sort((a,b)=>(a.value.sort_order || 0)-(b.value.sort_order || 0)) : [],
-      routeKey:routeKey(route),hash:location.hash,kind:route.kind,entity:create ? null : route.entity,lang:ui.language(),tab:'overview',page:0,filter:'',showArchived:false,expanded:new Set(),errors:{},busy:false,saved:null,request:null,userId:DK.auth.user.id};
-    render(`edit-${draft.root.value.id}-name`);
+    if (draft || opening) return;
+    opening = true;
+    try {
+      const requestedRoute = routeKey(DK.app.route), requestedUser = DK.auth.user?.id;
+      await checkCapability(true);
+      if (requestedRoute !== routeKey(DK.app.route) || requestedUser !== DK.auth.user?.id) return;
+      if (!capability) { ui.toast(t('edit.unavailable')); return; }
+      try { await DK.data.load('data/'); }
+      catch { ui.toast(t('edit.network')); return; }
+      if (draft || requestedRoute !== routeKey(DK.app.route) || requestedUser !== DK.auth.user?.id) return;
+      DK.app.render();
+      const route = DK.app.route, table = rootForRoute(route);
+      if (!table || !snapshot()) return;
+      const original = create ? schema.defaults(table,ui.language(), route.params.domain ? snapshot().domain.find(x=>x.identifier === route.params.domain) : null) : route.entity?._record;
+      if (!original) return;
+      const child = schema.children[table], requiredIds = DK.catalog.requiredAttributeIds(snapshot());
+      draft = {root:row(table,original,!create,requiredIds),rows:child ? DK.catalog.orderRows(snapshot()[child[0]].filter(x=>x[child[1]] === original.id)).map(x=>row(child[0],x,true,requiredIds)) : [],
+        routeKey:routeKey(route),hash:location.hash,kind:route.kind,entity:create ? null : route.entity,lang:ui.language(),tab:'overview',page:0,filter:'',showArchived:false,expanded:new Set(),errors:{},busy:false,saved:null,request:null,userId:DK.auth.user.id};
+      render(`edit-${draft.root.value.id}-name`);
+    } finally { opening = false; }
   }
   function optionLabel(value) { const key = 'edit.value.'+value; return t(key) === key ? value : t(key); }
   function control(row,f) {
     const r = row.value, id = `edit-${r.id}-${f.key}`, value = schema.read(r,f.key,draft.lang,row.table);
     const changed = !row.original || !same(value,schema.read(row.original,f.key,draft.lang,row.table));
     const error = draft.errors[id];
-    const attrs = `id="${id}" data-edit-record="${r.id}" data-edit-field="${f.key}" data-edit-lang="${draft.lang}" aria-invalid="${!!error}"${error ? ` aria-describedby="${id}-error"` : ''}`;
+    const hint = ['lines','urls'].includes(f.type), describedBy = [error && `${id}-error`,hint && `${id}-hint`].filter(Boolean).join(' ');
+    const attrs = `id="${id}" data-edit-record="${r.id}" data-edit-field="${f.key}" data-edit-lang="${draft.lang}" aria-invalid="${!!error}"${describedBy ? ` aria-describedby="${describedBy}"` : ''}`;
     let input;
     if (['select','reference','boolean','keys'].includes(f.type)) {
       let options = f.type === 'reference' ? snapshot()[f.table].filter(x=>x.id !== r.id && (!x.is_archived || x.id === value)).map(x=>[x.id,label(x)])
@@ -67,11 +77,12 @@
         : f.type === 'keys' ? [['primary','PK'],['foreign','FK'],['unique','UK'],['primary\nforeign','PK + FK']]
         : f.options.map(x=>[x,optionLabel(x)]);
       if (value !== '' && !options.some(([v])=>String(v) === String(value))) options.push([value,String(value)]);
-      input = `<select class="ob-select" ${attrs}><option value="">${esc(t('edit.unspecified'))}</option>${options.map(([v,l])=>`<option value="${esc(v)}"${String(value) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+      const emptyLabel = f.key === 'system_of_record_id' && row.table === 'business_attribute' ? 'systemOfRecord.inherit' : 'edit.unspecified';
+      input = `<select class="ob-select" ${attrs}><option value="">${esc(t(emptyLabel))}</option>${options.map(([v,l])=>`<option value="${esc(v)}"${String(value) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
     } else if (f.type === 'checkbox') input = `<input type="checkbox" ${attrs}${value ? ' checked' : ''}>`;
     else if (['textarea','lines','urls'].includes(f.type)) input = `<textarea class="ob-input" rows="${f.key === 'description' ? 3 : 2}" ${attrs}>${esc(value)}</textarea>`;
     else input = `<input class="ob-input" type="${['date','url'].includes(f.type) ? f.type : 'text'}" value="${esc(value)}" ${attrs}>`;
-    return `<div class="ob-edit-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
+    return `<div class="ob-edit-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
   }
   const titleFields = row => [schema.field('name','edit.name','text',{required:true}),schema.field('description','edit.description','textarea')].map(f=>control(row,f)).join('');
   function overview(row) {
@@ -90,8 +101,8 @@
     const rows = matches.slice(draft.page*25,(draft.page+1)*25);
     return `<div class="ob-edit-row-tools"><label>${esc(t('edit.searchRows'))}<input class="ob-input" type="search" id="edit-row-search" value="${esc(draft.filter)}" data-edit-filter></label><label><input type="checkbox" data-edit-archived${draft.showArchived ? ' checked' : ''}> ${esc(t('edit.showArchived'))}</label>${button('add-row','edit.addRow')}</div>
       <div class="ob-edit-table-scroll" tabindex="0" role="region" aria-label="${esc(t('edit.rows'))}"><table class="ob-edit-table"><thead><tr><th>${esc(t('edit.order'))}</th>${fields.map(f=>`<th>${esc(t(f.label))}</th>`).join('')}<th>${esc(t('edit.actions'))}</th></tr></thead><tbody>${rows.map(r=>{
-        const pos = draft.rows.indexOf(r), archived = r.value.is_archived;
-        return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === draft.rows.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="true" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
+        const pos = matches.indexOf(r), archived = r.value.is_archived;
+        return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === matches.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="${!draft.filter}" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
         ${draft.expanded.has(r.value.id) ? `<tr><td colspan="${fields.length+2}"><div class="ob-edit-row-detail">${r.table === 'service_endpoint' ? '' : control(r,schema.field('description','edit.description','textarea'))}${schema.groups(r.table).map(([name,group])=>`<section><h3>${esc(t(name))}</h3>${group.filter(f=>!fields.some(x=>x.key === f.key)).map(f=>control(r,f)).join('')}</section>`).join('')}</div></td></tr>` : ''}`;
       }).join('')}</tbody></table></div>${!rows.length ? `<p>${esc(t('edit.noRows'))}</p>` : ''}
       <div class="ob-edit-pagination">${button('previous','edit.previous',draft.page === 0 ? 'disabled' : '')}<span>${draft.page+1} / ${pages} · ${matches.length} ${esc(t('edit.rows'))}</span>${button('next','edit.next',draft.page+1 >= pages ? 'disabled' : '')}</div><p class="ob-edit-hint">${esc(t('edit.archiveHint'))}</p>`;
@@ -114,12 +125,14 @@
     if (!f) return;
     const language = input.dataset.editLang;
     schema.write(r.value,f,input.type === 'checkbox' ? input.checked : input.value,language,r.table);
+    refreshPatch(r);
     draft.request = null; draft.message = null;
     const wrapper = input.closest('.ob-edit-field'), changed = !r.original || !same(schema.read(r.value,f.key,language,r.table),schema.read(r.original,f.key,language,r.table));
     wrapper.classList.toggle('is-changed',changed); wrapper.querySelector('.ob-edit-changed').hidden = !changed;
     delete draft.errors[input.id]; input.setAttribute('aria-invalid','false'); wrapper.querySelector('.ob-edit-field-error').hidden = true;
-    document.getElementById('edit-unsaved').textContent = t('edit.unsaved',{count:dirtyCount()});
-    const save = document.querySelector('[data-edit="save"]'); if (save) save.disabled = !dirtyCount() || !capability || draft.userId !== DK.auth.user?.id;
+    const count = dirtyCount();
+    document.getElementById('edit-unsaved').textContent = t('edit.unsaved',{count});
+    const save = document.querySelector('[data-edit="save"]'); if (save) save.disabled = !count || !capability || draft.userId !== DK.auth.user?.id;
   }
   function validate() {
     draft.errors = {};
@@ -200,10 +213,16 @@
   }
   function reorder(id,to) {
     if (!draft || draft.busy || draft.saved) return;
-    const from = draft.rows.findIndex(r=>r.value.id === id);if(from<0 || to<0 || to>=draft.rows.length || draft.filter)return;
-    draft.rows.splice(to,0,draft.rows.splice(from,1)[0]);draft.rows.forEach((r,i)=>r.value.sort_order=i+1);draft.request=null;render();
+    const visible = matchingRows(), from = visible.findIndex(r=>r.value.id === id);
+    if(from<0 || to<0 || to>=visible.length || from===to || draft.filter)return;
+    const members = new Set(visible);
+    visible.splice(to,0,visible.splice(from,1)[0]);
+    let i=0; draft.rows=draft.rows.map(r=>members.has(r)?visible[i++]:r);
+    draft.rows.forEach((r,i)=>{r.value.sort_order=i+1;refreshPatch(r);});
+    draft.page=Math.floor(to/25);draft.request=null;render();
     document.querySelector(`[data-edit="up"][data-row="${id}"]`)?.focus({preventScroll:true});
   }
+
   function click(event) {
     if (event.target.closest('.ob-edit-confirm')) return;
     const el = event.target.closest('[data-edit]'); if (!el) return;
@@ -219,12 +238,13 @@
     else if(action==='tab'){draft.tab=el.dataset.tab;render('edit-tab-'+draft.tab);}
     else if(action==='add-row'){
       const table=schema.children[draft.root.table][0],value=schema.defaults(table,draft.lang);value.sort_order=draft.rows.length ? Math.max(...draft.rows.map(x=>x.value.sort_order||0))+1 : 1;
+      if(value.sort_order>2147483647){ui.toast(t('edit.orderLimit'));return;}
       draft.rows.push(row(table,value,false));draft.filter='';draft.showArchived=false;draft.page=Math.floor((matchingRows().length-1)/25);draft.request=null;render(`edit-${value.id}-${table==='code_value'?'code':table==='service_endpoint'?'url':'name'}`);
     } else if(action==='archive'||action==='restore'){
       if(!r)return;
-      if(!r.original && action==='archive')draft.rows=draft.rows.filter(x=>x!==r);else r.value.is_archived=action==='archive';
+      if(!r.original && action==='archive')draft.rows=draft.rows.filter(x=>x!==r);else {r.value.is_archived=action==='archive';refreshPatch(r);}
       draft.request=null;render();document.querySelector('[data-edit="add-row"]')?.focus({preventScroll:true});
-    } else if(action==='up'||action==='down')reorder(el.dataset.row,draft.rows.indexOf(r)+(action==='up'?-1:1));
+    } else if(action==='up'||action==='down')reorder(el.dataset.row,matchingRows().indexOf(r)+(action==='up'?-1:1));
     else if(action==='row-details'){if(draft.expanded.has(el.dataset.row))draft.expanded.delete(el.dataset.row);else draft.expanded.add(el.dataset.row);render();}
     else if(action==='previous'||action==='next'){draft.page+=action==='next'?1:-1;render();document.querySelector(`[data-edit="${action}"]`)?.focus();}
   }
@@ -268,7 +288,7 @@
       let dragged=null;
       document.addEventListener('dragstart',event=>{dragged=event.target.dataset.dragRow || null;if(dragged)event.dataTransfer.setData('text/plain',dragged);});
       document.addEventListener('dragover',event=>{if(draft && dragged && event.target.closest('[data-edit-row]'))event.preventDefault();});
-      document.addEventListener('drop',event=>{if(!draft||!dragged)return;const target=event.target.closest('[data-edit-row]');if(target){event.preventDefault();reorder(dragged,draft.rows.findIndex(r=>r.value.id===target.dataset.editRow));}dragged=null;});
+      document.addEventListener('drop',event=>{if(!draft||!dragged)return;const target=event.target.closest('[data-edit-row]');if(target){event.preventDefault();reorder(dragged,matchingRows().findIndex(r=>r.value.id===target.dataset.editRow));}dragged=null;});
       document.addEventListener('dragend',()=>{dragged=null;});
       window.addEventListener('beforeunload',event=>{if(draft && (dirtyCount()||draft.busy)&&!draft.saved){event.preventDefault();event.returnValue='';}});
       checkCapability();

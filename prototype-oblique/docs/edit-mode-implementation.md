@@ -45,3 +45,7 @@ Successful saves reload the catalog. If that reload fails, the editor explicitly
 Follow [Enable editing](../supabase/README.md#enable-editing): disable public signup, apply the earlier security migration if needed, then apply the editing migration once. The implementation does not change hosted accounts/settings or apply hosted SQL. Public reads and login remain available before activation.
 
 Local checks use PGlite with the actual migrations and the real vendored Supabase SDK in Edge, intercepting only network transport. They cover authorization, immutable/relation properties, atomic rollback, all collection types, owned rows and endpoint defaults, no-ops, revisions, stale owner/child drafts, private attribution, retries, multilingual edits, validation, navigation/discard, archive/restore, pending saves, session loss, reload failure and mobile layouts in all four languages. Auth, public browsing/Excel, core, migration, security and public API contract regressions are also run. No test writes hosted data or sends email. See [test commands](../tests/README.md).
+
+## Saved row order
+
+The [canonical ordering rules](data-model.md#row-order) apply to all five child types. Movement skips hidden archived rows and keeps their slots; crossing a page follows the moved row. Filtering disables movement. A reorder compacts the full draft to 1…n and saves through the audited owner command. New rows append after all ranks, including archived rows. The profile's Saved order button removes temporary column sorting without changing any stored rank.

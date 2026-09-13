@@ -1,30 +1,9 @@
 /* On-demand PDF assets and vector conversion; diagram-layout.js owns page content. */
 (function (DK) {
   'use strict';
-  const pdf = {}, scripts = new Map();
+  const pdf = {};
   let loading;
-  function script(url) {
-    if (!scripts.has(url)) scripts.set(url, new Promise((resolve, reject) => {
-      const el = document.createElement('script');
-      let settled = false;
-      const fail = () => {
-        if (settled) return;
-        settled = true; clearTimeout(timer); scripts.delete(url); el.remove(); reject(new Error('PDF asset could not be loaded: ' + url));
-      };
-      const timer = setTimeout(fail, 20000);
-      el.onload = () => { if (!settled) { settled = true; clearTimeout(timer); resolve(); } };
-      el.onerror = fail; el.src = url; document.head.appendChild(el);
-    }));
-    return scripts.get(url);
-  }
-  async function asset(url, binary = false) {
-    const controller = new AbortController(), timer = setTimeout(() => controller.abort(), 20000);
-    try {
-      const response = await fetch(url, { signal: controller.signal });
-      if (!response.ok) throw new Error('PDF asset request failed: ' + url);
-      return await (binary ? response.arrayBuffer() : response.text());
-    } finally { clearTimeout(timer); }
-  }
+  const asset = (url, binary = false) => DK.resources.read(url, { format: binary ? 'binary' : 'text' });
   function base64(buffer) {
     const bytes = new Uint8Array(buffer); let result = '';
     for (let i = 0; i < bytes.length; i += 8192) result += String.fromCharCode(...bytes.subarray(i, i + 8192));
@@ -39,7 +18,7 @@
           return { face, file: `NotoSans-${weight}.ttf`, style: i ? 'bold' : 'normal', data: base64(buffer) };
         })),
         asset('assets/swiss-logo-flag.svg'),
-        (async () => { await script('vendor/jspdf/jspdf.umd.min.js'); await script('vendor/svg2pdf.js/svg2pdf.umd.min.js'); })(),
+        (async () => { await DK.resources.asset('vendor/jspdf/jspdf.umd.min.js', { ready: () => !!window.jspdf?.jsPDF }); await DK.resources.asset('vendor/svg2pdf.js/svg2pdf.umd.min.js', { ready: () => typeof window.jspdf.jsPDF.API.svg === 'function' }); })(),
       ]);
       fonts.forEach(font => document.fonts.add(font.face));
       const svg = new DOMParser().parseFromString(logo, 'image/svg+xml');

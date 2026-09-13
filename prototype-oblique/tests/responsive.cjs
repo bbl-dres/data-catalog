@@ -91,11 +91,11 @@ const server = createServer();
     await visit('#/domains/bau');
     await page.click('#view-tab-overview');
     assert.equal(await page.locator('.ob-entity-header .ob-chip').count(), 0, 'Type/status must be in Kerndaten, not the title');
-    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Führendes System', 'Kommentar']);
+    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Kommentar']);
     assert.deepEqual(await page.locator('.ob-protection-facts dt').allTextContents(), ['Klassifizierung', 'Personendaten']);
     assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
-    const factHeights = await page.locator('.ob-facts dt, .ob-facts dd').evaluateAll(els => els.map(el => el.getBoundingClientRect().height));
-    assert(factHeights.every(height => height === 37), 'System, protection, core facts and contacts share the same single-line row height');
+    const factHeights = await page.locator('.ob-facts dt').evaluateAll(els => els.map(el => [el.getBoundingClientRect().height,el.nextElementSibling.getBoundingClientRect().height]));
+    assert(factHeights.every(([label,value]) => label >= 37 && label === value), 'Canonical labels may wrap; label/value pairs retain aligned rows and the minimum single-line height');
     /* The trimmed attribute table fits beside the sidebar, so the grouped object
        list is the table that scrolls sideways at these desktop widths. */
     await page.setViewportSize({ width: 1024, height: 768 });
@@ -133,7 +133,7 @@ const server = createServer();
     await page.evaluate(() => {
       const object = DK.data.objOf('gebaeude');
       const seed = object.attributes[0];
-      object.attributes = Array.from({ length: 123 }, (_, i) => ({ ...seed, identifier: `test-${i}`, name: `Test ${String(i + 1).padStart(3, '0')}`, position: i + 1 }));
+      object.attributes = Array.from({ length: 123 }, (_, i) => ({ ...seed, identifier: `test-${i}`, name: `Test ${String(i + 1).padStart(3, '0')}`, sortOrder: i + 1 }));
       delete DK.app.state.tableSorts['detail:objects:rows'];
       DK.app.render();
     });
@@ -151,9 +151,11 @@ const server = createServer();
     const download = await downloadEvent;
     const workbook = await require('./excel-helpers.cjs').readWorkbook(await download.path());
     const attrs = workbook.getWorksheet('Attribute');
-    assert.equal(attrs.rowCount, 124, 'Excel lost rows outside current page');
-    assert.equal(attrs.getCell('E2').value, 'Test 123', 'Excel must retain the selected row sort');
-    assert(attrs.getColumn(5).values.includes('Test 001'));
+    assert.equal(attrs.rowCount, 125, 'Excel lost rows outside current page');
+    const names = require('./excel-helpers.cjs').columnValues(attrs, 'name');
+    assert.equal(names[0], 'Test 123', 'Excel must retain the selected row sort');
+    assert(names.includes('Test 001'));
+    assert.equal(require('./excel-helpers.cjs').columnValues(attrs, 'sortOrder')[0], 123, 'Export keeps the saved rank while sorting by name');
     await page.emulateMedia({ media: 'print' });
     assert.equal(await page.locator('.ob-table thead').evaluate(el => getComputedStyle(el).position), 'static');
     assert.equal(await page.locator('.ob-table-scroll-hint').first().evaluate(el => getComputedStyle(el).display), 'none', 'print shows no scroll hint');

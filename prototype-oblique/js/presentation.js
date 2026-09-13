@@ -18,6 +18,10 @@
     property('classification', 'fact.classification'), property('personalData', 'fact.personalData', 'boolean'),
     field('domain', 'fact.domain', (e, kind) => data.domainForEntity(kind, e)?.name),
     field('system', 'fact.system', e => e.system ? data.nameOf('systems', e.system) : null), property('normReference', 'fact.normReference'),
+    field('systemOfRecord', 'fact.systemOfRecord', e => data.systemOfRecordOf(e)?.name, 'text', { href: e => {
+      const system = data.systemOfRecordOf(e);
+      return system && !system._record?.is_archived ? DK.router.entityHref('systems', system.identifier) : null;
+    } }),
   ];
   const byId = Object.fromEntries(shared.map(f => [f.id, f]));
   const metadata = ['identifier', 'version', 'versionDate', 'created', 'modified', 'comment', 'informationUrls'];
@@ -33,7 +37,7 @@
     refs: [count('valueCount', 'col.values', 'refs'), field('businessObject', 'fact.object', e => e.businessObject ? data.nameOf('objects', e.businessObject) : null)],
     products: [property('accessRights', 'fact.access'), property('format', 'fact.format'), count('attributeCount', 'col.attributes', 'products'),
       property('accrualPeriodicity', 'fact.refresh'), property('license', 'fact.license'), field('landingPage', 'visibility.landingPage', e => e._record?.landing_page_url ? [e._record.landing_page_url] : [], 'links')],
-    apis: [field('serviceVersion', 'visibility.serviceVersion', e => e._record?.service_version || e.version), property('protocol', 'fact.protocol'), property('accessRights', 'fact.access'),
+    apis: [field('serviceVersion', 'visibility.serviceVersion', e => data.serviceVersionOf(e)), property('protocol', 'fact.protocol'), property('accessRights', 'fact.access'),
       property('endpointURL', 'fact.baseUrl'), field('documentation', 'fact.documentation', e => e.documentation ? [e.documentation] : [], 'links'), field('endpointCount', 'visibility.endpoints', e => e.endpoints?.length ?? (e.endpointURL ? 1 : 0), 'number')],
   };
   const defaults = {
@@ -49,19 +53,19 @@
     values: ['code', 'name'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
   };
   const extras = {
-    objects: ['domain', 'normReference', ...responsibility, ...protection],
+    objects: ['domain', 'systemOfRecord', 'normReference', ...responsibility, ...protection],
     tables: ['domain', ...responsibility, 'dataCustodian', ...protection],
     domains: responsibility, systems: [...responsibility, 'dataCustodian', ...protection],
     refs: ['domain', 'responsibleOrg'], products: ['domain', ...responsibility, ...protection],
     apis: ['domain', ...responsibility, 'dataCustodian', ...protection],
   };
   const childOf = { objects: 'attrs', tables: 'fields', refs: 'values', products: 'productAttrs', apis: 'endpoints', systems: 'tables' };
-  const nameLabels = { objects: 'col.name', tables: 'col.name', domains: 'col.domain', systems: 'col.system', refs: 'col.codeList', products: 'col.product', apis: 'col.api', attrs: 'col.attribute', fields: 'col.field', values: 'col.label', productAttrs: 'col.attribute', endpoints: 'visibility.endpoint' };
+  const nameLabels = Object.fromEntries(Object.keys(defaults).map(kind => [kind, kind === 'endpoints' ? 'visibility.endpoint' : 'col.name']));
   const rowFields = kind => [
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name),
-    field('type', ['attrs', 'fields'].includes(kind) ? 'col.format' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
-    field('required', 'col.mandatory', e => e.mandatory, 'boolean'),
-    field('key', 'col.key', e => kind === 'attrs' ? e.keyRole || null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UK' }[k] || k)).join(', ') : e.keyRole),
+    field('type', kind === 'fields' ? 'col.dataType' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
+    field('required', kind === 'attrs' ? 'fact.requiredRule' : 'col.mandatory', e => e.mandatory, 'boolean'),
+    field('key', kind === 'attrs' ? 'fact.businessKey' : 'col.key', e => kind === 'attrs' ? e.keyRole || null : e.keyRoles?.length ? e.keyRoles.map(k => ({ primary: 'PK', foreign: 'FK', unique: 'UK' }[k] || k)).join(', ') : e.keyRole),
     field('codeList', 'col.codeList', e => e.codeList ? data.nameOf('refs', e.codeList) : null, 'text', { href: e => e.codeList ? DK.router.entityHref('refs', e.codeList) : null }),
     field('unit', 'print.column.unit', e => [e.length, e.unit].filter(v => v != null).join(' / ')), property('source', 'print.column.source'),
     record('nullable', 'visibility.nullable', 'is_nullable'), record('semanticName', 'visibility.semanticName', 'semantic_name'),
@@ -70,7 +74,7 @@
     ...(kind === 'endpoints' ? [field('description', 'col.description', e => ui.localized(e, 'description_') || e.description, 'long')] : []),
   ].map(f => f.id === 'nullable' ? { ...f, type: 'boolean' } : f);
   const rowExtras = {
-    attrs: ['description', 'required', 'normReference', 'semanticName', ...responsibility, ...protection],
+    attrs: ['description', 'required', 'systemOfRecord', 'normReference', 'semanticName', ...responsibility, ...protection],
     fields: ['description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
     values: ['description', 'shortName', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
     productAttrs: ['required', 'semanticName', 'code', 'source', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
@@ -78,19 +82,19 @@
   };
   // Keep browsing choices compact; full definitions still support search and source snapshots.
   const optionalChoices = {
-    objects: ['domain', 'normReference', 'dataOwner', 'dataSteward', 'version'],
+    objects: ['domain', 'systemOfRecord', 'normReference', 'dataOwner', 'dataSteward', 'version'],
     tables: ['domain', ...responsibility, 'dataCustodian', 'businessObject', 'version'],
     domains: ['dataOwner', 'dataSteward', 'version'],
     systems: [...responsibility, 'dataCustodian', 'version'],
     refs: ['domain', 'responsibleOrg', 'version'],
     products: ['domain', ...responsibility, 'version'],
     apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL'],
-    attrs: ['description', 'required', 'normReference', ...responsibility, 'version'],
+    attrs: ['description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
     fields: ['description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
     values: ['description'], productAttrs: ['required', 'code'],
     endpoints: ['http_method', 'relative_path', 'url'],
   };
-  const fieldOrder = ['name', 'description', 'domain', 'parentDomain', 'system', 'businessObject', ...responsibility, 'dataCustodian',
+  const fieldOrder = ['name', 'description', 'domain', 'parentDomain', 'system', 'systemOfRecord', 'businessObject', ...responsibility, 'dataCustodian',
     'normReference', 'technology', 'systemType', 'serviceVersion', 'protocol', 'http_method', 'relative_path', 'endpointURL', 'url',
     'format', 'accessRights', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
     'attributeCount', 'fieldCount', 'objectCount', 'tableCount', 'apiCount', 'valueCount', 'endpointCount', 'status'];
@@ -109,6 +113,7 @@
     const child = !custom[kind];
     const title = field('name', nameLabels[kind], e => kind === 'values' ? e.label || e.name : kind === 'endpoints' ? ui.localized(e, 'name_') || e.name || e.operation_name || e.identifier || e.url : kind === 'apis' ? e.name : data.displayName(kind === 'productAttrs' ? 'attrs' : kind, e), 'text', { required: true, primary: true });
     const available = { ...byId, name: title, ...Object.fromEntries((custom[kind] || rowFields(kind)).map(f => [f.id, f])) };
+    if (['refs', 'values'].includes(kind)) available.responsibleOrg = { ...available.responsibleOrg, label: 'fact.authorityOrganisation' };
     const ids = [...defaults[kind], ...(child ? rowExtras[kind] : [...custom[kind].map(f => f.id), ...extras[kind]]),
       ...(!child || ['attrs', 'fields'].includes(kind) ? metadata : [])];
     const result = [...new Set(ids)].filter(id => available[id]).map(id => ({ ...available[id], sizing: sizing(available[id]),

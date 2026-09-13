@@ -21,3 +21,4 @@ Use `YYYY-MM-DD-short-english-description` for top-level files and folders: the 
 | 2026-09-05 | [Relationship panels](2026-09-05-relationship-panels/README.md) |
 | 2026-09-06 | [Tiles and print layout](2026-09-06-tiles-and-print-layout.html) |
 | 2026-09-06 | [Excel layout](2026-09-06-excel-layout.html) |
+| 2026-09-13 | [Whole-prototype code review](2026-09-13-code-review.md) |

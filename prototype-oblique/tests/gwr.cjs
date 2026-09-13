@@ -95,8 +95,8 @@ const server = createServer();
     await page.click('[data-export="xlsx"]');
     const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await download).path());
     const values = workbook.getWorksheet('Werte');
-    assert.equal(values.rowCount, 120, 'Excel must contain all values, not just one page');
-    const labels = values.getColumn(4).values;
+    assert.equal(values.rowCount, 121, 'Excel must contain all values, not just one page');
+    const labels = require('./excel-helpers.cjs').columnValues(values, 'name');
     assert(labels.includes('Parterre inkl. Hochparterre') && labels.includes('19. Untergeschoss'));
     console.log('PASS: code-list round trip, source version, 119-value paging, sorting and complete Excel export');
 

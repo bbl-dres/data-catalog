@@ -51,15 +51,15 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'No mobile page overflow');
     await visit('#/objects?filter=NoMatchingEntryForExcel');
     await page.click('[data-menu="actions"]');
-    assert.equal(await page.locator('[data-export="xlsx"]').innerText(), 'Excel: Aktuelle Auswahl');
+    assert.equal(await page.locator('[data-export="xlsx"]').innerText(), 'Excel: Diese Ansicht');
     assert.equal(await page.locator('[data-export="xlsx-all"]').innerText(), 'Excel: Gesamter Katalog');
     assert.ok(await page.locator('.ob-menu').evaluate(el => el.getBoundingClientRect().right <= innerWidth));
     let downloaded = page.waitForEvent('download'); await page.click('[data-export="xlsx"]');
     const selectedWorkbook = await require('./excel-helpers.cjs').readWorkbook(await (await downloaded).path());
-    assert.equal(selectedWorkbook.getWorksheet('Geschäftsobjekte').rowCount, 1, 'Empty current selection stays empty');
+    assert.equal(selectedWorkbook.getWorksheet('Geschäftsobjekte').rowCount, 2, 'Empty current selection stays empty');
     await page.waitForFunction(() => !DK.app.state.exporting);
     const expected = await page.evaluate(() => ({
-      sections: DK.data.kinds.map(kind => [DK.data.kindDef(kind).plural, DK.data.list(kind).length]),
+      sections: DK.data.kinds.map(kind => [kind==='apis'?'APIs':DK.data.kindDef(kind).plural, DK.data.list(kind).length]),
       fields: DK.data.tables.reduce((sum, e) => sum + e.fields.length, 0),
       attributes: [...DK.data.objects, ...DK.data.products].reduce((sum, e) => sum + e.attributes.length, 0),
       values: DK.data.refs.reduce((sum, e) => sum + e.values.length, 0)
@@ -82,11 +82,11 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.equal(await page.evaluate(() => window.excelDownloads), 1, 'A pending catalog export blocks both modes');
     await page.evaluate(() => { location.hash = '#/objects/gebaeude'; window.resumeExcel(); });
     const allDownload = await downloaded;
-    assert.equal(allDownload.suggestedFilename(), 'gesamter-katalog.xlsx');
+    assert.match(allDownload.suggestedFilename(), /^datenkatalog_gesamt_\d{4}-\d{2}-\d{2}\.xlsx$/);
     const catalogWorkbook = await require('./excel-helpers.cjs').readWorkbook(await allDownload.path());
-    for (const [name, count] of expected.sections) assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 1, name);
+    for (const [name, count] of expected.sections) assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 2, name);
     for (const [name, count] of [['Felder', expected.fields], ['Attribute', expected.attributes], ['Werte', expected.values]]) {
-      assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 1, name);
+      assert.equal(catalogWorkbook.getWorksheet(name).rowCount, count + 2, name);
     }
     await page.waitForFunction(() => !DK.app.state.exporting);
     console.log('PASS: both Excel scopes on mobile, complete SQL catalog workbook, duplicate-export guard and navigation during export.');

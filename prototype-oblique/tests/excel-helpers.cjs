@@ -5,4 +5,9 @@ async function readWorkbook(file) {
   await workbook.xlsx.load(fs.readFileSync(file));
   return workbook;
 }
-module.exports = { readWorkbook };
+function columnValues(sheet, key) {
+  const column = sheet.getRow(1).values.indexOf(key);
+  if (column < 1) throw new Error(`Missing Excel key ${key} in ${sheet.name}`);
+  return Array.from({ length: Math.max(0, sheet.rowCount - 2) }, (_, i) => sheet.getCell(i + 3, column).value);
+}
+module.exports = { readWorkbook, columnValues };

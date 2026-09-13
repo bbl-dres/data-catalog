@@ -16,8 +16,8 @@ const server = createServer();
     page.on('pageerror', error => report.errors.push(error.message));
     const dir = path.join(process.env.TEMP || '/tmp', 'oblique-contrast-review'); fs.mkdirSync(dir, { recursive: true });
     const phase = process.env.REPORT_ONLY ? 'before' : 'after';
-    const visit = async (hash, tab) => {
-      await page.goto(base + hash); await page.locator('#page-content').waitFor();
+    const visit = async (hash, tab, fresh = false) => {
+      await page.goto(base + (fresh ? '?contrast-contact=1' : '') + hash); await page.locator('#page-content').waitFor();
       if (hash === '#/api') await page.locator('.swagger-ui .opblock').first().waitFor();
       if (tab) await page.click(`[data-tab="${tab}"]`);
       await page.evaluate(installContrast); await settle(page);
@@ -87,14 +87,15 @@ const server = createServer();
       spec.info.contact = { name: 'Documentation', url: 'https://catalog.example/documentation' };
       return route.fulfill({ json: spec });
     });
-    await visit('#/api');
+    // Start a new document so the earlier route scans cannot reuse a cached spec.
+    await visit('#/api', null, true);
     await sample('API version badge', '.info .title small pre');
     await sample('API specification badge', '.info .title small.version-stamp pre');
     await sample('API documentation link', '.info a');
     await sample('API authorization button', '.btn.authorize');
     await sample('API authorization icon', '.authorization__btn svg', 'fill', 3);
     await sample('API filter boundary', '.operation-filter-input', 'borderTopColor', 3);
-    await sample('API method badge', '.opblock-summary-method');
+    for (const method of ['get', 'post', 'patch', 'delete']) await sample(`API ${method.toUpperCase()} method badge`, `.opblock-${method} .opblock-summary-method`);
     await focus('API authorization button', '.btn.authorize');
     await page.screenshot({ path: path.join(dir, phase + '-api-overview.png') });
     await page.locator('.opblock-summary-control').first().click(); await settle(page);
@@ -108,6 +109,7 @@ const server = createServer();
     await focus('API operation disclosure', '.opblock-summary-control');
     await page.screenshot({ path: path.join(dir, phase + '-api.png') });
     // Populated source models exercise the vendor's type/constraint labels.
+    await page.locator('.models-control[aria-expanded="false"]').click();
     await sample('API expand schema control', '.json-schema-2020-12-expand-deep-button');
     const schemas = page.locator('.models .json-schema-2020-12-expand-deep-button');
     assert(await schemas.count(), 'Current API must render schema controls');

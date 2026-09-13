@@ -39,17 +39,18 @@ const server = createServer();
     assert(await page.locator('#loading').isHidden(), 'failed export must clear its spinner');
     const gwr = await download();
     assert.equal(attempts, 2);
-    assert.equal(gwr.getWorksheet('Felder').rowCount, 147);
-    assert.equal(gwr.getWorksheet('Werte').rowCount, 468);
+    assert.equal(gwr.getWorksheet('Datentabellen').rowCount, 9);
+    assert.equal(gwr.getWorksheet('Felder'), undefined);
+    assert.equal(gwr.getWorksheet('Werte'), undefined);
     assert.equal(await page.locator('script[src*="exceljs.min.js"]').count(), 1);
     console.log('PASS: lazy local writer, load failure/retry and complete GWR workbook download');
 
     const profiles = [
-      ['#/objects/gebaeude/attributes/egid', 'Attribute', 2],
-      ['#/tables/t-gwr-gebaeude/fields/GKAT', 'Felder', 2],
-      ['#/products/p-gebaeudebestand', 'Attribute', 6],
-      ['#/apis/api-energie', 'API-Verzeichnis', 2],
-      ['#/objects?filter=no-such-record', 'Geschäftsobjekte', 1],
+      ['#/objects/gebaeude/attributes/egid', 'Attribute', 3],
+      ['#/tables/t-gwr-gebaeude/fields/GKAT', 'Felder', 3],
+      ['#/products/p-gebaeudebestand', 'Attribute', 7],
+      ['#/apis/api-energie', 'APIs', 3],
+      ['#/objects?filter=no-such-record', 'Geschäftsobjekte', 2],
     ];
     await page.setViewportSize({ width: 390, height: 844 });
     for (const [hash, sheet, count] of profiles) {
@@ -78,9 +79,9 @@ const server = createServer();
     assert(await page.locator('#loading').isVisible(), 'pending export survives navigation');
     release();
     const wb = await readWorkbook(await (await pending).path());
-    assert.equal(wb.getWorksheet('Geschäftsobjekte').rowCount, 2);
-    assert.equal(wb.getWorksheet('Geschäftsobjekte').getCell('B2').value, 'Meilenstein');
-    assert.equal(wb.getWorksheet('Attribute').rowCount, 7);
+    assert.equal(wb.getWorksheet('Geschäftsobjekte').rowCount, 3);
+    const sheet=wb.getWorksheet('Geschäftsobjekte');assert.equal(sheet.getRow(3).getCell(sheet.getRow(1).values.indexOf('name')).value,'Meilenstein');
+    assert.equal(wb.getWorksheet('Attribute'), undefined);
     assert.equal(page.url().split('#')[1], '/manual?ch=introduction', 'navigation completed with the canonical handbook chapter');
     await page.waitForFunction(() => !DK.app.state.exporting);
     assert(await page.locator('#loading').isHidden());

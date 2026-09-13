@@ -11,7 +11,7 @@ const { workspace } = require('./print-test-helpers.cjs');
       assert.equal(await page.evaluate(() => DK.router.parse().params.group), 'resp');
       const groups = await page.locator('.ob-group-title').allTextContents();
       await page.locator('[data-menu="group"]').click();
-      assert.equal(await page.locator('[data-action="set-group"][data-group="resp"]').innerText(), 'Verantwortung');
+      assert.equal(await page.locator('[data-action="set-group"][data-group="resp"]').innerText(), kind === 'refs' ? 'Herausgebende Stelle' : 'Verantwortliche Organisation');
       await page.locator('[data-action="set-group"][data-group="resp"]').click();
       if (['domains', 'systems'].includes(kind)) continue;
       await open();

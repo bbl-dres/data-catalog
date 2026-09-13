@@ -7,7 +7,7 @@ const path = require('node:path');
 const { PGlite } = require(process.env.PGLITE_MODULE || '@electric-sql/pglite');
 const { database } = require('../supabase/local-database.cjs');
 const migration = fs.readFileSync(path.join(__dirname, '../supabase/migrations/20260906000000_catalog_schema.sql'), 'utf8');
-const model = fs.readFileSync(path.join(__dirname, '../docs/data-model.md'), 'utf8');
+const model = fs.readFileSync(path.join(__dirname, '../docs/data-model.md'), 'utf8').replace(/\r\n/g, '\n');
 const snake = value => value.replace(/(?<!^)[A-Z]/g, letter => '_' + letter).toLowerCase();
 const id = number => `'00000000-0000-0000-0000-${String(number).padStart(12, '0')}'`;
 
@@ -27,7 +27,8 @@ async function checkCanonicalModel() {
       const columns = actual.filter(column => column.table_name === table);
       for (const line of dictionary[0].split('\n').filter(line => line.startsWith('| `'))) {
         const cells = line.trim().slice(1, -1).split('|').map(cell => cell.trim());
-        assert.equal(cells.length, 6, section + ' dictionary shape');
+        assert.equal(cells.length, 7, section + ' dictionary shape');
+        assert.ok(cells[2], section + ' German alias');
         const property = cells[0].replaceAll('`', '');
         let mapped;
         if (['source', 'target', 'record'].includes(property)) {
@@ -44,7 +45,7 @@ async function checkCanonicalModel() {
         } else {
           const column = columns.find(column => column.column_name === snake(property));
           assert.ok(column, section + '.' + property);
-          const required = cells[4].endsWith('*') ? property !== 'keyRoles' : cells[4] === '1';
+          const required = cells[5].endsWith('*') ? property !== 'keyRoles' : cells[5] === '1';
           assert.equal(column.is_nullable, required ? 'NO' : 'YES', section + '.' + property + ' null/collection semantics');
           mapped = [column];
         }

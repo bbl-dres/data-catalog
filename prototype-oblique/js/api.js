@@ -5,40 +5,15 @@
   const mounts = new WeakSet();
 
   function load() {
-    if (typeof window.SwaggerUIBundle === 'function') return Promise.resolve();
-    if (!loading) loading = new Promise((resolve, reject) => {
-      const stylesheet = document.createElement('link');
-      stylesheet.rel = 'stylesheet';
-      stylesheet.href = 'vendor/swagger-ui/swagger-ui.css';
-      // Application overrides follow the vendor stylesheet.
-      document.head.insertBefore(stylesheet, document.getElementById('main-css'));
-      const script = document.createElement('script');
-      script.src = 'vendor/swagger-ui/swagger-ui-bundle.js';
-      const fail = () => {
-        clearTimeout(timer);
-        loading = null; script.remove(); stylesheet.remove();
-        reject(new Error('swagger-ui-bundle.js could not be loaded'));
-      };
-      const timer = setTimeout(fail, 20000);
-      script.onload = () => { clearTimeout(timer); resolve(); };
-      script.onerror = fail;
-      document.head.appendChild(script);
-    });
+    if (!loading) loading = Promise.all([
+      DK.resources.asset('vendor/swagger-ui/swagger-ui.css', { stylesheet: true, before: document.getElementById('main-css') }),
+      DK.resources.asset('vendor/swagger-ui/swagger-ui-bundle.js', { ready: () => typeof window.SwaggerUIBundle === 'function' })
+    ]).catch(error => { loading = null; throw error; });
     return loading;
   }
-
-  let spec = null; // the parsed contract is reused by every later visit; a failed load is forgotten so a retry fetches again
+  let spec;
   function loadSpec() {
-    spec ||= (async () => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 20000);
-      try {
-        const response = await fetch('data/swagger.json', { signal: controller.signal });
-        if (!response.ok) throw new Error(`API documentation request failed (${response.status})`);
-        return await response.json();
-      } catch (error) { spec = null; throw error; }
-      finally { clearTimeout(timer); }
-    })();
+    spec ||= DK.resources.read('data/swagger.json').catch(error => { spec = null; throw error; });
     return spec;
   }
 

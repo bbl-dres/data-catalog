@@ -137,7 +137,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     const download = page.waitForEvent('download');
     await page.click('[data-export="xlsx"]');
     const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await download).path());
-    assert.equal(workbook.getWorksheet('Felder').rowCount, 151, 'entity export retains the complete schema while browsing a filtered list');
+    assert.equal(workbook.getWorksheet('Felder').rowCount, 152, 'entity export retains the complete schema while browsing a filtered list');
     assert.deepEqual(errors, []);
     console.log('PASS empty source lists, complete entity export and no browser errors');
   } finally {

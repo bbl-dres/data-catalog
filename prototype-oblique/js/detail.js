@@ -26,7 +26,7 @@
     const tab = detail.resolveTab(e, route.params.tab);
     const rowList = tab === 'rows' ? ctx?.rowList || detail.rowsContext(e, route, state) : null;
     const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: data.history(e.kind, e.identifier).length };
-    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}<div class="ob-local-menus">${DK.fieldPicker.button(rowList.kind)}</div></div>` : ''}</div>`;
+    const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${rowList ? `<div class="ob-local-actions">${ui.collectionSearch(rowList.filter, 'panel-rows')}<div class="ob-local-menus">${DK.fieldPicker.button(rowList.kind)}${['objects','tables','refs','products'].includes(e.kind) ? `<button type="button" class="ob-button" data-action="restore-row-order"${rowList.options.sort ? '' : ' disabled'}>${esc(t('sort.savedOrder'))}</button>` : ''}</div></div>` : ''}</div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e);
     else if (tab === 'rows') panel = detail.rows(e, route, state, rowList);
@@ -46,8 +46,15 @@
       ? [...new Set(e.informationUrls.filter(url => typeof url === 'string' && /^https?:\/\//i.test(url) && ui.safeHref(url)))] : [];
     const primary = [plain(t('fact.type'), data.kindDef(e.kind).singular), { label: t('fact.status'), value: e.status, type: 'chip', tone: data.statusTone(e.status) }];
     if (e.kind !== 'domains') primary.push(dom ? internal(t('fact.domain'), dom.name, 'domains', dom.identifier) : plain(t('fact.domain')));
-    /* The system of record belongs to the key facts, e.g. Gebäude = SAP RE-FX. */
-    primary.push(plain(t('fact.source'), e.source));
+    if (['objects', 'attrs'].includes(e.kind)) {
+      const system = data.systemOfRecordOf(e);
+      const note = [e.systemOfRecordInheritedFrom && t('systemOfRecord.inherited'),
+        system?._record?.is_archived && t('systemOfRecord.archived')].filter(Boolean).join('; ');
+      const name = system ? [system.name, note && `(${note})`].filter(Boolean).join(' ') : null;
+      primary.push(system && !system._record?.is_archived
+        ? internal(t('fact.systemOfRecord'), name, 'systems', system.identifier)
+        : plain(t('fact.systemOfRecord'), name));
+    }
     switch (e.kind) {
       case 'systems':
         primary.push(plain(t('fact.technology'), e.technology));
@@ -61,7 +68,7 @@
         const ref = data.get('refs', e.codeList);
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : null;
         primary.push(internal(t('fact.object'), o.name, 'objects', o.identifier));
-        primary.push(plain(t('fact.format'), e.valueType), plain(t('fact.key'), key), plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
+        primary.push(plain(t('fact.valueType'), e.valueType), plain(t('fact.businessKey'), key), plain(t('fact.requiredRule'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null),
           ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')),
           plain(t('fact.normReference'), e.normReference));
         break;
@@ -75,7 +82,7 @@
         primary.push({ ...internal(t('fact.table'), data.displayName('tables', table), 'tables', table.identifier), href: router.entityHref('tables', table.identifier, { tab: 'rows' }) });
         if (data.sysOf(e.system)) primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system));
         const key = e.keyRole === 'PK' ? t('fact.key.pk') : e.keyRole === 'FK' ? t('fact.key.fk') : t(e.provenance || (e._record && e.keyRoles == null) ? 'fact.undocumented' : 'fact.key.none');
-        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.label'), e.label), plain(t('fact.format'), e.dataType), plain(t('fact.key'), key));
+        primary.push(plain(t('fact.technicalName'), e.technicalName), plain(t('col.name'), e.label), plain(t('col.dataType'), e.dataType), plain(t('fact.key'), key));
         primary.push(plain(t('fact.mandatory'), typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : null));
         const ref = data.get('refs', e.codeList);
         primary.push(ref ? internal(t('col.codeList'), ref.name, 'refs', ref.identifier) : plain(t('col.codeList')));
@@ -85,6 +92,7 @@
         primary.push(plain(t('fact.access'), e.accessRights), plain(t('fact.license'), e.license), plain(t('fact.format'), e.format), plain(t('fact.refresh'), e.accrualPeriodicity), ext(t('fact.obtain'), t('fact.obtainProduct')));
         break;
       case 'apis':
+        primary.push(plain(t('visibility.serviceVersion'), data.serviceVersionOf(e)));
         primary.push(internal(t('fact.system'), data.nameOf('systems', e.system), 'systems', e.system), plain(t('fact.protocol'), e.protocol), plain(t('fact.access'), e.accessRights),
           plain(t('fact.baseUrl'), e.endpointURL), ext(t('fact.documentation'), e.documentation ? t('fact.openDocs') : null, e.documentation));
         break;
@@ -110,7 +118,7 @@
     }
     const protection = [plain(t('fact.classification'), e.classification), plain(t('fact.personalData'), typeof e.personalData === 'boolean' ? (e.personalData ? t('yes') : t('no')) : null)];
     primary.push({ label: t('fact.comment'), value: e.comment, type: 'comment' });
-    const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.synced'), fmt(e.synced))];
+    const metadata = [plain(t('fact.identifier'), e.identifier), plain(t('fact.version'), e.kind === 'apis' ? e._record?.version : e.version), plain(t('fact.created'), fmt(e.created)), plain(t('fact.modified'), fmt(e.modified)), plain(t('fact.synced'), fmt(e.synced))];
     return { primary, protection, metadata };
   };
 
@@ -159,7 +167,7 @@
       return website(a.name, a.url || (directory ? data.config.admindirUrl : null), directory ? t('detail.openAdmindir', { name: a.name }) : null);
     };
     const contact = e.contact || {};
-    const rows = row('detail.organisation', e.responsibleOrg ? website(e.responsibleOrg, contact.url) : '')
+    const rows = row(e.kind === 'refs' ? 'fact.authorityOrganisation' : 'detail.organisation', e.responsibleOrg ? website(e.responsibleOrg, contact.url) : '')
       + row('detail.owner', actor(e.dataOwner, 'person'))
       + row('detail.steward', actor(e.dataSteward, 'person'))
       + (data.supportsCustodian(e.kind) ? row('detail.dataCustodian', actor(data.custodianOf(e.kind, e), 'organisation')) : '');
@@ -173,12 +181,12 @@
     if (!kind) return { columns: [], rows: [] };
     const fields = DK.presentation.definitions(kind);
     const items = e.kind === 'systems' ? data.tablesOfSystem(e) : e.kind === 'tables' ? e.fields : e.kind === 'refs' ? e.values : e.attributes || [];
-    const rows = items.map(item => {
-      const href = e.kind === 'objects' ? router.entityHref('attrs', `${e.identifier}/${item.identifier}`)
-        : e.kind === 'tables' ? router.entityHref('fields', `${e.identifier}/${data.fieldId(item)}`)
+    const rows = items.map((item, position) => {
+      const href = e.kind === 'objects' ? router.entityHref('attrs', data.childId(e.identifier, item.identifier))
+        : e.kind === 'tables' ? router.entityHref('fields', data.childId(e.identifier, data.fieldId(item)))
         : e.kind === 'systems' ? router.entityHref('tables', item.identifier) : null;
-      const entity = kind === 'fields' ? data.field(`${e.identifier}/${data.fieldId(item)}`)
-        : kind === 'attrs' ? data.attr(`${e.identifier}/${item.identifier}`) : item;
+      const entity = kind === 'fields' ? data.fieldEntity(e, item, position)
+        : kind === 'attrs' ? data.attributeEntity(e, item) : item;
       const values = DK.presentation.values(kind, entity);
       return { entity, href, values,
         text: fields.map(f => DK.presentation.format(f, values[f.id])), search: [item.identifier, item.technicalName] };

@@ -61,16 +61,26 @@ const { readWorkbook } = require('./excel-helpers.cjs');
     const download = page.waitForEvent('download');
     await page.click('[data-export="xlsx"]');
     const workbook = await readWorkbook(await (await download).path());
-    const fields = workbook.getWorksheet('Felder');
-    assert.equal(fields.rowCount, 276);
-    assert.equal(fields.getColumn(4).values.filter(value => value === 'bbl_hist').length, 2);
-    const metadata = workbook.getWorksheet('Metadaten');
-    assert(metadata.getColumn(4).values.includes('sourceStatus'));
-    const types = [];
-    metadata.eachRow(row => { if (row.getCell(4).value === 'objectTypes') types.push(JSON.parse(row.getCell(5).value)); });
-    assert(types.some(list => list[0].name === 'Gebäude' && list[0].geometryType === 'Polygon'));
+    assert.equal(workbook.getWorksheet('Datentabellen').rowCount, 7 + 2);
+    assert.equal(workbook.getWorksheet('Felder'), undefined, 'A system does not expand its tables into fields');
+    assert.equal(workbook.getWorksheet('Metadaten'), undefined);
+    const tables = await page.evaluate(() => DK.data.tablesOfSystem(DK.data.get('systems', 'gis')).map(t => ({ id: t.identifier, count: t.fields.length })));
+    const exportedNames = [];
+    for (const table of tables) {
+      await visit('#/tables/' + table.id);
+      await page.click('[data-menu="actions"]');
+      const nextDownload = page.waitForEvent('download');
+      await page.click('[data-export="xlsx"]');
+      const tableWorkbook = await readWorkbook(await (await nextDownload).path());
+      const fields = tableWorkbook.getWorksheet('Felder');
+      assert.equal(fields.rowCount, table.count + 2);
+      exportedNames.push(...require('./excel-helpers.cjs').columnValues(fields, 'technicalName'));
+    }
+    assert.equal(exportedNames.length, 275, 'Individual table exports retain every source field');
+    assert.equal(exportedNames.filter(name => name === 'bbl_hist').length, 2, 'Duplicate field names remain separate rows');
+
     assert.deepEqual(errors, []);
-    console.log('PASS complete 275-field workbook, source statuses, geometry type metadata and no browser errors');
+    console.log('PASS GIS system scope, all 275 fields through table exports, duplicate identities and no browser errors');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

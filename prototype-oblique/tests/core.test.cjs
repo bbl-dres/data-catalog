@@ -9,7 +9,7 @@ const root = path.resolve(__dirname, '..');
 function runtime(change = () => {}, globals = {}) {
   const warnings = [];
   const context = vm.createContext({
-    window: {}, URL, URLSearchParams, ...globals,
+    window: {}, URL, URLSearchParams, AbortController, setTimeout, clearTimeout, ...globals,
     console: { warn: message => warnings.push(message) },
     fetch: async url => ({ ok: true, json: async () => {
       const name = path.basename(url);
@@ -17,7 +17,7 @@ function runtime(change = () => {}, globals = {}) {
       return change(name, value) ?? value;
     } }),
   });
-  for (const file of ['ui', 'preferences', 'data', 'router', 'presentation', 'field-picker', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
+  for (const file of ['resources', 'ui', 'preferences', 'data', 'router', 'presentation', 'field-picker', 'manual', 'search', 'graph', 'views', 'detail', 'excel']) {
     vm.runInContext(fs.readFileSync(path.join(root, 'js', file + '.js'), 'utf8'), context, { filename: file + '.js' });
   }
   return { ...context.window.DK, warnings };
@@ -28,6 +28,22 @@ async function loaded(change) {
   dk.ui.setDictionary(dk.data.i18n, 'de');
   return dk;
 }
+
+const sheetRecords = sheet => sheet.rows.map(row => Object.fromEntries(sheet.columns.map((col,i)=>[col.key,row[i]])));
+
+test('parent and child identifiers with slashes, percent signs and Unicode survive routing', async () => {
+  const {data,router,detail}=await loaded((file,records)=>{
+    if(file==='tables.json')records[0].identifier='System/A % ä';
+    if(file==='objects.json')records[0].identifier='Object/A % ä';
+  });
+  for(const [kind,parent,list,idOf] of [['fields',data.tables[0],'fields',data.fieldId],['attrs',data.objects[0],'attributes',r=>r.identifier]]) {
+    const child=parent[list][0],id=data.childId(parent.identifier,idOf(child));
+    const href=router.entityHref(kind,id),route=router.parse(href);
+    assert.equal(route.id,id);assert(data.get(kind,id));
+    const rd=detail.rowsData({...parent,kind:kind==='fields'?'tables':'objects'});
+    assert.equal(rd.rows[0].href,href);assert.equal(rd.rows[0].entity.identifier,id);
+  }
+});
 
 test('responsibility grouping covers every collection and orders unknown organisations alphabetically', async () => {
   const { data } = await loaded();
@@ -289,7 +305,7 @@ test('domain browsing reuses collection rows, filtering and export scope while k
   const plan = excel.plan(filteredRoute, filtered, 'http://localhost/#/domains/bau');
   const rows = plan.sheets.find(s => s.name === 'Geschäftsobjekte').rows;
   assert.equal(rows.length, filtered.matched);
-  assert.ok(rows.every(r => filtered.groups.some(g => g.items.some(e => e.identifier === r[0]))));
+  assert.ok(sheetRecords(plan.sheets.find(s=>s.kind==='objects')).every(r => filtered.groups.some(g => g.items.some(e => e.identifier === r.identifier))));
   const overview = views.context({ ...route, params: { tab: 'overview', filter: 'Gebäude' } }, state);
   assert.equal(overview.isList, false);
   assert.equal(overview.filter, '');
@@ -459,10 +475,9 @@ test('field labels follow the selected language with a German fallback and stabl
     assert.ok(!html.includes('<test>'));
     const plan = excel.plan({ view: 'detail', kind: 'fields', entity: field }, { title: field.name, state: {} }, 'http://localhost/');
     const fields = plan.sheets.find(s => s.name === ui.t('col.fields'));
-    assert.equal(fields.rows[0][3], 'MANDT');
-    assert.equal(fields.rows[0][4], expected);
-    const meta = plan.sheets.find(s => s.name === ui.t('excel.metadata'));
-    assert.ok(meta.rows.some(r => r[3] === 'labels.fr' && r[4] === embedded.labels.fr));
+    assert.equal(sheetRecords(fields)[0].technicalName, 'MANDT');
+    assert.equal(sheetRecords(fields)[0].name, expected);
+    assert.ok(!plan.sheets.some(s => s.name === ui.t('excel.metadata')));
   }
   assert.equal(JSON.stringify(embedded), stored, 'language selection must not rewrite the source record');
 });
@@ -623,7 +638,7 @@ test('tree groups and members sort by displayed labels without changing source o
   assert.ok(named.indexOf('Ärea 10') < named.indexOf('Zulu ('));
 });
 
-test('information links are safe, optional and preserved in Excel metadata across profiles', async () => {
+test('information links are safe, optional and preserved in Excel review columns', async () => {
   const { data, detail, excel, ui } = await loaded();
   const urls = ['https://example.org/reference?a=1&b=2', 'https://example.org/second'];
   for (const kind of ['tables', 'objects', 'refs']) {
@@ -644,7 +659,7 @@ test('information links are safe, optional and preserved in Excel metadata acros
     }
     entity.informationUrls = urls;
     const plan = excel.plan({ view: 'detail', kind, entity }, { title: entity.name, state: { tableSorts: {} } }, 'http://localhost/');
-    assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'informationUrls' && row[4] === JSON.stringify(urls)));
+    assert.equal(sheetRecords(plan.sheets.find(sheet=>sheet.kind===kind))[0].documentationLinks,urls.join('; '));
   }
   for (const lang of ['de', 'fr', 'it', 'en']) {
     ui.setDictionary(data.i18n, lang);
@@ -687,7 +702,7 @@ test('comments belong to each entity and render safely in core facts and Excel',
     entity.kind = kind;
     assert.equal(detail.facts(entity).primary.find(fact => fact.type === 'comment').value, comment);
     const plan = excel.plan({ view: 'detail', kind, entity }, { title: entity.name, state: {} }, 'http://localhost/');
-    assert.ok(plan.sheets.find(sheet => sheet.name === 'Metadaten').rows.some(row => row[3] === 'comment' && row[4] === comment));
+    assert.equal(sheetRecords(plan.sheets.find(sheet=>sheet.kind===kind))[0].comment,comment);
   }
 });
 
@@ -1022,40 +1037,20 @@ test('catalog links validate URL protocols as well as escaping HTML', async () =
   assert.ok(!ui.chip('label', 'x" onclick="bad()').includes(' onclick="'));
 });
 
-test('Excel workbooks contain complete scoped GWR data and retain explicit cell types', async () => {
-  const { data, excel } = await loaded();
-  const ExcelJS = require('../vendor/exceljs/exceljs.min.js');
-  const profile = (kind, id) => {
-    const e = { ...data.get(kind, id), kind };
-    return excel.plan({ view: 'detail', kind, entity: e, params: {} }, { title: e.name, state: { tableSorts: {} }, filter: '' }, 'http://localhost/prototype/#/' + kind + '/' + id);
-  };
-  const plan = profile('systems', 'gwr');
-  const rows = name => plan.sheets.find(s => s.name === name).rows;
-  assert.equal(rows('Datentabellen').length, 7);
-  assert.equal(rows('Felder').length, 146);
-  assert.equal(rows('Referenzdaten').length, 48);
-  assert.equal(rows('Werte').length, 467);
-  assert.ok(rows('Quelldokumentation').some(r => r[1] === 'EGID' && r[3].includes('gesamtschweizerisch eindeutige')));
-  assert.ok(rows('Metadaten').some(r => r[3] === 'contact.url' && r[4] === 'https://www.housing-stat.ch/de/home.html'));
-  assert.ok(!rows('Metadaten').some(r => ['contact.email', 'contact.phone'].includes(r[3])));
-  assert.equal(new Set(rows('Felder').map(r => r[0] + '/' + r[2])).size, 146);
-  const workbook = excel.createWorkbook(plan, ExcelJS);
-  const buffer = await workbook.xlsx.writeBuffer();
-  const reopened = new ExcelJS.Workbook();
-  await reopened.xlsx.load(buffer);
-  assert.equal(reopened.getWorksheet('Felder').rowCount, 147);
-  assert.equal(reopened.getWorksheet('Felder').views[0].ySplit, 1);
-  assert.ok(reopened.getWorksheet('Felder').autoFilter);
-  assert.equal(reopened.getWorksheet('Felder').getCell('J2').type, ExcelJS.ValueType.Number);
-  assert.equal(reopened.getWorksheet('Werte').getCell('C2').type, ExcelJS.ValueType.String);
-  assert.equal(reopened.getWorksheet('Felder').getCell('P2').hyperlink, 'http://localhost/prototype/#/tables/t-gwr-bauprojekt/fields/EPROID');
-  assert.equal(profile('fields', 't-gwr-gebaeude/GKAT').sheets.find(s => s.name === 'Felder').rows.length, 1);
-  assert.equal(profile('fields', 't-gwr-gebaeude/GKAT').sheets.find(s => s.name === 'Werte').rows.length, 6);
-  const project = profile('domains', 'projekt');
-  assert.equal(project.sheets.find(s => s.name === 'Geschäftsobjekte').rows.length, 4);
-  assert.equal(project.sheets.find(s => s.name === 'Attribute').rows.length, 25);
-  // Also leave a real artifact for an independent openpyxl compatibility check.
-  fs.writeFileSync(path.join(require('node:os').tmpdir(), 'oblique-gwr.xlsx'), buffer);
+test('Excel review scope contains direct rows, fixed headers and safe typed values', async () => {
+  const {data,excel}=await loaded(),ExcelJS=require('../vendor/exceljs/exceljs.min.js');
+  const profile=(kind,id)=>{const e={...data.get(kind,id),kind};return excel.plan({view:'detail',kind,entity:e,params:{}},{title:e.name,state:{tableSorts:{}}},'http://localhost/');};
+  const system=profile('systems','gwr');
+  assert.equal(system.sheets.find(s=>s.kind==='tables').rows.length,7);
+  assert.ok(!system.sheets.some(s=>['fields','attrs','values','refs'].includes(s.kind)));
+  const plan=profile('tables','t-gwr-gebaeude'),fields=plan.sheets.find(s=>s.kind==='fields');
+  assert.equal(fields.rows.length,data.get('tables','t-gwr-gebaeude').fields.length);
+  assert.ok(!plan.sheets.some(s=>['refs','values'].includes(s.kind)));
+  const wb=excel.createWorkbook(plan,ExcelJS),reopened=new ExcelJS.Workbook();await reopened.xlsx.load(await wb.xlsx.writeBuffer());
+  const ws=reopened.getWorksheet('Felder');assert.equal(ws.rowCount,fields.rows.length+2);assert.equal(ws.views[0].ySplit,2);assert(ws.views[0].xSplit>0);assert(ws.autoFilter);
+  assert.deepEqual(ws.getRow(1).values.slice(1),Array.from(fields.columns,c=>c.key));
+  const codes=profile('refs','r-gwr-kat');assert.equal(codes.sheets.find(s=>s.kind==='values').rows.length,data.get('refs','r-gwr-kat').values.length);
+  const project=profile('domains','projekt');assert.equal(project.sheets.find(s=>s.kind==='objects').rows.length,4);assert.ok(!project.sheets.some(s=>s.kind==='attrs'));
 });
 
 test('Excel catalog scope ignores view filters and includes all sections and parent-scoped children', async () => {
@@ -1070,18 +1065,18 @@ test('Excel catalog scope ignores view filters and includes all sections and par
   const plan = excel.plan(route, ctx, url, { scope: 'catalog' });
   const rows = name => plan.sheets.find(s => s.name === name).rows;
   for (const kind of data.kinds) {
-    const actual = rows(data.kindDef(kind).plural);
+    const actual = sheetRecords(plan.sheets.find(s=>s.kind===kind));
     assert.equal(actual.length, data.list(kind).length, kind);
-    assert.equal(new Set(actual.map(row => row[0])).size, actual.length, kind + ' unique IDs');
-    assert(actual.every(row => row[8] === 'Ausgewählt'));
+    assert.equal(new Set(actual.map(row => row.identifier)).size, actual.length, kind + ' unique IDs');
+    assert(actual.every(row => row.remark === ''));
   }
   assert.equal(rows('Felder').length, data.tables.reduce((sum, e) => sum + e.fields.length, 0));
   assert.equal(rows('Attribute').length, [...data.objects, ...data.products].reduce((sum, e) => sum + e.attributes.length, 0));
-  assert.equal(rows('Attribute').filter(row => row[3] === 'shared-id').length, 2);
+  assert.equal(sheetRecords(plan.sheets.find(s=>s.kind==='attrs')).filter(row => row.identifier === 'shared-id').length, 2);
   assert.equal(rows('Werte').length, data.refs.reduce((sum, e) => sum + e.values.length, 0));
   assert.equal(rows('Übersicht').find(row => row[0] === 'Suchfilter')[1], '');
   assert.equal(rows('Übersicht').find(row => row[0] === 'Ausgewählte Einträge')[1], data.kinds.reduce((sum, kind) => sum + data.list(kind).length, 0));
-  assert.equal(plan.filename, 'gesamter-katalog.xlsx');
+  assert.match(plan.filename, /^datenkatalog_gesamt_\d{4}-\d{2}-\d{2}\.xlsx$/);
   const profile = excel.plan({ view: 'detail', entity: { ...data.objects[0], kind: 'objects' } }, ctx, url, { scope: 'catalog' });
   assert.equal(JSON.stringify(profile.sheets.slice(1)), JSON.stringify(plan.sheets.slice(1)), 'Originating route does not change catalog export');
   const before = JSON.stringify(plan);
@@ -1106,14 +1101,14 @@ test('Excel preserves formula-like strings, zero-prefixed codes, Unicode and ove
   const wb = excel.createWorkbook(plan, ExcelJS);
   const reopened = new ExcelJS.Workbook(); await reopened.xlsx.load(await wb.xlsx.writeBuffer());
   const first = reopened.worksheets[0];
-  strings.forEach((s, i) => { assert.equal(first.getCell(i + 2, 1).value, s); assert.equal(first.getCell(i + 2, 1).type, ExcelJS.ValueType.String); });
-  assert.equal(first.getCell(strings.length + 2, 1).value, -12);
-  assert.equal(first.getCell(strings.length + 4, 1).type, ExcelJS.ValueType.String);
-  assert.equal(reopened.worksheets[1].getCell('A2').hyperlink, undefined);
+  strings.forEach((s, i) => { assert.equal(first.getCell(i + 3, 1).value, s); assert.equal(first.getCell(i + 3, 1).type, ExcelJS.ValueType.String); });
+  assert.equal(first.getCell(strings.length + 3, 1).value, -12);
+  assert.equal(first.getCell(strings.length + 5, 1).type, ExcelJS.ValueType.String);
+  assert.equal(reopened.worksheets[1].getCell('A3').hyperlink, undefined);
   assert.equal(new Set(reopened.worksheets.map(s => s.name.toLowerCase())).size, reopened.worksheets.length);
   assert.ok(reopened.worksheets[1].name.endsWith('(2)'));
-  assert.ok(first.getCell(strings.length + 3, 1).value.includes('Langtexte / T1'));
-  const parts = []; reopened.getWorksheet('Langtexte').eachRow((r, n) => { if (n > 1) parts.push(r.getCell(6).value); });
+  assert.ok(first.getCell(strings.length + 4, 1).value.includes('Langtexte / T1'));
+  const parts = []; reopened.getWorksheet('Langtexte').eachRow((r, n) => { if (n > 2) parts.push(r.getCell(6).value); });
   assert.equal(parts.join(''), long);
 });
 

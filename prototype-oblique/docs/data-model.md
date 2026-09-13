@@ -1,8 +1,8 @@
 # Catalog data model
 
-**Canonical specification · review baseline: 12 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
+**Canonical specification · review baseline: 13 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
 
-**Review status:** the repository schema has been reconciled with this specification; your review of its business sufficiency is still pending. All 19 public tables and 472 columns are accounted for. Deployment and the factual completeness of catalog entries must be verified separately; neither is certified by this document.
+**Review status:** all 19 public tables and 474 columns in the repository schema are accounted for. The earlier read-only hosted comparison on 13 September found **40 columns missing from the then-current 472-column baseline**, and the CRUD Edge Function was unavailable. The two new system-of-record columns also await hosted activation. Browser coverage is partial. The [coverage matrix](#documented-deployed-visible-and-editable) records these distinctions; [property-set and business-key decisions](#property-sets-and-business-keys) specify a proposed next revision separately from the current schema. Business sufficiency and [content readiness](#content-readiness-review) remain open for owner review.
 
 ## Vision and purpose
 
@@ -19,6 +19,11 @@ The scope includes reusable quality requirements, documented lineage, controlled
 | What does the catalog describe? | [Conceptual model](#conceptual-model) and [entity overview](#entity-overview) |
 | What are the exact attributes and relationships? | [Conventions](#conventions), [entity definitions](#entity-definitions) and [owned value types](#reusable-value-types) |
 | What should I review before launch? | [Review checklist and known gaps](#review-before-launch) |
+| What exists in the database and app today? | [Documented, deployed, visible and editable](#documented-deployed-visible-and-editable) |
+| How is row order defined? | [Row order](#row-order) |
+| What does Führendes System mean? | [System of record](#system-of-record) |
+| How should property sets and business keys work? | [Model decisions and transition](#property-sets-and-business-keys) |
+| Are the actual catalog definitions ready? | [Content readiness review](#content-readiness-review) |
 | Is every stored field and key accounted for? | [Schema baseline and mapping](#physical-schema-and-constraints), [ER diagram](#physical-er-review-diagram) and [key constraints](#key-and-constraint-review) |
 | What should editors know before using it? | [Editing, archiving and history](#editing-archiving-and-history) |
 | How does it align with standards? | [Standards alignment](#standards-alignment) |
@@ -28,7 +33,7 @@ Each entity dictionary lists its complete canonical attributes. Review one entit
 
 ### Authority and change control
 
-Change model meaning, fields, cardinalities, controlled values and integrity rules here first. Implement an accepted change through a new migration, corresponding API/app changes and verification. Existing applied migrations remain historical records; do not edit them to conceal a model change.
+Change model meaning, fields, aliases, cardinalities, controlled values and integrity rules here first. Implement an accepted change through a new migration, corresponding API/app changes and verification. Existing applied migrations remain historical records; do not edit them to conceal a model change.
 
 | Artifact | Role |
 |---|---|
@@ -46,11 +51,13 @@ The checks below are for your review of the specification. They are intentionall
 - [ ] **Scope:** the [16 core entities](#entity-overview) cover the required catalog metadata. Operational building/parcel records, source observations and execution results remain outside this schema.
 - [ ] **Attributes:** each [entity dictionary](#entity-definitions) has the required facts, formats, optionality and controlled values; unknown values and four-language completeness rules are acceptable.
 - [ ] **Identity and ownership:** required parents, scoped uniqueness, hierarchical codes/domains and retained identifiers match the intended lifecycle. Use the [key review](#key-and-constraint-review).
+- [ ] **Property sets and business keys:** review the proposed grouping, composite identity and reference-target decisions below; decide whether their structured implementation is required for initial use. The current comment conventions are not a completed implementation.
 - [ ] **Business versus source constraints:** [BusinessAttribute](#businessattribute), [DataField](#datafield), [ProductAttribute](#productattribute) and [QualityRequirement](#qualityrequirement) keep their distinct meanings. The five rule types and prose-only custom requirements are sufficient for initial use.
 - [ ] **Relationships:** the [nine allowed signatures](#relationship-types), verification, coverage and endpoint scope cover the associations needed at launch. Business-instance cardinalities and arbitrary new relationship types are not implied by these signatures.
 - [ ] **Governance and visibility:** responsibility, authority, inheritance and sensitivity have the right scope. [Public metadata and history](#editing-archiving-and-history) may include names and comments; internal classification does not make those records private.
 - [ ] **Retention and audit:** independent archive/status flags, retained references and the current audit limitations below meet the review and recovery needs.
-- [ ] **Content readiness:** review the actual object/attribute definitions, vocabularies, source inventories and candidate mappings separately. A structurally valid catalog entry is not necessarily factually complete or approved.
+- [ ] **Deployment and presentation:** resolve or explicitly accept the gaps in the [coverage matrix](#documented-deployed-visible-and-editable). A locally passing migration does not certify hosted behavior or frontend visibility.
+- [ ] **Content readiness:** complete the [separate content review](#content-readiness-review). A structurally valid catalog entry is not necessarily factually complete or approved.
 
 ### Known gaps and deferred work
 
@@ -59,12 +66,103 @@ These items distinguish the model contract from current app/tooling coverage. De
 | Area | Current state / review consequence |
 |---|---|
 | Audit completeness | REST quality changes retain full assignment IDs. The browser Required shortcut records a boolean and may create a shared rule without a separate creation event. Endpoint history targets its service, with the endpoint row in the snapshot; complete owner-aggregate snapshots are not implemented. Review whether this is sufficient before editing begins. |
-| Browser field coverage | Forms cover a subset of the schema. Actor/rule management, full quality assignments, relationship/lineage editing and service verification changes use REST. The [coverage matrix](data-model-implementation.md#prototype-coverage) identifies available editors; stored support does not promise a dedicated screen. |
+| Browser field coverage | Forms cover a subset of the schema. General rule definitions/assignments, contact overrides and geometric details are not fully presented. Actor/rule management, full quality assignments, relationship/lineage editing and service verification changes have repository REST support awaiting activation. See the [coverage matrix](#documented-deployed-visible-and-editable) and [detailed frontend mapping](data-model-implementation.md#current-presentation-mapping). |
+| Property sets and business keys | Live comments carry grouping and key-role conventions that the current dictionaries do not model structurally. The [next-revision decisions](#property-sets-and-business-keys) define the intended meaning and transition; they are not new deployed fields. |
+| Presentation semantics | Business value types are collapsed to broad display labels; geometric details are hidden. Retired is still labelled Archiviert. Definition and service versions now have separate labels and values. The model's type, version and lifecycle distinctions remain authoritative; these displays need correction. |
 | Review evidence | The database checks shapes, tokens and selected evidence requirements. It does not verify that a source statement is true or that an endpoint check actually occurred. Generic change history is not a test report; review evidence must identify its scope. |
 | Derived relationship views | The complete confirmation-aware, multi-domain read model remains a target. The current projection may show a candidate realization and reduce a table's mappings to one. Do not treat that display as proof of complete or confirmed coverage. |
 | Additional tooling | General batch/source-refresh merging, automatic impact review, quality execution, lineage ingestion/visualization and standards export remain later work. Their absence does not remove QualityRequirement or LineageRelation from the model. |
 | Publication extension | Catalog, Dataset and Distribution are [deferred proposals](#optional-publication-extension), outside the 16-entity baseline. Introduce them through an explicit model decision when an exchange profile requires them. |
-| Hosted activation and recovery | This audit executes the repository schema locally. Before user access, verify the deployed migrations, API function, disabled public signup and intended permissions using the [database](../supabase/README.md) and [API activation](api.md#activation) guides, and validate a current backup/recovery path. Hosted state was not checked in this review. |
+| Hosted activation and recovery | The 13 September public read audit confirmed missing editing/CRUD columns and an unavailable Edge Function; public signup was disabled. Activate the missing implementation using the [database](../supabase/README.md) and [API activation](api.md#activation) guides, then verify authenticated permissions and a current backup/recovery path. Private policies, triggers and the migration ledger were outside this audit's access. |
+
+### Documented, deployed, visible and editable
+
+**Evidence date: 13 September 2026; project `zicluerzbevodlmtbxow`.** “Documented” describes the canonical contract and repository implementation. “Deployed” describes public read observations on that date. “Visible” describes the checked repository frontend using the live snapshot, including selectable columns where stated; it is not a claim that every hosted website has the same assets. “Editable” identifies implemented forms/API paths, **not working hosted saves**: the editing schema is incomplete and the CRUD function is unavailable. No authenticated write was attempted.
+
+| Capability | Documented / repository | Deployed evidence | Visible in frontend | Editable implementation |
+|---|---|---|---|---|
+| Public catalog and descriptions | 16 core entities, owned endpoints and two quality junctions | All 19 collections returned by `read_snapshot`; older column shape | Seven main collections, nested rows and attribute/field profiles | Selected fields have browser forms; remaining mutable resources have REST support after activation |
+| Archive flags, edit timestamps and row ordering | Complete in the ten-migration, 474-column baseline | 40 columns missing across 16 tables; exact groups below | Filtering/order code exists; retired records still appear with the label Archiviert | Owned-row removal/order in forms; root archive/restore via REST; deployment incomplete |
+| Endpoint revisions and CRUD API | Endpoint revisions and audited CRUD implemented | Endpoint revision fields absent; `GET /functions/v1/catalog-api/domain?limit=1` returned 404, `NOT_FOUND`, “Requested function was not found” | Account token and API documentation UI do not establish backend readiness | Browser edits require the editing migration; REST CRUD also requires its migration and deployed Edge Function |
+| Endpoint descriptions | Owned endpoint operations, paths, methods, capabilities and verification | 7 services and 7 endpoint records | Endpoint count and primary/first protocol/base URL shown; no normal endpoint rows tab | Owned endpoint form exists; verification changes use REST after activation |
+| System of record | Typed System references on BusinessObject and BusinessAttribute; object default with attribute override | Public reads returned 42703 (undefined column) for both new columns on 13 September; activation pending, no values backfilled | Linked system in object/attribute profiles and optional columns; inheritance labelled | System dropdown on both forms; UUID writes through browser/REST commands after activation |
+| Property sets | Proposed next revision below; currently only authored notes | 106 attributes have `Property Set (vorgeschlagen): …` comments | Comment text, without structured grouping | Comment editing only; no group field |
+| Business keys and reference targets | Current `isIdentifier`; structured key/reference definitions proposed below | Comment roles include 7 PK and 17 FK markers; no structured composition or target store | PK/FK/UK selector and key labels use `is_identifier` plus comment parsing | Selector writes `is_identifier` and rewrites FK/UK comment lines; no component/target editor |
+| Quality requirements | Reusable rules and both assignment junctions | 28 rules, 179 business-attribute assignments, no field assignments | Required flag only; assigned custom rule definitions are not displayed | Required shortcut in browser; complete rules/assignments via REST after activation |
+| Business value specification | Distinct types, format, unit, geometry type and CRS | Stored; e.g. `gebaeude/geometrie` has Point and EPSG:4326 | Broad type only; code/identifier/structured become Text; geometry details omitted | These descriptive properties have form fields; richer ProductAttribute bounds use REST |
+| Source-field constraints | Independent requiredness, nullability and key-role array | Present as columns; completeness measured separately below | Required/nullable selectable columns; table key column preserves multiple roles, detail key fact only shows PK/FK | Browser fields exist for requiredness, nullability and key roles |
+| Relationships and lineage | Nine allowed relationship signatures; separate technical lineage | 112 relationship records, all candidate; no lineage records | Some candidate mappings shown as ordinary links; a table is reduced to its first realization | No browser relation/lineage editor; REST after activation |
+| Code and product bindings | CodeValue parent, CodeList business object, ProductAttribute business attribute | Columns exist; no populated code-parent or product-attribute business bindings | Code hierarchy and product-attribute binding omitted; CodeList business context shown | These bindings have no browser form fields; REST after activation |
+| Responsibility and contact | Explicit contact actor and labelled parent fallback | Role columns present; no populated `contact_actor_id` in the snapshot | Owner/steward/custodian shown; explicit contact actor ignored and inheritance origin not labelled | Existing actors selectable in forms; no actor-management page |
+| Definition version, service release and lifecycle | Separate definition/service versions and status/archive flag | Existing definition/service/status columns present; archive flags absent | Service detail Version uses service release; definition-version table field uses the separate catalog value; retired labelled Archiviert | Definition and service versions have distinct form fields |
+| Login and editing permissions | Public reading; permanent internal users edit; signup disabled | Public Auth settings: email enabled, `disable_signup = true` | Login/account UI implemented | Account provisioning remains administrative; authenticated permissions were not exercised in this audit |
+
+The missing-column inventory is grouped by identical shape. Each of the 40 named table/column pairs was requested individually with a public read selecting that column and `limit=0`; PostgreSQL returned `42703` (undefined column).
+
+| Affected tables | Missing columns on each table | Missing pairs |
+|---|---|---:|
+| `actor`, `domain`, `system`, `code_list`, `data_table`, `data_product`, `data_service`, `relationship`, `business_object`, `quality_requirement`, `lineage_relation` | `is_archived`, `edited_at` | 22 |
+| `business_attribute`, `data_field`, `code_value`, `product_attribute` | `edited_at`, `sort_order`, `is_archived` | 12 |
+| `service_endpoint` | `sort_order`, `is_archived`, `row_version`, `created_on`, `modified_on`, `edited_at` | 6 |
+
+This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/474 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
+
+### System of record
+
+**Führendes System / System of record** is the System designated by the responsible Data Owner as the authoritative reference for the values of a business object or attribute. It describes the business data, independently of where its catalog documentation was imported or where a copy is stored. A designation records the editorial decision; the future approval workflow is not yet implemented.
+
+Use **`systemOfRecordId`**, serialized as **`system_of_record_id`**: an optional UUID foreign key to `System.id`, never a system name, catalog identifier string or other free text. BusinessObject holds the default; BusinessAttribute may supply an explicit override. A null attribute reference inherits its object's reference; if both are null, no authoritative system is designated. Clearing an override restores inheritance. Effective values and their origin are derived, not stored on children, and changing the object does not rewrite child overrides.
+
+The frontend offers existing systems in a selector, displays their current localized names as links, and labels attribute inheritance. Archived systems retain their references and labels without a broken profile link; the selector offers unarchived systems plus an already selected archived value. The database FK requires an existing System, including retained archived records. Hard deletion is restricted while referenced. Names, labels and evidence do not substitute for the stored UUID.
+
+Only BusinessObject and BusinessAttribute carry this designation. A DataTable's `systemId` describes its technical system, and a DataField inherits that technical context; neither establishes business authority. Relationship.realizes/represents and LineageRelation also do not establish it. No designation is inferred from the legacy `source` field, documentation links or similarly named systems. All existing designations remain null until explicitly selected; metadata provenance stays in documentation/evidence.
+
+The [system-of-record migration](../supabase/migrations/20260913000000_catalog_system_of_record.sql) adds both references and permits them through the existing audited browser and REST commands. Read responses expose stored UUIDs; inherited effective values are a frontend/read-model projection. There is no automatic requirement for an owner to be assigned or to approve a save in the current edit flow.
+
+### Row order
+
+`sortOrder` (`sort_order`) is the saved display sequence within the owner of a BusinessAttribute, DataField, CodeValue, ProductAttribute or ServiceEndpoint. Its German alias is **Zeilenreihenfolge**. It is an integer from 0 through 2147483647. Zero is a valid rank; null is invalid. Gaps and ties are allowed. Sort by rank, then the exact catalog identifier, then UUID, independently of the selected language. Existing zero ranks retain their identifier order; no alphabetical-by-name mode is inferred from zero or a blank export cell.
+
+The SQL column default remains 0 for imports. Browser and REST commands that create a row without an explicit rank append it at the owner's maximum rank plus one (starting at 1). Include archived rows when calculating the maximum. Explicit ranks, including zero, are preserved. Allocation runs under the existing command lock and participates in the same transaction, audit and retry receipt. At the integer limit, reorder existing rows before appending.
+
+The editor moves among the visible rows, including across pages; text filtering disables movement. Hidden archived rows retain their slots. A reorder compacts the full draft sequence to 1…n, including archived slots, and is saved atomically with its revisions and history. Archiving alone does not renumber rows; restoring a row keeps its saved rank and uses the same tie-breakers. Adding a row appends it.
+
+Column sorting is temporary view state. **Gespeicherte Reihenfolge / Saved order** restores the saved sequence without editing data. Exporting a profile follows its selected row sort, but its `sortOrder` cells retain the stored values. Entire-catalog exports use alphabetical top-level entries and saved child order. `position` in legacy projections is a calculated ordinal and must not substitute for `sortOrder` or source-file positions. An offline fixture without a saved rank exports an empty cell.
+
+Top-level entities have no manual order in this revision. Future property sets need their own group order; grouped attributes use their own `sortOrder` within each group. Group membership and group order remain proposed features, not implicit meanings of the current field.
+
+### Property sets and business keys
+
+**Decision for the next model revision:** represent property-set membership, business-key composition and business-reference targets as explicit metadata. The following defines the proposed meaning for owner review. It is outside the current 19-table/474-column baseline: no new SQL columns, REST properties or frontend behavior are implied by this documentation change. The physical design, dictionaries, migration and API/editor changes must be delivered together after that review.
+
+| Topic | Proposed decision | Integrity and review boundary |
+|---|---|---|
+| Property sets | Own groups within each BusinessObject, with stable identifiers, localized names, optional descriptions and display order. A BusinessAttribute belongs to zero or one group within its owner. | An absent group means ungrouped. Group names may be reused by different objects without making them a shared global definition. Grouping does not imply physical nesting, requiredness, access control or inherited constraints. Review whether single membership is sufficient. |
+| Business keys | Own key definitions within each BusinessObject: stable identifier, primary or alternate role, and an ordered, non-empty list of references to that object's BusinessAttributes. Allow at most one primary key definition and multiple alternate keys. | Components must be distinct and belong to the owner. A component can participate in multiple keys; component membership alone does not establish individual uniqueness. Keep the identification scope and required/null behavior explicit through the definition and QualityRequirements. |
+| Composite representation | Where a named attribute represents a composite key, record its relationship to the ordered components and its documented construction rule. | The representation is derived, not a second independently authored identifier. Preserve letters and leading zeros; do not invent padding, separators or storage lengths. Current `isIdentifier` remains an identification flag until migration; never infer key membership solely from it. |
+| Business references | Describe a reference separately from primary/alternate key membership. Record its source attribute(s), intended target business object and target key when modeled, plus supporting evidence. External targets use an explicit register/document/entity description and documentation link. | A bare FK marker cannot identify a target. Keep unresolved targets explicitly unresolved. Composite source/target components must be mapped in order; one attribute may both participate in a key and reference another object. External parties are not automatically catalog Actor records. |
+| Physical constraints and multiplicity | Business keys/references describe the business definitions. DataField.keyRoles describes documented source roles; database PK/FK/UQ columns identify catalog metadata itself. | These three layers remain separate. No operational database constraint, arbitrary Relationship type or business-instance cardinality is created by a business FK label. Cardinalities/conditions that are only prose remain so until a reviewed model extension represents them. |
+
+For example, the [confirmed SAP component proposal](business-object-attribute-proposal.md#sap-business-keys-and-their-components) describes Gebäude-ID using Buchungskreis, Wirtschaftseinheit and Gebäudenummer, in that order. Its future key definition should reference those three component attributes, retain Gebäude-ID as the named composite representation, and identify the business-object type. Neither Wirtschaftseinheit nor Gebäudenummer is globally unique. The same pattern applies to Grundstück and Wirtschaftseinheit with their documented component lists.
+
+**Current compatibility behavior:** the live property-set labels are authored in comments. The frontend maps `is_identifier = true` to PK; otherwise it reads a standalone German `Schlüsselrolle: FK` or `Schlüsselrolle: UK` line. Its selector sets the flag and adds/removes those lines. SQL does not enforce those comment tokens, there is no property-set selector, and there is no structured composite-key or target reference. Changing an apparently ordinary comment can therefore change a key label. This is a documented implementation gap, not the canonical meaning of `comment` or `isIdentifier`.
+
+Before replacing this convention, inventory every marker, reconcile it with the business-object proposal and explicit evidence, preserve stable attribute IDs, and report ambiguous groups/components/targets for review. Preserve original notes and audit the conversion. Keep the compatibility reader until converted records can be rendered from the new fields, then remove comment parsing. The canonical dictionaries and physical ER diagram must gain the accepted structured representation at that point; the existing baseline must not silently claim it already exists.
+
+### Content readiness review
+
+This review concerns the catalog's metadata definitions and their evidence, not the completeness of operational buildings or parcels. Counts below describe the full public snapshot on 13 September 2026, including retired records; they are not a percentage of approved or current content. A valid SQL row, non-null value or populated relationship is not an editorial approval.
+
+| Review area | Observed content | Review action / completion criterion |
+|---|---|---|
+| Business definitions | 40 BusinessObjects and 215 BusinessAttributes; 106 attributes carry proposed property-set comments | Review the [106 direct definitions and 20 referenced measurement profile values](business-object-attribute-proposal.md), key components, grouping and source evidence. Distinguish direct attributes from values reached through measurement concepts; approve each relevant definition or record its remaining gap. |
+| Source inventories | 4 systems, 30 tables and 621 fields | Compare each inventory against its cited source revision and scope. Requiredness is known for 35/621 fields, key roles for 3/621, nullability for 0/621. Review unknowns from evidence; never fill unknown with false or an empty key set merely to improve a count. |
+| Requirements | 28 rules: 2 required and 26 custom; 179 business-attribute assignments and 0 field assignments | Review each rule's applicability, scope and assignment, including retired rules. An empty assignment set is not proof of optionality or lack of constraints. Assigned rules need a usable review surface before users can approve them through the app. |
+| Mappings and service support | 112 candidate relationships: 21 realizes, 66 exposes, 14 basedOn, 5 sourcedFrom, 1 servedBy and 5 measuredFor; none confirmed | Review the evidence for each required mapping. There are no represents, correspondsTo or assesses records and no lineage records. Empty sets mean undocumented/unassessed coverage, not proven absence of a relationship or service capability. |
+| Vocabularies and product definitions | 90 code lists, 2,080 code values; 5 products and 12 product attributes | Check code-list applicability, editions, descriptions and product contracts. No code-value parent or product-attribute business binding is populated; decide where those links are actually required. |
+| Lifecycle, language and responsibility | 9 attributes, 1 code list, 1 product and 1 requirement have status retired; explicit contact-actor assignments are empty | Review retirement and continued reference use, required language coverage and the source of inherited roles. Empty managed contacts may be valid when the responsible organisation's contact page suffices. |
+
+Record review outcomes per object/source: reviewer, date, reviewed identifiers and source revision, accepted scope, and unresolved gaps. Use authored review notes and supporting links for that evidence; this is a review procedure, not a claim that structured sign-off fields or a review workflow already exist. Approve schema sufficiency, deployment readiness and content readiness separately. None of the counts above closes a checklist item automatically.
 
 ### Maintaining this baseline
 
@@ -73,11 +171,13 @@ After an accepted model change, reconcile every SQL column with a dictionary att
 Using the [local SQL test setup](../supabase/README.md#validation), run these commands from the repository root:
 
 ```powershell
+node prototype-oblique/scripts/sync-model-aliases.cjs --check
+node prototype-oblique/tests/model-aliases.cjs
 node prototype-oblique/tests/catalog-schema.cjs
 node prototype-oblique/supabase/generate-openapi.cjs --check
 ```
 
-The first checks every current column against the dictionaries, nullability and table inventory before exercising the original schema's constraints. The second detects drift in the generated API contract; regenerate OpenAPI when migrations intentionally change it. Run the affected editing/API suites for any corresponding behavior change. Neither command replaces review of meaning, evidence, enum definitions or the ER diagram.
+The alias checks verify generated EN/DE wording, SQL/API metadata, forms, print snapshots and XLSX headers. The schema check reconciles every current column with the dictionaries, nullability and table inventory before exercising the original constraints. The final command detects API-contract drift. After changing aliases here, run `node prototype-oblique/scripts/sync-model-aliases.cjs`, prepare any required new comment migration, and regenerate OpenAPI. The [alias review](review/2026-09-13-model-alias-review.md) records field bindings, projection rules and the update procedure. Run the affected editing/API suites for any corresponding behavior change. Neither command replaces review of meaning, evidence, enum definitions or the ER diagram.
 
 ## Conceptual model
 
@@ -93,6 +193,8 @@ This overview shows the main conceptual connections. The dictionaries define com
 flowchart LR
     Domain -->|groups| BusinessObject
     BusinessObject -->|defines| BusinessAttribute
+    BusinessObject -.->|system of record| System
+    BusinessAttribute -.->|system override| System
     System -->|documents| DataTable
     DataTable -->|contains| DataField
     System -->|provides| DataService
@@ -158,7 +260,7 @@ Documentation, entity names, attribute bases and controlled application tokens a
 
 ### Reading attribute tables
 
-Each dictionary is complete. Alias (EN) is the English human-readable label, not an additional attribute. Key describes identity and reference roles in the target model; it never describes keys in the source data being cataloged.
+Each dictionary is complete. Alias (EN) and Alias (DE) are the English and German human-readable labels, not additional attributes. Language suffixes in either alias identify the language of the stored text: Beschreibung (FR), for example, labels the French description field. Technical attribute names remain unchanged. Key describes identity and reference roles in the target model; it never describes keys in the source data being cataloged.
 
 | Key | Meaning |
 |---|---|
@@ -171,6 +273,40 @@ Each dictionary is complete. Alias (EN) is the English human-readable label, not
 | — | No identity or reference role. |
 
 The [physical schema mapping](#physical-schema-and-constraints) belongs to this specification. The companion guide describes [storage implementation](data-model-implementation.md#postgresql-persistence), [prototype coverage](data-model-implementation.md#prototype-coverage) and [current presentation](data-model-implementation.md#current-presentation-mapping).
+
+### Alias contract across surfaces
+
+Alias (EN) and Alias (DE) govern attribute labels in forms, profile facts, column pickers, browser print, PDF, Excel and API documentation. Change an alias here first, then regenerate the label artifacts and API contract. Technical SQL/JSON keys, stable identifiers, URLs and stored catalog content do not change when an alias changes. Navigation names, action buttons and explanatory sentences are separate interface copy.
+
+When showing one selected translation, omit the language suffix: `name_de` / `name_en` becomes **Name**, and `description_de` / `description_en` becomes **Description / Beschreibung**. Keep the suffix when several stored translations appear together, as in the Excel Values sheet. Reference-name columns use the alias of the reference they resolve; UUID columns retain that same meaning. Context may be appended in parentheses when parent and child columns share a label. It must not replace the canonical alias.
+
+The canonical dictionary currently defines English and German aliases. French and Italian interface translations remain maintained translations; adding canonical Alias (FR)/(IT) columns is a separate model change. Do not generate invented translations from English or German.
+
+Derived fields need explicit labels because they are not stored attributes. The following display aliases do not add database columns or constraints:
+
+| Projection | Alias (EN) | Alias (DE) | Meaning |
+|---|---|---|---|
+| `businessKeyRole` | Key role | Schlüsselrolle | Existing PK/FK/UK projection from the identifier flag and documented comment convention. |
+| `requiredRule` | Mandatory | Pflichtfeld | Browser shortcut indicating an assigned required quality rule whose status is not retired and whose isArchived flag is false. |
+| `lengthAndUnit` | Length / Unit | Länge / Einheit | Combined legacy field length and unit, where recorded. |
+| `accessSummary` | Access | Zugang | Access notes, falling back to the recorded access mode. |
+| `licenseSummary` | License | Lizenz | License notes, falling back to the recorded license URI. |
+| `endpointName` | Endpoint | Endpunkt | Endpoint display name derived from the operation name, identifier or URL. |
+| `relationshipLabel` | Relationship | Beziehung | Readable profile association, including derived ownership links. |
+| `realizedBusinessObject` | Realizes business object | Realisiert Geschäftsobjekt | Business object reached through the existing realization projection. |
+| `productComponentType` | Type | Typ | Product-print rows mix attribute value types with linked component categories; this column does not assert a stored value type for a linked component. |
+| `componentOrigin` | Origin | Herkunft | Source/context text on a legacy product component row. |
+| `sourceType` | Source type | Quelltyp | Entity type of a displayed relationship source. |
+| `sourceId` | Source ID | Quell-ID | UUID of that source. |
+| `sourceIdentifier` | Source identifier | Quellkennung | Public identifier of that source. |
+| `sourceName` | Source name | Quellname | Display name of that source. |
+| `targetType` | Target type | Zieltyp | Entity type of a displayed relationship target. |
+| `targetId` | Target ID | Ziel-ID | UUID of that target. |
+| `targetIdentifier` | Target identifier | Zielkennung | Public identifier of that target. |
+| `targetName` | Target name | Zielname | Display name of that target. |
+| `effectiveSystemOfRecord` | Effective system of record | Wirksames führendes System | Resolved designation, including the business object's default. |
+| `inheritedSystemOfRecord` | Inherited from object | Vom Objekt übernommen | Whether the designation is inherited. |
+| `feedback` | Feedback | Bemerkung | Empty Excel review column, separate from the stored catalog comment. |
 
 ### Primitive formats
 
@@ -235,7 +371,7 @@ Relationship has one optional comment and localized rule notes; LineageRelation 
 
 The ten entities with status use draft, valid and retired. Status is maintained manually and describes catalog readiness, not a formal approval. BusinessAttribute and DataField have independent status; CodeValue and ProductAttribute derive it from their owner. Relationship and LineageRelation use verificationStatus. Actor has no editorial lifecycle; ChangeEvent records edits without separate reviewer/date fields or an approval workflow.
 
-Every mutable core entity and ServiceEndpoint also has `isArchived`, default false. It controls removal from normal browsing independently of status or verification. A record can therefore have status `valid` and be archived. Archiving an Actor does not remove its existing responsibility references; it prevents ordinary new selection in the editor. `sortOrder` on the five owned row types records a non-negative display order within the owner; it is not identity, a source key or a guarantee of unique positions. The current editor preserves the initial order when positions tie.
+Every mutable core entity and ServiceEndpoint also has `isArchived`, default false. It controls removal from normal browsing independently of status or verification. A record can therefore have status `valid` and be archived. Archiving an Actor does not remove its existing responsibility references; it prevents ordinary new selection in the editor. `sortOrder` on the five owned row types records a non-negative display order within the owner; it is not identity, a source key or a guarantee of unique positions. The [row-order contract](#row-order) defines tie-breaking, append behavior and temporary view sorting.
 
 #### Responsibility
 
@@ -296,26 +432,26 @@ Alphabetical reference. Each dictionary lists all stored attributes, including a
 
 Derived `kind = actor`. The table lists its complete attributes and identity. An internally managed person or organisation, independent of the roles it fulfils. External organisations need no Actor record; their details belong directly to the catalog entry.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `actorType` | Actor type | — | Enum | 1 | `person`, `organisation`. |
-| `websiteUrl` | Website | — | HttpUrl | 0..1 | Official website or directory entry. Do not fabricate URLs from names. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `actorType` | Actor type | Akteurstyp | — | Enum | 1 | `person`, `organisation`. |
+| `websiteUrl` | Website | Website | — | HttpUrl | 0..1 | Official website or directory entry. Do not fabricate URLs from names. |
 
 Organisation names may have official language variants. Personal names are proper names and must not be automatically translated. Matching labels alone are insufficient to merge actors.
 
@@ -325,45 +461,48 @@ Contact actors are independent of login accounts. Changing an Actor updates refe
 
 Derived `kind = businessAttribute`. The table lists its complete attributes and identity. Describes expected business values; it does not hold those values.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `businessObjectId` | Business object | FK | UUID → BusinessObject | 1 | Owning business definition. |
-| `semanticName` | Semantic name | UQ (composite) | Identifier | 1 | Stable English name, unique within the owner, for example `constructionYear`. Independent of localized labels. |
-| `valueSpecification` | Value specification | — | ValueSpecification | 0..1 | Descriptive value type/format/unit only; required before status becomes valid. Validation rules come from qualityRequirementIds, not inline bounds or conditions. |
-| `qualityRequirementIds` | Data quality requirements | FK (collection) | UUID[] → QualityRequirement | 0..* | Reusable quality rules assigned to this attribute/field; no duplicates or per-assignment overrides. Resolve each referenced rule's definition and status; no automatic parent-status cascade. Business requirements stay solution-neutral; field rules describe additional source expectations. |
-| `isIdentifier` | Business identifier | — | Boolean | 0..1 | Participation in business identification. Does not establish a physical key or global uniqueness. |
-| `codeListId` | Code list | FK | UUID → CodeList | 0..1 | Reviewed vocabulary; similar source wording is insufficient evidence. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `businessObjectId` | Business object | Geschäftsobjekt | FK | UUID → BusinessObject | 1 | Owning business definition. |
+| `systemOfRecordId` | System of record | Führendes System | FK | UUID → System | 0..1 | Explicit authoritative-system override. Null inherits the owning BusinessObject designation; clearing restores inheritance. Effective values remain derived. Stored as system_of_record_id; existing System required. See [system of record](#system-of-record). |
+| `semanticName` | Semantic name | Semantischer Name | UQ (composite) | Identifier | 1 | Stable English name, unique within the owner, for example `constructionYear`. Independent of localized labels. |
+| `valueSpecification` | Value specification | Wertespezifikation | — | ValueSpecification | 0..1 | Descriptive value type/format/unit only; required before status becomes valid. Validation rules come from qualityRequirementIds, not inline bounds or conditions. |
+| `qualityRequirementIds` | Data quality requirements | Datenqualitätsanforderungen | FK (collection) | UUID[] → QualityRequirement | 0..* | Reusable quality rules assigned to this attribute/field; no duplicates or per-assignment overrides. Resolve each referenced rule's definition and status; no automatic parent-status cascade. Business requirements stay solution-neutral; field rules describe additional source expectations. |
+| `isIdentifier` | Business identifier | Fachlicher Identifikator | — | Boolean | 0..1 | Participation in business identification. Does not establish a physical key or global uniqueness. |
+| `codeListId` | Code list | Werteliste | FK | UUID → CodeList | 0..1 | Reviewed vocabulary; similar source wording is insufficient evidence. |
 
 BusinessAttribute derives normative references from its BusinessObject; these are parent context, not separate attribute assertions.
 
 Validation requirements are resolved through qualityRequirementIds. An empty assignment list means no requirements are recorded; it does not establish optionality. isIdentifier describes the attribute's identification role, not a uniqueness check. Conditional requirements and cardinality limits belong to reusable QualityRequirement definitions.
+
+Property-set membership and structured business keys/reference targets are not attributes of this baseline. Their [proposed model and current comment-based compatibility behavior](#property-sets-and-business-keys) are specified separately for the next revision; the current PK/FK/UK display must not be read as a complete key definition.
 
 Derived context: domain and normative references from BusinessObject; effective roles and sensitivity use the documented fallback. Status is independent; parent dates and history remain labelled parent context.
 
@@ -371,36 +510,37 @@ Derived context: domain and normative references from BusinessObject; effective 
 
 Derived `kind = businessObject`. The table lists its complete attributes and identity. Defines a business **type** independently of physical schemas and interface capabilities.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `domainId` | Domain | FK | UUID → Domain | 1 | Primary business domain. A copied domain label is not the relationship. |
-| `normativeReferences` | Standard reference | — | Text[] | 0..* | Documented standards/rules, including edition when known. URLs belong in DocumentationLink. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `domainId` | Domain | Domäne | FK | UUID → Domain | 1 | Primary business domain. A copied domain label is not the relationship. |
+| `systemOfRecordId` | System of record | Führendes System | FK | UUID → System | 0..1 | Explicit default authoritative System for this business object. Null means no designation. Attributes inherit unless they set their own reference. Stored as system_of_record_id; existing System required. See [system of record](#system-of-record). |
+| `normativeReferences` | Standard reference | Normreferenz | — | Text[] | 0..* | Documented standards/rules, including edition when known. URLs belong in DocumentationLink. |
 
 Derived: BusinessAttributes by owner and technical realisations through Relationship. Terminology links use `purpose = terminology`. API limitations must not define the business concept.
 
@@ -408,27 +548,27 @@ Derived: BusinessAttributes by owner and technical realisations through Relation
 
 Derived `kind = changeEvent`. The table lists its complete attributes and identity. Append-only metadata history, separate from business transactions or operational measurement history.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Unique event identifier; never an array position. |
-| `record` | Catalog entity | FK (typed) | RecordReference | 1 | Changed catalog record. |
-| `occurredOn` | Date | — | Date | 1 | Known event date. For events with occurredAt, use its UTC calendar date; preserve standalone legacy dates without inventing a timestamp. |
-| `occurredAt` | Event timestamp | — | Timestamp | 0..1 | Exact event time when known; normalize to UTC. Its UTC calendar date must equal occurredOn. Keep legacy date-only events without this attribute. |
-| `action` | Change | — | Enum | 1 | `created`, `updated`, `imported`, `retired`, `restored`. Preserve unmapped original action wording in summaries. |
-| `actorId` | Actor | FK | UUID → Actor | 0..1 | Identified editor when available; this is edit attribution, not approval. |
-| `actorName_de` | Edited by (DE) | — | Text | 0..1 | German. Recorded name at the time of the edit, also when actorId resolves. Preserve known wording without translation or inferred identity; later Actor edits must not rewrite attribution. |
-| `actorName_it` | Edited by (IT) | — | Text | 0..1 | Italian. Recorded name at the time of the edit, also when actorId resolves. Preserve known wording without translation or inferred identity; later Actor edits must not rewrite attribution. |
-| `actorName_fr` | Edited by (FR) | — | Text | 0..1 | French. Recorded name at the time of the edit, also when actorId resolves. Preserve known wording without translation or inferred identity; later Actor edits must not rewrite attribution. |
-| `actorName_en` | Edited by (EN) | — | Text | 0..1 | English. Recorded name at the time of the edit, also when actorId resolves. Preserve known wording without translation or inferred identity; later Actor edits must not rewrite attribution. |
-| `summary_de` | Details (DE) | — | Text | 0..1 | German. Change summary. At least one of the four summaries is required. |
-| `summary_it` | Details (IT) | — | Text | 0..1 | Italian. Change summary. At least one of the four summaries is required. |
-| `summary_fr` | Details (FR) | — | Text | 0..1 | French. Change summary. At least one of the four summaries is required. |
-| `summary_en` | Details (EN) | — | Text | 0..1 | English. Change summary. At least one of the four summaries is required. |
-| `changedProperties` | Changed properties | — | Text[] | 0..* | Canonical property paths, including the exact language suffix for translated text, where known. |
-| `before` | Before change | — | Object | 0..1 | Snapshot before the changed record/owned edit, absent for creation. Legacy events may lack it. Contains direct values and command-specific owned data, without linked-record expansion or derived counts; see the audit-format notes below. |
-| `after` | After change | — | Object | 0..1 | Snapshot after the edit, required for all new events; retirement retains the record and snapshot. Legacy history may omit it; never reconstruct unknown past values. |
-| `importId` | Import or operation ID | — | Identifier | 0..1 | Shared operation identifier grouping related events from an import, batch or multi-record command. Required for new commands emitting multiple events, including relationship/product edits. One generated value is reused across retries; no separate operation entity is required. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Unique event identifier; never an array position. |
+| `record` | Catalog entity | Katalogeintrag | FK (typed) | RecordReference | 1 | Changed catalog record. |
+| `occurredOn` | Date | Datum | — | Date | 1 | Known event date. For events with occurredAt, use its UTC calendar date; preserve standalone legacy dates without inventing a timestamp. |
+| `occurredAt` | Event timestamp | Ereigniszeitpunkt | — | Timestamp | 0..1 | Exact event time when known; normalize to UTC. Its UTC calendar date must equal occurredOn. Keep legacy date-only events without this attribute. |
+| `action` | Change | Änderung | — | Enum | 1 | `created`, `updated`, `imported`, `retired`, `restored`. Preserve unmapped original action wording in summaries. |
+| `actorId` | Actor | Akteur | FK | UUID → Actor | 0..1 | Identified editor when available; this is edit attribution, not approval. |
+| `actorName_de` | Edited by (DE) | Bearbeitet von (DE) | — | Text | 0..1 | German. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. |
+| `actorName_it` | Edited by (IT) | Bearbeitet von (IT) | — | Text | 0..1 | Italian. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. |
+| `actorName_fr` | Edited by (FR) | Bearbeitet von (FR) | — | Text | 0..1 | French. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. |
+| `actorName_en` | Edited by (EN) | Bearbeitet von (EN) | — | Text | 0..1 | English. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. |
+| `summary_de` | Details (DE) | Details (DE) | — | Text | 0..1 | German. Change summary. At least one of the four summaries is required. |
+| `summary_it` | Details (IT) | Details (IT) | — | Text | 0..1 | Italian. Change summary. At least one of the four summaries is required. |
+| `summary_fr` | Details (FR) | Details (FR) | — | Text | 0..1 | French. Change summary. At least one of the four summaries is required. |
+| `summary_en` | Details (EN) | Details (EN) | — | Text | 0..1 | English. Change summary. At least one of the four summaries is required. |
+| `changedProperties` | Changed properties | Geänderte Attribute | — | Text[] | 0..* | Canonical property paths, including the exact language suffix for translated text, where known. |
+| `before` | Before change | Vor der Änderung | — | Object | 0..1 | Snapshot before the changed record/owned edit, absent for creation. Legacy events may lack it. Contains direct values and command-specific owned data, without linked-record expansion or derived counts; see the audit-format notes below. |
+| `after` | After change | Nach der Änderung | — | Object | 0..1 | Snapshot after the edit, required for all new events; retirement retains the record and snapshot. Legacy history may omit it; never reconstruct unknown past values. |
+| `importId` | Import or operation ID | Import- oder Vorgangskennung | — | Identifier | 0..1 | Shared operation identifier grouping related events from an import, batch or multi-record command. Required for new commands emitting multiple events, including relationship/product edits. One generated value is reused across retries; no separate operation entity is required. |
 
 Parent history may appear as related context on child profiles, clearly labelled as parent history. Do not duplicate it as child events. Retain stable archival references when retiring records referenced by history.
 
@@ -440,32 +580,32 @@ Current snapshots use SQL property names, including `row_version` and UUID forei
 
 Derived `kind = codeList`. The table lists its complete attributes and identity. A vocabulary independent of labels and applications using it.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `domainId` | Domain | FK | UUID → Domain | 0..1 | Explicit primary domain; if absent, derive it from businessObjectId when that object is active. Explicit domain takes precedence. |
-| `businessObjectId` | Business object | FK | UUID → BusinessObject | 0..1 | Primary classified concept. Actual attribute/field usage comes from their direct references. |
-| `authorityOrganisation` | Source authority | — | OrganisationDetails | 0..1 | Organisation defining the vocabulary, recorded directly. The sole organisation value on a CodeList. Keep unresolved authority wording in comment/import notes; do not infer an organisation from a standard citation. |
-| `normativeReferences` | Standard reference | — | Text[] | 0..* | Documented standards/rules, including edition when known. Preserve partial or composite citations intact; do not invent a standard identifier. URLs belong in DocumentationLink. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `domainId` | Domain | Domäne | FK | UUID → Domain | 0..1 | Explicit primary domain; if absent, derive it from businessObjectId when that object is active. Explicit domain takes precedence. |
+| `businessObjectId` | Business object | Geschäftsobjekt | FK | UUID → BusinessObject | 0..1 | Primary classified concept. Actual attribute/field usage comes from their direct references. |
+| `authorityOrganisation` | Source authority | Herausgebende Stelle | — | OrganisationDetails | 0..1 | Organisation defining the vocabulary, recorded directly. The sole organisation value on a CodeList. Keep unresolved authority wording in comment/import notes; do not infer an organisation from a standard citation. |
+| `normativeReferences` | Standard reference | Normreferenz | — | Text[] | 0..* | Documented standards/rules, including edition when known. Preserve partial or composite citations intact; do not invent a standard identifier. URLs belong in DocumentationLink. |
 
 Derived: CodeValues and the attributes/fields using the list. Use version/versionDate for catalog releases and documentationLinks/normativeReferences for the applicable external specification. Record known incompleteness or usage restrictions in comment; an empty list does not prove completeness.
 
@@ -475,33 +615,33 @@ A compatible update or added translation keeps the same identity. If a code chan
 
 Derived `kind = codeValue`. The table lists its complete attributes and identity. Several translated labels describe the same vocabulary member.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `codeListId` | Code list | FK | UUID → CodeList | 1 | Owning vocabulary. |
-| `code` | Code | UQ (composite) | Text | 1 | Unique within the list. Preserve leading zeros, punctuation, case and symbolic paths. Source order is not a wire code. |
-| `shortName_de` | Short name (DE) | — | Text | 0..1 | German. Official abbreviations where available. |
-| `shortName_it` | Short name (IT) | — | Text | 0..1 | Italian. Official abbreviations where available. |
-| `shortName_fr` | Short name (FR) | — | Text | 0..1 | French. Official abbreviations where available. |
-| `shortName_en` | Short name (EN) | — | Text | 0..1 | English. Official abbreviations where available. |
-| `parentCodeValueId` | Parent code value | FK (composite) | UUID → CodeValue | 0..1 | Broader member in the same vocabulary; enforce the composite FK with codeListId. No self-reference or cycles. Do not invent selectable parent codes from source headings. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `codeListId` | Code list | Werteliste | FK | UUID → CodeList | 1 | Owning vocabulary. |
+| `code` | Code | Code | UQ (composite) | Text | 1 | Unique within the list. Preserve leading zeros, punctuation, case and symbolic paths. Source order is not a wire code. |
+| `shortName_de` | Short name (DE) | Kurzbezeichnung (DE) | — | Text | 0..1 | German. Official abbreviations where available. |
+| `shortName_it` | Short name (IT) | Kurzbezeichnung (IT) | — | Text | 0..1 | Italian. Official abbreviations where available. |
+| `shortName_fr` | Short name (FR) | Kurzbezeichnung (FR) | — | Text | 0..1 | French. Official abbreviations where available. |
+| `shortName_en` | Short name (EN) | Kurzbezeichnung (EN) | — | Text | 0..1 | English. Official abbreviations where available. |
+| `parentCodeValueId` | Parent code value | Übergeordneter Codewert | FK (composite) | UUID → CodeValue | 0..1 | Broader member in the same vocabulary; enforce the composite FK with codeListId. No self-reference or cycles. Do not invent selectable parent codes from source headings. |
 
 If a code changes meaning while existing references must retain its old definition, use a separately identified CodeList. Do not silently relabel historical references. Status and catalog definition version belong to CodeList; CodeValue has its own edit revision and history, without a separate version field or validity period.
 
@@ -511,48 +651,48 @@ Derived context: status, authority and domain from CodeList. CodeList/CodeValue 
 
 Derived `kind = dataField`. The table lists its complete attributes and identity. Has a stable catalog identifier independent of its source name or array position.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `dataCustodianId` | Data custodian | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `dataTableId` | Data table | FK | UUID → DataTable | 1 | Owning technical structure. |
-| `technicalName` | Technical name | — | Text | 1 | Exact documented source field name, preserving case. Never translated. |
-| `technicalNameKind` | Technical name kind | — | Enum | 1 | `physicalColumn`, `modelAttribute`, `apiField`, `dataSourceField`, `unknown`. |
-| `sourcePath` | Source path | — | Text | 0..1 | Documented nesting or path context when the name is ambiguous. Not a guessed flattened column. |
-| `sourceDataType` | Data type | — | Text | 0..1 | Exact reported type, including documented length/precision. |
-| `dataTypeScope` | Data type scope | — | Enum | 0..1 | `physicalSchema`, `modelDefinition`, `serviceSchema`, `unknown`; required when sourceDataType is present, otherwise absent. Use unknown when a documented type has no established scope. |
-| `qualityRequirementIds` | Data quality requirements | FK (collection) | UUID[] → QualityRequirement | 0..* | Reusable quality rules assigned to this attribute/field; no duplicates or per-assignment overrides. Resolve each referenced rule's definition and status; no automatic parent-status cascade. Business requirements stay solution-neutral; field rules describe additional source expectations. |
-| `isRequired` | Mandatory | — | Boolean | 0..1 | Documented presence requirement in the stated source scope. Not inherited from the business definition. |
-| `isNullable` | Nullable | — | Boolean | 0..1 | Whether explicit null is permitted. Distinct from whether the field may be absent. |
-| `keyRoles` | Key | — | Enum[] | 0..* | `primary`, `foreign`, `unique`. An absent value means unknown; an empty set means reviewed with no documented role. Never treat an unknown key set as a confirmed empty set. Composite-key membership does not make a field individually unique.  Describes source-data keys; not a catalog key. |
-| `codeListId` | Code list | FK | UUID → CodeList | 0..1 | Verified source vocabulary; never infer service wire codes from a similarly named model enumeration. |
-| `appliesToTypeNames` | Applies to model types | — | Text[] | 0..* | Exact documented source type names using the field; descriptive text, not references to a catalog type registry. Use the documented source declaration to establish membership. The DataTable has no stored type set. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `dataCustodianId` | Data custodian | Datenhalter | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `dataTableId` | Data table | Datentabelle | FK | UUID → DataTable | 1 | Owning technical structure. |
+| `technicalName` | Technical name | Technischer Name | — | Text | 1 | Exact documented source field name, preserving case. Never translated. |
+| `technicalNameKind` | Technical name kind | Art des technischen Namens | — | Enum | 1 | `physicalColumn`, `modelAttribute`, `apiField`, `dataSourceField`, `unknown`. |
+| `sourcePath` | Source path | Quellpfad | — | Text | 0..1 | Documented nesting or path context when the name is ambiguous. Not a guessed flattened column. |
+| `sourceDataType` | Data type | Datentyp | — | Text | 0..1 | Exact reported type, including documented length/precision. |
+| `dataTypeScope` | Data type scope | Geltungsbereich des Datentyps | — | Enum | 0..1 | `physicalSchema`, `modelDefinition`, `serviceSchema`, `unknown`; required when sourceDataType is present, otherwise absent. Use unknown when a documented type has no established scope. |
+| `qualityRequirementIds` | Data quality requirements | Datenqualitätsanforderungen | FK (collection) | UUID[] → QualityRequirement | 0..* | Reusable quality rules assigned to this attribute/field; no duplicates or per-assignment overrides. Resolve each referenced rule's definition and status; no automatic parent-status cascade. Business requirements stay solution-neutral; field rules describe additional source expectations. |
+| `isRequired` | Mandatory | Pflichtfeld | — | Boolean | 0..1 | Documented presence requirement in the stated source scope. Not inherited from the business definition. |
+| `isNullable` | Nullable | NULL zulässig | — | Boolean | 0..1 | Whether explicit null is permitted. Distinct from whether the field may be absent. |
+| `keyRoles` | Key | Schlüsselrollen | — | Enum[] | 0..* | `primary`, `foreign`, `unique`. An absent value means unknown; an empty set means reviewed with no documented role. Never treat an unknown key set as a confirmed empty set. Composite-key membership does not make a field individually unique.  Describes source-data keys; not a catalog key. |
+| `codeListId` | Code list | Werteliste | FK | UUID → CodeList | 0..1 | Verified source vocabulary; never infer service wire codes from a similarly named model enumeration. |
+| `appliesToTypeNames` | Applies to model types | Gilt für Modelltypen | — | Text[] | 0..* | Exact documented source type names using the field; descriptive text, not references to a catalog type registry. Use the documented source declaration to establish membership. The DataTable has no stored type set. |
 
 Duplicate source names may remain as separately identified draft records with evidence of the ambiguity. Domain and system derive through the table. Parent descriptions, comments and provenance are not copied as field-specific facts. Business correspondence belongs to Relationship.
 
@@ -562,42 +702,42 @@ Derived context: system and domains from DataTable; effective roles and sensitiv
 
 Derived `kind = dataProduct`. The table lists its complete attributes and identity. A governed offering assembled for a user purpose; its schema is a product contract rather than necessarily one source table.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `domainId` | Domain | FK | UUID → Domain | 0..1 | Primary business classification. |
-| `accessMode` | Access | — | Enum | 0..1 | `public`, `internal`, `restricted`; separate from authentication configuration. |
-| `accessNotes` | Access notes | — | Text | 0..1 | Who may obtain the product and under what conditions. One value in its authored language; no translation variants or fallback. |
-| `landingPageUrl` | Information page | — | HttpUrl | 0..1 | Documented product information/access page; no placeholder destination. |
-| `formats` | Format | — | Text[] | 0..* | Documented product format names or media types; preserve exact tokens and do not guess a standard vocabulary URI. |
-| `licenseUri` | License | — | HttpUrl | 0..1 | Identified product usage terms. Missing does not imply open reuse. |
-| `licenseNotes` | License notes | — | Text | 0..1 | Documented usage terms in their authored language, including unresolved legacy licence text. One value; no language variants or fallback. |
-| `updateFrequency` | Update frequency | — | Enum | 0..1 | `continuous`, `daily`, `weekly`, `monthly`, `quarterly`, `annually`, `onChange`, `onDemand`, `irregular`. Product commitment, not evidence of actual data freshness. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `domainId` | Domain | Domäne | FK | UUID → Domain | 0..1 | Primary business classification. |
+| `accessMode` | Access | Zugang | — | Enum | 0..1 | `public`, `internal`, `restricted`; separate from authentication configuration. |
+| `accessNotes` | Access notes | Zugangshinweise | — | Text | 0..1 | Who may obtain the product and under what conditions. One value in its authored language; no translation variants or fallback. |
+| `landingPageUrl` | Information page | Informationsseite | — | HttpUrl | 0..1 | Documented product information/access page; no placeholder destination. |
+| `formats` | Format | Format | — | Text[] | 0..* | Documented product format names or media types; preserve exact tokens and do not guess a standard vocabulary URI. |
+| `licenseUri` | License | Lizenz | — | HttpUrl | 0..1 | Identified product usage terms. Missing does not imply open reuse. |
+| `licenseNotes` | License notes | Lizenzhinweise | — | Text | 0..1 | Documented usage terms in their authored language, including unresolved legacy licence text. One value; no language variants or fallback. |
+| `updateFrequency` | Update frequency | Aktualisierungsfrequenz | — | Enum | 0..1 | `continuous`, `daily`, `weekly`, `monthly`, `quarterly`, `annually`, `onChange`, `onDemand`, `irregular`. Product commitment, not evidence of actual data freshness. |
 
 Derived: ProductAttributes by owner. Format, licence and cadence describe the product offering. Multiple independently managed data collections or representations can justify the optional publication extension later. A product is not automatically a DCAT Dataset or an ArchiMate Product.
 
@@ -607,44 +747,44 @@ Derived associations: outgoing Relationship records with type `basedOn` resolve 
 
 Derived `kind = dataService`. The table lists its complete attributes and identity. Describes access interfaces, including SOAP, REST, map and feature services.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `dataCustodianId` | Data custodian | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `systemId` | System | FK | UUID → System | 0..1 | Providing system, if identified. External services need no invented system assignment. |
-| `domainId` | Domain | FK | UUID → Domain | 0..1 | Primary catalog classification. |
-| `technicalName` | Technical name | — | Text | 0..1 | Official interface identifier. |
-| `serviceVersion` | Service version | — | Text | 0..1 | Source interface release, separate from catalog `version`. |
-| `purpose` | Purpose | — | Enum | 0..1 | `recordAccess`, `featureAccess`, `mapImage`, `download`, `mixed`. Map display does not imply polygon extraction. |
-| `accessMode` | Access | — | Enum | 0..1 | `public`, `internal`, `restricted`. |
-| `accessNotes` | Access notes | — | Text | 0..1 | Access restrictions and limitations. One value in its authored language; no translation variants or fallback. |
-| `endpointDescriptionUrls` | Interface descriptions | — | HttpUrl[] | 0..* | Machine-readable interface descriptions, such as OpenAPI, WSDL or capabilities documents. Human help pages stay in DocumentationLink. |
-| `endpoints` | Endpoints | — | ServiceEndpoint[] | 0..* | Documented entry points or operations with distinct stable identifiers. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `dataCustodianId` | Data custodian | Datenhalter | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `systemId` | System | System | FK | UUID → System | 0..1 | Providing system, if identified. External services need no invented system assignment. |
+| `domainId` | Domain | Domäne | FK | UUID → Domain | 0..1 | Primary catalog classification. |
+| `technicalName` | Technical name | Technischer Name | — | Text | 0..1 | Official interface identifier. |
+| `serviceVersion` | Service version | Schnittstellenversion | — | Text | 0..1 | Source interface release, separate from catalog `version`. |
+| `purpose` | Purpose | Zweck | — | Enum | 0..1 | `recordAccess`, `featureAccess`, `mapImage`, `download`, `mixed`. Map display does not imply polygon extraction. |
+| `accessMode` | Access | Zugang | — | Enum | 0..1 | `public`, `internal`, `restricted`. |
+| `accessNotes` | Access notes | Zugangshinweise | — | Text | 0..1 | Access restrictions and limitations. One value in its authored language; no translation variants or fallback. |
+| `endpointDescriptionUrls` | Interface descriptions | Schnittstellenbeschreibungen | — | HttpUrl[] | 0..* | Machine-readable interface descriptions, such as OpenAPI, WSDL or capabilities documents. Human help pages stay in DocumentationLink. |
+| `endpoints` | Endpoints | Endpunkte | — | ServiceEndpoint[] | 0..* | Documented entry points or operations with distinct stable identifiers. |
 
 Derived: served products and exposure mappings. Link request/response and capability documentation through documentationLinks. A successful sample does not certify all operations, coverage or completeness.
 
@@ -652,40 +792,40 @@ Derived: served products and exposure mappings. Link request/response and capabi
 
 Derived `kind = dataTable`. The table lists its complete attributes and identity. Describes a documented technical structure within a System. Keep its known technical identifier and field inventory; document relevant source limitations in comment and documentationLinks. An API-derived inventory does not establish the full physical schema, and an empty field list does not prove the source has no fields.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `dataCustodianId` | Data custodian | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `systemId` | System | FK | UUID → System | 1 | System or source inventory documenting the structure. |
-| `domainId` | Domain | FK | UUID → Domain | 0..1 | Explicit primary classification, especially without a confirmed business mapping. |
-| `technicalName` | Technical name | — | Text | 0..1 | Exact documented table, class or feature-type identifier. Never substitute an alias for an unknown physical table ID. |
-| `databaseName` | Database name | — | Text | 0..1 | Exact source database name, if documented. A source system is not necessarily a database. |
-| `schemaName` | Schema name | — | Text | 0..1 | Exact source namespace/schema, if documented; no invented default schema. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `dataCustodianId` | Data custodian | Datenhalter | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `systemId` | System | System | FK | UUID → System | 1 | System or source inventory documenting the structure. |
+| `domainId` | Domain | Domäne | FK | UUID → Domain | 0..1 | Explicit primary classification, especially without a confirmed business mapping. |
+| `technicalName` | Technical name | Technischer Name | — | Text | 0..1 | Exact documented table, class or feature-type identifier. Never substitute an alias for an unknown physical table ID. |
+| `databaseName` | Database name | Datenbankname | — | Text | 0..1 | Exact source database name, if documented. A source system is not necessarily a database. |
+| `schemaName` | Schema name | Schemaname | — | Text | 0..1 | Exact source namespace/schema, if documented; no invented default schema. |
 
 Derived: DataFields by owner, business mappings and consuming products/services. Display the explicit primary domain when supplied; otherwise derive the set of domains from confirmed realisation mappings. Do not silently reduce multiple domains to the first one.
 
@@ -695,33 +835,33 @@ Use documentationLinks for definition and schema references; the catalog describ
 
 Derived `kind = domain`. The table includes its own names and descriptions. A business subject area independent of an application or navigation layout.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `parentDomainId` | Parent domain | FK | UUID → Domain | 0..1 | Broader domain; no self-reference or cycles. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `parentDomainId` | Parent domain | Übergeordnete Domäne | FK | UUID → Domain | 0..1 | Broader domain; no self-reference or cycles. |
 
 Derived: child domains and BusinessObjects referencing this domain. Domains may have no members.
 
@@ -731,24 +871,24 @@ A Domain's description explains its subject area, including relevant inclusion/e
 
 Derived `kind = lineageRelation`. A directed dependency describing documented data movement or transformation between technical tables or fields. Its display label derives from the endpoints. It has no generic name, ownership or second status. Lineage is distinct from catalog associations.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `source` | Source | FK (typed) | RecordReference | 1 | Upstream DataTable or DataField. Must resolve and differ from target. |
-| `target` | Target | FK (typed) | RecordReference | 1 | Downstream record of the same kind: table-to-table or field-to-field. BusinessObject and BusinessAttribute are meaning definitions, not flow nodes. |
-| `operation` | Operation | — | Enum | 1 | `copy`, `transform`, `aggregate`, `unknown`. A documented dependency may have an unknown operation; do not infer copy from similar names. |
-| `transformationNotes_de` | Transformation notes (DE) | — | Text | 0..1 | German. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
-| `transformationNotes_it` | Transformation notes (IT) | — | Text | 0..1 | Italian. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
-| `transformationNotes_fr` | Transformation notes (FR) | — | Text | 0..1 | French. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
-| `transformationNotes_en` | Transformation notes (EN) | — | Text | 0..1 | English. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
-| `verificationStatus` | Verification status | — | Enum | 1 | `candidate`, `confirmed`, `rejected`, `obsolete`; new records default to candidate. Confirmation requires a documented basis in transformation notes and/or documentationLinks, an explicit verification-state edit recorded in ChangeEvent. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Supporting documentation for the scoped assertion. Deduplicate URL/purpose pairs; confirmation also needs the review and scope notes below. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `source` | Source | Quelle | FK (typed) | RecordReference | 1 | Upstream DataTable or DataField. Must resolve and differ from target. |
+| `target` | Target | Ziel | FK (typed) | RecordReference | 1 | Downstream record of the same kind: table-to-table or field-to-field. BusinessObject and BusinessAttribute are meaning definitions, not flow nodes. |
+| `operation` | Operation | Operation | — | Enum | 1 | `copy`, `transform`, `aggregate`, `unknown`. A documented dependency may have an unknown operation; do not infer copy from similar names. |
+| `transformationNotes_de` | Transformation notes (DE) | Transformationshinweise (DE) | — | Text | 0..1 | German. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
+| `transformationNotes_it` | Transformation notes (IT) | Transformationshinweise (IT) | — | Text | 0..1 | Italian. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
+| `transformationNotes_fr` | Transformation notes (FR) | Transformationshinweise (FR) | — | Text | 0..1 | French. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
+| `transformationNotes_en` | Transformation notes (EN) | Transformationshinweise (EN) | — | Text | 0..1 | English. Documented derivation and scope. At least one note is required for confirmed transform or aggregate relations. No executable expression is assumed. |
+| `verificationStatus` | Verification status | Prüfstatus | — | Enum | 1 | `candidate`, `confirmed`, `rejected`, `obsolete`; new records default to candidate. Confirmation requires a documented basis in transformation notes and/or documentationLinks, an explicit verification-state edit recorded in ChangeEvent. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Supporting documentation for the scoped assertion. Deduplicate URL/purpose pairs; confirmation also needs the review and scope notes below. |
 
 Store one relation identity per directed source/target pair, including rejected/obsolete rows; retain changes in history. Endpoints are immutable: a different pair has a different identity. Explicitly restoring a previously recorded pair reuses its ID and history, returns it to candidate. Several input relations can lead into the same output, with transformation scope documented in notes and documentation links. The initial model records dependency, not distinct execution instances or multiple scheduled jobs for the same pair.
 
@@ -760,31 +900,31 @@ A business correspondence, product source-table association or API exposure does
 
 Derived `kind = productAttribute`. The table lists its complete attributes and identity. Defines a product-specific characteristic, distinct from business definitions and source fields.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `sortOrder` | Row order | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `dataProductId` | Data product | FK | UUID → DataProduct | 1 | Owning product contract. |
-| `semanticName` | Semantic name | UQ (composite) | Identifier | 1 | Stable English name, unique within the product. |
-| `businessAttributeId` | Business attribute | FK | UUID → BusinessAttribute | 0..1 | Reviewed business meaning when correspondence is direct. |
-| `valueSpecification` | Value specification | — | ValueSpecification | 0..1 | Value format and constraints promised by the product. |
-| `isRequired` | Mandatory | — | Boolean | 0..1 | Requiredness in the product contract; absence is unknown. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `dataProductId` | Data product | Datenprodukt | FK | UUID → DataProduct | 1 | Owning product contract. |
+| `semanticName` | Semantic name | Semantischer Name | UQ (composite) | Identifier | 1 | Stable English name, unique within the product. |
+| `businessAttributeId` | Business attribute | Geschäftsattribut | FK | UUID → BusinessAttribute | 0..1 | Reviewed business meaning when correspondence is direct. |
+| `valueSpecification` | Value specification | Wertespezifikation | — | ValueSpecification | 0..1 | Value format and constraints promised by the product. |
+| `isRequired` | Mandatory | Pflichtfeld | — | Boolean | 0..1 | Requiredness in the product contract; absence is unknown. |
 
 Product restrictions must not overwrite the business attribute's general definition. Array positions do not identify product attributes.
 
@@ -796,33 +936,33 @@ Derived context: status, responsibilities, sensitivity and domain from DataProdu
 
 Derived `kind = qualityRequirement`. A reusable definition of an expected data-quality check. BusinessAttribute and DataField each reference zero or more rules through qualityRequirementIds. The same Required, Not null or Unique record can be reused across many attributes and fields; a Greater than zero rule stores its threshold once. Assignments reference reusable rules without duplicating their definitions.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable rule identifier, unique in the rule library and independent of translated labels or assignments. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Organisation responsible for maintaining this rule; stored inline. No parent responsibility inheritance. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact for this rule. Organisation details may be supplied independently in responsibleOrganisation. No parent responsibility inheritance. |
-| `ruleType` | Rule type | — | Enum | 1 | `required`, `notNull`, `unique`, `greaterThan`, `custom`. Describes the rule semantics below; no executable rule body is stored. |
-| `comparisonValue` | Comparison value | — | Decimal | 0..1 | Required only for greaterThan; forbidden for the other rule types. Zero is a valid value. Stored once on the reusable rule, with no per-assignment override. |
-| `dimension` | Quality dimension | — | Enum | 1 | `completeness`, `validity`, `consistency`, `uniqueness`, `timeliness`, `accuracy`. Local classification tokens, not a standards-conformance claim. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable rule identifier, unique in the rule library and independent of translated labels or assignments. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. At least one language value in this property family is required before status becomes valid. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Organisation responsible for maintaining this rule; stored inline. No parent responsibility inheritance. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact for this rule. Organisation details may be supplied independently in responsibleOrganisation. No parent responsibility inheritance. |
+| `ruleType` | Rule type | Regeltyp | — | Enum | 1 | `required`, `notNull`, `unique`, `greaterThan`, `custom`. Describes the rule semantics below; no executable rule body is stored. |
+| `comparisonValue` | Comparison value | Vergleichswert | — | Decimal | 0..1 | Required only for greaterThan; forbidden for the other rule types. Zero is a valid value. Stored once on the reusable rule, with no per-assignment override. |
+| `dimension` | Quality dimension | Qualitätsdimension | — | Enum | 1 | `completeness`, `validity`, `consistency`, `uniqueness`, `timeliness`, `accuracy`. Local classification tokens, not a standards-conformance claim. |
 
 #### Rule semantics and examples
 
@@ -852,29 +992,29 @@ Rule assignments are audited owner edits. Changing a shared rule updates its joi
 
 Derived `kind = relationship`. The table lists its complete attributes and identity. Stores an explicitly maintained, typed association between catalog definitions. The display label derives from its endpoints and the relationship type. No independent name, description, generic catalog status, owner or classification is required. Structural ownership stays in direct FKs; external documentation stays in DocumentationLink; technical data flow stays in LineageRelation. Neither operational instances nor diagram coordinates are stored here.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `source` | Source | FK (typed) | RecordReference | 1 | Must satisfy the signature table below. |
-| `target` | Target | FK (typed) | RecordReference | 1 | Must resolve; cannot identify the same kind and record as source. |
-| `relationshipType` | Relationship type | — | Enum | 1 | Controlled English token from the signature table below. |
-| `comment` | Comment | — | Text | 0..1 | Optional, publicly readable catalog explanation, stored once without translation or language fallback. |
-| `sourceEndpointId` | Source endpoint | FK (composite) | UUID → ServiceEndpoint | 0..1 | Endpoint within the source DataService. Required for assesses; optional for exposes; prohibited for all other relationship types. |
-| `verificationStatus` | Verification status | — | Enum | 1 | `candidate`, `confirmed`, `rejected`, `obsolete`; defaults to candidate. This is the sole relationship review lifecycle. Rejected/obsolete records remain available in history and review tools. |
-| `coverage` | Coverage | — | Enum | 0..1 | `full`, `partial`, `unknown`; required for realizes, represents, correspondsTo and exposes, absent for all other relationship types. Describes source coverage of the documented target scope; partial needs a rule note. |
-| `supportStatus` | Requirement support | — | Enum | 0..1 | For assesses only: `notAssessed`, `supported`, `partial`, `missing`. Required for that type; confirmed requires a value other than notAssessed. |
-| `assessedServiceVersion` | Assessed service version | — | Text | 0..1 | Exact source service release assessed for exposes/assesses; absent for other types. Required when known; never invented. Evidence must identify its documentation scope even when no release number exists. |
-| `ruleNotes_de` | Rule notes (DE) | — | Text | 0..1 | German. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
-| `ruleNotes_it` | Rule notes (IT) | — | Text | 0..1 | Italian. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
-| `ruleNotes_fr` | Rule notes (FR) | — | Text | 0..1 | French. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
-| `ruleNotes_en` | Rule notes (EN) | — | Text | 0..1 | English. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Supporting documentation for the scoped assertion. Deduplicate URL/purpose pairs; confirmation also needs the review and scope notes below. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `source` | Source | Quelle | FK (typed) | RecordReference | 1 | Must satisfy the signature table below. |
+| `target` | Target | Ziel | FK (typed) | RecordReference | 1 | Must resolve; cannot identify the same kind and record as source. |
+| `relationshipType` | Relationship type | Beziehungstyp | — | Enum | 1 | Controlled English token from the signature table below. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Optional, publicly readable catalog explanation, stored once without translation or language fallback. |
+| `sourceEndpointId` | Source endpoint | Quellendpunkt | FK (composite) | UUID → ServiceEndpoint | 0..1 | Endpoint within the source DataService. Required for assesses; optional for exposes; prohibited for all other relationship types. |
+| `verificationStatus` | Verification status | Prüfstatus | — | Enum | 1 | `candidate`, `confirmed`, `rejected`, `obsolete`; defaults to candidate. This is the sole relationship review lifecycle. Rejected/obsolete records remain available in history and review tools. |
+| `coverage` | Coverage | Abdeckung | — | Enum | 0..1 | `full`, `partial`, `unknown`; required for realizes, represents, correspondsTo and exposes, absent for all other relationship types. Describes source coverage of the documented target scope; partial needs a rule note. |
+| `supportStatus` | Requirement support | Unterstützung der Anforderung | — | Enum | 0..1 | For assesses only: `notAssessed`, `supported`, `partial`, `missing`. Required for that type; confirmed requires a value other than notAssessed. |
+| `assessedServiceVersion` | Assessed service version | Bewertete Schnittstellenversion | — | Text | 0..1 | Exact source service release assessed for exposes/assesses; absent for other types. Required when known; never invented. Evidence must identify its documentation scope even when no release number exists. |
+| `ruleNotes_de` | Rule notes (DE) | Regelhinweise (DE) | — | Text | 0..1 | German. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
+| `ruleNotes_it` | Rule notes (IT) | Regelhinweise (IT) | — | Text | 0..1 | Italian. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
+| `ruleNotes_fr` | Rule notes (FR) | Regelhinweise (FR) | — | Text | 0..1 | French. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
+| `ruleNotes_en` | Rule notes (EN) | Regelhinweise (EN) | — | Text | 0..1 | English. Scope limits, semantic differences or the capability gap. At least one ruleNotes language value is required for partial/missing support or partial coverage. No executable code. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Supporting documentation for the scoped assertion. Deduplicate URL/purpose pairs; confirmation also needs the review and scope notes below. |
 
 #### Relationship types
 
@@ -930,37 +1070,37 @@ Keep one assessment per service/endpoint/requirement scope. assessedServiceVersi
 
 Derived `kind = system`. The table lists its complete attributes and identity. A source application, register, model repository or coordinated distributed inventory.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
-| `identifier` | ID | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
-| `createdOn` | Created | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
-| `name_de` | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
-| `name_it` | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
-| `name_fr` | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
-| `name_en` | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
-| `description_de` | Description (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
-| `description_it` | Description (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
-| `description_fr` | Description (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
-| `description_en` | Description (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
-| `comment` | Comment | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
-| `documentationLinks` | More information | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
-| `status` | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
-| `version` | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
-| `versionDate` | Version date | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
-| `responsibleOrganisation` | Responsible organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
-| `dataOwnerId` | Data owner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
-| `dataStewardId` | Data steward | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
-| `dataCustodianId` | Data custodian | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
-| `contactActorId` | Contact | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
-| `classification` | Classification | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
-| `containsPersonalData` | Personal data | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `systemType` | System type | — | Enum | 0..1 | `application`, `register`, `modelRepository`, `distributedSource`; omit if unreviewed. |
-| `technology` | Technology | — | Text | 0..1 | Documented platform or technology name. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable internal identity, separate from the public catalog identifier and source identifiers. |
+| `identifier` | ID | Kennung | UQ | Identifier | 1 | Stable and unique within its kind. Child identifiers distinguish records across owners. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. |
+| `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
+| `name_it` | Name (IT) | Name (IT) | — | Text | 0..1 | Italian name; at least one language is required. Not an identifier. |
+| `name_fr` | Name (FR) | Name (FR) | — | Text | 0..1 | French name; at least one language is required. Not an identifier. |
+| `name_en` | Name (EN) | Name (EN) | — | Text | 0..1 | English name; at least one language is required. Not an identifier. |
+| `description_de` | Description (DE) | Beschreibung (DE) | — | Text | 0..1 | German. Definition; preserve documented wording. |
+| `description_it` | Description (IT) | Beschreibung (IT) | — | Text | 0..1 | Italian. Definition; preserve documented wording. |
+| `description_fr` | Description (FR) | Beschreibung (FR) | — | Text | 0..1 | French. Definition; preserve documented wording. |
+| `description_en` | Description (EN) | Beschreibung (EN) | — | Text | 0..1 | English. Definition; preserve documented wording. |
+| `comment` | Comment | Kommentar | — | Text | 0..1 | Catalog note in its authored language; publicly readable. No translation variants, fallback or parent inheritance. |
+| `documentationLinks` | More information | Weitere Informationen | — | DocumentationLink[] | 0..* | Curated supporting links; deduplicate identical URL/purpose pairs. |
+| `status` | Status | Status | — | Enum | 1 | `draft`, `valid`, `retired`; new records default to draft. Status changes are manual and audited; source publication alone does not establish the correctness of local interpretations. |
+| `version` | Version | Version | — | Text | 0..1 | Catalog definition version, if managed; paired with versionDate. Separate from source editions, serviceVersion and the technical rowVersion. |
+| `versionDate` | Version date | Versionsdatum | — | Date | 0..1 | Date this catalog definition version was issued. Required for a newly assigned/changed version; absent without version. Preserve unknown legacy dates. Not an import, last-edit or service-release date. |
+| `responsibleOrganisation` | Responsible organisation | Verantwortliche Organisation | — | OrganisationDetails | 0..1 | Inline organisation; no Actor required. Apply the documented parent fallback only when this whole value is absent. |
+| `dataOwnerId` | Data owner | Dateneigner | FK | UUID → Actor | 0..1 | Accountable person/organisation. One optional Actor; apply only the documented parent fallback. |
+| `dataStewardId` | Data steward | Datenverwalter | FK | UUID → Actor | 0..1 | Person/organisation maintaining meaning and metadata. One optional Actor; apply only the documented parent fallback. |
+| `dataCustodianId` | Data custodian | Datenhalter | FK | UUID → Actor | 0..1 | Maintains the technical source; may be a person or organisation. One explicit actor per role; missing means undocumented or inherited as specified below. |
+| `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
+| `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
+| `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
+| `systemType` | System type | Systemtyp | — | Enum | 0..1 | `application`, `register`, `modelRepository`, `distributedSource`; omit if unreviewed. |
+| `technology` | Technology | Technologie | — | Text | 0..1 | Documented platform or technology name. |
 
 Derived: DataTables and DataServices referencing this system. Websites use DocumentationLink; custodians use the direct `dataCustodianId` reference. No stored table counts.
 
@@ -970,12 +1110,12 @@ Derived: DataTables and DataServices referencing this system. Websites use Docum
 
 A reusable attribute-family convention, not a nested object or separate entity. For each translatable base, define these four sibling Text attributes on the owning record or value object:
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `<base>_de` | Text (DE) | — | Text | 0..1 | German text. |
-| `<base>_it` | Text (IT) | — | Text | 0..1 | Italian text. |
-| `<base>_fr` | Text (FR) | — | Text | 0..1 | French text. |
-| `<base>_en` | Text (EN) | — | Text | 0..1 | English text. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `<base>_de` | Text (DE) | Text (DE) | — | Text | 0..1 | German text. |
+| `<base>_it` | Text (IT) | Text (IT) | — | Text | 0..1 | Italian text. |
+| `<base>_fr` | Text (FR) | Text (FR) | — | Text | 0..1 | French text. |
+| `<base>_en` | Text (EN) | Text (EN) | — | Text | 0..1 | English text. |
 
 Each supplied value must be non-empty plain text. Per-field optionality allows missing translations; family-level constraints still apply (at least one name, a conditionally required description or rule note, or at least one change summary). Missing optional translations remain unknown. Empty strings are invalid; fallback never changes stored values.
 
@@ -983,10 +1123,10 @@ Nested value objects use the same names: DocumentationLink has `title_de` throug
 
 ### RecordReference
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `kind` | Type | — | Enum | 1 | `actor`, `businessAttribute`, `businessObject`, `codeList`, `codeValue`, `dataField`, `dataProduct`, `dataService`, `dataTable`, `domain`, `lineageRelation`, `productAttribute`, `qualityRequirement`, `relationship`, `system`. ChangeEvent cannot itself be a target. Owned value types are not reference targets. |
-| `id` | Internal ID | — | UUID | 1 | Existing internal ID of that kind. Human-readable identifiers and labels are resolved separately. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `kind` | Type | Typ | — | Enum | 1 | `actor`, `businessAttribute`, `businessObject`, `codeList`, `codeValue`, `dataField`, `dataProduct`, `dataService`, `dataTable`, `domain`, `lineageRelation`, `productAttribute`, `qualityRequirement`, `relationship`, `system`. ChangeEvent cannot itself be a target. Owned value types are not reference targets. |
+| `id` | Internal ID | Interne ID | — | UUID | 1 | Existing internal ID of that kind. Human-readable identifiers and labels are resolved separately. |
 
 Typed properties such as `domainId` imply their kind and contain the target UUID. Labels never serve as references. RecordReference is a conceptual shorthand: the current REST contract exposes concrete columns such as `domain_id`, `source_data_table_id` or `record_business_object_id`, with SQL foreign keys and exactly-one-target checks. It does not accept an arbitrary `{kind, id}` payload instead of those columns. ServiceEndpoint is referenced through its explicit owner-scoped endpoint FK and is not a core RecordReference target.
 
@@ -994,13 +1134,13 @@ Typed properties such as `domainId` imply their kind and contain the target UUID
 
 An owned organisation/contact value, not a catalog entity or separate registry. Used by responsibleOrganisation and CodeList.authorityOrganisation. At least one of the four names is required when the value exists; missing translations and contact details remain unknown. Omit the whole optional object when no organisation is known.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `name_de` | Organisation name (DE) | — | Text | 0..1 | German. Documented organisation name. At least one name is required; never fabricate translations. |
-| `name_it` | Organisation name (IT) | — | Text | 0..1 | Italian. Documented organisation name. At least one name is required; never fabricate translations. |
-| `name_fr` | Organisation name (FR) | — | Text | 0..1 | French. Documented organisation name. At least one name is required; never fabricate translations. |
-| `name_en` | Organisation name (EN) | — | Text | 0..1 | English. Documented organisation name. At least one name is required; never fabricate translations. |
-| `websiteUrl` | Website | — | HttpUrl | 0..1 | Documented organisation website or relevant contact page. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `name_de` | Organisation name (DE) | Organisationsname (DE) | — | Text | 0..1 | German. Documented organisation name. At least one name is required; never fabricate translations. |
+| `name_it` | Organisation name (IT) | Organisationsname (IT) | — | Text | 0..1 | Italian. Documented organisation name. At least one name is required; never fabricate translations. |
+| `name_fr` | Organisation name (FR) | Organisationsname (FR) | — | Text | 0..1 | French. Documented organisation name. At least one name is required; never fabricate translations. |
+| `name_en` | Organisation name (EN) | Organisationsname (EN) | — | Text | 0..1 | English. Documented organisation name. At least one name is required; never fabricate translations. |
+| `websiteUrl` | Website | Website | — | HttpUrl | 0..1 | Documented organisation website or relevant contact page. |
 
 Organisation details are deliberately repeated across entries when needed, so each entry can maintain its documented organisation independently. This permits updates without registering external contacts. Do not silently unify two entries because their organisation labels match. If a registry becomes necessary later, it requires a separate model decision.
 
@@ -1008,16 +1148,16 @@ Organisation details are deliberately repeated across entries when needed, so ea
 
 An owned link value on entities that declare `documentationLinks`.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `url` | URL | — | HttpUrl | 1 | Documentation destination with validated scheme. |
-| `title_de` | Title (DE) | — | Text | 0..1 | German. Link text; fall back to the URL when no title resolves. |
-| `title_it` | Title (IT) | — | Text | 0..1 | Italian. Link text; fall back to the URL when no title resolves. |
-| `title_fr` | Title (FR) | — | Text | 0..1 | French. Link text; fall back to the URL when no title resolves. |
-| `title_en` | Title (EN) | — | Text | 0..1 | English. Link text; fall back to the URL when no title resolves. |
-| `purpose` | Purpose | — | Enum | 1 | `documentation`, `definition`, `standard`, `terminology`, `license`, `access`. |
-| `language` | Language | — | LanguageTag | 0..1 | Destination language, independent of the link-title language. |
-| `externalIdentifier` | External ID | — | Text | 0..1 | Official terminology, standard or document identifier. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `url` | URL | URL | — | HttpUrl | 1 | Documentation destination with validated scheme. |
+| `title_de` | Title (DE) | Titel (DE) | — | Text | 0..1 | German. Link text; fall back to the URL when no title resolves. |
+| `title_it` | Title (IT) | Titel (IT) | — | Text | 0..1 | Italian. Link text; fall back to the URL when no title resolves. |
+| `title_fr` | Title (FR) | Titel (FR) | — | Text | 0..1 | French. Link text; fall back to the URL when no title resolves. |
+| `title_en` | Title (EN) | Titel (EN) | — | Text | 0..1 | English. Link text; fall back to the URL when no title resolves. |
+| `purpose` | Purpose | Zweck | — | Enum | 1 | `documentation`, `definition`, `standard`, `terminology`, `license`, `access`. |
+| `language` | Language | Sprache | — | LanguageTag | 0..1 | Destination language, independent of the link-title language. |
+| `externalIdentifier` | External ID | Externe Kennung | — | Text | 0..1 | Official terminology, standard or document identifier. |
 
 Several links are supported. A link alone is not evidence that every assertion on the linked page was reviewed.
 
@@ -1025,23 +1165,23 @@ Several links are supported. A link alone is not evidence that every assertion o
 
 Describes business values and product-contract values. The containing entity determines the allowed properties. For BusinessAttribute, allow only valueType, format, unit, geometryType and coordinateReferenceSystem as descriptive metadata; validation requirements come from referenced QualityRequirements. ProductAttribute may retain documented contract bounds and rule notes. DataField uses sourceDataType and assigned QualityRequirements instead of this value. This value never establishes a physical schema by itself.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `valueType` | Value type | — | Enum | 1 | `text`, `identifier`, `integer`, `decimal`, `boolean`, `date`, `dateTime`, `year`, `code`, `geometry`, `structured`. |
-| `format` | Format | — | Text | 0..1 | Reviewed representation or official identifier format. No invented storage length. |
-| `minimumLength` | Minimum length | — | Integer | 0..1 | At least zero; applies to text/code/identifier values. Count Unicode code points, not bytes. |
-| `maximumLength` | Maximum length | — | Integer | 0..1 | Non-negative; at least the minimum when both exist. A source byte limit is a separately documented constraint. |
-| `minimumValue` | Minimum value | — | Decimal | 0..1 | Inclusive lower numeric bound. |
-| `maximumValue` | Maximum value | — | Decimal | 0..1 | Inclusive upper numeric bound, not below the minimum. |
-| `precision` | Precision | — | Integer | 0..1 | Positive total decimal digits when defined by the applicable specification. |
-| `scale` | Scale | — | Integer | 0..1 | Documented decimal scale. Negative values or a scale greater than precision are allowed when the source specification supports them. |
-| `unit` | Unit | — | Text | 0..1 | Defined unit identifier or symbol. A measurement's unit is a business value, not its field's storage type. |
-| `geometryType` | Geometry type | — | Text | 0..1 | Documented geometric form, independent of transport/file format. |
-| `coordinateReferenceSystem` | Coordinate reference system | — | Text | 0..1 | Authority-qualified reference system where established. |
-| `ruleNotes_de` | Rule notes (DE) | — | Text | 0..1 | German. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
-| `ruleNotes_it` | Rule notes (IT) | — | Text | 0..1 | Italian. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
-| `ruleNotes_fr` | Rule notes (FR) | — | Text | 0..1 | French. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
-| `ruleNotes_en` | Rule notes (EN) | — | Text | 0..1 | English. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `valueType` | Value type | Wertetyp | — | Enum | 1 | `text`, `identifier`, `integer`, `decimal`, `boolean`, `date`, `dateTime`, `year`, `code`, `geometry`, `structured`. |
+| `format` | Format | Format | — | Text | 0..1 | Reviewed representation or official identifier format. No invented storage length. |
+| `minimumLength` | Minimum length | Mindestlänge | — | Integer | 0..1 | At least zero; applies to text/code/identifier values. Count Unicode code points, not bytes. |
+| `maximumLength` | Maximum length | Maximallänge | — | Integer | 0..1 | Non-negative; at least the minimum when both exist. A source byte limit is a separately documented constraint. |
+| `minimumValue` | Minimum value | Mindestwert | — | Decimal | 0..1 | Inclusive lower numeric bound. |
+| `maximumValue` | Maximum value | Maximalwert | — | Decimal | 0..1 | Inclusive upper numeric bound, not below the minimum. |
+| `precision` | Precision | Präzision | — | Integer | 0..1 | Positive total decimal digits when defined by the applicable specification. |
+| `scale` | Scale | Skala | — | Integer | 0..1 | Documented decimal scale. Negative values or a scale greater than precision are allowed when the source specification supports them. |
+| `unit` | Unit | Einheit | — | Text | 0..1 | Defined unit identifier or symbol. A measurement's unit is a business value, not its field's storage type. |
+| `geometryType` | Geometry type | Geometrietyp | — | Text | 0..1 | Documented geometric form, independent of transport/file format. |
+| `coordinateReferenceSystem` | Coordinate reference system | Koordinatenreferenzsystem | — | Text | 0..1 | Authority-qualified reference system where established. |
+| `ruleNotes_de` | Rule notes (DE) | Regelhinweise (DE) | — | Text | 0..1 | German. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
+| `ruleNotes_it` | Rule notes (IT) | Regelhinweise (IT) | — | Text | 0..1 | Italian. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
+| `ruleNotes_fr` | Rule notes (FR) | Regelhinweise (FR) | — | Text | 0..1 | French. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
+| `ruleNotes_en` | Rule notes (EN) | Regelhinweise (EN) | — | Text | 0..1 | English. Conditional, composite-identifier, uniqueness or other rules beyond the simple bounds. |
 
 Only applicable constraints may be supplied: numeric bounds for numbers, geometric constraints for geometry, and so on. A year remains a year; do not fabricate month/day. Requiredness, nullability and multiplicity are represented only where the containing entity dictionary declares them; absence of a counterpart implies no constraint. Preserve unsupported product constraints in explanatory rule notes. Field source declarations remain in sourceDataType and linked documentation. Precision and scale follow the documented specification; they do not establish a physical schema.
 
@@ -1049,27 +1189,27 @@ Only applicable constraints may be supplied: numeric bounds for numbers, geometr
 
 An owned technical interface record describing documented capabilities. Its separate persistence/API identity supports stable references and edits; it remains owned by one DataService and is not a seventeenth core entity.
 
-| Attribute | Alias (EN) | Key | Format | Cardinality | Constraints and description |
-|---|---|---|---|---|---|
-| `id` | Internal ID | PK | UUID | 1 | Immutable endpoint identity. |
-| `identifier` | ID | UQ (composite) | Identifier | 1 | Stable and unique within the owning DataService. |
-| `dataServiceId` | Data service | FK | UUID → DataService | 1 | Required, immutable owner. Assertion endpoint references must agree with this service. |
-| `rowVersion` | Edit revision | — | Integer | 1 | Server-maintained positive revision, initially 1. An endpoint edit also advances the service revision. |
-| `createdOn` | Created | — | Date | 0..1 | Catalog creation date; unknown legacy dates remain unknown. |
-| `modifiedOn` | Last modified | — | Date | 0..1 | Catalog modification date, not source freshness. |
-| `editedAt` | Last edit timestamp | — | Timestamp | 0..1 | Server time of the app/REST edit; may be unknown for older records. |
-| `isArchived` | Archived | — | Boolean | 1 | Defaults to false. Hides the endpoint from the normal endpoint list without deleting its identity or references. |
-| `sortOrder` | Row order | — | Integer | 1 | Display order within the service, from 0 through 2147483647 (SQL integer); default 0. Ties are permitted. |
-| `url` | URL | — | HttpUrl | 0..1 | Documented base or operation URL; unknown hosts are not invented. |
-| `relativePath` | Relative path | — | Text | 0..1 | Documented path where the base is unavailable or separately specified. |
-| `protocol` | Protocol | — | Text | 0..1 | Official protocol name/version, such as `SOAP`, `REST`, `WMS`, `WFS`. |
-| `httpMethod` | HTTP method | — | Enum | 0..1 | `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`. |
-| `operationName` | Operation name | — | Text | 0..1 | Exact operation identifier, never translated. |
-| `environment` | Environment | — | Enum | 0..1 | `production`, `test`, `development`, only when documented. |
-| `isReadOnly` | Read-only | — | Boolean | 0..1 | Documented behaviour, not inferred from the operation label. |
-| `supportsBulk` | Bulk access supported | — | Boolean | 0..1 | Explicit bulk capability; not inferred from pagination or a sample response. |
-| `authenticationMethods` | Authentication methods | — | Text[] | 0..* | Documented mechanism names. No passwords, tokens or private credentials. |
-| `verificationStatus` | Verification status | — | Enum | 1 | `notChecked`, `metadataChecked`, `sampleChecked`, `accessDenied`, `failed`; defaults to notChecked. Editors must document the operation-scoped result. The current command validates the token and creates generic history; it does not require or verify a custom test report. |
+| Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
+| --- | --- | --- | --- | --- | --- | --- |
+| `id` | Internal ID | Interne ID | PK | UUID | 1 | Immutable endpoint identity. |
+| `identifier` | ID | Kennung | UQ (composite) | Identifier | 1 | Stable and unique within the owning DataService. |
+| `dataServiceId` | Data service | Datendienst | FK | UUID → DataService | 1 | Required, immutable owner. Assertion endpoint references must agree with this service. |
+| `rowVersion` | Edit revision | Bearbeitungsrevision | — | Integer | 1 | Server-maintained positive revision, initially 1. An endpoint edit also advances the service revision. |
+| `createdOn` | Created | Erstellt am | — | Date | 0..1 | Catalog creation date; unknown legacy dates remain unknown. |
+| `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Catalog modification date, not source freshness. |
+| `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the app/REST edit; may be unknown for older records. |
+| `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the endpoint from the normal endpoint list without deleting its identity or references. |
+| `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the service, from 0 through 2147483647 (SQL integer); default 0. Ties are permitted. |
+| `url` | URL | URL | — | HttpUrl | 0..1 | Documented base or operation URL; unknown hosts are not invented. |
+| `relativePath` | Relative path | Relativer Pfad | — | Text | 0..1 | Documented path where the base is unavailable or separately specified. |
+| `protocol` | Protocol | Protokoll | — | Text | 0..1 | Official protocol name/version, such as `SOAP`, `REST`, `WMS`, `WFS`. |
+| `httpMethod` | HTTP method | HTTP-Methode | — | Enum | 0..1 | `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`. |
+| `operationName` | Operation name | Operationsname | — | Text | 0..1 | Exact operation identifier, never translated. |
+| `environment` | Environment | Umgebung | — | Enum | 0..1 | `production`, `test`, `development`, only when documented. |
+| `isReadOnly` | Read-only | Nur lesend | — | Boolean | 0..1 | Documented behaviour, not inferred from the operation label. |
+| `supportsBulk` | Bulk access supported | Massenzugriff unterstützt | — | Boolean | 0..1 | Explicit bulk capability; not inferred from pagination or a sample response. |
+| `authenticationMethods` | Authentication methods | Authentifizierungsmethoden | — | Text[] | 0..* | Documented mechanism names. No passwords, tokens or private credentials. |
+| `verificationStatus` | Verification status | Prüfstatus | — | Enum | 1 | `notChecked`, `metadataChecked`, `sampleChecked`, `accessDenied`, `failed`; defaults to notChecked. Editors must document the operation-scoped result. The current command validates the token and creates generic history; it does not require or verify a custom test report. |
 
 An endpoint belongs to one DataService and has a stable identifier within that service. At least one of URL, relative path or operation name is known. Supporting links belong to the DataService; their title or the check summary identifies the operation. Referenced endpoints remain available for their assertion history.
 
@@ -1079,16 +1219,16 @@ Request/response inventories are not automatically physical DataFields.
 
 ### Reviewed schema baseline
 
-The seven migrations in [supabase/migrations](../supabase/migrations/), ending with `20260912010000_catalog_rest_crud.sql`, define **19 public `catalog` tables, 472 columns and 83 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 472 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 12 September 2026.
+The eleven migrations in [supabase/migrations](../supabase/migrations/), ending with `20260913030000_catalog_required_rules.sql`, define **19 public `catalog` tables, 474 columns and 85 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 474 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 13 September 2026.
 
-These counts describe the repository schema. They do not establish which migrations are deployed, how many catalog entries exist, or whether the source inventories are complete. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
+These counts describe the repository schema. The [13 September hosted comparison](#documented-deployed-visible-and-editable) identified 40 missing columns from the earlier baseline, and the two new system-of-record columns are also absent. These counts do not establish deployed completeness or source-content readiness. Proposed property-set/business-key extensions are excluded from this inventory and diagram until their physical design is implemented. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
 
 | Dictionary / collection | SQL table | Columns |
 |---|---|---:|
 | [Actor](#actor) | `actor` | 18 |
-| [BusinessAttribute](#businessattribute) | `business_attribute` | 32 |
+| [BusinessAttribute](#businessattribute) | `business_attribute` | 33 |
 | BusinessAttribute.qualityRequirementIds | `business_attribute_quality_requirement` | 2 |
-| [BusinessObject](#businessobject) | `business_object` | 28 |
+| [BusinessObject](#businessobject) | `business_object` | 29 |
 | [ChangeEvent](#changeevent) | `change_event` | 33 |
 | [CodeList](#codelist) | `code_list` | 24 |
 | [CodeValue](#codevalue) | `code_value` | 25 |
@@ -1104,7 +1244,7 @@ These counts describe the repository schema. They do not establish which migrati
 | [Relationship](#relationship) | `relationship` | 29 |
 | [ServiceEndpoint](#serviceendpoint) | `service_endpoint` | 19 |
 | [System](#system) | `system` | 29 |
-| **Total** | **19 tables** | **472** |
+| **Total** | **19 tables** | **474** |
 
 ### Dictionary-to-storage mapping
 
@@ -1181,6 +1321,7 @@ erDiagram
         jsonb value_specification "NULL"
         boolean is_identifier "NULL"
         uuid code_list_id FK "NULL; code_list.id"
+        uuid system_of_record_id FK "NULL; system.id"
     }
     business_object {
         uuid id PK
@@ -1200,6 +1341,7 @@ erDiagram
         uuid data_steward_id FK "NULL; actor.id"
         uuid contact_actor_id FK "NULL; actor.id"
         uuid domain_id FK "domain.id"
+        uuid system_of_record_id FK "NULL; system.id"
     }
     change_event {
         uuid id PK
@@ -1500,6 +1642,8 @@ erDiagram
     domain o|..o{ data_product : classifies
     domain o|..o{ data_service : classifies
     business_object ||..o{ business_attribute : defines
+    system o|..o{ business_object : authoritative_default
+    system o|..o{ business_attribute : authoritative_override
     system ||..o{ data_table : contains
     system o|..o{ data_service : provides
     data_table ||..o{ data_field : describes
@@ -1553,7 +1697,7 @@ Use UTF8 storage and exact, case-sensitive comparison for catalog identifiers, s
 | Optional owned properties | Omit unknown scalar keys inside JSONB. Replace an owned object without an optional key to clear that nested property; top-level null clears an optional column. Do not persist JSON null as a substitute for an unknown canonical value. Original import captures may retain upstream nulls. |
 | Integer | JSON integer within the documented safe range; tighter domain bounds still apply. Keep rowVersion positive. Converting a bigint to a JavaScript Number must never silently round it. |
 | Decimal | Owned JSONB Decimal values require canonical decimal strings under their SQL validator. Scalar comparison_value accepts finite JSON numbers or numeric strings through REST; send a decimal string to preserve precision. The snapshot returns comparison values as strings, while ordinary REST reads return PostgreSQL numeric JSON tokens. Use a decimal-aware client for those reads; no NaN or infinity. |
-| Decimal storage | Scalar Decimal properties use finite numeric columns; Decimal properties inside JSONB stay strings and are validated/cast as exact numerics for comparisons. Do not run either representation through binary floating point. Original source number tokens remain in their capture. |
+| Decimal storage | Scalar Decimal properties use finite numeric columns; Decimal properties inside JSONB stay strings and are validated/cast as exact numerics for comparisons. Do not run either representation through binary floating point. The Edge write boundary preserves numeric comparison-value tokens from the JSON source; runtimes without that capability require a decimal string. Original source number tokens remain in their capture. |
 | Constraints on other rows | Use native FK/unique constraints for identity and ownership, plus transactional checks for hierarchy cycles, current rule state and applicable assertion scope. These are not safe as CHECK functions querying other tables. |
 
 The canonical Decimal text `"0"` becomes numeric zero in SQL; a missing comparisonValue stays SQL NULL. The rule examples' unquoted zero describes the mathematical value. PostgreSQL offers exact numeric storage but also special numeric values, which this contract excludes; see [numeric types](https://www.postgresql.org/docs/18/datatype-numeric.html). Row checks must treat unknown explicitly and native constraints should express relational invariants; see [constraint behavior](https://www.postgresql.org/docs/18/ddl-constraints.html). The UTF8 text boundary also excludes the zero character; see [character types](https://www.postgresql.org/docs/18/datatype-character.html).

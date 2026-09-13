@@ -63,6 +63,47 @@ The local invitation callback and error-message tests pass with the real SDK and
 
 ## Apply to the existing project
 
+### Required-rule correction
+
+Apply [catalog_required_rules](migrations/20260913030000_catalog_required_rules.sql) after the alias migration. Archived or retired quality rules no longer activate the editor's required checkbox. Re-enabling the checkbox selects or creates an active editor rule; historical assignments stay intact. This function-only correction changes no table/column inventory and was tested locally. It has not been applied to the hosted project by this review.
+
+Deploy the revised [catalog-api function](functions/catalog-api/index.ts) separately for exact decimal token forwarding and strict UTF-8 request validation. Follow the existing [API activation guide](../docs/api.md#activation).
+
+### Canonical aliases
+
+Apply [canonical column comments](migrations/20260913020000_catalog_aliases.sql) after all earlier migrations, including the row-order and system-of-record updates below. This migration changes comments only on all 474 public columns. It preserves rows, identities, permissions and constraints. The generated OpenAPI contract carries English titles, EN/DE aliases and canonical property references from [data-model.md](../docs/data-model.md#alias-contract-across-surfaces).
+
+Hosted activation is pending: no authenticated Supabase connection was available in this session. Apply the prerequisite sequence below, then this migration once as `postgres`. Verify the new comments and reload the API schema. Follow the [alias review and maintenance commands](../docs/review/2026-09-13-model-alias-review.md#maintaining-one-source-of-truth); future changes start in the Markdown and use a new comment migration.
+
+### Row ordering
+
+Apply [catalog row ordering](migrations/20260913010000_catalog_row_order.sql) after the system-of-record migration below. It changes command behavior only: omitted child ranks append consistently through both `save_entry` and REST CRUD. Existing columns, ranks, permissions and identities remain unchanged. The command lock, history and idempotency receipt cover the allocated rank. Explicit zero and ties remain valid; null is rejected. See the [canonical contract](../docs/data-model.md#row-order).
+
+This migration is prepared and tested locally. Hosted activation remains pending because this session has no authenticated database connection or dashboard. Complete the prerequisite sequence below, then apply this migration once as `postgres` and reload the app.
+
+Verify with `node prototype-oblique/tests/row-order.cjs` and `node prototype-oblique/tests/row-order-browser.cjs`. The first covers all five child types and the resulting workbook; the second checks hidden archives and restoration of saved view order.
+
+### System of record
+
+`system_of_record_id` is an optional UUID foreign key to `catalog.system(id)` on BusinessObject and BusinessAttribute. The object supplies a default; a null attribute value inherits that default. Legacy source text is not converted into assignments. The [canonical definition](../docs/data-model.md#system-of-record) specifies the scope.
+
+The migration is prepared locally; hosted application is pending because no authenticated database connection or dashboard browser is available in this session. Apply missing migrations once, in this order, without rerunning the initial schema or import:
+
+1. Apply the existing [security update](migrations/20260907000000_catalog_security.sql) if still pending.
+2. Apply [catalog editing](migrations/20260912000000_catalog_editing.sql) and then [REST CRUD](migrations/20260912010000_catalog_rest_crud.sql) if not already applied. These provide the audited commands and private write inventories extended by the new migration. Keep public signup disabled.
+3. Apply [the system-of-record migration](migrations/20260913000000_catalog_system_of_record.sql) as `postgres`. It adds two nullable references and indexes and extends the existing write inventories; no catalog values are backfilled.
+4. Verify both columns below, reload the app and sign in. Select a system on a business object, verify the attribute inheritance, then set and clear an attribute override. Check the owner history. The REST Edge Function needs [separate activation](../docs/api.md#activation) for standard HTTP CRUD; browser saves use the SQL RPC directly.
+
+```sql
+select table_name, column_name, data_type, is_nullable
+from information_schema.columns
+where table_schema = 'catalog'
+  and table_name in ('business_object', 'business_attribute')
+  and column_name = 'system_of_record_id';
+```
+
+Expected: two nullable UUID columns. Local verification: `node prototype-oblique/tests/system-of-record.cjs` and `node prototype-oblique/tests/system-of-record-browser.cjs`, with the dependencies described below.
+
 ### Enable editing
 
 For standard REST CRUD and account access tokens, also follow [API activation](../docs/api.md#activation). It adds the later CRUD migration and one Edge Function; end users do not receive database or Supabase dashboard access.
@@ -127,6 +168,10 @@ Expected: **30 tables, 621 fields, 25 business objects, 119 business attributes,
 | [20260907000000_catalog_security.sql](migrations/20260907000000_catalog_security.sql) | Deny future implicit API-role grants; apply separately to the existing project. |
 | [20260912000000_catalog_editing.sql](migrations/20260912000000_catalog_editing.sql) | Authenticated atomic edit commands, revisions, row ordering/archive, private attribution and safe retries. Apply after disabling public signup. |
 | [20260912010000_catalog_rest_crud.sql](migrations/20260912010000_catalog_rest_crud.sql) | REST command boundary for all 16 resource types, archival and atomic owned quality assignments. Requires catalog-api deployment for standard HTTP routes. |
+| [20260913000000_catalog_system_of_record.sql](migrations/20260913000000_catalog_system_of_record.sql) | Explicit System UUID references on business objects and attributes; object default, attribute override, existing audit/write boundary. |
+| [20260913010000_catalog_row_order.sql](migrations/20260913010000_catalog_row_order.sql) | Consistent audited append behavior for browser and REST child creation. |
+| [20260913020000_catalog_aliases.sql](migrations/20260913020000_catalog_aliases.sql) | Canonical EN/DE column aliases and descriptions; comments only. |
+| [20260913030000_catalog_required_rules.sql](migrations/20260913030000_catalog_required_rules.sql) | Exclude archived required rules and retain historical assignments when the checkbox is re-enabled. |
 | [import-catalog.cjs](import-catalog.cjs) | Deterministic offline importer and bundle generator. |
 | [import-manifest.json](import-manifest.json) | Source SHA-256 hashes, all allocated identities and expected counts. Retain with backups. |
 | [archive/](archive/README.md) | The 22 content updates applied on 7 September 2026, preserved unchanged with their original replay order and evidence. |
@@ -166,7 +211,7 @@ Direct table INSERT, UPDATE, DELETE and TRUNCATE remain denied. Authenticated ch
 
 `catalog.read_snapshot()` projects normalized tables in one consistent statement using **SECURITY INVOKER**, respecting RLS. It returns one JSON object, so PostgREST row limits do not truncate collections. Numeric quality thresholds travel as exact decimal strings. No JSON catalog mirror is stored.
 
-`js/catalog.js` projects that response for the existing routes, collections, search, diagrams and Excel export. Canonical records and relationship verification details remain in workbook metadata. Attribute-to-field links now require explicit `represents` assertions; the database mode does not infer physical mappings from similar names. Labels follow the selected language, then German, English, French and Italian. Errors never silently fall back to legacy JSON; failed reloads preserve the last validated in-memory snapshot.
+`js/catalog.js` projects that response for the existing routes, collections, search, diagrams and Excel export. The review workbook uses fixed readable columns; complete canonical records and relationship verification details remain available through the API. See the [Excel contract](../docs/excel-export.md). Attribute-to-field links now require explicit `represents` assertions; the database mode does not infer physical mappings from similar names. Labels follow the selected language, then German, English, French and Italian. Errors never silently fall back to legacy JSON; failed reloads preserve the last validated in-memory snapshot.
 
 The prototype retains client-side search, sorting and pagination. Using server-side search/pagination and incremental loading in the app is future scaling work. Reloading fetches current database data; there is no realtime subscription. `#/api` documents public table/snapshot reads and authenticated CRUD. Swagger supplies the public key for reads and the current app token for writes. Standard CRUD routes require the later SQL migration and `catalog-api` Edge Function; see [API activation](../docs/api.md#activation).
 

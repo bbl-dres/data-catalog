@@ -5,6 +5,35 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS','Access-Control-Allow-Headers':'authorization,apikey,content-type,if-match,idempotency-key','Access-Control-Expose-Headers':'ETag,Location,Content-Range','Cache-Control':'no-store'};
 const json = (body: unknown, status=200, headers: Record<string,string>={}) => Response.json(body,{status,headers:{...cors,...headers}});
 const failure = (status: number,code: string,message: string) => json({code,message},status);
+async function bodyText(request: Request): Promise<string | Response> {
+  const limit=2097152;
+  if (Number(request.headers.get('Content-Length'))>limit) return failure(413,'body_too_large','Maximum request size is 2 MiB');
+  const reader=request.body?.getReader(), chunks: Uint8Array[]=[];
+  let size=0;
+  if (reader) try {
+    while (true) {
+      const {done,value}=await reader.read();if(done)break;
+      size+=value.byteLength;
+      if(size>limit){await reader.cancel();return failure(413,'body_too_large','Maximum request size is 2 MiB');}
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const bytes=new Uint8Array(size);let offset=0;
+  for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
+  try { return new TextDecoder('utf-8',{fatal:true}).decode(bytes); }
+  catch { return failure(400,'invalid_utf8','Request body must be valid UTF-8'); }
+}
+function parseBody(text: string, table: string) {
+  // Decimal tokens must reach PostgreSQL without a binary-float round trip.
+  // On an older runtime without source-aware JSON parsing, require a string.
+  return JSON.parse(text,(key,value,context?: {source?: string})=>{
+    if(table==='quality_requirement' && key==='comparison_value' && typeof value==='number') {
+      if(!context?.source)throw new Error('Send comparison_value as a decimal string');
+      return context.source;
+    }
+    return value;
+  });
+}
 function errorStatus(code: string, fallback: number) {
   if (code==='40001') return 412;
   if (code==='P0002') return 404;
@@ -52,15 +81,11 @@ export function createHandler({url,publicKey,fetcher=fetch}: {url: string,public
         if (!revision || !Number.isSafeInteger(Number(revision[1]))) return failure(428,'revision_required','Supply If-Match with the quoted row_version from the record read');
         expected=Number(revision[1]);
       }
-      const limit=2097152;
-      if (Number(request.headers.get('Content-Length'))>limit) return failure(413,'body_too_large','Maximum request size is 2 MiB');
-      const reader=request.body?.getReader();let size=0;const chunks: Uint8Array[]=[];
-      if (reader) while(true) {const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();return failure(413,'body_too_large','Maximum request size is 2 MiB');}chunks.push(value);}
-      const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
-      const text=new TextDecoder().decode(bytes);
+      const text=await bodyText(request);
+      if(typeof text!=='string')return text;
       if (method==='DELETE' && text.trim()) return failure(400,'invalid_body','DELETE accepts no body');
       if (method!=='DELETE' && !/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) return failure(415,'json_required','Use Content-Type: application/json');
-      let body={};try{if(method!=='DELETE')body=JSON.parse(text);}catch{return failure(400,'invalid_json','Request body must be a JSON object');}
+      let body={};try{if(method!=='DELETE')body=parseBody(text,table);}catch(error){return failure(400,'invalid_json',error instanceof SyntaxError?'Request body must be a JSON object':(error as Error).message);}
       if (!body || Array.isArray(body) || typeof body!=='object') return failure(400,'invalid_body','Request body must be a JSON object');
       // Auth verifies signature, expiration and the existing app user; the Data API
       // then verifies the forwarded token again and SQL checks its permanent role.

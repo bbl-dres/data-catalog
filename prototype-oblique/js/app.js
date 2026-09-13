@@ -685,6 +685,9 @@
         }
         app.render(); return;
       }
+      case 'restore-row-order':
+        delete state.tableSorts[`detail:${route.kind}:rows`];
+        router.replaceParams({ sort: null, page: null }); app.render(); return;
       case 'sort-table': {
         const sortKey = el.dataset.sortKey;
         const column = parseInt(el.dataset.sortColumn, 10);

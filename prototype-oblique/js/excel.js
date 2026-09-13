@@ -1,189 +1,200 @@
-/* excel.js – scoped, multi-sheet catalog workbooks. ExcelJS loads only on export. */
+/* Review workbooks: explicit scope, stable keys and saved row order. ExcelJS loads on demand. */
 (function (DK) {
   'use strict';
-  const { ui, data, router } = DK;
-  const t = ui.t;
-  const excel = {};
+  const { ui, data, router } = DK, t = ui.t, excel = {};
   const libraryUrl = typeof document === 'undefined' ? '' : new URL('../vendor/exceljs/exceljs.min.js', document.currentScript.src).href;
   let loading;
-
-  /** Build a plain-data snapshot before any asynchronous work or route/language change. */
-  excel.plan = function (route, ctx, baseUrl = window.location.href, { scope = 'selection' } = {}) {
-    if (!['selection', 'catalog'].includes(scope)) throw new Error('Unknown Excel export scope: ' + scope);
-    const catalog = scope === 'catalog', title = catalog ? t('excel.catalog') : ctx.title;
-    const collection = ctx.isList ?? route.view === 'list', kind = ctx.kind || route.kind;
-    const roots = catalog ? data.kinds.flatMap(kind => ui.sortRows(data.list(kind), { column: 0, direction: 'asc' }, e => [data.displayName(kind, e)]).map(e => ({ ...e, kind })))
-      : route.entity && !collection ? [route.entity] : ctx.groups.flatMap(g => {
-      const sort = DK.presentation.sortOptions(ctx.state, `list:${kind}`, kind).sort;
-      const items = DK.presentation.sort(kind, g.items, sort);
-      return items.map(e => ({ ...e, kind }));
-    });
-    const records = new Map();
-    const add = (kind, e) => { if (e) records.set(`${kind}:${e.identifier}`, { ...e, kind }); };
-    roots.forEach(e => add(e.kind, e));
-    // Expand owned content, not every neighbour in the relationship graph.
-    if (!catalog) {
-      roots.forEach(e => {
-        if (e.kind === 'domains') ['objects', 'tables', 'refs', 'products', 'apis'].forEach(kind => data.membersOfDomain(kind, e).forEach(x => add(kind, x)));
-        if (e.kind === 'systems') {
-          data.tablesOfSystem(e).forEach(x => add('tables', x));
-          data.apisOfSystem(e).forEach(x => add('apis', x));
+  const kinds = ['domains','systems','objects','attrs','tables','fields','refs','values','products','apis','endpoints'];
+  const colours = { domains:'1D4ED8',systems:'1D4ED8',objects:'C2410C',attrs:'C2410C',tables:'596978',fields:'596978',refs:'047857',values:'047857',products:'6D28D9',apis:'6D28D9',endpoints:'6D28D9' };
+  const labels = { domains:'excel.domains',systems:'excel.systems',objects:'print.kind.objects',tables:'print.kind.tables',refs:'print.kind.refs',products:'print.kind.products',attrs:'col.attributes', fields:'col.fields', values:'col.values', apis:'excel.apis', endpoints:'excel.endpoints' };
+  const nameLabel = { domains:'fact.domain',systems:'fact.system',objects:'col.object',attrs:'col.attribute',tables:'fact.table',fields:'col.field',refs:'col.codeList',values:'col.label',products:'excel.product',apis:'excel.api',endpoints:'excel.endpoint' };
+  const sheetName = kind => labels[kind] ? t(labels[kind]) : data.kindDef(kind).plural;
+  const empty = value => value == null ? null : typeof value === 'object' ? JSON.stringify(value) : value;
+  const actorName = value => typeof value === 'string' ? value : value?.name;
+  const definition = kind => ui.language()==='de' && data.model.kinds[kind]?.description ? data.model.kinds[kind].description : t('excel.definition.'+kind);
+  const alpha = (kind, items) => ui.sortRows(items, {column:0,direction:'asc'}, e=>[data.displayName(kind,e)]);
+  const identity = e => e?._record?.id || e?.id || null;
+  const canonicalId = e => e?._record?.identifier || e?.identifier || null;
+  const lookup = (kind,id) => kind==='attrs' ? data.attr(id) : kind==='fields' ? data.field(id) : data.get(kind,id);
+  function columns(kind) {
+    const out=[];
+    const c=(key,label,width=24,block='content',type,hidden=false)=>{out.push({key,label:t(label),width,block,type,hidden});};
+    const ref=(key,label)=>{c(key+'Id',label,32,'context',undefined,true);c(key+'Name',label,25,'context');};
+    if(!['domains','systems','values','endpoints'].includes(kind))ref('domain','fact.domain');
+    if(['tables','fields','apis'].includes(kind))ref('system','fact.system');
+    if(kind==='domains')ref('parentDomain','edit.parentDomain');
+    if(kind==='attrs'){ref('businessObject','col.object');ref('dataProduct','excel.product');}
+    if(kind==='fields')ref('dataTable','fact.table');
+    if(kind==='values')ref('codeList','col.codeList');
+    if(kind==='endpoints')ref('dataService','excel.dataService');
+    if(['attrs','fields','values','endpoints'].includes(kind))c('sortOrder','excel.sortOrder',18,'entry','number');
+    c('id','excel.internalId',36,'entry',undefined,true);
+    c('identifier','fact.identifier',28,'entry');
+    if(kind==='values')c('code','col.code',16,'entry');
+    c('name',kind==='endpoints'?'excel.endpoint':'col.name',30,'entry');out.at(-1).freeze=true;
+    if(['tables','fields','apis'].includes(kind))c('technicalName','fact.technicalName',24,'entry');
+    if(!['endpoints'].includes(kind)) {
+      c('responsibleOrganisationName',['refs','values'].includes(kind)?'fact.authorityOrganisation':'col.responsibility',32,'responsibility');
+      if(!['refs','values'].includes(kind)) {
+        for(const [key,label] of [['dataOwner','detail.owner'],['dataSteward','detail.steward'],...(['systems','tables','fields','apis'].includes(kind)?[['dataCustodian','detail.dataCustodian']]:[])]) {
+          c(key+'Id',label,36,'responsibility',undefined,true);c(key+'Name',label,24,'responsibility');
         }
-      });
-      [...records.values()].filter(e => e.kind === 'objects').forEach(e => {
-        data.tables.filter(x => x.realizes === e.identifier).forEach(x => add('tables', x));
-        data.refs.filter(x => x.businessObject === e.identifier).forEach(x => add('refs', x));
-      });
-      [...records.values()].forEach(e => {
-        const fields = e.kind === 'tables' ? e.fields : ['fields', 'attrs'].includes(e.kind) ? [e] : [];
-        fields.forEach(f => add('refs', data.get('refs', f.codeList)));
-      });
+      }
+      c('description','col.description',60);
     }
-    const rootKeys = new Set(roots.map(e => `${e.kind}:${e.identifier}`));
-    const link = (kind, id) => new URL(router.entityHref(kind, id), baseUrl).href;
-    const sheets = [];
-    const col = (key, width = 24, type) => ({ label: t(key), width, type });
-    const sheet = (name, columns) => { const s = { name, columns, rows: [] }; sheets.push(s); return s; };
-    const overview = sheet(t('detail.tab.overview'), [col('excel.property', 30), col('excel.value', 100)]);
-    overview.rows.push([t('excel.selection'), title], [t('excel.exported'), new Date().toISOString()], [t('excel.view'), baseUrl],
-      [t('excel.filter'), catalog ? '' : ctx.filter || ''], [t('excel.selectedCount'), roots.length], [t('excel.scope'), t(catalog ? 'excel.catalogScopeNote' : 'excel.scopeNote')]);
-    const metadata = { name: t('excel.metadata'), columns: [col('col.type'), col('fact.identifier', 36), col('col.name', 36), col('excel.property', 40), col('excel.value', 90)], rows: [] };
-    const documentation = { name: t('detail.sourceDocumentation'), columns: [col('fact.table', 36), col('col.field'), col('excel.section', 38), col('excel.value', 100), col('fact.sourceDocument', 60, 'link')], rows: [] };
-    const relationships = { name: t('detail.tab.relations'), columns: [col('col.type'), col('fact.identifier', 36), col('col.name', 36), col('excel.relationship', 36), col('excel.target', 45), col('col.details', 45), col('excel.link', 60, 'link')], rows: [] };
-    const history = { name: t('detail.tab.history'), columns: [col('col.type'), col('fact.identifier', 36), col('col.name', 36), col('col.date'), col('col.change'), col('col.details', 80), col('col.editedBy')], rows: [] };
-    // Remaining metadata is flattened without guessing data types or dropping unknown fields.
-    const flatten = (kind, id, name, value, path = '') => {
-      if (value == null) return;
-      if (typeof value === 'object' && !Array.isArray(value)) Object.entries(value).forEach(([k, v]) => flatten(kind, id, name, v, path ? `${path}.${k}` : k));
-      else metadata.rows.push([kind, String(id), name, path, Array.isArray(value) ? JSON.stringify(value) : value]);
+    if(['objects','attrs'].includes(kind)) {
+      c('systemOfRecordId','fact.systemOfRecord',36,'content',undefined,true);
+      c('effectiveSystemOfRecordId','fact.effectiveSystemOfRecord',36,'content',undefined,true);
+      c('systemOfRecordName','fact.systemOfRecord',28);
+      if(kind==='attrs')c('systemOfRecordInherited','excel.inherited',16,'content','boolean');
+    }
+    const specs={
+      domains:[],systems:[['systemType','edit.systemType'],['technology','fact.technology']],
+      objects:[['normativeReferences','fact.normReference']],
+      attrs:[['semanticName','edit.semanticName'],['valueType','excel.valueType'],['unit','edit.unit'],['keyRole','fact.businessKey'],['required','fact.requiredRule','boolean'],['codeListId','col.codeList'],['codeListName','col.codeList']],
+      tables:[['databaseName','edit.databaseName'],['schemaName','edit.schemaName']],
+      fields:[['sourceDataType','excel.dataType'],['sourcePath','edit.sourcePath'],['keyRoles','fact.key'],['isRequired','fact.mandatory','boolean'],['isNullable','edit.nullable','boolean'],['codeListId','col.codeList'],['codeListName','col.codeList']],
+      refs:[['normativeReferences','fact.normReference']],
+      values:[['name_de','excel.labelDe'],['name_fr','excel.labelFr'],['name_it','excel.labelIt'],['name_en','excel.labelEn']],
+      products:[['accessMode','edit.accessMode'],['accessNotes','edit.accessNotes'],['formats','fact.format'],['licenseUri','edit.licenseUrl'],['licenseNotes','edit.licenseNotes'],['updateFrequency','edit.frequency']],
+      apis:[['serviceVersion','edit.serviceVersion'],['accessMode','edit.accessMode'],['accessNotes','edit.accessNotes']],
+      endpoints:[['url','excel.url','link'],['protocol','edit.protocol'],['httpMethod','edit.httpMethod'],['operationName','edit.operationName'],['relativePath','edit.relativePath'],['environment','edit.environment'],['isReadOnly','edit.readOnly','boolean'],['supportsBulk','edit.bulk','boolean'],['authenticationMethods','edit.authenticationMethods']]
     };
-    // Keys starting with "_" are projection internals (the SQL record and its relationship index), not catalog metadata.
-    const meta = (e, kindLabel) => Object.entries(e).filter(([k]) => !k.startsWith('_') && !['kind', 'attributes', 'fields', 'values', 'catalogMetadata'].includes(k)).forEach(([k, v]) => flatten(kindLabel, e.identifier, e.name, v, k));
-    const kinds = [...new Set([...roots.map(e => e.kind), ...data.kinds])].filter(k => !['attrs', 'fields'].includes(k));
-    kinds.forEach(kind => {
-      const items = [...records.values()].filter(e => e.kind === kind);
-      if (!items.length && !catalog && !(collection && (ctx.kind || route.kind) === kind)) return;
-      const s = sheet(data.kindDef(kind).plural, [col('fact.identifier', 34), col('col.name', 40), col('col.description', 85), col('col.status', 20), col('fact.version', 18), col('col.domain', 30), col('col.system', 25), col('col.responsibility', 40), col('excel.selection', 20), col('excel.link', 60, 'link')]);
-      items.forEach(e => {
-        s.rows.push([String(e.identifier), data.displayName(kind, e), e.description, e.status, e.version, data.domainForEntity(kind, e)?.name,
-          data.sysOf(e.system)?.name, e.responsibleOrg, t(rootKeys.has(`${kind}:${e.identifier}`) ? 'excel.selected' : 'excel.included'), link(kind, e.identifier)]);
-      });
-    });
-    const attrs = { name: t('col.attributes'), columns: [col('excel.parentType'), col('excel.parentId', 32), col('excel.parent', 35), col('fact.identifier', 32), col('col.name', 34), col('col.description', 80), col('col.format'), col('col.key'), col('col.mandatory'), col('fact.position', 20, 'number'), col('col.status'), col('col.codeList', 32), col('excel.link', 60, 'link')], rows: [] };
-    const fields = { name: t('col.fields'), columns: [col('excel.parentId', 32), col('fact.table', 38), col('fact.identifier', 32), col('fact.technicalName', 25), col('col.label', 45), col('col.description', 80), col('col.format'), col('col.key'), col('col.mandatory'), col('fact.position', 20, 'number'), col('col.codeList', 32), col('fact.registerAccess', 28), col('fact.masterData', 25), col('col.status'), col('fact.sourceDocument', 60, 'link'), col('excel.link', 60, 'link')], rows: [] };
-    const values = { name: t('col.values'), columns: [col('excel.parentId', 32), col('col.codeList', 44), col('col.code', 20), col('col.label', 65), ...['fr', 'it', 'en'].map(lang => ({ label: `${t('col.label')} (${lang})`, width: 50 })), col('col.details', 75), col('fact.version'), col('excel.sourceRow', 20, 'number')], rows: [] };
-    const children = new Map();
-    const addChild = (e, parent, kind) => children.set(`${kind}:${parent.identifier}:${e.identifier}`, { e, parent, kind });
-    const orderedChildren = (e, items) => {
-      if (catalog || route.entity?.kind !== e.kind || route.entity.identifier !== e.identifier) return items;
-      const rowData = DK.detail.rowsData(e), rows = rowData.rows;
-      const sort = ui.tableOptions(ctx.state, `detail:${e.kind}:rows`).sort;
-      if (sort?.field) return DK.presentation.sort(rowData.kind, items.map((item, i) => ({ item, entity: rows[i]?.entity || item })), sort, row => row.entity).map(row => row.item);
-      return ui.sortRows(items.map((item, i) => ({ item, text: rows[i]?.text || [] })), sort, r => r.text).map(r => r.item);
+    (specs[kind]||[]).forEach(([key,label,type])=>c(key,label,type==='link'?44:24,'content',type));
+    if(kind!=='endpoints') {
+      c('comment','fact.comment',45);c('documentationLinks','fact.moreInformation',44,'source','link');
+      c('status','fact.status',18,'status');c('version','fact.version',16,'status');
+    }
+    c('createdOn','fact.created',18,'status');
+    c('remark','excel.remark',36,'feedback');
+    out.forEach(c=>{if(c.key==='id' || c.key.endsWith('Id'))c.hidden=true;});
+    return out;
+  }
+  function rowValues(kind,e,parent) {
+    const r=e._record || (kind==='endpoints'?e:{}), pr=parent?._record || {};
+    const dom=data.domainForEntity(parent?.kind || kind,parent || e), sys=data.sysOf(e.system || parent?.system);
+    const values={id:identity(e),identifier:canonicalId(e),name:(kind==='fields'?e.label:null) || e.name || e.label || e.operation_name || e.identifier || e.url,
+      domainId:identity(dom),domainName:dom?.name,systemId:identity(sys),systemName:sys?.name,
+      sortOrder:r.sort_order ?? e.sortOrder ?? null,description:e.description,
+      responsibleOrganisationName:e.responsibleOrg || (['values','attrs'].includes(kind)?parent?.responsibleOrg:null),
+      technicalName:r.technical_name ?? e.technicalName,comment:r.comment ?? e.comment ?? e.note,
+      documentationLinks:(e.informationUrls || []).join('; '), status:e.status,version:e._record?r.version:e.version,createdOn:r.created_on ?? e.created,
+      normativeReferences:r.normative_references?.join('; ') ?? e.normReference,remark:''};
+    for(const role of ['dataOwner','dataSteward','dataCustodian']) {
+      const snake=role.replace(/[A-Z]/g,c=>'_'+c.toLowerCase())+'_id';
+      values[role+'Id']=r[snake] || (parent ? pr[snake] : null);
+      values[role+'Name']=actorName(role==='dataCustodian' ? data.custodianOf(kind,e) : e[role] || parent?.[role]);
+      if(role==='dataCustodian' && ['tables','fields'].includes(kind))values[role+'Id'] ||= sys?._record?.data_custodian_id;
+    }
+    for(const [key,col] of [['systemType','system_type'],['technology','technology'],['semanticName','semantic_name'],['sourceDataType','source_data_type'],['sourcePath','source_path'],['databaseName','database_name'],['schemaName','schema_name'],['accessMode','access_mode'],['accessNotes','access_notes'],['licenseUri','license_uri'],['licenseNotes','license_notes'],['updateFrequency','update_frequency']]) values[key]=r[col] ?? e[key];
+    values.formats=r.formats?.join('; ') ?? e.format;
+    values.accessNotes ??= e.accessRights;values.licenseNotes ??= e.license;values.updateFrequency ??= e.accrualPeriodicity;
+    values.valueType=r.value_specification?.valueType ?? e.valueType;values.unit=r.value_specification?.unit ?? e.unit;
+    values.required=typeof e.mandatory==='boolean'?e.mandatory:null;values.keyRole=e.keyRole;
+    values.sourceDataType ??= e.dataType;values.isRequired=r.is_required ?? e.mandatory;values.isNullable=r.is_nullable ?? e.nullable;values.keyRoles=r.key_roles?.join('; ') ?? e.keyRole;
+    const codes=data.get('refs',e.codeList);values.codeListId=r.code_list_id ?? identity(codes);values.codeListName=codes?.name;
+    if(parent) {
+      const key={objects:'businessObject',products:'dataProduct',tables:'dataTable',refs:'codeList',apis:'dataService'}[parent.kind];
+      if(key){values[key+'Id']=identity(parent) || parent.identifier;values[key+'Name']=parent.name;}
+    }
+    if(kind==='domains'){const parentDomain=data.get('domains',e.parentDomain || data.catalogSnapshot?.domain.find(x=>x.id===r.parent_domain_id)?.identifier);values.parentDomainId=r.parent_domain_id;values.parentDomainName=parentDomain?.name;}
+    if(kind==='values') {
+      values.code=String(e.code??'');for(const lang of ['de','fr','it','en']) values['name_'+lang]=r['name_'+lang] ?? e.labels?.[lang] ?? (lang==='de'?e.label:null);
+      values.status=parent?.status;values.version=parent?.version;
+    }
+    if(kind==='attrs' && parent?.kind==='products'){values.status=parent.status;values.version=parent.version;}
+    if(['objects','attrs'].includes(kind)) {
+      const system=data.systemOfRecordOf(e);values.systemOfRecordId=r.system_of_record_id;
+      values.effectiveSystemOfRecordId=identity(system);values.systemOfRecordName=system?.name;
+      values.systemOfRecordInherited=system?!!e.systemOfRecordInheritedFrom:null;
+    }
+    if(kind==='apis')values.serviceVersion=data.serviceVersionOf(e);
+    if(kind==='endpoints')for(const key of ['url','protocol','httpMethod','operationName','relativePath','environment','isReadOnly','supportsBulk','authenticationMethods']) {
+      const v=r[key.replace(/[A-Z]/g,c=>'_'+c.toLowerCase())];values[key]=Array.isArray(v)?v.join('; '):v;
+    }
+    return values;
+  }
+  /** Freeze scope, language and values before asynchronous writer loading. */
+  excel.plan=function(route,ctx,baseUrl=window.location.href,{scope='selection'}={}) {
+    if(!['selection','catalog'].includes(scope))throw new Error('Unknown Excel export scope: '+scope);
+    const catalog=scope==='catalog',collection=ctx.isList ?? route.view==='list',title=catalog?t('excel.catalog'):ctx.title;
+    const rootKind=ctx.kind || route.kind, state={...ctx.state,tableSorts:ctx.state?.tableSorts || {}};
+    const roots=catalog?data.kinds.flatMap(kind=>alpha(kind,data.list(kind)).map(e=>({...e,kind})))
+      :!collection&&route.entity?[{...route.entity,kind:route.entity.kind || route.kind}]:(ctx.groups || []).flatMap(g=>DK.presentation.sort(rootKind,g.items,DK.presentation.sortOptions(state,`list:${rootKind}`,rootKind).sort).map(e=>({...e,kind:rootKind})));
+    const byKind=new Map(), relationSources=new Map();
+    const relate=(kind,e)=>relationSources.set(`${kind}:${canonicalId(e)}`,{...e,kind});
+    const add=(kind,e,parent)=>{if(!byKind.has(kind))byKind.set(kind,[]);byKind.get(kind).push(rowValues(kind,e,parent));};
+    const children=(e)=> {
+      const items=e.kind==='domains'?alpha('objects',data.membersOfDomain('objects',e)):e.kind==='systems'?alpha('tables',data.tablesOfSystem(e))
+        :e.kind==='objects'||e.kind==='products'?e.attributes:e.kind==='tables'?e.fields:e.kind==='refs'?e.values:e.kind==='apis'?e.endpoints || []:[];
+      const childKind={domains:'objects',systems:'tables',objects:'attrs',products:'attrs',tables:'fields',refs:'values',apis:'endpoints'}[e.kind];
+      const enriched=items.map((item,position)=>e.kind==='objects'?data.attributeEntity(e,item):e.kind==='tables'?data.fieldEntity(e,item,position):item);
+      const sort=!catalog&&route.entity?.identifier===e.identifier ? state.tableSorts?.[`detail:${e.kind}:rows`] : null;
+      const ordered=sort?DK.presentation.sort(e.kind==='products'?'productAttrs':childKind,enriched,sort):enriched;
+      ordered.forEach(item=>{add(childKind,item,e);if(['objects','tables'].includes(childKind) || childKind==='fields' || childKind==='attrs'&&e.kind==='objects')relate(childKind,item);});
     };
-    [...records.values()].forEach(e => {
-      if (e.kind === 'objects') orderedChildren(e, e.attributes).forEach(a => addChild(data.attr(`${e.identifier}/${a.identifier}`), e, 'attrs'));
-      if (e.kind === 'products') orderedChildren(e, e.attributes).forEach(a => addChild({ ...a, identifier: a.identifier || `${e.identifier}/${e.attributes.indexOf(a) + 1}`, position: e.attributes.indexOf(a) + 1, status: e.status }, e, 'productAttrs'));
-      if (e.kind === 'tables') orderedChildren(e, e.fields).forEach(f => addChild(data.field(`${e.identifier}/${data.fieldId(f)}`), e, 'fields'));
-      if (e.kind === 'attrs') addChild(e, { ...data.objOf(e.object), kind: 'objects' }, 'attrs');
-      if (e.kind === 'fields') addChild(e, { ...data.get('tables', e.table), kind: 'tables' }, 'fields');
-      if (e.kind === 'refs') orderedChildren(e, e.values).forEach(v => {
-        values.rows.push([String(e.identifier), e.name, String(v.code ?? ''), v.label, v.labels?.fr, v.labels?.it, v.labels?.en, v.note, v.sourceVersion || e.version, v.sourceRow]);
-        flatten(data.kindDef('refs').singular, `${e.identifier}/${v.code}`, v.label, v);
-      });
-      if (!['attrs', 'fields'].includes(e.kind)) meta(e, data.kindDef(e.kind).singular);
-      data.relations(e.kind, e).forEach(g => g.items.forEach(item => relationships.rows.push([data.kindDef(e.kind).singular, String(e.identifier), e.name, g.title, item.name, item.sub, new URL(item.href, baseUrl).href])));
-      data.history(e.kind, e.identifier).forEach(h => history.rows.push([data.kindDef(e.kind).singular, String(e.identifier), e.name, h.date, h.action, h.detail, h.user]));
+    roots.forEach(e=> {
+      const parent=e.kind==='attrs'?{...data.objOf(e.object),kind:'objects'}:e.kind==='fields'?{...data.get('tables',e.table),kind:'tables'}:null;
+      add(e.kind,e,parent);
+      if(catalog || !collection){relate(e.kind,e);if(!catalog || !['domains','systems'].includes(e.kind))children(e);}
     });
-    children.forEach(({ e, parent, kind }) => {
-      const mandatory = typeof e.mandatory === 'boolean' ? t(e.mandatory ? 'yes' : 'no') : '';
-      if (kind === 'fields') {
-        const source = data.fieldSourceFacts(e);
-        fields.rows.push([String(parent.identifier), data.displayName('tables', parent), String(e.fieldId), e.technicalName, e.label, e.description, e.dataType, e.keyRole, mandatory, e.position, e.codeList,
-          source.registerAccess, source.masterData, e.status, e.sourceUrl, link('fields', e.identifier)]);
-        Object.entries(e.catalogMetadata || {}).forEach(([section, text]) => documentation.rows.push([String(parent.identifier), e.technicalName, section, text, e.sourceUrl]));
-      } else attrs.rows.push([data.kindDef(parent.kind).singular, String(parent.identifier), parent.name, String(e.attrId || e.identifier), e.name, e.description, e.valueType, e.keyRole, mandatory, e.position, e.status, e.codeList, kind === 'attrs' ? link('attrs', e.identifier) : link('products', parent.identifier)]);
-      meta(e, data.kindDef(kind === 'productAttrs' ? 'attrs' : kind).singular);
+    // An empty filtered list still has its fixed schema, with no invented records.
+    if(collection&&!catalog&&!byKind.has(rootKind))byKind.set(rootKind,[]);
+    const col=(key,label,width=24,type)=>({key,label:t(label),width,type});
+    const overview={kind:'overview',name:t('detail.tab.overview'),color:'344154',columns:[col('property','excel.property',32),col('value','excel.value',100)],rows:[
+      [t('excel.selection'),title],[t('excel.exported'),new Date().toISOString()],[t('excel.filter'),catalog?'':ctx.filter || ''],
+      [t('excel.selectedCount'),roots.length],[t('excel.scope'),t(catalog?'excel.catalogScopeNote':'excel.scopeNote')],[t('excel.contents'),t('excel.reviewNote')]]};
+    const sheets=[overview];
+    kinds.forEach(kind=>{if(!byKind.has(kind))return;const cols=columns(kind),rows=byKind.get(kind).map(r=>cols.map(c=>empty(c.type==='boolean'?typeof r[c.key]==='boolean'?t(r[c.key]?'yes':'no'):null:r[c.key])));
+      sheets.push({kind,name:sheetName(kind),color:colours[kind],columns:cols,rows});overview.rows.push([sheetName(kind),definition(kind)]);
     });
-    [attrs, fields, values, metadata, documentation, relationships, history].forEach(s => { if (s.rows.length) sheets.push(s); });
-    sheets.slice(1).forEach(s => overview.rows.push([s.name, s.rows.length]));
-    return { filename: `${ui.slug(title) || 'catalog'}.xlsx`, title, sheets, longTextName: t('excel.longTexts'), continuation: t('excel.continuation'),
-      longColumns: [col('fact.identifier'), col('excel.sheet'), col('excel.row', 20, 'number'), col('excel.column'), col('excel.part', 20, 'number'), col('excel.value', 100)] };
+    const relations={kind:'relations',name:t('detail.tab.relations'),color:'828E9A',columns:[col('sourceKind','excel.sourceType'),col('sourceId','excel.sourceId',36),col('sourceIdentifier','excel.sourceIdentifier',32),col('sourceName','excel.sourceName',30),col('relationship','excel.relationship',30),col('targetKind','excel.targetType'),col('targetId','excel.targetId',36),col('targetIdentifier','excel.targetIdentifier',32),col('targetName','excel.targetName',30),col('comment','fact.comment',45),{...col('remark','excel.remark',36),block:'feedback'}],rows:[]};
+    relations.columns.forEach(c=>{if(['sourceId','targetId'].includes(c.key))c.hidden=true;if(c.key==='sourceName')c.freeze=true;});
+    relationSources.forEach(e=>data.relations(e.kind,e).forEach(g=>g.items.forEach(item=>{const targetRoute=router.parse(item.href),target=lookup(targetRoute.kind,targetRoute.id);relations.rows.push([t(nameLabel[e.kind]),identity(e),canonicalId(e),e.name,g.title,targetRoute.kind?t(nameLabel[targetRoute.kind]):null,identity(target),canonicalId(target) || targetRoute.id,item.name,item.sub,'']);})));
+    if(relations.rows.length){sheets.push(relations);overview.rows.push([relations.name,t('excel.definition.relations')]);}
+    const date=new Date().toISOString().slice(0,10),fileScope=catalog?'gesamt':ui.slug(title)||'ansicht';
+    return {filename:`datenkatalog_${fileScope}_${date}.xlsx`,title,sheets,longTextName:t('excel.longTexts'),continuation:t('excel.continuation'),
+      longColumns:[col('identifier','fact.identifier'),col('sheet','excel.sheet'),col('row','excel.row',12,'number'),col('column','excel.column'),col('part','excel.part',12,'number'),col('text','excel.value',100)]};
   };
-
-  /** Workbook construction is separate from browser loading/downloading for round-trip tests. */
-  excel.createWorkbook = function (plan, ExcelJS) {
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'BBL Datenkatalog'; workbook.title = plan.title;
-    const used = new Set(['history']); // Excel reserves the sheet name "History" (the English history tab)
-    const nameOf = proposed => {
-      const base = proposed.replace(/[\\/*?:\[\]]/g, ' ').replace(/^'+|'+$/g, '').slice(0, 31) || 'Sheet';
-      let name = base, n = 1;
-      while (used.has(name.toLowerCase())) { const suffix = ` (${++n})`; name = base.slice(0, 31 - suffix.length) + suffix; }
-      used.add(name.toLowerCase()); return name;
-    };
-    const longTexts = [];
-    let longTextName;
-    const add = (s, reservedName) => {
-      if (s.rows.length > 1048575) throw new Error('Excel worksheet row limit exceeded');
-      const ws = workbook.addWorksheet(reservedName || nameOf(s.name), { views: [{ state: 'frozen', ySplit: 1 }] });
-      ws.columns = s.columns.map(c => ({ header: c.label, width: c.width }));
-      s.rows.forEach((values, index) => {
-        const safe = values.map((v, colIndex) => {
-          if (v == null) return null;
-          // Catalog objects are never handed to ExcelJS as formula/hyperlink instructions.
-          if (typeof v === 'object') v = JSON.stringify(v);
-          if (typeof v === 'string' && v.length > 32767) {
-            longTextName ||= nameOf(plan.longTextName);
-            const id = `T${longTexts.length + 1}`;
-            for (let start = 0, part = 1; start < v.length; part++) {
-              let end = Math.min(start + 32000, v.length);
-              if (end < v.length && /[\uD800-\uDBFF]/.test(v[end - 1])) end--;
-              longTexts.push([id, ws.name, index + 2, s.columns[colIndex].label, part, v.slice(start, end)]);
-              start = end;
-            }
-            return `${Array.from(v).slice(0, 1000).join('')}\n[${plan.continuation}: ${longTextName} / ${id}]`;
+  excel.createWorkbook=function(plan,ExcelJS) {
+    const workbook=new ExcelJS.Workbook();workbook.creator='BBL Datenkatalog';workbook.title=plan.title;
+    const used=new Set(['history']),nameOf=proposed=>{const base=proposed.replace(/[\\/*?:\[\]]/g,' ').replace(/^'+|'+$/g,'').slice(0,31)||'Sheet';let name=base,n=1;while(used.has(name.toLowerCase())){const suffix=` (${++n})`;name=base.slice(0,31-suffix.length)+suffix;}used.add(name.toLowerCase());return name;};
+    const longTexts=[];let longTextName;
+    const add=(s,reservedName)=> {
+      if(s.rows.length>1048574)throw new Error('Excel worksheet row limit exceeded');
+      const ws=workbook.addWorksheet(reservedName||nameOf(s.name),{properties:{tabColor:{argb:'FF'+(s.color||'344154')}},views:[{state:'frozen',ySplit:2,xSplit:Math.max(0,s.columns.findIndex(c=>c.freeze)+1),showGridLines:false}]});
+      ws.columns=s.columns.map(c=>({width:c.width,hidden:!!c.hidden}));
+      for(const key of ['key','label']){const header=ws.addRow();s.columns.forEach((c,i)=>header.getCell(i+1).value=c[key] || `column${i+1}`);}
+      s.rows.forEach((values,index)=>{
+        const row=ws.addRow();let height=30;
+        values.forEach((value,i)=>{
+          const c=s.columns[i],cell=row.getCell(i+1);let v=empty(value);if(v==='')v=null;
+          if(typeof v==='string'&&v.length>32767){longTextName ||= nameOf(plan.longTextName);const id=`T${longTexts.length+1}`;
+            for(let start=0,part=1;start<v.length;part++){let end=Math.min(start+32000,v.length);if(end<v.length&&/[\uD800-\uDBFF]/.test(v[end-1]))end--;longTexts.push([id,ws.name,index+3,c.key||c.label,part,v.slice(start,end)]);start=end;}
+            v=`${Array.from(v).slice(0,1000).join('')}\n[${plan.continuation}: ${longTextName} / ${id}]`;
           }
-          if (s.columns[colIndex].type === 'link' && typeof v === 'string' && /^https?:\/\//i.test(v) && ui.safeHref(v)) return { text: v, hyperlink: v };
-          return v;
-        });
-        const row = ws.addRow();
-        safe.forEach((value, i) => { row.getCell(i + 1).value = value; });
-        row.eachCell(cell => {
-          cell.font = { name: 'Arial', size: 11, ...(cell.hyperlink ? { color: { argb: 'FF005EA8' }, underline: true } : {}) };
-          cell.alignment = { vertical: 'top', horizontal: typeof cell.value === 'number' ? 'right' : 'left', wrapText: true };
-          if (typeof cell.value === 'string') cell.numFmt = '@';
-        });
+          cell.value=c.type==='link'&&typeof v==='string'&&/^https?:\/\/[^\s;]+$/i.test(v)&&ui.safeHref(v)?{text:v,hyperlink:v}:v;
+          cell.font={name:'Arial',size:11,...(cell.hyperlink?{color:{argb:'FF005EA8'},underline:true}:{})};
+          cell.alignment={vertical:'top',horizontal:typeof v==='number'?'right':'left',wrapText:true};
+          if(typeof v==='string')cell.numFmt='@';
+          if(c.block==='feedback')cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF1F2'}};
+          else if(c.block==='context')cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF7F9FB'}};
+          if(!c.hidden)height=Math.max(height,Math.min(409,Math.max(...String(v??'').split('\n').map(line=>Math.ceil(line.length/Math.max(8,c.width-2))))*15+12));
+        });row.height=height;
       });
-      ws.getRow(1).height = 30;
-      ws.getRow(1).eachCell((cell, i) => {
-        cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF344154' } };
-        cell.alignment = { vertical: 'middle', horizontal: s.columns[i - 1].type === 'number' ? 'right' : 'left', wrapText: false };
-      });
-      ws.autoFilter = { from: { row: 1, column: 1 }, to: { row: Math.max(1, ws.rowCount), column: s.columns.length } };
+      for(const n of [1,2]){const row=ws.getRow(n);row.height=n===1?32:42;row.eachCell(cell=>{cell.font={name:'Arial',size:n===1?10:11,bold:n===2,color:{argb:n===1?'FF596978':'FFFFFFFF'}};cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:n===1?'FFF0F4F7':'FF344154'}};cell.alignment={vertical:'middle',horizontal:'left',wrapText:true};});}
+      ws.autoFilter={from:{row:2,column:1},to:{row:Math.max(2,ws.rowCount),column:s.columns.length}};
       return ws;
     };
-    plan.sheets.forEach(s => add(s));
-    if (longTexts.length) add({ name: longTextName, columns: plan.longColumns || ['ID', 'Sheet', 'Row', 'Column', 'Part', 'Text'].map((label, i) => ({ label, width: i === 5 ? 100 : 24, type: [2, 4].includes(i) ? 'number' : undefined })), rows: longTexts }, longTextName);
+    plan.sheets.forEach(s=>add(s));
+    if(longTexts.length)add({name:longTextName,columns:plan.longColumns || ['ID','Sheet','Row','Column','Part','Text'].map((label,i)=>({key:label.toLowerCase(),label,width:i===5?100:24})),rows:longTexts},longTextName);
     return workbook;
   };
 
   excel.load = function () {
     if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
-    if (loading) return loading;
-    loading = new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      const finish = error => {
-        clearTimeout(timer); script.onload = script.onerror = null;
-        if (error) { script.remove(); reject(error); } else resolve(window.ExcelJS);
-      };
-      const timer = setTimeout(() => finish(new Error('ExcelJS loading timed out')), 20000);
-      script.src = libraryUrl;
-      script.onload = () => finish(window.ExcelJS ? null : new Error('ExcelJS is unavailable'));
-      script.onerror = () => finish(new Error('ExcelJS failed to load'));
-      document.head.appendChild(script);
-    }).catch(error => { loading = null; throw error; });
+    loading ||= DK.resources.asset(libraryUrl, { ready: () => !!window.ExcelJS })
+      .then(() => window.ExcelJS).catch(error => { loading = null; throw error; });
     return loading;
   };
 

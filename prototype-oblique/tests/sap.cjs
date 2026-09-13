@@ -1,4 +1,4 @@
-/* Curated SAP scope, architectural object types and exported source metadata. */
+/* Curated SAP scope, architectural object types and Excel review columns. */
 const assert = require('node:assert/strict');
 const { createServer, settle, chromium } = require('./browser-helpers.cjs');
 
@@ -80,13 +80,11 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     const download = page.waitForEvent('download');
     await page.click('[data-export="xlsx"]');
     const workbook = await require('./excel-helpers.cjs').readWorkbook(await (await download).path());
-    assert.equal(workbook.getWorksheet('Felder').rowCount, 25);
-    const metadata = workbook.getWorksheet('Metadaten');
-    const fieldTypes = [];
-    let objectTypes;
-    metadata.eachRow(row => {
-      if (row.getCell(4).value === 'appliesToObjectTypes') fieldTypes.push(JSON.parse(row.getCell(5).value));
-      if (row.getCell(4).value === 'objectTypes') objectTypes = JSON.parse(row.getCell(5).value);
+    assert.equal(workbook.getWorksheet('Felder').rowCount, 26);
+    assert.equal(workbook.getWorksheet('Metadaten'), undefined, 'Source payloads are outside the review workbook');
+    const { fieldTypes, objectTypes } = await page.evaluate(() => {
+      const table = DK.data.get('tables', 't-sap-architectural-object');
+      return { fieldTypes: table.fields.map(f => f.appliesToObjectTypes || []), objectTypes: table.objectTypes };
     });
     assert.equal(fieldTypes.filter(types => types.includes('Ebene')).length, 1);
     assert.equal(fieldTypes.filter(types => types.includes('Raum')).length, 23);
@@ -98,10 +96,11 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
       await page.click('[data-export="xlsx"]');
       const entityWorkbook = await require('./excel-helpers.cjs').readWorkbook(await (await entityDownload).path());
       const entityFields = entityWorkbook.getWorksheet('Felder');
-      assert.equal(entityFields.rowCount, entry.count + 1);
-      assert(entityFields.getColumn(4).values.includes(entry.field));
-      assert(entityFields.getColumn(5).values.includes(entry.label));
-      assert(entityWorkbook.getWorksheet('Metadaten').getColumn(4).values.includes('informationUrls'));
+      assert.equal(entityFields.rowCount, entry.count + 2);
+      const { columnValues } = require('./excel-helpers.cjs');
+      assert(columnValues(entityFields, 'technicalName').includes(entry.field));
+      assert(columnValues(entityFields, 'name').includes(entry.label));
+      assert(columnValues(entityWorkbook.getWorksheet('Datentabellen'), 'documentationLinks').some(Boolean));
     }
     await visit('#/apis/api-sap-building');
     assert((await page.locator('#page-content').innerText()).includes('SOAP'));

@@ -8,6 +8,8 @@ Swagger supplies the current app session for writes automatically. An explicit B
 
 ## Activation
 
+For system-of-record assignments, also apply [20260913000000_catalog_system_of_record.sql](../supabase/migrations/20260913000000_catalog_system_of_record.sql) after the editing/CRUD migrations. Both business-object and business-attribute create/update bodies accept `system_of_record_id` as a System UUID or null. Null clears an object designation or restores attribute inheritance. Reads return the stored reference; clients resolve the object fallback separately. System labels are not accepted as IDs. See [ordered activation](../supabase/README.md#system-of-record).
+
 This implementation is prepared and tested locally; the new migration and Edge Function have **not been applied/deployed to the hosted project**.
 
 1. Keep public signup disabled. Internal accounts remain administrator-created app users.
@@ -95,6 +97,8 @@ Table reads support PostgREST column filters, `select`, `order`, `limit`, `offse
 
 `read_snapshot()` returns `schemaVersion` and every catalog collection in one database statement, under the caller's RLS permissions. It is used by the current app. It is not paginated, and quality-rule comparison numbers are serialized as decimal strings to preserve precision. Use table endpoints for smaller integration queries. The app's relevance search and Excel/PDF generation remain browser features, with no corresponding REST routes.
 
+REST write bodies must be valid UTF-8. Numeric `comparison_value` tokens are forwarded to PostgreSQL using their exact JSON source text; decimal strings remain the portable choice, including on older Edge runtimes without source-aware parsing. No binary floating-point conversion is used for that threshold. The [September code review](wireframes/2026-09-13-code-review.md) documents the fix and tests.
+
 ## Regenerating the contract
 
 The generator executes the repository migrations in an isolated PGlite PostgreSQL database, then reads column types, nullability, comments, defaults, primary keys, foreign keys and constraints. It does not contact or modify Supabase. Initial bulk data imports are skipped. New publicly readable tables require an explicit addition to the generator's reviewed table/tag inventory.
@@ -148,3 +152,7 @@ Regression checks also passed: 37 core tests, 6,847 migration/access/adapter che
 - [PostgREST table queries](https://postgrest.org/en/stable/references/api/tables_views.html)
 - [PostgREST pagination and counts](https://postgrest.org/en/stable/references/api/pagination_count.html)
 - [SQL setup and access](../supabase/README.md), [editing boundary](data-model-implementation.md#editing-review-and-imports) and [test setup](../tests/README.md)
+
+### Owned row order
+
+`sort_order` is the saved integer rank within a row's owner. On creation, omitting it appends after the maximum rank, including archived rows; an empty owner starts at 1. Explicit zero, positive ranks, gaps and ties are valid. Null is rejected. Updates change the rank only when supplied. Archive/restore retains it. Sort reads explicitly by `sort_order,identifier,id` to reproduce the saved sequence; an ordinary REST response does not imply ordering. See the [canonical rules](data-model.md#row-order) and [activation step](../supabase/README.md#row-ordering). The command allocator requires the row-order migration; the physical column default for imports remains 0.

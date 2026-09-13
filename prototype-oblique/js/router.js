@@ -25,10 +25,10 @@
       if (seg.length === 1) { r.view = 'list'; return r; }
       if (seg.length === 2) { r.view = 'detail'; r.id = seg[1]; return r; }
       if (seg.length === 4 && seg[0] === 'objects' && seg[2] === 'attributes') {
-        r.view = 'detail'; r.kind = 'attrs'; r.id = seg[1] + '/' + seg[3]; return r;
+        r.view = 'detail'; r.kind = 'attrs'; r.id = DK.data.childId(seg[1], seg[3]); return r;
       }
       if (seg.length === 4 && seg[0] === 'tables' && seg[2] === 'fields') {
-        r.view = 'detail'; r.kind = 'fields'; r.id = seg[1] + '/' + seg[3]; return r;
+        r.view = 'detail'; r.kind = 'fields'; r.id = DK.data.childId(seg[1], seg[3]); return r;
       }
     }
     r.view = 'notfound';
@@ -48,9 +48,10 @@
   router.domainListHref = (kind, domain, params) => router.listHref(kind, { domain, group: 'domain', ...params });
   router.entityHref = function (kind, id, params) {
     if (kind === 'attrs' || kind === 'fields') {
-      const i = id.indexOf('/');
+      const parts = DK.data.splitChildId(id);
+      if (!parts) throw new Error('Invalid child identity');
       const parent = kind === 'attrs' ? 'objects' : 'tables', child = kind === 'attrs' ? 'attributes' : 'fields';
-      return router.href('/' + parent + '/' + encodeURIComponent(id.slice(0, i)) + '/' + child + '/' + encodeURIComponent(id.slice(i + 1)), params);
+      return router.href('/' + parent + '/' + encodeURIComponent(parts[0]) + '/' + child + '/' + encodeURIComponent(parts[1]), params);
     }
     return router.href('/' + kind + '/' + encodeURIComponent(id), params);
   };

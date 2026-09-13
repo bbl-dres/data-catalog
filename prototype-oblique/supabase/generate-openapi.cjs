@@ -4,6 +4,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { createHash } = require('node:crypto');
 const { database, migrationFiles, root, migrations } = require('./local-database.cjs');
+const { read: readModel, source: modelSource } = require('../scripts/model-contract.cjs');
 
 // New exposed tables require an explicit documentation decision.
 const tags = {
@@ -40,6 +41,20 @@ function columnSchema(column) {
 }
 
 async function generate(db) {
+  const model = readModel();
+  const aliases = d => ({ title: d.en, 'x-aliases': { en: d.en, de: d.de }, 'x-canonical-property': d.id });
+  const documentedColumn = field => {
+    const schema = { ...columnSchema(field), ...aliases(model.column(field.table_name, field.name)) };
+    const owned = model.owned[field.name];
+    if (owned) {
+      const businessSpec = field.table_name === 'business_attribute' && owned === 'ValueSpecification';
+      const properties = Object.fromEntries(Object.values(model.definitions).filter(d => d.entity === owned && (!businessSpec || ['valueType','format','unit','geometryType','coordinateReferenceSystem'].includes(d.property)))
+        .map(d => [d.property, { ...aliases(d), description: d.description }]));
+      if (field.name === 'documentation_links') schema.items = { properties };
+      else schema.properties = properties;
+    }
+    return schema;
+  };
   const tables = (await db.query(`SELECT c.relname AS name, obj_description(c.oid) AS description
     FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
     WHERE n.nspname='catalog' AND c.relkind='r' AND has_table_privilege('anon', c.oid, 'SELECT') ORDER BY c.relname`)).rows;
@@ -84,7 +99,7 @@ async function generate(db) {
     const fields = columns.filter(column => column.table_name === table.name), rules = constraints.filter(rule => rule.table_name === table.name);
     schemas[table.name] = {
       type: 'object', description: table.description || `Catalog ${table.name} record. SQL checks and triggers enforce additional rules; x-postgresql annotations are descriptive, not JSON Schema validation rules.`,
-      properties: Object.fromEntries(fields.map(field => [field.name, columnSchema(field)])),
+      properties: Object.fromEntries(fields.map(field => [field.name, documentedColumn(field)])),
       'x-postgresql-primary-key': rules.find(rule => rule.type === 'p')?.columns || [],
       'x-postgresql-foreign-keys': rules.filter(rule => rule.type === 'f').map(rule => ({ columns: rule.columns, table: rule.target_table, referencedColumns: rule.target_columns })),
       'x-postgresql-constraints': rules.map(rule => ({ name: rule.name, definition: rule.definition }))
@@ -98,7 +113,7 @@ async function generate(db) {
     } };
   }
   schemas.SnapshotQualityRequirement = { ...schemas.quality_requirement, properties: { ...schemas.quality_requirement.properties,
-    comparison_value: { type: ['string', 'null'], description: 'Exact numeric comparison value serialized as a decimal string by read_snapshot().' } } };
+    comparison_value: { ...schemas.quality_requirement.properties.comparison_value, type: ['string', 'null'], description: 'Exact numeric comparison value serialized as a decimal string by read_snapshot().' } } };
   schemas.CatalogSnapshot = { type: 'object', required: ['schemaVersion', ...tables.map(table => table.name)], properties: {
     schemaVersion: { type: 'integer', const: 1 }, ...Object.fromEntries(tables.map(table => [table.name, { type: 'array', items: ref(table.name === 'quality_requirement' ? 'SnapshotQualityRequirement' : table.name) }]))
   } };
@@ -117,7 +132,7 @@ async function generate(db) {
     if(!editable.create.length)continue;
     const fields=columns.filter(column=>column.table_name===table.name);
     const schemaName=table.name+'WriteResult';
-    const quality=editable.update.includes('quality_requirement_ids') ? {quality_requirement_ids:{type:'array',items:{type:'string',format:'uuid'},uniqueItems:true,maxItems:2000,description:'Complete set of assigned quality requirement UUIDs. Updating this array atomically replaces the owned collection; rule records and history are retained.'}} : {};
+    const quality=editable.update.includes('quality_requirement_ids') ? {quality_requirement_ids:{...aliases(model.get(model.byTable[table.name]+'.qualityRequirementIds')),type:'array',items:{type:'string',format:'uuid'},uniqueItems:true,maxItems:2000,description:'Complete set of assigned quality requirement UUIDs. Updating this array atomically replaces the owned collection; rule records and history are retained.'}} : {};
     schemas[schemaName]={...schemas[table.name],properties:{...schemas[table.name].properties,...quality}};
     for(const mode of ['create','update']){
       const properties=Object.fromEntries(editable[mode].map(key=>[key,quality[key] || schemas[table.name].properties[key]]));
@@ -142,7 +157,7 @@ async function generate(db) {
   }, servers: [{ url: new URL('/rest/v1', config().url).href, description: 'Supabase catalog Data API' }],
   tags: [...new Set(Object.values(tags)), 'Snapshot'].map(name => ({ name })), security: [{ PublishableKey: [] }],
   paths, components: { securitySchemes: { PublishableKey: { type: 'apiKey', in: 'header', name: 'apikey', description: 'Supabase publishable key (sb_publishable_…). The app supplies its configured public key. Do not enter a secret or service-role key.' },BearerAuth:{type:'http',scheme:'bearer',bearerFormat:'JWT',description:'Current app access token from Account. Never enter a refresh token, database password, secret key or service-role key.'} }, parameters, schemas },
-  'x-generated-from': { generator: 'supabase/generate-openapi.cjs', schema: 'catalog', readRole: 'anon', writeRole:'authenticated', snapshotSchemaVersion: 1, migrations: sources }
+  'x-generated-from': { generator: 'supabase/generate-openapi.cjs', canonicalModel: { file:'docs/data-model.md', sha256:createHash('sha256').update(fs.readFileSync(modelSource,'utf8').replace(/\r\n/g,'\n')).digest('hex') }, schema: 'catalog', readRole: 'anon', writeRole:'authenticated', snapshotSchemaVersion: 1, migrations: sources }
   };
 }
 

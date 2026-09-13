@@ -53,7 +53,7 @@ const server = createServer();
       }
       await page.locator('.btn.authorize').first().click(); await settle(page);
       await record(`api-dialog-${width}-${height}`);
-      await page.locator('.modal-ux .btn-done').tap();
+      await page.locator('.modal-ux .btn-done').first().tap();
       assert.equal(await page.locator('.modal-ux').count(), 0, 'Dialog must remain dismissible on a short screen');
     }
     await page.setViewportSize({ width: 390, height: 280 });
@@ -106,6 +106,7 @@ const server = createServer();
     await settle(page); await record('keyboard-home-search');
     await page.evaluate(() => { delete visualViewport.height; visualViewport.dispatchEvent(new Event('resize')); });
     await visit('#/api'); await page.locator('.btn.authorize').first().tap();
+    await page.locator('.modal-ux input').first().tap();
     await page.evaluate(() => {
       window.mobileAuthInput = document.querySelector('.modal-ux input');
       Object.defineProperty(visualViewport, 'height', { configurable: true, get: () => 280 });

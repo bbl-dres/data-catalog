@@ -46,7 +46,7 @@
     const entityFields = diagram.selectedFields(snapshot, settings, true), rowFields = diagram.selectedFields(snapshot, settings);
     // Long entry descriptions belong in the introduction, not on every attribute row.
     const tableFields = tiles ? [] : [...(continuousList ? entityFields.filter(f => f.id !== 'description').map(f => ({ ...f, id: 'entity.' + f.id,
-      labelText: f.id === 'name' ? snapshot.entityLabel : rowFields.some(row => row.id === f.id) ? t('visibility.entryField', { field: f.labelText }) : f.labelText })) : []), ...rowFields]
+      labelText: rowFields.some(row => row.id === f.id) ? t('visibility.entryField', { field: f.labelText }) : f.labelText })) : []), ...rowFields]
       .sort((a, b) => (a.id === 'entity.name' ? -2 : a.order) - (b.id === 'entity.name' ? -2 : b.order));
     const keys = tableFields.map(f => f.id), columnLabels = tableFields.map(f => f.labelText);
     const minima = columnLabels.map(label => measure(label, 8, true) + 12);

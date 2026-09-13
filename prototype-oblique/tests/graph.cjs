@@ -79,15 +79,15 @@ const server = createServer();
 
     await page.click('[data-action="graph-fullscreen"]');
     assert(await page.locator('dialog.ob-graph-fullscreen').isVisible());
-    let full = await page.locator('dialog').boundingBox();
+    let full = await page.locator('dialog.ob-graph-fullscreen').boundingBox();
     assert.equal(full.width, 1600); assert.equal(full.height, 1050);
     await page.click('[data-action="graph-zoom-in"]');
     await page.setViewportSize({ width: 820, height: 1050 });
     await settle(page);
     assert.equal(await page.locator('#graph').count(), 1);
-    assert(await page.locator('dialog').isVisible());
+    assert(await page.locator('dialog.ob-graph-fullscreen').isVisible());
     await page.keyboard.press('Escape');
-    assert.equal(await page.locator('dialog').count(), 0);
+    assert.equal(await page.locator('dialog.ob-graph-fullscreen').count(), 0);
     assert.equal(await page.evaluate(() => document.activeElement.dataset.action), 'graph-fullscreen');
     assert.equal(await page.locator('#main #graph').count(), 1);
     await page.locator('#graph').focus();
@@ -124,7 +124,7 @@ const server = createServer();
       if (width === 390) {
         await page.screenshot({ path: path.join(process.env.TEMP || '/tmp', 'oblique-relations-phone.png') });
         await page.click('[data-action="graph-fullscreen"]');
-        full = await page.locator('dialog').boundingBox(); assert.equal(full.width, width);
+        full = await page.locator('dialog.ob-graph-fullscreen').boundingBox(); assert.equal(full.width, width);
         await page.click('[data-action="graph-fullscreen"]');
       }
     }
@@ -153,7 +153,7 @@ const server = createServer();
     await touch.keyboard.press('Enter');
     await touch.locator('#graph-selection a').click();
     await touch.waitForSelector('.ob-entity-header'); await settle(touch);
-    assert.equal(await touch.locator('dialog').count(), 0);
+    assert.equal(await touch.locator('dialog.ob-graph-fullscreen').count(), 0);
     assert.equal(await touch.evaluate(() => document.activeElement.id), 'page-content');
     await touchContext.close();
     assert.deepEqual(errors, []);

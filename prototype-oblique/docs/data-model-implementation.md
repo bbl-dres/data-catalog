@@ -1,8 +1,8 @@
 # Catalog model implementation guide
 
-**Implementation companion · reviewed 12 September 2026.** The [canonical data model](data-model.md) owns entities, attributes, semantics, physical schema mapping, keys, constraints and the ER diagram. This guide explains the current app/API, storage implementation and frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
+**Implementation companion · reviewed 13 September 2026.** The [canonical data model](data-model.md) owns entities, attributes, semantics, physical schema mapping, keys, constraints and the ER diagram. This guide explains the current app/API, storage implementation and frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
 
-The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. The initial import/public reads were verified on the hosted project on 6 September; the later editing/CRUD implementation was verified locally on 12 September. Verify current deployment separately with [hosted activation](api.md#activation); this documentation review did not inspect the hosted state. Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
+The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. The read-only hosted audit on 13 September confirmed public snapshot reads, 40 missing editing/CRUD columns across 16 tables, an unavailable `catalog-api` Edge Function and disabled public signup. The canonical [coverage matrix](data-model.md#documented-deployed-visible-and-editable) records the exact evidence and access limits. Follow [hosted activation](api.md#activation) before treating implemented write paths as usable; authenticated writes were not tested in that audit. Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
 
 ## Purpose and reading guide
 
@@ -11,6 +11,7 @@ Implementation details may evolve without changing the model. A change to entity
 | Task | Section |
 |---|---|
 | Understand the current starting point | [Prototype coverage](#prototype-coverage), [presentation mapping](#current-presentation-mapping) and [source inventory](#source-inventory) |
+| Check deployed support and unresolved model decisions | [Dated coverage](data-model.md#documented-deployed-visible-and-editable), [property sets/business keys](data-model.md#property-sets-and-business-keys) and [content readiness](data-model.md#content-readiness-review) |
 | Review the PostgreSQL schema | [Canonical schema and ER diagram](data-model.md#physical-schema-and-constraints); [persistence implementation](#postgresql-persistence) |
 | Implement editing and reads | [Write rules](#editing-review-and-imports), [read models](#read-models) and [language handling](#display-fallback-and-language-handling) |
 | Migrate and verify | [Migration](#migration-from-the-current-prototype), [property appendix](#appendix-json-property-migration) and [acceptance checks](#implementation-acceptance) |
@@ -18,7 +19,7 @@ Implementation details may evolve without changing the model. A change to entity
 
 ## Prototype coverage
 
-All 16 core entities have SQL storage and public read access. The 15 mutable core entities plus owned ServiceEndpoint have REST CRUD after activation; ChangeEvent remains append-only. The table distinguishes storage/API support from the browser's available editors. A stored kind need not have a dedicated collection page or imported rows.
+All 16 core entities have SQL storage and public read access. The 15 mutable core entities plus owned ServiceEndpoint have REST CRUD after activation; ChangeEvent remains append-only. The table describes implemented browser editors, not verified hosted saves. The 13 September audit found editing-schema and CRUD-function activation incomplete. A stored kind need not have a dedicated collection page or imported rows.
 
 Entity meanings belong to the [conceptual overview](data-model.md#entity-overview). The [source inventory](#source-inventory) records the historical JSON inputs, not the current source of catalog truth.
 
@@ -46,10 +47,11 @@ ServiceEndpoint is stored in `service_endpoint` with its own UUID, revision, ord
 ### Current limits relevant to editors
 
 - Browser forms cover a subset of stored attributes. Complete API schemas list all permitted inputs; advanced rule management, assertions, hierarchy/binding properties omitted by forms, and verification changes use REST. Public metadata remains readable without login.
-- Root archiving/restoration is available through REST. Browser row removal/restoration changes `is_archived`; setting a root's editorial status to `retired` does not set that flag.
+- After activation, root archiving/restoration uses REST. Browser row removal/restoration changes `is_archived`; setting a root's editorial status to `retired` does not set that flag, despite its current Archiviert label.
 - Endpoint check results and evidence quality require human review. Generic command history is not an operation test report.
 - `save_entry` records the Required shortcut as a boolean and may create its shared rule without a separate rule-creation event. It does not retain a complete before/after assignment-ID set. REST quality assignment writes do retain that set. See [audit formats](#audit-snapshots-and-event-grouping).
 - The current projection can show one realisation for a table, including candidate mappings, and does not implement the full multi-domain/confirmation-aware read model below. Complete assertions remain in SQL/snapshot/API data. There is no automatic impact review or quality execution.
+- The structured property-set and business-key design is a [proposed next revision](data-model.md#property-sets-and-business-keys). Current grouping/key-role comments and parsing are compatibility behavior; no corresponding new fields or migrations have been implemented.
 
 ## Physical ER review diagram
 
@@ -238,154 +240,64 @@ This is a property fragment, not a complete entity. The four name columns are su
 
 ### Current presentation mapping
 
-The conceptual dictionaries are in [data-model.md](data-model.md#entity-definitions). This mapping records current prototype placement; it is not a visibility setting or a target attribute. Blank placement means hidden/internal, export-only or not implemented. Rows with identical placement/context are grouped; language attributes remain distinct in the target.
+**Checked against the repository frontend on 13 September 2026.** The [canonical coverage matrix](data-model.md#documented-deployed-visible-and-editable) owns dated deployment findings. The tables below describe the Supabase frontend path and implemented form fields. Browser editing and REST writes still require the missing hosted activation; a form being present does not demonstrate a successful save. Frozen JSON fixture behavior is not the current storage contract.
 
-**Visible in** identifies where the current prototype presents the corresponding value in the mapping below. It is documentation, not a stored visibility setting. Multiple locations are separated by semicolons. An **empty cell means no current visible counterpart**: hidden/internal, export-only or not yet implemented. Planned placement must be agreed when its feature is implemented; blank does not forbid future display. All suffixed translation columns are stored; their location describes the resolved label/value, not four simultaneously displayed translations. The edit workspace chooses one authored language at a time.
+The canonical [dictionaries](data-model.md#entity-definitions) enumerate every stored field. This mapping groups user-facing capabilities rather than duplicating that inventory. Full raw rows retained in `_record` or the snapshot are not automatically visible. A presentation definition used for searching/source exports is also not necessarily a selectable browsing column.
 
-| Location | Meaning |
+| Surface | Meaning and implementation |
 |---|---|
-| Table | A collection/search table or the owning entity's table tab. Conditional columns and inherited context are explained in the row description. |
-| Key facts | The overview's Key facts section (`detail.facts`). |
-| Responsible | The overview's Responsible section (`detail.contacts`), including role labels and contact links. |
-| Further metadata | The expandable metadata section (`detail.metadata`). |
-| Header | Page heading/description or tile label outside the detail sections. |
-| Relationships | Relationship presentation, including its table option. |
-| History | The history tab; shown together with Table for its visible columns. |
+| Collection / owned rows | The default and selectable columns in [presentation.js](../js/presentation.js). Attribute and field rows also link to independent profiles; code values and product attributes stay within their owner. Endpoint column definitions exist but are not connected to a normal service rows tab. |
+| Profile | Heading/description, key facts, responsibility/protection and system metadata in [detail.js](../js/detail.js). System metadata is part of the overview; there is no separate `detail.metadata` renderer. |
+| Relations | Derived groups from [data.js](../js/data.js), not a full browser of Relationship rows and verification evidence. |
+| Form | Authenticated root/owned editing from [edit-schema.js](../js/edit-schema.js) and [editor.js](../js/editor.js). Names/descriptions are authored one language at a time. |
+| REST | Public table/snapshot reads and, after activation, the documented writable properties in [OpenAPI](../data/swagger.json). Actor/rule management, full assignments and omitted bindings use REST. |
 
-Placements are entity-specific. CodeValue and ProductAttribute currently have only parent-table rows; Actor has only embedded contact counterparts. Parent-derived status, dates or responsibility are identified in the description. An applicable visible row or column stays visible when its value is unknown and displays an em dash; a blank visibility cell never means "hide if empty." Source-link conditions remain explicitly documented.
+Empty displayed values use an em dash. An omitted property below means no dedicated browser presentation, not that the field is absent from SQL or necessarily lost on an unrelated edit. The editor starts from the full row and submits changed fields; unsupported fields are not deliberately cleared.
 
-| Entity / value | Attributes | Visible in | Current counterpart / context |
-|---|---|---|---|
-| [Actor](data-model.md#actor) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `description_de`, `description_it`, `description_fr`, `description_en`, `comment` |  |  |
-| [Actor](data-model.md#actor) | `name_de`, `name_it`, `name_fr`, `name_en` | Responsible | Current counterpart: embedded name. |
-| [Actor](data-model.md#actor) | `actorType` |  | Current counterpart: controls contact links. |
-| [Actor](data-model.md#actor) | `websiteUrl` | Responsible | Current counterpart: link destination. |
-| [BusinessAttribute](data-model.md#businessattribute) | `id`, `rowVersion`, `versionDate`, `semanticName`, `qualityRequirementIds`, `codeListId` |  |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `identifier`, `version` | Further metadata |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `createdOn`, `modifiedOn` | Further metadata | Current counterpart: currently parent context. |
-| [BusinessAttribute](data-model.md#businessattribute) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `comment`, `classification`, `containsPersonalData` | Key facts |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [BusinessAttribute](data-model.md#businessattribute) | `status` | Key facts | Current counterpart: currently parent status. |
-| [BusinessAttribute](data-model.md#businessattribute) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `contactActorId` | Responsible |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `businessObjectId` | Table; Key facts; Relationships |  |
-| [BusinessAttribute](data-model.md#businessattribute) | `valueSpecification` | Table; Key facts | Current counterpart: value type only. |
-| [BusinessAttribute](data-model.md#businessattribute) | `isIdentifier` | Table; Key facts | Current counterpart: legacy key role. |
-| [BusinessObject](data-model.md#businessobject) | `id`, `rowVersion`, `versionDate` |  |  |
-| [BusinessObject](data-model.md#businessobject) | `identifier`, `createdOn`, `version` | Further metadata |  |
-| [BusinessObject](data-model.md#businessobject) | `modifiedOn` | Table; Further metadata |  |
-| [BusinessObject](data-model.md#businessobject) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [BusinessObject](data-model.md#businessobject) | `comment`, `classification`, `containsPersonalData`, `normativeReferences` | Key facts |  |
-| [BusinessObject](data-model.md#businessobject) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [BusinessObject](data-model.md#businessobject) | `status`, `domainId` | Table; Key facts |  |
-| [BusinessObject](data-model.md#businessobject) | `responsibleOrganisation` | Table; Responsible |  |
-| [BusinessObject](data-model.md#businessobject) | `dataOwnerId`, `dataStewardId`, `contactActorId` | Responsible |  |
-| [ChangeEvent](data-model.md#changeevent) | `id`, `identifier`, `occurredAt`, `actorId`, `changedProperties`, `before`, `after`, `importId` |  |  |
-| [ChangeEvent](data-model.md#changeevent) | `record` | History | Current counterpart: profile context. |
-| [ChangeEvent](data-model.md#changeevent) | `occurredOn`, `action`, `actorName_de`, `actorName_it`, `actorName_fr`, `actorName_en`, `summary_de`, `summary_it`, `summary_fr`, `summary_en` | Table; History |  |
-| [CodeList](data-model.md#codelist) | `id`, `rowVersion`, `versionDate` |  |  |
-| [CodeList](data-model.md#codelist) | `identifier`, `createdOn`, `version` | Further metadata |  |
-| [CodeList](data-model.md#codelist) | `modifiedOn` | Table; Further metadata |  |
-| [CodeList](data-model.md#codelist) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [CodeList](data-model.md#codelist) | `comment` | Key facts |  |
-| [CodeList](data-model.md#codelist) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [CodeList](data-model.md#codelist) | `status` | Table; Key facts |  |
-| [CodeList](data-model.md#codelist) | `domainId` | Key facts | Current counterpart: resolved. |
-| [CodeList](data-model.md#codelist) | `businessObjectId` | Table; Key facts; Relationships |  |
-| [CodeList](data-model.md#codelist) | `authorityOrganisation` |  | No dedicated current authority field. |
-| [CodeList](data-model.md#codelist) | `normativeReferences` | Table; Key facts | Current counterpart: normReference, renamed from sourceAuthority. |
-| [CodeValue](data-model.md#codevalue) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `description_de`, `description_it`, `description_fr`, `description_en`, `comment`, `documentationLinks`, `shortName_de`, `shortName_it`, `shortName_fr`, `shortName_en`, `parentCodeValueId` |  |  |
-| [CodeValue](data-model.md#codevalue) | `name_de`, `name_it`, `name_fr`, `name_en` | Table | Current counterpart: current source-language value. |
-| [CodeValue](data-model.md#codevalue) | `codeListId` | Table | Current counterpart: parent context. |
-| [CodeValue](data-model.md#codevalue) | `code` | Table |  |
-| [DataField](data-model.md#datafield) | `id`, `rowVersion`, `versionDate`, `technicalNameKind`, `sourcePath`, `dataTypeScope`, `qualityRequirementIds`, `isNullable`, `appliesToTypeNames` |  |  |
-| [DataField](data-model.md#datafield) | `identifier`, `version` | Further metadata |  |
-| [DataField](data-model.md#datafield) | `createdOn`, `modifiedOn` | Further metadata | Current counterpart: currently parent context. |
-| [DataField](data-model.md#datafield) | `name_de`, `name_it`, `name_fr`, `name_en`, `technicalName` | Table; Key facts; Header |  |
-| [DataField](data-model.md#datafield) | `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [DataField](data-model.md#datafield) | `comment`, `classification`, `containsPersonalData`, `isRequired` | Key facts |  |
-| [DataField](data-model.md#datafield) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [DataField](data-model.md#datafield) | `status` | Key facts | Current counterpart: currently parent status. |
-| [DataField](data-model.md#datafield) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `dataCustodianId`, `contactActorId` | Responsible |  |
-| [DataField](data-model.md#datafield) | `dataTableId`, `codeListId` | Table; Key facts; Relationships |  |
-| [DataField](data-model.md#datafield) | `sourceDataType` | Table; Key facts |  |
-| [DataField](data-model.md#datafield) | `keyRoles` | Table; Key facts | Current counterpart: legacy keyRole. |
-| [DataProduct](data-model.md#dataproduct) | `id`, `rowVersion`, `versionDate`, `landingPageUrl` |  |  |
-| [DataProduct](data-model.md#dataproduct) | `identifier`, `createdOn`, `version` | Further metadata |  |
-| [DataProduct](data-model.md#dataproduct) | `modifiedOn` | Table; Further metadata |  |
-| [DataProduct](data-model.md#dataproduct) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [DataProduct](data-model.md#dataproduct) | `comment`, `classification`, `containsPersonalData`, `domainId`, `licenseNotes`, `updateFrequency` | Key facts |  |
-| [DataProduct](data-model.md#dataproduct) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [DataProduct](data-model.md#dataproduct) | `status`, `formats` | Table; Key facts |  |
-| [DataProduct](data-model.md#dataproduct) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `contactActorId` | Responsible |  |
-| [DataProduct](data-model.md#dataproduct) | `accessMode` | Key facts | Current counterpart: legacy access text. |
-| [DataProduct](data-model.md#dataproduct) | `accessNotes` | Table; Key facts | Current counterpart: legacy access text. |
-| [DataProduct](data-model.md#dataproduct) | `licenseUri` | Key facts | Current counterpart: legacy licence text. |
-| [DataService](data-model.md#dataservice) | `id`, `rowVersion`, `versionDate`, `technicalName`, `purpose`, `endpointDescriptionUrls` |  |  |
-| [DataService](data-model.md#dataservice) | `identifier`, `createdOn`, `version` | Further metadata |  |
-| [DataService](data-model.md#dataservice) | `modifiedOn` | Table; Further metadata |  |
-| [DataService](data-model.md#dataservice) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [DataService](data-model.md#dataservice) | `comment`, `classification`, `containsPersonalData`, `domainId` | Key facts |  |
-| [DataService](data-model.md#dataservice) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [DataService](data-model.md#dataservice) | `status` | Table; Key facts |  |
-| [DataService](data-model.md#dataservice) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `dataCustodianId`, `contactActorId` | Responsible |  |
-| [DataService](data-model.md#dataservice) | `systemId` | Table; Key facts; Relationships |  |
-| [DataService](data-model.md#dataservice) | `serviceVersion` | Table; Further metadata | Current counterpart: legacy version. |
-| [DataService](data-model.md#dataservice) | `accessMode`, `accessNotes` | Key facts | Current counterpart: legacy access text. |
-| [DataService](data-model.md#dataservice) | `endpoints` | Key facts | Current counterpart: protocol / base URL only. |
-| [DataTable](data-model.md#datatable) | `id`, `rowVersion`, `versionDate`, `databaseName`, `schemaName` |  |  |
-| [DataTable](data-model.md#datatable) | `identifier`, `createdOn`, `version` | Further metadata |  |
-| [DataTable](data-model.md#datatable) | `modifiedOn` | Table; Further metadata |  |
-| [DataTable](data-model.md#datatable) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [DataTable](data-model.md#datatable) | `comment`, `classification`, `containsPersonalData` | Key facts |  |
-| [DataTable](data-model.md#datatable) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [DataTable](data-model.md#datatable) | `status` | Table; Key facts |  |
-| [DataTable](data-model.md#datatable) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `dataCustodianId`, `contactActorId` | Responsible |  |
-| [DataTable](data-model.md#datatable) | `systemId` | Table; Key facts; Relationships |  |
-| [DataTable](data-model.md#datatable) | `domainId` | Key facts | Current counterpart: resolved. |
-| [DataTable](data-model.md#datatable) | `technicalName` | Table; Key facts; Header |  |
-| [Domain](data-model.md#domain) | `id`, `rowVersion`, `versionDate`, `parentDomainId` |  |  |
-| [Domain](data-model.md#domain) | `identifier`, `createdOn`, `modifiedOn`, `version` | Further metadata |  |
-| [Domain](data-model.md#domain) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [Domain](data-model.md#domain) | `comment` | Key facts |  |
-| [Domain](data-model.md#domain) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [Domain](data-model.md#domain) | `status` | Table; Key facts |  |
-| [Domain](data-model.md#domain) | `responsibleOrganisation` | Table; Responsible |  |
-| [Domain](data-model.md#domain) | `dataOwnerId`, `dataStewardId`, `contactActorId` | Responsible |  |
-| [LineageRelation](data-model.md#lineagerelation) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `source`, `target`, `operation`, `transformationNotes_de`, `transformationNotes_it`, `transformationNotes_fr`, `transformationNotes_en`, `verificationStatus`, `documentationLinks` |  |  |
-| [ProductAttribute](data-model.md#productattribute) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `comment`, `documentationLinks`, `semanticName`, `businessAttributeId`, `isRequired` |  |  |
-| [ProductAttribute](data-model.md#productattribute) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table | Current counterpart: current source-language value. |
-| [ProductAttribute](data-model.md#productattribute) | `dataProductId` | Table | Current counterpart: parent context. |
-| [ProductAttribute](data-model.md#productattribute) | `valueSpecification` | Table | Current counterpart: value type only. |
-| [QualityRequirement](data-model.md#qualityrequirement) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en`, `comment`, `documentationLinks`, `status`, `version`, `versionDate`, `responsibleOrganisation`, `contactActorId`, `ruleType`, `comparisonValue`, `dimension` |  |  |
-| [Relationship](data-model.md#relationship) | `id`, `identifier`, `rowVersion`, `createdOn`, `modifiedOn`, `sourceEndpointId`, `verificationStatus`, `coverage`, `supportStatus`, `assessedServiceVersion`, `ruleNotes_de`, `ruleNotes_it`, `ruleNotes_fr`, `ruleNotes_en`, `documentationLinks` |  |  |
-| [Relationship](data-model.md#relationship) | `source`, `target` | Table; Relationships | Current counterpart: legacy realizes and product reference arrays. |
-| [Relationship](data-model.md#relationship) | `relationshipType` | Table; Relationships | Current counterpart: derived from the legacy reference property. |
-| [Relationship](data-model.md#relationship) | `comment` |  | Planned relationship editing only; no current profile row. |
-| [System](data-model.md#system) | `id`, `rowVersion`, `versionDate`, `systemType` |  |  |
-| [System](data-model.md#system) | `identifier`, `createdOn`, `modifiedOn`, `version` | Further metadata |  |
-| [System](data-model.md#system) | `name_de`, `name_it`, `name_fr`, `name_en`, `description_de`, `description_it`, `description_fr`, `description_en` | Table; Header |  |
-| [System](data-model.md#system) | `comment`, `classification`, `containsPersonalData` | Key facts |  |
-| [System](data-model.md#system) | `documentationLinks` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [System](data-model.md#system) | `status`, `technology` | Table; Key facts |  |
-| [System](data-model.md#system) | `responsibleOrganisation`, `dataOwnerId`, `dataStewardId`, `dataCustodianId`, `contactActorId` | Responsible |  |
-| [LocalizedTextFields](data-model.md#localizedtextfields) | `<base>_de`, `<base>_it`, `<base>_fr`, `<base>_en` |  |  |
-| [RecordReference](data-model.md#recordreference) | `kind`, `identifier` |  |  |
-| [OrganisationDetails](data-model.md#organisationdetails) | `name_de`, `name_it`, `name_fr`, `name_en` | Key facts; Responsible |  |
-| [OrganisationDetails](data-model.md#organisationdetails) | `websiteUrl` | Responsible | Current counterpart: contact link. |
-| [DocumentationLink](data-model.md#documentationlink) | `url` | Table; Key facts; Relationships | Current counterpart: by purpose. |
-| [DocumentationLink](data-model.md#documentationlink) | `title_de`, `title_it`, `title_fr`, `title_en` | Table; Key facts; Relationships | Current counterpart: link text. |
-| [DocumentationLink](data-model.md#documentationlink) | `purpose`, `language` |  |  |
-| [DocumentationLink](data-model.md#documentationlink) | `externalIdentifier` | Table; Relationships | Current counterpart: TERMDAT ID. |
-| [ValueSpecification](data-model.md#valuespecification) | `valueType` | Table; Key facts | Current counterpart: legacy valueType. |
-| [ValueSpecification](data-model.md#valuespecification) | `format`, `minimumLength`, `maximumLength`, `minimumValue`, `maximumValue`, `precision`, `scale`, `unit`, `geometryType`, `coordinateReferenceSystem`, `ruleNotes_de`, `ruleNotes_it`, `ruleNotes_fr`, `ruleNotes_en` |  |  |
-| [ServiceEndpoint](data-model.md#serviceendpoint) | `identifier`, `relativePath`, `httpMethod`, `operationName`, `environment`, `isReadOnly`, `supportsBulk`, `authenticationMethods`, `verificationStatus` |  |  |
-| [ServiceEndpoint](data-model.md#serviceendpoint) | `url` | Key facts | Current counterpart: legacy endpointURL. |
-| [ServiceEndpoint](data-model.md#serviceendpoint) | `protocol` | Table; Key facts |  |
+| Entity / capability | Current browsing | Implemented browser form / remaining path |
+|---|---|---|
+| Domain | Collection/profile, name, description, organisation/roles, status and metadata; object membership derived | General fields and `parentDomainId`; the parent value itself has no dedicated profile fact or selectable column |
+| System | Collection/profile, technology, table/service counts, roles, protection, status and metadata | General fields, `systemType`, technology and technical custodian; system type is not a selectable browsing column |
+| BusinessObject | Collection/profile, attributes, domain, normative references, roles, protection, status and metadata | General fields, domain, normative references and owned attributes |
+| BusinessObject / BusinessAttribute system of record | Linked system name and optional column; attribute inherits object default with origin shown. Archived labels retained without a broken link | System UUID selector; blank attribute selection restores inheritance. Both new columns require [activation](../supabase/README.md#system-of-record) |
+| BusinessAttribute identity and description | Owner rows/profile; its own status, version and creation/modification dates, rather than parent status/dates | General fields and `semanticName`; system UUID, row revision and server dates remain managed |
+| BusinessAttribute vocabulary and requirements | `codeListId` resolves to a linked vocabulary in rows/profile. Required is a derived flag; complete assigned rule definitions are not shown | Vocabulary selector and Required shortcut. Full `qualityRequirementIds` assignment management uses REST |
+| BusinessAttribute key role | Row key labels support PK/FK/UK; profile key fact supports PK/FK only | Selector writes `isIdentifier` and FK/UK comment lines. No structured key composition, target or property-set field; see the [canonical decisions](data-model.md#property-sets-and-business-keys) |
+| BusinessAttribute value specification | Broad type label in rows/profile; full format/unit/geometry/CRS absent from normal browsing | `valueType`, format, unit, geometry type and CRS have form fields |
+| DataTable | Collection/profile, system, technical name, field count, first realization, roles, protection, status and metadata | General fields, system/domain, technical/database/schema names and owned fields; database/schema names are not selectable browsing columns |
+| DataField identity and source declaration | Owner rows/profile show technical name, label and source type. Own status/dates retained. Technical-name kind, source path/type scope and applies-to types have no dedicated profile facts | General fields, technical name/kind, source path/type/scope and applies-to list |
+| DataField constraints | Requiredness and nullability are selectable columns; requiredness also appears in profile. The row key column preserves all stored roles; profile key fact only handles PK/FK | `isRequired`, `isNullable`, `keyRoles` and code-list selector. Full quality assignments use REST |
+| CodeList | Collection/profile, code rows, normative references and business-object context. `authorityOrganisation` is shown as organisation/link | Domain, organisation, normative references, general fields and owned values. `businessObjectId` has no form field |
+| CodeValue | Owner table shows code/name with optional description; no independent profile or code hierarchy | Code, translated name/description and short name, comments/links. Short names are retained in presentation/source fields but not offered in the normal column chooser; `parentCodeValueId` uses REST |
+| DataProduct | Collection/profile, access, format, refresh, licence, attribute count and related objects/tables/services | General fields, access, landing page, formats, licence, update frequency and owned attributes. Landing page is editable but is not wired to the profile's obtain-product action |
+| ProductAttribute | Owner rows show name/description/type, with optional requiredness/code columns. No business-attribute binding or full contract constraints displayed | Translated name/description, semantic name, descriptive value specification, requiredness, comments/links. `businessAttributeId`, contract bounds and rule notes use REST |
+| DataService | Collection/profile, system, service release, protocol, endpoint count and access; no normal endpoint rows tab | General fields, system/domain, technical name, source service version, purpose, access and endpoint-description URLs. Definition version is edited separately; endpoints have an owned-row editor |
+| ServiceEndpoint | Profile protocol/base URL use the primary or first active endpoint. Individual endpoint operations/methods/paths are not listed in normal browsing: the service model has no rows-tab label, and `detail.rowsData` does not read `e.endpoints` | Owned-row editor provides URL/path/operation, protocol/method, environment, read-only/bulk flags and authentication methods; verification changes use REST |
+| Actor | Referenced owner/steward/custodian names and links; existing actors appear in form selectors | No standalone management form; REST after activation |
+| QualityRequirement | No registry/profile for rule definitions; active required rules feed the Required shortcut | No general rule editor. Rule CRUD and complete attribute/field assignments use REST after activation |
+| Relationship | Selected derived links and diagrams; no general assertion/evidence/verification table | No relation editor. Full assertions and verification use REST after activation |
+| LineageRelation | No dedicated lineage view | No editor or ingestion flow; REST after activation |
+| ChangeEvent | Owner history shows date, localized action, actor label and summary; child edits feed owner history | Read-only. Audited commands create events; raw before/after snapshots are not shown as a full field diff |
+
+#### Shared fields and presentation discrepancies
+
+| Field / rule | Current behavior | Canonical requirement or remaining gap |
+|---|---|---|
+| Responsibility and sensitivity | Attribute-to-object and field-to-table fallback runs independently for roles/sensitivity; table custodian can fall back to System | Inheritance origin is not labelled, although the canonical model requires it. Review stored overrides separately from effective display values |
+| `contactActorId` | Forms include a selector on applicable entities, but projection/profile responsibility does not use it | Contact links should prefer this explicit actor before organisation fallback. No live contact override was populated in the audited snapshot; the missing renderer still matters for new entries |
+| CodeValue / ProductAttribute parent roles | Owned row projection does not resolve parent authority/roles into a responsibility display | Canonical parent context does not imply the browser currently exposes it |
+| Definition `version` and `versionDate` | Attribute/field values come from their own rows. Root/attribute/field forms edit the pair; version can be selected as a column where offered. Version date has no normal profile fact/column choice | Preserve the distinction between definition issue date, source release, row revision and edit date |
+| DataService `serviceVersion` | Collection and profile show the source release as Service version / Schnittstellenversion. Profile system metadata and the catalog-version column read the separate stored `version` | Definition and service versions are now distinct in the projection, profile, print and Excel |
+| `status` / `isArchived` | `retired` is translated to Archiviert. Actual archive filtering reads `is_archived`; owned-row removal/restoration sets that flag, while root status editing does not | Retirement and archiving are independent. The live archive columns were absent on the audit date; root archive/restore requires REST activation |
+| Business value types | `code`, `identifier` and `structured` all project to Text; geometric details are retained only in the raw value specification | Preserve distinct semantic types and expose relevant format/unit/geometry/CRS for review. E.g. live `gebaeude/geometrie` stores Point and EPSG:4326 |
+| Source key roles | Row tables render all roles including UK; detail facts render PK first, otherwise FK, otherwise none/undocumented | Detail does not faithfully show unique-only or combined roles. An empty array and an unknown array have different canonical meanings |
+| Required shortcut | Displays true if an assigned required rule is not retired; otherwise the projected attribute flag is unknown. The editor uses a checkbox to add/remove the required assignment | Unchecked does not mean optional and does not remove custom conditional requirements. The shortcut does not expose the complete rule set or assignment audit |
+| Documentation links | Ordinary information links render URL/title; terminology feeds specific relation groups. Forms edit URL lists and preserve matching existing link objects | No full link-purpose/title/language/external-ID editor. Full owned JSON changes use REST |
+| Relations | Candidate and confirmed assertions feed some derived groups; a table keeps only the first realization | The confirmation-aware, multi-domain read model below is a target. Ordinary navigation is not evidence of confirmed mappings or complete coverage |
 
 ### Current detail context
 
-The current attribute profile also displays its parent BusinessObject's standard reference and governance metadata. These are derived context, not separate attribute assertions; use BusinessObject `normativeReferences` and identify the parent as their origin.
+The current attribute profile derives domain and normative references from its BusinessObject. Its system of record uses its explicit System UUID override or the object default, with inheritance labelled; see the [canonical definition](data-model.md#system-of-record). Applicable roles and sensitivity use the attribute's own values first, then the documented parent fallback; status, version and dates use its own row. The browser does not yet label the origin of inherited values. Normative references remain parent context, not separate attribute assertions.
 
 ### Relationship label configuration
 
@@ -411,7 +323,7 @@ The [browser edit mode](edit-mode-implementation.md) edits profiles and owned ro
 
 Status and verificationStatus are manual catalog metadata. Validate required content for the selected state and record the edit in ChangeEvent. There is no dedicated reviewer, review date, approval workflow or automatic status cascade. Existing known statuses can migrate without manufacturing historical events.
 
-CodeValue/ProductAttribute use parent status; BusinessAttribute/DataField have their own. A relationship's confirmation does not approve its endpoints or product. Editors must consider changed definitions when updating verification; the interface can show linked rule states and outdated service assessments directly.
+CodeValue/ProductAttribute use parent status as model context; BusinessAttribute/DataField have their own. A relationship's confirmation does not approve its endpoints or product. Editors must consider changed definitions when updating verification. Direct display of linked rule states and outdated service assessments remains a frontend gap, not a released review surface.
 
 ### Transactional write contract
 
@@ -597,7 +509,7 @@ The table records differences in the frozen pre-SQL fixture renderer, not curren
 
 | Area | Migration decision |
 |---|---|
-| Child profiles | Attribute/field profiles currently inherit parent dates, status, standard references and responsibility. Preserve origin; do not fabricate independent child statuses or dates. |
+| Child profiles | Frozen JSON profiles inherited parent dates/status. The Supabase path uses each attribute/field's own dates, status and version; only declared context and role/sensitivity fallback come from parents. Preserve unknown child values rather than copying parent dates. |
 | Domain resolution | The renderer currently prefers a linked business object's domain over a table/code-list domain and ignores System.domain. Apply the target explicit-domain precedence deliberately. |
 | Visibility | CodeValue/ProductAttribute have no independent profiles. Source extensions and translations may be exported without appearing in detail tables. Keep the documented exclusions; schema presence alone does not require a UI row. |
 | Source context | Keep sourceDetail in the import archive. Promote useful human context to an existing comment or link title only after review; do not invent a source version. |
@@ -632,7 +544,7 @@ Actor, Relationship, LineageRelation and QualityRequirement have no current rout
 | Excel payload | Target exports retain translations, exact codes, documentation, relationship labels/URLs, notes and applicable history. Long text retains continuation parts; never truncate or evaluate formula-like strings. Current nested source payloads remain in the import archive, with separate access when needed. |
 | Presentation/configuration | Tree disclosure/width, graph coordinates/zoom, tab selection, search preferences, UI messages, handbook, help contacts and the deterministic AI demo belong to application configuration/state. They are not missing catalog entities or attributes. |
 
-The current table renderer omits the code-list column when no field has a code-list link, while field profiles keep the empty code-list fact. Current headers may omit empty descriptions. These are presentation conditions; they do not make codeListId or description disappear from the target dictionary. The prospective empty-value rule must be applied deliberately when the renderer migrates.
+The current shared field definitions include the code-list column by default for attribute/field rows even when links are unknown; users may change the column selection. Field profiles keep the empty code-list fact, and headers may omit empty descriptions. These presentation conditions do not remove codeListId or description from the canonical dictionary. Historical fixture rendering behavior is not the current Supabase coverage contract.
 
 ### Migration identity and cutover
 
@@ -784,7 +696,7 @@ Applies to top-level entity records, except ChangeEvent. The entity-specific row
 | `domain` | Owner-specific domainId. Current tables, fields and code lists can derive it through a business object; System.domain is an exception below. | Key facts / grouping |
 | `responsibleOrg`, `dataOwner`, `dataSteward`, `dataCustodian` | Map responsibleOrg to responsibleOrganisation with suffixed names and documented contact details. Resolve optional dataOwnerId and dataStewardId only for managed Actor identities; dataCustodianId applies only to System, DataTable, DataField and DataService. Preserve unresolved role labels as evidence; never invent an external Actor or equate all roles with the organisation. | Responsible |
 | `contact` | The current URL maps to responsibleOrganisation.websiteUrl after resolving attribution. Managed contacts may use contactActorId. Email and phone were deliberately removed from active catalog records on 6 September 2026; old captures must not reintroduce them. | Organisation link in Responsible |
-| `source` | Retain the original source name in the import archive; optionally add reviewed context to comment. Do not infer a System FK from this display label. | Further metadata |
+| `source` | Legacy metadata provenance, never a system-of-record assignment. Retain the original source name in the import archive; optionally add reviewed context to comment. Do not infer a System FK from this display label. | Further metadata |
 | `sourceDetail` | Archive the original scope/edition prose. Promote only useful reviewed context into an existing note/link title, without replacing curated content. | Conditional Key facts; excluded for fields/tables/code lists |
 | `sourceUrl` | Reviewed DocumentationLink where supported. Keep exact URLs and deduplicate identical URL/purpose pairs. | Key facts; consolidated into More information for data tables, code lists and business objects |
 | `sourceModified` | Archive only; not catalog modifiedOn or versionDate. | Stored only |
@@ -965,3 +877,11 @@ These are design precedents, not authoritative content for Oblique. SQLite techn
 - [Business-object attribute proposal](business-object-attribute-proposal.md) — separate proposed business content.
 - [English UI terminology](../data/i18n.json), [detail facts and responsibility rendering](../js/detail.js), [derived records and relationships](../js/data.js), [headers and collections](../js/views.js), and [Excel mapping](../js/excel.js) - evidence for attribute aliases, current placement and inheritance.
 - [Test guide](../tests/README.md) — runtime, import, browser and export verification.
+
+### Ordering and review workbooks
+
+The [canonical row-order contract](data-model.md#row-order) is implemented by the shared projection sorter, editor movement and the browser/REST command allocator. The [row-order migration](../supabase/migrations/20260913010000_catalog_row_order.sql) changes omitted-rank creation behavior without changing public schema columns. Export uses exact stored ranks and the [review-workbook mapping](excel-export.md), not the legacy calculated `position`. Hosted activation remains separate from local verification.
+
+### Canonical aliases
+
+English/German field labels follow the [canonical alias contract](data-model.md#alias-contract-across-surfaces). Generated translation bindings, handbook labels, SQL comments and OpenAPI annotations are checked against the Markdown. See the [13 September alias review](review/2026-09-13-model-alias-review.md) for findings, context-specific projections, regeneration commands and validation.

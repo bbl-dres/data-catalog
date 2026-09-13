@@ -12,6 +12,14 @@
   const valueTypes = { text: 'Text', identifier: 'Text', integer: 'Ganzzahl', decimal: 'Dezimalzahl', date: 'Datum', dateTime: 'Datum / Zeit', year: 'Jahr', code: 'Text', geometry: 'Geometrie', boolean: 'Ja / Nein', structured: 'Text' };
   const frequencies = { continuous: 'kontinuierlich', daily: 'täglich', weekly: 'wöchentlich', monthly: 'monatlich', quarterly: 'quartalsweise', annually: 'jährlich', onChange: 'bei Änderung', onDemand: 'bei Bedarf', irregular: 'unregelmässig' };
   const localized = (value, getters) => Object.defineProperties(value, Object.fromEntries(Object.entries(getters).map(([key, get]) => [key, { enumerable: true, configurable: true, get }])));
+  const orderRows = rows => rows.slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    || compareId(a.identifier, b.identifier) || compareId(a.id, b.id));
+  const compareId = (a, b) => String(a ?? '') < String(b ?? '') ? -1 : String(a ?? '') > String(b ?? '') ? 1 : 0;
+  const isRequiredRule = q => q.rule_type === 'required' && q.status !== 'retired' && !q.is_archived;
+  const requiredAttributeIds = snapshot => {
+    const rules = new Set(snapshot.quality_requirement.filter(isRequiredRule).map(q => q.id));
+    return new Set(snapshot.business_attribute_quality_requirement.filter(a => rules.has(a.quality_requirement_id)).map(a => a.business_attribute_id));
+  };
 
   function project(snapshot) {
     if (snapshot?.schemaVersion !== 1) throw new Error('Unsupported catalog schema version');
@@ -50,7 +58,7 @@
     const relationshipIndex = index(snapshot.relationship.filter(r=>!r.is_archived), link => Object.entries(link)
       .filter(([key]) => /^(source|target)_.+_id$/.test(key)).map(([, value]) => value));
     const requirementIndex = index(snapshot.business_attribute_quality_requirement, r => [r.business_attribute_id]);
-    const endpointIndex = index(snapshot.service_endpoint.filter(r => !r.is_archived).slice().sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)), r => [r.data_service_id]);
+    const endpointIndex = index(orderRows(snapshot.service_endpoint.filter(r => !r.is_archived)), r => [r.data_service_id]);
     const actor = id => {
       const a = resolve('actor', id);
       return a ? { name: text(a, 'name'), type: a.actor_type, url: a.website_url } : undefined;
@@ -58,10 +66,11 @@
     const base = r => localized({ identifier: r.identifier, labels: labels(r), _record: r,
       _relationships: (relationshipIndex.get(r.id) || []).slice(),
       status: status[r.status], version: r.version, versionDate: r.version_date, created: r.created_on, modified: r.modified_on,
-      comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
+      sortOrder: r.sort_order, comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
       informationUrls: (r.documentation_links || []).filter(l => l.purpose !== 'terminology').map(l => l.url),
       documentationLinks: r.documentation_links || [], contact: { url: (r.responsible_organisation || r.authority_organisation)?.websiteUrl },
-      domain: visibleRef('domain', r.domain_id), system: visibleRef('system', r.system_id), normReference: r.normative_references?.join('; ')
+      domain: visibleRef('domain', r.domain_id), system: visibleRef('system', r.system_id),
+      systemOfRecord: ref('system', r.system_of_record_id), normReference: r.normative_references?.join('; ')
     }, { name: () => text(r, 'name'), description: () => text(r, 'description'),
       responsibleOrg: () => text(r.responsible_organisation || r.authority_organisation || {}, 'name'),
       dataOwner: () => actor(r.data_owner_id), dataSteward: () => actor(r.data_steward_id), dataCustodian: () => actor(r.data_custodian_id) });
@@ -91,14 +100,16 @@
     result.refs.forEach(e => Object.assign(e, { values: [], businessObject: visibleRef('business_object', e._record.business_object_id) }));
     result.products.forEach(e => Object.assign(e, { attributes: [], basedOn: linked(e._record, 'basedOn', 'business_object'), sourcedFrom: linked(e._record, 'sourcedFrom', 'data_table'), servedBy: linked(e._record, 'servedBy', 'data_service'),
       accessRights: e._record.access_notes || e._record.access_mode, license: e._record.license_notes || e._record.license_uri, format: e._record.formats.join(', '), accrualPeriodicity: frequencies[e._record.update_frequency] }));
-    const ownedRows = table => snapshot[table].filter(r => !r.is_archived).slice().sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0));
+    const ownedRows = table => orderRows(snapshot[table].filter(r => !r.is_archived));
     for (const r of ownedRows('business_attribute')) {
       const parent = owner('business_object', r.business_object_id), e = base(r);
       const requirements = (requirementIndex.get(r.id) || []).map(a => resolve('quality_requirement', a.quality_requirement_id));
       /* One PK per object via is_identifier; FK/UK come from the documented Schlüsselrolle comment line. */
       Object.assign(e, { identifier: childId(r, parent), valueType: valueTypes[r.value_specification?.valueType],
+        systemOfRecord: e.systemOfRecord || parent.systemOfRecord,
+        systemOfRecordInheritedFrom: !r.system_of_record_id && parent.systemOfRecord ? parent.identifier : null,
         keyRole: r.is_identifier ? 'PK' : (/(?:^|\n)Schlüsselrolle: (FK|UK)(?:\n|$)/.exec(r.comment || '')?.[1] ?? null),
-        mandatory: requirements.some(q => q.rule_type === 'required' && q.status !== 'retired') ? true : null, qualityRequirements: requirements, codeList: visibleRef('code_list', r.code_list_id) });
+        mandatory: requirements.some(isRequiredRule) ? true : null, qualityRequirements: requirements, codeList: visibleRef('code_list', r.code_list_id) });
       parent.attributes.push(e);
     }
     for (const r of ownedRows('data_field')) {
@@ -121,7 +132,7 @@
     result.apis.forEach(e => {
       const endpoints = (endpointIndex.get(e._record.id) || []).slice();
       const endpoint = endpoints.find(x => x.identifier === 'primary') || endpoints[0];
-      Object.assign(e, { endpoints, version: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
+      Object.assign(e, { endpoints, serviceVersion: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
     });
     result.changelog = snapshot.change_event.map(r => {
       const target = Object.entries(kinds).find(([, table]) => r[`record_${table}_id`]);
@@ -135,32 +146,22 @@
     return result;
   }
 
-  function connection(config) {
-    const url = new URL(config.url);
-    const localHttp = url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-    if (url.protocol !== 'https:' && !localHttp) throw new Error('Supabase requires HTTPS');
-    if (url.username || url.password || typeof config.publishableKey !== 'string' || !config.publishableKey.startsWith('sb_publishable_')) throw new Error('Use a Supabase publishable key in the browser configuration');
-    return { base: new URL('/rest/v1/', url), key: config.publishableKey };
-  }
-
+  const connection = config => DK.resources.catalogConnection(config);
   async function load(config) {
-    const target = connection(config);
-    const url = new URL('rpc/read_snapshot', target.base);
-    const early = DK.boot?.take(url); // boot.js sends the same request before the application scripts
-    const controller = early?.controller || new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
+    const target = connection(config), url = new URL('rpc/read_snapshot', target.base);
     try {
-      const response = await (early?.response || fetch(url, { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error', signal: controller.signal,
-        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' }));
-      if (!response.ok) {
-        const detail = await response.json().catch(() => ({}));
-        const hint = detail.code === 'PGRST106' ? 'Expose the catalog schema in Supabase Data API settings.' : detail.code === 'PGRST202' ? 'Apply the catalog public-read and import migrations.' : 'Check the catalog migrations and read policies.';
-        throw new Error(`Supabase HTTP ${response.status}. ${hint}`);
-      }
-      return project(await response.json());
+      return project(await (DK.boot?.take(url) || DK.resources.read(url, {
+        method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}'
+      })));
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('Supabase did not respond within 20 seconds. Please retry.');
+      if (error.status) {
+        const hint = error.code === 'PGRST106' ? 'Expose the catalog schema in Supabase Data API settings.' : error.code === 'PGRST202' ? 'Apply the catalog public-read and import migrations.' : 'Check the catalog migrations and read policies.';
+        throw new Error(`Supabase HTTP ${error.status}. ${hint}`);
+      }
       throw error;
-    } finally { clearTimeout(timeout); }
+    }
   }
-  DK.catalog = { load, project, connection };
+  DK.catalog = { load, project, connection, orderRows, isRequiredRule, requiredAttributeIds };
 })(window.DK);

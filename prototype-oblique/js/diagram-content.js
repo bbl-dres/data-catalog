@@ -48,8 +48,8 @@
     let rows = kind === 'tables' ? entity.fields : kind === 'refs' ? entity.values : entity.attributes;
     if (kind === 'apis') rows = entity.endpoints?.length ? entity.endpoints : (entity.endpointURL ? [{ identifier: 'primary', url: entity.endpointURL, protocol: entity.protocol,
       operation_name: entity.operationName || entity.operation, http_method: entity.httpMethod, relative_path: entity.relativePath || entity.documentedPath }] : []);
-    rows = (rows || []).map((row, index) => rowContent(kind, kind === 'tables' ? data.field(`${entity.identifier}/${data.fieldId(row)}`)
-      : kind === 'objects' ? data.attr(`${entity.identifier}/${row.identifier}`) : row, index));
+    rows = (rows || []).map((row, index) => rowContent(kind, kind === 'tables' ? data.fieldEntity(entity, row, index)
+      : kind === 'objects' ? data.attributeEntity(entity, row) : row, index));
     if (kind === 'products') for (const [relation, targetKind] of [['basedOn', 'objects'], ['sourcedFrom', 'tables'], ['servedBy', 'apis']]) {
       for (const id of new Set(entity[relation] || [])) {
         const target = data.get(targetKind, id), name = target ? data.displayName(targetKind, target) : id;
@@ -90,19 +90,20 @@
         if (!groups.has(key)) groups.set(key, { id: key, title: value.title, value: value.id, entityIds: [] });
         groups.get(key).entityIds.push(entity.id);
       }
-      const key = { classification: 'fact.classification', businessObject: 'col.object' }[id] || 'group.' + id;
+      const key = { classification: 'fact.classification', businessObject: 'col.object', ...(kind === 'refs' ? {resp:'fact.authorityOrganisation'} : {}) }[id] || 'group.' + id;
       return { id, label: ui.t(key), groups: [...groups.values()].sort((a, b) => data.compareGroupTitles(a.title, b.title, language)) };
     };
     const groupings = data.groupOptions(kind).map(option => ({ ...grouping(option.id), label: option.label }));
     const labels = Object.fromEntries(['continued', 'emptyFields', 'page', 'documentId', 'version', 'created', 'selection', 'legend', 'tooLong', 'noSelection', 'noFilterMatches', 'filters', 'scope', 'fieldCount'].map(key => [key, ui.t('diagram.' + key)]));
-    Object.assign(labels, { name: ui.t(kind === 'tables' ? 'col.field' : kind === 'apis' ? 'print.endpoint' : kind === 'refs' || kind === 'products' ? 'col.name' : 'col.attribute'),
-      type: ui.t(kind === 'apis' ? 'print.protocol' : kind === 'products' ? 'col.type' : 'col.format'),
-      key: ui.t('col.key'), code: ui.t('print.column.code'), codeList: ui.t('print.column.codeList'), description: ui.t('col.description') });
+    labels.legend = ui.t('diagram.legend', { identifier: ui.t('fact.identifier') });
+    Object.assign(labels, { name: ui.t(kind === 'apis' ? 'print.endpoint' : 'col.name'),
+      type: ui.t(kind === 'apis' ? 'print.protocol' : kind === 'tables' ? 'col.dataType' : kind === 'products' ? 'print.componentType' : 'col.valueType'),
+      key: ui.t(kind === 'objects' ? 'fact.businessKey' : 'col.key'), code: ui.t('print.column.code'), codeList: ui.t('print.column.codeList'), description: ui.t('col.description') });
     return clone({ templateVersion: diagram.templateVersion, createdAt: new Date().toISOString(), language, dictionary,
       kind, title, scope: ui.t('print.kind.' + kind), entityLabel: data.kindDef(kind).singular,
       rowKind: DK.presentation.childOf[kind],
       entityFields: DK.presentation.choices(kind).map(f => ({ id: f.id, sharedId: f.sharedId, order: f.order, sizing: f.sizing, labelText: ui.t(f.label), type: f.type, required: f.required, defaultVisible: f.defaultVisible })),
-      rowFields: DK.presentation.choices(DK.presentation.childOf[kind]).map(f => ({ id: f.id, sharedId: f.sharedId, order: f.order, sizing: f.sizing, labelText: ui.t(f.label), type: f.type, required: f.required, defaultVisible: f.defaultVisible })),
+      rowFields: DK.presentation.choices(DK.presentation.childOf[kind]).map(f => ({ id: f.id, sharedId: f.sharedId, order: f.order, sizing: f.sizing, labelText: ui.t(kind === 'products' && f.id === 'type' ? 'print.componentType' : f.label), type: f.type, required: f.required, defaultVisible: f.defaultVisible })),
       filter, sourceUrl: window.location.href, creator: data.config.app.user?.name || data.config.app.user?.initials || '',
       organisation: data.config.app.organisation, application: data.config.app.name, labels, entities, groupings, facets: facetIds.map(grouping), defaultGroupBy: groupBy });
   }

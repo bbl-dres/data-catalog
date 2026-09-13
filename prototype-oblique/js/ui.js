@@ -117,12 +117,13 @@
    *  case- and diacritic-insensitive, and "ae/oe/ue/ss" for umlauts, so a hit found by search is also shown. */
   const foldMarks = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const foldUmlauts = x => x.toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss');
+  ui.searchFoldings = Object.freeze([foldMarks, foldUmlauts]);
   ui.highlight = function (text, query) {
     const s = String(text == null ? '' : text);
     const raw = (query || '').trim();
     if (!raw) return ui.esc(s);
     const ranges = [];
-    for (const fold of [foldMarks, foldUmlauts]) {
+    for (const fold of ui.searchFoldings) {
       const q = fold(raw);
       if (!q) continue;
       // Fold character by character so every folded offset maps back to its source character.

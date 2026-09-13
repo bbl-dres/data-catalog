@@ -51,13 +51,24 @@ const { readWorkbook } = require('./excel-helpers.cjs');
     const download = page.waitForEvent('download');
     await page.click('[data-export="xlsx"]');
     const workbook = await readWorkbook(await (await download).path());
-    assert.equal(workbook.getWorksheet('Felder').rowCount, 50);
-    const metadata = workbook.getWorksheet('Metadaten');
-    assert(metadata.getColumn(4).values.includes('modelDeclaration'));
-    assert(metadata.getColumn(4).values.includes('serviceMetadata.storageCrs'));
-    assert(metadata.getColumn(5).values.includes('http://www.opengis.net/def/crs/EPSG/0/2056'));
+    assert.equal(workbook.getWorksheet('Datentabellen').rowCount, 8 + 2);
+    assert.equal(workbook.getWorksheet('Felder'), undefined, 'A system does not expand its tables into fields');
+    assert.equal(workbook.getWorksheet('Metadaten'), undefined);
+    const tables = await page.evaluate(() => DK.data.tablesOfSystem(DK.data.get('systems', 'av')).map(t => ({ id: t.identifier, count: t.fields.length })));
+    const exportedNames = [];
+    for (const table of tables) {
+      await visit('#/tables/' + table.id);
+      await page.click('[data-menu="actions"]');
+      const nextDownload = page.waitForEvent('download');
+      await page.click('[data-export="xlsx"]');
+      const tableWorkbook = await readWorkbook(await (await nextDownload).path());
+      const fields = tableWorkbook.getWorksheet('Felder');
+      assert.equal(fields.rowCount, table.count + 2);
+      exportedNames.push(...require('./excel-helpers.cjs').columnValues(fields, 'technicalName'));
+    }
+    assert.equal(exportedNames.length, 49, 'Individual table exports retain every source field');
     assert.deepEqual(errors, []);
-    console.log('PASS complete AV Excel export and no browser errors');
+    console.log('PASS AV system scope, all 49 fields through table exports and no browser errors');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

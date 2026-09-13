@@ -540,9 +540,10 @@ button.ob-tree-link { width: 100%; }
   .ob-detail-controls .ob-local-actions { justify-content: flex-end; }
   .ob-detail-controls .ob-collection-search { flex: 0 1 var(--ob-collection-search-width); }
 }
-/* Phone columns: the single detail menu and both sort selects fill the width below their labels. */
+/* Phone columns: detail actions wrap to full rows when the pair no longer fits. */
 @container workspace (width < 600px) {
-  .ob-detail-controls .ob-local-menus { flex: 1 1 100%; min-width: 0; margin-left: 0; }
+  .ob-detail-controls .ob-local-menus { flex: 1 1 100%; flex-wrap: wrap; min-width: 0; margin-left: 0; }
+  .ob-detail-controls .ob-local-menus > * { flex: 1 1 0; min-width: max-content; }
   .ob-detail-controls .ob-local-menus .ob-button { width: 100%; }
   .ob-search-sort { flex-wrap: wrap; flex-basis: 100%; margin-left: 0; }
   .ob-search-sort .ob-select { flex-basis: 100%; }
@@ -571,6 +572,7 @@ button.ob-tree-link { width: 100%; }
 /* Sticky column headers need an unclipped ancestor; a table that scrolls sideways gives them up for the scroller. */
 .ob-detail-rows .ob-table-region:not(.is-scrollable) .ob-table-wrap { overflow: visible; }
 .ob-detail-rows th { position: sticky; top: var(--ob-header-height); z-index: 1; background: var(--ob-color-surface); box-shadow: 0 var(--ob-border-width-xs) var(--ob-color-border-strong); }
+.ob-detail-rows .ob-table-region.is-scrollable th { position: static; }
 .ob-detail-rows td { overflow-wrap: anywhere; }
 
 /* Relationships default to the diagram; the table is also used for print. */
@@ -662,7 +664,8 @@ button.ob-tree-link { width: 100%; }
 .ob-swagger .swagger-ui :is(input[type=text], input[type=password], input[type=search], textarea, select):not(:disabled) { border-color: var(--ob-color-border-input); }
 .ob-swagger .swagger-ui .authorization__btn svg { fill: var(--ob-color-text-tertiary); opacity: 1; }
 .ob-swagger .swagger-ui .opblock.opblock-get .opblock-summary-method { background: var(--ob-color-link); color: var(--ob-color-text-inverse); }
-.ob-swagger .swagger-ui .opblock.opblock-post .opblock-summary-method { background: var(--ob-color-success); color: var(--ob-color-text-inverse); }
+.ob-swagger .swagger-ui .opblock:is(.opblock-post, .opblock-patch) .opblock-summary-method { background: var(--ob-color-success); color: var(--ob-color-text-inverse); }
+.ob-swagger .swagger-ui .opblock.opblock-delete .opblock-summary-method { background: var(--ob-color-error); color: var(--ob-color-text-inverse); }
 .ob-swagger .swagger-ui .parameter__in { color: var(--ob-color-text-tertiary); }
 .ob-swagger .swagger-ui .parameter__name.required span,
 .ob-swagger .swagger-ui .parameter__name.required::after,
