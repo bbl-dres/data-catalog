@@ -1,0 +1,14 @@
+{
+  "stage": "postflight",
+  "tableUpdates": 30,
+  "fieldUpdates": 621,
+  "updatedRecords": 651,
+  "untouchedRecords": 2757,
+  "sourceDefinitionsPreserved": true,
+  "allOtherContentPreserved": true,
+  "priorHistoryPreserved": true,
+  "newAuditEvents": 651,
+  "historyEvents": 1864,
+  "allTablesAndFieldsProjectedInSavedOrder": true,
+  "declaredPrimaryKeysFirst": true
+}

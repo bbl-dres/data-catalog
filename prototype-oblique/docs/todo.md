@@ -1,5 +1,31 @@
 # Follow-up queue
 
+## Datentabellen and Felder sortOrder — completed
+
+Added saved DataTable order and applied 30 table / 621 field ranks through audited RPCs after a rollback preview. Tables are ordered within each system; declared primary keys lead field lists, followed by identifiers, references and subject groups. Source definitions, identities and prior history are unchanged. Table and field lists default to sortOrder ascending, including when hidden. Zeilenreihenfolge is first in Attribute/Felder Ansicht controls and visible columns when selected; common columns follow the same order, Status last. Further naming candidates were explicitly skipped. Independently verified in Supabase and localhost. [Applied plan and verification](review/2026-09-13-source-order.md).
+
+## Separate field names and lean Gebäude — completed
+
+Datentabelle field lists show the alias in Name and the technical identifier in Technischer Name, both visible by default, with Status last. Search covers both values; explicit visibility choices persist. Gebäude.Hauptnutzung and its exclusive completeness rule are archived with history. [Applied changes and verification](review/2026-09-13-field-cleanup.md).
+
+## Simple attribute names and lean Bemessung — completed
+
+Technische Anlage and Heizzentrale each have one active Gebäude-ID. Ermittlungsart is removed from Bemessung; FID is now FID (AOID). Five audited updates passed rollback, independent readback and local frontend checks. Archived definitions retain history. [Changes and skipped naming candidates](review/2026-09-13-simple-attributes.md).
+
+## Component classification and warranty — completed
+
+Added eBKP-H Code, Einbaudatum, Garant, Garantiebeginn and Garantieende (2-/5-Jahresfrist) to Bauteil, Technische Komponente and Technische Anlage. Eighteen audited additions passed rollback, independent readback and frontend verification. Unknown dates remain empty; existing eBKP-H main-group lists are unchanged. [Applied definitions and evidence](review/2026-09-13-component-attributes.md).
+
+## Documents, organisation and consistent identifiers — completed
+
+Applied 90 audited commands across four rollback-tested batches: EFV partner assignments, document-domain responsibility, Dossier specializations/shared attributes, lean eCH metadata and status lists, archive of four unused document concepts, removal of Geometriebezug, and consistent ID across all 38 active profiles. Specialization schema migration applied with unchanged RLS/public reads and guarded writes. [Decisions and evidence](review/2026-09-13-document-concepts.md).
+
+## Basic architectural measurements and spatial FK attributes — completed
+
+Seven minimum measurement definitions are applied: Grundstück GSF; Raum netto area, clear height and netto volume; Nutzungseinheit NGF; Parkplatz Parkierfläche; Zone **Nettofläche**. BBL Bemessungsart has NGF/PARKIERFLAECHE, and Nutzungseinheit/Parkplatz now have measuredFor definition links. [Measurements](review/2026-09-13-basic-measurements-proposal.md).
+
+Added 23 missing FK-labelled attributes across 14 profiles after IFC/SBB review. Areal stays separate and optional; existing Geschoss.Gebäude-ID and Raum.Geschoss-ID are unchanged. No explicit target metadata, schema extension or new UI behavior. Both batches were rollback-tested, committed and independently read back; 42 audit events, existing data/history preserved, 19 tables / 477 columns unchanged. Localhost and the actual frontend projection verified quantities, FK labels, ordering and status pills. [Applied attributes and review scope](review/2026-09-13-spatial-fks.md).
+
 ## Gebäudezustand and Schutz-/Denkmalstatus — completed
 
 Added the two approved attributes as draft text definitions, with correct responsibilities, spaced ranks and candidate RE-FX source links. Official value lists remain to be confirmed; retain source wording in the interim. NF/HNF and Anzahl Wohnungen are explicitly excluded. Four audited commands passed rollback and independent postflight checks. [Details and evidence](review/2026-09-13-building-condition-heritage.md).
@@ -30,7 +56,7 @@ All 217 attributes across 26 populated business objects now have spaced numbers 
 
 ## Bemessung and consistent attribute names — completed
 
-Applied and verified 13 September 2026: **11 active Bemessung attributes**, no separate Bemessungsumfang, five existing typed measured-object relationships, FID, accuracy and method value lists. Genauigkeit now follows the later user-confirmed categories Geschätzt / Gemessen / Aggregiert / Unbekannt; the exact tolerance stays in the source. Standard now uses the completed value-list follow-up above; edition and detailed rule evidence stay in Quelle.
+Applied and verified 13 September 2026: **10 active Bemessung attributes**, no separate Bemessungsumfang, seven typed measured-object relationships, FID (AOID), accuracy and standard value lists. Ermittlungsart was removed in the later simplification. Genauigkeit now follows the later user-confirmed categories Geschätzt / Gemessen / Aggregiert / Unbekannt; the exact tolerance stays in the source. Standard now uses the completed value-list follow-up above; edition and detailed rule evidence stay in Quelle.
 
 Geometry values are named **Geometrie**; lifecycle attributes use **Status**, with the requested Gebäude exception **Status (GWR)** linked to **GWR Gebäudestatus (GSTAT)**. Geometriebezug and Bewirtschaftungsstatus remain distinct. The 52 audited commands were rollback-tested, committed atomically and checked against the original snapshot. Existing data, references and history were preserved. Verified Bemessung and GSTAT in the localhost app. [Applied content and evidence](review/2026-09-13-bemessung-simplification.md).
 

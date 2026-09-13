@@ -114,7 +114,7 @@ test('web and print visibility choices exclude detailed metadata without removin
   for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
     const ids = [...p.choices(kind)].map(field => field.id);
     assert(ids.length <= (kind === 'fields' ? 16 : 15), kind + ': bounded browsing choices, including row order and status');
-    const owned = ['attrs', 'fields', 'values', 'productAttrs', 'endpoints'].includes(kind);
+    const owned = ['attrs', 'fields', 'values', 'productAttrs', 'endpoints', 'tables'].includes(kind);
     assert.equal(ids.includes('sortOrder'), owned, kind + ': row order belongs to owned rows');
     assert(!p.defaults(kind).includes('sortOrder'), kind + ': row order is hidden by default');
     for (const id of ['identifier', 'comment', 'created', 'modified', 'versionDate', 'informationUrls', 'classification', 'personalData', 'sourcePath', 'semanticName']) assert(!ids.includes(id), kind + ': omit ' + id);
@@ -124,9 +124,9 @@ test('web and print visibility choices exclude detailed metadata without removin
   assert.deepEqual([...p.selected('objects')], ['name', 'version'], 'Old preferences discard retired choices');
   assert.equal(p.values('objects', { attributes: [], comment: 'Still searchable' }).comment, 'Still searchable');
   for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis']) {
-    const fields = p.choices(kind), counts = fields.filter(field => field.type === 'number');
+    const fields = p.choices(kind), counts = fields.filter(field => field.type === 'number' && field.id !== 'sortOrder');
     assert(counts.length && counts.every(field => field.defaultVisible && !field.required), kind + ': counts are optional and on by default');
-    assert.deepEqual([...fields].slice(0, 2).map(field => field.id), ['name', 'description']);
+    assert.deepEqual([...fields].filter(f=>f.id!=='sortOrder').slice(0, 2).map(field => field.id), ['name', 'description']);
     assert(fields.find(field => field.id === 'description').sizing.weight > fields.find(field => field.id === 'name').sizing.weight);
     assert(counts.every(field => field.sizing.weight < fields.find(field => field.id === 'name').sizing.weight));
   }
@@ -1181,4 +1181,32 @@ test('the tree collapses a branch that the current page opened', async () => {
   const branch = data.buildGroups('objects', 'domain').find(group => group.items.some(e => e.identifier === 'gebaeude')).id;
   assert.match(views.tree(route, { treeOpen: { objects: true } }), /href="#\/objects\/gebaeude"/, 'the branch holding the page opens by itself');
   assert.doesNotMatch(views.tree(route, { treeOpen: { objects: true, [branch]: false } }), /href="#\/objects\/gebaeude"/, 'and closes when the user collapses it');
+});
+
+
+test('field lists separate aliases and technical names while retaining hidden-column search and stable links', async () => {
+  const {data,presentation:p,detail,router}=await loaded();
+  const table={...data.get('tables','t-sap-building'),kind:'tables'};
+  const defaults=p.defaults('fields');assert.deepEqual([...defaults].slice(0,2),['name','code']);assert.equal(defaults.at(-1),'status');
+  const row=detail.rowsData(table).rows.find(r=>r.values.code==='BUILDING');
+  assert.equal(row.values.name,'Nummer des Gebäudes');assert.equal(row.values.code,'BUILDING');assert.equal(row.href,router.entityHref('fields','t-sap-building/BUILDING'));
+  const code=p.definitions('fields').find(f=>f.id==='code');assert.equal(code.href(row.entity),row.href);
+  assert.equal(p.display('fields',{technicalName:'ONLY_CODE'}).name,'—','A missing alias is not replaced with a duplicate technical name');
+  p.save('fields',defaults.filter(id=>id!=='code'));
+  const ctx=detail.rowsContext(table,{params:{filter:'BUILDING'}},{tableSorts:{}});assert(ctx.matched>0);assert(!ctx.columns.some(c=>c.id==='code'));assert(ctx.rows.some(r=>r.href===row.href));
+  assert.equal(data.displayName('fields',table.fields.find(f=>f.technicalName==='BUILDING')),'Nummer des Gebäudes (BUILDING)','Contextual profile titles remain unchanged');
+});
+
+test('split field-name preferences migrate once and respect later hiding and default reset', () => {
+  for(const version of [1,2]){
+    const saved=new Map([['datenkatalog.visibleFields',JSON.stringify({version,kinds:{fields:['name','type','key','codeList','status'],objects:['name','version']}})]]);
+    const localStorage={getItem:key=>saved.get(key),setItem:(key,value)=>saved.set(key,value)};
+    let p=runtime(()=>{},{localStorage}).presentation;
+    assert.deepEqual([...p.selected('fields')],['name','code','type','key','codeList','status']);
+    assert.deepEqual([...p.selected('objects')],['name','version']);
+    assert.equal(JSON.parse(saved.get('datenkatalog.visibleFields')).version,3);
+    p.save('fields',['name','status']);p=runtime(()=>{},{localStorage}).presentation;
+    assert.deepEqual([...p.selected('fields')],['name','status']);
+    p.save('fields',p.defaults('fields'));assert(p.selected('fields').includes('code'));
+  }
 });

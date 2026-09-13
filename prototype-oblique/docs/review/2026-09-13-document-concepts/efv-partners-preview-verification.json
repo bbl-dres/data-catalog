@@ -1,0 +1,40 @@
+{
+  "stage": "preview",
+  "commands": 5,
+  "preservedRecords": 3305,
+  "updatedRecords": 5,
+  "newRecords": 0,
+  "newAuditEvents": 5,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "onlyOrganisationPropertiesChanged": true,
+  "documentObjectsUnchanged": true,
+  "actorsAndContactsUnchanged": true,
+  "assignments": [
+    {
+      "table": "domain",
+      "identifier": "partner",
+      "organisation": "EFV Finanzverwaltung"
+    },
+    {
+      "table": "business_object",
+      "identifier": "kontakt",
+      "organisation": "EFV Finanzverwaltung"
+    },
+    {
+      "table": "business_object",
+      "identifier": "person",
+      "organisation": "EFV Finanzverwaltung"
+    },
+    {
+      "table": "business_object",
+      "identifier": "unternehmen",
+      "organisation": "EFV Finanzverwaltung"
+    },
+    {
+      "table": "domain",
+      "identifier": "dokumente",
+      "organisation": "BBL Immobilienmanagement"
+    }
+  ]
+}

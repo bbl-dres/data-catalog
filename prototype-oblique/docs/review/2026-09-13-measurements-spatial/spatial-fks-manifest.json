@@ -1,0 +1,571 @@
+{
+  "operation": "2026-09-13-spatial-fk-attributes",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "45a3b6c1352308a53db35b4015ab4283",
+  "description": "Add only missing FK-labelled attribute definitions. Areal remains separate and optional. No explicit target columns, new relationship types or operational instance constraints.",
+  "commands": [
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/grundstueck-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "ec2e4541-3205-48c8-a4f9-f658cc78b4da",
+        "identifier": "gebaeude/grundstueck-ids",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "name_de": "Grundstück-IDs",
+        "semantic_name": "parcelIds",
+        "description_de": "Vollständige IDs der zugeordneten Grundstücke. Ein Gebäude kann mehrere Parzellen betreffen; die vorhandene EGRID bleibt eine separate Registerreferenz.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "e17d9cbc-81da-4fb5-8539-2299b135c0d9"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "areal/grundstueck-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "b6a4330e-2f0d-4e17-bb25-67cdbf56c410",
+        "identifier": "areal/grundstueck-ids",
+        "business_object_id": "820bc133-7bf4-59af-9ae3-bd3e19c71edd",
+        "name_de": "Grundstück-IDs",
+        "semantic_name": "parcelIds",
+        "description_de": "Vollständige IDs der zum Areal gehörenden Grundstücke. Das Areal ist eine optionale Gruppierung und keine Pflichtstufe der Gebäudehierarchie.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "9fec30e4-bcc4-469a-be18-aaeeae0b94d0"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "kampus/gebaeude-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "396e41da-ce90-4a87-99ea-ec12a11516ac",
+        "identifier": "kampus/gebaeude-ids",
+        "business_object_id": "62cd87ae-c2a3-5fa5-9a7c-dafc2fce3a6a",
+        "name_de": "Gebäude-IDs",
+        "semantic_name": "buildingIds",
+        "description_de": "Vollständige IDs der zum Kampus gehörenden Gebäude. Funktionale Gruppierung, unabhängig von Areal und Parzellengrenzen.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "3921f3ea-ce1b-4877-ac2b-9092ffbca1bc"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "nutzungseinheit/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "953dd2cb-459b-4702-bc1d-6ee6b013a8a8",
+        "identifier": "nutzungseinheit/gebaeude-id",
+        "business_object_id": "8531fd23-c677-5846-b3eb-32ab0d9ca186",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Vollständige ID des Gebäudes, in dem die Nutzungseinheit liegt. Die Einheit kann mehrere Geschosse umfassen.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "4fba6da9-b39b-4700-8404-093b9db71cc6"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "nutzungseinheit/raum-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "a6b73948-cba1-4dad-b7ae-1d8eb00d21bf",
+        "identifier": "nutzungseinheit/raum-ids",
+        "business_object_id": "8531fd23-c677-5846-b3eb-32ab0d9ca186",
+        "name_de": "Raum-IDs",
+        "semantic_name": "roomIds",
+        "description_de": "Vollständige IDs der zugeordneten Räume zum betrachteten Zeitpunkt. Für die NGF jeden Raum einmal zählen; gemeinsame Flächen nach der dokumentierten Zuordnung behandeln.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "ffa91d08-ec6a-4845-ab91-de58e186fd78"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "zone/raum-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "1c02a147-c6ae-4ee4-8d3b-034878dd6764",
+        "identifier": "zone/raum-ids",
+        "business_object_id": "72212694-a3df-4db4-a60b-e0c72d9b93e2",
+        "name_de": "Raum-IDs",
+        "semantic_name": "roomIds",
+        "description_de": "Vollständige IDs der zur Zone gehörenden Räume zum betrachteten Zeitpunkt. Räume können mehreren Zonen angehören; ihre primäre Geschosszuordnung bleibt bestehen.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "458c9c2a-678e-49d1-a6fa-106621ae0ab0"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "parkplatz/geschoss-id",
+      "expected_version": 0,
+      "body": {
+        "id": "4e75d32f-d55e-4fd3-b896-bd9bd8819eb9",
+        "identifier": "parkplatz/geschoss-id",
+        "business_object_id": "e9e6c667-5c3b-4c0d-b213-7af70d01cff5",
+        "name_de": "Geschoss-ID",
+        "semantic_name": "storeyId",
+        "description_de": "Primäres Geschoss eines Stellplatzes innerhalb eines Gebäudes. Das Gebäude ergibt sich daraus; bei Aussenparkplätzen bleibt die Angabe leer.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "e8bf75a2-431c-496d-b54a-831088c478bd"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "parkplatz/grundstueck-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "165f49f8-d337-4f4b-9391-58fd60da32a1",
+        "identifier": "parkplatz/grundstueck-ids",
+        "business_object_id": "e9e6c667-5c3b-4c0d-b213-7af70d01cff5",
+        "name_de": "Grundstück-IDs",
+        "semantic_name": "parcelIds",
+        "description_de": "Vollständige IDs der betroffenen Grundstücke, insbesondere für Aussenparkplätze. Bei Innenparkplätzen ersetzt dieser Parzellenbezug nicht die Geschosszuordnung.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "7e541f73-8a09-4577-a379-23287ec42fc4"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bodenbedeckung/grundstueck-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "a5273d46-76ef-45fc-aebe-b5644fee88d8",
+        "identifier": "bodenbedeckung/grundstueck-ids",
+        "business_object_id": "553a34ee-58f3-5cf0-bcc4-a9a29b3d1fff",
+        "name_de": "Grundstück-IDs",
+        "semantic_name": "parcelIds",
+        "description_de": "Vollständige IDs der Grundstücke, die von der Bodenbedeckungsfläche betroffen sind. Keine Gleichsetzung der Bodenbedeckung mit der ganzen Parzelle.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "b89159e7-3ee9-4e3f-bec1-552e1144ffd1"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "138c3812-70f5-4614-86a2-94191761d76e",
+        "identifier": "bauteil/gebaeude-id",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Primäres Gebäude eines gebäudeweiten Bauteils. Bei primärer Geschosszuordnung wird das Gebäude daraus abgeleitet.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "179e7935-3f40-44c9-b239-e665cd094682"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/geschoss-id",
+      "expected_version": 0,
+      "body": {
+        "id": "cee728e7-8f79-4e96-af57-c017dfed5162",
+        "identifier": "bauteil/geschoss-id",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Geschoss-ID",
+        "semantic_name": "storeyId",
+        "description_de": "Primäres Geschoss eines geschossbezogenen Bauteils. Bei mehrgeschossigen Bauteilen eine primäre Zuordnung behalten; weitere berührte Geschosse sind zusätzliche Bezüge.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "e8acca1b-e311-4e0e-a43a-1e124aea496d"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/versorgte-gebaeude-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "3423c103-a6d1-4baf-a37b-d6cb2df300a0",
+        "identifier": "technische-anlage/versorgte-gebaeude-ids",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Versorgte Gebäude-IDs",
+        "semantic_name": "servedBuildingIds",
+        "description_de": "Vollständige IDs der durch die Anlage versorgten Gebäude. Versorgungsbezug, kein physischer Standort und keine Stufe der Raumhierarchie.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "1c81cdf0-6f39-44f2-8d16-60431fcf5e72"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/technische-anlage-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "175623e1-df38-4001-ae52-d017a12af4b5",
+        "identifier": "technische-komponente/technische-anlage-ids",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Technische Anlage-IDs",
+        "semantic_name": "technicalSystemIds",
+        "description_de": "Vollständige IDs der Anlagen, denen die Komponente funktional zugeordnet ist. Die Anlagenzugehörigkeit ist vom Standort getrennt.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "d7219e5c-8dbc-4ad7-b5e8-61975bc259a9"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "161b0c24-9680-42c6-936a-12d25ee6f832",
+        "identifier": "technische-komponente/gebaeude-id",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Primäres Standortgebäude, wenn kein Standort-Raum geführt wird. Bei Raumzuordnung das Gebäude über Raum und Geschoss ableiten.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "9fae94cb-3ca4-4f50-913d-03426822424f"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/raum-id",
+      "expected_version": 0,
+      "body": {
+        "id": "95da448a-c5f5-4476-8d68-56874c4e3b14",
+        "identifier": "technische-komponente/raum-id",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Raum-ID",
+        "semantic_name": "roomId",
+        "description_de": "Primärer Standort-Raum der Komponente, sofern anwendbar. Versorgte Räume sind keine zusätzlichen Standorte.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 220,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "5464b2fc-4374-4995-908c-f8bb44c963c9"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "wohnung/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "149d932a-95e5-455c-85ee-728d97b98a4c",
+        "identifier": "wohnung/gebaeude-id",
+        "business_object_id": "4e93b45c-93c1-537a-acf6-9127dfd88f04",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Vollständige ID des Gebäudes, in dem die Wohnung liegt. Auch eine Wohnung über mehrere Geschosse bleibt einem Gebäude zugeordnet.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "01b86408-2468-4742-a498-2a7246ea1607"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "wohnung/raum-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "84792a75-7652-454d-9312-8f67a342037d",
+        "identifier": "wohnung/raum-ids",
+        "business_object_id": "4e93b45c-93c1-537a-acf6-9127dfd88f04",
+        "name_de": "Raum-IDs",
+        "semantic_name": "roomIds",
+        "description_de": "Vollständige IDs der zur Wohnung gehörenden Räume zum betrachteten Zeitpunkt. Die Raum-Geschoss-Zuordnung bleibt bestehen.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "dd12affd-3e32-40fd-a7a3-a5c4eadcc637"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "cafm-basisplan/geschoss-id",
+      "expected_version": 0,
+      "body": {
+        "id": "66b593ab-9c48-4d65-890b-9d240f956f24",
+        "identifier": "cafm-basisplan/geschoss-id",
+        "business_object_id": "fc74b3bf-f6ba-4708-8a49-94d9ad91b0a2",
+        "name_de": "Geschoss-ID",
+        "semantic_name": "storeyId",
+        "description_de": "Vollständige ID des im Basisplan dargestellten Geschosses. Das Gebäude ergibt sich aus der Geschosszuordnung.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "a82d46a0-4bb5-4451-b8c0-150500c4ce28"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "heizzentrale/versorgte-gebaeude-ids",
+      "expected_version": 0,
+      "body": {
+        "id": "29e604e7-e3c8-4e90-8064-42cda34c49e3",
+        "identifier": "heizzentrale/versorgte-gebaeude-ids",
+        "business_object_id": "af9f31b3-5b66-5c8e-ab8d-0f92780519a4",
+        "name_de": "Versorgte Gebäude-IDs",
+        "semantic_name": "servedBuildingIds",
+        "description_de": "Vollständige IDs der mit Wärme versorgten Gebäude. Versorgungsgebiet und physischer Standort können verschieden sein.",
+        "value_specification": {
+          "valueType": "structured",
+          "format": "Liste vollständiger IDs"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "adcb4341-aee8-41e4-aaa7-d2ba41239cda"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "heizzentrale/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "40dcb917-05a3-45d8-888e-c7bbe15dfa91",
+        "identifier": "heizzentrale/gebaeude-id",
+        "business_object_id": "af9f31b3-5b66-5c8e-ab8d-0f92780519a4",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Standortgebäude der Heizzentrale, wenn kein Standort-Raum geführt wird. Bei Raumzuordnung das Gebäude daraus ableiten.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "26456023-5751-4596-a515-fbbe1955006a"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "heizzentrale/raum-id",
+      "expected_version": 0,
+      "body": {
+        "id": "2f84b0f1-61f9-41e4-a8cc-032bd0682c4e",
+        "identifier": "heizzentrale/raum-id",
+        "business_object_id": "af9f31b3-5b66-5c8e-ab8d-0f92780519a4",
+        "name_de": "Raum-ID",
+        "semantic_name": "roomId",
+        "description_de": "Primärer Standort-Raum der Heizzentrale, sofern als Raum abgegrenzt. Keine Referenz auf alle versorgten Räume.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 220,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "3758c93e-d5e2-4394-9afa-f7b014b5ec30"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "stromzaehler/gebaeude-id",
+      "expected_version": 0,
+      "body": {
+        "id": "8d160b90-78ba-4599-a164-32672c7a0176",
+        "identifier": "stromzaehler/gebaeude-id",
+        "business_object_id": "477b9f52-340b-5dd4-a52c-3b5bb88618f5",
+        "name_de": "Gebäude-ID",
+        "semantic_name": "buildingId",
+        "description_de": "Primäres Standortgebäude, wenn kein Standort-Raum geführt wird. Der Standort ist nicht automatisch das gemessene Gebäude.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 200,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "22ad88c5-1609-44fa-b67f-89d0a33c468a"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "stromzaehler/raum-id",
+      "expected_version": 0,
+      "body": {
+        "id": "f29c1200-a8f0-4b6c-bd84-4702eed867ea",
+        "identifier": "stromzaehler/raum-id",
+        "business_object_id": "477b9f52-340b-5dd4-a52c-3b5bb88618f5",
+        "name_de": "Raum-ID",
+        "semantic_name": "roomId",
+        "description_de": "Primärer Standort-Raum des Zählers, sofern anwendbar. Die gemessene Nutzungseinheit oder Versorgung bleibt ein separater fachlicher Bezug.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 210,
+        "comment": "Schlüsselrolle: FK"
+      },
+      "command_id": "ae0f22cb-2425-40be-9460-ef4bca783e7b"
+    }
+  ]
+}

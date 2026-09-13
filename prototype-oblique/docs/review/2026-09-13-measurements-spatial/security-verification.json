@@ -1,0 +1,11 @@
+{
+  "tables": 19,
+  "columns": 477,
+  "rls_all": true,
+  "no_direct_writes": true,
+  "public_snapshot": true,
+  "editor_rpc": true,
+  "anon_write_rpc": false,
+  "anon_guard": false,
+  "editor_guard": false
+}

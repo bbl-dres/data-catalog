@@ -1,0 +1,147 @@
+{
+  "bemessungActiveAttributes": 10,
+  "buildingIdNamesConsistent": true,
+  "noBrokenReferences": true,
+  "rows": [
+    {
+      "object": "Bemessung",
+      "attributes": [
+        {
+          "name": "ID",
+          "role": "PK",
+          "order": 100
+        },
+        {
+          "name": "Bemessungsart",
+          "role": null,
+          "order": 1100
+        },
+        {
+          "name": "Wert",
+          "role": null,
+          "order": 1110
+        },
+        {
+          "name": "Einheit",
+          "role": null,
+          "order": 1120
+        },
+        {
+          "name": "Quelle",
+          "role": "FK",
+          "order": 1200
+        },
+        {
+          "name": "FID (AOID)",
+          "role": null,
+          "order": 1210
+        },
+        {
+          "name": "Standard",
+          "role": null,
+          "order": 1220
+        },
+        {
+          "name": "Genauigkeit",
+          "role": null,
+          "order": 1240
+        },
+        {
+          "name": "Gültig ab",
+          "role": null,
+          "order": 1300
+        },
+        {
+          "name": "Gültig bis",
+          "role": null,
+          "order": 1310
+        }
+      ]
+    },
+    {
+      "object": "Technische Anlage",
+      "attributes": [
+        {
+          "name": "ID",
+          "role": "PK",
+          "order": 100
+        },
+        {
+          "name": "Gebäude-ID",
+          "role": "FK",
+          "order": 200
+        },
+        {
+          "name": "eBKP-H Code",
+          "role": null,
+          "order": 400
+        },
+        {
+          "name": "Einbaudatum",
+          "role": null,
+          "order": 710
+        },
+        {
+          "name": "Garant",
+          "role": null,
+          "order": 800
+        },
+        {
+          "name": "Garantiebeginn",
+          "role": null,
+          "order": 810
+        },
+        {
+          "name": "Garantieende (2-Jahresfrist)",
+          "role": null,
+          "order": 820
+        },
+        {
+          "name": "Garantieende (5-Jahresfrist)",
+          "role": null,
+          "order": 830
+        }
+      ]
+    },
+    {
+      "object": "Heizzentrale",
+      "attributes": [
+        {
+          "name": "ID",
+          "role": "PK",
+          "order": 100
+        },
+        {
+          "name": "Bezeichnung",
+          "role": null,
+          "order": 110
+        },
+        {
+          "name": "Gebäude-ID",
+          "role": "FK",
+          "order": 200
+        },
+        {
+          "name": "Raum-ID",
+          "role": "FK",
+          "order": 220
+        },
+        {
+          "name": "Status",
+          "role": null,
+          "order": 700
+        },
+        {
+          "name": "Gültig ab",
+          "role": null,
+          "order": 1300
+        },
+        {
+          "name": "Gültig bis",
+          "role": null,
+          "order": 1310
+        }
+      ]
+    }
+  ]
+}

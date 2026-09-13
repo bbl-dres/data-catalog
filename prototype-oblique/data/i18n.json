@@ -1,4 +1,7 @@
 {
+  "detail.sharedAttributes": {"de":"Gemeinsame Attribute werden hier gepflegt:","fr":"Les attributs communs sont gérés ici :","it":"Gli attributi condivisi sono gestiti qui:","en":"Shared attributes are maintained here:"},
+  "rel.specializationOf": {"de":"Spezialisierung von","fr":"Spécialisation de","it":"Specializzazione di","en":"Specialization of"},
+  "rel.specializations": {"de":"Spezialisierungen","fr":"Spécialisations","it":"Specializzazioni","en":"Specializations"},
   "access.parent": {"de":"Eintrag","fr":"Entrée","it":"Voce","en":"Entry"},
   "access.title": {"de":"Bereitstellungsformen","fr":"Formes de mise à disposition","it":"Forme di disponibilità","en":"Access options"},
   "access.format": {"de":"Format","fr":"Format","it":"Formato","en":"Format"},
@@ -715,6 +718,7 @@
   "visibility.httpMethod": {"de":"HTTP-Methode","fr":"Méthode HTTP","it":"Metodo HTTP","en":"HTTP method"},
   "visibility.relativePath": {"de":"Relativer Pfad","fr":"Chemin relatif","it":"Percorso relativo","en":"Relative path"},
   "visibility.entryField": {"de": "{field} (Eintrag)", "fr": "{field} (entrée)", "it": "{field} (voce)", "en": "{field} (entry)"},
+  "edit.invalidOrder": {"de":"Bitte eine ganze Zahl zwischen 0 und 2147483647 eingeben.","fr":"Saisissez un entier entre 0 et 2147483647.","it":"Inserire un numero intero tra 0 e 2147483647.","en":"Enter a whole number between 0 and 2147483647."},
   "edit.orderLimit": {"de": "Bitte zuerst die bestehenden Zeilen neu ordnen.", "fr": "Réordonnez d’abord les lignes existantes.", "it": "Riordinare prima le righe esistenti.", "en": "Reorder the existing rows first."},
   "excel.sortOrder": {"de":"Zeilenreihenfolge","fr":"Ordre","it":"Ordine","en":"Row order"},
   "excel.internalId": {"de":"Interne ID","fr":"ID interne","it":"ID interno","en":"Internal ID"},

@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-13",
+  "baseUrl": "http://localhost:8765/",
+  "freshFieldRoute": "/tables/t-sap-building?tab=rows",
+  "automaticSort": "sortOrder:asc",
+  "fieldRowsStart": [
+    "COMP_CODE",
+    "BUSINESS_ENTITY",
+    "BUILDING",
+    "IDENT_KEY",
+    "IDENT_OBJECT_TYPE"
+  ],
+  "fieldRanksStart": [
+    1000,
+    1010,
+    1020,
+    1030,
+    1040
+  ],
+  "attributeProfile": "bauteil",
+  "attributeRanksStart": [
+    100,
+    200,
+    210,
+    400
+  ],
+  "rankFirstInBothDropdownsAndTables": true,
+  "sharedColumnsInSameSequence": true,
+  "statusLast": true,
+  "rankHiddenByDefault": true,
+  "originalVisibilityRestored": true
+}

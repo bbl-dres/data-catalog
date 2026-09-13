@@ -1,0 +1,14 @@
+{
+  "stage": "preview",
+  "commands": 18,
+  "preservedRecords": 3387,
+  "updatedOwnerRevisions": 3,
+  "newAttributes": 18,
+  "newAuditEvents": 18,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "existingCodeListsUnchanged": true,
+  "businessAttributes": 295,
+  "historyEvents": 1206,
+  "noSchemaChange": true
+}

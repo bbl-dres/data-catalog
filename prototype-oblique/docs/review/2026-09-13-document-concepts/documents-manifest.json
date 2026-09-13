@@ -1,0 +1,1287 @@
+{
+  "operation": "2026-09-13-document-concepts",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "73d6f2d4d2555787bf5ad2c5da7540ab",
+  "description": "Simplify documents; two Dossier specializations, four archived concepts, BAR terminology and lean eCH-derived metadata. Local profile, not full XML conformity.",
+  "commands": [
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "812fbf7d-e68f-4639-b63d-38f155e388e7",
+      "identifier": "archivgut",
+      "expected_version": 7,
+      "before": {
+        "id": "812fbf7d-e68f-4639-b63d-38f155e388e7",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Archiv-ID.",
+        "name_de": "Archivgut",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.438719+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "archivgut",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 7,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Dokumente mit bleibendem Wert, die dauerhaft aufbewahrt werden",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "ArchG",
+          "ISAD(G)"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "ad56dad2-7e4f-44c7-94f5-37d5bac34021"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "b9c04180-3edb-490b-b17c-9d5db8e8a9dd",
+      "identifier": "vorarchiv",
+      "expected_version": 3,
+      "before": {
+        "id": "b9c04180-3edb-490b-b17c-9d5db8e8a9dd",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Vorarchiv-ID.",
+        "name_de": "Vorarchiv",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.479789+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "vorarchiv",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Zwischenlager für Dokumente vor der definitiven Archivierung",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "ArchG"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "3a2b0e6d-d503-4393-994d-ab2c187ee0d6"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "ed0dab7f-745c-4764-a144-e5014bd7f792",
+      "identifier": "metadatensatz",
+      "expected_version": 3,
+      "before": {
+        "id": "ed0dab7f-745c-4764-a144-e5014bd7f792",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Metadaten-ID.",
+        "name_de": "Metadatensatz",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.468255+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "metadatensatz",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Eigenständige Entität für strukturierte Beschreibungsinformationen zu Dokumenten",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "Dublin Core",
+          "ISO 23081",
+          "eCH-0039"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "12a1a2ff-e5b6-455c-b1aa-26e618134086"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "2a058e1d-b776-4c3e-81f4-0d9827ad5796",
+      "identifier": "dokumenttyp",
+      "expected_version": 3,
+      "before": {
+        "id": "2a058e1d-b776-4c3e-81f4-0d9827ad5796",
+        "status": "draft",
+        "comment": "Identifikation: Dokumenttypcode (DTC).",
+        "name_de": "Dokumenttyp",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.458545+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "dokumenttyp",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Katalogentität für die Klassifikation ähnlicher Dokumente mit spezifischem Informationsgehalt",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "KBOB BWD"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "d76c2f2c-1519-42d5-86c7-a11f75621bb1"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+      "identifier": "dokument",
+      "expected_version": 3,
+      "before": {
+        "id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Dokument-ID / UUID.",
+        "name_de": "Dokument",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.456756+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "dokument",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Einzelne aufgezeichnete Information unabhängig vom Informationsträger (Pläne, Verträge, Berichte, E-Mails)",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "eCH-0039",
+          "KBOB BWD",
+          "ISO 15489"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Einzelne aufgezeichnete Information, zum Beispiel ein Plan, Vertrag oder Bericht.",
+        "comment": null,
+        "normative_references": [
+          "KBOB BWD",
+          "ISO 15489",
+          "eCH-0039 V3.1",
+          "eCH-0002 V1.0"
+        ],
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          },
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0002/1.0",
+            "purpose": "documentation",
+            "title_de": "eCH-0002 – Records Management"
+          }
+        ]
+      },
+      "command_id": "b8c1ceb7-cfd8-4c07-8d52-c08aa148cfa4"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "fb7131d6-0475-4767-96da-140934315a55",
+      "identifier": "dossier",
+      "expected_version": 3,
+      "before": {
+        "id": "fb7131d6-0475-4767-96da-140934315a55",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Dossier-ID / UUID.",
+        "name_de": "Dossier",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.460159+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "dossier",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Zusammengehörige Dokumente zu einem Geschäft oder Vorgang als strukturierte Einheit",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "eCH-0039",
+          "ArchG",
+          "GEVER"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Sammlung zusammengehöriger Dokumente zu einem Geschäft, Projekt oder Objekt.",
+        "comment": null,
+        "normative_references": [
+          "ArchG",
+          "GEVER",
+          "eCH-0039 V3.1"
+        ],
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "015d0cef-0e49-4859-999b-7737d1762f00"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "461cae3a-f20e-4362-9e51-2c3be9b3a936",
+      "identifier": "registraturplan",
+      "expected_version": 3,
+      "before": {
+        "id": "461cae3a-f20e-4362-9e51-2c3be9b3a936",
+        "status": "draft",
+        "comment": "Identifikation: BBL-Registratur-ID.",
+        "name_de": "Registraturplan",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "edited_at": "2026-09-13T15:30:57.47405+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "registraturplan",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "data_owner_id": null,
+        "classification": null,
+        "description_de": "Systematisches Ordnungssystem für die strukturierte Ablage",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "normative_references": [
+          "ArchG",
+          "eCH-0002"
+        ],
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Aufgabenbezogenes Ordnungssystem für die Gliederung und Ablage von Dossiers.",
+        "comment": "Beim BAR als Ordnungssystem (OS) bezeichnet.",
+        "documentation_links": [
+          {
+            "url": "https://www.bar.admin.ch/de/geschaeftsverwaltung",
+            "purpose": "documentation",
+            "title_de": "BAR – Geschäftsverwaltung und Ordnungssystem"
+          },
+          {
+            "url": "https://www.bar.admin.ch/de/geschaeftsverwaltung-einfuehrung-und-betrieb",
+            "purpose": "documentation",
+            "title_de": "BAR – Arbeitshilfen zur Geschäftsverwaltung"
+          }
+        ]
+      },
+      "command_id": "d32fdf1e-67fb-4941-9dd8-5b1ca8d79ddd"
+    },
+    {
+      "table": "code_list",
+      "operation": "update",
+      "id": "5204d69a-7997-4ea6-b89e-701686444c6e",
+      "identifier": "r-kbob-dokumenttyp",
+      "expected_version": 2,
+      "before": {
+        "id": "5204d69a-7997-4ea6-b89e-701686444c6e",
+        "status": "draft",
+        "comment": "Format-, Aufbewahrungs- und Phasenangaben sind nicht übernommen.",
+        "name_de": "KBOB Dokumenttyp",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": null,
+        "edited_at": "2026-09-13T15:30:57.55465+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "r-kbob-dokumenttyp",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 2,
+        "version_date": null,
+        "description_de": "Dokumenttypcodes (DTC) der Bauwerksdokumentation im Hochbau gemäss KBOB-IPB Anhang C – Dokumenttypenkatalog 2016.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "business_object_id": "2a058e1d-b776-4c3e-81f4-0d9827ad5796",
+        "documentation_links": [
+          {
+            "url": "https://www.kbob.admin.ch/dam/de/sd-web/rVvtgYM1wFVT/20171024_KBOB-IPB_Anhang_C_-_Dokumenttypenkatalog_2016_DE.pdf",
+            "purpose": "standard",
+            "title_de": "KBOB-IPB Anhang C – Dokumenttypenkatalog 2016"
+          },
+          {
+            "url": "https://www.kbob.admin.ch/de/bauwerksdokumentation-im-hochbau",
+            "purpose": "documentation",
+            "title_de": "KBOB: Bauwerksdokumentation im Hochbau"
+          }
+        ],
+        "normative_references": [
+          "KBOB-IPB Anhang C – Dokumenttypenkatalog 2016"
+        ],
+        "authority_organisation": null
+      },
+      "body": {
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28"
+      },
+      "command_id": "e9a70e6b-be87-4004-8d82-a743631ca635"
+    },
+    {
+      "table": "business_object",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier-projektdokumentation",
+      "expected_version": 0,
+      "body": {
+        "id": "3305596b-d761-4750-a6eb-2a0ac2d25c7f",
+        "identifier": "dossier-projektdokumentation",
+        "name_de": "Dossier (Projektdokumentation)",
+        "description_de": "Sammlung der Dokumente zur Planung und Durchführung eines Bauprojekts.",
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "responsible_organisation": {
+          "name_de": "BBL Projektmanagement"
+        },
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "a6960b12-bd00-4d7f-bf94-1558f0f4a776"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "specializes:dossier-projektdokumentation:dossier",
+      "expected_version": 0,
+      "body": {
+        "id": "4772aaac-c883-45c7-9883-0d437c3e46c5",
+        "identifier": "specializes:dossier-projektdokumentation:dossier",
+        "source_business_object_id": "3305596b-d761-4750-a6eb-2a0ac2d25c7f",
+        "target_business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "relationship_type": "specializes",
+        "verification_status": "confirmed",
+        "rule_notes_de": "Fachliche Spezialisierung von Dossier gemäss der bestätigten BBL-Modellierung vom 13.09.2026.",
+        "is_archived": false
+      },
+      "command_id": "4dcc74f0-115b-4d77-9af1-c8fb6079ec40"
+    },
+    {
+      "table": "business_object",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier-objektdokumentation",
+      "expected_version": 0,
+      "body": {
+        "id": "5d396652-0540-43d4-962d-5410e8fcbb5e",
+        "identifier": "dossier-objektdokumentation",
+        "name_de": "Dossier (Objektdokumentation)",
+        "description_de": "Sammlung der Dokumente zu einem Immobilienobjekt für dessen Nutzung und Betrieb.",
+        "domain_id": "167ed33d-5227-4ea9-a09f-1a8b6095464b",
+        "responsible_organisation": {
+          "name_de": "BBL Objektmanagement"
+        },
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "7512a668-655d-4471-b5ea-8e2c5b5e822a"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "specializes:dossier-objektdokumentation:dossier",
+      "expected_version": 0,
+      "body": {
+        "id": "61d88b3e-ca5f-4c2c-8499-27ba364a7754",
+        "identifier": "specializes:dossier-objektdokumentation:dossier",
+        "source_business_object_id": "5d396652-0540-43d4-962d-5410e8fcbb5e",
+        "target_business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "relationship_type": "specializes",
+        "verification_status": "confirmed",
+        "rule_notes_de": "Fachliche Spezialisierung von Dossier gemäss der bestätigten BBL-Modellierung vom 13.09.2026.",
+        "is_archived": false
+      },
+      "command_id": "8f3b7c60-e9f6-43c2-af3e-8d168321448f"
+    },
+    {
+      "table": "code_list",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus",
+      "expected_version": 0,
+      "body": {
+        "id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "identifier": "r-ech-dokumentstatus",
+        "name_de": "eCH Dokumentstatus",
+        "description_de": "Lebenszyklusstatus gemäss eCH-0039 V3.1 (documentStatusType).",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "authority_organisation": {
+          "name_de": "Verein eCH"
+        },
+        "normative_references": [
+          "eCH-0039 V3.1"
+        ],
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          },
+          {
+            "url": "https://www.ech.ch/sites/default/files/imce/eCH-Dossier/0031-0060/eCH-0039/3.1/Beilagen/eCH-0039-3.1.xsd",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – XML-Schema"
+          }
+        ],
+        "status": "draft",
+        "is_archived": false
+      },
+      "command_id": "bc441993-ab0a-452c-9580-b00f5b3dc34b"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/undefined",
+      "expected_version": 0,
+      "body": {
+        "id": "08dcf71c-4dd0-46dd-8e49-fbb708e7fe69",
+        "identifier": "r-ech-dokumentstatus/undefined",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "undefined",
+        "name_de": "Nicht zugewiesen",
+        "sort_order": 100,
+        "is_archived": false
+      },
+      "command_id": "648579ec-2f6e-4fe9-a96e-8ff4969bb55e"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/created",
+      "expected_version": 0,
+      "body": {
+        "id": "f49605e0-6f43-4b17-9b4e-1aec56133b93",
+        "identifier": "r-ech-dokumentstatus/created",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "created",
+        "name_de": "Erstellt",
+        "sort_order": 200,
+        "is_archived": false
+      },
+      "command_id": "8c2b1a0c-bb01-48f8-83ae-76574f1aedff"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/in_process",
+      "expected_version": 0,
+      "body": {
+        "id": "3bba980f-009c-4f48-abb3-be42e8a11468",
+        "identifier": "r-ech-dokumentstatus/in_process",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "in_process",
+        "name_de": "In Bearbeitung",
+        "sort_order": 300,
+        "is_archived": false
+      },
+      "command_id": "d36e094d-536a-4232-b7da-f6dd142ae8d0"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/signed",
+      "expected_version": 0,
+      "body": {
+        "id": "5fc9ff05-6ec9-454f-94eb-2367f940184a",
+        "identifier": "r-ech-dokumentstatus/signed",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "signed",
+        "name_de": "Visiert",
+        "sort_order": 400,
+        "is_archived": false
+      },
+      "command_id": "8d1bfe7c-51e5-4b0b-9080-4cb0b75024b1"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/approved",
+      "expected_version": 0,
+      "body": {
+        "id": "b4ac9414-4df7-4ca1-90b1-8f72a5200935",
+        "identifier": "r-ech-dokumentstatus/approved",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "approved",
+        "name_de": "Genehmigt",
+        "sort_order": 500,
+        "is_archived": false
+      },
+      "command_id": "4f5b27ee-6c68-4695-a69c-56e2ca473d18"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/sent",
+      "expected_version": 0,
+      "body": {
+        "id": "80b4d666-d9a0-4f52-8f61-f2d512e51fa8",
+        "identifier": "r-ech-dokumentstatus/sent",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "sent",
+        "name_de": "Versendet",
+        "sort_order": 600,
+        "is_archived": false
+      },
+      "command_id": "3185a3f1-9ae4-4abf-8160-b58a34f648f0"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/canceled",
+      "expected_version": 0,
+      "body": {
+        "id": "37d6bf06-b9d7-43a0-9861-e9334c9db01f",
+        "identifier": "r-ech-dokumentstatus/canceled",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "canceled",
+        "name_de": "Storniert",
+        "sort_order": 700,
+        "is_archived": false
+      },
+      "command_id": "673996b6-b945-45df-baa0-a64248bb02d7"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/invalidated",
+      "expected_version": 0,
+      "body": {
+        "id": "c8a5d490-0e1d-4023-b6d3-04d78c98e8b9",
+        "identifier": "r-ech-dokumentstatus/invalidated",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "invalidated",
+        "name_de": "Vernichtet",
+        "sort_order": 800,
+        "is_archived": false
+      },
+      "command_id": "88c51e3e-87cf-4ee8-afb8-525013419da6"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/archived",
+      "expected_version": 0,
+      "body": {
+        "id": "ed337fdb-ff4a-45da-a534-e22cc7ad66e3",
+        "identifier": "r-ech-dokumentstatus/archived",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "archived",
+        "name_de": "Archiviert",
+        "sort_order": 900,
+        "is_archived": false
+      },
+      "command_id": "c75d31c2-adef-43c5-a529-cb9125045aac"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dokumentstatus/preserved",
+      "expected_version": 0,
+      "body": {
+        "id": "af38a197-4796-424b-95b5-63fdf9e52704",
+        "identifier": "r-ech-dokumentstatus/preserved",
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e",
+        "code": "preserved",
+        "name_de": "Aufbewahrt",
+        "sort_order": 1000,
+        "is_archived": false
+      },
+      "command_id": "ef9e6427-9099-4d53-b618-85181f85d2d7"
+    },
+    {
+      "table": "code_list",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus",
+      "expected_version": 0,
+      "body": {
+        "id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "identifier": "r-ech-dossierstatus",
+        "name_de": "eCH Dossierstatus",
+        "description_de": "Lebenszyklusstatus gemäss eCH-0039 V3.1 (dossierStatusType).",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "authority_organisation": {
+          "name_de": "Verein eCH"
+        },
+        "normative_references": [
+          "eCH-0039 V3.1"
+        ],
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          },
+          {
+            "url": "https://www.ech.ch/sites/default/files/imce/eCH-Dossier/0031-0060/eCH-0039/3.1/Beilagen/eCH-0039-3.1.xsd",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – XML-Schema"
+          }
+        ],
+        "status": "draft",
+        "is_archived": false
+      },
+      "command_id": "b1fc36ce-1209-486d-a1a9-25014233a170"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/undefined",
+      "expected_version": 0,
+      "body": {
+        "id": "20af3e4a-b66d-46f6-9eb4-0d576081ea7b",
+        "identifier": "r-ech-dossierstatus/undefined",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "undefined",
+        "name_de": "Nicht zugewiesen",
+        "sort_order": 100,
+        "is_archived": false
+      },
+      "command_id": "601b1dba-df07-4fde-bc75-9ffa9978879c"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/created",
+      "expected_version": 0,
+      "body": {
+        "id": "f23dbd89-ed2e-454d-9ced-37a1a322b767",
+        "identifier": "r-ech-dossierstatus/created",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "created",
+        "name_de": "Erstellt",
+        "sort_order": 200,
+        "is_archived": false
+      },
+      "command_id": "f771f35f-4f5d-4fcf-94d0-c60f03f5fa21"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/in_process",
+      "expected_version": 0,
+      "body": {
+        "id": "ff7a8db2-eb13-4b23-857a-65fd448996b5",
+        "identifier": "r-ech-dossierstatus/in_process",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "in_process",
+        "name_de": "In Bearbeitung",
+        "sort_order": 300,
+        "is_archived": false
+      },
+      "command_id": "d0a7005c-9f9e-4e28-b60d-8a80440d7124"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/moved",
+      "expected_version": 0,
+      "body": {
+        "id": "7fe18555-c371-4c53-9eb5-79463eacebe9",
+        "identifier": "r-ech-dossierstatus/moved",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "moved",
+        "name_de": "Verschoben / abgetreten",
+        "sort_order": 400,
+        "is_archived": false
+      },
+      "command_id": "d95d96ac-cb22-406a-98f1-089f6677ad16"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/canceled",
+      "expected_version": 0,
+      "body": {
+        "id": "52125820-a38c-49ce-94b2-3395c4f3152f",
+        "identifier": "r-ech-dossierstatus/canceled",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "canceled",
+        "name_de": "Storniert",
+        "sort_order": 500,
+        "is_archived": false
+      },
+      "command_id": "64508b9c-8df1-4b87-b61f-021d0f6d4886"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/closed",
+      "expected_version": 0,
+      "body": {
+        "id": "86079e7b-c6f9-4f94-adc9-df0b11cda2a5",
+        "identifier": "r-ech-dossierstatus/closed",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "closed",
+        "name_de": "Abgeschlossen",
+        "sort_order": 600,
+        "is_archived": false
+      },
+      "command_id": "991aac17-0cc7-4a05-a179-da335f9797e9"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/archived",
+      "expected_version": 0,
+      "body": {
+        "id": "fd896845-57b6-4317-8f9c-fce0ff206c9c",
+        "identifier": "r-ech-dossierstatus/archived",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "archived",
+        "name_de": "Archiviert",
+        "sort_order": 700,
+        "is_archived": false
+      },
+      "command_id": "d8c084c4-8973-44ce-af12-ded7e3ff59db"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/invalidated",
+      "expected_version": 0,
+      "body": {
+        "id": "2b167251-7ec9-412d-80a2-2c38b2c3e7b4",
+        "identifier": "r-ech-dossierstatus/invalidated",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "invalidated",
+        "name_de": "Vernichtet",
+        "sort_order": 800,
+        "is_archived": false
+      },
+      "command_id": "898012c7-0eb8-46e5-a570-c5913825019f"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/in_selection",
+      "expected_version": 0,
+      "body": {
+        "id": "c7dc8a82-3d9a-4343-9eea-c0da323ea696",
+        "identifier": "r-ech-dossierstatus/in_selection",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "in_selection",
+        "name_de": "In Aussonderung",
+        "sort_order": 900,
+        "is_archived": false
+      },
+      "command_id": "65825892-31d0-4b11-a11c-056dcd79af65"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "r-ech-dossierstatus/preserved",
+      "expected_version": 0,
+      "body": {
+        "id": "f7cafa3e-28bb-4bb4-afce-4f695bf233af",
+        "identifier": "r-ech-dossierstatus/preserved",
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f",
+        "code": "preserved",
+        "name_de": "Aufbewahrt",
+        "sort_order": 1000,
+        "is_archived": false
+      },
+      "command_id": "b234259a-5434-45d9-a69b-81f58b9b06a9"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/id",
+      "expected_version": 0,
+      "body": {
+        "id": "1cf3f4e3-d464-4e92-bdce-94ed887df554",
+        "identifier": "dokument/id",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "ID",
+        "semantic_name": "id",
+        "description_de": "Stabile UUID des Dokuments.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "sort_order": 100,
+        "is_identifier": true,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "2bf5e3a8-a952-41fb-8b3d-a9736402279d"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/titel",
+      "expected_version": 0,
+      "body": {
+        "id": "cc26de4c-6f1b-490f-9833-169d32c91d3c",
+        "identifier": "dokument/titel",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Titel",
+        "semantic_name": "titel",
+        "description_de": "Bezeichnung des Dokuments.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "sort_order": 200,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "bdfb9bd1-8c34-4e96-9f38-5697083c489c"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/aktenzeichen",
+      "expected_version": 0,
+      "body": {
+        "id": "59446aac-1172-4b18-ba1a-9129e57c4aea",
+        "identifier": "dokument/aktenzeichen",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Aktenzeichen",
+        "semantic_name": "aktenzeichen",
+        "description_de": "Fachliches Ordnungsmerkmal in der führenden Ablage.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "sort_order": 300,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "e9cedd0e-f5ae-44eb-a79c-0597c4e89f72"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/status",
+      "expected_version": 0,
+      "body": {
+        "id": "b2f3a846-7741-4489-b6ca-51a5c07a7493",
+        "identifier": "dokument/status",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Status",
+        "semantic_name": "status",
+        "description_de": "Lebenszyklusstatus des Dokuments.",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "sort_order": 900,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ],
+        "code_list_id": "ef7e5d40-149c-4418-a828-6333411a3c5e"
+      },
+      "command_id": "f49c105f-3c70-48ac-ab83-8bcabaca5b38"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/registriert-am",
+      "expected_version": 0,
+      "body": {
+        "id": "0c18fa8f-159d-4beb-8b49-89a9b5964c2f",
+        "identifier": "dokument/registriert-am",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Registriert am",
+        "semantic_name": "registriert-am",
+        "description_de": "Datum der Registrierung beziehungsweise Zuordnung zu einem Dossier.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "sort_order": 700,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "d0faf46e-5d78-4c46-a360-81594849fbf4"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/dokumenttyp",
+      "expected_version": 0,
+      "body": {
+        "id": "59c3ea2b-cacf-4e1c-9faf-a100d17b8a3d",
+        "identifier": "dokument/dokumenttyp",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Dokumenttyp",
+        "semantic_name": "dokumenttyp",
+        "description_de": "Fachliche Dokumentart gemäss KBOB-Dokumenttypenkatalog.",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "sort_order": 400,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.kbob.admin.ch/dam/de/sd-web/rVvtgYM1wFVT/20171024_KBOB-IPB_Anhang_C_-_Dokumenttypenkatalog_2016_DE.pdf",
+            "purpose": "standard",
+            "title_de": "KBOB-IPB Anhang C – Dokumenttypenkatalog 2016"
+          },
+          {
+            "url": "https://www.kbob.admin.ch/de/bauwerksdokumentation-im-hochbau",
+            "purpose": "documentation",
+            "title_de": "KBOB: Bauwerksdokumentation im Hochbau"
+          }
+        ],
+        "code_list_id": "5204d69a-7997-4ea6-b89e-701686444c6e"
+      },
+      "command_id": "92b25260-68cd-4e7a-84f4-5b4a9880db4d"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dokument/dateien",
+      "expected_version": 0,
+      "body": {
+        "id": "f2884604-1eba-4d77-b42f-f8951259d2c8",
+        "identifier": "dokument/dateien",
+        "business_object_id": "088cb176-1b70-477e-9708-a8fd99cd2b28",
+        "name_de": "Dateien",
+        "semantic_name": "dateien",
+        "description_de": "Eine oder mehrere Dateien mit Pfad oder URL und MIME-Typ.",
+        "value_specification": {
+          "valueType": "structured"
+        },
+        "sort_order": 500,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "dc20d38b-fc8a-4ed5-85c3-563ede12c535"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier/id",
+      "expected_version": 0,
+      "body": {
+        "id": "19595298-270b-4d4a-a9e5-8fead636ccc2",
+        "identifier": "dossier/id",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "name_de": "ID",
+        "semantic_name": "id",
+        "description_de": "Stabile UUID des Dossiers.",
+        "value_specification": {
+          "valueType": "identifier"
+        },
+        "sort_order": 100,
+        "is_identifier": true,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "c9b554e8-a5b5-4233-9055-eeb487af11d3"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier/titel",
+      "expected_version": 0,
+      "body": {
+        "id": "c157dcb3-6072-431a-a518-2ad1f8306b7c",
+        "identifier": "dossier/titel",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "name_de": "Titel",
+        "semantic_name": "titel",
+        "description_de": "Bezeichnung des Dossiers.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "sort_order": 200,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "3b8b7183-b9fd-436b-b099-9b0d2c8a4c72"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier/aktenzeichen",
+      "expected_version": 0,
+      "body": {
+        "id": "5ac6ef9c-40d2-43bc-a653-95f1167fd06a",
+        "identifier": "dossier/aktenzeichen",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "name_de": "Aktenzeichen",
+        "semantic_name": "aktenzeichen",
+        "description_de": "Fachliches Ordnungsmerkmal in der führenden Ablage.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "sort_order": 300,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "ba9cb5ea-4762-4c29-8d77-4ef0101d312f"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier/status",
+      "expected_version": 0,
+      "body": {
+        "id": "6341bfbb-1d11-47e5-b849-35101a9c4e7d",
+        "identifier": "dossier/status",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "name_de": "Status",
+        "semantic_name": "status",
+        "description_de": "Lebenszyklusstatus des Dossiers.",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "sort_order": 900,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ],
+        "code_list_id": "8616e6e7-086e-47c9-b7bc-01db1dd8e67f"
+      },
+      "command_id": "d9bc7825-3526-4345-87bc-8ede4273d4b2"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "dossier/eroeffnet-am",
+      "expected_version": 0,
+      "body": {
+        "id": "6d572ee9-23c4-4b9c-8991-b591749186fd",
+        "identifier": "dossier/eroeffnet-am",
+        "business_object_id": "fb7131d6-0475-4767-96da-140934315a55",
+        "name_de": "Eröffnet am",
+        "semantic_name": "eroeffnet-am",
+        "description_de": "Datum der Eröffnung beziehungsweise Registrierung.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "sort_order": 700,
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "documentation_links": [
+          {
+            "url": "https://www.ech.ch/de/ech/ech-0039/3.1",
+            "purpose": "documentation",
+            "title_de": "eCH-0039 V3.1 – Dossiers und Dokumente"
+          }
+        ]
+      },
+      "command_id": "4889054f-0168-487e-8468-ae08f616c5ca"
+    }
+  ]
+}

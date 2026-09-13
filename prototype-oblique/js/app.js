@@ -239,7 +239,7 @@
       const sort = router.sort(route.params[sortParam]);
       delete state.tableSorts[key];
       if (sort && (DK.presentation.fields(visibleKind).some(field => field.id === sort.field && field.type !== 'links')
-        || sort.field === 'sortOrder' && ['attrs', 'fields'].includes(visibleKind))) state.tableSorts[key] = sort;
+        || sort.field === 'sortOrder' && ['attrs', 'fields', 'tables'].includes(visibleKind))) state.tableSorts[key] = sort;
     }
     if (route.view === 'list' && route.params.view) state.mode = route.params.view === 'table' ? 'table' : 'tiles';
     if ((route.view === 'list' || route.kind === 'domains') && route.params.group) state.groupBy[views.groupKey(route)] = route.params.group;

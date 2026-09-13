@@ -1,0 +1,96 @@
+{
+  "operation": "2026-09-13-remove-building-main-use",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "3c3102e645a4095b7dc3b56cda6a0047",
+  "description": "Archive Gebäude.Hauptnutzung and its exclusively assigned completeness requirement. Preserve history, references and all other classifications.",
+  "commands": [
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "7f0ea0af-e9f9-4768-89ec-790cd70b0fd6",
+      "identifier": "gebaeude/hauptnutzung",
+      "expected_version": 4,
+      "before": {
+        "id": "7f0ea0af-e9f9-4768-89ec-790cd70b0fd6",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung",
+        "name_de": "Hauptnutzung",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:30:57.644353+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/hauptnutzung",
+        "sort_order": 430,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 4,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "primaryUse",
+        "classification": null,
+        "description_de": "Vorherrschende tatsächliche Nutzung des Gebäudes für die Portfolioübersicht nach einer vereinbarten Bewertungsregel. Detaillierte Mischnutzung wird den Räumen oder Nutzungseinheiten mit ihrer Gültigkeit zugeordnet.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "51abe5a0-ccc4-4f24-bebf-942774d19330"
+    },
+    {
+      "table": "quality_requirement",
+      "operation": "update",
+      "id": "438d285f-e323-4037-b79e-d1cc0a207458",
+      "identifier": "profile-gebaeude/hauptnutzung",
+      "expected_version": 3,
+      "before": {
+        "id": "438d285f-e323-4037-b79e-d1cc0a207458",
+        "status": "draft",
+        "comment": null,
+        "name_de": "Bedingte Vollständigkeit: Hauptnutzung",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "dimension": "completeness",
+        "edited_at": "2026-09-13T15:35:29.496099+00:00",
+        "rule_type": "custom",
+        "created_on": "2026-09-07",
+        "identifier": "profile-gebaeude/hauptnutzung",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "version_date": null,
+        "description_de": "Für Gebäude mit tatsächlicher Nutzung erforderlich; eine fehlende Zuordnung ist eine Vollständigkeitslücke. Geplante Nutzung separat kennzeichnen.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "comparison_value": null,
+        "contact_actor_id": null,
+        "documentation_links": [],
+        "responsible_organisation": {
+          "name_de": "BBL Immobilienmanagement"
+        }
+      },
+      "body": {
+        "is_archived": true
+      },
+      "command_id": "25d6b1e2-f96a-4efa-8ede-b0f0e7e575c2"
+    }
+  ]
+}

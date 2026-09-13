@@ -4569,6 +4569,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Filter sort_order: operator.value (for example eq.value or is.null). Row order. Display order within the system, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves identity. Ties are permitted. Alias (DE): Zeilenreihenfolge. Canonical: DataTable.sortOrder.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -18971,6 +18980,20 @@
                 }
               ]
             }
+          },
+          "sort_order": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Row order. Display order within the system, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves identity. Ties are permitted. Alias (DE): Zeilenreihenfolge. Canonical: DataTable.sortOrder.",
+            "x-postgresql-type": "integer",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "0",
+            "title": "Row order",
+            "x-aliases": {
+              "en": "Row order",
+              "de": "Zeilenreihenfolge"
+            },
+            "x-canonical-property": "DataTable.sortOrder"
           }
         },
         "x-postgresql-primary-key": [
@@ -19108,6 +19131,10 @@
           {
             "name": "data_table_pkey",
             "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "data_table_sort_order_check",
+            "definition": "CHECK ((sort_order >= 0))"
           },
           {
             "name": "data_table_system_id_fkey",
@@ -22076,7 +22103,7 @@
           },
           {
             "name": "relationship_check_12",
-            "definition": "CHECK ((((relationship_type = 'realizes'::text) AND (source_data_table_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'represents'::text) AND (source_data_field_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'correspondsTo'::text) AND (source_data_field_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'assesses'::text) AND (source_data_service_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'basedOn'::text) AND (source_data_product_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'sourcedFrom'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'servedBy'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_service_id IS NOT NULL)) OR ((relationship_type = 'measuredFor'::text) AND (source_business_object_id IS NOT NULL) AND (target_business_object_id IS NOT NULL))))"
+            "definition": "CHECK ((((relationship_type = 'realizes'::text) AND (source_data_table_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'represents'::text) AND (source_data_field_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'correspondsTo'::text) AND (source_data_field_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'assesses'::text) AND (source_data_service_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'basedOn'::text) AND (source_data_product_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'sourcedFrom'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'servedBy'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_service_id IS NOT NULL)) OR ((relationship_type = ANY (ARRAY['measuredFor'::text, 'specializes'::text])) AND (source_business_object_id IS NOT NULL) AND (target_business_object_id IS NOT NULL))))"
           },
           {
             "name": "relationship_check_13",
@@ -22132,7 +22159,7 @@
           },
           {
             "name": "relationship_check_6",
-            "definition": "CHECK ((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text, 'assesses'::text, 'basedOn'::text, 'sourcedFrom'::text, 'servedBy'::text, 'measuredFor'::text])))"
+            "definition": "CHECK ((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text, 'assesses'::text, 'basedOn'::text, 'sourcedFrom'::text, 'servedBy'::text, 'measuredFor'::text, 'specializes'::text])))"
           },
           {
             "name": "relationship_check_7",
@@ -39940,6 +39967,20 @@
                 }
               ]
             }
+          },
+          "sort_order": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Row order. Display order within the system, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves identity. Ties are permitted. Alias (DE): Zeilenreihenfolge. Canonical: DataTable.sortOrder.",
+            "x-postgresql-type": "integer",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "0",
+            "title": "Row order",
+            "x-aliases": {
+              "en": "Row order",
+              "de": "Zeilenreihenfolge"
+            },
+            "x-canonical-property": "DataTable.sortOrder"
           }
         },
         "x-postgresql-primary-key": [
@@ -40077,6 +40118,10 @@
           {
             "name": "data_table_pkey",
             "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "data_table_sort_order_check",
+            "definition": "CHECK ((sort_order >= 0))"
           },
           {
             "name": "data_table_system_id_fkey",
@@ -40874,6 +40919,20 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataTable.isArchived"
+          },
+          "sort_order": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Row order. Display order within the system, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves identity. Ties are permitted. Alias (DE): Zeilenreihenfolge. Canonical: DataTable.sortOrder.",
+            "x-postgresql-type": "integer",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "0",
+            "title": "Row order",
+            "x-aliases": {
+              "en": "Row order",
+              "de": "Zeilenreihenfolge"
+            },
+            "x-canonical-property": "DataTable.sortOrder"
           }
         },
         "required": [
@@ -41689,6 +41748,20 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataTable.isArchived"
+          },
+          "sort_order": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Row order. Display order within the system, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves identity. Ties are permitted. Alias (DE): Zeilenreihenfolge. Canonical: DataTable.sortOrder.",
+            "x-postgresql-type": "integer",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "0",
+            "title": "Row order",
+            "x-aliases": {
+              "en": "Row order",
+              "de": "Zeilenreihenfolge"
+            },
+            "x-canonical-property": "DataTable.sortOrder"
           }
         }
       },
@@ -47949,7 +48022,7 @@
           },
           {
             "name": "relationship_check_12",
-            "definition": "CHECK ((((relationship_type = 'realizes'::text) AND (source_data_table_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'represents'::text) AND (source_data_field_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'correspondsTo'::text) AND (source_data_field_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'assesses'::text) AND (source_data_service_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'basedOn'::text) AND (source_data_product_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'sourcedFrom'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'servedBy'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_service_id IS NOT NULL)) OR ((relationship_type = 'measuredFor'::text) AND (source_business_object_id IS NOT NULL) AND (target_business_object_id IS NOT NULL))))"
+            "definition": "CHECK ((((relationship_type = 'realizes'::text) AND (source_data_table_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'represents'::text) AND (source_data_field_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'correspondsTo'::text) AND (source_data_field_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'assesses'::text) AND (source_data_service_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'basedOn'::text) AND (source_data_product_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'sourcedFrom'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'servedBy'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_service_id IS NOT NULL)) OR ((relationship_type = ANY (ARRAY['measuredFor'::text, 'specializes'::text])) AND (source_business_object_id IS NOT NULL) AND (target_business_object_id IS NOT NULL))))"
           },
           {
             "name": "relationship_check_13",
@@ -48005,7 +48078,7 @@
           },
           {
             "name": "relationship_check_6",
-            "definition": "CHECK ((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text, 'assesses'::text, 'basedOn'::text, 'sourcedFrom'::text, 'servedBy'::text, 'measuredFor'::text])))"
+            "definition": "CHECK ((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text, 'assesses'::text, 'basedOn'::text, 'sourcedFrom'::text, 'servedBy'::text, 'measuredFor'::text, 'specializes'::text])))"
           },
           {
             "name": "relationship_check_7",
@@ -51270,7 +51343,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "5fc14e43a4756576352433e5c207d521d4140bafebe3b1cec3b06fafc189f864"
+      "sha256": "ca4440bb0f2e23533a4d331954bd63f6205341eecc85b26e83e36b221a082c25"
     },
     "schema": "catalog",
     "readRole": "anon",
@@ -51324,6 +51397,14 @@
       {
         "file": "20260913050000_catalog_session_security.sql",
         "sha256": "0a9bd1380a7c99d827e73a8ba8809ab3289f2b6663837923ad76e762cd4e6f6f"
+      },
+      {
+        "file": "20260913060000_catalog_specializations.sql",
+        "sha256": "8cc3c11dcacb2a3efa9a466ae12c566f9991fb94d408cf95060b3ee6832f1461"
+      },
+      {
+        "file": "20260913070000_catalog_table_order.sql",
+        "sha256": "e488af55ca8eced7a9cd06137d9371d0a9d48453b727b2e867e96619a8085791"
       }
     ]
   }

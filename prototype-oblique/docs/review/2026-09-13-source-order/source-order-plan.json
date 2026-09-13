@@ -1,0 +1,4503 @@
+{
+  "tables": [
+    {
+      "identifier": "t-av-property",
+      "system": "av",
+      "sortOrder": 100
+    },
+    {
+      "identifier": "t-av-parcel",
+      "system": "av",
+      "sortOrder": 200
+    },
+    {
+      "identifier": "t-av-building-number",
+      "system": "av",
+      "sortOrder": 300
+    },
+    {
+      "identifier": "t-av-land-cover",
+      "system": "av",
+      "sortOrder": 400
+    },
+    {
+      "identifier": "t-av-property-update",
+      "system": "av",
+      "sortOrder": 500
+    },
+    {
+      "identifier": "t-av-land-cover-update",
+      "system": "av",
+      "sortOrder": 600
+    },
+    {
+      "identifier": "t-av-service-parcel",
+      "system": "av",
+      "sortOrder": 700
+    },
+    {
+      "identifier": "t-av-service-land-cover",
+      "system": "av",
+      "sortOrder": 800
+    },
+    {
+      "identifier": "t-parzelle",
+      "system": "gis",
+      "sortOrder": 100
+    },
+    {
+      "identifier": "t-geb-gis",
+      "system": "gis",
+      "sortOrder": 200
+    },
+    {
+      "identifier": "t-huelle",
+      "system": "gis",
+      "sortOrder": 300
+    },
+    {
+      "identifier": "t-gis-room",
+      "system": "gis",
+      "sortOrder": 400
+    },
+    {
+      "identifier": "t-boden",
+      "system": "gis",
+      "sortOrder": 500
+    },
+    {
+      "identifier": "t-gis-green-area",
+      "system": "gis",
+      "sortOrder": 600
+    },
+    {
+      "identifier": "t-proj",
+      "system": "gis",
+      "sortOrder": 700
+    },
+    {
+      "identifier": "t-gwr-gebaeude",
+      "system": "gwr",
+      "sortOrder": 100
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang",
+      "system": "gwr",
+      "sortOrder": 200
+    },
+    {
+      "identifier": "t-gwr-wohnung",
+      "system": "gwr",
+      "sortOrder": 300
+    },
+    {
+      "identifier": "t-gwr-strasse",
+      "system": "gwr",
+      "sortOrder": 400
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage",
+      "system": "gwr",
+      "sortOrder": 500
+    },
+    {
+      "identifier": "t-gwr-bauprojekt",
+      "system": "gwr",
+      "sortOrder": 600
+    },
+    {
+      "identifier": "t-gwr-arbeiten",
+      "system": "gwr",
+      "sortOrder": 700
+    },
+    {
+      "identifier": "t-sap-business-entity",
+      "system": "sap",
+      "sortOrder": 100
+    },
+    {
+      "identifier": "t-sap-land-architecture",
+      "system": "sap",
+      "sortOrder": 200
+    },
+    {
+      "identifier": "t-sap-building",
+      "system": "sap",
+      "sortOrder": 300
+    },
+    {
+      "identifier": "t-sap-architectural-object",
+      "system": "sap",
+      "sortOrder": 400
+    },
+    {
+      "identifier": "t-sap-area",
+      "system": "sap",
+      "sortOrder": 500
+    },
+    {
+      "identifier": "t-bem",
+      "system": "sap",
+      "sortOrder": 600
+    },
+    {
+      "identifier": "t-sap-rental-object",
+      "system": "sap",
+      "sortOrder": 700
+    },
+    {
+      "identifier": "t-sap-contract",
+      "system": "sap",
+      "sortOrder": 800
+    }
+  ],
+  "fields": [
+    {
+      "identifier": "t-av-property/EGRIS_EGRID",
+      "name": "Eidgenössischer Grundstücksidentifikator",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-property/NBIdent",
+      "name": "Identifikation Nummerierungsbereich",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-av-property/Nummer",
+      "name": "Nummer",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-av-property/Entstehung",
+      "name": "Nachführung",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-av-property/Art",
+      "name": "Art",
+      "system": "av",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-av-property/Gueltigkeit",
+      "name": "Gültigkeit",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-av-property/Vollstaendigkeit",
+      "name": "Vollständigkeit",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-av-property/GesamteFlaechenmass",
+      "name": "Gesamtes Flächenmass",
+      "system": "av",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-av-parcel/NummerTeilGrundstueck",
+      "name": "Nummer Teilgrundstück",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-parcel/Liegenschaft_von",
+      "name": "Grundstück",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-av-parcel/Geometrie",
+      "name": "Geometrie",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-parcel/Flaechenmass",
+      "name": "Flächenmass",
+      "system": "av",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-av-building-number/Nummer",
+      "name": "Nummer",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-building-number/GWR_EGID",
+      "name": "Eidgenössischer Gebäudeidentifikator",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-av-building-number/Gebaeudenummer_von",
+      "name": "Bodenbedeckungsfläche",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-av-land-cover/Entstehung",
+      "name": "Nachführung",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-av-land-cover/Art",
+      "name": "Art",
+      "system": "av",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-av-land-cover/Geometrie",
+      "name": "Geometrie",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-land-cover/Qualitaet",
+      "name": "Qualitätsstandard",
+      "system": "av",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-av-property-update/Identifikator",
+      "name": "Identifikator",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-property-update/NBIdent",
+      "name": "Identifikation Nummerierungsbereich",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-av-property-update/Beschreibung",
+      "name": "Beschreibung",
+      "system": "av",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-av-property-update/Perimeter",
+      "name": "Perimeter",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-property-update/Gueltigkeit",
+      "name": "Gültigkeit",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-av-property-update/GueltigerEintrag",
+      "name": "Gültiger Eintrag",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-av-property-update/GBEintrag",
+      "name": "Grundbucheintrag",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-av-property-update/Datum1",
+      "name": "Datum 1 (Altbestand)",
+      "system": "av",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-av-property-update/Datum2",
+      "name": "Datum 2 (Altbestand)",
+      "system": "av",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-av-land-cover-update/Identifikator",
+      "name": "Identifikator",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-land-cover-update/NBIdent",
+      "name": "Identifikation Nummerierungsbereich",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-av-land-cover-update/Beschreibung",
+      "name": "Beschreibung",
+      "system": "av",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-av-land-cover-update/Perimeter",
+      "name": "Perimeter",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-land-cover-update/Gueltigkeit",
+      "name": "Gültigkeit",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-av-land-cover-update/GueltigerEintrag",
+      "name": "Gültiger Eintrag",
+      "system": "av",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-av-land-cover-update/Datum1",
+      "name": "Datum 1 (Altbestand)",
+      "system": "av",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-av-service-parcel/EGRIS_EGRID",
+      "name": "Eidgenössischer Grundstücksidentifikator",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-av-service-parcel/NBIdent",
+      "name": "Identifikation Nummerierungsbereich",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-av-service-parcel/Nummer",
+      "name": "Nummer",
+      "system": "av",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-av-service-parcel/Kanton",
+      "name": "Kanton",
+      "system": "av",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-av-service-parcel/BFSNr",
+      "name": "BFS-Gemeindenummer",
+      "system": "av",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-av-service-parcel/msGeometry",
+      "name": "Geometrie",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-service-parcel/Flaeche",
+      "name": "Fläche",
+      "system": "av",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-av-service-parcel/Vollstaendigkeit",
+      "name": "Vollständigkeit",
+      "system": "av",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-av-service-land-cover/GWR_EGID",
+      "name": "Eidgenössischer Gebäudeidentifikator",
+      "system": "av",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-av-service-land-cover/Art",
+      "name": "Art",
+      "system": "av",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-av-service-land-cover/Kanton",
+      "name": "Kanton",
+      "system": "av",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-av-service-land-cover/BFSNr",
+      "name": "BFS-Gemeindenummer",
+      "system": "av",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-av-service-land-cover/msGeometry",
+      "name": "Geometrie",
+      "system": "av",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-av-service-land-cover/Qualitaet",
+      "name": "Qualitätsstandard",
+      "system": "av",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-parzelle/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-parzelle/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-parzelle/ao_id",
+      "name": "AO ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-parzelle/bbl_buch",
+      "name": "BBL Buchungskreis",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-parzelle/bbl_we",
+      "name": "BBL Wirtschaftseinheit",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-parzelle/bbl_tobj",
+      "name": "BBL Teilobjekt",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-parzelle/av_egrid",
+      "name": "AV EGRID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2040
+    },
+    {
+      "identifier": "t-parzelle/bbl_bez",
+      "name": "BBL Bezeichnung",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-parzelle/sys_label",
+      "name": "Label",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-parzelle/av_nrisk",
+      "name": "AV Naturgefahren",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4050
+    },
+    {
+      "identifier": "t-parzelle/av_zbez",
+      "name": "AV Bauzone Bezeichnung",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4060
+    },
+    {
+      "identifier": "t-parzelle/av_znut",
+      "name": "AV Bauzone Nutzung",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4070
+    },
+    {
+      "identifier": "t-parzelle/bbl_hgart",
+      "name": "Historischer Garten",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4120
+    },
+    {
+      "identifier": "t-parzelle/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-parzelle/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-parzelle/bfs_gemnr",
+      "name": "BFS Gemeindennummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5020
+    },
+    {
+      "identifier": "t-parzelle/bfs_gem",
+      "name": "BFS Gemeindename",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5030
+    },
+    {
+      "identifier": "t-parzelle/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-parzelle/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-parzelle/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-parzelle/adr_hsnr",
+      "name": "Hausnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5090
+    },
+    {
+      "identifier": "t-parzelle/adr_conct",
+      "name": "Adresse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5100
+    },
+    {
+      "identifier": "t-parzelle/av_nr",
+      "name": "AV Grundstücksnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5110
+    },
+    {
+      "identifier": "t-parzelle/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-parzelle/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-parzelle/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-parzelle/bbl_stat",
+      "name": "Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-parzelle/av_stat",
+      "name": "AV Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-parzelle/bbl_eigen",
+      "name": "BBL Eigentum Art",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-parzelle/bbl_mietm",
+      "name": "BBL Mietmodell",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-parzelle/bbl_awrt",
+      "name": "BBL Anschaffungswert",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8020
+    },
+    {
+      "identifier": "t-parzelle/bbl_bwrt",
+      "name": "BBL Buchwert",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8030
+    },
+    {
+      "identifier": "t-parzelle/bbl_port",
+      "name": "BBL Teilportfolio",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10000
+    },
+    {
+      "identifier": "t-parzelle/larea_gsf",
+      "name": "Grundstücksfläche GSF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-parzelle/larea_ggf",
+      "name": "Gebäudegrundfläche GGF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-parzelle/larea_uf",
+      "name": "Umgebungsfläche UF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-parzelle/larea_buf",
+      "name": "Unbearbeitete Umgebungsfläche UUF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11030
+    },
+    {
+      "identifier": "t-parzelle/larea_uuf",
+      "name": "Bearbeitete Umgebungsfläche BUF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11040
+    },
+    {
+      "identifier": "t-parzelle/larea_ver",
+      "name": "Versiegelte Fläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11050
+    },
+    {
+      "identifier": "t-parzelle/larea_acu",
+      "name": "Grundstücksfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-parzelle/ao_src",
+      "name": "AO Quelle",
+      "system": "gis",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-parzelle/sys_sear",
+      "name": "Suche",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-geb-gis/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_buch",
+      "name": "BBL Buchungskreis",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_we",
+      "name": "BBL Wirtschaftseinheit",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_tobj",
+      "name": "BBL Teilobjekt",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-geb-gis/av_egrid",
+      "name": "AV EGRID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2040
+    },
+    {
+      "identifier": "t-geb-gis/av_egid",
+      "name": "AV EGID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2050
+    },
+    {
+      "identifier": "t-geb-gis/bbl_bez",
+      "name": "BBL Bezeichnung",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-geb-gis/sys_label",
+      "name": "Label",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_gbda1",
+      "name": "BBL Gebäudeart 1",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_gbda2",
+      "name": "BBL Gebäudeart 2",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-geb-gis/av_nrisk",
+      "name": "AV Naturgefahren",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4050
+    },
+    {
+      "identifier": "t-geb-gis/av_zbez",
+      "name": "AV Bauzone Bezeichnung",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4060
+    },
+    {
+      "identifier": "t-geb-gis/av_znut",
+      "name": "AV Bauzone Nutzung",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4070
+    },
+    {
+      "identifier": "t-geb-gis/kgs_nr",
+      "name": "BABS KGS Nummer",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4080
+    },
+    {
+      "identifier": "t-geb-gis/kgs_kat",
+      "name": "BABS KGS Kategorie",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4090
+    },
+    {
+      "identifier": "t-geb-gis/bbl_hist-source-41",
+      "name": "BBL Historische Austattung",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4100
+    },
+    {
+      "identifier": "t-geb-gis/bbl_hist-source-42",
+      "name": "BBL Archivwürdigkeit",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4110
+    },
+    {
+      "identifier": "t-geb-gis/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-geb-gis/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-geb-gis/av_ggdenr",
+      "name": "BFS Gemeindennummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5040
+    },
+    {
+      "identifier": "t-geb-gis/av_ggde",
+      "name": "BFS Gemeindename",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5050
+    },
+    {
+      "identifier": "t-geb-gis/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-geb-gis/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-geb-gis/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-geb-gis/adr_hsnr",
+      "name": "Hausnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5090
+    },
+    {
+      "identifier": "t-geb-gis/adr_conct",
+      "name": "Adresse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5100
+    },
+    {
+      "identifier": "t-geb-gis/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-geb-gis/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-geb-gis/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-geb-gis/bbl_stat",
+      "name": "BBL Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_estat",
+      "name": "BBL ESTAT",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-geb-gis/bbl_bjahr",
+      "name": "BBL Baujahr",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7030
+    },
+    {
+      "identifier": "t-geb-gis/bbl_vjahr",
+      "name": "BBL Verkaufsjahr",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7040
+    },
+    {
+      "identifier": "t-geb-gis/bbl_eigen",
+      "name": "BBL Eigentum Art",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_mietm",
+      "name": "BBL Mietmodell",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_awrt",
+      "name": "BBL Anschaffungswert",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8020
+    },
+    {
+      "identifier": "t-geb-gis/bbl_bwrt",
+      "name": "BBL Buchwert",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8030
+    },
+    {
+      "identifier": "t-geb-gis/bbl_rgrp",
+      "name": "Reinigung Gruppe",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_ovtw",
+      "name": "BBL Objektverantwortlich",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9110
+    },
+    {
+      "identifier": "t-geb-gis/bbl_port",
+      "name": "BBL Teilportfolio",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10000
+    },
+    {
+      "identifier": "t-geb-gis/bbl_port2",
+      "name": "BBL Teilportfoliogruppe",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10010
+    },
+    {
+      "identifier": "t-geb-gis/bbl_ostr",
+      "name": "BBL Objektstrategie",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10020
+    },
+    {
+      "identifier": "t-geb-gis/bbl_pvtw",
+      "name": "BBL Portfoliomanager",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10030
+    },
+    {
+      "identifier": "t-geb-gis/larea_gsf",
+      "name": "Grundstücksfläche GSF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-geb-gis/larea_ggf",
+      "name": "Gebäudegrundfläche GGF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-geb-gis/larea_uf",
+      "name": "Umgebungsfläche UF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-geb-gis/larea_acu",
+      "name": "Grundstücksfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-geb-gis/garea_gf",
+      "name": "Geschossfläche GF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11070
+    },
+    {
+      "identifier": "t-geb-gis/garea_gfo",
+      "name": "GF Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11080
+    },
+    {
+      "identifier": "t-geb-gis/garea_gfu",
+      "name": "GF Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11090
+    },
+    {
+      "identifier": "t-geb-gis/garea_ngf",
+      "name": "Netto-Geschossfläche NGF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11100
+    },
+    {
+      "identifier": "t-geb-gis/garea_nf",
+      "name": "Nutzfläche NF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11110
+    },
+    {
+      "identifier": "t-geb-gis/garea_hnf",
+      "name": "Hauptnutzfläche HNF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11120
+    },
+    {
+      "identifier": "t-geb-gis/garea_nnf",
+      "name": "Nebennutzfläche NNF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11130
+    },
+    {
+      "identifier": "t-geb-gis/garea_ff",
+      "name": "Funktionsfläche FF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11140
+    },
+    {
+      "identifier": "t-geb-gis/garea_vf",
+      "name": "Verkehrsfläche VF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11150
+    },
+    {
+      "identifier": "t-geb-gis/garea_vmf",
+      "name": "Vermietbare Fläche VMF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11160
+    },
+    {
+      "identifier": "t-geb-gis/garea_ebf",
+      "name": "Energiebezugsfläche EBF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11170
+    },
+    {
+      "identifier": "t-geb-gis/garea_rff",
+      "name": "Reinigung Fensterfläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11200
+    },
+    {
+      "identifier": "t-geb-gis/garea_rgf",
+      "name": "Reinigung Glasfläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11210
+    },
+    {
+      "identifier": "t-geb-gis/garea_acu",
+      "name": "Geschossfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11220
+    },
+    {
+      "identifier": "t-geb-gis/gvol_gv",
+      "name": "Gebäudevolumen GV",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11300
+    },
+    {
+      "identifier": "t-geb-gis/gvol_gvo",
+      "name": "GV Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11310
+    },
+    {
+      "identifier": "t-geb-gis/gvol_gvu",
+      "name": "GV Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11320
+    },
+    {
+      "identifier": "t-geb-gis/gvol_acu",
+      "name": "Gebäudevolumen Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11330
+    },
+    {
+      "identifier": "t-geb-gis/gastw",
+      "name": "Anzahl Geschosse",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11380
+    },
+    {
+      "identifier": "t-geb-gis/gastw_og",
+      "name": "Geschosse Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11390
+    },
+    {
+      "identifier": "t-geb-gis/gastw_ug",
+      "name": "Geschosse Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11400
+    },
+    {
+      "identifier": "t-geb-gis/gastw_acu",
+      "name": "Geschosse Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11410
+    },
+    {
+      "identifier": "t-geb-gis/bbl_aps",
+      "name": "Anzahl AP SOLL",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11430
+    },
+    {
+      "identifier": "t-geb-gis/bbl_api",
+      "name": "Anzahl AP IST",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11440
+    },
+    {
+      "identifier": "t-geb-gis/bbl_apr",
+      "name": "Anzahl AP Reserve",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11450
+    },
+    {
+      "identifier": "t-geb-gis/sys_sear",
+      "name": "Suche",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-huelle/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-huelle/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-huelle/ao_id",
+      "name": "AO ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-huelle/av_egrid",
+      "name": "AV AGRID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2040
+    },
+    {
+      "identifier": "t-huelle/av_egid",
+      "name": "AV EGID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2050
+    },
+    {
+      "identifier": "t-huelle/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-huelle/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-huelle/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-huelle/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-huelle/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-huelle/adr_hsnr",
+      "name": "Hausnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5090
+    },
+    {
+      "identifier": "t-huelle/adr_conct",
+      "name": "Adresse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5100
+    },
+    {
+      "identifier": "t-huelle/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-huelle/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-huelle/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-huelle/av_stat",
+      "name": "AV Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-huelle/larea_gsf",
+      "name": "Grundstücksfläche GSF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-huelle/larea_ggf",
+      "name": "Gebäudegrundfläche GGF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-huelle/larea_uf",
+      "name": "Umgebungsfläche UF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-huelle/larea_acu",
+      "name": "Grundstücksfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-huelle/garea_gf",
+      "name": "Geschossfläche GF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11070
+    },
+    {
+      "identifier": "t-huelle/garea_ebf",
+      "name": "Energiebezugsfläche EBF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11170
+    },
+    {
+      "identifier": "t-huelle/garea_awf",
+      "name": "Fläche Aussenwand AWF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11180
+    },
+    {
+      "identifier": "t-huelle/garea_daf",
+      "name": "Fläche Dach DAF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11190
+    },
+    {
+      "identifier": "t-huelle/garea_acu",
+      "name": "Geschossfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11220
+    },
+    {
+      "identifier": "t-huelle/gvol_gv",
+      "name": "Gebäudevolumen GV",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11300
+    },
+    {
+      "identifier": "t-huelle/gvol_acu",
+      "name": "Gebäudevolumen Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11330
+    },
+    {
+      "identifier": "t-huelle/gastw",
+      "name": "Anzahl Geschosse",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11380
+    },
+    {
+      "identifier": "t-huelle/gastw_acu",
+      "name": "Geschosse Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11410
+    },
+    {
+      "identifier": "t-huelle/ao_src",
+      "name": "AO Quelle",
+      "system": "gis",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-gis-room/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gis-room/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gis-room/ao_id",
+      "name": "AO ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-gis-room/bbl_buch",
+      "name": "BBL Buchungskreis",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gis-room/bbl_we",
+      "name": "BBL Wirtschaftseinheit",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-gis-room/bbl_tobj",
+      "name": "BBL Teilobjekt",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-gis-room/bbl_fid",
+      "name": "BBL Geschoss",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2030
+    },
+    {
+      "identifier": "t-gis-room/bbl_bez",
+      "name": "BBL Bezeichnung",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-gis-room/sys_label",
+      "name": "Label",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-gis-room/class_sia",
+      "name": "Klassifizierung SIA 416",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-gis-room/class_ipms",
+      "name": "Klassifizierung IPMS",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4040
+    },
+    {
+      "identifier": "t-gis-room/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gis-room/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-gis-room/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-gis-room/bbl_stat",
+      "name": "BBL Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gis-room/bbl_mietm",
+      "name": "Mieter",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-gis-room/beheizt",
+      "name": "Beiheizt",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9090
+    },
+    {
+      "identifier": "t-gis-room/rarea_gf",
+      "name": "Raumfläche Brutto",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11230
+    },
+    {
+      "identifier": "t-gis-room/rarea_ngf",
+      "name": "Raumfläche Netto",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11240
+    },
+    {
+      "identifier": "t-gis-room/rarea_ebf",
+      "name": "Energiebezugsfläche EBF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11250
+    },
+    {
+      "identifier": "t-gis-room/rarea_rff",
+      "name": "Reinigung Fensterfläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11260
+    },
+    {
+      "identifier": "t-gis-room/rarea_rgf",
+      "name": "Reinigung Glasfläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11270
+    },
+    {
+      "identifier": "t-gis-room/rarea_zfao",
+      "name": "ZFAO Zuschlagsfläche AO",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11280
+    },
+    {
+      "identifier": "t-gis-room/rvol_gv",
+      "name": "Raumvolumen Brutto",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11340
+    },
+    {
+      "identifier": "t-gis-room/rvol_ngv",
+      "name": "Raumvolumen Netto",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11350
+    },
+    {
+      "identifier": "t-gis-room/rhgt_gros",
+      "name": "Raumhöhe",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11360
+    },
+    {
+      "identifier": "t-gis-room/rhgt_net",
+      "name": "Raumhöhe Lichte",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11370
+    },
+    {
+      "identifier": "t-gis-room/rnass",
+      "name": "Anzahl Nassstellen",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11420
+    },
+    {
+      "identifier": "t-gis-room/bbl_aps",
+      "name": "Anzahl AP SOLL",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11430
+    },
+    {
+      "identifier": "t-gis-room/bbl_apr",
+      "name": "Anzahl AP Reserve",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11450
+    },
+    {
+      "identifier": "t-gis-room/ao_src",
+      "name": "AO Quelle",
+      "system": "gis",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-gis-room/sys_sear",
+      "name": "Suche",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-boden/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-boden/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-boden/ao_id",
+      "name": "AO ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-boden/av_egrid",
+      "name": "AV AGRID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2040
+    },
+    {
+      "identifier": "t-boden/av_egid",
+      "name": "AV EGID",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2050
+    },
+    {
+      "identifier": "t-boden/sys_label",
+      "name": "Label",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-boden/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-boden/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-boden/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-boden/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-boden/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-boden/adr_hsnr",
+      "name": "Hausnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5090
+    },
+    {
+      "identifier": "t-boden/adr_conct",
+      "name": "Adresse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5100
+    },
+    {
+      "identifier": "t-boden/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-boden/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-boden/av_stat",
+      "name": "AV Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-boden/genh",
+      "name": "Energie-/Wärmequelle Heizung",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9010
+    },
+    {
+      "identifier": "t-boden/gwaerzh",
+      "name": "Wärmeerzeuger Heizung",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9020
+    },
+    {
+      "identifier": "t-boden/gwaersceh",
+      "name": "Informationsquelle Heizung",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9030
+    },
+    {
+      "identifier": "t-boden/gwaerdath",
+      "name": "Aktualisierungsdatum Heizung",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9040
+    },
+    {
+      "identifier": "t-boden/genw1",
+      "name": "Energie-/Wärmequelle Warmwasser",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9050
+    },
+    {
+      "identifier": "t-boden/gwaerzw",
+      "name": "Wärmeerzeuger Warmwasser",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9060
+    },
+    {
+      "identifier": "t-boden/gwaerscew",
+      "name": "Informationsquelle Warmwasser",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9070
+    },
+    {
+      "identifier": "t-boden/gwaerdatw",
+      "name": "Aktualisierungsdatum Warmwasser",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9080
+    },
+    {
+      "identifier": "t-boden/gschutzr",
+      "name": "Zivilschutzraum",
+      "system": "gis",
+      "category": "operations",
+      "sortOrder": 9100
+    },
+    {
+      "identifier": "t-boden/larea_gsf",
+      "name": "Grundstücksfläche GSF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-boden/larea_ggf",
+      "name": "Gebäudegrundfläche GGF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-boden/larea_uf",
+      "name": "Umgebungsfläche UF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-boden/larea_acu",
+      "name": "Grundstücksfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-boden/garea_gf",
+      "name": "Geschossfläche GF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11070
+    },
+    {
+      "identifier": "t-boden/garea_gfo",
+      "name": "GF Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11080
+    },
+    {
+      "identifier": "t-boden/garea_gfu",
+      "name": "GF Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11090
+    },
+    {
+      "identifier": "t-boden/garea_ebf",
+      "name": "Energiebezugsfläche EBF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11170
+    },
+    {
+      "identifier": "t-boden/garea_awf",
+      "name": "Fläche Aussenwand AWF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11180
+    },
+    {
+      "identifier": "t-boden/garea_daf",
+      "name": "Fläche Dach DAF",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11190
+    },
+    {
+      "identifier": "t-boden/garea_acu",
+      "name": "Geschossfläche Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11220
+    },
+    {
+      "identifier": "t-boden/gvol_gv",
+      "name": "Gebäudevolumen GV",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11300
+    },
+    {
+      "identifier": "t-boden/gvol_gvo",
+      "name": "GV Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11310
+    },
+    {
+      "identifier": "t-boden/gvol_gvu",
+      "name": "GV Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11320
+    },
+    {
+      "identifier": "t-boden/gvol_acu",
+      "name": "Gebäudevolumen Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11330
+    },
+    {
+      "identifier": "t-boden/gastw",
+      "name": "Anzahl Geschosse",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11380
+    },
+    {
+      "identifier": "t-boden/gastw_og",
+      "name": "Geschosse Oberirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11390
+    },
+    {
+      "identifier": "t-boden/gastw_ug",
+      "name": "Geschosse Unterirdisch",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11400
+    },
+    {
+      "identifier": "t-boden/gastw_acu",
+      "name": "Geschosse Genauigkeit",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11410
+    },
+    {
+      "identifier": "t-boden/ao_src",
+      "name": "AO Quelle",
+      "system": "gis",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-boden/sys_sear",
+      "name": "Suche",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-gis-green-area/objectid",
+      "name": "OBJECTID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gis-green-area/ao_id",
+      "name": "AO ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_buch",
+      "name": "BBL Buchungskreis",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_we",
+      "name": "BBL Wirtschaftseinheit",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-gis-green-area/sys_label",
+      "name": "Label",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-gis-green-area/ao_type",
+      "name": "AO Typ",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_hgart",
+      "name": "Historischer Garten",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4120
+    },
+    {
+      "identifier": "t-gis-green-area/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-gis-green-area/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-gis-green-area/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-gis-green-area/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-gis-green-area/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-gis-green-area/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gis-green-area/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-gis-green-area/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_stat",
+      "name": "BBL Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_eigen",
+      "name": "BBL Eigentum Art",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_mietm",
+      "name": "BBL Mietmodell",
+      "system": "gis",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_port",
+      "name": "BBL Teilportfolio",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10000
+    },
+    {
+      "identifier": "t-gis-green-area/bbl_ostr",
+      "name": "BBL Objektstrategie",
+      "system": "gis",
+      "category": "portfolio",
+      "sortOrder": 10020
+    },
+    {
+      "identifier": "t-gis-green-area/ao_area",
+      "name": "AO Fläche",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11290
+    },
+    {
+      "identifier": "t-gis-green-area/ao_src",
+      "name": "AO Quelle",
+      "system": "gis",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-gis-green-area/sys_sear",
+      "name": "Suche",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-proj/bbl_id",
+      "name": "BBL ID",
+      "system": "gis",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-proj/bbl_buch",
+      "name": "BBL Buchungskreis",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-proj/bbl_we",
+      "name": "BBL Wirtschaftseinheit",
+      "system": "gis",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-proj/bbl_bez",
+      "name": "BBL Bezeichnung",
+      "system": "gis",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-proj/bbl_part",
+      "name": "BBL Projektart",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4130
+    },
+    {
+      "identifier": "t-proj/bbl_partb",
+      "name": "BBL Art der Bauwerke",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4140
+    },
+    {
+      "identifier": "t-proj/bbl_ptypb",
+      "name": "BBL Typ der Bauwerke",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4150
+    },
+    {
+      "identifier": "t-proj/bbl_ptag",
+      "name": "BBL Typ der Auftraggeber",
+      "system": "gis",
+      "category": "classification",
+      "sortOrder": 4160
+    },
+    {
+      "identifier": "t-proj/adr_land",
+      "name": "Land",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-proj/adr_reg",
+      "name": "Region",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-proj/adr_ort",
+      "name": "Ort",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5060
+    },
+    {
+      "identifier": "t-proj/adr_plz",
+      "name": "Postleitzahl",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5070
+    },
+    {
+      "identifier": "t-proj/adr_str",
+      "name": "Strasse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5080
+    },
+    {
+      "identifier": "t-proj/adr_hsnr",
+      "name": "Hausnummer",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5090
+    },
+    {
+      "identifier": "t-proj/adr_conct",
+      "name": "Adresse",
+      "system": "gis",
+      "category": "address",
+      "sortOrder": 5100
+    },
+    {
+      "identifier": "t-proj/wgs84_lat",
+      "name": "WGS84 Latitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-proj/wgs84_lon",
+      "name": "WGS84 Longitude",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-proj/egm_elev",
+      "name": "EGM Höhe",
+      "system": "gis",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-proj/bbl_stat",
+      "name": "BBL Status",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-proj/bbl_pdtin",
+      "name": "BBL Datum Baueingabe",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7050
+    },
+    {
+      "identifier": "t-proj/bbl_pdtok",
+      "name": "BBL Datum Baubewilligung",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7060
+    },
+    {
+      "identifier": "t-proj/bbl_pdtbb",
+      "name": "BBL Datum Baubeginn",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7070
+    },
+    {
+      "identifier": "t-proj/bbl_pstat",
+      "name": "BBL Datum Bauende",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7080
+    },
+    {
+      "identifier": "t-proj/bbl_pvbd",
+      "name": "BBL Voraussichtliche Baudauer",
+      "system": "gis",
+      "category": "lifecycle",
+      "sortOrder": 7090
+    },
+    {
+      "identifier": "t-proj/bbl_pkost",
+      "name": "BBL Projektkosten total",
+      "system": "gis",
+      "category": "measurements",
+      "sortOrder": 11460
+    },
+    {
+      "identifier": "t-proj/bbl_ptxt1",
+      "name": "BBL Freitextfeld Projekt 1",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-proj/bbl_ptxt2",
+      "name": "BBL Freitextfeld Projekt 2",
+      "system": "gis",
+      "category": "audit",
+      "sortOrder": 14020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/EGID",
+      "name": "Eidgenössischer Gebäudeidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBNR",
+      "name": "Amtliche Gebäudenummer",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEGRID",
+      "name": "GEGRID",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GGBKR",
+      "name": "GGBKR",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GPARZ",
+      "name": "GPARZ",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GBEZ",
+      "name": "Name des Gebäudes",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GKAT",
+      "name": "Gebäudekategorie",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GKLAS",
+      "name": "Gebäudeklasse",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GLOC1",
+      "name": "Lokalcodes 1",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GLOC2",
+      "name": "Lokalcodes 2",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GLOC3",
+      "name": "Lokalcodes 3",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4040
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GLOC4",
+      "name": "Lokalcodes 4",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4050
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GGDENR",
+      "name": "BFS-Gemeindenummer",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GQUART",
+      "name": "Quartier",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GUSPAT1",
+      "name": "Raumbezogene statistische Grundeinheiten der ersten Stufe (USPAT1)",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GKODE",
+      "name": "E-Gebäudekoordinate",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GKODN",
+      "name": "N-Gebäudekoordinate",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GKSCE",
+      "name": "Koordinatenherkunft",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GSTAT",
+      "name": "Gebäudestatus",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GBAUJ",
+      "name": "Baujahr des Gebäudes",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GBAUM",
+      "name": "Baumonat des Gebäudes",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GBAUP",
+      "name": "Bauperiode",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7030
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GABBJ",
+      "name": "Abbruchjahr des Gebäudes",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7040
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GSCHUTZR",
+      "name": "Zivilschutzraum",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GAREA",
+      "name": "Gebäudefläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBF",
+      "name": "Energiebezugsfläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBFBER",
+      "name": "Berechnungsart der Energiebezugsfläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBFSCE",
+      "name": "Informationsquelle der Energiebezugsfläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11030
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBFDAT",
+      "name": "Aktualisierungsdatum der Energiebezugsfläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11040
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GVOL",
+      "name": "Gebäudevolumen",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11050
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GVOLNORM",
+      "name": "Gebäudevolumen: Norm",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GVOLSCE",
+      "name": "Informationsquelle zum Gebäudevolumen",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11070
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GASTW",
+      "name": "Anzahl Geschosse",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11080
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GAZZI",
+      "name": "Anzahl separate Wohnräume",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11090
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBQH",
+      "name": "Heizwärmebedarf des Gebäudes QH",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11100
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBQHSCE",
+      "name": "Informationsquelle zum Heizwärmebedarf des Gebäudes",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11110
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GEBQHDAT",
+      "name": "Aktualisierungsdatum des Heizwärmebedarfs des Gebäudes",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11120
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GFREITXT1",
+      "name": "Freitextfeld Gebäude 1",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-gwr-gebaeude/GFREITXT2",
+      "name": "Freitextfeld Gebäude 2",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/EDID",
+      "name": "Eidgenössischer Eingangsidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DEINR",
+      "name": "Eingangsnummer Gebäude",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/EGAID",
+      "name": "Eidgenössischer Gebäudeadressidentifikator",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DPLZNAME",
+      "name": "Ortschaftsname",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DPLZ4",
+      "name": "Postleitzahl",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DPLZZ",
+      "name": "Postleitzahl-Zusatzziffer",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5020
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DOFFADR",
+      "name": "Offizielle Adresse",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5030
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DKODE",
+      "name": "E-Eingangskoordinate",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gwr-gebaeudeeingang/DKODN",
+      "name": "N-Eingangskoordinate",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-gwr-wohnung/EWID",
+      "name": "Eidgenössischer Wohnungsidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WEINR",
+      "name": "Physische Wohnungsnummer",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WHGNR",
+      "name": "Administrative Wohnungsnummer",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-gwr-wohnung/WEGRID",
+      "name": "Eidgenössischer Grundstücksidentifikator der Wohnung",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WBEZ",
+      "name": "Lage auf dem Stockwerk",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WNART",
+      "name": "Nutzungsart der Wohnung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WNARTSCE",
+      "name": "Informationsquelle zur Nutzungsart",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WNARTDAT",
+      "name": "Aktualisierungsdatum der Nutzungsart",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-gwr-wohnung/WNARTKOM",
+      "name": "Kommentar zur Nutzungsart der Wohnung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-gwr-wohnung/WGBANMERKUNG",
+      "name": "Nutzungsbeschränkung gemäss ZWG",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4040
+    },
+    {
+      "identifier": "t-gwr-wohnung/WSTWK",
+      "name": "Stockwerk",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WMEHRG",
+      "name": "Mehrgeschossige Wohnung",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WSTAT",
+      "name": "Wohnungsstatus",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WBAUJ",
+      "name": "Baujahr der Wohnung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WABBJ",
+      "name": "Abbruchjahr der Wohnung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-gwr-wohnung/WERSTBELEGDAT",
+      "name": "Datum der ersten Belegung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7030
+    },
+    {
+      "identifier": "t-gwr-wohnung/WLETZTBELEGDAT",
+      "name": "Datum der letzten Belegung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7040
+    },
+    {
+      "identifier": "t-gwr-wohnung/WKCHE",
+      "name": "Kocheinrichtung",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WPERSHW",
+      "name": "Person(en) mit Hauptwohnsitz",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WPERSNW",
+      "name": "Person(en) mit Nebenwohnsitz",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9020
+    },
+    {
+      "identifier": "t-gwr-wohnung/WAREA",
+      "name": "Wohnungsfläche",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WAZIM",
+      "name": "Anzahl Zimmer",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-gwr-wohnung/WFREITXT1",
+      "name": "Freitextfeld Wohnung 1",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-gwr-wohnung/WFREITXT2",
+      "name": "Freitextfeld Wohnung 2",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-gwr-strasse/ESID",
+      "name": "Eidgenössischer Strassenidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-strasse/STRANR",
+      "name": "Amtliche Strassennummer",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-strasse/STRNAME",
+      "name": "Strassenbezeichnung",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-gwr-strasse/STRNAMK",
+      "name": "Strassenbezeichnung kurz",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3010
+    },
+    {
+      "identifier": "t-gwr-strasse/STRINDX",
+      "name": "Strassenbezeichnung Index",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3020
+    },
+    {
+      "identifier": "t-gwr-strasse/STRSP",
+      "name": "Strassenbezeichnung Sprache",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3030
+    },
+    {
+      "identifier": "t-gwr-strasse/STROFFIZIEL",
+      "name": "Strassenbezeichnung offiziell",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3040
+    },
+    {
+      "identifier": "t-gwr-strasse/STRART",
+      "name": "Art der Strasse",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-strasse/STRGEOM",
+      "name": "Strassengeometrie",
+      "system": "gwr",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-gwr-strasse/SREAL",
+      "name": "Realisierungsstand der Strasse",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/EWAID",
+      "name": "Eidgenössischer Wärmeerzeugungsanlagenidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TONR",
+      "name": "Offizielle Nummer der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TETNID",
+      "name": "Eidgenössischer Identifikator des thermischen Netzes",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TWAERZEGID",
+      "name": "EGID des Versorgergebäudes",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TWAERZGEBROLLE",
+      "name": "Rolle des Gebäudes im Rahmen einer Wärmeerzeugungsanlage für mehrere Gebäude",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TWAERZ",
+      "name": "Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TENT",
+      "name": "Energieträger der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TSTAT",
+      "name": "Status Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TINBJ",
+      "name": "Inbetriebnahmejahr der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TAUSJ",
+      "name": "Ausserbetriebnahmejahr der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TNHEIZ",
+      "name": "Wärmenutzung für Heizung",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TNWW",
+      "name": "Wärmenutzung für Warmwasser",
+      "system": "gwr",
+      "category": "operations",
+      "sortOrder": 9010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TNLEIST",
+      "name": "Nennleistung der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TNLEISTSCE",
+      "name": "Informationsquelle der Nennleistung der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TSCE",
+      "name": "Informationsquelle der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TEINDAT",
+      "name": "Eintragungsdatum im GWR",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-gwr-waermeerzeugungsanlage/TDAT",
+      "name": "Aktualisierungsdatum der Wärmeerzeugungsanlage",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/EPROID",
+      "name": "Eidgenössischer Bauprojektidentifikator",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PBDNR",
+      "name": "Amtliche Baudossiernummer",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PBDNRSX",
+      "name": "Amtliche Baudossiernummer Zusatz",
+      "system": "gwr",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PEGRID",
+      "name": "PEGRID",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PGBKR",
+      "name": "PGBKR",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PPARZ",
+      "name": "PPARZ",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PESTNR",
+      "name": "Erhebungsstellennummer",
+      "system": "gwr",
+      "category": "references",
+      "sortOrder": 2030
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PBEZ",
+      "name": "Umschreibung Bauprojekt",
+      "system": "gwr",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PARTBW",
+      "name": "Art der Bauwerke",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PTYPBW",
+      "name": "Typ der Bauwerke",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PARTBZ",
+      "name": "Bewilligungsgrund",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PGDENR",
+      "name": "Bauort",
+      "system": "gwr",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PSTAT",
+      "name": "Status Bauprojekt",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATIN",
+      "name": "Datum Baueingabe",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATOK",
+      "name": "Datum Baubewilligung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATBB",
+      "name": "Datum Baubeginn",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7030
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATBE",
+      "name": "Datum Bauende",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7040
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PVBD",
+      "name": "Voraussichtliche Baudauer",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7050
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATRZG",
+      "name": "Datum Rückzug des Baugesuchs",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7060
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATABL",
+      "name": "Datum Ablehnung des Baugesuchs",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7070
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATANN",
+      "name": "Datum Nichtrealisierung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7080
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDATSIST",
+      "name": "Datum Sistierung",
+      "system": "gwr",
+      "category": "lifecycle",
+      "sortOrder": 7090
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PTYPAG",
+      "name": "Typ der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGNAME1",
+      "name": "Name der Auftraggeber 1",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGNAME2",
+      "name": "Name der Auftraggeber 2",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8020
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGNAMEZ",
+      "name": "Name der Auftraggeber Zusatz Unternehmen",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8030
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGLAND",
+      "name": "Wohnsitzland der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8040
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGAUSLORT",
+      "name": "Ausländische Ortschaft der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8050
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGPLZ4",
+      "name": "Postleitzahl der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8060
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGPLZZ",
+      "name": "Zusatzziffer PLZ der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8070
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGSTR",
+      "name": "Strasse der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8080
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGEINR",
+      "name": "Eingangsnummer der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8090
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PAGADRZ",
+      "name": "Zus. Adresse der Auftraggeber",
+      "system": "gwr",
+      "category": "ownership",
+      "sortOrder": 8100
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PKOST",
+      "name": "Projektkosten total",
+      "system": "gwr",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PDOK",
+      "name": "Beilage zum Bauprojekt",
+      "system": "gwr",
+      "category": "provenance",
+      "sortOrder": 12000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PFREITXT1",
+      "name": "Freitextfeld Projekt 1",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-gwr-bauprojekt/PFREITXT2",
+      "name": "Freitextfeld Projekt 2",
+      "system": "gwr",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PARTAB",
+      "name": "Art der Arbeiten",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PUMNUTZ",
+      "name": "Umnutzung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PINNUMB",
+      "name": "Umbauten / Renovationen im Innenbereich",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PANDUMB",
+      "name": "Andere Umbauten",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PERWMHZ",
+      "name": "Beheizte Erweiterung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4040
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PERWOHZ",
+      "name": "Nicht beheizte Erweiterung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4050
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PENSAN",
+      "name": "Energetische Sanierung",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4060
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PHEIZSAN",
+      "name": "Sanierung des Heizsystems",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4070
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PPHOTSOL",
+      "name": "Photovoltaische Solaranlage",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4080
+    },
+    {
+      "identifier": "t-gwr-arbeiten/PTHERSOL",
+      "name": "Thermische Solaranlage",
+      "system": "gwr",
+      "category": "classification",
+      "sortOrder": 4090
+    },
+    {
+      "identifier": "t-sap-business-entity/BUKRS",
+      "name": "Buchungskreis",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-business-entity/SWENR",
+      "name": "Wirtschaftseinheit",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-business-entity/KOKRS",
+      "name": "Kostenrechnungskreis",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-sap-business-entity/SLAGEWE",
+      "name": "Grundstück",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-sap-business-entity/SOBJLAGE",
+      "name": "Kennzeichen Ortslage",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-business-entity/SSTDORT",
+      "name": "Standort",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-sap-business-entity/SINSTBEZ",
+      "name": "Instandhaltungsbezirk",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-sap-business-entity/SMIETR",
+      "name": "Mietrecht",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9010
+    },
+    {
+      "identifier": "t-sap-business-entity/SMIETSP",
+      "name": "Mietspiegel",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9020
+    },
+    {
+      "identifier": "t-sap-land-architecture/GrundstückID",
+      "name": "GrundstückID",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Parzellennummer",
+      "name": "Parzellennummer",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-land-architecture/Grundbuchnummer",
+      "name": "Grundbuchnummer",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-sap-land-architecture/WirtschaftseinheitID",
+      "name": "WirtschaftseinheitID",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Nutzungszone",
+      "name": "Nutzungszone",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Nutzungsziffer",
+      "name": "Nutzungsziffer",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-sap-land-architecture/Land",
+      "name": "Land",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Kanton",
+      "name": "Kanton",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5010
+    },
+    {
+      "identifier": "t-sap-land-architecture/Ort",
+      "name": "Ort",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5020
+    },
+    {
+      "identifier": "t-sap-land-architecture/Postleitzahl",
+      "name": "Postleitzahl",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5030
+    },
+    {
+      "identifier": "t-sap-land-architecture/Strasse",
+      "name": "Strasse",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5040
+    },
+    {
+      "identifier": "t-sap-land-architecture/Hausnummer",
+      "name": "Hausnummer",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5050
+    },
+    {
+      "identifier": "t-sap-land-architecture/Status",
+      "name": "Status",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Eigentumsverhältnis",
+      "name": "Eigentumsverhältnis",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-sap-land-architecture/Dienstbarkeiten",
+      "name": "Dienstbarkeiten",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-sap-land-architecture/Erwerbsdatum",
+      "name": "Erwerbsdatum",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8020
+    },
+    {
+      "identifier": "t-sap-land-architecture/Erwerbspreis",
+      "name": "Erwerbspreis",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8030
+    },
+    {
+      "identifier": "t-sap-land-architecture/Grundstückswert",
+      "name": "Grundstückswert",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8040
+    },
+    {
+      "identifier": "t-sap-land-architecture/Fläche",
+      "name": "Fläche",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-sap-building/COMP_CODE",
+      "name": "Buchungskreis",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-building/BUSINESS_ENTITY",
+      "name": "Nummer der Wirtschaftseinheit",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-building/BUILDING",
+      "name": "Nummer des Gebäudes",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-sap-building/IDENT_KEY",
+      "name": "Ident-Teil Schlüssel, z.B. \"1000/123\"",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1030
+    },
+    {
+      "identifier": "t-sap-building/IDENT_OBJECT_TYPE",
+      "name": "Ident-Teil Objektart, z.B. \"IS\" (Immobilienvertrag)",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1040
+    },
+    {
+      "identifier": "t-sap-building/MANDATE_OBJECT_ID",
+      "name": "Ident-Teil des Mandatsobjekts im Mandatsbukrs",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-sap-building/MANDATE_MNG_OBJECT_ID",
+      "name": "Ident-Teil des Mandatsobjekts im Verwaltungsbukrs",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-sap-building/MANDATE_CR_OBJECT_ID",
+      "name": "Ident-Teil des Mandatsobjekts im Sondereigentumsbukrs",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_TEXT",
+      "name": "Bezeichnung des Gebäudes",
+      "system": "sap",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_TYPE",
+      "name": "Art des Gebäudes",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-building/MAIN_USAGE_TYPE",
+      "name": "Überwiegende Nutzungsart",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-sap-building/FUNCTION",
+      "name": "Funktion des Objektes",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-sap-building/LOCATION_CLASS",
+      "name": "Lageklasse",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-sap-building/HAS_HIST_SITE_PROTECTION",
+      "name": "Denkmalschutz",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4040
+    },
+    {
+      "identifier": "t-sap-building/MUNICIPALITY_KEY",
+      "name": "Gemeindeschlüssel",
+      "system": "sap",
+      "category": "address",
+      "sortOrder": 5000
+    },
+    {
+      "identifier": "t-sap-building/STAT_PROF",
+      "name": "Statusschema",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_CONDITION",
+      "name": "Allgemeiner Gebäudezustand",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7010
+    },
+    {
+      "identifier": "t-sap-building/CONSTRUCTION_YEAR",
+      "name": "Baujahr",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7020
+    },
+    {
+      "identifier": "t-sap-building/BEGIN_CONSTRUCTION_YEAR",
+      "name": "Datum Baubeginn",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7030
+    },
+    {
+      "identifier": "t-sap-building/COMPLETION_DATE",
+      "name": "Fertigstellung",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7040
+    },
+    {
+      "identifier": "t-sap-building/READY_FOR_OCCUPANCY_DATE",
+      "name": "Bezugsfertigkeit",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7050
+    },
+    {
+      "identifier": "t-sap-building/FINAL_INSPECTION_DATE",
+      "name": "Schlussabnahme",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7060
+    },
+    {
+      "identifier": "t-sap-building/MODERNIZATION_YEAR",
+      "name": "Jahr der Modernisierung",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7070
+    },
+    {
+      "identifier": "t-sap-building/RECONSTRUCTION_YEAR",
+      "name": "Jahr Wiederaufbau",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7080
+    },
+    {
+      "identifier": "t-sap-building/PLANNING_INQUIRY_DATE",
+      "name": "Datum Bauvoranfrage",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7090
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_PERMIT_APPLIC_DATE",
+      "name": "Antrag Baugenehmigung",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7100
+    },
+    {
+      "identifier": "t-sap-building/PRIOR_NOTICE_DATE",
+      "name": "Datum Vorbescheid",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7110
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_PERMIT_DATE",
+      "name": "Baugenehmigung",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7120
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_PERMIT_NOTE",
+      "name": "Anmerkung zur Baugenehmigung",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7130
+    },
+    {
+      "identifier": "t-sap-building/HERITABLE_BLDG_RIGHT_IND",
+      "name": "Kennzeichen Erbbaurecht",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-sap-building/TRANSF_USE_AND_ENCUMBR_DATE",
+      "name": "Übergang Nutzung / Lasten",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-sap-building/PLANNED_SALE_DATE",
+      "name": "Geplanter Verkauf",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8020
+    },
+    {
+      "identifier": "t-sap-building/SALE_DATE",
+      "name": "Verkaufsdatum",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8030
+    },
+    {
+      "identifier": "t-sap-building/USAGE_END_DATE",
+      "name": "Nutzungsende",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8040
+    },
+    {
+      "identifier": "t-sap-building/PUBLIC_FUNDING_FROM",
+      "name": "Öffentliche Förderung von",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8050
+    },
+    {
+      "identifier": "t-sap-building/PUBLIC_FUNDING_TO",
+      "name": "Öffentliche Förderung bis",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8060
+    },
+    {
+      "identifier": "t-sap-building/RESPONSIBLE",
+      "name": "Verantwortlicher",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-sap-building/AUTHORIZATION_GROUP",
+      "name": "Berechtigungsgruppe",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9010
+    },
+    {
+      "identifier": "t-sap-building/USES_REPR_LIST_OF_RENTS",
+      "name": "Mietspiegel wird verwendet",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9020
+    },
+    {
+      "identifier": "t-sap-building/REPR_LIST_OF_RENTS",
+      "name": "Mietspiegel",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9030
+    },
+    {
+      "identifier": "t-sap-building/HAS_CURR_OCC_PRINC",
+      "name": "Nutzt das Raumschuldnerprinzip",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9040
+    },
+    {
+      "identifier": "t-sap-building/FLOORS",
+      "name": "Anzahl der Geschosse",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-sap-building/BASEMENTS",
+      "name": "Anzahl Untergeschosse",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-sap-building/TOP_FLOOR",
+      "name": "Oberstes Geschoss eines Gebäudes",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-sap-building/ELEVATOR_TO_FLOOR",
+      "name": "Lift bis Geschoss im Gebäude",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11030
+    },
+    {
+      "identifier": "t-sap-building/UNIT_VOLUME",
+      "name": "Einheit für Rauminhalt",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11040
+    },
+    {
+      "identifier": "t-sap-building/UNIT_VOLUME_ISO",
+      "name": "ISO-Code Maßeinheit",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11050
+    },
+    {
+      "identifier": "t-sap-building/CURRENCY",
+      "name": "Währungsschlüssel",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11060
+    },
+    {
+      "identifier": "t-sap-building/CURRENCY_ISO",
+      "name": "Iso-Code Währung",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11070
+    },
+    {
+      "identifier": "t-sap-building/BUILDING_VALUE",
+      "name": "Bauwert",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11080
+    },
+    {
+      "identifier": "t-sap-building/CURRENT_BUILDING_VALUE",
+      "name": "Aktueller Bauwert",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11090
+    },
+    {
+      "identifier": "t-sap-building/ASSESSMENT_VALUE",
+      "name": "Einheitswert des Gebäudes",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11100
+    },
+    {
+      "identifier": "t-sap-building/ASSESSMENT_VALUE_YEAR",
+      "name": "Basisjahr des Einheitswertes",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11110
+    },
+    {
+      "identifier": "t-sap-building/INSURANCE_VALUE_TYPE",
+      "name": "Art des Versicherungswertes",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11120
+    },
+    {
+      "identifier": "t-sap-building/INSURANCE_VALUE",
+      "name": "Betrag des Versicherungswertes",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11130
+    },
+    {
+      "identifier": "t-sap-building/AMOUNT_PER_VOLUME",
+      "name": "Betrag pro Raumeinheit",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11140
+    },
+    {
+      "identifier": "t-sap-building/OBJECT_VALID_FROM",
+      "name": "Datum: Objekt gültig ab",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13000
+    },
+    {
+      "identifier": "t-sap-building/OBJECT_VALID_TO",
+      "name": "Datum: Objekt gültig bis",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13010
+    },
+    {
+      "identifier": "t-sap-building/REAL_VALID_FROM",
+      "name": "Datum: Gültig ab (effektiv)",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13020
+    },
+    {
+      "identifier": "t-sap-building/REAL_VALID_TO",
+      "name": "Datum: Gültig bis (effektiv)",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13030
+    },
+    {
+      "identifier": "t-sap-building/CREATION_DATE",
+      "name": "Zuerst erfasst am",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-sap-building/CREATION_TIME",
+      "name": "Angelegt um",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-sap-building/CREATION_USER",
+      "name": "Erfasser",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14020
+    },
+    {
+      "identifier": "t-sap-building/LASTCHANGE_DATE",
+      "name": "Zuletzt bearbeitet am",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14030
+    },
+    {
+      "identifier": "t-sap-building/LASTCHANGE_TIME",
+      "name": "Uhrzeit der letzten Bearbeitung",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14040
+    },
+    {
+      "identifier": "t-sap-building/LASTCHANGE_USER",
+      "name": "Mitarbeiterkennung",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14050
+    },
+    {
+      "identifier": "t-sap-architectural-object/ID",
+      "name": "ID",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Kürzel AOID",
+      "name": "Kürzel AOID",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-architectural-object/Schlüssel",
+      "name": "Schlüssel",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-sap-architectural-object/Schlüssel_Nr",
+      "name": "Schlüssel_Nr",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1030
+    },
+    {
+      "identifier": "t-sap-architectural-object/Übergeordnetes Objekt",
+      "name": "Übergeordnetes Objekt",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Beziehung zu Objekt",
+      "name": "Beziehung zu Objekt",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-sap-architectural-object/Bezeichnung",
+      "name": "Bezeichnung",
+      "system": "sap",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Typ ach. Objekt",
+      "name": "Typ ach. Objekt",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Systemstatus",
+      "name": "Systemstatus",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Businesspartner",
+      "name": "Businesspartner",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Rolle Geschäftspartner",
+      "name": "Rolle Geschäftspartner",
+      "system": "sap",
+      "category": "ownership",
+      "sortOrder": 8010
+    },
+    {
+      "identifier": "t-sap-architectural-object/Bemessungsart",
+      "name": "Bemessungsart",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Grösse",
+      "name": "Grösse",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-sap-architectural-object/Einheit",
+      "name": "Einheit",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11020
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig ab AO",
+      "name": "Gültig ab AO",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13000
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig bis AO",
+      "name": "Gültig bis AO",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13010
+    },
+    {
+      "identifier": "t-sap-architectural-object/gültig ab übergeordnetes Objekt",
+      "name": "gültig ab übergeordnetes Objekt",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13020
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig bis übergeordnetes Objekt",
+      "name": "Gültig bis übergeordnetes Objekt",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13030
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig ab Beziehung zu Objekt",
+      "name": "Gültig ab Beziehung zu Objekt",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13040
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig bis Beziehung zu Objekt",
+      "name": "Gültig bis Beziehung zu Objekt",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13050
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig ab Beziehung zu Partner",
+      "name": "Gültig ab Beziehung zu Partner",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13060
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig bis Beziehung zu Partner",
+      "name": "Gültig bis Beziehung zu Partner",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13070
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig ab Bemessung",
+      "name": "Gültig ab Bemessung",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13080
+    },
+    {
+      "identifier": "t-sap-architectural-object/Gültig bis Bemessung",
+      "name": "Gültig bis Bemessung",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13090
+    },
+    {
+      "identifier": "t-sap-area/ID",
+      "name": "ID",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-area/M2",
+      "name": "M2",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11000
+    },
+    {
+      "identifier": "t-sap-area/Energieverbrauch",
+      "name": "Energieverbrauch",
+      "system": "sap",
+      "category": "measurements",
+      "sortOrder": 11010
+    },
+    {
+      "identifier": "t-bem/MANDT",
+      "name": "Mandant",
+      "system": "sap",
+      "category": "declared primary key",
+      "sortOrder": 100
+    },
+    {
+      "identifier": "t-bem/BEMESSUNG_ID",
+      "name": "Bemessung-ID",
+      "system": "sap",
+      "category": "declared primary key",
+      "sortOrder": 110
+    },
+    {
+      "identifier": "t-bem/BEZEICHNUNG",
+      "name": "Bezeichnung",
+      "system": "sap",
+      "category": "label",
+      "sortOrder": 3000
+    },
+    {
+      "identifier": "t-bem/STATUS",
+      "name": "Status",
+      "system": "sap",
+      "category": "lifecycle",
+      "sortOrder": 7000
+    },
+    {
+      "identifier": "t-bem/GUELTIG_AB",
+      "name": "Gültig ab",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13000
+    },
+    {
+      "identifier": "t-bem/ERDAT",
+      "name": "Anlagedatum",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14000
+    },
+    {
+      "identifier": "t-bem/ERNAM",
+      "name": "Angelegt von",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14010
+    },
+    {
+      "identifier": "t-bem/AEDAT",
+      "name": "Änderungsdatum",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14020
+    },
+    {
+      "identifier": "t-bem/AENAM",
+      "name": "Geändert von",
+      "system": "sap",
+      "category": "audit",
+      "sortOrder": 14030
+    },
+    {
+      "identifier": "t-sap-rental-object/BUKRS",
+      "name": "Buchungskreis",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-rental-object/SWENR",
+      "name": "Wirtschaftseinheit",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-rental-object/SMENR",
+      "name": "Mietobjekt",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1020
+    },
+    {
+      "identifier": "t-sap-rental-object/SGENR",
+      "name": "Gebäude",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2000
+    },
+    {
+      "identifier": "t-sap-rental-object/SGRNR",
+      "name": "Grundstück",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2010
+    },
+    {
+      "identifier": "t-sap-rental-object/SGEBT",
+      "name": "Gebäudeteil",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2020
+    },
+    {
+      "identifier": "t-sap-rental-object/KOKRS",
+      "name": "Kostenrechnungskreis",
+      "system": "sap",
+      "category": "references",
+      "sortOrder": 2030
+    },
+    {
+      "identifier": "t-sap-rental-object/ROTYPE",
+      "name": "Typ des Mietobjekts",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-rental-object/SNUNR",
+      "name": "Externe Nutzungsart",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-sap-rental-object/XAUSTKL",
+      "name": "Ausstattungsklasse",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4020
+    },
+    {
+      "identifier": "t-sap-rental-object/XLAGE",
+      "name": "Lageklasse",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4030
+    },
+    {
+      "identifier": "t-sap-rental-object/RLGESCH",
+      "name": "Lage im Geschoss",
+      "system": "sap",
+      "category": "geometry",
+      "sortOrder": 6000
+    },
+    {
+      "identifier": "t-sap-contract/BUKRS",
+      "name": "Buchungskreis",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1000
+    },
+    {
+      "identifier": "t-sap-contract/RECNNR",
+      "name": "Nummer des Vertrags",
+      "system": "sap",
+      "category": "identity",
+      "sortOrder": 1010
+    },
+    {
+      "identifier": "t-sap-contract/RECNTYPE",
+      "name": "Vertragsart",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4000
+    },
+    {
+      "identifier": "t-sap-contract/RECNTLAW",
+      "name": "Mietrecht",
+      "system": "sap",
+      "category": "classification",
+      "sortOrder": 4010
+    },
+    {
+      "identifier": "t-sap-contract/SRRELEVANT",
+      "name": "Kennzeichen Umsatzrelevant",
+      "system": "sap",
+      "category": "operations",
+      "sortOrder": 9000
+    },
+    {
+      "identifier": "t-sap-contract/RECNBEG",
+      "name": "Datum Vertragsbeginn",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13000
+    },
+    {
+      "identifier": "t-sap-contract/RECNENDABS",
+      "name": "Datum Laufzeitende",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13010
+    },
+    {
+      "identifier": "t-sap-contract/RECNNOTPER",
+      "name": "Kündigung des Vertrags zum...",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13020
+    },
+    {
+      "identifier": "t-sap-contract/RECNNOTREASON",
+      "name": "Kündigungsgrund",
+      "system": "sap",
+      "category": "validity",
+      "sortOrder": 13030
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "stage": "postflight",
+  "commands": 5,
+  "preservedRecords": 3340,
+  "updatedRecords": 8,
+  "newRecords": 0,
+  "newAuditEvents": 5,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "geometriebezugRemaining": 0,
+  "exclusiveRulesArchived": 2
+}

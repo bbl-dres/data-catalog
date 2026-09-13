@@ -77,13 +77,14 @@ async function generate(db) {
     JOIN pg_type t ON t.oid=a.atttypid LEFT JOIN pg_type bt ON bt.oid=t.typbasetype
     LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum
     WHERE n.nspname='catalog' AND c.relkind='r' AND a.attnum>0 AND NOT a.attisdropped ORDER BY c.relname,a.attnum`)).rows;
+  // Nullability is already represented by column schemas/required; omit version-specific named NOT NULL constraints.
   const constraints = (await db.query(`SELECT c.relname AS table_name, k.contype AS type, k.conname AS name,
     pg_get_constraintdef(k.oid) AS definition,
     ARRAY(SELECT a.attname FROM unnest(k.conkey) WITH ORDINALITY AS key(num,idx) JOIN pg_attribute a ON a.attrelid=k.conrelid AND a.attnum=key.num ORDER BY key.idx) AS columns,
     target.relname AS target_table,
     ARRAY(SELECT a.attname FROM unnest(k.confkey) WITH ORDINALITY AS key(num,idx) JOIN pg_attribute a ON a.attrelid=k.confrelid AND a.attnum=key.num ORDER BY key.idx) AS target_columns
     FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
-    LEFT JOIN pg_class target ON target.oid=k.confrelid WHERE n.nspname='catalog' ORDER BY c.relname,k.conname`)).rows;
+    LEFT JOIN pg_class target ON target.oid=k.confrelid WHERE n.nspname='catalog' AND k.contype <> 'n' ORDER BY c.relname,k.conname`)).rows;
   const rpc = (await db.query(`SELECT p.provolatile, p.prosecdef, p.pronargs, p.prorettype::regtype::text AS result,
     has_function_privilege('anon', p.oid, 'EXECUTE') AS executable FROM pg_proc p
     JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='catalog' AND p.proname='read_snapshot'`)).rows;

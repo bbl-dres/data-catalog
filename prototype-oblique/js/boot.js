@@ -21,7 +21,7 @@
   const config = DK.catalogConfig;
   if (!config) return;
   // The UI files data.load() always needs, resolved against the same 'data/' base.
-  ['config.json', 'i18n.json', 'model.json', 'manual.json'].forEach(file => start('data/' + file));
+  ['config.json', 'i18n.json', 'model.json', 'manual.json'].forEach(file => start('data/' + file, file === 'i18n.json' ? { cache: 'no-cache' } : undefined));
   if (config.provider !== 'supabase') return;
   let target;
   try { target = DK.resources.catalogConnection(config); } catch { return; }

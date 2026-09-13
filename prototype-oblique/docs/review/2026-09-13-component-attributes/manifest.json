@@ -1,0 +1,584 @@
+{
+  "operation": "2026-09-13-component-classification-warranty",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "621e8462d18e513f793e395e8879218b",
+  "description": "eBKP-H Code and five installation/warranty definitions on Bauteil, Technische Komponente and Technische Anlage. Existing main-group lists remain unchanged; no restriction to a single group. Unknown dates stay empty, no SBB sentinel values or automatic legal deadlines. No schema change.",
+  "commands": [
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/ebkp-h-code",
+      "expected_version": 0,
+      "body": {
+        "id": "ef797e68-7071-4c1f-bdb0-2b4511e95de6",
+        "identifier": "bauteil/ebkp-h-code",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "eBKP-H Code",
+        "semantic_name": "ebkpHCode",
+        "description_de": "Code gemäss eBKP-H (Baukostenplan Hochbau, SN 506 511).",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 400,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://www.crb.ch/de/normen-standards/baukostenplane/baukostenplan-hochbau-ebkp-h",
+            "purpose": "documentation",
+            "title_de": "CRB eBKP-H"
+          }
+        ]
+      },
+      "command_id": "ef4c50f6-00be-4dba-a739-36727c2eb523"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/einbaudatum",
+      "expected_version": 0,
+      "body": {
+        "id": "ee744c70-1d26-4832-ae12-0d4fcc728bc7",
+        "identifier": "bauteil/einbaudatum",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Einbaudatum",
+        "semantic_name": "installationDate",
+        "description_de": "Datum des Einbaus am aktuellen Standort.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 710,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "21f5ee5e-5560-472f-ade1-14d54931352f"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/garant",
+      "expected_version": 0,
+      "body": {
+        "id": "f3ad91af-3b6f-4299-be69-31b271b5f365",
+        "identifier": "bauteil/garant",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Garant",
+        "semantic_name": "warrantyProvider",
+        "description_de": "Hersteller, Lieferant oder Verkäufer, der die Garantieleistungen erbringt.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 800,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "fa211624-54cc-492f-8b22-f3e6c0786a05"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/garantiebeginn",
+      "expected_version": 0,
+      "body": {
+        "id": "82d31454-b424-4197-a82d-f1edd531ba41",
+        "identifier": "bauteil/garantiebeginn",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Garantiebeginn",
+        "semantic_name": "warrantyStartDate",
+        "description_de": "Anfangsdatum des Garantiezeitraums.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 810,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "61cd15e7-dfc1-464c-8c8d-daf60fa39673"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/garantieende-2-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "fc5eff6c-2715-431d-9587-ca749eebf4f2",
+        "identifier": "bauteil/garantieende-2-jahre",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Garantieende (2-Jahresfrist)",
+        "semantic_name": "warrantyEndDate2Years",
+        "description_de": "Enddatum der vereinbarten 2-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 820,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "6450fc6f-b30c-4f9e-9a10-472220689b53"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "bauteil/garantieende-5-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "26652aa4-8425-4e3c-8806-85b445badcf9",
+        "identifier": "bauteil/garantieende-5-jahre",
+        "business_object_id": "231b3a0e-851f-4472-aa93-979fa3eb3ea7",
+        "name_de": "Garantieende (5-Jahresfrist)",
+        "semantic_name": "warrantyEndDate5Years",
+        "description_de": "Enddatum der vereinbarten 5-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 830,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "ad62aab5-c61a-4a61-a103-62121c4a5430"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/ebkp-h-code",
+      "expected_version": 0,
+      "body": {
+        "id": "dd6ab6a0-73a4-4e66-bce9-55125501e49e",
+        "identifier": "technische-komponente/ebkp-h-code",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "eBKP-H Code",
+        "semantic_name": "ebkpHCode",
+        "description_de": "Code gemäss eBKP-H (Baukostenplan Hochbau, SN 506 511).",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 400,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://www.crb.ch/de/normen-standards/baukostenplane/baukostenplan-hochbau-ebkp-h",
+            "purpose": "documentation",
+            "title_de": "CRB eBKP-H"
+          }
+        ]
+      },
+      "command_id": "85543700-8c4e-4997-b231-a36cf11faf1b"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/einbaudatum",
+      "expected_version": 0,
+      "body": {
+        "id": "b44f8b20-7827-4891-b884-7db6944b47ed",
+        "identifier": "technische-komponente/einbaudatum",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Einbaudatum",
+        "semantic_name": "installationDate",
+        "description_de": "Datum des Einbaus am aktuellen Standort.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 710,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "6055cb2a-9799-4538-b4a1-64141d6b02a7"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/garant",
+      "expected_version": 0,
+      "body": {
+        "id": "05afa0ba-2f3f-4667-ad11-8fb91bd3a482",
+        "identifier": "technische-komponente/garant",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Garant",
+        "semantic_name": "warrantyProvider",
+        "description_de": "Hersteller, Lieferant oder Verkäufer, der die Garantieleistungen erbringt.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 800,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "888c3dfa-375d-4ca5-b146-c9bd89405f96"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/garantiebeginn",
+      "expected_version": 0,
+      "body": {
+        "id": "c7f961dc-fcba-4fff-bae8-b7ba8bfca434",
+        "identifier": "technische-komponente/garantiebeginn",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Garantiebeginn",
+        "semantic_name": "warrantyStartDate",
+        "description_de": "Anfangsdatum des Garantiezeitraums.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 810,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "1dc80708-64e3-43ee-b483-d50a3c2a9d59"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/garantieende-2-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "15e8a9b4-2770-4765-b960-2f0059d447a8",
+        "identifier": "technische-komponente/garantieende-2-jahre",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Garantieende (2-Jahresfrist)",
+        "semantic_name": "warrantyEndDate2Years",
+        "description_de": "Enddatum der vereinbarten 2-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 820,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "4f38c037-d7e1-496b-a54f-408da7a6bfef"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-komponente/garantieende-5-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "1ae38c7c-35fe-4f03-9be5-30db710e219c",
+        "identifier": "technische-komponente/garantieende-5-jahre",
+        "business_object_id": "376136e2-f3d4-4f00-b3ef-97eadc46a9d3",
+        "name_de": "Garantieende (5-Jahresfrist)",
+        "semantic_name": "warrantyEndDate5Years",
+        "description_de": "Enddatum der vereinbarten 5-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 830,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "1b0c4ea9-437f-48ae-b70f-c836d28078f1"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/ebkp-h-code",
+      "expected_version": 0,
+      "body": {
+        "id": "de97be83-dde4-4335-98d4-3061c9faa01f",
+        "identifier": "technische-anlage/ebkp-h-code",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "eBKP-H Code",
+        "semantic_name": "ebkpHCode",
+        "description_de": "Code gemäss eBKP-H (Baukostenplan Hochbau, SN 506 511).",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 400,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://www.crb.ch/de/normen-standards/baukostenplane/baukostenplan-hochbau-ebkp-h",
+            "purpose": "documentation",
+            "title_de": "CRB eBKP-H"
+          }
+        ]
+      },
+      "command_id": "1c1362d9-fa6e-4aa2-891d-c1e5dc440dfd"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/einbaudatum",
+      "expected_version": 0,
+      "body": {
+        "id": "97f02081-0d05-4bad-b3c7-49c3da68ebf1",
+        "identifier": "technische-anlage/einbaudatum",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Einbaudatum",
+        "semantic_name": "installationDate",
+        "description_de": "Datum des Einbaus am aktuellen Standort.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 710,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "fd3f82ce-325a-43c1-8876-d5a24d1c82ba"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/garant",
+      "expected_version": 0,
+      "body": {
+        "id": "d39fa718-552e-40d1-ab2f-b5854ba045e1",
+        "identifier": "technische-anlage/garant",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Garant",
+        "semantic_name": "warrantyProvider",
+        "description_de": "Hersteller, Lieferant oder Verkäufer, der die Garantieleistungen erbringt.",
+        "value_specification": {
+          "valueType": "text"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 800,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "f360dd42-4972-4d9b-867a-65167034d149"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/garantiebeginn",
+      "expected_version": 0,
+      "body": {
+        "id": "c80ef2e2-be48-4a79-88b2-a249fe669a82",
+        "identifier": "technische-anlage/garantiebeginn",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Garantiebeginn",
+        "semantic_name": "warrantyStartDate",
+        "description_de": "Anfangsdatum des Garantiezeitraums.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 810,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "5baf427f-69ca-43d1-9770-a4ebe797938e"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/garantieende-2-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "7328978c-f0d3-439c-99fc-573e46bf1cbf",
+        "identifier": "technische-anlage/garantieende-2-jahre",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Garantieende (2-Jahresfrist)",
+        "semantic_name": "warrantyEndDate2Years",
+        "description_de": "Enddatum der vereinbarten 2-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 820,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "3497f38f-3c5d-451b-a70a-e88bb7bce87e"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "technische-anlage/garantieende-5-jahre",
+      "expected_version": 0,
+      "body": {
+        "id": "3ce93806-a0fc-477c-b2b1-bdf32440e764",
+        "identifier": "technische-anlage/garantieende-5-jahre",
+        "business_object_id": "7bec62e0-b62f-4c6d-bc6e-a9bffb543f6e",
+        "name_de": "Garantieende (5-Jahresfrist)",
+        "semantic_name": "warrantyEndDate5Years",
+        "description_de": "Enddatum der vereinbarten 5-Jahresfrist.",
+        "value_specification": {
+          "valueType": "date"
+        },
+        "is_identifier": false,
+        "status": "draft",
+        "is_archived": false,
+        "sort_order": 830,
+        "comment": null,
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://fdk.app.sbb.ch/de/objects",
+            "purpose": "documentation",
+            "title_de": "SBB Fachdatenkatalog"
+          }
+        ]
+      },
+      "command_id": "e4668a13-c493-468a-be93-b320336904ab"
+    }
+  ]
+}

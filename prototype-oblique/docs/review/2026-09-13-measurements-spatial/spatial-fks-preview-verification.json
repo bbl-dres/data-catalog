@@ -1,0 +1,16 @@
+{
+  "stage": "preview",
+  "commands": 23,
+  "preservedRecords": 3353,
+  "updatedRecords": 14,
+  "newRecords": 23,
+  "newAuditEvents": 23,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "existingSpatialFksPreserved": true,
+  "newFkAttributes": 23,
+  "affectedObjects": 14,
+  "businessAttributes": 277,
+  "relationships": 121,
+  "noSchemaChange": true
+}

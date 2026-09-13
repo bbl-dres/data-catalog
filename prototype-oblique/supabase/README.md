@@ -2,7 +2,7 @@
 
 The prototype reads public catalog metadata from Supabase, with optional email/password login. UI configuration, translations, the handbook and the generated OpenAPI contract remain local. **The hosted import and browser connection were verified on 6 September 2026:** all 2,003 normalized rows match the tested import, and the browser reads the live project anonymously.
 
-**Editing was activated and verified on 13 September 2026:** all eight pending migrations and a narrow existing-grant repair are applied. The hosted schema has 19 catalog tables / 477 columns; an actual signed-in save, history and restoration passed. [Deployment record](../docs/review/2026-09-13-editing-activation.md#completed-hosted-activation). Do not rerun the activation bundle on this project.
+**Editing was activated and verified on 13 September 2026:** all eight pending migrations and a narrow existing-grant repair are applied. That activation established 19 catalog tables / 477 columns; an actual signed-in save, history and restoration passed. [Deployment record](../docs/review/2026-09-13-editing-activation.md#completed-hosted-activation). Do not rerun the activation bundle on this project.
 
 ## Email and password login
 
@@ -65,7 +65,7 @@ The local invitation callback and error-message tests pass with the real SDK and
 
 ## Apply to the existing project
 
-All numbered schema changes through `catalog_session_security` are already applied to Data Catalog. The sections below describe their dependencies for recovery or a fresh project; they are not a pending deployment queue. Current status: [security review](../docs/review/2026-09-13-security-review.md).
+All numbered schema changes through `catalog_table_order` are already applied to Data Catalog. The sections below describe their dependencies for recovery or a fresh project; they are not a pending deployment queue. Current status: [security review](../docs/review/2026-09-13-security-review.md).
 
 ### Required-rule correction
 
@@ -77,9 +77,11 @@ Deploy the revised [catalog-api function](functions/catalog-api/index.ts) separa
 
 Apply [canonical column comments](migrations/20260913020000_catalog_aliases.sql) after all earlier migrations, including the row-order and system-of-record updates below. This migration changes comments only on all 474 public columns. It preserves rows, identities, permissions and constraints. The generated OpenAPI contract carries English titles, EN/DE aliases and canonical property references from [data-model.md](../docs/data-model.md#alias-contract-across-surfaces).
 
-Applied through Supabase MCP on 13 September 2026. All 477 current column comments, including the later access-option columns, match the canonical migration output. Follow the [alias review and maintenance commands](../docs/review/2026-09-13-model-alias-review.md#maintaining-one-source-of-truth); future changes start in the Markdown and use a new comment migration.
+Applied through Supabase MCP on 13 September 2026. All 477 then-current column comments, including the later access-option columns, match the canonical migration output. Follow the [alias review and maintenance commands](../docs/review/2026-09-13-model-alias-review.md#maintaining-one-source-of-truth); future changes start in the Markdown and use a new comment migration.
 
 ### Row ordering
+
+[catalog table ordering](migrations/20260913070000_catalog_table_order.sql) is applied via MCP as **20260913190314**. The current schema is **19 catalog tables / 478 columns**. It adds DataTable.sortOrder with integer validation and guarded browser/REST edit support, preserving RLS and denied direct writes. The 30 table and 621 field ranks were separately curated through audited RPCs. [Deployment and verification](../docs/review/2026-09-13-source-order.md).
 
 Apply [catalog row ordering](migrations/20260913010000_catalog_row_order.sql) after the system-of-record migration below. It changes command behavior only: omitted child ranks append consistently through both `save_entry` and REST CRUD. Existing columns, ranks, permissions and identities remain unchanged. The command lock, history and idempotency receipt cover the allocated rank. Explicit zero and ties remain valid; null is rejected. See the [canonical contract](../docs/data-model.md#row-order).
 
@@ -175,7 +177,7 @@ MCP assigned deployment timestamps different from source filenames, and the init
 
 Apply [20260913040000_catalog_access_options.sql](migrations/20260913040000_catalog_access_options.sql) once as `postgres`, after all preceding migrations through [catalog_required_rules](migrations/20260913030000_catalog_required_rules.sql). For an existing database, apply only missing migrations in the table below; do not rerun the initial schema or import.
 
-The migration adds `access_options` JSONB lists to `data_table`, `data_product` and `data_service`, with strict validation, retained item identities, canonical column comments and the existing browser/REST write inventories. Lists start empty. Parent revisions and history cover edits, reordering and archival. Existing endpoint records, grants and catalog content are preserved; no demonstration URLs are imported. The repository now defines 19 public tables and 477 columns.
+The migration adds `access_options` JSONB lists to `data_table`, `data_product` and `data_service`, with strict validation, retained item identities, canonical column comments and the existing browser/REST write inventories. Lists start empty. Parent revisions and history cover edits, reordering and archival. Existing endpoint records, grants and catalog content are preserved; no demonstration URLs are imported. That migration brought the repository to 19 public tables and 477 columns; table ordering later adds one column.
 
 **Hosted activation is complete.** The access-option columns, constraints, triggers, functions and canonical comments match the tested current schema. An MCP ledger timestamp collision was reconciled after confirming the DDL committed; the DDL was not rerun. After applying it, reload the app, sign in, open a table/product/API and use the Bereitstellungsformen edit tab. Check a saved entry and its history. If the CRUD Edge Function is already deployed, it needs no code change for this new owner property. The frontend handles an older schema by keeping public reads available and disabling access-option editing.
 
@@ -198,9 +200,11 @@ The migration adds `access_options` JSONB lists to `data_table`, `data_product` 
 | [import-catalog.cjs](import-catalog.cjs) | Deterministic offline importer and bundle generator. |
 | [import-manifest.json](import-manifest.json) | Source SHA-256 hashes, all allocated identities and expected counts. Retain with backups. |
 | [20260913050000_catalog_session_security.sql](migrations/20260913050000_catalog_session_security.sql) | Current account/session checks for both write RPCs, retired membership-helper execution and closed future public-schema grants. Applied through MCP on 13 September 2026. |
+| [20260913060000_catalog_specializations.sql](migrations/20260913060000_catalog_specializations.sql) | Typed BusinessObject specialization, uniqueness and cycle guard. Applied via MCP as 20260913175334; existing content and ACLs preserved. |
+| [20260913070000_catalog_table_order.sql](migrations/20260913070000_catalog_table_order.sql) | DataTable display rank and guarded edit/API support. Applied via MCP as 20260913190314; schema now 478 columns. |
 | [archive/](archive/README.md) | The 22 content updates applied on 7 September 2026, preserved unchanged with their original replay order and evidence. |
 
-For a **fresh project**, apply all thirteen numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
+For a **fresh project**, apply all fifteen numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
 
 Cleanup review: every numbered SQL migration remains required by the rebuild chain; the 22 archived content operations are also used by regression tests. Applying a migration does not make its source obsolete. The repair remains a tested tool for existing grant drift.
 

@@ -1,0 +1,216 @@
+{
+  "addedAttributes": 18,
+  "businessAttributes": 295,
+  "affectedObjects": 3,
+  "pkNamesAndOrderPreserved": true,
+  "noBrokenReferences": true,
+  "rows": [
+    {
+      "object": "Bauteil",
+      "attributeCount": 9,
+      "attributes": [
+        {
+          "name": "ID",
+          "type": "Text",
+          "role": "PK",
+          "order": 100,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Gebäude-ID",
+          "type": "Text",
+          "role": "FK",
+          "order": 200,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Geschoss-ID",
+          "type": "Text",
+          "role": "FK",
+          "order": 210,
+          "status": "Entwurf"
+        },
+        {
+          "name": "eBKP-H Code",
+          "type": "Text",
+          "role": null,
+          "order": 400,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Einbaudatum",
+          "type": "Datum",
+          "role": null,
+          "order": 710,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garant",
+          "type": "Text",
+          "role": null,
+          "order": 800,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantiebeginn",
+          "type": "Datum",
+          "role": null,
+          "order": 810,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (2-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 820,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (5-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 830,
+          "status": "Entwurf"
+        }
+      ]
+    },
+    {
+      "object": "Technische Komponente",
+      "attributeCount": 10,
+      "attributes": [
+        {
+          "name": "ID",
+          "type": "Text",
+          "role": "PK",
+          "order": 100,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Technische Anlage-IDs",
+          "type": "Text",
+          "role": "FK",
+          "order": 200,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Gebäude-ID",
+          "type": "Text",
+          "role": "FK",
+          "order": 210,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Raum-ID",
+          "type": "Text",
+          "role": "FK",
+          "order": 220,
+          "status": "Entwurf"
+        },
+        {
+          "name": "eBKP-H Code",
+          "type": "Text",
+          "role": null,
+          "order": 400,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Einbaudatum",
+          "type": "Datum",
+          "role": null,
+          "order": 710,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garant",
+          "type": "Text",
+          "role": null,
+          "order": 800,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantiebeginn",
+          "type": "Datum",
+          "role": null,
+          "order": 810,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (2-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 820,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (5-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 830,
+          "status": "Entwurf"
+        }
+      ]
+    },
+    {
+      "object": "Technische Anlage",
+      "attributeCount": 8,
+      "attributes": [
+        {
+          "name": "ID",
+          "type": "Text",
+          "role": "PK",
+          "order": 100,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Versorgte Gebäude-IDs",
+          "type": "Text",
+          "role": "FK",
+          "order": 200,
+          "status": "Entwurf"
+        },
+        {
+          "name": "eBKP-H Code",
+          "type": "Text",
+          "role": null,
+          "order": 400,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Einbaudatum",
+          "type": "Datum",
+          "role": null,
+          "order": 710,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garant",
+          "type": "Text",
+          "role": null,
+          "order": 800,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantiebeginn",
+          "type": "Datum",
+          "role": null,
+          "order": 810,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (2-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 820,
+          "status": "Entwurf"
+        },
+        {
+          "name": "Garantieende (5-Jahresfrist)",
+          "type": "Datum",
+          "role": null,
+          "order": 830,
+          "status": "Entwurf"
+        }
+      ]
+    }
+  ]
+}

@@ -190,7 +190,7 @@
     const fields = DK.presentation.definitions(kind);
     const items = e.kind === 'systems' ? data.tablesOfSystem(e) : e.kind === 'tables' ? e.fields : e.kind === 'refs' ? e.values : e.attributes || [];
     const rows = items.map((item, position) => {
-      const href = e.kind === 'objects' ? router.entityHref('attrs', data.childId(e.identifier, item.identifier))
+      const href = e.kind === 'objects' ? router.entityHref('attrs', data.attributeEntity(e, item).identifier)
         : e.kind === 'tables' ? router.entityHref('fields', data.childId(e.identifier, data.fieldId(item)))
         : e.kind === 'systems' ? router.entityHref('tables', item.identifier) : null;
       const entity = kind === 'fields' ? data.fieldEntity(e, item, position)
@@ -207,7 +207,7 @@
     const rd = detail.rowsData(e);
     const filter = (route.params.filter || '').trim();
     const key = `detail:${e.kind}:rows`;
-    const options = state.tableSorts[key] || ['attrs', 'fields'].includes(rd.kind) ? DK.presentation.sortOptions(state, key, rd.kind) : { key, sort: null };
+    const options = state.tableSorts[key] || ['attrs', 'fields', 'tables'].includes(rd.kind) ? DK.presentation.sortOptions(state, key, rd.kind) : { key, sort: null };
     const matches = rd.rows.filter(row => data.matchesValues([...row.text, ...(row.search || [])], filter));
     const ordered = options.sort ? DK.presentation.sort(rd.kind, matches, options.sort, row => row.entity) : matches;
     const fields = DK.presentation.fields(rd.kind);
@@ -224,7 +224,12 @@
     if (!list.matched) return ui.collectionEmpty(list.filter);
     const { columns, options, paging } = list;
     const rows = list.rows.map(r => ui.tr(r.cells, r.href, columns)).join('');
-    return pagedTable(columns, rows, options, paging);
+    const definitions = [...new Set((e.attributes || []).map(a => a.definitionObject).filter(Boolean))];
+    const shared = definitions.length ? '<p>' + esc(t('detail.sharedAttributes')) + ' ' + definitions.map(id => {
+      const object = data.get('objects', id);
+      return ui.link(router.entityHref('objects', id, { tab: 'rows' }), object?.name || id);
+    }).join(', ') + '.</p>' : '';
+    return shared + pagedTable(columns, rows, options, paging);
   };
 
   function pagedTable(columns, rows, options, paging) {

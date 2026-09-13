@@ -1,0 +1,14 @@
+{
+  "stage": "postflight",
+  "commands": 34,
+  "preservedRecords": 3288,
+  "updatedRecords": 60,
+  "newRecords": 8,
+  "newAuditEvents": 34,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "pkNamesNormalized": 26,
+  "missingIdsAdded": 8,
+  "activeObjects": 38,
+  "sharedDossierIds": 2
+}

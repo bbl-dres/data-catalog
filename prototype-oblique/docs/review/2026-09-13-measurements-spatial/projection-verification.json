@@ -1,0 +1,151 @@
+{
+  "businessObjects": 38,
+  "businessAttributes": 277,
+  "newFkAttributes": 23,
+  "affectedObjects": 14,
+  "newQuantities": 7,
+  "pkNamesAndOrderPreserved": true,
+  "existingSpatialFksPreserved": true,
+  "noArealParentAdded": true,
+  "noBrokenReferences": true,
+  "rows": [
+    {
+      "object": "Gebäude",
+      "name": "Grundstück-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Areal",
+      "name": "Grundstück-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Kampus",
+      "name": "Gebäude-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Nutzungseinheit",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Nutzungseinheit",
+      "name": "Raum-IDs",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "Zone",
+      "name": "Raum-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Parkplatz",
+      "name": "Geschoss-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Parkplatz",
+      "name": "Grundstück-IDs",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "Bodenbedeckung",
+      "name": "Grundstück-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Bauteil",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Bauteil",
+      "name": "Geschoss-ID",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "Technische Anlage",
+      "name": "Versorgte Gebäude-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Technische Komponente",
+      "name": "Technische Anlage-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Technische Komponente",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "Technische Komponente",
+      "name": "Raum-ID",
+      "role": "FK",
+      "order": 220
+    },
+    {
+      "object": "Wohnung",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Wohnung",
+      "name": "Raum-IDs",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "CAFM Basisplan",
+      "name": "Geschoss-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Heizzentrale",
+      "name": "Versorgte Gebäude-IDs",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Heizzentrale",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 210
+    },
+    {
+      "object": "Heizzentrale",
+      "name": "Raum-ID",
+      "role": "FK",
+      "order": 220
+    },
+    {
+      "object": "Stromzähler",
+      "name": "Gebäude-ID",
+      "role": "FK",
+      "order": 200
+    },
+    {
+      "object": "Stromzähler",
+      "name": "Raum-ID",
+      "role": "FK",
+      "order": 210
+    }
+  ]
+}

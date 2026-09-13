@@ -26,7 +26,7 @@
     const files = Object.entries(FILES).filter(([key]) => provider === 'json' || ['config', 'i18n', 'model', 'manual'].includes(key));
     const [entries, catalog] = await Promise.all([Promise.all(files.map(async ([key, file]) => {
       // boot.js may have requested the UI files already; the HTTP cache policy is the same as for scripts and styles.
-      try { return [key, await (DK.boot?.take(base + file) || DK.resources.read(base + file))]; }
+      try { return [key, await (DK.boot?.take(base + file) || DK.resources.read(base + file, key === 'i18n' ? { cache: 'no-cache' } : {}))]; }
       catch (err) { throw new Error(file + ': ' + (err.name === 'SyntaxError' ? 'invalid JSON: ' : '') + err.message); }
     })), provider === 'supabase' ? DK.catalog.load(DK.catalogConfig) : null]);
     // Validate a complete snapshot before publishing it; a failed reload keeps the old catalog usable.
@@ -176,6 +176,11 @@
     return a ? data.attributeEntity(o, a) : null;
   };
   data.attributeEntity = function (o, a) {
+    if (a.definitionObject) {
+      const definingObject = data.get('objects', a.definitionObject);
+      const definition = definingObject?.attributes.find(item => !item.definitionObject && item._record?.id === a._record.id);
+      if (definition) return data.attributeEntity(definingObject, definition);
+    }
     const id = data.childId(o.identifier, a.identifier);
     if (a._record) return {
       ...a, identifier: id, attrId: a.identifier, object: o.identifier, domain: o.domain, normReference: o.normReference,
@@ -410,7 +415,7 @@
     const attributeGroup = fields => {
       const assertions = fields.flatMap(mappings).filter(r => fields.some(f => f._record?.id === r.source_data_field_id && f.status !== 'Archiviert'));
       return { key: 'representedAttributes', title: t('rel.representedAttributes'), icon: 'tag', items:
-        data.objects.filter(o => o.status !== 'Archiviert').flatMap(o => o.attributes.filter(a => a.status !== 'Archiviert' &&
+        data.objects.filter(o => o.status !== 'Archiviert').flatMap(o => o.attributes.filter(a => !a.definitionObject && a.status !== 'Archiviert' &&
           assertions.some(r => r.target_business_attribute_id === a._record?.id)).map(a => ({
             name: data.displayName('attrs', a), sub: [o.name, mappingStatus(assertions.filter(r => r.target_business_attribute_id === a._record.id))].join(' · '),
             href: href('attrs', data.childId(o.identifier, a.identifier)),
@@ -506,6 +511,13 @@
       mk('usedInProducts', 'briefcase', 'products', data.products.filter(p => (o && p.basedOn.includes(o.identifier)) || (kind === 'tables' && p.sourcedFrom.includes(e.identifier)))),
       { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: o ? data.termsOf(o) : [] },
     ];
+    if (kind === 'objects' && e.status !== 'Archiviert') {
+      const assertions = (e._relationships || []).filter(r => !r.is_archived && r.relationship_type === 'specializes' && ['candidate', 'confirmed'].includes(r.verification_status));
+      const related = (ownKey, otherKey) => data.objects.filter(object => object.status !== 'Archiviert' &&
+        assertions.some(r => r[ownKey] === e._record?.id && r[otherKey] === object._record?.id));
+      rels.unshift(mk('specializationOf', 'stack', 'objects', related('source_business_object_id', 'target_business_object_id')),
+        mk('specializations', 'stack', 'objects', related('target_business_object_id', 'source_business_object_id')));
+    }
     if (kind !== 'objects' && o) rels.splice(2, 0, mk('object', 'stack', 'objects', [o]));
     if (kind === 'tables') rels.push(mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]), attributeGroup(e.status === 'Archiviert' ? [] : e.fields));
     return rels;

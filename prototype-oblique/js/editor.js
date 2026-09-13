@@ -84,7 +84,7 @@
       input = `<select class="ob-select" ${attrs}><option value="">${esc(t(emptyLabel))}</option>${options.map(([v,l])=>`<option value="${esc(v)}"${String(value) === String(v) ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
     } else if (f.type === 'checkbox') input = `<input class="ob-check-input" type="checkbox" ${attrs}${value ? ' checked' : ''}>`;
     else if (['textarea','lines','urls'].includes(f.type)) input = `<textarea class="ob-input" rows="${f.key === 'description' ? 3 : 2}" ${attrs}>${esc(value)}</textarea>`;
-    else input = `<input class="ob-input" type="${['date','url'].includes(f.type) ? f.type : 'text'}" value="${esc(value)}" ${attrs}>`;
+    else input = `<input class="ob-input" type="${['date','url','number'].includes(f.type) ? f.type : 'text'}" value="${esc(value)}" ${attrs}>`;
     return `<div class="ob-edit-field ob-form-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
   }
   const titleFields = row => [schema.field('name','edit.name','text',{required:true}),schema.field('description','edit.description','textarea')].map(f=>control(row,f)).join('');
@@ -190,6 +190,7 @@
       for (const [,fields] of schema.groups(r.table)) for (const f of fields) {
         const value = schema.read(r.value,f.key,draft.lang,r.table);
         if (f.required && !String(value).trim()) error(r,f.key);
+        if (f.type === 'number' && (!Number.isInteger(r.value[f.key]) || r.value[f.key]<0 || r.value[f.key]>2147483647)) error(r,f.key,'edit.invalidOrder');
         if (f.type === 'reference' && value && !snapshot()[f.table].some(x=>x.id === value)) error(r,f.key,'edit.invalidReference');
         if (f.type === 'url' && value && !validUrl(value) || f.type === 'urls' && String(value).split('\n').some(x=>x && !validUrl(x))) error(r,f.key,'edit.invalidUrl');
       }

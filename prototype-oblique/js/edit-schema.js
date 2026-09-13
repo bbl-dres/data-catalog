@@ -16,7 +16,7 @@
     system: [select('system_type','edit.systemType',['application','register','modelRepository','distributedSource']),field('technology','fact.technology')],
     business_object: [ref('domain_id','fact.domain','domain',true),ref('system_of_record_id','fact.systemOfRecord','system'),field('normative_references','fact.normReference','lines')],
     business_attribute: [field('semantic_name','edit.semanticName','text',{required:true}),ref('system_of_record_id','fact.systemOfRecord','system'),...formats,select('keyRole','fact.businessKey',['PK','FK','UK','none']),field('required','fact.requiredRule','checkbox'),ref('code_list_id','col.codeList','code_list')],
-    data_table: [ref('system_id','fact.system','system',true),ref('domain_id','fact.domain','domain'),field('technical_name','fact.technicalName'),field('database_name','edit.databaseName'),field('schema_name','edit.schemaName')],
+    data_table: [field('sort_order','edit.order','number',{required:true}),ref('system_id','fact.system','system',true),ref('domain_id','fact.domain','domain'),field('technical_name','fact.technicalName'),field('database_name','edit.databaseName'),field('schema_name','edit.schemaName')],
     data_field: [field('technical_name','fact.technicalName','text',{required:true}),select('technical_name_kind','edit.technicalNameKind',['physicalColumn','modelAttribute','apiField','dataSourceField','unknown'],{required:true}),field('source_path','edit.sourcePath'),field('source_data_type','edit.sourceDataType'),select('data_type_scope','edit.dataTypeScope',['physicalSchema','modelDefinition','serviceSchema','unknown']),field('is_required','fact.mandatory','boolean'),field('is_nullable','edit.nullable','boolean'),field('key_roles','fact.key','keys'),ref('code_list_id','col.codeList','code_list'),field('applies_to_type_names','edit.appliesTo','lines')],
     code_list: [ref('domain_id','fact.domain','domain'),field('organisationName','edit.organisationName'),field('organisationUrl','edit.organisationUrl','url'),field('normative_references','fact.normReference','lines')],
     code_value: [field('code','col.code','text',{required:true}),field('shortName','edit.shortName')],
@@ -48,6 +48,7 @@
     if (Object.values(children).some(([t]) => t === table)) Object.assign(r,{sort_order:0,is_archived:false});
     if (table === 'business_attribute' || table === 'product_attribute') Object.assign(r,{semantic_name:'attribute-'+r.id.slice(0,8),value_specification:null});
     if (table === 'data_field') r.technical_name_kind = 'unknown';
+    if (table === 'data_table') r.sort_order = 0;
     if (table === 'business_object') r.domain_id = parent?.domain_id || parent?.id || null;
     return r;
   }
@@ -94,7 +95,7 @@
       if (key === 'valueType' && value !== 'geometry') { delete spec.geometryType; delete spec.coordinateReferenceSystem; }
       r.value_specification = Object.keys(spec).length ? spec : null; return;
     }
-    r[key] = f.type === 'checkbox' ? value : f.type === 'boolean' ? value === '' ? null : value === 'true'
+    r[key] = f.type === 'number' ? value.trim() === '' ? null : Number(value) : f.type === 'checkbox' ? value : f.type === 'boolean' ? value === '' ? null : value === 'true'
       : ['lines','urls','keys'].includes(f.type) ? value.split('\n').map(x=>x.trim()).filter(Boolean) : blank(value);
   }
   DK.editSchema = { kinds, children, groups, defaults, read, write, languages, field };

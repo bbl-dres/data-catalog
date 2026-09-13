@@ -1,0 +1,16 @@
+{
+  "stage": "preview",
+  "commands": 5,
+  "preservedRecords": 3400,
+  "updatedRecords": 8,
+  "newRecords": 0,
+  "newAuditEvents": 5,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "existingCodeListsAndRulesUnchanged": true,
+  "bemessungActiveAttributes": 10,
+  "buildingIdNamesConsistent": true,
+  "attributesArchived": 2,
+  "businessAttributes": 295,
+  "historyEvents": 1211
+}

@@ -1,0 +1,15 @@
+{
+  "stage": "preview",
+  "commands": 46,
+  "preservedRecords": 3302,
+  "updatedRecords": 8,
+  "newRecords": 38,
+  "newAuditEvents": 46,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "archivedConcepts": 4,
+  "newDossierSpecializations": 2,
+  "newAttributes": 12,
+  "newValueLists": 2,
+  "newCodeValues": 20
+}

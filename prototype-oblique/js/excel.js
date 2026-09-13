@@ -27,7 +27,7 @@
     if(kind==='fields')ref('dataTable','fact.table');
     if(kind==='values')ref('codeList','col.codeList');
     if(kind==='endpoints')ref('dataService','excel.dataService');
-    if(['attrs','fields','values','endpoints'].includes(kind))c('sortOrder','excel.sortOrder',18,'entry','number');
+    if(['attrs','fields','values','endpoints','tables'].includes(kind))c('sortOrder','excel.sortOrder',18,'entry','number');
     c('id','excel.internalId',36,'entry',undefined,true);
     c('identifier','fact.identifier',28,'entry');
     if(kind==='values')c('code','col.code',16,'entry');

@@ -84,7 +84,7 @@
       }
       return true;
     };
-    const sourceIndex = index(snapshot.relationship.filter(active), link => [link.source_data_product_id, link.source_data_table_id]);
+    const sourceIndex = index(snapshot.relationship.filter(active), link => [link.source_data_product_id, link.source_data_table_id, link.source_business_object_id]);
     const linked = (r, type, targetTable) => (sourceIndex.get(r.id) || []).filter(link => link.relationship_type === type).map(link => ref(targetTable, link[`target_${targetTable}_id`])).filter(Boolean);
     const result = { catalogSnapshot: snapshot };
     for (const [kind, table] of Object.entries(kinds)) result[kind] = snapshot[table].map(base);
@@ -112,6 +112,28 @@
         mandatory: requirements.some(isRequiredRule) ? true : null, qualityRequirements: requirements, codeList: visibleRef('code_list', r.code_list_id) });
       parent.attributes.push(e);
     }
+    // Confirmed specializations share the defining attributes, without copying database rows.
+    const resolved = new Set(), resolving = new Set();
+    const inheritAttributes = object => {
+      if (resolved.has(object._record.id) || resolving.has(object._record.id)) return;
+      resolving.add(object._record.id);
+      const ids = new Set(object.attributes.map(a => a._record.id));
+      const parents = (sourceIndex.get(object._record.id) || []).filter(r => r.relationship_type === 'specializes' && r.verification_status === 'confirmed');
+      for (const relation of parents) {
+        const parent = owner('business_object', relation.target_business_object_id);
+        inheritAttributes(parent);
+        for (const attribute of parent.attributes.filter(a => a.status !== 'Archiviert')) {
+          if (ids.has(attribute._record.id)) continue;
+          ids.add(attribute._record.id);
+          const shared = Object.defineProperties({}, Object.getOwnPropertyDescriptors(attribute));
+          Object.assign(shared, { identifier: attribute._record.identifier, definitionObject: attribute.definitionObject || parent.identifier });
+          object.attributes.push(shared);
+        }
+      }
+      object.attributes.sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || compareId(a.identifier,b.identifier));
+      resolving.delete(object._record.id); resolved.add(object._record.id);
+    };
+    result.objects.forEach(inheritAttributes);
     for (const r of ownedRows('data_field')) {
       const parent = owner('data_table', r.data_table_id), e = base(r);
       Object.assign(e, { identifier: childId(r, parent), technicalName: r.technical_name, dataType: r.source_data_type, technicalNameKind: r.technical_name_kind, dataTypeKind: r.data_type_scope,

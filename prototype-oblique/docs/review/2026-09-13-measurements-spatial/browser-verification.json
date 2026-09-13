@@ -1,0 +1,22 @@
+{
+  "date": "2026-09-13",
+  "host": "http://localhost:8765",
+  "raum": {
+    "visibleQuantities": [
+      "Raumfläche (netto)",
+      "Lichte Raumhöhe",
+      "Raumvolumen (netto)"
+    ],
+    "existingStoreyFkVisible": true,
+    "pkFirst": true,
+    "statusLast": true
+  },
+  "zone": {
+    "fkAttribute": "Raum-IDs",
+    "fkLabel": "FK",
+    "quantity": "Nettofläche",
+    "pkFirst": true,
+    "statusLast": true
+  },
+  "scope": "Read-only browser display verification after audited SQL RPC edits; no extra browser save was needed for these content-only additions."
+}

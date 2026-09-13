@@ -1,0 +1,16 @@
+{
+  "stage": "preview",
+  "commands": 19,
+  "preservedRecords": 3342,
+  "updatedRecords": 14,
+  "newRecords": 11,
+  "newAuditEvents": 19,
+  "originalHistoryPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "newMeasurementAttributes": 7,
+  "newMeasurementTypes": 2,
+  "measurementTargets": 7,
+  "businessAttributes": 254,
+  "codeValues": 2120,
+  "relationships": 121
+}
