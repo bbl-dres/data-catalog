@@ -4,6 +4,7 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [13 September 2026 — Detail pages and tabs: design/UX](2026-09-13-detail-page-ux-review.md) | Analysis only: live desktop/mobile profiles, tab navigation, disclosures, rows, relationships, history, export scope and locally simulated editing; prioritized findings, screenshots, acceptance criteria and user-validation tasks. |
 | [13 September 2026 — Canonical aliases](2026-09-13-model-alias-review.md) | EN/DE model aliases across SQL/API metadata, forms, profile/collection labels, print/PDF and Excel; generated bindings, version separation and verification. |
 | [7 September 2026 — Code: bugs and performance](2026-09-07-code-review.md) | Loader, routing, views, diagram, search, exports: load and reactivity measured under a real request waterfall before and after; early catalog requests, inline icons, local menu/tree updates, batched table layout, cached collators, lazy print capture, and 18 defect fixes with regression checks. |
 | [7 September 2026 — Mobile and multi-device design](2026-09-07-mobile-design-review.md) | Phones, tablets, small laptops and large desktops: title row, drawer, footer and floating widgets, column sizing, fact labels, tab strips, relationship diagram, print workspace and API reference, with before/after measurements and comparison images. |
