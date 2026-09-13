@@ -66,7 +66,8 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
       }
       await visit('#/tables/t-sap-building?tab=overview');
       assert.equal(await page.locator('.ob-fact-links a').count(), 3);
-      assert((await page.locator('.ob-core-facts .ob-comment').innerText()).includes('SAP-Frontend'));
+      await page.click('#ob-system-facts-toggle');
+      assert((await page.locator('.ob-system-facts .ob-comment').innerText()).includes('SAP-Frontend'));
       assert((await page.locator('.ob-core-facts').innerText()).includes('Definitionsquelle'));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `documentation links overflow at ${width}px`);
       console.log(`PASS curated system scope and type-specific field search at ${width}px`);

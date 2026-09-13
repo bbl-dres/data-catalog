@@ -91,9 +91,10 @@ const server = createServer();
     await visit('#/domains/bau');
     await page.click('#view-tab-overview');
     assert.equal(await page.locator('.ob-entity-header .ob-chip').count(), 0, 'Type/status must be in Kerndaten, not the title');
-    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status', 'Kommentar']);
+    assert.deepEqual(await page.locator('.ob-core-facts > .ob-facts dt').allTextContents(), ['Typ', 'Status']);
     assert.deepEqual(await page.locator('.ob-protection-facts dt').allTextContents(), ['Klassifizierung', 'Personendaten']);
     assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
+    await page.locator('#ob-system-facts-toggle').click();
     const factHeights = await page.locator('.ob-facts dt').evaluateAll(els => els.map(el => [el.getBoundingClientRect().height,el.nextElementSibling.getBoundingClientRect().height]));
     assert(factHeights.every(([label,value]) => label >= 37 && label === value), 'Canonical labels may wrap; label/value pairs retain aligned rows and the minimum single-line height');
     /* The trimmed attribute table fits beside the sidebar, so the grouped object

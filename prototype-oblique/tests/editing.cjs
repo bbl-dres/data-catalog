@@ -48,7 +48,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   await page.locator('#auth-dialog').waitFor({state:'hidden'});await edit();await field('name').waitFor();
   const original=await field('name').inputValue();assert(await page.locator('[data-edit="save"]').isDisabled());
   await field('description').fill('Browser edit description');
-  await page.locator('[data-edit-field="comment"]').fill('Local test comment');
+  await page.locator('.ob-edit-system [data-edit-field="comment"]').fill('Local test comment');
   assert.equal(await page.locator('#edit-unsaved').innerText(),'2 ungespeicherte Änderungen');
   await page.locator('#edit-language').selectOption('fr');await field('name').fill('Bâtiment modifié');
   await page.locator('#edit-language').selectOption('de');assert.equal(await field('name').inputValue(),original);
@@ -69,7 +69,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   await db.query('UPDATE catalog.business_object SET comment=$1 WHERE id=$2',['Concurrent administrator edit',object.id]);
   await click('save');await message('edit.conflict');assert.equal(await field('description').inputValue(),'Draft after conflict');
   await click('discard');await click('confirm');await edit();
-  assert.equal(await page.locator('[data-edit-field="comment"]').inputValue(),'Concurrent administrator edit','New draft fetches current data');
+  assert.equal(await page.locator('.ob-edit-system [data-edit-field="comment"]').inputValue(),'Concurrent administrator edit','New draft fetches current data');
   await field('description').fill('Idempotent browser save');failAfterSave=true;await click('save');await message('edit.network');
   const retry=saves.at(-1).p_command_id;await save();assert.equal(saves.at(-1).p_command_id,retry,'Lost response retries the same command');
   await edit();await field('description').fill('Persisted despite reload error');failReload=true;await click('save');await message('edit.savedReloadFailed');

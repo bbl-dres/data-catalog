@@ -31,10 +31,15 @@ const ExcelJS=require('../vendor/exceljs/exceljs.min.js');
     assert.equal((await db.query(`SELECT sort_order FROM catalog.${table} WHERE id=$1`,[childId])).rows[0].sort_order,101,'Omitted browser RPC rank appends too');
   }
   let s=await snapshot();const object=s.business_object.find(r=>r.identifier==='gebaeude'),attrs=s.business_attribute.filter(r=>r.business_object_id===object.id);
-  await request(db,command('business_object',object,{},attrs.map((r,i)=>({id:r.id,expected_version:r.row_version,patch:{sort_order:(attrs.length-i)*10}}))));
+  await request(db,command('business_object',object,{},attrs.map((r,i)=>({id:r.id,expected_version:r.row_version,patch:{sort_order:(attrs.length-i-1)*10}}))));
   s=await snapshot();s.business_attribute.reverse();
   const {DK}=runtime(s);await DK.data.load('data/');DK.ui.setDictionary(DK.data.i18n,'de');
   const e={...DK.data.objOf('gebaeude'),kind:'objects'},state={tableSorts:{}};
+  const ranks=Array.from(e.attributes,a=>DK.presentation.values('attrs',a).sortOrder);
+  assert.equal(ranks[0],0,'Zero remains a stored rank');
+  assert(ranks.some(n=>n>=10),'Fixture includes non-contiguous two-digit ranks');
+  assert.deepEqual(Array.from(DK.presentation.sort('attrs',e.attributes,{field:'sortOrder',direction:'desc'}),a=>a.sortOrder),ranks.slice().reverse());
+  assert.equal(DK.presentation.values('attrs',{position:99}).sortOrder,null,'A calculated legacy ordinal is not a saved rank');
   const plan=()=>DK.excel.plan({view:'detail',kind:e.kind,entity:e,params:{}},{kind:e.kind,title:e.name,state},'http://localhost/');
   let p=plan(),sheet=p.sheets.find(s=>s.kind==='attrs');
   const records=sheet=>Array.from(sheet.rows,r=>Object.fromEntries(sheet.columns.map((c,i)=>[c.key,r[i]])));

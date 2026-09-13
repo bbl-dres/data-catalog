@@ -44,6 +44,8 @@ const server = createServer();
       assert.equal(await responsibility.getByRole('link', {name: 'Bundesamt für Statistik (BFS)'}).getAttribute('href'), 'https://www.housing-stat.ch/de/home.html');
       assert(!(await page.locator('.ob-core-facts').innerText()).includes('Bundesamt für Statistik (BFS)'));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      assert.equal(await page.locator('.ob-system-facts dl').isVisible(), false);
+      await page.click('#ob-system-facts-toggle');
       await page.click('[data-menu="actions"]');
       assert(await page.locator('.ob-system-facts dl').isVisible());
       await page.keyboard.press('Escape');

@@ -62,6 +62,7 @@
   const childOf = { objects: 'attrs', tables: 'fields', refs: 'values', products: 'productAttrs', apis: 'endpoints', systems: 'tables' };
   const nameLabels = Object.fromEntries(Object.keys(defaults).map(kind => [kind, kind === 'endpoints' ? 'visibility.endpoint' : 'col.name']));
   const rowFields = kind => [
+    field('sortOrder', 'excel.sortOrder', e => e._record?.sort_order ?? e.sort_order ?? e.sortOrder ?? null, 'number'),
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name),
     field('type', kind === 'fields' ? 'col.dataType' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
     field('required', kind === 'attrs' ? 'fact.requiredRule' : 'col.mandatory', e => e.mandatory, 'boolean'),
@@ -74,11 +75,11 @@
     ...(kind === 'endpoints' ? [field('description', 'col.description', e => ui.localized(e, 'description_') || e.description, 'long')] : []),
   ].map(f => f.id === 'nullable' ? { ...f, type: 'boolean' } : f);
   const rowExtras = {
-    attrs: ['description', 'required', 'systemOfRecord', 'normReference', 'semanticName', ...responsibility, ...protection],
-    fields: ['description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
-    values: ['description', 'shortName', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
-    productAttrs: ['required', 'semanticName', 'code', 'source', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
-    endpoints: ['code', 'http_method', 'relative_path', 'url'],
+    attrs: ['sortOrder', 'description', 'required', 'systemOfRecord', 'normReference', 'semanticName', ...responsibility, ...protection],
+    fields: ['sortOrder', 'description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
+    values: ['sortOrder', 'description', 'shortName', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
+    productAttrs: ['sortOrder', 'required', 'semanticName', 'code', 'source', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
+    endpoints: ['sortOrder', 'code', 'http_method', 'relative_path', 'url'],
   };
   // Keep browsing choices compact; full definitions still support search and source snapshots.
   const optionalChoices = {
@@ -89,12 +90,12 @@
     refs: ['domain', 'responsibleOrg', 'version'],
     products: ['domain', ...responsibility, 'version'],
     apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL'],
-    attrs: ['description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
-    fields: ['description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
-    values: ['description'], productAttrs: ['required', 'code'],
-    endpoints: ['http_method', 'relative_path', 'url'],
+    attrs: ['sortOrder', 'description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
+    fields: ['sortOrder', 'description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
+    values: ['sortOrder', 'description'], productAttrs: ['sortOrder', 'required', 'code'],
+    endpoints: ['sortOrder', 'http_method', 'relative_path', 'url'],
   };
-  const fieldOrder = ['name', 'description', 'domain', 'parentDomain', 'system', 'systemOfRecord', 'businessObject', ...responsibility, 'dataCustodian',
+  const fieldOrder = ['name', 'sortOrder', 'description', 'domain', 'parentDomain', 'system', 'systemOfRecord', 'businessObject', ...responsibility, 'dataCustodian',
     'normReference', 'technology', 'systemType', 'serviceVersion', 'protocol', 'http_method', 'relative_path', 'endpointURL', 'url',
     'format', 'accessRights', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
     'attributeCount', 'fieldCount', 'objectCount', 'tableCount', 'apiCount', 'valueCount', 'endpointCount', 'status'];

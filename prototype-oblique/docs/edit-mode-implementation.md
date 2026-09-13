@@ -48,4 +48,4 @@ Local checks use PGlite with the actual migrations and the real vendored Supabas
 
 ## Saved row order
 
-The [canonical ordering rules](data-model.md#row-order) apply to all five child types. Movement skips hidden archived rows and keeps their slots; crossing a page follows the moved row. Filtering disables movement. A reorder compacts the full draft to 1…n and saves through the audited owner command. New rows append after all ranks, including archived rows. The profile's Saved order button removes temporary column sorting without changing any stored rank.
+The [canonical ordering rules](data-model.md#row-order) apply to all five child types. Movement skips hidden archived rows and keeps their slots; crossing a page follows the moved row. Filtering disables movement. A reorder compacts the full draft to 1…n and saves through the audited owner command. New rows append after all ranks, including archived rows. Profiles offer the saved rank as an optional Row order column in View, hidden by default; sorting it ascending returns to the saved order.

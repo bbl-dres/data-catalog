@@ -42,6 +42,7 @@ const { readWorkbook } = require('./excel-helpers.cjs');
       assert.equal(new Set(links).size, 2);
       await page.locator('#panel-rows a').last().click();
       await page.waitForFunction(() => document.querySelector('h1')?.textContent.includes('Archivwürdigkeit'));
+      await page.click('#ob-system-facts-toggle');
       assert((await page.locator('.ob-comment').innerText()).includes('zweimal'));
       assert.equal(await page.locator('.ob-core-facts dt').filter({ hasText: 'Status in Quelle' }).count(), 0);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `field overflow at ${width}px`);

@@ -86,8 +86,9 @@
   }
   const titleFields = row => [schema.field('name','edit.name','text',{required:true}),schema.field('description','edit.description','textarea')].map(f=>control(row,f)).join('');
   function overview(row) {
-    return `<div class="ob-edit-sections">${schema.groups(row.table).map(([name,fields])=>`<section><h2>${esc(t(name))}</h2>${fields.map(f=>control(row,f)).join('')}</section>`).join('')}
-      <section class="ob-edit-system"><h2>${esc(t('detail.system'))}</h2><p>${esc(t('edit.systemHint'))}</p><dl class="ob-facts"><dt>${esc(t('fact.identifier'))}</dt><dd>${esc(row.original?.identifier || t('edit.assignedOnSave'))}</dd><dt>${esc(t('edit.revision'))}</dt><dd>${esc(row.original?.row_version || '—')}</dd><dt>${esc(t('fact.modified'))}</dt><dd>${esc(ui.fmtDate(row.original?.modified_on) || '—')}</dd></dl></section></div>`;
+    const groups = schema.groups(row.table), systemFields = groups.find(([name])=>name === 'detail.system')?.[1] || [];
+    return `<div class="ob-edit-sections">${groups.filter(([name])=>name !== 'detail.system').map(([name,fields])=>`<section><h2>${esc(t(name))}</h2>${fields.map(f=>control(row,f)).join('')}</section>`).join('')}
+      <section class="ob-edit-system"><h2>${esc(t('detail.system'))}</h2><p>${esc(t('edit.systemHint'))}</p><dl class="ob-facts"><dt>${esc(t('fact.identifier'))}</dt><dd>${esc(row.original?.identifier || t('edit.assignedOnSave'))}</dd><dt>${esc(t('edit.revision'))}</dt><dd>${esc(row.original?.row_version || '—')}</dd><dt>${esc(t('fact.modified'))}</dt><dd>${esc(ui.fmtDate(row.original?.modified_on) || '—')}</dd></dl>${systemFields.map(f=>control(row,f)).join('')}</section></div>`;
   }
   function rowFields(table) {
     const all = schema.groups(table).flatMap(([,f])=>f);

@@ -48247,7 +48247,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "1f400c632c91d1de6a0a836f05c5b8730841abf57bb22d9be2d67070f900e5d0"
+      "sha256": "eba34136a8e3c54ae2def9ef93da91b6cefe6827b336bbd943dc24dcb024fb61"
     },
     "schema": "catalog",
     "readRole": "anon",

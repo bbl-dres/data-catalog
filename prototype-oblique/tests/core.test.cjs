@@ -113,7 +113,10 @@ test('web and print visibility choices exclude detailed metadata without removin
   const { presentation: p } = await loaded();
   for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
     const ids = [...p.choices(kind)].map(field => field.id);
-    assert(ids.length <= 14, kind + ': bounded browsing choices');
+    assert(ids.length <= 15, kind + ': bounded browsing choices, including optional row order');
+    const owned = ['attrs', 'fields', 'values', 'productAttrs', 'endpoints'].includes(kind);
+    assert.equal(ids.includes('sortOrder'), owned, kind + ': row order belongs to owned rows');
+    assert(!p.defaults(kind).includes('sortOrder'), kind + ': row order is hidden by default');
     for (const id of ['identifier', 'comment', 'created', 'modified', 'versionDate', 'informationUrls', 'classification', 'personalData', 'sourcePath', 'semanticName']) assert(!ids.includes(id), kind + ': omit ' + id);
     assert(p.defaults(kind).every(id => ids.includes(id)), 'Defaults are selectable');
   }
@@ -679,12 +682,12 @@ test('information links are safe, optional and preserved in Excel review columns
   }
 });
 
-test('comments belong to each entity and render safely in core facts and Excel', async () => {
+test('comments belong to each entity and render safely in System facts and Excel', async () => {
   const { data, detail, excel } = await loaded();
   const comment = 'Review <script> & field mapping\nSecond line';
   for (const kind of data.kinds) {
     const entity = { ...data.list(kind)[0], kind, comment };
-    assert.equal(detail.facts(entity).primary.find(fact => fact.label === 'Kommentar').value, comment);
+    assert.equal(detail.facts(entity).metadata.find(fact => fact.label === 'Kommentar').value, comment);
     const html = detail.overview(entity);
     assert.ok(html.includes('Review &lt;script&gt; &amp; field mapping\nSecond line'));
     assert.ok(!html.includes('<script>'));
@@ -700,7 +703,7 @@ test('comments belong to each entity and render safely in core facts and Excel',
   table.fields[0].comment = comment; object.attributes[0].comment = comment;
   for (const [kind, entity] of [['fields', data.field(fieldId)], ['attrs', data.attr(attrId)]]) {
     entity.kind = kind;
-    assert.equal(detail.facts(entity).primary.find(fact => fact.type === 'comment').value, comment);
+    assert.equal(detail.facts(entity).metadata.find(fact => fact.type === 'comment').value, comment);
     const plan = excel.plan({ view: 'detail', kind, entity }, { title: entity.name, state: {} }, 'http://localhost/');
     assert.equal(sheetRecords(plan.sheets.find(sheet=>sheet.kind===kind))[0].comment,comment);
   }

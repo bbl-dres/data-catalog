@@ -71,7 +71,7 @@ const { installContrast } = require('./contrast-helpers.cjs');
     }
     await visit('#/objects/gebaeude'); await shot('metadata');
     assert.deepEqual(await page.locator('.ob-detail-facts h2').allTextContents(), ['Kerndaten', 'Informationsschutz', 'System']);
-    assert(await page.locator('.ob-system-facts dl').isVisible());
+    assert.equal(await page.locator('.ob-system-facts dl').isVisible(), false);
     await visit('#/objects?filter=NoMatchingCatalogEntry');
     const emptyType = await page.locator('.ob-empty-title').evaluate(el => {
       const css = getComputedStyle(el); return [css.fontSize, css.fontWeight, css.lineHeight, css.marginBottom];

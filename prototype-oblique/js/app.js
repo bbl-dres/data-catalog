@@ -16,6 +16,7 @@
     mode: 'tiles',                    // tiles | table (URL ?view= overrides)
     groupBy: {},                      // per section (URL ?group= overrides)
     closed: {},                       // collapsed list groups
+    detailSections: {},               // overview section choices for the current entity
     filteredClosed: {},               // search disclosures do not alter unfiltered groups
     treeOpen: { objects: true },      // expanded tree nodes
     treeSection: 'objects',           // section whose branch is open (others collapse on section change)
@@ -198,7 +199,7 @@
       state.treeOpen[branch] = true;
     }
     const key = route.entity ? `${route.kind}:${route.id}` : null;
-    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.lastEntity = key; }
+    if (key !== state.lastEntity) { state.graph = DK.graph.createState(); state.relationDiagram = true; state.detailSections = {}; state.lastEntity = key; }
     if (route.view === 'search') state.query = route.params.q || '';
     // The URL always names a chapter, but only an explicitly requested one scrolls; a plain #/manual opens at the top.
     const requestedChapter = route.view === 'manual' ? route.params.ch : null;
@@ -685,9 +686,6 @@
         }
         app.render(); return;
       }
-      case 'restore-row-order':
-        delete state.tableSorts[`detail:${route.kind}:rows`];
-        router.replaceParams({ sort: null, page: null }); app.render(); return;
       case 'sort-table': {
         const sortKey = el.dataset.sortKey;
         const column = parseInt(el.dataset.sortColumn, 10);
@@ -704,6 +702,15 @@
       case 'toggle-group': {
         const closed = ctx.filter ? state.filteredClosed : state.closed;
         closed[key] = !closed[key]; app.render(); return;
+      }
+      case 'toggle-detail-section': {
+        // Closing a flyout may already have replaced the clicked heading.
+        const button = $(el.id);
+        const expanded = button.getAttribute('aria-expanded') !== 'true';
+        state.detailSections[button.dataset.section] = expanded;
+        button.setAttribute('aria-expanded', String(expanded));
+        $(button.getAttribute('aria-controls')).hidden = !expanded;
+        return;
       }
       case 'toggle-tree': {
         e.preventDefault(); e.stopPropagation();

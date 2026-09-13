@@ -275,7 +275,7 @@
     </div>`;
   };
 
-  views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : ui.collectionStatus(ctx)}${ui.tabPanel('collection-view-panel', `view-tab-${ctx.mode}`, ctx.mode === 'overview' ? DK.detail.overview(ctx.entity) : views.list(ctx))}`;
+  views.collection = ctx => `${views.collectionControls(ctx)}${ctx.mode === 'overview' ? '' : ui.collectionStatus(ctx)}${ui.tabPanel('collection-view-panel', `view-tab-${ctx.mode}`, ctx.mode === 'overview' ? DK.detail.overview(ctx.entity, ctx.state) : views.list(ctx))}`;
 
   /** One combobox for home, results and the expandable header. */
   views.searchField = function (state, home = false) {

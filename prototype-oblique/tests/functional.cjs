@@ -657,15 +657,55 @@ const server = createServer();
       assert.equal(await page.locator('#sidebar-tree [data-action="toggle-tree"][data-key="tables:system:gwr"]').getAttribute('aria-expanded'), 'true');
     });
 
-    await check('System metadata stays visible through search, export and sidebar changes', async () => {
+    await check('overview sections toggle independently and preserve choices within an entry', async () => {
       await visit('#/objects/areal');
+      const system = page.locator('#ob-system-facts-toggle');
+      const core = page.locator('#ob-core-facts-toggle');
+      assert.equal(await system.getAttribute('aria-expanded'), 'false');
+      assert.equal(await page.locator('.ob-system-facts dl').isVisible(), false);
+      assert.equal(await page.locator('.ob-detail-section-toggle[aria-expanded="true"]').count(), 3);
+      await system.press('Enter');
+      assert.equal(await system.getAttribute('aria-expanded'), 'true');
+      await core.press('Space');
+      assert.equal(await core.getAttribute('aria-expanded'), 'false');
+      assert.equal(await page.locator('.ob-core-facts dl').isVisible(), false);
+      assert(await page.locator('.ob-responsibility dl').isVisible());
+      await page.evaluate(() => DK.app.render());
+      assert.equal(await core.evaluate(el => el === document.activeElement), true);
       for (const selector of ['[data-action="toggle-search"]', '[data-menu="actions"]', '[data-action="toggle-sidebar"]']) {
         await page.click(selector);
         assert(await page.locator('.ob-system-facts dl').isVisible(), selector);
+        assert.equal(await page.locator('.ob-core-facts dl').isVisible(), false, selector);
       }
-      await visit('#/objects/gebaeude');
+      await page.click('#tab-rows');
+      await page.click('#tab-overview');
       assert(await page.locator('.ob-system-facts dl').isVisible());
-      assert.equal(await page.locator('.ob-detail-facts details').count(), 0);
+      assert.equal(await page.locator('.ob-core-facts dl').isVisible(), false);
+      await page.emulateMedia({ media: 'print' });
+      assert(await page.locator('.ob-core-facts dl').isVisible(), 'Print includes collapsed content');
+      await page.emulateMedia({ media: 'screen' });
+      assert.equal(await page.locator('.ob-core-facts dl').isVisible(), false);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await settle(page);
+      for (const name of ['ob-responsibility', 'ob-protection-facts', 'ob-system-facts']) {
+        const button = page.locator(`#${name}-toggle`);
+        assert((await button.boundingBox()).height >= 44, 'Touch target');
+        await button.click();
+        assert.equal(await page.locator(`#${name}-content`).isVisible(), false);
+        await button.click();
+        assert(await page.locator(`#${name}-content`).isVisible());
+      }
+      await page.goto(base + '#/objects/gebaeude?tab=overview'); await settle(page);
+      assert.equal(await page.locator('.ob-system-facts dl').isVisible(), false, 'New entry restores defaults');
+      assert(await page.locator('.ob-core-facts dl').isVisible());
+      await system.click();
+      await page.reload(); await page.locator('.ob-detail-sections').waitFor();
+      assert.equal(await page.locator('.ob-system-facts dl').isVisible(), false, 'Reload restores defaults');
+      await visit('#/domains/bau?tab=overview');
+      await system.click();
+      await page.click('#view-tab-table');
+      await page.click('#view-tab-overview');
+      assert(await page.locator('.ob-system-facts dl').isVisible(), 'Domain overview shares section state');
     });
 
     await check('sorting a later desktop group keeps focus in that group', async () => {

@@ -695,7 +695,6 @@
   "visibility.httpMethod": {"de":"HTTP-Methode","fr":"Méthode HTTP","it":"Metodo HTTP","en":"HTTP method"},
   "visibility.relativePath": {"de":"Relativer Pfad","fr":"Chemin relatif","it":"Percorso relativo","en":"Relative path"},
   "visibility.entryField": {"de": "{field} (Eintrag)", "fr": "{field} (entrée)", "it": "{field} (voce)", "en": "{field} (entry)"},
-  "sort.savedOrder": {"de": "Gespeicherte Reihenfolge", "fr": "Ordre enregistré", "it": "Ordine salvato", "en": "Saved order"},
   "edit.orderLimit": {"de": "Bitte zuerst die bestehenden Zeilen neu ordnen.", "fr": "Réordonnez d’abord les lignes existantes.", "it": "Riordinare prima le righe esistenti.", "en": "Reorder the existing rows first."},
   "excel.sortOrder": {"de":"Zeilenreihenfolge","fr":"Ordre","it":"Ordine","en":"Row order"},
   "excel.internalId": {"de":"Interne ID","fr":"ID interne","it":"ID interno","en":"Internal ID"},
