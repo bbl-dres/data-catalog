@@ -1,0 +1,182 @@
+{
+  "operation": "2026-09-13-bemessung-standard",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "094c7485032e6da3d43d869ebad666e8",
+  "description": "Add BBL Bemessungsstandard and bind Bemessung Standard; preserve edition and rule details in Quelle.",
+  "commands": [
+    {
+      "table": "code_list",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard",
+      "expected_version": 0,
+      "body": {
+        "id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "identifier": "profile-bemessungsstandard",
+        "name_de": "BBL Bemessungsstandard",
+        "description_de": "Lokale Werteliste für den bei einer Bemessung angewendeten Standard beziehungsweise die dokumentierte Bemessungsregel. Die konkrete Ausgabe, Messkategorie, Bezugsgrenzen, Abzüge und Abweichungen bleiben in der Quelle dokumentiert. Ein Code allein bescheinigt keine Normkonformität. Bei unbekannter Grundlage bleibt die Angabe offen.",
+        "status": "draft",
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c"
+      },
+      "command_id": "0f7c1440-f817-4194-94de-a9f6df766b4c"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/SIA_416",
+      "expected_version": 0,
+      "body": {
+        "id": "78c07783-eb06-413a-bd94-018df425ed8e",
+        "identifier": "profile-bemessungsstandard/SIA_416",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "code": "SIA_416",
+        "name_de": "SIA 416",
+        "description_de": "Flächen und Volumen von Gebäuden nach der tatsächlich angewendeten SIA-416-Ausgabe. Ausgabe, Messkategorie, Grenzen und Abweichungen in der Quelle dokumentieren.",
+        "sort_order": 10,
+        "documentation_links": [
+          {
+            "url": "https://www.shop.sia.ch/normenwerk/architekt/sia%20416/dfi/D/Product/",
+            "purpose": "standard",
+            "title_de": "SIA 416"
+          }
+        ]
+      },
+      "command_id": "666a1794-9101-40ec-b29e-739893981e36"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/DIN_277",
+      "expected_version": 0,
+      "body": {
+        "id": "67229bdb-a7ec-4822-a5af-7e871d35edab",
+        "identifier": "profile-bemessungsstandard/DIN_277",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "code": "DIN_277",
+        "name_de": "DIN 277",
+        "description_de": "Grundflächen und Rauminhalte im Hochbau nach der tatsächlich angewendeten DIN-277-Ausgabe. Ausgabe, Messkategorie, Grenzen und Abweichungen in der Quelle dokumentieren.",
+        "sort_order": 20,
+        "documentation_links": [
+          {
+            "url": "https://www.dinmedia.de/en/standard/din-277/342217323",
+            "purpose": "standard",
+            "title_de": "DIN 277"
+          }
+        ]
+      },
+      "command_id": "c014ecb3-df21-4353-886c-645467708463"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/IPMS",
+      "expected_version": 0,
+      "body": {
+        "id": "65764a9b-da8b-420f-81cb-925b648224a4",
+        "identifier": "profile-bemessungsstandard/IPMS",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "code": "IPMS",
+        "name_de": "IPMS",
+        "description_de": "International Property Measurement Standards. Das tatsächlich verwendete IPMS-Dokument, seine Ausgabe und Messkategorie in der Quelle angeben; ältere Messungen nicht automatisch auf IPMS All Buildings umdeuten.",
+        "sort_order": 30,
+        "documentation_links": [
+          {
+            "url": "https://ipmsc.org/standards/",
+            "purpose": "standard",
+            "title_de": "IPMS"
+          }
+        ]
+      },
+      "command_id": "b7603d50-4014-413f-9daa-0525fd8e29fb"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/BBL_REGEL",
+      "expected_version": 0,
+      "body": {
+        "id": "0e27473b-e559-4104-96a3-c4c9a0dce906",
+        "identifier": "profile-bemessungsstandard/BBL_REGEL",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "code": "BBL_REGEL",
+        "name_de": "BBL-Regel",
+        "description_de": "Dokumentierte BBL-interne Bemessungsregel. Regelbezeichnung, Version, Messkategorie und Geltungsbereich in der Quelle angeben; dieser lokale Sammelcode bezeichnet keine einzelne veröffentlichte Norm.",
+        "sort_order": 40
+      },
+      "command_id": "184366ac-7555-4550-abf8-5e81de8aab82"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/ANDERE_REGEL",
+      "expected_version": 0,
+      "body": {
+        "id": "6345a029-d216-4b82-b00a-2b4b89179fad",
+        "identifier": "profile-bemessungsstandard/ANDERE_REGEL",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "code": "ANDERE_REGEL",
+        "name_de": "Andere dokumentierte Regel",
+        "description_de": "Andere ausdrücklich dokumentierte Norm oder Bemessungsregel, beispielsweise eine amtliche oder projektspezifische Grundlage. Regelbezeichnung und anwendbare Ausgabe in der Quelle angeben. Nicht für eine unbekannte Grundlage verwenden.",
+        "sort_order": 50
+      },
+      "command_id": "43ce62a3-800d-4bb9-b2d4-c85e7a0f65da"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "d9a00300-8d31-4ad5-87a9-ffe0685df82b",
+      "identifier": "bemessung/bemessungsgrundlage",
+      "expected_version": 5,
+      "before": {
+        "id": "d9a00300-8d31-4ad5-87a9-ffe0685df82b",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Nachweis und Methode",
+        "name_de": "Standard",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:42.845205+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "bemessung/bemessungsgrundlage",
+        "sort_order": 1220,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 5,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "measurementBasis",
+        "classification": null,
+        "description_de": "Angewendeter Standard beziehungsweise dokumentierte Bemessungsregel, beispielsweise SIA 416, DIN 277, IPMS oder BBL-Regel. Referenz mit tatsächlich verwendeter Ausgabe und Messkategorie; Objektgrenzen, Abzüge und Abweichungen in der referenzierten Regel oder Quelle erhalten. Die bestehende strukturierte Regelreferenz bleibt erhalten. Für GF, AGF, GV und GGF die dokumentierte SIA-Grundlage, für GSF die tatsächliche amtliche oder geometrische Grundlage und für VMF die bestätigte Vermietungsflächenregel angeben. Höhen behalten ihre Bezugsflächen. Ein Normname allein bescheinigt keine normkonforme Berechnung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "structured"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "description_de": "Angewendeter Standard beziehungsweise dokumentierte Bemessungsregel aus der Werteliste BBL Bemessungsstandard. Die tatsächlich verwendete Ausgabe und Messkategorie sowie Objektgrenzen, Abzüge und Abweichungen in der Quelle dokumentieren. Bei unbekannter Grundlage bleibt die Angabe offen. Für GF, AGF, GV und GGF die dokumentierte SIA-Grundlage, für GSF die tatsächliche amtliche oder geometrische Grundlage und für VMF die bestätigte Vermietungsflächenregel angeben. Höhen behalten ihre Bezugsflächen. Ein Normname allein bescheinigt keine normkonforme Berechnung."
+      },
+      "command_id": "fbce2c62-03ab-4d4d-a521-c5e9e8b79016"
+    }
+  ]
+}

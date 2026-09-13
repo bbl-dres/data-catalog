@@ -4,6 +4,12 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [13 September 2026 — Gebäude condition and heritage](2026-09-13-building-condition-heritage.md) | Two approved attributes, candidate RE-FX source links and interim text representation; four audited commands. |
+| [13 September 2026 — Gebäude classification bindings](2026-09-13-building-classifications.md) | Two separate Gebäudeart code attributes, GBAUP/GKLAS bindings, retained source lists and five audited commands. |
+| [13 September 2026 — Catalog refinement](2026-09-13-catalog-refinement.md) | Building measurements/storeys, four accuracy categories, concise comments, scoped BBL responsibilities, candidate attribute/table mappings and consistent section layout; 297 audited commands. |
+| [13 September 2026 — Bemessung Standard value list](2026-09-13-bemessung-standard.md) | Five standard/rule choices bound to the existing attribute; seven audited commands, rollback/preservation checks and localhost verification. |
+| [13 September 2026 — Business-attribute order](2026-09-13-attribute-order.md) | 217 spaced ranks, PK-first and logical address ordering; default saved-rank sorting, retained references and 217 audited commands. |
+| [13 September 2026 — Bemessung and naming cleanup (applied)](2026-09-13-bemessung-simplification.md) | Eleven active attributes, preserved measured-object relations, accuracy/method vocabularies, consistent Geometrie/Status labels and GSTAT binding; 52 audited commands applied and verified. |
 | [13 September 2026 — Security and public API documentation](2026-09-13-security-review.md) | Hosted account/session authorization, RLS/grant review, public GET lock correction, framing defense, local browser verification and SQL cleanup. |
 | [13 September 2026 — Editing activation](2026-09-13-editing-activation.md) | Live deployment diagnosis, guarded activation from maintained migrations, atomic rollback and preservation checks; hosted activation and real signed-in save/history/restore completed. |
 | [13 September 2026 — Bereitstellungsformen](2026-09-13-access-options.md) | Editable access descriptions for tables, products and APIs; canonical model, SQL migration, shared profile/export rendering and browser evidence. |

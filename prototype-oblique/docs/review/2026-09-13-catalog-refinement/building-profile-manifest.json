@@ -1,0 +1,962 @@
+{
+  "operation": "2026-09-13-building-measurements",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "1de541d5f836f5b88a274947af8d1d93",
+  "description": "Expose five referenced building measurements, add EBF and its standard options, simplify total storeys without relabelling source-specific definitions. User-confirmed BBL Genauigkeit values: Geschätzt, Gemessen, Aggregiert, Unbekannt; preserve the retired tolerance option and separate method list.",
+  "commands": [
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "558affff-c16c-525b-b603-418bc1071a03",
+      "identifier": "gebaeude",
+      "expected_version": 40,
+      "before": {
+        "id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "comment": "Fachprofil (Entwurf). docs/business-object-attribute-proposal.md; Stand 2026-09-13, 105 direkte Fachattribute\n\nSAP-Schlüssel: Buchungskreis / Wirtschaftseinheit / Gebäudenummer; die Gebäude-ID ist deren abgeleitete Gesamtrepräsentation. EGID und EGRID bleiben bedingte Schweizer Registerreferenzen. Hauptadresse in sieben Bestandteilen; Geometrie ist ein WGS84-Punkt. Basisbemessungen in Bemessung: GF und GV für das identifizierte Gebäude; VMF bei anwendbarer Vermietungsflächenregel und GGF. Ober- und unterirdische GF/GV-Auswertungen selektieren die entsprechend abgegrenzten Geschosse anhand der gültigen Gebäudehierarchie und der dokumentierten Messregel. Vorhandene Gesamtnachweise bleiben eigenständig; keine automatische Summe, keine Schätzung aus Geschossanzahlen. Nicht eindeutig zuordenbare historische Teilwerte bleiben als solche im Quellnachweis erhalten.",
+        "name_de": "Gebäude",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": "2024.1",
+        "domain_id": "5eef2050-ecc3-50a6-9049-45982710ef70",
+        "edited_at": "2026-09-13T15:11:43.066353+00:00",
+        "created_on": "2021-09-03",
+        "identifier": "gebaeude",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 40,
+        "version_date": null,
+        "data_owner_id": "21c1ee57-266a-5fa8-8630-14d5c11d5ea8",
+        "classification": "internal",
+        "description_de": "Ein baulich abgegrenztes, dauerhaftes und überdachtes Bauwerk, das im Portfolio mit eigener Identität über seinen Lebenszyklus geführt wird. Erfasst werden auch seine geplante Ausprägung und der historische Nachweis nach einem Abbruch oder einer Nichtrealisierung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": "2e7b7072-a496-5f09-bc09-cce41d0ae08d",
+        "contact_actor_id": null,
+        "documentation_links": [
+          {
+            "url": "https://www.termdat.bk.admin.ch/entry/39047",
+            "purpose": "terminology",
+            "title_de": "Gebäude",
+            "externalIdentifier": "39047"
+          },
+          {
+            "url": "https://www.termdat.bk.admin.ch/entry/39051",
+            "purpose": "terminology",
+            "title_de": "Bauwerk",
+            "externalIdentifier": "39051"
+          },
+          {
+            "url": "https://www.termdat.bk.admin.ch/entry/61120",
+            "purpose": "terminology",
+            "title_de": "EGID",
+            "externalIdentifier": "61120"
+          }
+        ],
+        "system_of_record_id": null,
+        "normative_references": [
+          "eCH-0071 v2.0, GWR"
+        ],
+        "contains_personal_data": false,
+        "responsible_organisation": {
+          "name_de": "Immobilienmanagement"
+        }
+      },
+      "body": {
+        "comment": "Fachprofil (Entwurf). docs/business-object-attribute-proposal.md; Stand 2026-09-13. Gebäude: 31 direkte Attribute plus fünf referenzierte Basisbemessungen.\n\nSAP-Schlüssel: Buchungskreis / Wirtschaftseinheit / Gebäudenummer; die Gebäude-ID ist deren abgeleitete Gesamtrepräsentation. EGID und EGRID bleiben bedingte Schweizer Registerreferenzen. Hauptadresse in sieben Bestandteilen; Geometrie ist ein WGS84-Punkt. Anzahl Geschosse ist die Gesamtzahl nach dokumentierter Zählregel; die früheren Teildefinitionen bleiben archiviert.\n\nFünf Basisbemessungen am Gebäude: Geschossfläche GF, Gebäudegrundfläche GGF, Vermietbare Fläche VMF, Energiebezugsfläche EBF und Gebäudevolumen GV. Die Profilattribute beschreiben referenzierte Gebäudewerte aus Bemessung; Wert, Einheit, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der jeweiligen Bemessung. Gebäudegesamtwerte nicht zusätzlich zu ihren Teilwerten summieren. Eine Aggregation benötigt vollständige, überschneidungsfreie Teile, denselben Stichtag, passende Einheiten und dieselbe Messregel. Keine Schätzung aus Anzahl Geschosse oder Grundfläche. Historische ober-/unterirdische Teilwerte bleiben in den Quellen erhalten."
+      },
+      "command_id": "3054bd07-6d39-4a85-b7fd-69991157d10e"
+    },
+    {
+      "table": "business_object",
+      "operation": "update",
+      "id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+      "identifier": "bemessung",
+      "expected_version": 38,
+      "before": {
+        "id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "status": "draft",
+        "comment": "Fachprofil (Entwurf). docs/business-object-attribute-proposal.md; Stand 2026-09-13. Elf aktive Attribute plus Bezugsobjekt-Beziehung.\n\nBestehende measuredFor-Beziehungen zu Gebäude, Geschoss, Raum, Grundstück und Zone definieren zulässige Zieltypen. Genau ein identifiziertes Ziel je Bemessungsaussage; keine separaten Attribute für Zieltyp, Ziel-ID oder Bemessungsumfang. Aussenfläche ist noch kein eigenständiges Katalogobjekt. Zwölf Bemessungsarten; Flächen in m², Volumen in m³, Höhen in m. FID identifiziert nur die Quellgeometrie. Genauigkeit: Unbekannt / Geschätzt / Toleranz dokumentiert; genaue Toleranz im Quellnachweis. Keine automatischen Summen.",
+        "name_de": "Bemessung",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": "2024.1",
+        "domain_id": "5eef2050-ecc3-50a6-9049-45982710ef70",
+        "edited_at": "2026-09-13T15:19:22.646507+00:00",
+        "created_on": "2021-09-03",
+        "identifier": "bemessung",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 38,
+        "version_date": null,
+        "data_owner_id": "21c1ee57-266a-5fa8-8630-14d5c11d5ea8",
+        "classification": "internal",
+        "description_de": "Ein fachlich bestimmter Flächen-, Volumen- oder Längenwert für genau ein identifiziertes Bezugsobjekt, mit Einheit, Quelle, Standard, Ermittlungsart und zeitlicher Gültigkeit. Der räumliche Bezug ergibt sich aus dem Objekt, seiner Hierarchie und der Bemessungsart.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": "2e7b7072-a496-5f09-bc09-cce41d0ae08d",
+        "contact_actor_id": null,
+        "documentation_links": [
+          {
+            "url": "https://www.termdat.bk.admin.ch/entry/40350",
+            "purpose": "terminology",
+            "title_de": "Geschossfläche",
+            "externalIdentifier": "40350"
+          },
+          {
+            "url": "https://www.termdat.bk.admin.ch/entry/40352",
+            "purpose": "terminology",
+            "title_de": "Nutzfläche",
+            "externalIdentifier": "40352"
+          }
+        ],
+        "system_of_record_id": null,
+        "normative_references": [
+          "SIA 416"
+        ],
+        "contains_personal_data": false,
+        "responsible_organisation": {
+          "name_de": "Immobilienmanagement"
+        }
+      },
+      "body": {
+        "comment": "Fachprofil (Entwurf). docs/business-object-attribute-proposal.md; Stand 2026-09-13. Elf aktive Attribute plus Bezugsobjekt-Beziehung.\n\nBestehende measuredFor-Beziehungen zu Gebäude, Geschoss, Raum, Grundstück und Zone definieren zulässige Zieltypen. Genau ein identifiziertes Ziel je Bemessungsaussage; keine separaten Attribute für Zieltyp, Ziel-ID oder Bemessungsumfang. Aussenfläche ist noch kein eigenständiges Katalogobjekt. Dreizehn Bemessungsarten einschliesslich Energiebezugsfläche EBF; Flächen in m², Volumen in m³, Höhen in m. FID identifiziert nur die Quellgeometrie. Genauigkeit: Geschätzt / Gemessen / Aggregiert / Unbekannt; genaue Toleranz und Schätzanteile im Quellnachweis. Keine automatischen Summen."
+      },
+      "command_id": "726a7ffe-8e22-4cb8-92ee-e3ba8eb9a2ef"
+    },
+    {
+      "table": "code_list",
+      "operation": "update",
+      "id": "e8844d7a-5e27-44d4-b95d-6869d9d8ba4c",
+      "identifier": "profile-bemessungsart",
+      "expected_version": 10,
+      "before": {
+        "id": "e8844d7a-5e27-44d4-b95d-6869d9d8ba4c",
+        "status": "draft",
+        "comment": null,
+        "name_de": "BBL Bemessungsart",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": null,
+        "edited_at": "2026-09-13T15:00:37.292344+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "profile-bemessungsart",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 10,
+        "version_date": null,
+        "description_de": "Lokale BBL-Entwurfswerteliste mit zwölf Bemessungsarten für Gebäude-, Grundstücks-, Geschoss-, Raum- und Zonenwerte. Keine SAP-Customizing-Codes und keine vollständige SIA- oder Normhierarchie; jede Aussage behält ihre tatsächliche Bemessungsgrundlage.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "normative_references": [],
+        "authority_organisation": null
+      },
+      "body": {
+        "description_de": "Lokale BBL-Entwurfswerteliste mit dreizehn Bemessungsarten einschliesslich Energiebezugsfläche EBF für Gebäude-, Grundstücks-, Geschoss-, Raum- und Zonenwerte. Keine SAP-Customizing-Codes und keine vollständige SIA- oder Normhierarchie; jede Aussage behält ihre tatsächliche Bemessungsgrundlage."
+      },
+      "command_id": "abfc6822-fdd9-4c6d-bbe8-29b9693685ac"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "904bb6af-b93f-4bdc-8fd0-b67374ce8bff",
+      "identifier": "bemessung/bemessungsart",
+      "expected_version": 5,
+      "before": {
+        "id": "904bb6af-b93f-4bdc-8fd0-b67374ce8bff",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Messwert",
+        "name_de": "Bemessungsart",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:42.828753+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "bemessung/bemessungsart",
+        "sort_order": 1100,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 5,
+        "code_list_id": "e8844d7a-5e27-44d4-b95d-6869d9d8ba4c",
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "measurementKind",
+        "classification": null,
+        "description_de": "Art der bestimmten Grösse: GF, AGF, GV, VMF, GGF, GSF sowie Geschosshöhe, Raumfläche, Raumhöhe, Raumvolumen, Zonenfläche und Zonenvolumen. Die zwölf lokalen Entwurfscodes unterscheiden das Messkonzept. Das gemessene Objekt wird über measuredFor identifiziert; sein Bezug und seine Hierarchie bestimmen zusammen mit der Bemessungsart die räumliche Abgrenzung. Die tatsächlich angewendete Regel bleibt unter Standard dokumentiert. Keine Gleichsetzung mit SAP-, SIA-, DIN- oder IPMS-Codes.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Art der bestimmten Grösse: GF, AGF, GV, VMF, GGF, EBF, GSF sowie Geschosshöhe, Raumfläche, Raumhöhe, Raumvolumen, Zonenfläche und Zonenvolumen. Die dreizehn lokalen Entwurfscodes unterscheiden das Messkonzept. Das gemessene Objekt wird über measuredFor identifiziert; sein Bezug und seine Hierarchie bestimmen zusammen mit der Bemessungsart die räumliche Abgrenzung. Die tatsächlich angewendete Regel bleibt unter Standard dokumentiert. Keine Gleichsetzung mit SAP-, SIA-, DIN- oder IPMS-Codes."
+      },
+      "command_id": "05da8da2-6e6a-4ace-98cd-4a16d7ace188"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "8c85d739-2e1e-4c88-8966-97553676827e",
+      "identifier": "bemessung/einheit",
+      "expected_version": 5,
+      "before": {
+        "id": "8c85d739-2e1e-4c88-8966-97553676827e",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Messwert",
+        "name_de": "Einheit",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:42.835101+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "bemessung/einheit",
+        "sort_order": 1120,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 5,
+        "code_list_id": "19efb188-13a2-4030-8a45-b59975d6c4d6",
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "unit",
+        "classification": null,
+        "description_de": "Zur Bemessungsart passende Einheit: m² für GF, AGF, VMF, GGF, GSF, Raumfläche und Zonenfläche; m³ für GV, Raumvolumen und Zonenvolumen; m für Geschosshöhe und Raumhöhe. Eine dokumentierte Umrechnung erhält die ursprüngliche Einheit und Herkunft. Flächen-, Volumen- und Längenwerte werden nicht verwechselt oder gemeinsam summiert.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Zur Bemessungsart passende Einheit: m² für GF, AGF, VMF, GGF, EBF, GSF, Raumfläche und Zonenfläche; m³ für GV, Raumvolumen und Zonenvolumen; m für Geschosshöhe und Raumhöhe. Eine dokumentierte Umrechnung erhält die ursprüngliche Einheit und Herkunft. Flächen-, Volumen- und Längenwerte werden nicht verwechselt oder gemeinsam summiert."
+      },
+      "command_id": "7d62f3c3-882a-4190-b058-62cfc11ed337"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "d9a00300-8d31-4ad5-87a9-ffe0685df82b",
+      "identifier": "bemessung/bemessungsgrundlage",
+      "expected_version": 6,
+      "before": {
+        "id": "d9a00300-8d31-4ad5-87a9-ffe0685df82b",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Nachweis und Methode",
+        "name_de": "Standard",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:19:22.646507+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "bemessung/bemessungsgrundlage",
+        "sort_order": 1220,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 6,
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "measurementBasis",
+        "classification": null,
+        "description_de": "Angewendeter Standard beziehungsweise dokumentierte Bemessungsregel aus der Werteliste BBL Bemessungsstandard. Die tatsächlich verwendete Ausgabe und Messkategorie sowie Objektgrenzen, Abzüge und Abweichungen in der Quelle dokumentieren. Bei unbekannter Grundlage bleibt die Angabe offen. Für GF, AGF, GV und GGF die dokumentierte SIA-Grundlage, für GSF die tatsächliche amtliche oder geometrische Grundlage und für VMF die bestätigte Vermietungsflächenregel angeben. Höhen behalten ihre Bezugsflächen. Ein Normname allein bescheinigt keine normkonforme Berechnung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Angewendeter Standard beziehungsweise dokumentierte Bemessungsregel aus der Werteliste BBL Bemessungsstandard. Die tatsächlich verwendete Ausgabe und Messkategorie sowie Objektgrenzen, Abzüge und Abweichungen in der Quelle dokumentieren. Bei unbekannter Grundlage bleibt die Angabe offen. Für GF, AGF, GV und GGF die dokumentierte SIA-Grundlage, für GSF die tatsächliche amtliche oder geometrische Grundlage und für VMF die bestätigte Vermietungsflächenregel angeben. Für EBF die tatsächlich angewendete SIA-380- oder ältere SIA-416/1-Grundlage beziehungsweise eine belegte andere Regel erhalten; ältere GWR-Angaben nicht auf eine neue Normausgabe umdeuten. Höhen behalten ihre Bezugsflächen. Ein Normname allein bescheinigt keine normkonforme Berechnung."
+      },
+      "command_id": "93a2b605-bff5-4066-8d4c-648dc0adb447"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "d344bac8-520b-478d-86b3-8d6d20912828",
+      "identifier": "gebaeude/geschosse-oberirdisch",
+      "expected_version": 3,
+      "before": {
+        "id": "d344bac8-520b-478d-86b3-8d6d20912828",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus\nBedingte Angabe: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken.",
+        "name_de": "Anzahl oberirdische Geschosse",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:43.030731+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/geschosse-oberirdisch",
+        "sort_order": 740,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "aboveGroundStoreys",
+        "classification": null,
+        "description_de": "Anzahl oberirdischer Geschosse nach einer vereinbarten Regel für Erdgeschoss, Dachgeschosse und Zwischengeschosse, mit Quelle und massgeblichem Datum. GWR GASTW und GIS-/SAP-Zählungen werden nicht ungeprüft gleichgesetzt.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "integer"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true,
+        "sort_order": 9010,
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus\nBedingte Angabe: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken.\n\nIm vereinfachten Gebäudeprofil durch Anzahl Geschosse ersetzt. Frühere Teilzählungen behalten ihre eigene Bedeutung und werden nicht automatisch in Gesamtwerte umgerechnet."
+      },
+      "command_id": "271870fe-090a-4c7b-b9d8-7e245dd3b4aa"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "016bbbf2-8280-49c0-90d0-4df9aae83fb5",
+      "identifier": "gebaeude/geschosse-unterirdisch",
+      "expected_version": 3,
+      "before": {
+        "id": "016bbbf2-8280-49c0-90d0-4df9aae83fb5",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus\nBedingte Angabe: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken.",
+        "name_de": "Anzahl unterirdische Geschosse",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:43.034075+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/geschosse-unterirdisch",
+        "sort_order": 750,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "belowGroundStoreys",
+        "classification": null,
+        "description_de": "Anzahl unterirdischer Geschosse nach der vereinbarten baulichen Zählregel, mit Quelle und massgeblichem Datum. Unbekannt ist von einer bestätigten Anzahl 0 zu unterscheiden; Quellzählungen haben nicht automatisch dieselbe Bedeutung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "integer"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true,
+        "sort_order": 9020,
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus\nBedingte Angabe: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken.\n\nIm vereinfachten Gebäudeprofil durch Anzahl Geschosse ersetzt. Frühere Teilzählungen behalten ihre eigene Bedeutung und werden nicht automatisch in Gesamtwerte umgerechnet."
+      },
+      "command_id": "faa524ef-2bd1-4f75-b7f6-caa5e0c428cb"
+    },
+    {
+      "table": "quality_requirement",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-gebaeude/anzahl-geschosse",
+      "expected_version": 0,
+      "body": {
+        "id": "ab84c37c-d53a-42a6-af95-c1cfa5ae9205",
+        "identifier": "profile-gebaeude/anzahl-geschosse",
+        "name_de": "Bedingte Vollständigkeit: Anzahl Geschosse",
+        "description_de": "Für baulich realisierte Gebäude erforderlich. Unbekannte Anzahlen bleiben Vollständigkeitslücken; ein bestätigter Wert 0 ist davon zu unterscheiden. Quelle, Stichtag und Zählregel müssen den Gesamtwert erklären.",
+        "status": "draft",
+        "rule_type": "custom",
+        "dimension": "completeness"
+      },
+      "command_id": "4f477f45-fdf9-4ae6-9ecc-16690d5af21b"
+    },
+    {
+      "table": "quality_requirement",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-gebaeude/vermietbare-flaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "dcc8f117-aba3-41a5-9247-da7616dfa05d",
+        "identifier": "profile-gebaeude/vermietbare-flaeche",
+        "name_de": "Bedingte Vollständigkeit: Vermietbare Fläche",
+        "description_de": "Erforderlich, wenn für das Gebäude eine Vermietung oder Vermietbarkeitsauswertung vorgesehen ist. Bei anwendbarer Regel bleibt ein unbekannter Wert eine Lücke; nicht anwendbar ist von 0 zu unterscheiden. Die bestätigte Vermietungsflächenregel steht an der Bemessung.",
+        "status": "draft",
+        "rule_type": "custom",
+        "dimension": "completeness"
+      },
+      "command_id": "ddb6d64e-1228-494b-81c8-bd6245e14e9c"
+    },
+    {
+      "table": "quality_requirement",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-gebaeude/energiebezugsflaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "6c6d591d-15ff-4875-8c2f-b774d6ae81b7",
+        "identifier": "profile-gebaeude/energiebezugsflaeche",
+        "name_de": "Bedingte Vollständigkeit: Energiebezugsfläche",
+        "description_de": "Erforderlich, wenn das Gebäude einen beheizten oder klimatisierten Bezugsbereich für eine Energieauswertung hat. Unbekannte Werte bleiben Lücken; ein nicht anwendbarer Energiebezugsbereich ist von einem bestätigten Wert 0 zu unterscheiden.",
+        "status": "draft",
+        "rule_type": "custom",
+        "dimension": "completeness"
+      },
+      "command_id": "6af91f55-ae9b-4da5-ba39-2b7af2cd5187"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/anzahl-geschosse",
+      "expected_version": 0,
+      "body": {
+        "id": "70da2705-8648-4819-882d-17f5e363ef90",
+        "identifier": "gebaeude/anzahl-geschosse",
+        "name_de": "Anzahl Geschosse",
+        "semantic_name": "storeyCount",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "integer"
+        },
+        "sort_order": 740,
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus",
+        "description_de": "Gesamtzahl der Geschosse des identifizierten Gebäudes, einschliesslich ober- und unterirdischer Geschosse, nach einer dokumentierten baulichen Zählregel. Erdgeschoss, Dach- und Zwischengeschosse sowie Kellergeschosse nach dieser Regel behandeln; Quelle und massgeblichen Stichtag angeben. GIS IMMO gastw ist ein Kandidat für den Totalwert. SAP FLOORS/BASEMENTS und GWR GASTW erst nach Prüfung ihrer Zählregeln übernehmen: GWR zählt bestimmte Dach-/Untergeschosse nach Nutzung oder Beheizung und schliesst Kellergeschosse aus. Unbekannte Teilzahlen werden weder als 0 eingesetzt noch ungeprüft summiert.",
+        "quality_requirement_ids": [
+          "ab84c37c-d53a-42a6-af95-c1cfa5ae9205"
+        ]
+      },
+      "command_id": "342b7317-a7eb-4d62-8f90-e48f3048db2b"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/geschossflaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "35254e4e-b8df-4872-802d-24822ee24d0f",
+        "identifier": "gebaeude/geschossflaeche",
+        "name_de": "Geschossfläche (GF)",
+        "semantic_name": "grossFloorArea",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "decimal",
+          "unit": "m²"
+        },
+        "sort_order": 1100,
+        "comment": "Property Set (vorgeschlagen): Basisbemessungen",
+        "description_de": "Geschossfläche des gesamten Gebäudes nach der dokumentierten SIA-416-Grundlage. Enthält die gemäss Regel relevanten Geschosse; eine Summe von Raum-Nettoflächen oder GGF × Anzahl Geschosse ist kein Ersatz. Referenzierter Profilwert aus Bemessung mit Bemessungsart GF und measuredFor-Ziel Gebäude. Wert, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der Bemessung. Eine dokumentierte Aggregation benötigt vollständige, überschneidungsfreie Teile desselben Stichtags und derselben Regel; Gesamt- und Teilwerte niemals gemeinsam summieren. Keine separate Pflege einer Zahlenkopie am Gebäude.",
+        "quality_requirement_ids": [
+          "f378a23a-ce23-4750-a4d3-ff7a2c53d1d2"
+        ]
+      },
+      "command_id": "af7d8e69-ea4c-4d5d-b6f2-00a48a8f151b"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/gebaeudegrundflaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "8dabd64c-234b-495a-833f-b64658be8267",
+        "identifier": "gebaeude/gebaeudegrundflaeche",
+        "name_de": "Gebäudegrundfläche (GGF)",
+        "semantic_name": "buildingFootprintArea",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "decimal",
+          "unit": "m²"
+        },
+        "sort_order": 1110,
+        "comment": "Property Set (vorgeschlagen): Basisbemessungen",
+        "description_de": "Grundfläche des Gebäudes nach der dokumentierten Abgrenzungs- und Projektionsregel. GIS IMMO larea_ggf und GWR GAREA sind Quellenkandidaten; die Gebäudegrenzen und Messregeln müssen übereinstimmen. Grundstücksfläche und die Summe von Geschossflächen sind andere Grössen. Referenzierter Profilwert aus Bemessung mit Bemessungsart GGF und measuredFor-Ziel Gebäude. Wert, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der Bemessung. Eine dokumentierte Aggregation benötigt vollständige, überschneidungsfreie Teile desselben Stichtags und derselben Regel; Gesamt- und Teilwerte niemals gemeinsam summieren. Keine separate Pflege einer Zahlenkopie am Gebäude.",
+        "quality_requirement_ids": [
+          "f378a23a-ce23-4750-a4d3-ff7a2c53d1d2"
+        ]
+      },
+      "command_id": "f18ba9de-99e5-4a85-bd0f-b96cc5bf2969"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/vermietbare-flaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "e3fab1fc-2a4d-4d44-a8ad-4e5f7d5eb3c6",
+        "identifier": "gebaeude/vermietbare-flaeche",
+        "name_de": "Vermietbare Fläche (VMF)",
+        "semantic_name": "rentableArea",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "decimal",
+          "unit": "m²"
+        },
+        "sort_order": 1120,
+        "comment": "Property Set (vorgeschlagen): Basisbemessungen",
+        "description_de": "Nach der bestätigten Vermietungsflächenregel vermietbare Fläche des Gebäudes. Bezeichnet das Flächenpotenzial, nicht die aktuell vermietete oder belegte Fläche. Nicht pauschal mit GF, NF oder IPMS gleichsetzen; ein SAP-Verfügbarkeitswert ist ohne Prüfung kein VMF-Gesamtwert. Referenzierter Profilwert aus Bemessung mit Bemessungsart VMF und measuredFor-Ziel Gebäude. Wert, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der Bemessung. Eine dokumentierte Aggregation benötigt vollständige, überschneidungsfreie Teile desselben Stichtags und derselben Regel; Gesamt- und Teilwerte niemals gemeinsam summieren. Keine separate Pflege einer Zahlenkopie am Gebäude.",
+        "quality_requirement_ids": [
+          "dcc8f117-aba3-41a5-9247-da7616dfa05d"
+        ]
+      },
+      "command_id": "08066827-b9b4-4b89-80c5-5337683b23b3"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/energiebezugsflaeche",
+      "expected_version": 0,
+      "body": {
+        "id": "00f277d0-da8f-4923-bff8-c588ae5650d8",
+        "identifier": "gebaeude/energiebezugsflaeche",
+        "name_de": "Energiebezugsfläche (EBF)",
+        "semantic_name": "energyReferenceArea",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "decimal",
+          "unit": "m²"
+        },
+        "sort_order": 1130,
+        "comment": "Property Set (vorgeschlagen): Basisbemessungen",
+        "description_de": "Energiebezugsfläche des Gebäudes nach der dokumentierten energetischen Messregel und thermischen Abgrenzung, in m². Die anwendbare SIA-380-Ausgabe oder eine belegte ältere SIA-416/1-Grundlage erhalten. EBF ist weder pauschal GF noch GGF × Anzahl Geschosse; Quellschätzungen bleiben als solche gekennzeichnet. GIS IMMO garea_ebf und GWR GEBF sind Quellenkandidaten; Berechnungsart, Datenquelle und Stand mitführen. Referenzierter Profilwert aus Bemessung mit Bemessungsart EBF und measuredFor-Ziel Gebäude. Wert, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der Bemessung. Eine dokumentierte Aggregation benötigt vollständige, überschneidungsfreie Teile desselben Stichtags und derselben Regel; Gesamt- und Teilwerte niemals gemeinsam summieren. Keine separate Pflege einer Zahlenkopie am Gebäude.",
+        "quality_requirement_ids": [
+          "6c6d591d-15ff-4875-8c2f-b774d6ae81b7"
+        ]
+      },
+      "command_id": "22d9075c-f27e-49b4-8729-28d0b4788567"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/gebaeudevolumen",
+      "expected_version": 0,
+      "body": {
+        "id": "eac98d04-ba9c-4032-9e06-503a624c9364",
+        "identifier": "gebaeude/gebaeudevolumen",
+        "name_de": "Gebäudevolumen (GV)",
+        "semantic_name": "buildingVolume",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "status": "draft",
+        "is_identifier": false,
+        "value_specification": {
+          "valueType": "decimal",
+          "unit": "m³"
+        },
+        "sort_order": 1140,
+        "comment": "Property Set (vorgeschlagen): Basisbemessungen",
+        "description_de": "Volumen des gesamten Gebäudes nach der dokumentierten Messregel, mit eindeutigem oberen und unteren Abschluss und berücksichtigten Bauteilen. Eine Summe von Raumvolumen ist kein automatischer Ersatz. Historische Volumen nach anderen Normen behalten ihre tatsächliche Grundlage. Referenzierter Profilwert aus Bemessung mit Bemessungsart GV und measuredFor-Ziel Gebäude. Wert, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der Bemessung. Eine dokumentierte Aggregation benötigt vollständige, überschneidungsfreie Teile desselben Stichtags und derselben Regel; Gesamt- und Teilwerte niemals gemeinsam summieren. Keine separate Pflege einer Zahlenkopie am Gebäude.",
+        "quality_requirement_ids": [
+          "f378a23a-ce23-4750-a4d3-ff7a2c53d1d2"
+        ]
+      },
+      "command_id": "2bbda2fe-2c76-4610-81ad-5512ead65c8a"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsart/EBF",
+      "expected_version": 0,
+      "body": {
+        "id": "b78d7a13-bc52-416a-9e7b-412ac7e6b2b0",
+        "identifier": "profile-bemessungsart/EBF",
+        "code": "EBF",
+        "name_de": "Energiebezugsfläche EBF",
+        "code_list_id": "e8844d7a-5e27-44d4-b95d-6869d9d8ba4c",
+        "sort_order": 0,
+        "description_de": "Energetische Bezugsfläche des identifizierten Gebäudes in m² nach der tatsächlich angewendeten Regel und thermischen Abgrenzung. SIA 380 und ältere SIA-416/1-Ausgaben unterscheiden; Ausgabe und Nachweis unter Standard/Quelle erhalten. Nicht pauschal aus GF, GGF oder Geschossanzahl berechnen. Geschätzte GWR- oder GIS-Angaben behalten Ermittlungsart, Genauigkeit, Quelle und Stand."
+      },
+      "command_id": "95c0ef1b-9c0d-4d66-926a-b80e4cd74113"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/SIA_380",
+      "expected_version": 0,
+      "body": {
+        "id": "0deac941-09d5-4421-b0f2-2e35ea149b6d",
+        "identifier": "profile-bemessungsstandard/SIA_380",
+        "code": "SIA_380",
+        "name_de": "SIA 380",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "sort_order": 5,
+        "description_de": "Grundlagen für energetische Berechnungen von Gebäuden, einschliesslich Energiebezugsfläche. Die tatsächlich verwendete Ausgabe und Messregel in der Quelle dokumentieren.",
+        "documentation_links": [
+          {
+            "url": "https://shop.sia.ch/b1eced21-4220-4350-b516-55b1cda934de/F/DownloadAnhang",
+            "purpose": "standard",
+            "title_de": "SIA 380:2022 – Vorschau"
+          }
+        ]
+      },
+      "command_id": "05a6acdf-da86-4eaa-9849-4cae9a890fa1"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsstandard/SIA_416_1",
+      "expected_version": 0,
+      "body": {
+        "id": "b17fd68a-6edc-4eb5-8331-12eb284de596",
+        "identifier": "profile-bemessungsstandard/SIA_416_1",
+        "code": "SIA_416_1",
+        "name_de": "SIA 416/1",
+        "code_list_id": "5381da8e-3327-43ac-8057-17f8abf87bb7",
+        "sort_order": 15,
+        "description_de": "Grundlage älterer energetischer Bezugsflächen, insbesondere der im gespeicherten GWR-Katalog genannten SIA 416/1:2007. Die tatsächliche Ausgabe und Quelle erhalten; nicht mit SIA 416 gleichsetzen oder historische Werte automatisch auf SIA 380 umdeuten."
+      },
+      "command_id": "9efde171-ea06-404c-a0bb-26aed94bbd30"
+    },
+    {
+      "table": "relationship",
+      "operation": "update",
+      "id": "0dac6a30-bdf2-4a4b-9d6a-86560ed2c54d",
+      "identifier": "profile-bemessung-gebaeude",
+      "expected_version": 3,
+      "before": {
+        "id": "0dac6a30-bdf2-4a4b-9d6a-86560ed2c54d",
+        "comment": null,
+        "coverage": null,
+        "edited_at": "2026-09-13T15:00:37.206304+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "profile-bemessung-gebaeude",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 3,
+        "rule_notes_de": "Bezugsobjekt-Beziehung: GF und GV für das identifizierte Gebäude; VMF bei anwendbarer Vermietungsflächenregel und GGF. Ober- und unterirdische GF/GV-Auswertungen selektieren die entsprechend abgegrenzten Geschosse anhand der gültigen Gebäudehierarchie und der dokumentierten Messregel. Vorhandene Gesamtnachweise bleiben eigenständig; keine automatische Summe, keine Schätzung aus Geschossanzahlen. Nicht eindeutig zuordenbare historische Teilwerte bleiben als solche im Quellnachweis erhalten. Quelle, Standard, Ermittlungsart und Gültigkeit bleiben an der Bemessung. Genau ein typisiertes Ziel je operativer Aussage; die fünf Katalogbeziehungen beschreiben zulässige Alternativen, keine Mehrfachmessung.",
+        "rule_notes_en": null,
+        "rule_notes_fr": null,
+        "rule_notes_it": null,
+        "support_status": null,
+        "relationship_type": "measuredFor",
+        "source_endpoint_id": null,
+        "documentation_links": [],
+        "verification_status": "candidate",
+        "source_data_field_id": null,
+        "source_data_table_id": null,
+        "target_data_field_id": null,
+        "target_data_table_id": null,
+        "source_data_product_id": null,
+        "source_data_service_id": null,
+        "target_data_service_id": null,
+        "assessed_service_version": null,
+        "source_business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "target_business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "target_business_attribute_id": null
+      },
+      "body": {
+        "rule_notes_de": "Fünf Basisbemessungen am Gebäude: Geschossfläche GF, Gebäudegrundfläche GGF, Vermietbare Fläche VMF, Energiebezugsfläche EBF und Gebäudevolumen GV. Die Profilattribute beschreiben referenzierte Gebäudewerte aus Bemessung; Wert, Einheit, Quelle/FID, Standard mit Ausgabe, Ermittlungsart, Genauigkeit und Gültigkeit bleiben an der jeweiligen Bemessung. Gebäudegesamtwerte nicht zusätzlich zu ihren Teilwerten summieren. Eine Aggregation benötigt vollständige, überschneidungsfreie Teile, denselben Stichtag, passende Einheiten und dieselbe Messregel. Keine Schätzung aus Anzahl Geschosse oder Grundfläche. Historische ober-/unterirdische Teilwerte bleiben in den Quellen erhalten. Genau ein typisiertes Ziel je operativer Aussage; die fünf Katalogbeziehungen beschreiben zulässige Alternativen, keine Mehrfachmessung."
+      },
+      "command_id": "c89befe0-e690-40e6-af69-8be2ce3cd468"
+    },
+    {
+      "table": "code_list",
+      "operation": "update",
+      "id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+      "identifier": "profile-bemessungsgenauigkeit",
+      "expected_version": 4,
+      "before": {
+        "id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "status": "draft",
+        "comment": null,
+        "name_de": "BBL Genauigkeit",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "domain_id": null,
+        "edited_at": "2026-09-13T15:00:37.298274+00:00",
+        "created_on": "2026-09-13",
+        "identifier": "profile-bemessungsgenauigkeit",
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 4,
+        "version_date": null,
+        "description_de": "Nachweis der Genauigkeit einer Bemessung. Die drei lokalen Kategorien sind keine numerischen Genauigkeitsstufen; die tatsächliche Toleranz mit Einheit, Bezug und Nachweis steht in der Quelle.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "normative_references": [],
+        "authority_organisation": null
+      },
+      "body": {
+        "description_de": "Qualitative Einordnung der Bemessung: Geschätzt, Gemessen, Aggregiert oder Unbekannt. Diese vier Kategorien sind keine numerischen Genauigkeitsklassen. Eine tatsächliche Toleranz mit Einheit, Bezug und Bedingungen bleibt in der Quelle dokumentiert. Aggregierte Werte können gemessene und geschätzte Anteile enthalten; die Zusammensetzung ist im Nachweis festzuhalten."
+      },
+      "command_id": "11d71954-a37b-40e5-8800-8ed84ceadaa5"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "81fb4c73-712b-481f-b00c-b84e4c3d20ef",
+      "identifier": "bemessung/genauigkeit",
+      "expected_version": 2,
+      "before": {
+        "id": "81fb4c73-712b-481f-b00c-b84e4c3d20ef",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Nachweis und Methode\nOptional; Werteliste am 2026-09-13 vom Benutzer bestätigt.",
+        "name_de": "Genauigkeit",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:11:42.851307+00:00",
+        "created_on": "2026-09-13",
+        "identifier": "bemessung/genauigkeit",
+        "sort_order": 1240,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 2,
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "accuracy",
+        "classification": null,
+        "description_de": "Nachweis der Genauigkeit: Unbekannt, Geschätzt oder Toleranz dokumentiert. Die genaue Toleranz mit Einheit, Bezug und Bedingungen bleibt in der Quelle. Keine erfundenen numerischen Klassen und keine Gleichsetzung mit der Ermittlungsart; unbekannte Genauigkeit bleibt ausdrücklich unbekannt.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "722b25af-b5f6-5999-aed7-3c7a0bcbe93c",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "description_de": "Qualitative Einordnung gemäss BBL Genauigkeit: Geschätzt, Gemessen, Aggregiert oder Unbekannt. Ein einzelner Code beschreibt den vorliegenden Wert; bei einer Aggregation die Eingabewerte und allfällige Schätzanteile in der Quelle dokumentieren. Die genaue Toleranz mit Einheit, Bezug und Bedingungen bleibt ebenfalls in der Quelle. Die Kategorie Gemessen bescheinigt keine bestimmte numerische Präzision. Ermittlungsart bleibt als separate, detaillierte Methodenangabe erhalten."
+      },
+      "command_id": "944df464-5633-4f61-a869-a58ce4fcad40"
+    },
+    {
+      "table": "code_value",
+      "operation": "update",
+      "id": "9ece349a-d693-4d6b-89bd-eaf7c731999b",
+      "identifier": "profile-bemessungsgenauigkeit/GESCHAETZT",
+      "expected_version": 1,
+      "before": {
+        "id": "9ece349a-d693-4d6b-89bd-eaf7c731999b",
+        "code": "GESCHAETZT",
+        "comment": null,
+        "name_de": "Geschätzt",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "edited_at": "2026-09-13T15:00:37.296316+00:00",
+        "created_on": "2026-09-13",
+        "identifier": "profile-bemessungsgenauigkeit/GESCHAETZT",
+        "sort_order": 20,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 1,
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "short_name_de": null,
+        "short_name_en": null,
+        "short_name_fr": null,
+        "short_name_it": null,
+        "description_de": "Genauigkeit wurde eingeschätzt, ist aber nicht durch eine dokumentierte Toleranz belegt. Grundlage der Einschätzung in der Quelle erhalten. Bezeichnet die Genauigkeitsangabe; die Ermittlungsart des Messwerts bleibt separat.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "documentation_links": [],
+        "parent_code_value_id": null
+      },
+      "body": {
+        "sort_order": 10,
+        "description_de": "Der Bemessungswert ist geschätzt. Schätzgrundlage und Annahmen in der Quelle festhalten; keine bestimmte Toleranz aus dieser Kategorie ableiten."
+      },
+      "command_id": "29265982-8a02-4cae-9120-4fbf5873ef34"
+    },
+    {
+      "table": "code_value",
+      "operation": "update",
+      "id": "31d1d317-ecaa-443d-af6f-2c37cb90069c",
+      "identifier": "profile-bemessungsgenauigkeit/UNBEKANNT",
+      "expected_version": 1,
+      "before": {
+        "id": "31d1d317-ecaa-443d-af6f-2c37cb90069c",
+        "code": "UNBEKANNT",
+        "comment": null,
+        "name_de": "Unbekannt",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "edited_at": "2026-09-13T15:00:37.294233+00:00",
+        "created_on": "2026-09-13",
+        "identifier": "profile-bemessungsgenauigkeit/UNBEKANNT",
+        "sort_order": 10,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 1,
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "short_name_de": null,
+        "short_name_en": null,
+        "short_name_fr": null,
+        "short_name_it": null,
+        "description_de": "Keine belastbare Angabe zur Genauigkeit vorhanden. Keine Toleranz und keine Nullabweichung unterstellen.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "documentation_links": [],
+        "parent_code_value_id": null
+      },
+      "body": {
+        "sort_order": 40,
+        "description_de": "Die Einordnung des Bemessungswerts als geschätzt, gemessen oder aggregiert ist nicht bekannt oder nicht ausreichend belegt. Keine Messung, Toleranz oder Nullabweichung unterstellen."
+      },
+      "command_id": "f13f9114-3393-49dd-bc2c-995be11a704c"
+    },
+    {
+      "table": "code_value",
+      "operation": "update",
+      "id": "d645b803-c162-44b2-b075-73789591cff3",
+      "identifier": "profile-bemessungsgenauigkeit/TOLERANZ_DOKUMENTIERT",
+      "expected_version": 1,
+      "before": {
+        "id": "d645b803-c162-44b2-b075-73789591cff3",
+        "code": "TOLERANZ_DOKUMENTIERT",
+        "comment": null,
+        "name_de": "Toleranz dokumentiert",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "edited_at": "2026-09-13T15:00:37.298274+00:00",
+        "created_on": "2026-09-13",
+        "identifier": "profile-bemessungsgenauigkeit/TOLERANZ_DOKUMENTIERT",
+        "sort_order": 30,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 1,
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "short_name_de": null,
+        "short_name_en": null,
+        "short_name_fr": null,
+        "short_name_it": null,
+        "description_de": "Eine konkrete Toleranz ist in der referenzierten Quelle dokumentiert, einschliesslich Einheit, absolutem oder relativem Bezug und Anwendungsbedingungen. Dies bestätigt weder die Einhaltung noch eine unabhängige Prüfung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "documentation_links": [],
+        "parent_code_value_id": null
+      },
+      "body": {
+        "is_archived": true,
+        "sort_order": 90,
+        "comment": "Am 13.09.2026 aus der aktiven Vierer-Werteliste entfernt. Historische Bedeutung bleibt erhalten; dokumentierte Toleranzen weiterhin im Quellnachweis führen. Keine automatische Zuordnung zu Gemessen."
+      },
+      "command_id": "c83bddba-8e22-4fa1-ae9b-c821c51089b5"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsgenauigkeit/GEMESSEN",
+      "expected_version": 0,
+      "body": {
+        "id": "28a47b87-e3ab-47a2-9dae-25f1be843b9d",
+        "identifier": "profile-bemessungsgenauigkeit/GEMESSEN",
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "code": "GEMESSEN",
+        "name_de": "Gemessen",
+        "sort_order": 20,
+        "description_de": "Der Bemessungswert beruht auf einer direkten Messung am Objekt oder einer Ausmessung der dokumentierten Geometrie. Messverfahren beziehungsweise Modellquelle und Revision festhalten. Dies bescheinigt keine bestimmte Toleranz; eine zusammengefasste Menge von Teilmessungen wird als Aggregiert eingeordnet."
+      },
+      "command_id": "150d97b0-fec2-4fca-92a2-10d88b526f0e"
+    },
+    {
+      "table": "code_value",
+      "operation": "create",
+      "id": null,
+      "identifier": "profile-bemessungsgenauigkeit/AGGREGIERT",
+      "expected_version": 0,
+      "body": {
+        "id": "a46538ea-c95e-42c6-a33d-b08bef2a9e78",
+        "identifier": "profile-bemessungsgenauigkeit/AGGREGIERT",
+        "code_list_id": "ec934e76-6e20-4a8c-aaa4-72d3560e3bf2",
+        "code": "AGGREGIERT",
+        "name_de": "Aggregiert",
+        "sort_order": 30,
+        "description_de": "Der Bemessungswert fasst mehrere Teilwerte nach einer dokumentierten Regel zusammen. Eingabe-IDs, Revisionen, Einheiten, Stichtag und Aggregationsregel in der Quelle festhalten. Vollständigkeit, Überschneidungen und Schätzanteile prüfen; eine Aggregation bescheinigt keine höhere Präzision."
+      },
+      "command_id": "57222b9c-1b04-4522-9ffa-0291022834f6"
+    }
+  ]
+}

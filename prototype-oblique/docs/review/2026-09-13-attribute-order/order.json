@@ -1,0 +1,2111 @@
+[
+  {
+    "object": "areal",
+    "name": "Areal",
+    "attributes": [
+      {
+        "identifier": "areal/areal-id",
+        "name": "Areal-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "areal/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "areal/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "areal/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "areal/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "bauarbeiten",
+    "name": "Bauarbeiten",
+    "attributes": [
+      {
+        "identifier": "bauarbeiten/bauarbeiten-id",
+        "name": "Bauarbeiten-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauarbeiten/beschreibung",
+        "name": "Beschreibung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauarbeiten/bauprojekt",
+        "name": "Bauprojekt",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauarbeiten/gebaeude",
+        "name": "Gebäude",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 210,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauarbeiten/art-der-arbeiten",
+        "name": "Art der Arbeiten",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "bauprojekt",
+    "name": "Bauprojekt",
+    "attributes": [
+      {
+        "identifier": "bauprojekt/projekt-id",
+        "name": "Projekt-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/eproid",
+        "name": "EPROID",
+        "group": "Registerbezug",
+        "sort_order": 300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/projektkosten",
+        "name": "Projektkosten",
+        "group": "Messwert",
+        "sort_order": 1100,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/startdatum",
+        "name": "Startdatum",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bauprojekt/enddatum",
+        "name": "Enddatum",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "bemessung",
+    "name": "Bemessung",
+    "attributes": [
+      {
+        "identifier": "bemessung/bemessung-id",
+        "name": "Bemessung-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/bemessungsart",
+        "name": "Bemessungsart",
+        "group": "Messwert",
+        "sort_order": 1100,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/wert",
+        "name": "Wert",
+        "group": "Messwert",
+        "sort_order": 1110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/einheit",
+        "name": "Einheit",
+        "group": "Messwert",
+        "sort_order": 1120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/quelle",
+        "name": "Quelle",
+        "group": "Nachweis und Methode",
+        "sort_order": 1200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/fid",
+        "name": "FID",
+        "group": "Nachweis und Methode",
+        "sort_order": 1210,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/bemessungsgrundlage",
+        "name": "Standard",
+        "group": "Nachweis und Methode",
+        "sort_order": 1220,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/ermittlungsart",
+        "name": "Ermittlungsart",
+        "group": "Nachweis und Methode",
+        "sort_order": 1230,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/genauigkeit",
+        "name": "Genauigkeit",
+        "group": "Nachweis und Methode",
+        "sort_order": 1240,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bemessung/bemessungsumfang",
+        "name": "Bemessungsumfang",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9000,
+        "primaryKey": false,
+        "archived": true,
+        "retired": true
+      },
+      {
+        "identifier": "bemessung/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9010,
+        "primaryKey": false,
+        "archived": true,
+        "retired": true
+      },
+      {
+        "identifier": "bemessung/bezugsobjekt-id",
+        "name": "Bezugsobjekt-ID",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9020,
+        "primaryKey": false,
+        "archived": true,
+        "retired": true
+      },
+      {
+        "identifier": "bemessung/bezugsobjekttyp",
+        "name": "Bezugsobjekttyp",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9030,
+        "primaryKey": false,
+        "archived": true,
+        "retired": true
+      },
+      {
+        "identifier": "bemessung/status",
+        "name": "Status",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9040,
+        "primaryKey": false,
+        "archived": true,
+        "retired": true
+      }
+    ]
+  },
+  {
+    "object": "betriebsmesswert",
+    "name": "Betriebsmesswert",
+    "attributes": [
+      {
+        "identifier": "betriebsmesswert/betriebsmesswert-id",
+        "name": "Betriebsmesswert-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "betriebsmesswert/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "betriebsmesswert/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "betriebsmesswert/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "bodenbedeckung",
+    "name": "Bodenbedeckung",
+    "attributes": [
+      {
+        "identifier": "bodenbedeckung/bodenbedeckung-id",
+        "name": "Bodenbedeckung-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/egid",
+        "name": "EGID (GWR)",
+        "group": "Registerbezug",
+        "sort_order": 300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/egrid",
+        "name": "EGRID (AV)",
+        "group": "Registerbezug",
+        "sort_order": 310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/art",
+        "name": "Art",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/land",
+        "name": "Land",
+        "group": "Adresse",
+        "sort_order": 500,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/region",
+        "name": "Region / Kanton / Bundesstaat",
+        "group": "Adresse",
+        "sort_order": 510,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/ort",
+        "name": "Ort",
+        "group": "Adresse",
+        "sort_order": 520,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/postleitzahl",
+        "name": "Postleitzahl",
+        "group": "Adresse",
+        "sort_order": 530,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/adresszusatz",
+        "name": "Adresszusatz",
+        "group": "Adresse",
+        "sort_order": 540,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/geometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/teilportfolio",
+        "name": "Teilportfolio",
+        "group": "Portfoliomanagement",
+        "sort_order": 1000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/flaeche",
+        "name": "Fläche",
+        "group": "Messwert",
+        "sort_order": 1100,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "bodenbedeckung/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      },
+      {
+        "identifier": "bodenbedeckung/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9010,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      }
+    ]
+  },
+  {
+    "object": "buchungskreis",
+    "name": "Buchungskreis",
+    "attributes": [
+      {
+        "identifier": "buchungskreis/buchungskreis-id",
+        "name": "Buchungskreis-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "buchungskreis/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "buchungskreis/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "buchungskreis/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "gebaeude",
+    "name": "Gebäude",
+    "attributes": [
+      {
+        "identifier": "gebaeude/gebaeude-id",
+        "name": "Gebäude-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/buchungskreis",
+        "name": "Buchungskreis",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/wirtschaftseinheit",
+        "name": "Wirtschaftseinheit",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/gebaeudenummer-bbl",
+        "name": "Gebäudenummer",
+        "group": "Identifikation",
+        "sort_order": 130,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 140,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/egid",
+        "name": "EGID (GWR)",
+        "group": "Registerbezug",
+        "sort_order": 300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/grundstueck",
+        "name": "EGRID (AV)",
+        "group": "Registerbezug",
+        "sort_order": 310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/gebaeudeart",
+        "name": "Gebäudeart",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/gebaeudekategorie",
+        "name": "Gebäudekategorie (GWR)",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 410,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/gebaeudeklasse",
+        "name": "Gebäudeklasse (GWR)",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 420,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/hauptnutzung",
+        "name": "Hauptnutzung",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 430,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/land",
+        "name": "Land",
+        "group": "Adresse",
+        "sort_order": 500,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/region",
+        "name": "Region / Kanton / Bundesstaat",
+        "group": "Adresse",
+        "sort_order": 510,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/ort",
+        "name": "Ort",
+        "group": "Adresse",
+        "sort_order": 520,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/postleitzahl",
+        "name": "Postleitzahl",
+        "group": "Adresse",
+        "sort_order": 530,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/strasse",
+        "name": "Strasse",
+        "group": "Adresse",
+        "sort_order": 540,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/hausnummer",
+        "name": "Hausnummer",
+        "group": "Adresse",
+        "sort_order": 550,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/adresszusatz",
+        "name": "Adresszusatz",
+        "group": "Adresse",
+        "sort_order": 560,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/geometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/wgs84-lat",
+        "name": "WGS84 Breitengrad",
+        "group": "Geometrie",
+        "sort_order": 610,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/wgs84-lon",
+        "name": "WGS84 Längengrad",
+        "group": "Geometrie",
+        "sort_order": 620,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/gebaeudestatus",
+        "name": "Status (GWR)",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/baujahr",
+        "name": "Baujahr",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 710,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/bauperiode",
+        "name": "Bauperiode",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 720,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/abbruchjahr",
+        "name": "Abbruchjahr",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 730,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/geschosse-oberirdisch",
+        "name": "Anzahl oberirdische Geschosse",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 740,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/geschosse-unterirdisch",
+        "name": "Anzahl unterirdische Geschosse",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 750,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/eigentumsart",
+        "name": "Eigentumsart",
+        "group": "Eigentum",
+        "sort_order": 800,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/eigentuemer",
+        "name": "Eigentümer",
+        "group": "Eigentum",
+        "sort_order": 810,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/bewirtschaftungsstatus",
+        "name": "Bewirtschaftungsstatus",
+        "group": "Bewirtschaftung",
+        "sort_order": 900,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/teilportfolio",
+        "name": "Teilportfolio",
+        "group": "Portfoliomanagement",
+        "sort_order": 1000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/objektstrategie",
+        "name": "Objektstrategie",
+        "group": "Portfoliomanagement",
+        "sort_order": 1010,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "gebaeude/energietraeger",
+        "name": "Energieträger",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      }
+    ]
+  },
+  {
+    "object": "geschoss",
+    "name": "Geschoss",
+    "attributes": [
+      {
+        "identifier": "geschoss/geschoss-id",
+        "name": "Geschoss-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/geschosscode",
+        "name": "Geschosscode",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/building-id",
+        "name": "Gebäude-ID",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/sortierposition",
+        "name": "Sortierposition",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 210,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/geometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/geometriebezug",
+        "name": "Geometriebezug",
+        "group": "Geometrie",
+        "sort_order": 610,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/hoehenlage",
+        "name": "Höhenlage",
+        "group": "Geometrie",
+        "sort_order": 620,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/hoehenbezug",
+        "name": "Höhenbezug",
+        "group": "Geometrie",
+        "sort_order": 630,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/geschosslage",
+        "name": "Geschosslage",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 710,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "geschoss/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "grundstueck",
+    "name": "Grundstück",
+    "attributes": [
+      {
+        "identifier": "grundstueck/grundstueck-id",
+        "name": "Grundstück-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/buchungskreis",
+        "name": "Buchungskreis",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/wirtschaftseinheit",
+        "name": "Wirtschaftseinheit",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/grundstuecksnummer-bbl",
+        "name": "Grundstücksnummer",
+        "group": "Identifikation",
+        "sort_order": 130,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 140,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/egrid",
+        "name": "EGRID (AV)",
+        "group": "Registerbezug",
+        "sort_order": 300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/nummerierungsbereich",
+        "name": "Nummerierungsbereich",
+        "group": "Registerbezug",
+        "sort_order": 310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/parzellennummer",
+        "name": "Grundstücksnummer (amtlich)",
+        "group": "Registerbezug",
+        "sort_order": 320,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/rechtsstand",
+        "name": "Rechtsstand",
+        "group": "Registerbezug",
+        "sort_order": 330,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/land",
+        "name": "Land",
+        "group": "Adresse",
+        "sort_order": 500,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/region-kanton-bundesstaat",
+        "name": "Region / Kanton / Bundesstaat",
+        "group": "Adresse",
+        "sort_order": 510,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/ort",
+        "name": "Ort",
+        "group": "Adresse",
+        "sort_order": 520,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/postleitzahl",
+        "name": "Postleitzahl",
+        "group": "Adresse",
+        "sort_order": 530,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/strasse",
+        "name": "Strasse",
+        "group": "Adresse",
+        "sort_order": 540,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/adresszusatz",
+        "name": "Adresszusatz",
+        "group": "Adresse",
+        "sort_order": 550,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/grenzgeometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/wgs84-breitengrad",
+        "name": "WGS84 Breitengrad",
+        "group": "Geometrie",
+        "sort_order": 610,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/wgs84-laengengrad",
+        "name": "WGS84 Längengrad",
+        "group": "Geometrie",
+        "sort_order": 620,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/eigentumsart",
+        "name": "Eigentumsart",
+        "group": "Eigentum",
+        "sort_order": 800,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/eigentuemer",
+        "name": "Eigentümer",
+        "group": "Eigentum",
+        "sort_order": 810,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/teilportfolio",
+        "name": "Teilportfolio",
+        "group": "Portfoliomanagement",
+        "sort_order": 1000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "grundstueck/eigentumsform",
+        "name": "Eigentumsform",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      },
+      {
+        "identifier": "grundstueck/flaeche",
+        "name": "Fläche",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9010,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      },
+      {
+        "identifier": "grundstueck/gemeinde",
+        "name": "Gemeinde",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9020,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      }
+    ]
+  },
+  {
+    "object": "heizzentrale",
+    "name": "Heizzentrale",
+    "attributes": [
+      {
+        "identifier": "heizzentrale/heizzentrale-id",
+        "name": "Heizzentrale-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "heizzentrale/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "heizzentrale/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "heizzentrale/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "heizzentrale/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "kampus",
+    "name": "Kampus",
+    "attributes": [
+      {
+        "identifier": "kampus/kampus-id",
+        "name": "Kampus-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kampus/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kampus/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kampus/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "kondition",
+    "name": "Kondition",
+    "attributes": [
+      {
+        "identifier": "kondition/kondition-id",
+        "name": "Kondition-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kondition/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kondition/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "kontakt",
+    "name": "Kontakt",
+    "attributes": [
+      {
+        "identifier": "kontakt/kontakt-id",
+        "name": "Kontakt-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kontakt/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kontakt/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "kontakt/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "meilenstein",
+    "name": "Meilenstein",
+    "attributes": [
+      {
+        "identifier": "meilenstein/meilenstein-id",
+        "name": "Meilenstein-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "meilenstein/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "meilenstein/bauprojekt",
+        "name": "Bauprojekt",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "meilenstein/phase",
+        "name": "Phase",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 210,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "meilenstein/solltermin",
+        "name": "Solltermin",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "meilenstein/isttermin",
+        "name": "Isttermin",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "mietobjekt",
+    "name": "Mietobjekt",
+    "attributes": [
+      {
+        "identifier": "mietobjekt/mietobjekt-nummer",
+        "name": "Mietobjekt-Nummer",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietobjekt/wirtschaftseinheit",
+        "name": "Wirtschaftseinheit",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietobjekt/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietobjekt/nutzungsart",
+        "name": "Nutzungsart",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietobjekt/flaeche",
+        "name": "Fläche",
+        "group": "Messwert",
+        "sort_order": 1100,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "mietvertrag",
+    "name": "Mietvertrag",
+    "attributes": [
+      {
+        "identifier": "mietvertrag/mietvertrag-id",
+        "name": "Mietvertrag-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietvertrag/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietvertrag/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "mietvertrag/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "nutzungseinheit",
+    "name": "Nutzungseinheit",
+    "attributes": [
+      {
+        "identifier": "nutzungseinheit/nutzungseinheit-id",
+        "name": "Nutzungseinheit-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "nutzungseinheit/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "nutzungseinheit/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "nutzungseinheit/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "person",
+    "name": "Person",
+    "attributes": [
+      {
+        "identifier": "person/personen-id",
+        "name": "Personen-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "person/name",
+        "name": "Name",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "person/vorname",
+        "name": "Vorname",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "person/geburtsdatum",
+        "name": "Geburtsdatum",
+        "group": "Identifikation",
+        "sort_order": 130,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "person/unternehmen",
+        "name": "Unternehmen",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "person/rolle",
+        "name": "Rolle",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "phase",
+    "name": "Phase",
+    "attributes": [
+      {
+        "identifier": "phase/phase-id",
+        "name": "Phase-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/bauprojekt",
+        "name": "Bauprojekt",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/reihenfolge",
+        "name": "Reihenfolge",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 210,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/startdatum",
+        "name": "Startdatum",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "phase/enddatum",
+        "name": "Enddatum",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "raum",
+    "name": "Raum",
+    "attributes": [
+      {
+        "identifier": "raum/raum-id",
+        "name": "Raum-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/raumnummer",
+        "name": "Raumnummer",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/geschoss-id",
+        "name": "Geschoss-ID",
+        "group": "Räumliche Zuordnung",
+        "sort_order": 200,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/raumnutzung",
+        "name": "Raumnutzung",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/flaechenklassifikation",
+        "name": "Flächenklassifikation",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 410,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/geometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/geometriebezug",
+        "name": "Geometriebezug",
+        "group": "Geometrie",
+        "sort_order": 610,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "raum/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "stromzaehler",
+    "name": "Stromzähler",
+    "attributes": [
+      {
+        "identifier": "stromzaehler/stromzaehler-id",
+        "name": "Stromzähler-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "stromzaehler/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "stromzaehler/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "stromzaehler/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "unternehmen",
+    "name": "Unternehmen",
+    "attributes": [
+      {
+        "identifier": "unternehmen/unternehmen-id",
+        "name": "Unternehmen-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "unternehmen/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "unternehmen/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "unternehmen/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "unternehmen/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "wirtschaftseinheit",
+    "name": "Wirtschaftseinheit",
+    "attributes": [
+      {
+        "identifier": "wirtschaftseinheit/wirtschaftseinheit-id",
+        "name": "Wirtschaftseinheit-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/buchungskreis",
+        "name": "Buchungskreis",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/we-nummer",
+        "name": "Wirtschaftseinheit",
+        "group": "Identifikation",
+        "sort_order": 120,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 130,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/bewirtschaftungszweck",
+        "name": "Bewirtschaftungszweck",
+        "group": "Bewirtschaftung",
+        "sort_order": 900,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/bewirtschaftungsstatus",
+        "name": "Bewirtschaftungsstatus",
+        "group": "Bewirtschaftung",
+        "sort_order": 910,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wirtschaftseinheit/profit-center",
+        "name": "Profit Center",
+        "group": "Stillgelegte Definitionen",
+        "sort_order": 9000,
+        "primaryKey": false,
+        "archived": false,
+        "retired": true
+      }
+    ]
+  },
+  {
+    "object": "wohnung",
+    "name": "Wohnung",
+    "attributes": [
+      {
+        "identifier": "wohnung/wohnung-id",
+        "name": "Wohnung-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wohnung/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wohnung/status",
+        "name": "Status",
+        "group": "Bauwerk und Lebenszyklus",
+        "sort_order": 700,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wohnung/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "wohnung/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  },
+  {
+    "object": "zone",
+    "name": "Zone",
+    "attributes": [
+      {
+        "identifier": "zone/zone-id",
+        "name": "Zone-ID",
+        "group": "Identifikation",
+        "sort_order": 100,
+        "primaryKey": true,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/bezeichnung",
+        "name": "Bezeichnung",
+        "group": "Identifikation",
+        "sort_order": 110,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/zonentyp",
+        "name": "Zonentyp",
+        "group": "Klassifikation und Nutzung",
+        "sort_order": 400,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/geometrie",
+        "name": "Geometrie",
+        "group": "Geometrie",
+        "sort_order": 600,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/geometriebezug",
+        "name": "Geometriebezug",
+        "group": "Geometrie",
+        "sort_order": 610,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/zweck-und-abgrenzung",
+        "name": "Zweck und Abgrenzung",
+        "group": "Bewirtschaftung",
+        "sort_order": 900,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/zonenstatus",
+        "name": "Status",
+        "group": "Bewirtschaftung",
+        "sort_order": 910,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/gueltig-ab",
+        "name": "Gültig ab",
+        "group": "Gültigkeit",
+        "sort_order": 1300,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      },
+      {
+        "identifier": "zone/gueltig-bis",
+        "name": "Gültig bis",
+        "group": "Gültigkeit",
+        "sort_order": 1310,
+        "primaryKey": false,
+        "archived": false,
+        "retired": false
+      }
+    ]
+  }
+]

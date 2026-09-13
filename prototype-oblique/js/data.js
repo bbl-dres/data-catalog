@@ -402,6 +402,21 @@
     const mk = (key, icon, k, entities) => ({ key, title: t('rel.' + key), icon, items: entities.filter(Boolean).map(link[k]) });
     const byIds = (k, ids) => [...new Set(ids)].map(id => data.get(k, id));
 
+    // Only stored, current assertions establish field meanings; similar names are not evidence.
+    const mappings = entity => entity.status === 'Archiviert' ? [] : (entity._relationships || []).filter(r =>
+      !r.is_archived && r.relationship_type === 'represents' && ['candidate', 'confirmed'].includes(r.verification_status));
+    const mappingStatus = assertions => [...new Set(assertions.map(r => r.verification_status))]
+      .sort().map(status => t('rel.mapping.' + status)).join(' / ');
+    const attributeGroup = fields => {
+      const assertions = fields.flatMap(mappings).filter(r => fields.some(f => f._record?.id === r.source_data_field_id && f.status !== 'Archiviert'));
+      return { key: 'representedAttributes', title: t('rel.representedAttributes'), icon: 'tag', items:
+        data.objects.filter(o => o.status !== 'Archiviert').flatMap(o => o.attributes.filter(a => a.status !== 'Archiviert' &&
+          assertions.some(r => r.target_business_attribute_id === a._record?.id)).map(a => ({
+            name: data.displayName('attrs', a), sub: [o.name, mappingStatus(assertions.filter(r => r.target_business_attribute_id === a._record.id))].join(' · '),
+            href: href('attrs', data.childId(o.identifier, a.identifier)),
+          }))) };
+    };
+
     if (kind === 'domains') {
       const tables = data.tablesOfDomain(e);
       return [
@@ -444,17 +459,26 @@
         mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]),
         mk('usesCodelists', 'file_list', 'refs', [data.get('refs', e.codeList)]),
         mk('object', 'stack', 'objects', [data.objectForEntity(kind, e)]),
+        attributeGroup(table?.status === 'Archiviert' ? [] : [e]),
       ];
     }
     if (kind === 'attrs') {
       const o = data.objOf(e.object);
       if (e._record) {
-        const assertions = (e._relationships || []).filter(r => r.relationship_type === 'represents' && r.target_business_attribute_id === e._record.id && ['candidate', 'confirmed'].includes(r.verification_status));
-        const fields = data.tables.filter(table => table.status !== 'Archiviert').flatMap(table => table.fields.filter(f => f.status !== 'Archiviert' && assertions.some(r => r.source_data_field_id === f._record.id)).map(f => ({
-          name: data.displayName('fields', f), sub: data.displayName('tables', table), href: href('fields', data.childId(table.identifier, data.fieldId(f))),
-        })));
+        const assertions = o?.status === 'Archiviert' ? [] : mappings(e).filter(r => r.target_business_attribute_id === e._record.id);
+        const matches = data.tables.filter(table => table.status !== 'Archiviert').flatMap(table =>
+          table.fields.filter(f => f.status !== 'Archiviert' && assertions.some(r => r.source_data_field_id === f._record?.id))
+            .map(f => ({ table, field: f, assertions: assertions.filter(r => r.source_data_field_id === f._record.id) })));
+        const fields = matches.map(({ table, field, assertions }) => ({
+          name: data.displayName('fields', field), sub: [data.displayName('tables', table), data.nameOf('systems', table.system), mappingStatus(assertions)].filter(Boolean).join(' · '),
+          href: href('fields', data.childId(table.identifier, data.fieldId(field))),
+        }));
+        const tables = [...new Set(matches.map(m => m.table))].map(table => ({ ...link.tables(table),
+          sub: [data.nameOf('systems', table.system), mappingStatus(matches.filter(m => m.table === table).flatMap(m => m.assertions))].filter(Boolean).join(' · '),
+        }));
         return [mk('object', 'stack', 'objects', [o]),
-          { key: 'realizedInFields', title: t('rel.realizedInFields'), icon: 'database', items: e.status === 'Archiviert' ? [] : fields },
+          { key: 'mappedTables', title: t('rel.mappedTables'), icon: 'database', items: tables },
+          { key: 'realizedInFields', title: t('rel.mappedFields'), icon: 'tag', items: fields },
           mk('typedBy', 'file_list', 'refs', [data.get('refs', e.codeList)])];
       }
       const fieldName = ui.fieldName(e.name);
@@ -483,7 +507,7 @@
       { key: 'termdat', title: t('rel.termdat'), icon: 'tag', items: o ? data.termsOf(o) : [] },
     ];
     if (kind !== 'objects' && o) rels.splice(2, 0, mk('object', 'stack', 'objects', [o]));
-    if (kind === 'tables') rels.push(mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]));
+    if (kind === 'tables') rels.push(mk('sourceSystem', 'apps', 'systems', [data.sysOf(e.system)]), attributeGroup(e.status === 'Archiviert' ? [] : e.fields));
     return rels;
   };
 

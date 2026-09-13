@@ -1,0 +1,26 @@
+{
+  "stage": "preview",
+  "commands": 3,
+  "preservedRecords": 3301,
+  "updatedRecords": 0,
+  "newRecords": 3,
+  "newAuditEvents": 3,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "onlyCandidateRelationshipsAdded": true,
+  "sourceInventoriesUnchanged": true,
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Standard",
+    "Ermittlungsart",
+    "Genauigkeit",
+    "Gültig ab",
+    "Gültig bis"
+  ],
+  "gstatBound": true
+}

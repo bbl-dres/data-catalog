@@ -1,0 +1,504 @@
+{
+  "checkedAt": "2026-09-13T14:49:01.393Z",
+  "projectRef": "zicluerzbevodlmtbxow",
+  "migration": {
+    "version": "20260913143436",
+    "name": "catalog_session_security"
+  },
+  "manifest": {
+    "source": "supabase/migrations/20260913050000_catalog_session_security.sql",
+    "sourceSha256": "0a9bd1380a7c99d827e73a8ba8809ab3289f2b6663837923ad76e762cd4e6f6f",
+    "mcpPayloadSha256": "b6a939808eb2c4d02f35ac09508095a7bb3e4f7dd9e0caffe6765cd873f32a74",
+    "notes": "MCP owns transaction; added exact live function preflight checks."
+  },
+  "schemaComparison": {
+    "tables": {
+      "expected": 19,
+      "actual": 19,
+      "missing": 0,
+      "extra": 0
+    },
+    "columns": {
+      "expected": 477,
+      "actual": 477,
+      "missing": 0,
+      "extra": 0
+    },
+    "policies": {
+      "expected": 19,
+      "actual": 19,
+      "missing": 0,
+      "extra": 0
+    },
+    "triggers": {
+      "expected": 48,
+      "actual": 48,
+      "missing": 0,
+      "extra": 0
+    },
+    "functions": {
+      "expected": 26,
+      "actual": 26,
+      "missing": 0,
+      "extra": 0
+    },
+    "privileges": {
+      "expected": 57,
+      "actual": 57,
+      "missing": 0,
+      "extra": 0
+    },
+    "constraints": {
+      "expected": 335,
+      "actual": 335,
+      "missing": 0,
+      "extra": 0
+    },
+    "privateTables": {
+      "expected": 4,
+      "actual": 4,
+      "missing": 0,
+      "extra": 0
+    },
+    "defaultPrivileges": {
+      "expected": 1,
+      "actual": 7,
+      "missing": 0,
+      "extra": 6
+    }
+  },
+  "defaultPrivilegeNote": "Hosted public owner-only ACL rows and untouched graphql_public defaults account for extra rows; public API-role default grants verified zero.",
+  "migrationPreservedAll23Tables": true,
+  "browser": {
+    "revision": 6,
+    "rlsTables": 19,
+    "identifier": "archivgut",
+    "historyEvents": 4,
+    "newHelperCallable": true,
+    "verificationEvents": [
+      {
+        "afterRevision": 5,
+        "beforeRevision": 4,
+        "changedProperties": [
+          "comment"
+        ],
+        "privateAttribution": true
+      },
+      {
+        "afterRevision": 6,
+        "beforeRevision": 5,
+        "changedProperties": [
+          "comment"
+        ],
+        "privateAttribution": true
+      }
+    ],
+    "obsoleteHelperCallable": false,
+    "publicDefaultApiGrants": 0,
+    "originalCommentRestored": true,
+    "otherRecordValuesPreserved": true
+  },
+  "content": {
+    "before": [
+      {
+        "table_name": "catalog_private.edit_event_actor",
+        "rows": 2,
+        "hash": "d7c0236dd72e39897be87fa46899fc3a"
+      },
+      {
+        "table_name": "catalog_private.edit_receipt",
+        "rows": 2,
+        "hash": "3ae9f3aba2387a8b1024b1cdc7dbf251"
+      },
+      {
+        "table_name": "catalog_private.import_batch",
+        "rows": 23,
+        "hash": "276c1f172a87b689fbf90dd77e1d9aed"
+      },
+      {
+        "table_name": "catalog_private.user_access",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.actor",
+        "rows": 11,
+        "hash": "df56537538a92d4d1d9680ceca86847f"
+      },
+      {
+        "table_name": "catalog.business_attribute",
+        "rows": 215,
+        "hash": "133fb04ee88a418da9578af0a76752ba"
+      },
+      {
+        "table_name": "catalog.business_attribute_quality_requirement",
+        "rows": 179,
+        "hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "catalog.business_object",
+        "rows": 40,
+        "hash": "f476b4f604c88fd5f10f646088a129eb"
+      },
+      {
+        "table_name": "catalog.change_event",
+        "rows": 472,
+        "hash": "23826c5b0f1f0fd9f8cec8e8f6cf8863"
+      },
+      {
+        "table_name": "catalog.code_list",
+        "rows": 90,
+        "hash": "538d295f01536dbae02b7cc460d1a4b5"
+      },
+      {
+        "table_name": "catalog.code_value",
+        "rows": 2080,
+        "hash": "96adcddfbfcce22d2c328dd1ad6cfa53"
+      },
+      {
+        "table_name": "catalog.data_field",
+        "rows": 621,
+        "hash": "37115e801ac5929eb8897204c483f817"
+      },
+      {
+        "table_name": "catalog.data_field_quality_requirement",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.data_product",
+        "rows": 5,
+        "hash": "4f5ddb1c4fff22bbfb87ab4853d89e9e"
+      },
+      {
+        "table_name": "catalog.data_service",
+        "rows": 7,
+        "hash": "0ec360883505b0b1f6aae10abaffc913"
+      },
+      {
+        "table_name": "catalog.data_table",
+        "rows": 30,
+        "hash": "255d5393da934967a5cc5591028c33a8"
+      },
+      {
+        "table_name": "catalog.domain",
+        "rows": 7,
+        "hash": "02c34ab7cd1daba18826f1a0c119ce7f"
+      },
+      {
+        "table_name": "catalog.lineage_relation",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.product_attribute",
+        "rows": 12,
+        "hash": "8fe38cbe0b3cfb7f3a430e4f2eb72826"
+      },
+      {
+        "table_name": "catalog.quality_requirement",
+        "rows": 28,
+        "hash": "93e3bd2502e3b3756ab6dc471488ccec"
+      },
+      {
+        "table_name": "catalog.relationship",
+        "rows": 112,
+        "hash": "5526685301a94dcd3596f75fa97b06d4"
+      },
+      {
+        "table_name": "catalog.service_endpoint",
+        "rows": 7,
+        "hash": "f1b263938f20754a36815d9ad9eb38a0"
+      },
+      {
+        "table_name": "catalog.system",
+        "rows": 4,
+        "hash": "ddbff840d11642c18847a8a289754768"
+      }
+    ],
+    "afterMigration": [
+      {
+        "table_name": "catalog_private.edit_event_actor",
+        "rows": 2,
+        "hash": "d7c0236dd72e39897be87fa46899fc3a"
+      },
+      {
+        "table_name": "catalog_private.edit_receipt",
+        "rows": 2,
+        "hash": "3ae9f3aba2387a8b1024b1cdc7dbf251"
+      },
+      {
+        "table_name": "catalog_private.import_batch",
+        "rows": 23,
+        "hash": "276c1f172a87b689fbf90dd77e1d9aed"
+      },
+      {
+        "table_name": "catalog_private.user_access",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.actor",
+        "rows": 11,
+        "hash": "df56537538a92d4d1d9680ceca86847f"
+      },
+      {
+        "table_name": "catalog.business_attribute",
+        "rows": 215,
+        "hash": "133fb04ee88a418da9578af0a76752ba"
+      },
+      {
+        "table_name": "catalog.business_attribute_quality_requirement",
+        "rows": 179,
+        "hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "catalog.business_object",
+        "rows": 40,
+        "hash": "f476b4f604c88fd5f10f646088a129eb"
+      },
+      {
+        "table_name": "catalog.change_event",
+        "rows": 472,
+        "hash": "23826c5b0f1f0fd9f8cec8e8f6cf8863"
+      },
+      {
+        "table_name": "catalog.code_list",
+        "rows": 90,
+        "hash": "538d295f01536dbae02b7cc460d1a4b5"
+      },
+      {
+        "table_name": "catalog.code_value",
+        "rows": 2080,
+        "hash": "96adcddfbfcce22d2c328dd1ad6cfa53"
+      },
+      {
+        "table_name": "catalog.data_field",
+        "rows": 621,
+        "hash": "37115e801ac5929eb8897204c483f817"
+      },
+      {
+        "table_name": "catalog.data_field_quality_requirement",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.data_product",
+        "rows": 5,
+        "hash": "4f5ddb1c4fff22bbfb87ab4853d89e9e"
+      },
+      {
+        "table_name": "catalog.data_service",
+        "rows": 7,
+        "hash": "0ec360883505b0b1f6aae10abaffc913"
+      },
+      {
+        "table_name": "catalog.data_table",
+        "rows": 30,
+        "hash": "255d5393da934967a5cc5591028c33a8"
+      },
+      {
+        "table_name": "catalog.domain",
+        "rows": 7,
+        "hash": "02c34ab7cd1daba18826f1a0c119ce7f"
+      },
+      {
+        "table_name": "catalog.lineage_relation",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.product_attribute",
+        "rows": 12,
+        "hash": "8fe38cbe0b3cfb7f3a430e4f2eb72826"
+      },
+      {
+        "table_name": "catalog.quality_requirement",
+        "rows": 28,
+        "hash": "93e3bd2502e3b3756ab6dc471488ccec"
+      },
+      {
+        "table_name": "catalog.relationship",
+        "rows": 112,
+        "hash": "5526685301a94dcd3596f75fa97b06d4"
+      },
+      {
+        "table_name": "catalog.service_endpoint",
+        "rows": 7,
+        "hash": "f1b263938f20754a36815d9ad9eb38a0"
+      },
+      {
+        "table_name": "catalog.system",
+        "rows": 4,
+        "hash": "ddbff840d11642c18847a8a289754768"
+      }
+    ],
+    "afterBrowser": [
+      {
+        "table_name": "catalog_private.edit_event_actor",
+        "rows": 4,
+        "hash": "a01ec97ab0551f9ea5dd74f1ac6ef339"
+      },
+      {
+        "table_name": "catalog_private.edit_receipt",
+        "rows": 4,
+        "hash": "0fa281c8148e42d76c13885d7683fcc9"
+      },
+      {
+        "table_name": "catalog_private.import_batch",
+        "rows": 23,
+        "hash": "276c1f172a87b689fbf90dd77e1d9aed"
+      },
+      {
+        "table_name": "catalog_private.user_access",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.actor",
+        "rows": 11,
+        "hash": "df56537538a92d4d1d9680ceca86847f"
+      },
+      {
+        "table_name": "catalog.business_attribute",
+        "rows": 215,
+        "hash": "133fb04ee88a418da9578af0a76752ba"
+      },
+      {
+        "table_name": "catalog.business_attribute_quality_requirement",
+        "rows": 179,
+        "hash": "f717fe3cd081dc7027516b9b1035b00f"
+      },
+      {
+        "table_name": "catalog.business_object",
+        "rows": 40,
+        "hash": "a990896f4f08afc3232c92ec5b2f437b"
+      },
+      {
+        "table_name": "catalog.change_event",
+        "rows": 474,
+        "hash": "1b0faa485acbc576e81bee116b850044"
+      },
+      {
+        "table_name": "catalog.code_list",
+        "rows": 90,
+        "hash": "538d295f01536dbae02b7cc460d1a4b5"
+      },
+      {
+        "table_name": "catalog.code_value",
+        "rows": 2080,
+        "hash": "96adcddfbfcce22d2c328dd1ad6cfa53"
+      },
+      {
+        "table_name": "catalog.data_field",
+        "rows": 621,
+        "hash": "37115e801ac5929eb8897204c483f817"
+      },
+      {
+        "table_name": "catalog.data_field_quality_requirement",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.data_product",
+        "rows": 5,
+        "hash": "4f5ddb1c4fff22bbfb87ab4853d89e9e"
+      },
+      {
+        "table_name": "catalog.data_service",
+        "rows": 7,
+        "hash": "0ec360883505b0b1f6aae10abaffc913"
+      },
+      {
+        "table_name": "catalog.data_table",
+        "rows": 30,
+        "hash": "255d5393da934967a5cc5591028c33a8"
+      },
+      {
+        "table_name": "catalog.domain",
+        "rows": 7,
+        "hash": "02c34ab7cd1daba18826f1a0c119ce7f"
+      },
+      {
+        "table_name": "catalog.lineage_relation",
+        "rows": 0,
+        "hash": "d751713988987e9331980363e24189ce"
+      },
+      {
+        "table_name": "catalog.product_attribute",
+        "rows": 12,
+        "hash": "8fe38cbe0b3cfb7f3a430e4f2eb72826"
+      },
+      {
+        "table_name": "catalog.quality_requirement",
+        "rows": 28,
+        "hash": "93e3bd2502e3b3756ab6dc471488ccec"
+      },
+      {
+        "table_name": "catalog.relationship",
+        "rows": 112,
+        "hash": "5526685301a94dcd3596f75fa97b06d4"
+      },
+      {
+        "table_name": "catalog.service_endpoint",
+        "rows": 7,
+        "hash": "f1b263938f20754a36815d9ad9eb38a0"
+      },
+      {
+        "table_name": "catalog.system",
+        "rows": 4,
+        "hash": "ddbff840d11642c18847a8a289754768"
+      }
+    ]
+  },
+  "http": {
+    "checkedAt": "2026-09-13T14:33:06.311Z",
+    "signupDisabled": true,
+    "publicGetStatus": 200,
+    "privateProfile": {
+      "status": 406,
+      "code": "PGRST106",
+      "message": "Invalid schema: catalog_private"
+    },
+    "edgeGetStatus": 404,
+    "hostingHeaders": {
+      "content-security-policy": null,
+      "x-frame-options": null,
+      "x-content-type-options": null,
+      "referrer-policy": null,
+      "strict-transport-security": "max-age=31556952"
+    },
+    "directVendorAdvisories": {
+      "status": 200,
+      "result": {},
+      "scope": "Pinned top-level browser packages only; not a full bundled transitive-dependency audit."
+    }
+  },
+  "advisors": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "count": 4
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "count": 2
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "count": 1
+    }
+  ],
+  "localPreview": "http://localhost:8765/",
+  "apiLocks": {
+    "publicGET": 0,
+    "writeOperations": 48,
+    "readOnlySnapshot": 0
+  },
+  "systemSection": {
+    "expanded": true,
+    "last": true
+  }
+}

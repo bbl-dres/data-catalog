@@ -1,0 +1,126 @@
+{
+  "operation": "2026-09-13-building-condition-heritage",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "0cad2f80030b1ec5175c85d768574212",
+  "description": "Two approved building attributes, retaining source wording as text until the official value lists are available. Two source-evidenced candidate relationships. NF/HNF and apartment counts excluded.",
+  "commands": [
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/gebaeudezustand",
+      "expected_version": 0,
+      "body": {
+        "id": "964bdf2a-d00c-48d8-a660-b36b7f893dc2",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "identifier": "gebaeude/gebaeudezustand",
+        "name_de": "Gebäudezustand",
+        "semantic_name": "buildingCondition",
+        "sort_order": 910,
+        "description_de": "Beurteilung des baulichen Zustands des Gebäudes gemäss der dokumentierten Quelle. Originalbezeichnung, Beurteilungsdatum und Bewertungsverfahren erhalten; fehlende Angaben bedeuten nicht guter Zustand.",
+        "comment": "Property Set (vorgeschlagen): Bewirtschaftung",
+        "responsible_organisation": {
+          "name_de": "BBL Objektmanagement"
+        },
+        "value_specification": {
+          "valueType": "text"
+        },
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title",
+            "purpose": "documentation"
+          }
+        ],
+        "status": "draft",
+        "is_archived": false,
+        "is_identifier": false
+      },
+      "command_id": "80c9972e-315e-4dee-9f15-dd02fda48e89"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "represents:t-sap-building/BUILDING_CONDITION:gebaeude/gebaeudezustand",
+      "expected_version": 0,
+      "body": {
+        "id": "cafc1e9d-ede5-4e6f-8954-427122a5703d",
+        "identifier": "represents:t-sap-building/BUILDING_CONDITION:gebaeude/gebaeudezustand",
+        "source_data_field_id": "fe973e77-9777-50f6-a8bf-495ecc587d13",
+        "target_business_attribute_id": "964bdf2a-d00c-48d8-a660-b36b7f893dc2",
+        "relationship_type": "represents",
+        "verification_status": "candidate",
+        "coverage": "unknown",
+        "rule_notes_de": "RE-FX führt Allgemeiner Gebäudezustand. Die Quellwerteliste und das Bewertungsverfahren sind noch nicht dokumentiert; die fachliche Zuordnung ist zu prüfen.",
+        "documentation_links": [
+          {
+            "url": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title",
+            "purpose": "documentation"
+          }
+        ],
+        "is_archived": false
+      },
+      "command_id": "c16c9b03-7b54-46cd-93eb-4c9e6f47040e"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/schutz-denkmalstatus",
+      "expected_version": 0,
+      "body": {
+        "id": "4f4470b3-e114-47a9-b622-7cc281c4df6e",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "identifier": "gebaeude/schutz-denkmalstatus",
+        "name_de": "Schutz-/Denkmalstatus",
+        "semantic_name": "heritageProtectionStatus",
+        "sort_order": 440,
+        "description_de": "Dokumentierter Schutz- oder Denkmalstatus des Gebäudes gemäss der zuständigen Quelle. Originalbezeichnung, betroffenen Umfang und massgeblichen Stand erhalten. Ein fehlender Eintrag bedeutet nicht kein Schutz.",
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung",
+        "responsible_organisation": {
+          "name_de": "BBL Immobilienmanagement"
+        },
+        "value_specification": {
+          "valueType": "text"
+        },
+        "code_list_id": null,
+        "documentation_links": [
+          {
+            "url": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title",
+            "purpose": "documentation"
+          }
+        ],
+        "status": "draft",
+        "is_archived": false,
+        "is_identifier": false
+      },
+      "command_id": "6ed3378d-a5a3-4128-bd7b-69fbc6e8dcaa"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "represents:t-sap-building/HAS_HIST_SITE_PROTECTION:gebaeude/schutz-denkmalstatus",
+      "expected_version": 0,
+      "body": {
+        "id": "3ff611a4-61e1-4084-995f-20c02d92c90b",
+        "identifier": "represents:t-sap-building/HAS_HIST_SITE_PROTECTION:gebaeude/schutz-denkmalstatus",
+        "source_data_field_id": "17dcddca-e7a8-503d-ad28-692abc4b75b9",
+        "target_business_attribute_id": "4f4470b3-e114-47a9-b622-7cc281c4df6e",
+        "relationship_type": "represents",
+        "verification_status": "candidate",
+        "coverage": "unknown",
+        "rule_notes_de": "RE-FX führt Denkmalschutz. Der Quellhinweis bildet nicht zwingend den gesamten Schutzstatus ab; seine Kodierung und die Abgrenzung zum Inventareintrag sind noch zu prüfen.",
+        "documentation_links": [
+          {
+            "url": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title",
+            "purpose": "documentation"
+          }
+        ],
+        "is_archived": false
+      },
+      "command_id": "78e1cc07-64c7-4074-ae93-7cbde817552c"
+    }
+  ]
+}

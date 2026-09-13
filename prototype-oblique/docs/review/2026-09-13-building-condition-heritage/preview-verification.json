@@ -1,0 +1,30 @@
+{
+  "stage": "preview",
+  "commands": 4,
+  "preservedRecords": 3305,
+  "updatedRecords": 1,
+  "newRecords": 4,
+  "newAuditEvents": 4,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "vocabulariesUnchanged": true,
+  "sourceWordingAsText": true,
+  "buildingActiveAttributes": 39,
+  "addedAttributes": [
+    {
+      "identifier": "gebaeude/gebaeudezustand",
+      "name": "Gebäudezustand",
+      "sortOrder": 910,
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "identifier": "gebaeude/schutz-denkmalstatus",
+      "name": "Schutz-/Denkmalstatus",
+      "sortOrder": 440,
+      "organisation": "BBL Immobilienmanagement"
+    }
+  ],
+  "newCandidateMappings": 2,
+  "noNFHNFOrApartmentCount": true
+}

@@ -1,43 +1,36 @@
-# Queued: simplify Bemessung
+# Applied: Bemessung and business-attribute naming cleanup
 
-13 September 2026. Requested after completion of the database activation/security review. **Proposal only; no Bemessung content was changed.** This concerns business-attribute definitions and relationships in the catalog, not the creation of a physical measurement-data table.
+**Later follow-up, 13 September:** [Standard now has a five-choice value list](2026-09-13-bemessung-standard.md). It uses value type code, with edition and rule details documented in Quelle. The 52-command evidence below records the earlier cleanup, when Standard retained the structured definition.
 
-## Current state
+13 September 2026; Supabase project `zicluerzbevodlmtbxow`. This changes catalog definitions, not operational building or measurement records.
 
-Read-only Supabase inspection found 14 unarchived attributes: Bemessung-ID, Bemessungsart, Bemessungsgrundlage, Bemessungsumfang, Bezeichnung, Bezugsobjekt-ID, Bezugsobjekttyp, Einheit, Ermittlungsart, Gültig ab, Gültig bis, Quelle and Wert.
+## Applied content
 
-Bezeichnung and Status already say in their comments that they were removed from the business profile, but they remain unarchived and visible. Ermittlungsart already captures DWG/IFC derivation, manual measurement, adoption from evidence, calculation and estimation. Reuse its identity rather than creating a duplicate. The current profile deliberately distinguishes overall, above-ground and below-ground measurements.
+Bemessung now has **11 active attributes**: Bemessung-ID, Bemessungsart, Wert, Einheit, Quelle, FID, Gültig ab, Gültig bis, Genauigkeit, Standard, Ermittlungsart.
 
-## Recommended target
+- Archived Bezeichnung, Status, Bemessungsumfang, Bezugsobjekttyp and Bezugsobjekt-ID. Their identities, definitions, assigned rules and historical references remain present.
+- Reused all five measuredFor relationships to Gebäude, Geschoss, Raum, Grundstück and Zone. Rule notes require one identified target per operational assertion. Aussenfläche does not yet exist as a separate catalog object.
+- Archived the unused scope list and its three codes. Updated GF/GV and other dependent vocabulary/profile notes: selection derives from object, valid hierarchy and measurement kind. Existing totals and ambiguous historical partial values retain their source evidence; no numeric aggregation or conversion was performed.
+- Added FID and Genauigkeit. Accuracy uses the user-approved categories **Unbekannt / Geschätzt / Toleranz dokumentiert**, with exact tolerance in the source. These are evidence categories, not an invented numerical ranking.
+- Bound the existing Ermittlungsart to a five-value draft list. Standard reuses Bemessungsgrundlage's identity and structured rule reference; the applied edition, category and exceptions remain necessary.
+- Renamed Grenzgeometrie to **Geometrie** and Geschossstatus, Raumstatus and Zonenstatus to **Status**. Gebäude uses **Status (GWR)** with an actual foreign-key binding to the existing **GWR Gebäudestatus (GSTAT)** list. Geometriebezug and Bewirtschaftungsstatus retain their distinct meanings. No technical identifier or semantic name was renamed.
 
-Keep a small required core and group optional provenance/quality fields separately. Twelve business attributes plus an explicit measured-object relationship are sufficient for the stated scope:
+## Verification and preservation
 
-| Field | Recommendation |
-|---|---|
-| Bemessung-ID | Stable identity. |
-| Bemessungsart | Controlled vocabulary: what quantity is determined. |
-| Wert | Numeric value; unknown is not zero. |
-| Einheit | Controlled unit compatible with the measurement kind. |
-| Bemessungsumfang | Retain: Gesamt / oberirdisch / unterirdisch. Other subsets need an explicit documented boundary. Do not infer Gesamt when unknown. |
-| Gültig ab | When the value applies to the measured object; do not substitute a catalog edit date. |
-| Gültig bis | Optional open end; agree whether the end is inclusive or exclusive. |
-| Quelle | Concrete source/document/model and its revision; allow a measurement protocol for manual work. |
-| Geometrie-ID (FID) | Optional source-scoped reference. Retain source file/dataset, layer where applicable, revision and identifier. IFC GlobalId, DWG entity handles and GIS FIDs are different identifier schemes. |
-| Standard / Bemessungsregel | Controlled rule reference including its actual edition/category, e.g. SIA 416, DIN 277, IPMS or a documented BBL rule. Preserve boundary/deduction exceptions from the existing Bemessungsgrundlage as source/rule details. |
-| Ermittlungsart | Controlled method: model-derived, measured, adopted from evidence, calculated, estimated. DWG/IFC identifies the source format; typing a number manually does not describe how it was measured. |
-| Genauigkeitsklasse | Optional controlled quality class with defined criteria and an unknown state. Avoid arbitrary high/medium/low labels. If a numeric uncertainty/tolerance is required, model it explicitly with its unit rather than inventing a class. |
+A full live snapshot was captured before editing. The same **52 commands** passed a transaction ending in ROLLBACK; the original snapshot fingerprint was then rechecked. The commands were applied in one transaction through the guarded `catalog.api_write` boundary, with original-row/revision checks and audit assertions.
 
-**Object relation:** each measurement statement targets one identified measured object (Gebäude, Geschoss, Raum, Zone, Grundstück, Aussenfläche, etc.). Replace the separate type/ID presentation with a typed relationship. The source geometry identifier does not replace the business-object relationship. An aggregate targets an explicitly identified aggregate/zone; do not ambiguously attach one scalar to several independent objects. The catalog can document the permitted relationships now; enforcement on actual operational measurement records belongs to the consuming system.
+This was an administrative MCP content operation explicitly requested by the project's sole permanent app user. Transaction-local identity/session context was taken from that existing active account to use the ordinary audited command boundary; no token was read, generated or published. No Auth records, grants, RLS policies or schema definitions were changed. The metadata in the public manifest contains no session or account credentials.
 
-No additional default business fields are recommended. Measurement date may be useful when distinct from validity and source revision; retain it in provenance unless reporting requires a separate searchable field. Calculation inputs/formula remain provenance details where needed. Generic name, catalog workflow status and edit timestamps should not duplicate business attributes.
+The verified result contains 40 explicitly updated records, one additional owner whose revision was advanced by child writes, 12 created definitions/vocabulary records and 52 public audit events. All 3,228 other identified content records, 474 previous history events and all 179 business-attribute rule assignments were preserved. Each command has exactly one private receipt and attribution record. The original 3,922 public rows remain; 64 rows were added, giving 3,986. No rows were deleted.
 
-This is a design recommendation informed by [OGC's observation model](https://docs.ogc.org/as/20-082r4/20-082r4.html), which separates the observed property, result, target, procedure, time and quality, and [buildingSMART's IfcElementQuantity](https://ifc43-docs.standards.buildingsmart.org/IFC/RELEASE/IFC4x3/HTML/lexical/IfcElementQuantity.htm), which distinguishes a quantity's meaning from its method of measurement. It is not a claim that the proposed local fields establish compliance with any named measurement standard.
+The current localhost app shows Attribute (11) for Bemessung and **Status (GWR)** linked to **GWR Gebäudestatus (GSTAT)**. The SQL result was compared field-by-field against the before snapshot and expected command bodies. The preview also verified restoration of the entire original state by rollback. Earlier browser save/history/restore verification remains documented in the security review; this content batch does not claim a new browser-authored save.
 
-## Work queued
+[Exact applied manifest](2026-09-13-content-cleanup/manifest.json) and [verification](2026-09-13-content-cleanup/verification.json) retain original rows, IDs, command IDs and patches. They are evidence, not schema migrations or a script to rerun. To reverse content later, first read the current revision, then issue fresh audited commands restoring only the reviewed fields; archive new definitions rather than deleting their history. Reconcile subsequent user changes before reversal.
 
-1. Settle vocabulary semantics (especially accuracy criteria, standard editions and source identifier scope) and the measured-object relationships.
-2. Archive the two already superseded definitions; preserve UUIDs, history and any incoming references. Reuse continuing definitions and map the two current object-reference attributes to the relationship model. Preserve Bemessungsumfang and the existing source/method requirements.
-3. Update the reviewed business-object proposal, dependent object profiles and reference vocabularies together. Check all mappings, rules and relations before retiring definitions; add Aussenfläche only when the corresponding catalog object/reference is established.
-4. Apply only the reviewed content changes through the audited command API, with revisions and reversible verification. This does not require replaying any schema migration or import.
+## Remaining domain work
 
-The reduction is chiefly conceptual: 12 attributes with clear optionality instead of 14 partly duplicated fields, plus an explicit relationship. Do not trade necessary meaning for a lower field count.
+Aussenfläche needs an agreed definition and relation target. Operational interval conventions, exact standard editions and tolerance values belong to the actual source records; no values were invented. The 20 profile selections describe intended views and do not implement an automatic aggregation engine or structured PropertySets.
+
+## Later follow-up
+
+The [catalog refinement](2026-09-13-catalog-refinement.md) adds EBF and SIA 380 / SIA 416/1 (seven current standard choices), replaces the accuracy categories with Geschätzt / Gemessen / Aggregiert / Unbekannt, and simplifies building measurements/storey counts. The command counts and before/after evidence above describe the original batch and remain historical.

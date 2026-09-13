@@ -207,7 +207,7 @@
     const rd = detail.rowsData(e);
     const filter = (route.params.filter || '').trim();
     const key = `detail:${e.kind}:rows`;
-    const options = state.tableSorts[key] ? DK.presentation.sortOptions(state, key, rd.kind) : { key, sort: null };
+    const options = state.tableSorts[key] || ['attrs', 'fields'].includes(rd.kind) ? DK.presentation.sortOptions(state, key, rd.kind) : { key, sort: null };
     const matches = rd.rows.filter(row => data.matchesValues([...row.text, ...(row.search || [])], filter));
     const ordered = options.sort ? DK.presentation.sort(rd.kind, matches, options.sort, row => row.entity) : matches;
     const fields = DK.presentation.fields(rd.kind);

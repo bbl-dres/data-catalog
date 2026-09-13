@@ -1,0 +1,45 @@
+{
+  "buildingClassBound": true,
+  "buildingClassSourceVersion": "4.2",
+  "bauperiodeBound": true,
+  "stage": "postflight",
+  "commands": 5,
+  "preservedRecords": 3300,
+  "updatedRecords": 4,
+  "newRecords": 2,
+  "newAuditEvents": 5,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "sourceInventoriesUnchanged": true,
+  "vocabulariesUnchanged": true,
+  "combinedDefinitionArchived": true,
+  "buildingActiveAttributes": 37,
+  "attributeBindings": [
+    {
+      "identifier": "gebaeude/gebaeudeart-1",
+      "name": "Gebäudeart 1",
+      "sortOrder": 400,
+      "list": "BBL Gebäudeart 1"
+    },
+    {
+      "identifier": "gebaeude/gebaeudeart-2",
+      "name": "Gebäudeart 2",
+      "sortOrder": 405,
+      "list": "BBL Gebäudeart 2"
+    }
+  ],
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Standard",
+    "Ermittlungsart",
+    "Genauigkeit",
+    "Gültig ab",
+    "Gültig bis"
+  ],
+  "gstatBound": true
+}

@@ -1,0 +1,214 @@
+{
+  "operation": "2026-09-13-building-type-levels",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "1770a5b7fb8103823414e85483dd8dae",
+  "description": "Replace the combined structured definition with two code attributes bound to the existing RE-FX value lists. Preserve the combined definition as archived and retain all previous data and references. Bind Bauperiode to the existing GWR GBAUP code list, retaining its identity and order. Bind Gebäudeklasse (GWR) to the existing GKLAS list at its documented 4.2 source version; do not relabel it as a verified 5.0 vocabulary.",
+  "commands": [
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "f6db9b3d-9151-4cbe-8648-ab37a2912cc3",
+      "identifier": "gebaeude/gebaeudeart",
+      "expected_version": 7,
+      "before": {
+        "id": "f6db9b3d-9151-4cbe-8648-ab37a2912cc3",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung\nVerbindliche BBL-Zuordnung noch bestätigen.",
+        "name_de": "Gebäudeart",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:30:57.624612+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/gebaeudeart",
+        "sort_order": 400,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 7,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "buildingType",
+        "classification": null,
+        "description_de": "BBL-Gebäudeklassifikation mit den verfügbaren Hierarchiestufen 1 und 2 sowie dem verwendeten Vokabularstand. Gebäudeart, Hauptnutzung und GWR-Klassifikationen sind fachlich getrennt; eine Gleichsetzung wird nicht vorausgesetzt.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "structured"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "is_archived": true,
+        "sort_order": 9030
+      },
+      "command_id": "c440dbc9-d385-4ec4-8d83-c78f2f77b20a"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/gebaeudeart-1",
+      "expected_version": 0,
+      "body": {
+        "id": "1be53e78-de07-4b14-94e7-4c9d4803fdba",
+        "identifier": "gebaeude/gebaeudeart-1",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "name_de": "Gebäudeart 1",
+        "description_de": "BBL-Gebäudeklassifikation Stufe 1 gemäss RE-FX. Zulässige Werte stehen in BBL Gebäudeart 1. Hauptnutzung und GWR-Klassifikationen bleiben separat.",
+        "semantic_name": "buildingTypeLevel1",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "code_list_id": "37133418-2bc9-464f-90a5-fc56a51a5c49",
+        "status": "draft",
+        "is_archived": false,
+        "is_identifier": false,
+        "sort_order": 400,
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung",
+        "quality_requirement_ids": [
+          "3c5e7cee-57d7-440c-b0c5-b98e4b5cc091"
+        ]
+      },
+      "command_id": "94928c6a-d8dc-4992-a40f-ccf98a0d378c"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "create",
+      "id": null,
+      "identifier": "gebaeude/gebaeudeart-2",
+      "expected_version": 0,
+      "body": {
+        "id": "d23e65f5-b919-44ca-b05a-9a506a546614",
+        "identifier": "gebaeude/gebaeudeart-2",
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "name_de": "Gebäudeart 2",
+        "description_de": "BBL-Gebäudeklassifikation Stufe 2 gemäss RE-FX. Zulässige Werte stehen in BBL Gebäudeart 2; die zugehörige Stufe 1 wird separat geführt.",
+        "semantic_name": "buildingTypeLevel2",
+        "value_specification": {
+          "valueType": "code"
+        },
+        "code_list_id": "df2673b8-c5c6-4734-a671-c898a5a5f290",
+        "status": "draft",
+        "is_archived": false,
+        "is_identifier": false,
+        "sort_order": 405,
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung",
+        "quality_requirement_ids": [
+          "3c5e7cee-57d7-440c-b0c5-b98e4b5cc091"
+        ]
+      },
+      "command_id": "623de64a-9015-46e9-a5ca-f1abd460c9f8"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "83214548-304a-482a-8ac9-14ea324d3a77",
+      "identifier": "gebaeude/bauperiode",
+      "expected_version": 4,
+      "before": {
+        "id": "83214548-304a-482a-8ac9-14ea324d3a77",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Bauwerk und Lebenszyklus",
+        "name_de": "Bauperiode",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:30:57.615677+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/bauperiode",
+        "sort_order": 720,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 4,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "constructionPeriod",
+        "classification": null,
+        "description_de": "Bekannte Bauperiode oder ausdrücklich abgeleitete zeitliche Einteilung mit Periodenschema und Herkunft. Bekannte und abgeleitete Angaben sind zu unterscheiden; aus einer Periode wird kein scheinbar genaues Baujahr erfunden.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "structured"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "value_specification": {
+          "valueType": "code"
+        },
+        "code_list_id": "080daf9c-11a4-54b9-b8ab-320450fd4ae4",
+        "description_de": "Periode der Fertigstellung des Gebäudes gemäss der Werteliste GWR Bauperiode (GBAUP). Herkunft und allfällige Ableitung erhalten; aus einer Periode kein genaues Baujahr ableiten."
+      },
+      "command_id": "8d0494d5-32cf-40a2-a2a7-3501b8a7c543"
+    },
+    {
+      "table": "business_attribute",
+      "operation": "update",
+      "id": "51f2dabd-7364-4d95-8d9d-7fa3304ce775",
+      "identifier": "gebaeude/gebaeudeklasse",
+      "expected_version": 4,
+      "before": {
+        "id": "51f2dabd-7364-4d95-8d9d-7fa3304ce775",
+        "status": "draft",
+        "comment": "Property Set (vorgeschlagen): Klassifikation und Nutzung\nKompatibilität der Werteliste 4.2 mit GWR 5.0 noch prüfen.",
+        "name_de": "Gebäudeklasse (GWR)",
+        "name_en": null,
+        "name_fr": null,
+        "name_it": null,
+        "version": null,
+        "edited_at": "2026-09-13T15:30:57.631295+00:00",
+        "created_on": "2026-09-07",
+        "identifier": "gebaeude/gebaeudeklasse",
+        "sort_order": 420,
+        "is_archived": false,
+        "modified_on": "2026-09-13",
+        "row_version": 4,
+        "code_list_id": null,
+        "version_date": null,
+        "data_owner_id": null,
+        "is_identifier": false,
+        "semantic_name": "gwrBuildingClass",
+        "classification": null,
+        "description_de": "Detaillierte GWR-Gebäudeklassifikation auf Grundlage der erweiterten Eurostat-Klassifikation. Sie bleibt von GKAT, BBL-Gebäudeart und Hauptnutzung getrennt; der vorhandene 4.2-Quellenstand begründet keine geprüfte 5.0-Wertelistenbindung.",
+        "description_en": null,
+        "description_fr": null,
+        "description_it": null,
+        "data_steward_id": null,
+        "contact_actor_id": null,
+        "business_object_id": "558affff-c16c-525b-b603-418bc1071a03",
+        "documentation_links": [],
+        "system_of_record_id": null,
+        "value_specification": {
+          "valueType": "code"
+        },
+        "contains_personal_data": null,
+        "responsible_organisation": null
+      },
+      "body": {
+        "code_list_id": "c581874e-bfc8-5057-831e-c2a4d90ce373",
+        "description_de": "Detaillierte Gebäudeklassifikation gemäss der Werteliste GWR Gebäudeklasse (GKLAS), auf Grundlage der erweiterten Eurostat-Klassifikation. Gebäudekategorie, BBL-Gebäudeart und Hauptnutzung bleiben separat."
+      },
+      "command_id": "36be0cfc-87c9-42a5-9d9b-2ab76407d49f"
+    }
+  ]
+}

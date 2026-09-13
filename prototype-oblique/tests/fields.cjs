@@ -20,7 +20,7 @@ const server = createServer();
       await page.evaluate(() => document.fonts.ready);
     };
     const link = '#/tables/t-gwr-gebaeude/fields/EGID';
-    for (const width of [1440, 390, 320]) {
+    for (const width of [1920, 1440, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       await visit('#/tables/t-gwr-gebaeude');
       await page.click('#tab-rows');
@@ -35,12 +35,16 @@ const server = createServer();
       assert.equal(await page.locator('.ob-field-documentation').count(), 0);
       const facts = await page.locator('.ob-core-facts > .ob-facts').innerText();
       assert(facts.includes('Technischer Name\nEGID'));
-      assert(facts.includes('Bezeichnung\nEidgenössischer Gebäudeidentifikator'));
+      assert(facts.includes('Name\nEidgenössischer Gebäudeidentifikator'));
       assert((await page.locator('.ob-core-facts').innerText()).includes('Gültig'));
       assert.equal(await page.locator('.ob-core-facts a[href="https://www.housing-stat.ch/catalog/de/5.0/revised#EGID"]').count(), 1);
       const responsibility = page.locator('.ob-responsibility');
+      const responsibilityBox = await responsibility.boundingBox();
+      const factsBox = await page.locator('.ob-core-facts').boundingBox();
+      assert(responsibilityBox.y + responsibilityBox.height <= factsBox.y, 'Responsibility is above facts at every width');
+      assert(Math.abs(responsibilityBox.x - factsBox.x) < 1 && Math.abs(responsibilityBox.width - factsBox.width) < 1, 'Detail sections share one full-width column');
       assert((await responsibility.innerText()).includes('Bundesamt für Statistik (BFS)'));
-      assert.deepEqual(await responsibility.locator('dt').allTextContents(), ['Organisation', 'Dateneigner', 'Datenverwalter', 'Datenhalter']);
+      assert.deepEqual(await responsibility.locator('dt').allTextContents(), ['Verantwortliche Organisation', 'Dateneigner', 'Datenverwalter', 'Datenhalter']);
       assert.equal(await responsibility.getByRole('link', {name: 'Bundesamt für Statistik (BFS)'}).getAttribute('href'), 'https://www.housing-stat.ch/de/home.html');
       assert(!(await page.locator('.ob-core-facts').innerText()).includes('Bundesamt für Statistik (BFS)'));
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

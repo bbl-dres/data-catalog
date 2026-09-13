@@ -763,5 +763,10 @@
   "excel.targetName": {"fr":"Nom de la cible","it":"Nome della destinazione","en":"Target name","de":"Zielname"},
   "print.componentType": {"fr":"Type","it":"Tipo","en":"Type","de":"Typ"},
   "edit.onePerLine": {"de": "Ein Eintrag pro Zeile.", "en": "One entry per line.", "fr": "Une entrée par ligne.", "it": "Una voce per riga."},
-  "fact.requiredRule": {"fr":"Obligatoire","it":"Obbligatorio","en":"Mandatory","de":"Pflichtfeld"}
+  "fact.requiredRule": {"fr":"Obligatoire","it":"Obbligatorio","en":"Mandatory","de":"Pflichtfeld"},
+  "rel.mappedTables": {"de":"Zugeordnete Datentabellen","fr":"Tables de données associées","it":"Tabelle di dati associate","en":"Mapped data tables"},
+  "rel.mappedFields": {"de":"Zugeordnete Felder","fr":"Champs associés","it":"Campi associati","en":"Mapped fields"},
+  "rel.representedAttributes": {"de":"Zugeordnete Attribute","fr":"Attributs associés","it":"Attributi associati","en":"Mapped attributes"},
+  "rel.mapping.candidate": {"de":"Zu prüfen","fr":"À vérifier","it":"Da verificare","en":"To verify"},
+  "rel.mapping.confirmed": {"de":"Bestätigt","fr":"Confirmé","it":"Confermato","en":"Confirmed"}
 }

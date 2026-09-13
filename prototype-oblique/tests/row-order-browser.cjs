@@ -55,6 +55,7 @@ const project = 'https://zicluerzbevodlmtbxow.supabase.co';
     await page.locator('#tab-rows').click();
     const names=()=>page.locator('.ob-detail-rows tbody [data-field="name"]').allTextContents();
     const saved=await names();assert(saved.length>2);
+    assert.equal(new URLSearchParams(page.url().split('?')[1]).get('sort'),'sortOrder:asc','Saved rank is the explicit default sort even while hidden');
     assert.equal(await page.locator('[data-action="restore-row-order"]').count(),0);
     assert.equal(await page.locator('[data-sort-field="sortOrder"]').count(),0,'Saved rank is hidden by default');
     await page.locator('[data-field-picker="attrs"]').click();

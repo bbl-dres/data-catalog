@@ -1,0 +1,13 @@
+{
+  "stage": "postflight",
+  "commands": 217,
+  "objects": 26,
+  "attributes": 217,
+  "primaryKeysFirst": true,
+  "uniqueSpacedRanks": true,
+  "addressOrderVerified": true,
+  "onlyRanksAndManagedMetadataChanged": true,
+  "existingReferencesAndHistoryPreserved": true,
+  "newAuditEvents": 217,
+  "unrelatedRecordsPreserved": 3038
+}

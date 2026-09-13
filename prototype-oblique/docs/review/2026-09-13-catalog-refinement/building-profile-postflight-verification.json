@@ -1,0 +1,51 @@
+{
+  "accuracyValues": [
+    "Geschätzt",
+    "Gemessen",
+    "Aggregiert",
+    "Unbekannt"
+  ],
+  "buildingActiveAttributes": 36,
+  "buildingMeasurements": [
+    "Geschossfläche (GF)",
+    "Gebäudegrundfläche (GGF)",
+    "Vermietbare Fläche (VMF)",
+    "Energiebezugsfläche (EBF)",
+    "Gebäudevolumen (GV)"
+  ],
+  "storeyTotalDefined": true,
+  "existingSourceInventoriesUnchanged": true,
+  "standardListBound": true,
+  "standardSortOrder": 1220,
+  "values": [
+    "SIA 380",
+    "SIA 416",
+    "SIA 416/1",
+    "DIN 277",
+    "IPMS",
+    "BBL-Regel",
+    "Andere dokumentierte Regel"
+  ],
+  "stage": "postflight",
+  "commands": 28,
+  "preservedRecords": 3272,
+  "updatedRecords": 15,
+  "newRecords": 14,
+  "newAuditEvents": 28,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Standard",
+    "Ermittlungsart",
+    "Genauigkeit",
+    "Gültig ab",
+    "Gültig bis"
+  ],
+  "gstatBound": true
+}

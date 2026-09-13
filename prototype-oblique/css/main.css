@@ -538,7 +538,7 @@ button.ob-tree-link { width: 100%; }
 @media (any-pointer: coarse), (max-width: 960px) {
   .ob-collection-search .ob-search-clear { width: var(--ob-touch-target); height: var(--ob-touch-target); right: 0; }
 }
-.ob-detail-sections { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "facts responsibility"; gap: var(--ob-space-xl); }
+.ob-detail-sections { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "responsibility" "facts"; gap: var(--ob-space-xl); }
 .ob-detail-sections > *, .ob-detail-facts > section { min-width: 0; }
 .ob-detail-section-toggle { display: flex; align-items: center; justify-content: space-between; gap: var(--ob-space-sm); width: 100%; min-height: var(--ob-touch-target); padding: var(--ob-space-xs) var(--ob-space-md) var(--ob-space-xs) 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .ob-detail-section-toggle:hover { background: var(--ob-color-surface); }
@@ -749,7 +749,7 @@ button.ob-tree-link { width: 100%; }
   .ob-kpi:nth-last-child(-n + 2) { grid-column: span 3; }
 }
 @container workspace (max-width: 880px) {
-  .ob-detail-sections { grid-template-columns: 1fr; grid-template-areas: "responsibility" "facts"; gap: var(--ob-space-lg); }
+  .ob-detail-sections { gap: var(--ob-space-lg); }
 }
 @container workspace (width < 600px) {
   .ob-kpi-grid { grid-template-columns: 1fr; gap: var(--ob-space-sm); }
@@ -776,7 +776,7 @@ button.ob-tree-link { width: 100%; }
   .ob-detail-sections { gap: var(--ob-space-lg); }
 }
 @media (max-width: 960px) {
-  .ob-detail-sections { grid-template-columns: 1fr; grid-template-areas: "responsibility" "facts"; gap: var(--ob-space-lg); }
+  .ob-detail-sections { gap: var(--ob-space-lg); }
   html.ob-navigation-open, html.ob-navigation-open body { overflow: hidden; }
   .ob-header-bar { padding: 0 var(--ob-space-sm) 0 var(--ob-space-default); }
   .ob-navigation-bar, #header-tools > #help-host, #header-tools > #language-host, .ob-avatar { display: none; }
@@ -865,6 +865,7 @@ button.ob-tree-link { width: 100%; }
 /* ---- Print ------------------------------------------------------------------- */
 @media print {
   .ob-detail-sections .ob-facts[hidden], .ob-system-facts .ob-facts[hidden] { display: grid !important; }
+  #ob-access-options-content[hidden] { display: block !important; }
   .ob-access-options .ob-facts[hidden] { display: grid !important; }
   .ob-detail-section-toggle { min-height: 0; padding: 0; background: transparent; }
   .ob-detail-section-toggle > .ob-icon { display: none; }

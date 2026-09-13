@@ -175,3 +175,5 @@ The contrast suite writes measurements and screenshots to `oblique-contrast-revi
 The mobile suite writes to `oblique-mobile-review` in the same temporary directory and also supports `REPORT_ONLY=1` for baseline layout measurements. Its keyboard cases simulate visual-viewport changes; they do not operate an actual OS keyboard. See [responsive guidance](../docs/design-system.md#responsive-layout).
 
 See [architecture](../docs/architecture.md#testing) for verification scope and [responsive guidance](../docs/design-system.md#responsive-layout) for layout contracts.
+
+`attribute-mappings.test.cjs`: persisted candidate/confirmed field meanings, reciprocal table/field/attribute links, table deduplication, retired/rejected exclusions and no implicit name matching; requires PGlite.

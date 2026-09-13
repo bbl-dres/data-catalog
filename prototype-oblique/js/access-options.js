@@ -33,12 +33,12 @@
   const summary = (entity, kind = entity.kind) => entries(entity, kind).map(entry => [entry.name, ...entry.fields.filter(f => f.value != null && f.value !== '').map(f => `${f.label}: ${value(f)}`)].join('\n')).join('\n\n');
   function render(entity, state = {}) {
     if (!supports(entity.kind)) return '';
-    const items = entries(entity);
-    return `<section class="ob-access-options" aria-labelledby="access-options-title"><h2 id="access-options-title">${esc(t('access.title'))}</h2>${items.length ? `<div class="ob-access-options-list">${items.map(item => {
+    const items = entries(entity), sectionExpanded = state.detailSections?.['ob-access-options'] ?? true;
+    return `<section class="ob-access-options" aria-labelledby="access-options-title"><h2 id="access-options-title"><button type="button" id="ob-access-options-toggle" class="ob-detail-section-toggle" data-action="toggle-detail-section" data-section="ob-access-options" aria-expanded="${sectionExpanded}" aria-controls="ob-access-options-content">${esc(t('access.title'))}${ui.icon('chevron_down', 'sm')}</button></h2><div id="ob-access-options-content"${sectionExpanded ? '' : ' hidden'}>${items.length ? `<div class="ob-access-options-list">${items.map(item => {
       const id = 'ob-' + item.id, expanded = state.detailSections?.[id] === true;
       const rows = item.fields.map(f => `<dt>${esc(f.label)}</dt><dd>${f.link && httpUrl(f.value) ? ui.link(f.value, `${esc(f.value)} ${ui.icon('link_external', 'sm')}`, { external: true, className: 'ob-inline-link' }) : esc(value(f))}</dd>`).join('');
       return `<section class="ob-access-option"><h3><button type="button" id="${esc(id)}-toggle" class="ob-detail-section-toggle" data-action="toggle-detail-section" data-section="${esc(id)}" aria-expanded="${expanded}" aria-controls="${esc(id)}-content"><span class="ob-access-option-title">${esc(item.name)}</span>${item.format ? `<span class="ob-access-option-format">${esc(item.format)}</span>` : ''}${ui.icon('chevron_down', 'sm')}</button></h3><dl class="ob-facts" id="${esc(id)}-content"${expanded ? '' : ' hidden'}>${rows}</dl></section>`;
-    }).join('')}</div>` : `<p class="ob-context-note">${esc(t('access.empty'))}</p>`}</section>`;
+    }).join('')}</div>` : `<p class="ob-context-note">${esc(t('access.empty'))}</p>`}</div></section>`;
   }
   DK.accessOptions = { supports, authored, entries, summary, render, httpUrl };
 })(window.DK);

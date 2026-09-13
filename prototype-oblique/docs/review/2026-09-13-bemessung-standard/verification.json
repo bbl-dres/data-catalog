@@ -1,0 +1,45 @@
+{
+  "standardListBound": true,
+  "standardSortOrder": 1220,
+  "values": [
+    "SIA 416",
+    "DIN 277",
+    "IPMS",
+    "BBL-Regel",
+    "Andere dokumentierte Regel"
+  ],
+  "stage": "postflight",
+  "commands": 7,
+  "preservedRecords": 3279,
+  "updatedRecords": 2,
+  "newRecords": 6,
+  "newAuditEvents": 7,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Standard",
+    "Ermittlungsart",
+    "Genauigkeit",
+    "Gültig ab",
+    "Gültig bis"
+  ],
+  "gstatBound": true,
+  "rollbackBaselineRestored": true,
+  "browser": {
+    "origin": "http://localhost:8765",
+    "attributeLinkVerified": true,
+    "fiveValuesVisible": true
+  },
+  "counts": {
+    "codeLists": 93,
+    "codeValues": 2093,
+    "businessAttributes": 217,
+    "historyEvents": 750
+  }
+}

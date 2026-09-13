@@ -75,7 +75,7 @@ test('localized SQL columns preserve language fallback without constructing labe
 });
 
 test('visibility preferences tolerate invalid storage, enforce identity and stay scoped by kind', () => {
-  for (const stored of ['broken', '{"version":2,"kinds":{"objects":[]}}', '{"version":1,"kinds":[]}']) {
+  for (const stored of ['broken', '{"version":99,"kinds":{"objects":[]}}', '{"version":1,"kinds":[]}']) {
     const { presentation: p } = runtime(() => {}, { localStorage: { getItem: () => stored } });
     assert.deepEqual([...p.selected('objects')], [...p.defaults('objects')]);
   }
@@ -113,7 +113,7 @@ test('web and print visibility choices exclude detailed metadata without removin
   const { presentation: p } = await loaded();
   for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
     const ids = [...p.choices(kind)].map(field => field.id);
-    assert(ids.length <= 15, kind + ': bounded browsing choices, including optional row order');
+    assert(ids.length <= (kind === 'fields' ? 16 : 15), kind + ': bounded browsing choices, including row order and status');
     const owned = ['attrs', 'fields', 'values', 'productAttrs', 'endpoints'].includes(kind);
     assert.equal(ids.includes('sortOrder'), owned, kind + ': row order belongs to owned rows');
     assert(!p.defaults(kind).includes('sortOrder'), kind + ': row order is hidden by default');

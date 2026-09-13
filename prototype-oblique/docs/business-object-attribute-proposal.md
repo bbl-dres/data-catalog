@@ -1,16 +1,20 @@
 # Business-object attribute proposal
 
-**Working draft: 7 September 2026.** Proposed German business definitions for **32 Gebäude, 13 Geschoss, 11 Raum, 9 Zone, 21 Grundstück, 8 Wirtschaftseinheit and 12 Bemessung attributes**: **106 direct definitions**, plus related measurement profile values. This Markdown document is the current review version. This review adds explicit spatial geometry, floor elevation/reference and measurement-subject keys, extends the spatial measurements and introduces Portfoliomanagement as a property set. **The hosted database was synchronized to these 106 definitions on 7 September 2026** through the [106-attribute update](../supabase/archive/20260907-business-object-geometry.sql).
+**Working draft: 13 September 2026.** The seven profiles contain **34 Gebäude, 13 Geschoss, 11 Raum, 9 Zone, 21 Grundstück, 8 Wirtschaftseinheit and 11 Bemessung direct attributes**: **107 direct business definitions**, excluding retired definitions, plus **17 related measurement selections**. Gebäude additionally exposes five referenced measurement definitions as catalog attributes (39 active definitions in that profile). The [latest refinement](review/2026-09-13-catalog-refinement.md) is applied and verified in Supabase. Existing identities, archived definitions, references and history remain available.
 
-**Profilumfang:** Das Gebäude zeigt acht Basisbemessungen: Geschossfläche GF und Gebäudevolumen GV jeweils gesamt, oberirdisch und unterirdisch sowie Vermietbare Fläche VMF und Gebäudegrundfläche GGF jeweils gesamt. Das Geschoss zeigt GF, Aussengeschossfläche AGF, Geschossvolumen GV und Geschosshöhe. Der Raum zeigt Raumfläche, Raumhöhe, Raumvolumen und bei anwendbarer Regel VMF. Die Zone zeigt Zonenfläche, Zonenvolumen und optional VMF; das Grundstück zeigt Grundstücksfläche GSF. Das sind **20 referenzierte Profilwerte** mit den jeweils angegebenen Bedingungen. Ihre Werte und Nachweise bleiben in **Bemessung**. Höhenlage und Höhenbezug sind direkte Lageattribute des Geschosses. Die **106 direkten Attributdefinitionen** werden getrennt von den 20 referenzierten Profilwerten gezählt.
+**Profilumfang:** Das Gebäude zeigt fünf Basisbemessungen: Geschossfläche (GF), Gebäudegrundfläche (GGF), Vermietbare Fläche (VMF), Energiebezugsfläche (EBF) und Gebäudevolumen (GV). Das Geschoss zeigt GF, AGF, GV und Geschosshöhe. Der Raum zeigt Raumfläche, Raumhöhe, Raumvolumen und bei anwendbarer Regel VMF. Die Zone zeigt Zonenfläche, Zonenvolumen und optional VMF; das Grundstück zeigt GSF. Das sind **17 referenzierte Profilwerte**. Ihre Werte und Nachweise bleiben in **Bemessung**; eine automatische Aggregation wird nicht eingeführt. Die **107 direkten Attributdefinitionen** werden getrennt gezählt.
 
 The [source review](review/2026-09-07-building-attribute-review.md) preserves the GIS IMMO, BBL RE-FX and GWR evidence. Its earlier attribute counts and SQL conclusions are historical; this document governs the current proposed content. Source-specific inventories and technical mappings remain separate. **Gebäudehülle (AO) remains in the GIS IMMO catalog.**
 
 The [canonical property-set and business-key decisions](data-model.md#property-sets-and-business-keys) govern the proposed structured representation of this content. Current SQL still stores group/key-role markers in comments; the component lists and reference descriptions here do not establish deployed structured fields or physical foreign-key constraints. Review this proposal using the canonical [content-readiness checklist](data-model.md#content-readiness-review).
 
+The [classification follow-up](review/2026-09-13-building-classifications.md) replaces the combined Gebäudeart definition with two attributes bound to the existing BBL lists, and binds Bauperiode/Gebäudeklasse to GBAUP/GKLAS. The combined definition remains archived with its history.
+
+**Additional scope decision:** [Gebäudezustand and Schutz-/Denkmalstatus](review/2026-09-13-building-condition-heritage.md) are added. They temporarily retain source wording as text because no official value lists are documented. NF/HNF and Anzahl Wohnungen are explicitly excluded at this point.
+
 ## Reading the list
 
-**Benennung und Formatierung:** Attributnamen werden einheitlich auf Deutsch geführt, insbesondere **Gebäude-ID**. Die Herkunft aus SAP oder BBL steht in der Definition, ohne entsprechenden Namenszusatz. Fachlich unterscheidende Zusätze wie **(GWR)** und **(amtlich)** bleiben erhalten. Die sieben Attributtabellen verwenden dieselben Spalten und dieselbe Schreibweise für **Property Set**.
+**Benennung und Formatierung:** Attributnamen werden einheitlich auf Deutsch geführt, insbesondere **Gebäude-ID**. Die Herkunft aus SAP oder BBL steht in der Definition, ohne entsprechenden Namenszusatz. Fachlich unterscheidende Zusätze wie **(GWR)** und **(amtlich)** bleiben erhalten. Die sieben Attributtabellen verwenden dieselben Spalten und dieselbe Schreibweise für **Property Set**. Geometrische Werte heissen **Geometrie**; Referenzfelder wie Geometriebezug bleiben unterscheidbar. Der fachliche Lebenszyklus heisst **Status**, am Gebäude ausdrücklich **Status (GWR)** mit der Wertelistenbindung **GWR Gebäudestatus (GSTAT)**. Bewirtschaftungsstatus bezeichnet einen anderen Sachverhalt und bleibt separat. Bestehende Kennungen und technische Namen bleiben stabil.
 
 - **Kernangabe:** needed for the business use described in the definition. Missing information remains a visible completeness gap.
 - **Bedingt:** needed under the stated condition. Applicability and unknown values must be distinguished.
@@ -20,7 +24,7 @@ The [canonical property-set and business-key decisions](data-model.md#property-s
 
 These are descriptive business requirements. Definitions and vocabularies remain **draft** during review. A missing value does not make a requirement inapplicable: record a completeness gap. “Not applicable”, “unknown” and a confirmed numeric zero are different states.
 
-The attribute tables describe the information exposed by each business profile. Repeated owner and source references belong to related assignment rows. GF, GV, VMF and GGF are explicit building profile values; GSF is an explicit parcel profile value. Their **Basisbemessungen** tables complement the direct attribute tables and expose the values through related Bemessungen. The tables therefore do not prescribe one wide physical database table.
+The attribute tables describe the information exposed by each business profile. Repeated owner and source references belong to related assignment rows. GF, GGF, VMF, EBF and GV are explicit building profile values; GSF is an explicit parcel profile value. Their **Basisbemessungen** tables complement the direct attribute tables and expose the values through related Bemessungen. The tables therefore do not prescribe one wide physical database table.
 
 Value types describe the expected business value. An `identifier` preserves its textual identity, including letters and leading zeros; it does not declare a physical primary key. A `year` retains year precision. A `structured` value retains the context named in its definition; its parts belong in separate fields or a related record when implemented, not in an unstructured string. A `code` does not imply that an approved vocabulary already exists.
 
@@ -48,7 +52,7 @@ A change to Buchungskreis, Wirtschaftseinheit or the local object number changes
 
 **Grundstücksnummer** is the SAP/BBL component. **Grundstücksnummer (amtlich)** identifies the registered parcel in its Nummerierungsbereich. Preserve both, together with EGRID where applicable; do not substitute the official number for the BBL key component.
 
-## Gebäude — 32 attributes
+## Gebäude — 34 direct attributes and 5 referenced measurements
 
 **Working definition:** Ein baulich abgegrenztes, dauerhaftes und überdachtes Bauwerk, das im Portfolio mit eigener Identität über seinen Lebenszyklus geführt wird. Erfasst werden auch seine geplante Ausprägung und der historische Nachweis nach einem Abbruch oder einer Nichtrealisierung.
 
@@ -73,19 +77,21 @@ The physical boundary comes first. A commercial BBL/SAP object, an architectural
 | WGS84 Breitengrad | Geometrie | — | `decimal` | Breitengrad des festgelegten Gebäude-Referenzpunkts im Bezugssystem WGS84 in Dezimalgrad, von −90 bis +90. Separat vom Längengrad führen; 0 ist ein gültiger Wert und kein Platzhalter für unbekannt. Der Punkt ist nicht automatisch ein Eingang oder eine Grundrissgeometrie. | Kernangabe |
 | WGS84 Längengrad | Geometrie | — | `decimal` | Längengrad desselben Gebäude-Referenzpunkts im Bezugssystem WGS84 in Dezimalgrad, von −180 bis +180. Separat vom Breitengrad führen; 0 ist ein gültiger Wert und kein Platzhalter für unbekannt. Quelle, Aktualität und Punktbedeutung müssen nachvollziehbar bleiben. | Kernangabe |
 | Geometrie | Geometrie | — | `geometry` | Punktgeometrie des bewirtschafteten Gebäudes in WGS84 (EPSG:4326). Sie beschreibt denselben festgelegten Referenzpunkt wie WGS84 Breitengrad und Längengrad. Bei GeoJSON gilt die Reihenfolge [Längengrad, Breitengrad]; Punkt und Einzelkoordinaten müssen übereinstimmen. Grundriss und Gebäudehülle bleiben separate Geometrien. | Kernangabe |
-| Gebäudeart | Klassifikation und Nutzung | — | `structured` | BBL-Gebäudeklassifikation mit den verfügbaren Hierarchiestufen 1 und 2 sowie dem verwendeten Vokabularstand. Gebäudeart, Hauptnutzung und GWR-Klassifikationen sind fachlich getrennt; eine Gleichsetzung wird nicht vorausgesetzt. | Bedingt: Erforderlich im abgestimmten Geltungsbereich der BBL-Gebäudeklassifikation; ungeklärte Zuordnungen bleiben offen. |
+| Gebäudeart 1 | Klassifikation und Nutzung | — | `code` | BBL-Gebäudeklassifikation Stufe 1 gemäss RE-FX. Zulässige Werte stehen in BBL Gebäudeart 1. Hauptnutzung und GWR-Klassifikationen bleiben separat. | Bedingt: Erforderlich im abgestimmten Geltungsbereich der BBL-Gebäudeklassifikation. |
+| Gebäudeart 2 | Klassifikation und Nutzung | — | `code` | BBL-Gebäudeklassifikation Stufe 2 gemäss RE-FX. Zulässige Werte stehen in BBL Gebäudeart 2; die zugehörige Stufe 1 wird separat geführt. | Bedingt: Erforderlich im abgestimmten Geltungsbereich der BBL-Gebäudeklassifikation. |
 | Hauptnutzung | Klassifikation und Nutzung | — | `code` | Vorherrschende tatsächliche Nutzung des Gebäudes für die Portfolioübersicht nach einer vereinbarten Bewertungsregel. Detaillierte Mischnutzung wird den Räumen oder Nutzungseinheiten mit ihrer Gültigkeit zugeordnet. | Bedingt: Für Gebäude mit tatsächlicher Nutzung erforderlich; eine fehlende Zuordnung ist eine Vollständigkeitslücke. Geplante Nutzung separat kennzeichnen. |
-| Gebäudestatus | Bauwerk und Lebenszyklus | — | `code` | Physischer Lebenszyklus des Gebäudes. Als Referenzvokabular werden die GWR-Zustände projektiert, bewilligt, im Bau, bestehend, nicht nutzbar, abgebrochen und nicht realisiert vorgeschlagen; ihre Verwendung für das weltweite BBL-Portfolio bleibt zu bestätigen. Bewirtschaftung, Verkauf, Eigentum und Katalogfreigabe sind davon getrennt. | Kernangabe |
+| Status (GWR) | Bauwerk und Lebenszyklus | — | `code` | Physischer Lebenszyklus des Gebäudes gemäss der Werteliste GWR Gebäudestatus (GSTAT). Die zulässigen Werte werden durch diese verknüpfte Werteliste eingeschränkt. Bewirtschaftung, Verkauf, Eigentum und Katalogfreigabe sind davon getrennt. Die Verwendung des Vokabulars bescheinigt weder einen GWR-Registereintrag noch einen amtlich bestätigten Status; Herkunft und Gültigkeit des konkreten Werts bleiben nachvollziehbar. | Kernangabe |
 | Bewirtschaftungsstatus | Bewirtschaftung | — | `code` | Fachlicher Bewirtschaftungszustand des Gebäudes im BBL-Portfolio mit massgeblichem Datum. Für Gebäude im BBL-Bewirtschaftungsumfang benötigt. Vokabular und Ableitung sind abzustimmen; physischer Status, Eigentumsverhältnis und gegebenenfalls mehrere SAP-System-/Anwenderstatus bleiben getrennt. | Kernangabe |
+| Gebäudezustand | Bewirtschaftung | — | `text` | Beurteilung des baulichen Zustands des Gebäudes gemäss der dokumentierten Quelle. Originalbezeichnung, Beurteilungsdatum und Bewertungsverfahren erhalten; fehlende Angaben bedeuten nicht guter Zustand. | Optional; Quellwerteliste noch zu bestätigen. |
 | Baujahr | Bauwerk und Lebenszyklus | — | `year` | Jahr der physischen Fertigstellung des Gebäudes. Renovation, Nutzungsänderung und geplante Fertigstellung sind gesonderte Sachverhalte und ersetzen das Baujahr nicht. | Bedingt: Für fertiggestellte Gebäude erforderlich; unbekanntes Baujahr als Lücke führen und eine belegte Bauperiode ergänzen. |
-| Bauperiode | Bauwerk und Lebenszyklus | — | `structured` | Bekannte Bauperiode oder ausdrücklich abgeleitete zeitliche Einteilung mit Periodenschema und Herkunft. Bekannte und abgeleitete Angaben sind zu unterscheiden; aus einer Periode wird kein scheinbar genaues Baujahr erfunden. | Bedingt: Erforderlich, wenn nur eine Bauperiode bekannt ist oder die Auswertung eine solche Einteilung benötigt. |
+| Bauperiode | Bauwerk und Lebenszyklus | — | `code` | Periode der Fertigstellung des Gebäudes gemäss der Werteliste GWR Bauperiode (GBAUP). Herkunft und allfällige Ableitung erhalten; aus einer Periode kein genaues Baujahr ableiten. | Bedingt: Erforderlich, wenn nur eine Bauperiode bekannt ist oder die Auswertung eine solche Einteilung benötigt. |
 | Abbruchjahr | Bauwerk und Lebenszyklus | — | `year` | Jahr des vollständigen physischen Abbruchs. Verkauf, Ende der Nutzung und Ausscheiden aus der Bewirtschaftung sind kein Abbruchnachweis; ein Teilabbruch wird als eigenes datiertes Ereignis geführt. | Bedingt: Für vollständig abgebrochene Gebäude erforderlich; ein unbekanntes Jahr bleibt eine Vollständigkeitslücke. |
-| Anzahl oberirdische Geschosse | Bauwerk und Lebenszyklus | — | `integer` | Anzahl oberirdischer Geschosse nach einer vereinbarten Regel für Erdgeschoss, Dachgeschosse und Zwischengeschosse, mit Quelle und massgeblichem Datum. GWR GASTW und GIS-/SAP-Zählungen werden nicht ungeprüft gleichgesetzt. | Bedingt: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken. |
-| Anzahl unterirdische Geschosse | Bauwerk und Lebenszyklus | — | `integer` | Anzahl unterirdischer Geschosse nach der vereinbarten baulichen Zählregel, mit Quelle und massgeblichem Datum. Unbekannt ist von einer bestätigten Anzahl 0 zu unterscheiden; Quellzählungen haben nicht automatisch dieselbe Bedeutung. | Bedingt: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken. |
+| Anzahl Geschosse | Bauwerk und Lebenszyklus | — | `integer` | Gesamtzahl der Geschosse des identifizierten Gebäudes, einschliesslich ober- und unterirdischer Geschosse, nach einer dokumentierten baulichen Zählregel. Erdgeschoss, Dach- und Zwischengeschosse sowie Kellergeschosse nach dieser Regel behandeln; Quelle und massgeblichen Stichtag angeben. GIS IMMO gastw ist ein Kandidat für den Totalwert. SAP FLOORS/BASEMENTS und GWR GASTW erst nach Prüfung ihrer Zählregeln übernehmen: GWR zählt bestimmte Dach-/Untergeschosse nach Nutzung oder Beheizung und schliesst Kellergeschosse aus. Unbekannte Teilzahlen werden weder als 0 eingesetzt noch ungeprüft summiert. | Bedingt: Für baulich realisierte Gebäude erforderlich; unbekannte Anzahlen bleiben Vollständigkeitslücken. |
 | EGID | Registerbezug | `FK` | `identifier` | Fachliche Fremdreferenz (FK) zum zugehörigen Gebäude im Schweizer GWR, sofern dieser Registerbezug anwendbar ist. Sie ist kein Primärschlüssel des BBL-/SAP-Gebäudes. Die Zuordnung setzt übereinstimmende physische Gebäudegrenzen voraus; ausländische Gebäude benötigen keine EGID, und mehrere Kandidaten werden nicht in einem Einzelwert verkettet. | Bedingt: Erforderlich bei anwendbarem Schweizer GWR-Bezug und bestätigter Übereinstimmung der physischen Gebäudeabgrenzung. |
 | EGRID | Registerbezug | `FK` | `identifier` | Fachliche Fremdreferenz auf das für das Gebäude bezeichnete Grundstück im Schweizer Registerkontext. Bei mehreren Grundstücksbeziehungen bezeichnet dieser Einzelwert nur die dokumentiert ausgewählte Referenz; alle weiteren Zuordnungen bleiben separat erhalten. Eine EGRID bestimmt weder die Gebäude-ID noch automatisch eine Landparzellengeometrie. | Bedingt: Erforderlich, sofern für das Gebäude ein massgeblicher Schweizer Grundstücksbezug mit EGRID festgelegt ist; für ausländische Gebäude keine EGRID erfinden. |
 | Gebäudekategorie (GWR) | Klassifikation und Nutzung | — | `code` | Gebäudekategorie des GWR nach Zweckbestimmung, insbesondere hinsichtlich Wohn- und Nichtwohnnutzung. Die bestehende GKAT-Referenzliste wird getrennt von BBL-Gebäudeart und Hauptnutzung verwendet. | Bedingt: Bei einem anwendbaren GWR-Datensatz erforderlich; ohne entsprechenden Registerbezug keine Kategorie erfinden. |
-| Gebäudeklasse (GWR) | Klassifikation und Nutzung | — | `code` | Detaillierte GWR-Gebäudeklassifikation auf Grundlage der erweiterten Eurostat-Klassifikation. Sie bleibt von GKAT, BBL-Gebäudeart und Hauptnutzung getrennt; der vorhandene 4.2-Quellenstand begründet keine geprüfte 5.0-Wertelistenbindung. | Bedingt: Bei anwendbarem GWR-Bezug erforderlich. Fehlende Werte bleiben sichtbar; die Kompatibilität des vorhandenen 4.2-Vokabulars mit 5.0 bleibt zu prüfen. |
+| Gebäudeklasse (GWR) | Klassifikation und Nutzung | — | `code` | Detaillierte Gebäudeklassifikation gemäss der Werteliste GWR Gebäudeklasse (GKLAS), auf Grundlage der erweiterten Eurostat-Klassifikation. Gebäudekategorie, BBL-Gebäudeart und Hauptnutzung bleiben separat. | Bedingt: Bei anwendbarem GWR-Bezug erforderlich. Fehlende Werte bleiben sichtbar; die Kompatibilität des vorhandenen 4.2-Vokabulars mit 5.0 bleibt zu prüfen. |
+| Schutz-/Denkmalstatus | Klassifikation und Nutzung | — | `text` | Dokumentierter Schutz- oder Denkmalstatus des Gebäudes gemäss der zuständigen Quelle. Originalbezeichnung, betroffenen Umfang und massgeblichen Stand erhalten. Ein fehlender Eintrag bedeutet nicht kein Schutz. | Optional; Quellwerteliste noch zu bestätigen. |
 | Eigentumsart | Eigentum | — | `code` | Bewirtschaftungsbezogene Einordnung des Gebäudes mit den drei fachlich vorgegebenen Werten Eigentum, Anmiete oder Spezialfall. Die Zuordnung aus den SAP-Stammdaten mit ihrer Gültigkeit erhalten. Diese Kategorie ist weder die Identität des eingetragenen Eigentümers noch die grundbuchliche Eigentumsform. | Kernangabe |
 | Eigentümer | Eigentum | `FK` | `identifier` | Im Grundbuch eingetragener Eigentümer im für das Gebäude massgeblichen Grundstücks- beziehungsweise Registerrechtsbezug. Die Zuordnung am Gebäude wird mit diesem Registerbezug und ihrer Gültigkeit geführt; im Ausland ist das entsprechende zuständige Register massgeblich. Mehrere Eigentümer erhalten separate Zuordnungen; eine SAP-Geschäftspartner-ID ist nur bei bestätigtem Abgleich die Referenz auf die eingetragene Person oder Organisation. | Kernangabe |
 | Teilportfolio | Portfoliomanagement | — | `code` | Fachliche Teilportfolio-Zuordnung des Gebäudes im BBL-Portfolio mit dem verwendeten BBL-Wert und nachvollziehbarer Gültigkeit. Teilportfolio, Teilportfoliogruppe, Wirtschaftseinheit und Profit Center sind getrennte Sachverhalte. Die BBL-Werteliste definiert die Bedeutung; das liefernde System ist separate Quelleninformation. | Kernangabe |
@@ -93,22 +99,20 @@ The physical boundary comes first. A commercial BBL/SAP object, an architectural
 
 ### Basisbemessungen des Gebäudes
 
-**Geschossfläche, Gebäudevolumen, Vermietbare Fläche und Gebäudegrundfläche gehören ausdrücklich zum Gebäudeprofil.** Sie erscheinen im Profilabschnitt **Basisbemessungen** neben den direkten Attributen. Jede Tabellenzeile beschreibt eine Auswahl verknüpfter Bemessungen für das betreffende Gebäude, den fachlichen Zweck und den Stichtag. Die numerischen Werte sowie Quelle, Bemessungsgrundlage, Ermittlungsart und Gültigkeit bleiben bei der jeweiligen Bemessung.
+Diese fünf referenzierten Definitionen sind als Attribute am Gebäude sichtbar. Jede bezeichnet die passende Bemessung des Gebäudes für den fachlichen Zweck und Stichtag. Die Zahlenwerte, Einheit, Quelle, Standard und Gültigkeit bleiben bei Bemessung; es entstehen keine unabhängig gepflegten Kopien.
 
-| Profilwert | Property Set | Bemessungsart | Bemessungsumfang | Einheit | Vollständigkeit |
+| Profilwert | Property Set | Bemessungsart | Objektauswahl (abgeleitet) | Einheit | Vollständigkeit |
 |---|---|---|---|---|---|
-| Geschossfläche GF gesamt | Basisbemessungen | `GF` | `GESAMT` | m² | Kernangabe |
-| Geschossfläche GF oberirdisch | Basisbemessungen | `GF` | `OBERIRDISCH` | m² | Kernangabe |
-| Geschossfläche GF unterirdisch | Basisbemessungen | `GF` | `UNTERIRDISCH` | m² | Kernangabe |
-| Gebäudevolumen GV gesamt | Basisbemessungen | `GV` | `GESAMT` | m³ | Kernangabe |
-| Gebäudevolumen GV oberirdisch | Basisbemessungen | `GV` | `OBERIRDISCH` | m³ | Kernangabe |
-| Gebäudevolumen GV unterirdisch | Basisbemessungen | `GV` | `UNTERIRDISCH` | m³ | Kernangabe |
-| Vermietbare Fläche VMF gesamt | Basisbemessungen | `VMF` | `GESAMT` | m² | Bedingt: Erforderlich, wenn die bestätigte Vermietungsflächenregel auf das Gebäude anwendbar ist. |
-| Gebäudegrundfläche GGF gesamt | Basisbemessungen | `GGF` | `GESAMT` | m² | Kernangabe |
+| Geschossfläche (GF) | Basisbemessungen | `GF` | Bezugsgebäude | m² | Kernangabe |
+| Gebäudegrundfläche (GGF) | Basisbemessungen | `GGF` | Bezugsgebäude | m² | Kernangabe |
+| `EBF` | Energiebezugsfläche EBF | Energetische Bezugsfläche des identifizierten Gebäudes in m² nach der tatsächlich angewendeten Regel und thermischen Abgrenzung. SIA 380 und ältere SIA-416/1-Ausgaben unterscheiden; Ausgabe und Nachweis unter Standard/Quelle erhalten. Nicht pauschal aus GF, GGF oder Geschossanzahl berechnen. Geschätzte GWR- oder GIS-Angaben behalten Ermittlungsart, Genauigkeit, Quelle und Stand. |
+| Vermietbare Fläche (VMF) | Basisbemessungen | `VMF` | Bezugsgebäude | m² | Bedingt: anwendbare Vermietungsflächenregel |
+| Energiebezugsfläche (EBF) | Basisbemessungen | `EBF` | Bezugsgebäude | m² | Bedingt: beheizte oder gekühlte energetische Bezugsfläche |
+| Gebäudevolumen (GV) | Basisbemessungen | `GV` | Bezugsgebäude | m³ | Kernangabe |
 
-**Fachliche Grundlage:** Für GF, GV und GGF gilt die dokumentierte SIA-416-Grundlage mit der tatsächlich verwendeten Ausgabe. VMF verwendet die bestätigte Vermietungsflächenregel. Die vollständigen Definitionen stehen unter [Basisbemessungen und Wertelisten](#basisbemessungen-und-wertelisten). Die Grundstücksfläche GSF gehört zum Grundstücksprofil und wird über den Grundstücksbezug zugänglich.
+GF, GGF und GV behalten die dokumentierte SIA-416-Grundlage; VMF die bestätigte Vermietungsregel. EBF behält ihre energetische Grundlage und Ausgabe (SIA 380 beziehungsweise historisch SIA 416/1). Unbekannt, nicht anwendbar und ein bestätigter Wert 0 bleiben verschieden. Die [Quellenprüfung](review/2026-09-13-catalog-refinement.md#building-profile) dokumentiert die Grenzen der GIS-, RE-FX- und GWR-Übernahme.
 
-**Darstellung und Pflege:** Die Einordnung unter Basisbemessungen organisiert diese referenzierten Profilwerte. Es entstehen keine separat zu pflegenden Kopien der Messwerte am Gebäude. Gesamtwerte werden als eigene Bemessungen erhalten; die Aufteilung von GF und GV bleibt ausdrücklich oberirdisch/unterirdisch. Eine automatische Summierung oder Ableitung aus der Anzahl Geschosse ist nicht vorgesehen. Bei fehlenden Werten bleibt der betreffende Profilwert als Vollständigkeitslücke sichtbar; unbekannt, nicht anwendbar und ein bestätigter Wert 0 werden unterschieden.
+Ober- und unterirdische Quellwerte bleiben erhalten, gehören aber nicht mehr zur vereinfachten Auswahl am Gebäude. Auch Anzahl Geschosse wird nicht ungeprüft aus Quellzählungen summiert. Es wird kein Berechnungsmechanismus eingeführt.
 
 ### Address, coordinates and geometry
 
@@ -128,13 +132,13 @@ The managed **building geometry is a WGS84 Point**. Its latitude and longitude m
 | Spatial structure | The primary hierarchy is Gebäude → Geschoss → Raum. Zone groups rooms through separate dated memberships. Keep links to usage objects, architectural objects, footprint and envelope with extent, source/version, validity and partial correspondence. A managed building group remains a separate grouping. |
 | Grundstück | All relevant parcel associations with validity. Any percentage needs its definition and denominator. GWR GEGRID is a selected reference, not a full parcel list or proof that a building-right reference denotes a land polygon. |
 | Management and rights | Eigentumsart, Eigentümer and Teilportfolio are explicit profile information. Objektstrategie is also an explicit building attribute. The key components identify the primary SAP WE assignment. Keep its changes, any separate business groupings and contracts with their business validity. Each ownership assignment has one owner reference, register/right context, role and validity; retain any registered share where applicable and documented. Several owners require several assignments; do not invent equal percentages. |
-| Bemessungen | The eight building profile values are listed explicitly in **Basisbemessungen des Gebäudes** above: Geschossfläche GF and Gebäudevolumen GV, each total/above/below ground, plus Vermietbare Fläche VMF and Gebäudegrundfläche GGF. Every value stays in Bemessungen with unit, source, basis, scope and validity. Grundstücksfläche GSF belongs to the parcel profile. |
+| Bemessungen | Five referenced building totals: GF, GGF, VMF, EBF and GV. Values and evidence stay in Bemessung with the selected basis and validity. GSF belongs to the parcel profile. |
 | Events and assessments | Renovation, reconstruction, acquisition/disposal and condition assessment with their own dates. A condition rating needs its scale, source and assessment date; it is not physical lifecycle status. |
 | Protection and installations | Relevant protection/inventory assertions with their scope and source, plus technical and energy-supply relationships where needed. KGS classification and monument protection require separate semantic review. |
 
 The building profile includes the worldwide address and point geometry, both Swiss register references, BBL classifications and ownership/portfolio information. Source fields provide evidence for these requirements; technical implementation mappings remain subject to source review.
 
-**Vocabulary and counting:** GIS `bbl_gbda1`/`bbl_gbda2`, SAP `BUILDING_TYPE`/`MAIN_USAGE_TYPE`, GWR `GKAT`/`GKLAS` and IBPDI `PrimaryTypeOfBuilding` are not interchangeable. GWR `GASTW` uses specific rules for roof/basement levels; GIS and SAP counts require their own rule review. The existing GKLAS list was imported from the supplied **4.2** workbook and has not been verified as a 5.0 vocabulary. Keep GKLAS unbound until that vocabulary review is complete. The existing GKAT and GSTAT lists remain reference candidates for this business review.
+**Vocabulary and counting:** GIS `bbl_gbda1`/`bbl_gbda2`, SAP `BUILDING_TYPE`/`MAIN_USAGE_TYPE`, GWR `GKAT`/`GKLAS` and IBPDI `PrimaryTypeOfBuilding` are not interchangeable. GWR `GASTW` uses specific rules for roof/basement levels; GIS and SAP counts require their own rule review. The existing GKLAS list was imported from the supplied **4.2** workbook and has not been verified as a 5.0 vocabulary. GKLAS is now bound to the existing list on explicit user request; its documented 4.2 source version is retained, and comparison with 5.0 remains a separate vocabulary review. GKAT and GSTAT retain their existing bindings. Bauperiode now uses GWR Bauperiode (GBAUP).
 
 **Energy:** use a dedicated model for heating/energy relationships. The imported GWR 5.0 inventory has a separate Wärmeerzeugungsanlage entity. Older GIS heating fields and one generic Energieträger attribute do not establish an equivalent model.
 
@@ -150,7 +154,7 @@ The building profile includes the worldwide address and point geometry, both Swi
 | Bezeichnung | Identifikation | — | `text` | Lesbare Bezeichnung des Geschosses, beispielsweise Erdgeschoss oder Zwischengeschoss Ost. Sie bleibt von Geschosscode und stabiler Identifikation getrennt. | Kernangabe |
 | Geschosslage | Bauwerk und Lebenszyklus | — | `code` | Zuordnung zur oberirdischen oder unterirdischen Geschosszählung nach der vereinbarten Gebäuderegel. Bei Hanglage oder Split-Level muss die Abgrenzung dokumentiert sein; weder das Vorzeichen eines Codes noch eine ungeprüfte Modellhöhe bestimmt die Zuordnung. | Bedingt: Für baulich realisierte Geschosse erforderlich; eine ungeklärte Zuordnung bleibt eine Qualitätslücke. |
 | Sortierposition | Räumliche Zuordnung | — | `integer` | Reihenfolge des Geschosses innerhalb des Gebäudes für Navigation und Pläne. Die Position ist weder Höhenkote noch Geschossanzahl und kann ohne Änderung der Geschossidentität angepasst werden. | Optional |
-| Geschossstatus | Bauwerk und Lebenszyklus | — | `code` | Fachlicher Lebenszyklus des Geschosses, beispielsweise geplant, bestehend oder aufgehoben, nach einem abzustimmenden Vokabular. Katalogfreigabe und Nutzungsbelegung werden separat geführt. | Kernangabe |
+| Status | Bauwerk und Lebenszyklus | — | `code` | Fachlicher Lebenszyklus des Geschosses, beispielsweise geplant, bestehend oder aufgehoben, nach einem abzustimmenden Vokabular. Katalogfreigabe und Nutzungsbelegung werden separat geführt. | Kernangabe |
 | Geometrie | Geometrie | — | `geometry` | Räumliche Darstellung des Geschosses als 2D-Kontur und/oder 3D-Geometrie mit eindeutigem Objektumfang. GF-Kontur und AGF-Kontur werden als getrennte Darstellungen beziehungsweise Bestandteile kenntlich gemacht. Jede Darstellung erhält Geometrie-ID, Rolle, Koordinatensystem, Einheit, Höhenbezug, Quelle und Revision. Eine 2D-Kontur allein liefert kein Geschossvolumen. | Kernangabe |
 | Höhenlage | Geometrie | — | `decimal` | Höhenkote der Oberkante Fertigfussboden (OKFF) des Geschosses in Metern, relativ zum separat dokumentierten Höhenbezug. Positive und negative Werte sowie 0 sind möglich. Die zugehörige Bezugsebene beziehungsweise Messstelle und Quelle mit Revision und Gültigkeit dokumentieren; bei Split-Leveln die einzelnen Ebenen unterscheiden. | Kernangabe |
 | Höhenbezug | Geometrie | — | `structured` | Referenz für die Höhenlage mit eindeutig bezeichneter Bezugsebene beziehungsweise Höhensystem und Datum. Ein lokales Gebäude-Nullniveau und eine amtliche oder geodätische Höhenreferenz werden ausdrücklich unterschieden. Bei einer Umrechnung Ausgangssystem, Zielsystem und Transformationsnachweis erhalten. Die Bestandteile werden getrennt gespeichert; ein unkommentierter Wert «m ü. M.» oder eine WGS84-Lageangabe genügt nicht. | Kernangabe |
@@ -164,14 +168,14 @@ A Geschoss belongs to exactly one building in the primary hierarchy at a given t
 
 ### Basisbemessungen des Geschosses
 
-Geschossfläche, Aussengeschossfläche, Volumen und Höhe sind im Geschossprofil sichtbar. Jede Bemessung referenziert die **Geschoss-ID**; GESAMT bedeutet den definierten Umfang dieses Geschosses.
+Geschossfläche, Aussengeschossfläche, Volumen und Höhe sind im Geschossprofil sichtbar. Jede Bemessung referenziert die **Geschoss-ID**; Bezugsobjekt bedeutet den definierten Umfang dieses Geschosses.
 
-| Profilwert | Property Set | Bemessungsart | Bemessungsumfang | Einheit | Vollständigkeit |
+| Profilwert | Property Set | Bemessungsart | Objektauswahl (abgeleitet) | Einheit | Vollständigkeit |
 |---|---|---|---|---|---|
-| Geschossfläche GF gesamt | Basisbemessungen | `GF` | `GESAMT` | m² | Kernangabe |
-| Aussengeschossfläche AGF gesamt | Basisbemessungen | `AGF` | `GESAMT` | m² | Kernangabe |
-| Geschossvolumen GV gesamt | Basisbemessungen | `GV` | `GESAMT` | m³ | Kernangabe |
-| Geschosshöhe | Basisbemessungen | `GESCHOSSHOEHE` | `GESAMT` | m | Bedingt: Erforderlich, wenn eine übergeordnete Bodenebene als Bezug für die Boden-zu-Boden-Höhe festgelegt ist. |
+| Geschossfläche GF gesamt | Basisbemessungen | `GF` | Bezugsobjekt | m² | Kernangabe |
+| Aussengeschossfläche AGF gesamt | Basisbemessungen | `AGF` | Bezugsobjekt | m² | Kernangabe |
+| Geschossvolumen GV gesamt | Basisbemessungen | `GV` | Bezugsobjekt | m³ | Kernangabe |
+| Geschosshöhe | Basisbemessungen | `GESCHOSSHOEHE` | Bezugsobjekt | m | Bedingt: Erforderlich, wenn eine übergeordnete Bodenebene als Bezug für die Boden-zu-Boden-Höhe festgelegt ist. |
 
 **Höhe und Höhenlage — bestätigt:** Geschosshöhe ist die vertikale Distanz von OKFF dieses Geschosses zu OKFF der zugeordneten darüberliegenden Bodenebene. Höhenlage ist die Kote der eigenen OKFF gegenüber dem Höhenbezug. Die beiden Aussagen bleiben getrennt. Bei der obersten Ebene darf eine fehlende nächste Bodenebene nicht durch eine unbezeichnete Dach- oder Raumhöhe ersetzt werden. Bei variierenden Höhen die betroffene Teilfläche, Referenzstelle und Messregel dokumentieren.
 
@@ -193,7 +197,7 @@ Geschossfläche, Aussengeschossfläche, Volumen und Höhe sind im Geschossprofil
 | Bezeichnung | Identifikation | — | `text` | Lesbarer Raumname oder kurze Bezeichnung. Die Bezeichnung kann sich ändern, ohne die stabile Raumidentität oder die dokumentierte Raumnummer zu ersetzen. | Kernangabe |
 | Raumnutzung | Klassifikation und Nutzung | — | `code` | Betriebliche Funktion des Raums, beispielsweise Büro, Besprechung oder Lager, mit tatsächlicher beziehungsweise geplanter Nutzung und zeitlichem Bezug. Ein lokales Nutzungsvokabular bleibt möglich; dieses Feld enthält keine vermischte Werteliste aus SIA 416, DIN 277 und IPMS. Die normbezogene Einordnung wird separat als Flächenklassifikation geführt. | Optional |
 | Flächenklassifikation | Klassifikation und Nutzung | — | `structured` | Norm- beziehungsweise schemabezogene Zuordnung der Raumfläche mit Schema, tatsächlich verwendeter Ausgabe, Kategoriecode, Kategoriename, Gültigkeit und Nachweis. SIA 416, DIN 277 sowie anwendbare IPMS-Messkategorien oder Komponenten werden separat geführt. Pro Schema und Zuordnung eine eigene strukturierte Aussage; mehrere parallele Zuordnungen sind zulässig. Die Bestandteile werden als getrennte Felder geführt. Eine Kategorie ist kein Flächenwert und keine automatische Übersetzung in ein anderes Schema. | Bedingt: Wenn die Raumfläche für eine Auswertung nach dem betreffenden Schema klassifiziert werden muss. |
-| Raumstatus | Bauwerk und Lebenszyklus | — | `code` | Fachlicher Lebenszyklus des Raums, beispielsweise geplant, bestehend oder aufgehoben, nach einem abzustimmenden Vokabular. Leerstand, Belegung und Freigabe seiner Katalogdefinition sind davon getrennt. | Kernangabe |
+| Status | Bauwerk und Lebenszyklus | — | `code` | Fachlicher Lebenszyklus des Raums, beispielsweise geplant, bestehend oder aufgehoben, nach einem abzustimmenden Vokabular. Leerstand, Belegung und Freigabe seiner Katalogdefinition sind davon getrennt. | Kernangabe |
 | Geometrie | Geometrie | — | `geometry` | Räumliche Abgrenzung des Raums als 2D-Raumkontur und/oder 3D-Raumkörper. Darstellung, Modell-/Geschossbezug, Koordinatensystem, Einheit, Höhenbezug, Quelle und Revision dokumentieren. Messkonturen verschiedener Flächenschemata bleiben unterscheidbar. Eine schematische Extrusion aus Raumfläche und einzelner Raumhöhe ersetzt keinen belegten Raumkörper. | Kernangabe |
 | Geometriebezug | Geometrie | `FK` | `identifier` | Referenz auf die verwendete Raumgeometrie mit Dokument-/Modellrevision und eindeutigem Objektumfang. Die Quelle kann eine DWG-Raumabgrenzung oder eine IFC-Raumdarstellung sein. Referenzsystem, Einheit und Höhenbezug bleiben erhalten; ein Gebäude-Punkt beschreibt keine Raumgrenze. | Bedingt: Für Räume mit digital geführter Geometrie erforderlich. |
 | Gültig ab | Gültigkeit | — | `date` | Beginn der fachlichen Gültigkeit des beschriebenen Raums. Herkunfts-, Erfassungs- und Dateidaten sind davon getrennt; unbekannte historische Daten bleiben unbekannt. | Kernangabe |
@@ -209,12 +213,12 @@ A room can belong to **zero, one or several zones**. Zone membership does not re
 
 **Raumfläche, Raumhöhe und Raumvolumen gehören zum Raumprofil.** Quelle ist vorzugsweise das zugehörige DWG-/IFC-Modell; die Werte bleiben mit Grundlage, Ermittlungsart und Gültigkeit in Bemessung.
 
-| Profilwert | Property Set | Bemessungsart | Bemessungsumfang | Einheit | Vollständigkeit |
+| Profilwert | Property Set | Bemessungsart | Objektauswahl (abgeleitet) | Einheit | Vollständigkeit |
 |---|---|---|---|---|---|
-| Raumfläche | Basisbemessungen | `RAUMFLAECHE` | `GESAMT` | m² | Kernangabe |
-| Raumhöhe | Basisbemessungen | `RAUMHOEHE` | `GESAMT` | m | Kernangabe |
-| Raumvolumen | Basisbemessungen | `RAUMVOLUMEN` | `GESAMT` | m³ | Kernangabe |
-| Vermietbare Fläche VMF gesamt | Basisbemessungen | `VMF` | `GESAMT` | m² | Bedingt: Erforderlich, wenn die bestätigte Vermietungsflächenregel auf den Raum anwendbar ist. |
+| Raumfläche | Basisbemessungen | `RAUMFLAECHE` | Bezugsobjekt | m² | Kernangabe |
+| Raumhöhe | Basisbemessungen | `RAUMHOEHE` | Bezugsobjekt | m | Kernangabe |
+| Raumvolumen | Basisbemessungen | `RAUMVOLUMEN` | Bezugsobjekt | m³ | Kernangabe |
+| Vermietbare Fläche VMF gesamt | Basisbemessungen | `VMF` | Bezugsobjekt | m² | Bedingt: Erforderlich, wenn die bestätigte Vermietungsflächenregel auf den Raum anwendbar ist. |
 
 Raumfläche folgt der angegebenen Bemessungsgrundlage mit dokumentierten Grenzen und Abzügen. Raumhöhe bezeichnet die **lichte Höhe von OKFF bis zur fertigen Deckenunterseite**, bei abgehängter Decke bis zu deren Unterkante. Bei variierender Höhe die Messstelle oder Auswertungsregel angeben; ein einzelner Wert behauptet keine gleichbleibende Höhe. Raumvolumen beschreibt den abgegrenzten Innenraum nach der dokumentierten Volumenregel. Es wird nicht pauschal als Raumfläche × Raumhöhe berechnet. Ein solcher Rechenweg benötigt passende Geometrie, identische Bezugsgrenzen und einen belegten Berechnungsnachweis.
 
@@ -246,7 +250,7 @@ Parallele SIA-, DIN- und IPMS-Aussagen behalten ihre eigenen Kategorien und Mess
 | Bezeichnung | Identifikation | — | `text` | Lesbarer Name der Zone, der sie im zuständigen Bewirtschaftungskontext unterscheidbar macht. Eine Nummer oder Abkürzung darf als Anzeige dienen, ersetzt jedoch keine stabile Zone-ID. | Kernangabe |
 | Zonentyp | Klassifikation und Nutzung | — | `code` | Art der fachlichen Gruppierung, beispielsweise Nutzungszone, Reinigungszone oder Sicherheitszone. Das BBL-Vokabular ist abzustimmen. Ein Zonentyp allein erteilt weder Zugangsrechte noch bestätigt er eine technische oder rechtliche Zonierung. | Kernangabe |
 | Zweck und Abgrenzung | Bewirtschaftung | — | `text` | Fachlicher Zweck der Zone und nachvollziehbare Regel für die Auswahl ihrer Räume. Festhalten, ob räumliche Nähe, gleiche Nutzung oder ein anderer Zusammenhang massgeblich ist und ob Mitgliedschaften innerhalb dieses Zwecks exklusiv sein müssen. | Kernangabe |
-| Zonenstatus | Bewirtschaftung | — | `code` | Fachlicher Lebenszyklus der Raumgruppe, beispielsweise geplant, aktiv oder aufgehoben. Er gilt für die Zone; Raumstatus, Gültigkeit einzelner Mitgliedschaften und Katalogfreigabe bleiben separat. | Kernangabe |
+| Status | Bewirtschaftung | — | `code` | Fachlicher Lebenszyklus der Raumgruppe, beispielsweise geplant, aktiv oder aufgehoben. Er gilt für die Zone; Raumstatus, Gültigkeit einzelner Mitgliedschaften und Katalogfreigabe bleiben separat. | Kernangabe |
 | Geometrie | Geometrie | — | `geometry` | Räumliche Darstellung der zum Stichtag zugeordneten ganzen Räume als gegliederte 2D-Flächen und/oder 3D-Raumgeometrien. Sie kann aus den Mitgliedsgeometrien abgeleitet oder als belegte Darstellung übernommen werden; Raumzuordnung, Eingaberevisionen und Ableitungsregel bleiben referenziert. Mehrere Geschosse beziehungsweise Gebäude behalten ihre eigenen Bezugsrahmen und dürfen nicht in eine höhenlose Fläche abgeflacht werden. | Kernangabe |
 | Geometriebezug | Geometrie | `FK` | `identifier` | Referenz auf die eindeutig identifizierte Geometriedarstellung beziehungsweise ihren Ableitungsdatensatz mit Quelle, Revision und vollständigen Eingabereferenzen. Die geometrische Repräsentation muss mit den Raumzuordnungen für den angegebenen Zeitpunkt übereinstimmen. Ein ungeprüfter Umriss bestimmt keine zusätzlichen oder fehlenden Mitgliedsräume. | Kernangabe |
 | Gültig ab | Gültigkeit | — | `date` | Beginn der fachlichen Gültigkeit der Zone. Die Zugehörigkeit eines einzelnen Raums kann innerhalb dieses Zeitraums später beginnen. | Kernangabe |
@@ -278,11 +282,11 @@ For a given time, an active Zone must have at least one room; an incomplete plan
 
 **Zonenfläche und Zonenvolumen gehören zum Zonenprofil.** Eine Bemessung referenziert die Zone und die für ihren Gültigkeitszeitpunkt massgebliche Raumzuordnung. Die Zugehörigkeit eines Raums zu mehreren Zonen ist zulässig und begründet keine Addition dieser Zonenwerte im Portfolio.
 
-| Profilwert | Property Set | Bemessungsart | Bemessungsumfang | Einheit | Vollständigkeit |
+| Profilwert | Property Set | Bemessungsart | Objektauswahl (abgeleitet) | Einheit | Vollständigkeit |
 |---|---|---|---|---|---|
-| Zonenfläche | Basisbemessungen | `ZONENFLAECHE` | `GESAMT` | m² | Kernangabe |
-| Zonenvolumen | Basisbemessungen | `ZONENVOLUMEN` | `GESAMT` | m³ | Kernangabe |
-| Vermietbare Fläche VMF gesamt | Basisbemessungen | `VMF` | `GESAMT` | m² | Optional |
+| Zonenfläche | Basisbemessungen | `ZONENFLAECHE` | Bezugsobjekt | m² | Kernangabe |
+| Zonenvolumen | Basisbemessungen | `ZONENVOLUMEN` | Bezugsobjekt | m³ | Kernangabe |
+| Vermietbare Fläche VMF gesamt | Basisbemessungen | `VMF` | Bezugsobjekt | m² | Optional |
 
 Fläche und Volumen können aus geprüften Raumbemessungen ermittelt werden. Dazu gehören die eindeutige Menge der Mitgliedsräume, Eingabebemessungen mit Revisionen, kompatible Grundlagen und Gültigkeiten sowie eine dokumentierte Rechenregel. Doppelte Mitgliedschaften und sich geometrisch überlagernde Raumabgrenzungen werden vor der Berechnung bereinigt beziehungsweise fachlich abgegrenzt. Ein fehlender Raumwert darf nicht stillschweigend als 0 in eine vollständige Zonensumme eingehen.
 
@@ -338,7 +342,7 @@ This first profile covers land parcels. Other property/right types require an ex
 | EGRID | Registerbezug | `FK` | `identifier` | Fachliche Fremdreferenz (FK) zum Grundstück im anwendbaren Schweizer Registerkontext; kein Primärschlüssel der BBL-/SAP-Parzelle. Bei ausländischen Parzellen wird die Identität des zuständigen Registers als eigene Referenz erhalten. | Bedingt: Erforderlich, sofern im anwendbaren Schweizer Registerkontext zugeteilt; eine nicht beschaffte EGRID bleibt eine Vollständigkeitslücke. Für ausländische Parzellen keine EGRID erfinden. |
 | Grundstücksnummer (amtlich) | Registerbezug | — | `identifier` | Amtliche Nummer der eingetragenen Parzelle im zugehörigen Nummerierungsbereich. Buchstaben und führende Nullen bleiben Bestandteil des Identifikators. Sie ist kein Ersatz für Grundstücksnummer im SAP-Schlüssel. | Kernangabe |
 | Nummerierungsbereich | Registerbezug | — | `identifier` | Amtlicher Kontext, in dem die Grundstücksnummer (amtlich) eindeutig ist. Gemeinsam mit der amtlichen Nummer erforderlich; ein Gemeindename allein ersetzt den Nummerierungskontext nicht. | Kernangabe |
-| Grenzgeometrie | Geometrie | — | `geometry` | Räumliche Grundstücksgrenze als Polygon in WGS84 (EPSG:4326), bei getrennten Flächenteilen als MultiPolygon. Aussparungen und alle Teile sowie Quelle, Version und massgebliches Datum erhalten. Bei GeoJSON gilt [Längengrad, Breitengrad]. Die separaten WGS84-Koordinaten beschreiben einen Innenpunkt und ersetzen diese Grenzgeometrie nicht. | Kernangabe |
+| Geometrie | Geometrie | — | `geometry` | Räumliche Grundstücksgrenze als Polygon in WGS84 (EPSG:4326), bei getrennten Flächenteilen als MultiPolygon. Aussparungen und alle Teile sowie Quelle, Version und massgebliches Datum erhalten. Bei GeoJSON gilt [Längengrad, Breitengrad]. Die separaten WGS84-Koordinaten beschreiben einen Innenpunkt und ersetzen diese Grenzgeometrie nicht. | Kernangabe |
 | Rechtsstand | Registerbezug | — | `code` | Von der massgeblichen Quelle gemeldete rechtliche Gültigkeit der Parzellengrenze. Eigentum, Lieferumfang und Katalogstatus sind davon getrennt; GIS av_stat wird ohne bestätigte Bedeutung nicht gleichgesetzt. | Bedingt: Erforderlich, wenn die Grenzgeometrie als rechtlich massgeblich verwendet wird; ein fehlender oder ungeklärter Rechtsstand bleibt eine Qualitätslücke. Keine Ableitung aus einem ungeklärten Quellstatus. |
 | Eigentumsart | Eigentum | — | `code` | Bewirtschaftungsbezogene Einordnung des Grundstücks mit den drei fachlich vorgegebenen Werten Eigentum, Anmiete oder Spezialfall. Die Zuordnung aus den SAP-Stammdaten mit ihrer Gültigkeit erhalten. Diese Kategorie ist weder die Identität des eingetragenen Eigentümers noch die grundbuchliche Eigentumsform. | Kernangabe |
 | Eigentümer | Eigentum | `FK` | `identifier` | Im Grundbuch eingetragene Person oder Organisation als Eigentümer des Grundstücks; im Ausland gemäss dem zuständigen entsprechenden Register. Mehrere eingetragene Eigentümer erhalten getrennte Zuordnungen mit Registerbezug und Gültigkeit sowie dem eingetragenen Anteil, soweit anwendbar und belegt. Ein SAP-Geschäftspartner kann nach bestätigtem Abgleich referenziert werden; Vermieter, Verwalter und Katalog-Datenverantwortliche sind nicht automatisch Eigentümer. | Kernangabe |
@@ -356,7 +360,7 @@ This first profile covers land parcels. Other property/right types require an ex
 
 The six parcel address components are **country, region/state/canton, locality, postcode, street and supplement**. There is **no house-number attribute**. For an unaddressed parcel, use its documented locality/lage information. A postal component not assigned to that location is not applicable; a component that exists but has not been obtained is unknown.
 
-**Grenzgeometrie** is the WGS84 polygon boundary, with MultiPolygon permitted for separated parts. Preserve holes and all parts. Latitude/longitude describe a selected **point inside the parcel**, outside any holes; they do not replace the polygon. A geometric centroid must not be assumed to be an interior point. The parcel point may differ from every associated building point. For a MultiPolygon, this profile holds one selected interior point in one documented component; it is not a claim to mark every component. Recheck point containment against the applicable polygon revision after a boundary change.
+**Geometrie** is the WGS84 polygon boundary, with MultiPolygon permitted for separated parts. Preserve holes and all parts. Latitude/longitude describe a selected **point inside the parcel**, outside any holes; they do not replace the polygon. A geometric centroid must not be assumed to be an interior point. The parcel point may differ from every associated building point. For a MultiPolygon, this profile holds one selected interior point in one documented component; it is not a claim to mark every component. Recheck point containment against the applicable polygon revision after a boundary change.
 
 Eigentumsart, Eigentümer and Teilportfolio are explicit parcel attributes as well as building attributes. A building's owner or portfolio assignment is not automatically inherited from the parcel or vice versa. Owner references belong to dated ownership assignments; co-owners are separate rows, never concatenated IDs. There are **exactly two ownership attributes**, managed for both buildings and parcels:
 
@@ -371,9 +375,9 @@ No separate ownership boolean is proposed. These two meanings are confirmed requ
 
 **Grundstücksfläche gehört ausdrücklich zum Grundstücksprofil.** Der Profilabschnitt **Basisbemessungen** verwendet dieselbe Darstellung wie beim Gebäude. Bezugsobjekt ist das Grundstück; Quelle, Bemessungsgrundlage, Ermittlungsart und Gültigkeit bleiben bei der zugeordneten Bemessung.
 
-| Profilwert | Property Set | Bemessungsart | Bemessungsumfang | Einheit | Vollständigkeit |
+| Profilwert | Property Set | Bemessungsart | Objektauswahl (abgeleitet) | Einheit | Vollständigkeit |
 |---|---|---|---|---|---|
-| Grundstücksfläche GSF gesamt | Basisbemessungen | `GSF` | `GESAMT` | m² | Kernangabe |
+| Grundstücksfläche GSF gesamt | Basisbemessungen | `GSF` | Bezugsobjekt | m² | Kernangabe |
 
 GSF is explicitly part of the parcel profile. Its numeric value remains in **Bemessungen** and can be displayed alongside parcel attributes. Do not introduce a second independently maintained parcel-area value. If an official area and a model/polygon-derived area differ, retain both observations with their sources and identify which is used for the requested purpose/date. Do not overwrite an official value with a geometry calculation or relabel it as SIA-compliant without evidence.
 
@@ -402,35 +406,36 @@ A WE can include buildings and parcels. It need not coincide with a campus, parc
 
 Buchungskreis is now explicitly part of the agreed SAP identity. Profit Center and Teilportfolio remain separate assignments. In a later migration, reuse the existing WE-number definition where its semantics match the Wirtschaftseinheit component, preserving its stable catalog ID and history; do not retire that required number merely because the complete Wirtschaftseinheit-ID is also exposed.
 
-## Bemessung — 12 attributes
+## Bemessung — 11 attributes
 
-**Working definition:** Ein fachlich bestimmter Flächen-, Volumen- oder Längenwert für genau ein Bezugsobjekt und einen definierten Umfang, mit Einheit, dokumentierter Quelle, Bemessungsgrundlage, Ermittlungsart und zeitlicher Gültigkeit.
+**Working definition:** Ein fachlich bestimmter Flächen-, Volumen- oder Längenwert für genau ein identifiziertes Bezugsobjekt, mit Einheit, Quelle, Standard, Ermittlungsart und zeitlicher Gültigkeit. Der räumliche Bezug ergibt sich aus dem Objekt, seiner Hierarchie und der Bemessungsart.
 
-Each record is one measurement assertion: one subject, type, scope and numeric value. Distinguish the source file, the rule used to interpret it, and the way the result was obtained.
+One identified measured object, measurement kind and numeric value form each assertion. Separate source evidence, applied rule and derivation method.
 
 | Attribut | Property Set | Schlüsselrolle | Datentyp | Fachliche Definition | Vollständigkeit |
 |---|---|---|---|---|---|
 | Bemessung-ID | Identifikation | `PK` | `identifier` | Stabile Identifikation einer Bemessungsaussage; fachliche Revisionen bleiben nachvollziehbar. | Kernangabe |
-| Bezugsobjekttyp | Objektbezug | — | `code` | Typ des genau einen gemessenen Objekts: Gebäude, Grundstück, Geschoss, Raum oder Zone. Zusammen mit Bezugsobjekt-ID löst er die fachliche Referenz eindeutig auf. Wirtschaftseinheit ist im aktuellen Bemessungsprofil kein direktes Messobjekt. | Kernangabe |
-| Bezugsobjekt-ID | Objektbezug | `FK` | `identifier` | Vollständiger fachlicher Primärschlüssel des gemessenen Objekts entsprechend Bezugsobjekttyp. Beispielsweise die vollständige Gebäude-ID oder eine Raum-ID, nicht eine lokale Gebäudenummer oder Raumnummer allein. Quelle und Geometriebezug ersetzen diese Objektzuordnung nicht. Bei Schlüsseländerungen die datierte Identitätszuordnung erhalten. | Kernangabe |
-| Bemessungsart | Messwert | — | `code` | Art der bestimmten Grösse: GF, AGF, GV, VMF, GGF, GSF sowie Geschosshöhe, Raumfläche, Raumhöhe, Raumvolumen, Zonenfläche und Zonenvolumen. Die zwölf Einträge der lokalen Entwurfswerteliste unterscheiden das Messkonzept; Bezugsobjekt, Umfang und konkrete Bemessungsgrundlage bleiben zusätzlich erforderlich. Die Codes behaupten keine identischen SAP-, SIA-, DIN- oder IPMS-Codes. | Kernangabe |
-| Bemessungsumfang | Messwert | — | `code` | Räumlicher Umfang der Bemessung: GESAMT, OBERIRDISCH oder UNTERIRDISCH. Am Gebäude verwenden GF und GV je Umfang eine eigene Bemessung. Am Geschoss gelten GF, AGF und GV als GESAMT dieses Geschosses. Die übrigen Profilwerte verwenden GESAMT ihres jeweiligen Bezugsobjekts; bei Höhen bezeichnet dies die dokumentierte Höhenangabe und keine Summe. Für GF und GV die ober-/unterirdische Abgrenzungsregel und ihren Bezug zur Geschosszählung dokumentieren. Ein unbekannter Umfang wird nicht als Gesamtwert ausgegeben. | Kernangabe |
+| Bemessungsart | Messwert | — | `code` | Art der bestimmten Grösse: GF, AGF, GV, VMF, GGF, EBF, GSF sowie Geschosshöhe, Raumfläche, Raumhöhe, Raumvolumen, Zonenfläche und Zonenvolumen. Die dreizehn lokalen Entwurfscodes unterscheiden das Messkonzept. Das gemessene Objekt wird über measuredFor identifiziert; sein Bezug und seine Hierarchie bestimmen zusammen mit der Bemessungsart die räumliche Abgrenzung. Die tatsächlich angewendete Regel bleibt unter Standard dokumentiert. Keine Gleichsetzung mit SAP-, SIA-, DIN- oder IPMS-Codes. | Kernangabe |
 | Wert | Messwert | — | `decimal` | Numerischer Flächen-, Volumen- oder Längenwert. Für eine verwendbare Bemessung benötigt; ein unbekannter Wert ist von der Zahl 0 zu unterscheiden und wird nicht durch 0 ersetzt. Höhenkoten werden als Höhenlage mit Höhenbezug am Geschoss geführt; sie sind keine Distanzbemessungen. | Kernangabe |
-| Einheit | Messwert | — | `code` | Zur Bemessungsart passende Einheit: m² für GF, AGF, VMF, GGF, GSF, Raumfläche und Zonenfläche; m³ für GV, Raumvolumen und Zonenvolumen; m für Geschosshöhe und Raumhöhe. Eine dokumentierte Umrechnung erhält die ursprüngliche Einheit und Herkunft. Flächen-, Volumen- und Längenwerte werden nicht verwechselt oder gemeinsam summiert. | Kernangabe |
-| Bemessungsgrundlage | Nachweis und Methode | — | `structured` | Angewendete Bemessungsregel mit Schema/Norm, tatsächlich verwendeter Ausgabe, Messkategorie, Objektgrenzen und Abzügen. SIA 416, DIN 277, IPMS und BBL-Regeln bleiben unterscheidbar. Für GF, AGF, GV und GGF die dokumentierte SIA-416-Grundlage erhalten; für GSF die tatsächliche amtliche, SIA-basierte oder geometrische Grundlage, für VMF die bestätigte Vermietungsflächenregel. Geschosshöhe und Raumhöhe erhalten ihre Bezugsflächen und Messregel. Raum- und Zonenwerte dokumentieren die gewählte Flächen-/Volumenregel; berechnete Zonenwerte zusätzlich ihre Eingaben und deren Grenzen. Die Bestandteile werden getrennt geführt. Eine schematische Kategoriezuordnung ersetzt keinen Nachweis der Berechnung. | Kernangabe |
+| Einheit | Messwert | — | `code` | Zur Bemessungsart passende Einheit: m² für GF, AGF, VMF, GGF, EBF, GSF, Raumfläche und Zonenfläche; m³ für GV, Raumvolumen und Zonenvolumen; m für Geschosshöhe und Raumhöhe. Eine dokumentierte Umrechnung erhält die ursprüngliche Einheit und Herkunft. Flächen-, Volumen- und Längenwerte werden nicht verwechselt oder gemeinsam summiert. | Kernangabe |
 | Quelle | Nachweis und Methode | `FK` | `identifier` | Referenz auf die konkrete Quelldatei in der verwendeten Revision, vorzugsweise ein DWG- oder IFC-Modell. Bei manueller Ermittlung oder Übernahme auf das Messprotokoll beziehungsweise den belegenden Nachweis verweisen. Dokument-ID oder dauerhafte URI und unveränderliche Revision machen die Datei auffindbar; Dateiname oder Format allein genügen nicht. Bei mehreren Dateien je Quelle eine separate Zuordnung führen. | Kernangabe |
-| Ermittlungsart | Nachweis und Methode | — | `code` | Art der Wertermittlung: vorzugsweise modellbasiert aus DWG/IFC abgeleitet; alternativ manuell gemessen, aus einem dokumentierten Nachweis übernommen, aus bestehenden Bemessungen berechnet oder ausdrücklich geschätzt. Bei einer Berechnung Ausgangsbemessungen, deren Revisionen und die Rechenregel dokumentieren. Das Methodenvokabular ist ein Entwurf. Manuelle Eingabe eines bereits modellbasiert ermittelten Werts ändert dessen Ermittlungsart nicht. | Kernangabe |
+| FID | Nachweis und Methode | `FK` | `identifier` | Kennung der verwendeten Quellgeometrie innerhalb der unter Quelle referenzierten Datei oder des Datensatzes und seiner Revision. Kennung als Text erhalten; Ebene beziehungsweise Layer und Kennungssystem in der Quelle angeben. GIS-FID, IFC GlobalId und DWG-Handle sind unterschiedliche Kennungen. Optional, wenn keine identifizierbare Quellgeometrie vorliegt; ersetzt weder Bemessung-ID noch die Beziehung zum gemessenen Geschäftsobjekt. | Optional |
 | Gültig ab | Gültigkeit | — | `date` | Datum, ab dem der Wert für das Bezugsobjekt gilt. Für stichtagsbezogene Auswertungen benötigt; unbekannte Daten bleiben unbekannt. Das Datum ist weder automatisch Erhebungsdatum noch Bearbeitungsdatum des Katalogs. | Kernangabe |
 | Gültig bis | Gültigkeit | — | `date` | Ende der Anwendbarkeit des Werts auf das Bezugsobjekt. Bei offener Gültigkeit wird kein Enddatum erfunden. | Optional |
+| Genauigkeit | Nachweis und Methode | — | `code` | Qualitative Einordnung gemäss BBL Genauigkeit: Geschätzt, Gemessen, Aggregiert oder Unbekannt. Ein einzelner Code beschreibt den vorliegenden Wert; bei einer Aggregation die Eingabewerte und allfällige Schätzanteile in der Quelle dokumentieren. Die genaue Toleranz mit Einheit, Bezug und Bedingungen bleibt ebenfalls in der Quelle. Die Kategorie Gemessen bescheinigt keine bestimmte numerische Präzision. Ermittlungsart bleibt als separate, detaillierte Methodenangabe erhalten. | Optional |
+| Standard | Nachweis und Methode | — | `code` | Angewendeter Standard beziehungsweise dokumentierte Bemessungsregel aus der Werteliste BBL Bemessungsstandard. Die tatsächlich verwendete Ausgabe und Messkategorie sowie Objektgrenzen, Abzüge und Abweichungen in der Quelle dokumentieren. Bei unbekannter Grundlage bleibt die Angabe offen. Für GF, AGF, GV und GGF die dokumentierte SIA-Grundlage, für GSF die tatsächliche amtliche oder geometrische Grundlage und für VMF die bestätigte Vermietungsflächenregel angeben. Für EBF die tatsächlich angewendete SIA-380- oder ältere SIA-416/1-Grundlage beziehungsweise eine belegte andere Regel erhalten; ältere GWR-Angaben nicht auf eine neue Normausgabe umdeuten. Höhen behalten ihre Bezugsflächen. Ein Normname allein bescheinigt keine normkonforme Berechnung. | Kernangabe |
+| Ermittlungsart | Nachweis und Methode | — | `code` | Art der Wertermittlung: vorzugsweise modellbasiert aus DWG/IFC abgeleitet; alternativ manuell gemessen, aus einem dokumentierten Nachweis übernommen, aus bestehenden Bemessungen berechnet oder ausdrücklich geschätzt. Bei einer Berechnung Ausgangsbemessungen, deren Revisionen und die Rechenregel dokumentieren. Das Methodenvokabular ist ein Entwurf. Manuelle Eingabe eines bereits modellbasiert ermittelten Werts ändert dessen Ermittlungsart nicht. | Kernangabe |
 
-**Required relationship:** Bezugsobjekttyp and Bezugsobjekt-ID encode exactly one Bezugsobjekt per measurement assertion: a building, parcel, floor, room or zone. They are the visible fields of this same relationship, not a second independently editable assignment. A zone-level measurement refers to the Zone and identifies its contributing measurements when derived. This is a proposed business rule, not a claim about SAP storage cardinalities.
+**Required relationship:** the existing five `measuredFor` relationships document the permitted target types Gebäude, Geschoss, Raum, Grundstück and Zone. Each operational measurement has exactly one identified target; this cardinality is a business rule for the consuming system. The catalog stores relationships between definitions, not actual building/measurement instances. Separate Bezugsobjekttyp and Bezugsobjekt-ID attributes are archived. FID identifies source geometry, not the business target. Aussenfläche needs a separately defined catalog object before an additional target relationship can be created.
+
+**No separate Bemessungsumfang:** derive the selection from the measured object, its valid hierarchy and measurement kind. Above-/below-ground GF/GV selections use explicitly bounded storeys and the documented rule; never infer geometry from storey counts. Preserve historical totals and source evidence for partial values which cannot yet be assigned unambiguously. No automatic aggregation or operational data conversion is performed.
 
 ### Quelle, basis and method
 
 | Information | Meaning | Example |
 |---|---|---|
 | Quelle | Which actual file revision provides the evidence? | Referenced DWG/IFC file, or a measurement protocol for a manual value |
-| Bemessungsgrundlage | Which measurement definition and edition were applied? | Documented SIA 416 edition and agreed scope; a confirmed VMF rule |
+| Standard | Which measurement definition and edition were applied? | Documented SIA 416 edition and agreed scope; a confirmed VMF rule |
 | Ermittlungsart | How was the numeric value obtained? | Model derivation, manual measurement, documented transfer, calculation from other measurements or estimate |
 
 **Preferred workflow:** derive values from DWG/IFC. Preserve the source document identity, immutable revision, displayed filename/format and, where available, checksum in the source record. A mutable “latest file” link alone cannot reproduce an earlier result. Record the relevant model objects/geometry selection and extraction rule/version alongside the source assignment; one file may support many measurements and one measurement may depend on several files. Source revision alone does not identify which floor, space or geometry was used.
@@ -447,16 +452,16 @@ A readable measurement label can be derived from kind and subject. An observatio
 
 ### Basisbemessungen und Wertelisten
 
-All measurement values remain in **Bemessungen**. The proposed **Bemessungsart** list now has **twelve entries**, covering the explicitly requested building, parcel, floor, room and zone values. It is a local draft profile; the descriptive codes for heights and room/zone quantities are not claimed as standard or SAP codes. The earlier five-kind SQL vocabulary is a historical baseline and is not updated in this step.
+All measurement values remain in **Bemessungen**. The proposed **Bemessungsart** list now has **thirteen entries**, covering the explicitly requested building, parcel, floor, room and zone values. It is a local draft profile; the descriptive codes for heights and room/zone quantities are not claimed as standard or SAP codes. The earlier five-kind SQL vocabulary is historical; thirteen kinds are deployed, including EBF from the latest building review.
 
 | Code | Bemessungsart | Fachliche Definition |
 |---|---|---|
-| `GF` | Geschossfläche GF | Geschossfläche des Bezugsgebäudes oder Bezugsgeschosses nach der dokumentierten SIA-416-Grundlage, in m². Am Gebäude getrennt nach GESAMT, OBERIRDISCH und UNTERIRDISCH; am Geschoss als GESAMT dieses Geschosses. Eine Netto-Raumfläche ist nicht automatisch GF. |
-| `VMF` | Vermietbare Fläche VMF | Für die Vermietung bestimmte Fläche des jeweiligen Bezugsobjekts nach der bestätigten Vermietungsflächenregel, in m². Eine Verwendung für Raum oder Zone setzt eine entsprechende, belegte Bezugsabgrenzung voraus. Im Grundprofil Umfang GESAMT; Vermietbarkeit und tatsächlich vermietete Fläche unterscheiden. SIA D 0165 nur bei entsprechender Bemessungsgrundlage angeben. |
-| `GV` | Volumen GV | Volumen des Bezugsgebäudes oder der abgegrenzte Volumenanteil eines Bezugsgeschosses nach der dokumentierten Grundlage, in m³. Im SIA-bezogenen Profil am Gebäude je GESAMT, OBERIRDISCH und UNTERIRDISCH; am Geschoss GESAMT mit dokumentierten oberen/unteren Grenzen und Bauteilanteilen. Die Anzeige lautet am Gebäude Gebäudevolumen und am Geschoss Geschossvolumen. Dies begründet keine automatische Gleichheit mit einer Summe von Raumvolumen oder anders definierten DIN-Rauminhalten. |
-| `GGF` | Gebäudegrundfläche GGF | Gebäudegrundfläche des Bezugsgebäudes nach der dokumentierten SIA-416-Grundlage, in m² und Umfang GESAMT. Der tatsächliche bodenbezogene Umfang muss belegt sein; sie ist weder die Summe der Geschossflächen noch automatisch eine Dachprojektion. Eine Grundstückssumme aus mehreren Gebäudegrundflächen ist eine andere Bezugsabgrenzung. |
-| `GSF` | Grundstücksfläche GSF | Fläche des Bezugsgrundstücks, in m² und Umfang GESAMT. SIA-416-basierte, amtlich übernommene und geometrisch ermittelte Werte behalten ihre jeweils dokumentierte Herkunft und Grundlage; die Verwendung des Fachkürzels bescheinigt keine Normkonformität. Keine vollständige Grundstücksfläche auf jedes zugeordnete Gebäude duplizieren. |
-| `AGF` | Aussengeschossfläche AGF | Dem Bezugsgeschoss zugeordnete Aussenflächen nach der dokumentierten SIA-416-Grundlage, in m² und Umfang GESAMT. Aussenbereiche wie Balkone und Terrassen werden mit belegter Abgrenzung getrennt von GF geführt. Die Zuordnung zu einer Ebene und die Behandlung mehrgeschossiger Aussenbauteile sind nachvollziehbar. |
+| `GF` | Geschossfläche GF | Geschossfläche des Bezugsgebäudes oder Bezugsgeschosses nach der dokumentierten SIA-416-Grundlage, in m². Gebäude- und Geschosswerte haben jeweils ihr eigenes identifiziertes Bezugsobjekt. Ober- und unterirdische Auswertungen verwenden die gültige Geschosshierarchie mit dokumentierter Abgrenzung; keine zusätzliche Umfangseigenschaft. Eine Netto-Raumfläche ist nicht automatisch GF. |
+| `VMF` | Vermietbare Fläche VMF | Für die Vermietung bestimmte Fläche des jeweiligen Bezugsobjekts nach der bestätigten Vermietungsflächenregel, in m². Eine Verwendung für Raum oder Zone setzt eine entsprechende, belegte Bezugsabgrenzung voraus. Vermietbarkeit und tatsächlich vermietete Fläche unterscheiden. SIA D 0165 nur bei entsprechender Bemessungsgrundlage angeben. |
+| `GV` | Volumen GV | Volumen des Bezugsgebäudes oder der abgegrenzte Volumenanteil eines Bezugsgeschosses nach der dokumentierten Grundlage, in m³. Gebäude und Geschoss sind getrennt identifizierte Bezugsobjekte. Für ober- und unterirdische Auswertungen die gültige Geschosshierarchie und die dokumentierten oberen/unteren Grenzen und Bauteilanteile verwenden. Die Anzeige lautet am Gebäude Gebäudevolumen und am Geschoss Geschossvolumen. Dies begründet keine automatische Gleichheit mit einer Summe von Raumvolumen oder anders definierten DIN-Rauminhalten. |
+| `GGF` | Gebäudegrundfläche GGF | Gebäudegrundfläche des Bezugsgebäudes nach der dokumentierten SIA-416-Grundlage, in m². Der tatsächliche bodenbezogene Umfang muss belegt sein; sie ist weder die Summe der Geschossflächen noch automatisch eine Dachprojektion. Eine Grundstückssumme aus mehreren Gebäudegrundflächen ist eine andere Bezugsabgrenzung. |
+| `GSF` | Grundstücksfläche GSF | Fläche des Bezugsgrundstücks, in m². SIA-416-basierte, amtlich übernommene und geometrisch ermittelte Werte behalten ihre jeweils dokumentierte Herkunft und Grundlage; die Verwendung des Fachkürzels bescheinigt keine Normkonformität. Keine vollständige Grundstücksfläche auf jedes zugeordnete Gebäude duplizieren. |
+| `AGF` | Aussengeschossfläche AGF | Dem Bezugsgeschoss zugeordnete Aussenflächen nach der dokumentierten SIA-416-Grundlage, in m². Aussenbereiche wie Balkone und Terrassen werden mit belegter Abgrenzung getrennt von GF geführt. Die Zuordnung zu einer Ebene und die Behandlung mehrgeschossiger Aussenbauteile sind nachvollziehbar. |
 | `GESCHOSSHOEHE` | Geschosshöhe | Vertikale Boden-zu-Boden-Distanz von OKFF des Bezugsgeschosses zur OKFF der festgelegten darüberliegenden Bodenebene, in m. Beide Bezugsflächen und ihre Revisionen dokumentieren; bei variierender Höhe die Messstelle beziehungsweise Auswertungsregel angeben. |
 | `RAUMFLAECHE` | Raumfläche | Fläche des abgegrenzten Bezugsraums nach der angegebenen Bemessungsgrundlage, in m². Schema, Ausgabe, Messkategorie, Grenzen und Abzüge bestimmen den Wert. Die lokale Bezeichnung bescheinigt weder GF noch VMF oder eine normübergreifend identische Nettofläche. |
 | `RAUMHOEHE` | Raumhöhe | Lichte vertikale Distanz von OKFF bis zur fertigen Deckenunterseite beziehungsweise Unterkante einer abgehängten Decke, in m. Messstelle oder Auswertungsregel für variable Höhen dokumentieren; ein Einzelwert bezeichnet nicht automatisch die Höhe des gesamten Raums. |
@@ -464,53 +469,75 @@ All measurement values remain in **Bemessungen**. The proposed **Bemessungsart**
 | `ZONENFLAECHE` | Zonenfläche | Fläche der zum massgeblichen Zeitpunkt zugeordneten Raumabgrenzungen nach einer gemeinsamen dokumentierten Flächenregel, in m². Bei Berechnung aus Raumwerten Eingabebemessungen und Mitgliedschaftsstand referenzieren; Überlagerungen, fehlende Werte und inkompatible Grundlagen dürfen nicht verborgen werden. |
 | `ZONENVOLUMEN` | Zonenvolumen | Volumen der zum massgeblichen Zeitpunkt zugeordneten Raumabgrenzungen nach einer gemeinsamen dokumentierten Volumenregel, in m³. Bei Berechnung Eingaben, Revisionen, Mitgliedschaftsstand und Rechenregel erhalten; mehrfach erfasste räumliche Anteile nicht doppelt zählen. |
 
-The separate **Bemessungsumfang** list supplies the scope of a measurement:
+The separate Bemessungsumfang attribute, list and three codes are archived. Object and hierarchy selections below are derived query context, not another measurement property.
 
-| Code | Bemessungsumfang | Fachliche Definition |
+**BBL Genauigkeit:** Auf ausdrücklichen Benutzerentscheid ersetzen Geschätzt, Gemessen, Aggregiert und Unbekannt die frühere Dreierliste. Es sind qualitative Kategorien, keine numerischen Toleranzklassen. Eine genaue Toleranz bleibt in Quelle. Toleranz dokumentiert wurde archiviert und nicht in Gemessen umgedeutet. Ermittlungsart bleibt separat unverändert.
+
+| Code | Name | Meaning |
 |---|---|---|
-| `GESAMT` | Gesamtwert | Wert für den gesamten vereinbarten Bezugsumfang der jeweiligen Bemessungsart. Bei GF und GV am Gebäude umfasst er oberirdische und unterirdische Teile; am Geschoss, Raum oder an der Zone gilt der jeweils eigene Umfang. Höhen bleiben Distanzangaben mit dokumentierten Bezugsflächen. Einen vorhandenen Gesamtwert erhalten; keine automatische Neuberechnung und keine Addition zu seinen Teilwerten. |
-| `OBERIRDISCH` | Oberirdisch | Oberirdischer Teil einer GF- oder GV-Bemessung nach der dokumentierten Abgrenzungsregel. Den Bezug zur Geschosszählung dokumentieren, ohne deren Kategorien als geometrische Aufteilung vorauszusetzen; der Wert wird nicht aus einer Geschossanzahl geschätzt. |
-| `UNTERIRDISCH` | Unterirdisch | Unterirdischer Teil einer GF- oder GV-Bemessung nach derselben für die betreffende Bemessungsart dokumentierten Abgrenzungsregel wie ihr oberirdischer Teil. Eine bestätigte Abwesenheit unterirdischer Teile kann den Wert 0 ergeben; unbekannte Werte bleiben unbekannt. |
+| `GESCHAETZT` | Geschätzt | Der Bemessungswert ist geschätzt. Schätzgrundlage und Annahmen in der Quelle festhalten; keine bestimmte Toleranz aus dieser Kategorie ableiten. |
+| `GEMESSEN` | Gemessen | Der Bemessungswert beruht auf einer direkten Messung am Objekt oder einer Ausmessung der dokumentierten Geometrie. Messverfahren beziehungsweise Modellquelle und Revision festhalten. Dies bescheinigt keine bestimmte Toleranz; eine zusammengefasste Menge von Teilmessungen wird als Aggregiert eingeordnet. |
+| `AGGREGIERT` | Aggregiert | Der Bemessungswert fasst mehrere Teilwerte nach einer dokumentierten Regel zusammen. Eingabe-IDs, Revisionen, Einheiten, Stichtag und Aggregationsregel in der Quelle festhalten. Vollständigkeit, Überschneidungen und Schätzanteile prüfen; eine Aggregation bescheinigt keine höhere Präzision. |
+| `UNBEKANNT` | Unbekannt | Die Einordnung des Bemessungswerts als geschätzt, gemessen oder aggregiert ist nicht bekannt oder nicht ausreichend belegt. Keine Messung, Toleranz oder Nullabweichung unterstellen. |
 
-The previously agreed building and parcel minimum remains. The following combinations correspond exactly to the eight profile values in [Basisbemessungen des Gebäudes](#basisbemessungen-des-gebäudes) and the one in [Basisbemessung des Grundstücks](#basisbemessung-des-grundstücks):
+**BBL Ermittlungsart:** Lokaler Entwurf zur Herkunft des Zahlenwerts. Dateiformat und manuelle Dateneingabe sind keine eigenen Ermittlungsarten.
 
-| Subject | Type | Scope | Unit |
+| Code | Name | Meaning |
+|---|---|---|
+| `MODELLABGELEITET` | Aus Modell abgeleitet | Aus Geometrie eines dokumentierten Modells berechnet, beispielsweise DWG oder IFC. Modellrevision, Geometrieauswahl und Berechnungsregel in der Quelle erhalten. |
+| `GEMESSEN` | Gemessen | Durch eine Messung vor Ort ermittelt; Messverfahren, Messzeitpunkt und Protokoll in der Quelle dokumentieren. |
+| `UEBERNOMMEN` | Aus Nachweis übernommen | Bestehenden Zahlenwert aus einem dokumentierten Nachweis oder Modellattribut übernommen; dessen ursprüngliche Herkunft soweit bekannt erhalten. |
+| `BERECHNET` | Aus Bemessungen berechnet | Aus vorhandenen Bemessungen berechnet. Eingabe-IDs und Revisionen, Formel, Zuordnungsstand und Einheiten dokumentieren. |
+| `GESCHAETZT` | Geschätzt | Zahlenwert durch Schätzung ermittelt. Annahmen und Begründung dokumentieren; nicht als gemessenen Wert ausgeben. |
+
+**BBL Bemessungsstandard** is the value list for **Standard**, applied in a [separate September 13 follow-up](review/2026-09-13-bemessung-standard.md). The selected code identifies the standard or documented rule; the actual edition, category, boundaries, deductions and deviations remain in **Quelle**. A missing basis stays unknown. BBL-Regel and Andere dokumentierte Regel require an identified rule in the source. Codes do not certify conformance or automatically determine a standard from Bemessungsart.
+
+| Code | Standard |
+|---|---|
+| `SIA_380` | SIA 380 |
+| `SIA_416` | SIA 416 |
+| `SIA_416_1` | SIA 416/1 |
+| `DIN_277` | DIN 277 |
+| `IPMS` | IPMS |
+| `BBL_REGEL` | BBL-Regel |
+| `ANDERE_REGEL` | Andere dokumentierte Regel |
+
+The previously agreed building and parcel minimum remains. The following combinations correspond exactly to the five profile values in [Basisbemessungen des Gebäudes](#basisbemessungen-des-gebäudes) and the one in [Basisbemessung des Grundstücks](#basisbemessung-des-grundstücks):
+
+| Subject | Type | Object / hierarchy selection | Unit |
 |---|---|---|---|
-| Gebäude | GF | GESAMT | m² |
-| Gebäude | GF | OBERIRDISCH | m² |
-| Gebäude | GF | UNTERIRDISCH | m² |
-| Gebäude | GV | GESAMT | m³ |
-| Gebäude | GV | OBERIRDISCH | m³ |
-| Gebäude | GV | UNTERIRDISCH | m³ |
-| Gebäude | VMF | GESAMT | m² |
-| Gebäude | GGF | GESAMT | m² |
-| Grundstück | GSF | GESAMT | m² |
+| Gebäude | GF | Bezugsobjekt | m² |
+| Gebäude | GV | Bezugsobjekt | m³ |
+| Gebäude | VMF | Bezugsobjekt | m² |
+| Gebäude | GGF | Bezugsobjekt | m² |
+| Gebäude | EBF | Bezugsobjekt | m² |
+| Grundstück | GSF | Bezugsobjekt | m² |
 
 Die räumlichen Profile verwenden dieselbe Bemessungsstruktur:
 
-| Bezugsobjekt | Bemessungsart / Umfang / Einheit | Vollständigkeit |
+| Bezugsobjekt | Bemessungsart / Objektbezug / Einheit | Vollständigkeit |
 |---|---|---|
-| Geschoss | GF / GESAMT / m² | Kernangabe |
-| Geschoss | AGF / GESAMT / m² | Kernangabe; nachgewiesen fehlende Aussenfläche kann 0 sein |
-| Geschoss | GV / GESAMT / m³ | Kernangabe |
-| Geschoss | GESCHOSSHOEHE / GESAMT / m | Bedingt: definierte darüberliegende Bodenebene |
-| Raum | RAUMFLAECHE / GESAMT / m² | Kernangabe |
-| Raum | RAUMHOEHE / GESAMT / m | Kernangabe |
-| Raum | RAUMVOLUMEN / GESAMT / m³ | Kernangabe |
-| Raum | VMF / GESAMT / m² | Bedingt: anwendbare Vermietungsflächenregel |
-| Zone | ZONENFLAECHE / GESAMT / m² | Kernangabe |
-| Zone | ZONENVOLUMEN / GESAMT / m³ | Kernangabe |
-| Zone | VMF / GESAMT / m² | Optional; geprüfte Raumzuordnung und Bemessungsgrundlage |
+| Geschoss | GF / Bezugsobjekt / m² | Kernangabe |
+| Geschoss | AGF / Bezugsobjekt / m² | Kernangabe; nachgewiesen fehlende Aussenfläche kann 0 sein |
+| Geschoss | GV / Bezugsobjekt / m³ | Kernangabe |
+| Geschoss | GESCHOSSHOEHE / Bezugsobjekt / m | Bedingt: definierte darüberliegende Bodenebene |
+| Raum | RAUMFLAECHE / Bezugsobjekt / m² | Kernangabe |
+| Raum | RAUMHOEHE / Bezugsobjekt / m | Kernangabe |
+| Raum | RAUMVOLUMEN / Bezugsobjekt / m³ | Kernangabe |
+| Raum | VMF / Bezugsobjekt / m² | Bedingt: anwendbare Vermietungsflächenregel |
+| Zone | ZONENFLAECHE / Bezugsobjekt / m² | Kernangabe |
+| Zone | ZONENVOLUMEN / Bezugsobjekt / m³ | Kernangabe |
+| Zone | VMF / Bezugsobjekt / m² | Optional; geprüfte Raumzuordnung und Bemessungsgrundlage |
 
-Damit werden **acht Gebäude-, eine Grundstücks-, vier Geschoss-, vier Raum- und drei Zonenbemessungen** im Profil sichtbar, insgesamt 20 Selektionen mit unterschiedlicher Anwendbarkeit. Die Höhenlage bleibt separat als Lageattribut am Geschoss. Weitere Messarten können später nach fachlicher Definition ergänzt werden; eine vollständige Normhierarchie oder automatische Aggregation wird hier nicht eingeführt. Eine Bemessung hat genau ein Bezugsobjekt: Ein Gebäudetotal, ein Geschosswert und eine Zonenberechnung erhalten eigene Aussagen und Identitäten.
+Damit werden **fünf Gebäude-, eine Grundstücks-, vier Geschoss-, vier Raum- und drei Zonenbemessungen** im Profil sichtbar, insgesamt 17 Selektionen mit unterschiedlicher Anwendbarkeit. Die Höhenlage bleibt separat als Lageattribut am Geschoss. Weitere Messarten können später nach fachlicher Definition ergänzt werden; eine vollständige Normhierarchie oder automatische Aggregation wird hier nicht eingeführt. Eine Bemessung hat genau ein Bezugsobjekt: Ein Gebäudetotal, ein Geschosswert und eine Zonenberechnung erhalten eigene Aussagen und Identitäten.
 
-The original **eight building measurements and one parcel measurement** remain part of these 20 selections for each applicable basis/validity context. The 20 selections do not create independently maintained numeric copies on their subjects. Model-derived and manual observations can coexist; the source and applicable business purpose must distinguish them. VMF may be not applicable to an object without a meaningful rentable-area scope; do not fabricate a zero for such an object. Missing measurements remain completeness gaps; this proposal contains no property values. Other existing source measurement types remain available in their original inventories.
+The **five building measurements and one parcel measurement** are part of these 17 selections for each applicable basis/validity context. The 17 selections do not create independently maintained numeric copies on their subjects. Model-derived and manual observations can coexist; the source and applicable business purpose must distinguish them. VMF may be not applicable to an object without a meaningful rentable-area scope; do not fabricate a zero for such an object. Missing measurements remain completeness gaps; this proposal contains no property values. Other existing source measurement types remain available in their original inventories.
 
-GF and GV both use the agreed above-/below-ground distinction. Document the GF and GV partitions and how they relate to the storey-counting rule, particularly for partial storeys and sloping terrain. A counting category alone cannot allocate geometry. The [GWR 2022 catalog, GASTW, p. 67](https://www.housing-stat.ch/files/881-2200.pdf) counts certain roof/basement levels according to use or heating and excludes cellar levels; it does not supply this BBL measurement partition. Never calculate areas or volumes from a storey count. Preserve an existing total; checking `total = above + below` is meaningful only for the same subject, type, basis, observation context and period, with a complete, non-overlapping split and documented rounding tolerance. The total and parts from different model revisions do not automatically form a comparable set. Do not sum GF + VMF + GGF, mix m² with m³, or add totals to their parts. No automatic aggregation or source-value conversion is introduced.
+Above-/below-ground source partitions remain optional detail outside the five simplified building totals. When used, document their relation to the storey-counting rule, particularly for partial storeys and sloping terrain. A counting category alone cannot allocate geometry. The [GWR 2022 catalog, GASTW, p. 67](https://www.housing-stat.ch/files/881-2200.pdf) counts certain roof/basement levels according to use or heating and excludes cellar levels; it does not supply this BBL measurement partition. Never calculate areas or volumes from a storey count. Preserve an existing total; checking `total = above + below` is meaningful only for the same subject, type, basis, observation context and period, with a complete, non-overlapping split and documented rounding tolerance. The total and parts from different model revisions do not automatically form a comparable set. Do not sum GF + VMF + GGF, mix m² with m³, or add totals to their parts. No automatic aggregation or source-value conversion is introduced.
 
 **Basis:** GF, AGF, GV and GGF in the SIA-based profile use the documented SIA-416 basis; retain the edition actually used. For GSF, preserve whether the supplied value is official, SIA-based or geometrically calculated. The [SIA publisher lists SIA 416:2003](https://shop.sia.ch/416_2003_dfi/product). VMF remains a distinct rentable-area requirement: its confirmed basis may be SIA D 0165 or a BBL rule. The [Canton Lucerne guidance, pp. 15–17](https://immobilien.lu.ch/-/media/Immobilien/Dokumente/Leistungen/Planen_Bauen/23031W_Flaechendefinition_Version_11.pdf?hash=608B7B185F00F2113D42992AA5954247&rev=3ead1d06ffe84bb1a1e0bd2063d4b128) illustrates this distinction; it does not establish BBL's rule. The GIS label “VMF (SIA 416)” alone is insufficient to certify the calculation.
 
-**Source context:** GIS building rows 52–54 document GF total/above/below, row 62 VMF, rows 64–66 GV total/above/below, and rows 72–73 GGF/GSF. Parcel rows 146–147 distinguish summed building ground area from parcel area. RE-FX `MEASUREMENT` supplies object identity, type, validity, unit and distinct available/capacity values. The exact SAP type-code mapping and choice of value field still require confirmation; no SAP code or amount is invented.
+**Source context:** GIS building rows 52–54 document GF total/above/below, row 62 VMF, row 63 EBF, rows 64–66 GV total/above/below, and rows 72–73 GGF/GSF. Parcel rows 146–147 distinguish summed building ground area from parcel area. RE-FX `MEASUREMENT` supplies object identity, type, validity, unit and distinct available/capacity values. The exact SAP type-code mapping and choice of value field still require confirmation; no SAP code or amount is invented.
 
 ## Proposed catalog feature: property sets
 
@@ -518,33 +545,32 @@ A **property set (Attributgruppe)** is a named, reusable grouping of related bus
 
 ### Proposed grouping
 
-Each of the **106 direct attribute definitions** above appears in exactly one primary property set for its object. The two matrices below cover those direct definitions for all seven objects. A dash means the set is not assigned to that object. The **Basisbemessungen** group additionally presents related measurement selections, as shown in the building, parcel, floor, room and zone profile tables and the separate overview below; it is not included in the count of direct definitions.
+Each of the **107 direct attribute definitions** above appears in exactly one primary property set for its object. The two matrices below cover those direct definitions for all seven objects. A dash means the set is not assigned to that object. The **Basisbemessungen** group additionally presents related measurement selections, as shown in the building, parcel, floor, room and zone profile tables and the separate overview below; it is not included in the count of direct definitions.
 
 | Property Set | Gebäude | Grundstück | Wirtschaftseinheit | Bemessung |
 |---|---|---|---|---|
 | Identifikation | Gebäude-ID; Buchungskreis; Wirtschaftseinheit; Gebäudenummer; Bezeichnung | Grundstück-ID; Buchungskreis; Wirtschaftseinheit; Grundstücksnummer; Bezeichnung | Wirtschaftseinheit-ID; Buchungskreis; Wirtschaftseinheit; Bezeichnung | Bemessung-ID |
 | Registerbezug | EGID; EGRID | EGRID; Grundstücksnummer (amtlich); Nummerierungsbereich; Rechtsstand | — | — |
 | Adresse | Land; Region / Kanton / Bundesstaat; Ort; Postleitzahl; Strasse; Hausnummer; Adresszusatz | Land; Region / Kanton / Bundesstaat; Ort; Postleitzahl; Strasse; Adresszusatz | — | — |
-| Geometrie | Geometrie; WGS84 Breitengrad; WGS84 Längengrad | Grenzgeometrie; WGS84 Breitengrad; WGS84 Längengrad | — | — |
-| Klassifikation und Nutzung | Gebäudeart; Hauptnutzung; Gebäudekategorie (GWR); Gebäudeklasse (GWR) | — | — | — |
-| Bauwerk und Lebenszyklus | Gebäudestatus; Baujahr; Bauperiode; Abbruchjahr; Anzahl oberirdische Geschosse; Anzahl unterirdische Geschosse | — | — | — |
+| Geometrie | Geometrie; WGS84 Breitengrad; WGS84 Längengrad | Geometrie; WGS84 Breitengrad; WGS84 Längengrad | — | — |
+| Klassifikation und Nutzung | Gebäudeart 1; Gebäudeart 2; Hauptnutzung; Gebäudekategorie (GWR); Gebäudeklasse (GWR); Schutz-/Denkmalstatus | — | — | — |
+| Bauwerk und Lebenszyklus | Status (GWR); Baujahr; Bauperiode; Abbruchjahr; Anzahl Geschosse | — | — | — |
 | Eigentum | Eigentumsart; Eigentümer | Eigentumsart; Eigentümer | — | — |
-| Bewirtschaftung | Bewirtschaftungsstatus | — | Bewirtschaftungszweck; Bewirtschaftungsstatus | — |
+| Bewirtschaftung | Bewirtschaftungsstatus; Gebäudezustand | — | Bewirtschaftungszweck; Bewirtschaftungsstatus | — |
 | Portfoliomanagement | Teilportfolio; Objektstrategie | Teilportfolio | — | — |
 | Gültigkeit | — | — | Gültig ab; Gültig bis | Gültig ab; Gültig bis |
-| Objektbezug | — | — | — | Bezugsobjekttyp; Bezugsobjekt-ID |
-| Messwert | — | — | — | Bemessungsart; Bemessungsumfang; Wert; Einheit |
-| Nachweis und Methode | — | — | — | Quelle; Bemessungsgrundlage; Ermittlungsart |
+| Messwert | — | — | — | Bemessungsart; Wert; Einheit |
+| Nachweis und Methode | — | — | — | Quelle; FID; Standard; Ermittlungsart; Genauigkeit |
 
 | Property Set | Geschoss | Raum | Zone |
 |---|---|---|---|
 | Identifikation | Geschoss-ID; Geschosscode; Bezeichnung | Raum-ID; Raumnummer; Bezeichnung | Zone-ID; Bezeichnung |
 | Räumliche Zuordnung | Gebäude-ID; Sortierposition | Geschoss-ID | — |
-| Bauwerk und Lebenszyklus | Geschosslage; Geschossstatus | Raumstatus | — |
+| Bauwerk und Lebenszyklus | Geschosslage; Status | Status | — |
 | Geometrie | Geometrie; Höhenlage; Höhenbezug; Geometriebezug | Geometrie; Geometriebezug | Geometrie; Geometriebezug |
 | Gültigkeit | Gültig ab; Gültig bis | Gültig ab; Gültig bis | Gültig ab; Gültig bis |
 | Klassifikation und Nutzung | — | Raumnutzung; Flächenklassifikation | Zonentyp |
-| Bewirtschaftung | — | — | Zweck und Abgrenzung; Zonenstatus |
+| Bewirtschaftung | — | — | Zweck und Abgrenzung; Status |
 
 **Identifikation** contains the full SAP identity and its separate components. Wirtschaftseinheit also participates in the composite WE reference; that second role does not duplicate its definition in Bewirtschaftung. Full IDs and their components are counted as exposed catalog definitions, not independent sources of identity.
 
@@ -562,13 +588,13 @@ Show **Basisbemessungen** as a named group alongside the object's other property
 
 | Objektprofil | Referenzierte Basisbemessungen |
 |---|---|
-| Gebäude | Geschossfläche GF und Gebäudevolumen GV jeweils GESAMT / OBERIRDISCH / UNTERIRDISCH; Vermietbare Fläche VMF GESAMT bei anwendbarer Vermietungsflächenregel; Gebäudegrundfläche GGF GESAMT |
-| Grundstück | Grundstücksfläche GSF GESAMT |
-| Geschoss | Geschossfläche GF, Aussengeschossfläche AGF und Geschossvolumen GV jeweils GESAMT des Geschosses; Geschosshöhe bei definiertem Bezug |
-| Raum | Raumfläche, Raumhöhe und Raumvolumen jeweils GESAMT des Raums; VMF bei anwendbarer Vermietungsflächenregel |
-| Zone | Zonenfläche und Zonenvolumen jeweils GESAMT der Zone; optional VMF mit geprüfter Raumzuordnung und Bemessungsgrundlage |
+| Gebäude | GF, GGF, VMF, EBF und GV jeweils am Bezugsgebäude; VMF und EBF bei anwendbarer Regel |
+| Grundstück | Grundstücksfläche GSF Bezugsobjekt |
+| Geschoss | Geschossfläche GF, Aussengeschossfläche AGF und Geschossvolumen GV für das Bezugsobjekt Geschoss; Geschosshöhe bei definiertem Bezug |
+| Raum | Raumfläche, Raumhöhe und Raumvolumen für das Bezugsobjekt Raum; VMF bei anwendbarer Vermietungsflächenregel |
+| Zone | Zonenfläche und Zonenvolumen für das Bezugsobjekt Zone; optional VMF mit geprüfter Raumzuordnung und Bemessungsgrundlage |
 
-This is a group of **related measurement requirements**, not another set of independently editable numeric attributes. Each selection keeps the subject, type, scope, unit and applicable basis/validity context visible and links to its Bemessung definition. A direct property and a related measurement requirement should be distinguishable in the UI. Actual measurement values remain in the source/measurement systems; the catalog describes them.
+This is a group of **related measurement requirements**, not another set of independently editable numeric attributes. Each selection keeps the subject, type, derived hierarchy selection, unit and applicable basis/validity context visible and links to its Bemessung definition. A direct property and a related measurement requirement should be distinguishable in the UI. Actual measurement values remain in the source/measurement systems; the catalog describes them.
 
 Source-file and ownership assignments are likewise references with their own multiplicity. Property sets organize their definitions; grouping does not turn several owners or source files into one scalar value.
 
@@ -579,7 +605,7 @@ Source-file and ownership assignments are likewise references with their own mul
 | PropertySet | Stable ID, multilingual name/description, status and optional managed version for the reusable group |
 | Object–set assignment | Associates a set with a business object and defines its order and applicability |
 | Set membership | References the object's existing attribute ID and defines its order within that assignment; no copied attribute definitions |
-| Related measurement section | References Bemessung and the required type/scope selections; shows the 20 building, parcel, floor, room and zone selections in Basisbemessungen, including missing-value gaps, without duplicating the numeric definitions |
+| Related measurement section | References Bemessung and the required type/object-hierarchy selections; shows the 17 building, parcel, floor, room and zone selections in Basisbemessungen, including missing-value gaps, without duplicating the numeric definitions |
 
 The current catalog attributes belong to their business object. Reusing a set initially reuses the group definition, not the underlying object-specific attribute record. A future global property-template library would be a separate design decision.
 
@@ -597,7 +623,7 @@ This is a **feature proposal only**; no application or schema change is included
 
 **Review outcome, 7 September 2026:** the seven profiles now contain **106 direct attribute definitions**, each with one primary property-set assignment. The confirmed SAP key components add three building, three parcel and two WE attributes. Grundstücksnummer (amtlich) is explicitly distinguished from Grundstücksnummer. The review corrected the WE measurement sentence, the external-only FK definition, availability-based requirements, ambiguous validity wording and the assumed equivalence between storey counting and measurement partitioning. It also clarified evidence for calculated measurements and the limits of zone-type exclusivity. The agreed ownership and address scope is retained. This review adds floor elevation/reference, extends the spatial measurements, supports parallel international area schemes and moves strategic portfolio attributes to Portfoliomanagement.
 
-**Aktuelle Ergänzungen:** Geschoss, Raum und Zone enthalten nun ausdrücklich Geometrie und Geometriebezug. Geschoss enthält zusätzlich Höhenlage und Höhenbezug sowie GF, AGF, GV und Geschosshöhe als referenzierte Bemessungen. Bemessung enthält Bezugsobjekttyp und Bezugsobjekt-ID; Zone–Raum erhält eine Zuordnungs-ID. Raum und Zone führen eigene Flächen- und Volumenwerte; Raum zusätzlich die lichte Höhe. Raumnutzung bleibt optional, während Klassifikation und Bemessungsgrundlage die jeweils angewendeten SIA-, DIN- und IPMS-Regeln getrennt dokumentieren.
+**Aktuelle Ergänzungen:** Geschoss, Raum und Zone enthalten nun ausdrücklich Geometrie und Geometriebezug. Geschoss enthält zusätzlich Höhenlage und Höhenbezug sowie GF, AGF, GV und Geschosshöhe als referenzierte Bemessungen. Bemessung verwendet seit 13. September typisierte Bezugsobjekt-Beziehungen anstelle der zwei Zielattribute; Zone–Raum erhält eine Zuordnungs-ID. Raum und Zone führen eigene Flächen- und Volumenwerte; Raum zusätzlich die lichte Höhe. Raumnutzung bleibt optional, während Klassifikation und Bemessungsgrundlage die jeweils angewendeten SIA-, DIN- und IPMS-Regeln getrennt dokumentieren.
 
 The conclusions below distinguish agreed requirements from source mappings and proposed business rules. The evidence supports this semantic review; it does not establish a complete SIA calculation specification or verify actual asset values.
 
@@ -607,14 +633,14 @@ The conclusions below distinguish agreed requirements from source mappings and p
 | Spatial meaning | Building = WGS84 point; Grundstück = WGS84 polygon/MultiPolygon plus interior point. Geschoss, Raum and Zone expose geometry and source references with explicit CRS, units, height reference and revision. Floor elevation is separate from height. The primary hierarchy is building → floor → room; zone membership is separate. |
 | Tidy addresses | Seven building components; six parcel components without Hausnummer. Additional addresses are separate records. Postal codes and house numbers remain text. |
 | Ownership | Exactly two attributes on both buildings and parcels: Eigentumsart = Eigentum / Anmiete / Spezialfall; Eigentümer = registered owner. Assignments retain parcel/right context, jurisdiction, validity and any documented applicable share. No ownership boolean or invented ownership percentages. |
-| Building measurements | Geschossfläche GF, Gebäudevolumen GV, Vermietbare Fläche VMF and Gebäudegrundfläche GGF are explicit building profile values in Basisbemessungen. The eight selections retain both the total and above-/below-ground GF/GV values; VMF applies where the rentable-area rule is meaningful. Their values and evidence remain in Bemessungen. |
+| Building measurements | Five visible referenced definitions: GF, GGF, VMF, EBF and GV. VMF and EBF apply only under their documented conditions. Values and evidence stay in Bemessung. |
 | Parcel area | Grundstücksfläche is required in the parcel profile through GSF in Bemessungen. An official area and a calculated geometry area can differ and retain their own sources. |
 | Measurement identity | A value is distinguished by subject, type, scope, basis, source revision and validity. Several observations can exist for one combination; select an explicitly reviewed observation for the intended purpose, not merely the newest catalog edit. |
 | Measurement provenance | Quelle identifies file evidence; Bemessungsgrundlage identifies the rule; Ermittlungsart distinguishes model derivation, manual measurement, transfer, calculation and estimate. Calculated observations retain input IDs/revisions and formula; manual exceptions retain evidence and a reason. |
-| Totals and units | Keep GF/GV total and above/below values. Counting and quantity partitioning have separately documented rules. Compare totals only within a complete split with matching observation context and rounding tolerance; do not sum overlapping kinds or mix m² and m³. |
+| Totals and units | Preserve supplied total and partition values; only the five simplified building totals are selected by default. Counting and quantity partitioning have separately documented rules. Compare totals only within a complete split with matching observation context and rounding tolerance; do not sum overlapping kinds or mix m² and m³. |
 | Applicability | “Required if known” has been removed where it hid a completeness gap. Applicability is determined from the object's state and business use; unknown remains unknown. |
 | Time and versions | File revision, derivation date, business-valid interval and catalog edit date are separate. Preserve validity of changing attributes and relationships. An unknown historical end must not be read as an open/current interval. |
-| Property sets | All 106 direct attribute definitions have one primary thematic group. Teilportfolio and Objektstrategie belong to Portfoliomanagement. Zone is a room collection, not an attribute group. Related measurements stay in Bemessungen and are shown through explicit selections. |
+| Property sets | All 107 direct attribute definitions have one primary thematic group. Teilportfolio and Objektstrategie belong to Portfoliomanagement. Zone is a room collection, not an attribute group. Related measurements stay in Bemessungen and are shown through explicit selections. |
 | Room and zone identity | Local floor codes and room numbers are not global keys. Zones hold dated room memberships; room splits/merges and changes of primary floor preserve historical relationships. |
 | Zone totals | Zonenfläche and Zonenvolumen are explicit requirements with reviewed room inputs, basis and membership date. A room can belong to multiple zones; overlapping memberships do not justify adding zone totals. Exclusivity/coverage requires a defined zoning scheme and period; a Zonentyp label alone is insufficient. |
 
@@ -632,7 +658,7 @@ The conclusions below distinguish agreed requirements from source mappings and p
 | Geschoss | Geschoss-ID | Gebäude-ID | Vollständige, stabile Identität verlangt; konkreter führender Quellschlüssel noch zu bestätigen |
 | Raum | Raum-ID | Geschoss-ID | Vollständige, stabile Identität verlangt; Raumnummer allein genügt nicht |
 | Zone | Zone-ID | Räume über Zuordnungs-ID, Zone-ID und Raum-ID | Kein einzelnes Pflichtgebäude/-geschoss, da Zonen mehrere davon umfassen können |
-| Bemessung | Bemessung-ID | Bezugsobjekttyp + Bezugsobjekt-ID | Referenz jetzt ausdrücklich in der Attributtabelle; genau ein Zielobjekt pro Aussage |
+| Bemessung | Bemessung-ID | Typisierte measuredFor-Beziehung | Genau ein identifiziertes Zielobjekt pro Aussage; die fünf Katalogrelationen sind zulässige Zieltypen |
 
 **Eindeutigkeit:** Die Primärschlüssel müssen innerhalb ihres Objekttyps im gesamten Portfolio eindeutig sein. Derselbe Text darf bei unterschiedlichen Objekttypen vorkommen; typisierte Referenzen unterscheiden ihn. Für Geschoss, Raum und Zone wird kein unbestätigter SAP-Schlüsselaufbau erfunden. Nicht global eindeutige Quell-IDs benötigen einen dokumentierten System-/Mandanten-/Objektkontext in der Quellzuordnung. IFC-GlobalId, AOID, Geschosscode und Raumnummer sind ohne bestätigte Abbildung kein Ersatz für die jeweilige fachliche ID.
 
@@ -647,7 +673,7 @@ The conclusions below distinguish agreed requirements from source mappings and p
 | High | Building/parcel extent and identity continuity | The key components are confirmed; verify uniqueness across source systems and SAP clients. Review cases with multiple SAP/architectural/register correspondences and a WE or Buchungskreis reassignment. Establish how each key maps to the physical extent and how old/new keys and dependent references preserve history. |
 | High | GF/GV partitions and storey counting | Agree the counting rule and the GF/GV above-/below-ground rules with the responsible measurement specialists. Check a basement, a slope and a split-level example, including terrain reference and rounding. Retain the requested split of both GF and GV. |
 | High | Measurement basis and preferred observation | Confirm the actual SIA edition/rules for GF/AGF/GV/GGF, the BBL VMF definition, the adopted DIN/IPMS measurement definitions, and room/zone rules, including shared portions. Agree how one observation is selected for a purpose/date when official, model-derived or manual values coexist. |
-| Medium | BBL vocabularies and register applicability | Confirm Teilportfolio and Objektstrategie, building/room classifications and physical/management statuses. The three Eigentumsart labels are already agreed. Review GKLAS 4.2/5.0 compatibility and whether the GWR physical-status vocabulary is adopted worldwide. |
+| Medium | BBL vocabularies and register applicability | Confirm Teilportfolio and Objektstrategie, building/room classifications and physical/management statuses. The three Eigentumsart labels are already agreed. Review GKLAS 4.2/5.0 compatibility and source applicability of individual status values. Status (GWR) is now explicitly bound to GSTAT at the user’s request; the binding does not establish a register entry. |
 | High | International classifications | Confirm each SIA 416, DIN 277 and IPMS edition, applicable categories/components and any reviewed mappings. Preserve parallel observations and keep room function separate. |
 | Medium | Floor/room identity and boundaries | Confirm leading-system key scopes and examples for partial storeys, multi-level rooms, renumbering and splits/merges. Review the proposed single-primary-floor rule. |
 | Medium | Zone scope and schemes | Confirm the whole-room scope, Zonentyp vocabulary and active-zone membership rule. If exclusivity is required, define the zoning scheme, covered room population, period and treatment of unassigned rooms. |
@@ -658,7 +684,7 @@ The conclusions below distinguish agreed requirements from source mappings and p
 
 ## SQL synchronization
 
-**Aktueller Bearbeitungsumfang:** Diese Überarbeitung ergänzt Portfoliomanagement, die expliziten Geometrieangaben, Höhenlage und Höhenbezug am Geschoss, die Zielobjektfelder an Bemessung sowie die sichtbaren Basisbemessungen für Gebäude, Grundstück, Geschoss, Raum und Zone. Sie trennt Raumnutzung von internationalen Flächenschemata und erweitert Bemessung um Längenwerte und die zugehörigen Messarten. **Der aktuelle Vorschlag hat 106 direkte Attribute und zwölf Bemessungsarten; die [106-Attribut-Synchronisierung](../supabase/archive/20260907-business-object-geometry.sql) hat die Datenbank am 7. September 2026 auf diesen Stand gebracht.** Sie ergänzt die acht neuen Definitionen, überarbeitet sieben bestehende, verschiebt Teilportfolio und Objektstrategie nach Portfoliomanagement, erweitert die Wertelisten auf zwölf Bemessungsarten und die Einheit m, aktualisiert die drei räumlichen Messbeziehungen auf die 20 Profilselektionen und stellt Raumnutzung auf optional um; die zugehörige Bedingungsregel ist stillgelegt. Die folgenden Absätze beschreiben die zuvor angewendeten Operationen.
+**Historischer Bearbeitungsumfang, 7. September 2026:** Diese Überarbeitung ergänzt Portfoliomanagement, die expliziten Geometrieangaben, Höhenlage und Höhenbezug am Geschoss, die Zielobjektfelder an Bemessung sowie die sichtbaren Basisbemessungen für Gebäude, Grundstück, Geschoss, Raum und Zone. Sie trennt Raumnutzung von internationalen Flächenschemata und erweitert Bemessung um Längenwerte und die zugehörigen Messarten. **Der damalige Vorschlag hatte 106 direkte Attribute und zwölf Bemessungsarten; die [106-Attribut-Synchronisierung](../supabase/archive/20260907-business-object-geometry.sql) hat die Datenbank am 7. September 2026 auf diesen Stand gebracht.** Sie ergänzt die acht neuen Definitionen, überarbeitet sieben bestehende, verschiebt Teilportfolio und Objektstrategie nach Portfoliomanagement, erweitert die Wertelisten auf zwölf Bemessungsarten und die Einheit m, aktualisiert die drei räumlichen Messbeziehungen auf die 20 Profilselektionen und stellt Raumnutzung auf optional um; die zugehörige Bedingungsregel ist stillgelegt. Die folgenden Absätze beschreiben die zuvor angewendeten Operationen.
 
 The [profile update](../supabase/archive/20260907-business-object-profiles.sql) creates the **32 / 10 / 10 / 7 / 21 / 8 / 10** profiles of the previous review from the original import. It has already committed in the hosted database. Its embedded content is kept unchanged for repeat-run recognition; the [incremental naming update](../supabase/archive/20260907-business-object-labels.sql) updates the display names and their definitions, object comments and affected completeness-rule name. Existing installations with the profile update need only this follow-up; a fresh import needs both scripts in that order. See the [execution guide](../supabase/archive/README.md).
 

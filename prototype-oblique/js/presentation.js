@@ -48,8 +48,8 @@
     refs: ['name', 'normReference', 'description', 'valueCount', 'status'],
     products: ['name', 'accessRights', 'description', 'format', 'attributeCount', 'status'],
     apis: ['name', 'system', 'serviceVersion', 'description', 'protocol', 'endpointCount', 'status'],
-    attrs: ['name', 'type', 'key', 'codeList'],
-    fields: ['name', 'type', 'key', 'codeList'],
+    attrs: ['name', 'type', 'key', 'codeList', 'status'],
+    fields: ['name', 'type', 'key', 'codeList', 'status'],
     values: ['code', 'name'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
     history: ['date', 'action', 'detail', 'user'],
   };
@@ -134,7 +134,16 @@
   let preferences;
   function stored() {
     if (!preferences) {
-      try { const value = JSON.parse(DK.preferences?.read('visibleFields') || 'null'); preferences = value?.version === 1 && value.kinds && typeof value.kinds === 'object' && !Array.isArray(value.kinds) ? value.kinds : {}; }
+      try {
+        const value = JSON.parse(DK.preferences?.read('visibleFields') || 'null');
+        preferences = [1, 2].includes(value?.version) && value.kinds && typeof value.kinds === 'object' && !Array.isArray(value.kinds) ? value.kinds : {};
+        // Status was unavailable for these rows in v1. Add it once while retaining
+        // other choices; v2 preserves an explicit decision to hide it thereafter.
+        if (value?.version === 1) {
+          for (const kind of ['attrs', 'fields']) if (Array.isArray(preferences[kind]) && !preferences[kind].includes('status')) preferences[kind].push('status');
+          DK.preferences?.write('visibleFields', JSON.stringify({ version: 2, kinds: preferences }));
+        }
+      }
       catch { preferences = {}; }
     }
     return preferences;
@@ -149,7 +158,7 @@
     const next = normalize(kind, ids);
     if (JSON.stringify(stored()[kind]) === JSON.stringify(next)) return;
     stored()[kind] = next;
-    DK.preferences?.write('visibleFields', JSON.stringify({ version: 1, kinds: preferences }));
+    DK.preferences?.write('visibleFields', JSON.stringify({ version: 2, kinds: preferences }));
   }
   /** Share controls by semantic ID, retaining distinct names and each underlying selection. */
   function mergeFields(groups) {
@@ -186,9 +195,9 @@
   }
   function sortOptions(state, key, kind) {
     const visible = fields(kind), old = state.tableSorts[key];
-    const fallback = kind === 'history' ? 'date' : 'name';
-    const id = old?.field || definitions(kind)[old?.column ?? 0]?.id || fallback;
-    const field = visible.find(f => f.id === id && f.type !== 'links')?.id || fallback;
+    const fallback = kind === 'history' ? 'date' : ['attrs', 'fields'].includes(kind) ? 'sortOrder' : 'name';
+    const id = old?.field || (old ? definitions(kind)[old.column ?? 0]?.id : null) || fallback;
+    const field = visible.find(f => f.id === id && f.type !== 'links')?.id || (id === 'sortOrder' && ['attrs', 'fields'].includes(kind) ? id : fallback);
     const direction = field === id && old ? (old.direction === 'desc' ? 'desc' : 'asc') : kind === 'history' ? 'desc' : 'asc';
     const sort = { field, direction };
     if (old && old.field && field !== old.field) state.tableSorts[key] = sort;

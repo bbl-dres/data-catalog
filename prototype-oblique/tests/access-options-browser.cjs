@@ -43,6 +43,15 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   for(const item of owners){
    await visit(item);const buttons=page.locator('.ob-access-option .ob-detail-section-toggle');assert(await buttons.count()>=2);
    await buttons.first().focus();await page.keyboard.press('Enter');assert.equal(await buttons.first().getAttribute('aria-expanded'),'true');assert.equal(await buttons.nth(1).getAttribute('aria-expanded'),'false');
+   const sectionButton=page.locator('#ob-access-options-toggle'),sectionContent=page.locator('#ob-access-options-content');
+   assert.equal(await sectionButton.getAttribute('aria-expanded'),'true');
+   assert(await sectionButton.locator('.ob-icon').count(),'Section has the shared chevron');
+   const bounds=await sectionButton.evaluate(el=>({button:el.getBoundingClientRect().width,section:el.closest('section').getBoundingClientRect().width}));
+   assert(Math.abs(bounds.button-bounds.section)<2,'Heading fills the available section width');
+   await sectionButton.click();assert(await sectionContent.isHidden(),'Click collapses the complete section');
+   await page.emulateMedia({media:'print'});assert(await page.locator('.ob-access-option dl').nth(1).isVisible(),'Print reveals collapsed parent and child sections');await page.emulateMedia({media:'screen'});
+   await sectionButton.focus();await page.keyboard.press('Space');assert(await sectionContent.isVisible(),'Space expands section');
+   assert.equal(await buttons.first().getAttribute('aria-expanded'),'true','Child choice survives parent collapse');
    await page.locator('.ob-access-options').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(out,item.kind+'-1440.png')});
    for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:900});await measure(item.kind+'-'+width);if(width===390){await page.locator('.ob-access-options').evaluate(el=>scrollBy(0,el.getBoundingClientRect().top-document.querySelector('#header').getBoundingClientRect().bottom-16));await page.screenshot({path:path.join(out,item.kind+'-390.png')});}}
    await page.emulateMedia({media:'print'});assert(await page.locator('.ob-access-option dl').nth(1).isVisible(),'Print reveals collapsed descriptions');await page.emulateMedia({media:'screen'});

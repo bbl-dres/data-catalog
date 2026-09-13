@@ -1,0 +1,78 @@
+{
+  "operation": "2026-09-13-building-year-mappings",
+  "project": "zicluerzbevodlmtbxow",
+  "baselineHash": "5f88094b4641d79d1d00685460b16113",
+  "description": "Three source-evidenced candidate field mappings. No operational equivalence or coverage is asserted.",
+  "commands": [
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "represents:t-geb-gis/bbl_bjahr:gebaeude/baujahr",
+      "expected_version": 0,
+      "body": {
+        "id": "4f1c4381-e85c-4d36-a8bb-c630ec1fa3d8",
+        "identifier": "represents:t-geb-gis/bbl_bjahr:gebaeude/baujahr",
+        "source_data_field_id": "ca604f2a-0490-5d94-a156-d668c2be1619",
+        "target_business_attribute_id": "545e8e3d-e88f-56e4-af67-28afdea1a216",
+        "relationship_type": "represents",
+        "verification_status": "candidate",
+        "coverage": "unknown",
+        "rule_notes_de": "GIS IMMO bezeichnet das Feld als BBL Baujahr gemäss SAP-Stammdaten. Die Gleichsetzung mit dem Fertigstellungsjahr ist noch zu bestätigen.",
+        "documentation_links": [],
+        "is_archived": false
+      },
+      "command_id": "b622aa80-dfee-4d0c-8a00-b5d5efdc1ccd"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "represents:t-sap-building/CONSTRUCTION_YEAR:gebaeude/baujahr",
+      "expected_version": 0,
+      "body": {
+        "id": "3fea156a-edae-4758-8cb8-73ab4d282801",
+        "identifier": "represents:t-sap-building/CONSTRUCTION_YEAR:gebaeude/baujahr",
+        "source_data_field_id": "6518e37a-6b52-5be9-833d-4776d5be4529",
+        "target_business_attribute_id": "545e8e3d-e88f-56e4-af67-28afdea1a216",
+        "relationship_type": "represents",
+        "verification_status": "candidate",
+        "coverage": "unknown",
+        "rule_notes_de": "RE-FX führt das Feld als Baujahr. Die Abgrenzung zu Baubeginn, Modernisierung und Fertigstellung ist noch zu bestätigen.",
+        "documentation_links": [
+          {
+            "url": "https://confluence.bit.admin.ch/pages/viewpage.action?pageId=1105159761#apiDocumentation.businessContext.serviceStructure.serviceRequest.serviceEntities.1.2.1.i.1.i.3.title",
+            "purpose": "documentation"
+          }
+        ],
+        "is_archived": false
+      },
+      "command_id": "7fd884e2-fad1-4ce3-8522-265405fa0321"
+    },
+    {
+      "table": "relationship",
+      "operation": "create",
+      "id": null,
+      "identifier": "represents:t-gwr-gebaeude/GBAUJ:gebaeude/baujahr",
+      "expected_version": 0,
+      "body": {
+        "id": "0e6b1968-90ea-46db-8f42-b8fee4488b35",
+        "identifier": "represents:t-gwr-gebaeude/GBAUJ:gebaeude/baujahr",
+        "source_data_field_id": "1660a02b-54b8-5690-9877-429fdadf1808",
+        "target_business_attribute_id": "545e8e3d-e88f-56e4-af67-28afdea1a216",
+        "relationship_type": "represents",
+        "verification_status": "candidate",
+        "coverage": "unknown",
+        "rule_notes_de": "GWR beschreibt das Jahr der Fertigstellung des Gebäudes. Die Zuordnung zum Geschäftsobjekt ist noch zu bestätigen.",
+        "documentation_links": [
+          {
+            "url": "https://www.housing-stat.ch/catalog/de/5.0/revised#GBAUJ",
+            "purpose": "documentation"
+          }
+        ],
+        "is_archived": false
+      },
+      "command_id": "4e373147-0460-4e5d-9fde-09b48d8cc883"
+    }
+  ]
+}

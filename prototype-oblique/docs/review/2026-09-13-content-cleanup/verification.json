@@ -1,0 +1,24 @@
+{
+  "stage": "postflight",
+  "commands": 52,
+  "preservedRecords": 3228,
+  "updatedRecords": 41,
+  "newRecords": 12,
+  "newAuditEvents": 52,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Gültig ab",
+    "Gültig bis",
+    "Genauigkeit",
+    "Standard",
+    "Ermittlungsart"
+  ],
+  "gstatBound": true
+}

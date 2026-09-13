@@ -1,0 +1,736 @@
+{
+  "commands": 138,
+  "assignments": [
+    {
+      "table": "actor",
+      "identifier": "actor-c9b67e85adcca753c815",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "actor",
+      "identifier": "actor-d0696acc41b80effa6ff",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "domain",
+      "identifier": "bau",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "domain",
+      "identifier": "energie",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "domain",
+      "identifier": "finanzen",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "domain",
+      "identifier": "miete",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "domain",
+      "identifier": "projekt",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "system",
+      "identifier": "gis",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "system",
+      "identifier": "sap",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "areal",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "bauarbeiten",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "bauprojekt",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "baurecht",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "bauteil",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "bemessung",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "betriebsmesswert",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "bodenbedeckung",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "buchungskreis",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "dienstbarkeit",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "gebaeude",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "geschoss",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "grundstueck",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "heizzentrale",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "kampus",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "kondition",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "business_object",
+      "identifier": "meilenstein",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "mietobjekt",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "business_object",
+      "identifier": "mietvertrag",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "business_object",
+      "identifier": "nutzungseinheit",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "parkplatz",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "phase",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "raum",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "stromzaehler",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "technische-anlage",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "technische-komponente",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "wirtschaftseinheit",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_object",
+      "identifier": "wohnung",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "business_object",
+      "identifier": "zone",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-bem",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-boden",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-geb-gis",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-gis-green-area",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-gis-room",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-huelle",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-parzelle",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-proj",
+      "organisation": "BBL Projektmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-architectural-object",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-area",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-building",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-business-entity",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-contract",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-land-architecture",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_table",
+      "identifier": "t-sap-rental-object",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-bemessungsart",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-bemessungsermittlung",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-bemessungsgenauigkeit",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-bemessungsstandard",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-bemessungsumfang",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-eigentumsart",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "profile-messeinheit",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-bbl-gebaeudeart-1",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-bbl-gebaeudeart-2",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-bbl-mietmodell",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-bbl-teilportfolio",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-eigentum",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-energie",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-kond",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-vertrag",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-waehrung",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "code_list",
+      "identifier": "r-zaehler",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_product",
+      "identifier": "p-energie",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_product",
+      "identifier": "p-flaechen",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_product",
+      "identifier": "p-gebaeudebestand",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_product",
+      "identifier": "p-mietportfolio",
+      "organisation": "BBL Liegenschaften"
+    },
+    {
+      "table": "data_product",
+      "identifier": "p-opendata",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "data_service",
+      "identifier": "api-energie",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_service",
+      "identifier": "api-sap-building",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/abbruchjahr",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/adresszusatz",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/anzahl-geschosse",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/baujahr",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/bauperiode",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/egid",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/energiebezugsflaeche",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/gebaeudeart",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/gebaeudekategorie",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/gebaeudeklasse",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/geschosse-oberirdisch",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/geschosse-unterirdisch",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/grundstueck",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/hauptnutzung",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/hausnummer",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/postleitzahl",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/region",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/strasse",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-gebaeude/vermietbare-flaeche",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-geschoss/geometriebezug",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-geschoss/geschosslage",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-grundstueck/egrid",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-grundstueck/postleitzahl",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-grundstueck/rechtsstand",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-grundstueck/region-kanton-bundesstaat",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-grundstueck/strasse",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-raum/flaechenklassifikation",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-raum/geometriebezug",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "quality_requirement",
+      "identifier": "profile-raum/raumnutzung",
+      "organisation": "BBL Immobilienmanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "bodenbedeckung/teilportfolio",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "gebaeude/energiebezugsflaeche",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "gebaeude/energietraeger",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "gebaeude/objektstrategie",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "gebaeude/teilportfolio",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "business_attribute",
+      "identifier": "grundstueck/teilportfolio",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/garea_ebf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/genh",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/genw1",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaerdath",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaerdatw",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaersceh",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaerscew",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaerzh",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-boden/gwaerzw",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/bbl_ostr",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/bbl_port",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/bbl_port2",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/bbl_pvtw",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/bbl_rgrp",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/garea_ebf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/garea_rff",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-geb-gis/garea_rgf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-green-area/bbl_ostr",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-green-area/bbl_port",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-room/beheizt",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-room/rarea_ebf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-room/rarea_rff",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-gis-room/rarea_rgf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-huelle/garea_ebf",
+      "organisation": "BBL Objektmanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-parzelle/bbl_port",
+      "organisation": "BBL Portfoliomanagement"
+    },
+    {
+      "table": "data_field",
+      "identifier": "t-sap-area/Energieverbrauch",
+      "organisation": "BBL Objektmanagement"
+    }
+  ],
+  "byUnit": {
+    "BBL Immobilienmanagement": 70,
+    "BBL Portfoliomanagement": 18,
+    "BBL Objektmanagement": 32,
+    "BBL Liegenschaften": 12,
+    "BBL Projektmanagement": 6
+  },
+  "documentsExcluded": true,
+  "externalSourcesExcluded": true,
+  "earlyDevelopmentRule": "BBL Projektentwicklung; no dedicated early-stage definition currently exists",
+  "legacyExternalAuthorityNotes": [
+    "r-sia-flaeche",
+    "r-kanton"
+  ],
+  "onlyOrganisationPropertiesChanged": true,
+  "documentsUnchanged": true,
+  "externalSourceOrganizationsUnchanged": true,
+  "allDefinitionsPreserved": true,
+  "displayedKeyRolesPreserved": true,
+  "propertySetsPreserved": true,
+  "stage": "preview",
+  "preservedRecords": 3163,
+  "updatedRecords": 138,
+  "newRecords": 0,
+  "newAuditEvents": 138,
+  "originalHistoryPreserved": true,
+  "allExistingReferencesPreserved": true,
+  "bemessungAttributes": [
+    "Bemessung-ID",
+    "Bemessungsart",
+    "Wert",
+    "Einheit",
+    "Quelle",
+    "FID",
+    "Standard",
+    "Ermittlungsart",
+    "Genauigkeit",
+    "Gültig ab",
+    "Gültig bis"
+  ],
+  "gstatBound": true
+}
