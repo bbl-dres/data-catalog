@@ -1,0 +1,156 @@
+{
+  "loaded": true,
+  "fields": 1138,
+  "history": 2243,
+  "projectMs": 16.899999976158142,
+  "request": {
+    "name": "https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_snapshot",
+    "entryType": "resource",
+    "startTime": 31.399999976158142,
+    "duration": 2198.699999988079,
+    "navigationId": 9696,
+    "initiatorType": "fetch",
+    "deliveryType": "",
+    "nextHopProtocol": "",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "application/json",
+    "contentEncoding": "gzip",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 31.399999976158142,
+    "domainLookupStart": 0,
+    "domainLookupEnd": 0,
+    "connectStart": 0,
+    "secureConnectionStart": 0,
+    "connectEnd": 0,
+    "requestStart": 0,
+    "responseStart": 0,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 0,
+    "responseEnd": 2230.099999964237,
+    "transferSize": 0,
+    "encodedBodySize": 0,
+    "decodedBodySize": 0,
+    "responseStatus": 200,
+    "serverTiming": []
+  },
+  "collections": [
+    {
+      "key": "change_event",
+      "rows": 2243,
+      "bytes": 6447027
+    },
+    {
+      "key": "data_field",
+      "rows": 1138,
+      "bytes": 1407896
+    },
+    {
+      "key": "code_value",
+      "rows": 2120,
+      "bytes": 1317362
+    },
+    {
+      "key": "business_attribute",
+      "rows": 295,
+      "bytes": 309112
+    },
+    {
+      "key": "relationship",
+      "rows": 121,
+      "bytes": 133260
+    },
+    {
+      "key": "code_list",
+      "rows": 95,
+      "bytes": 81304
+    },
+    {
+      "key": "business_object",
+      "rows": 42,
+      "bytes": 44675
+    },
+    {
+      "key": "data_table",
+      "rows": 30,
+      "bytes": 42206
+    },
+    {
+      "key": "quality_requirement",
+      "rows": 31,
+      "bytes": 24432
+    },
+    {
+      "key": "business_attribute_quality_requirement",
+      "rows": 187,
+      "bytes": 24124
+    },
+    {
+      "key": "data_service",
+      "rows": 7,
+      "bytes": 9576
+    },
+    {
+      "key": "product_attribute",
+      "rows": 12,
+      "bytes": 7417
+    },
+    {
+      "key": "domain",
+      "rows": 7,
+      "bytes": 5772
+    },
+    {
+      "key": "data_product",
+      "rows": 5,
+      "bytes": 5695
+    },
+    {
+      "key": "actor",
+      "rows": 11,
+      "bytes": 4435
+    },
+    {
+      "key": "system",
+      "rows": 4,
+      "bytes": 4305
+    },
+    {
+      "key": "service_endpoint",
+      "rows": 7,
+      "bytes": 3586
+    },
+    {
+      "key": "lineage_relation",
+      "rows": 0,
+      "bytes": 2
+    },
+    {
+      "key": "data_field_quality_requirement",
+      "rows": 0,
+      "bytes": 2
+    }
+  ],
+  "requests": [
+    {
+      "body": "{\"include_api_fields\":true}",
+      "timing": {
+        "startTime": 1789391968394.158,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.166,
+        "responseStart": 1945.301,
+        "responseEnd": 2198.821
+      }
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,147 @@
+{
+  "investigated_at": "2026-09-14",
+  "production_changes": false,
+  "snapshot": {
+    "collection_json_bytes": 10531752,
+    "history_bytes": 6861959,
+    "history_events": 2243,
+    "fields": 1138,
+    "batch_event_bytes": 407590,
+    "batch_committed_at": "2026-09-14T13:15:51.871501Z"
+  },
+  "timeouts": {
+    "browser_ms": 20000,
+    "anon_config_ms": 3000,
+    "authenticated_config_ms": 8000,
+    "confirmed_statement_timeouts_utc": [
+      "2026-09-14T13:15:00.455Z",
+      "2026-09-14T13:16:46.808Z"
+    ]
+  },
+  "measurements": {
+    "snapshot_explain_ms": 1625.9,
+    "observed_snapshot_hash_read_max_ms": 19192.56,
+    "direct_constant_query_ms": 705.188,
+    "direct_query_without_history_states_ms": 439.712,
+    "generic_query_ms": 1501.544,
+    "compact_history_with_null_keys_omitted_bytes": 1271104,
+    "memory_probe": [
+      {
+        "work_mem": "2184kB",
+        "execution_ms": 3540.229,
+        "temp_read_blocks": 1822,
+        "shared_read_blocks": 0,
+        "temp_written_blocks": 1824
+      },
+      {
+        "work_mem": "16MB",
+        "execution_ms": 2735.948,
+        "temp_read_blocks": 0,
+        "shared_read_blocks": 0,
+        "temp_written_blocks": 0
+      }
+    ]
+  },
+  "collections": [
+    {
+      "key": "change_event",
+      "records": 2243,
+      "json_bytes": 6861959
+    },
+    {
+      "key": "data_field",
+      "records": 1138,
+      "json_bytes": 1503394
+    },
+    {
+      "key": "code_value",
+      "records": 2120,
+      "json_bytes": 1423381
+    },
+    {
+      "key": "business_attribute",
+      "records": 295,
+      "json_bytes": 329690
+    },
+    {
+      "key": "relationship",
+      "records": 121,
+      "json_bytes": 140751
+    },
+    {
+      "key": "code_list",
+      "records": 95,
+      "json_bytes": 86244
+    },
+    {
+      "key": "business_object",
+      "records": 42,
+      "json_bytes": 47429
+    },
+    {
+      "key": "data_table",
+      "records": 30,
+      "json_bytes": 44493
+    },
+    {
+      "key": "quality_requirement",
+      "records": 31,
+      "json_bytes": 26010
+    },
+    {
+      "key": "business_attribute_quality_requirement",
+      "records": 187,
+      "json_bytes": 24871
+    },
+    {
+      "key": "data_service",
+      "records": 7,
+      "json_bytes": 10111
+    },
+    {
+      "key": "product_attribute",
+      "records": 12,
+      "json_bytes": 7980
+    },
+    {
+      "key": "domain",
+      "records": 7,
+      "json_bytes": 6145
+    },
+    {
+      "key": "data_product",
+      "records": 5,
+      "json_bytes": 6053
+    },
+    {
+      "key": "actor",
+      "records": 11,
+      "json_bytes": 4830
+    },
+    {
+      "key": "system",
+      "records": 4,
+      "json_bytes": 4554
+    },
+    {
+      "key": "service_endpoint",
+      "records": 7,
+      "json_bytes": 3853
+    },
+    {
+      "key": "data_field_quality_requirement",
+      "records": 0,
+      "json_bytes": 2
+    },
+    {
+      "key": "lineage_relation",
+      "records": 0,
+      "json_bytes": 2
+    }
+  ],
+  "limitations": [
+    "Single-run comparisons on a shared live database are directional, not controlled benchmarks.",
+    "Current activity showed no blocked queries; transient resource contention during timeouts was not captured.",
+    "Read-only investigation: no schema, query function, timeout, catalog, history or permission changes applied."
+  ]
+}
