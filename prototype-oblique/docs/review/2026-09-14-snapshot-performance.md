@@ -38,3 +38,5 @@ Increasing the browser timeout alone would leave the database deadline and exces
 Evidence: [SQL measurements](2026-09-14-snapshot-performance/measurements.json), [browser measurements](2026-09-14-snapshot-performance/browser.json). Diagnostic command: `node scripts/diagnose-snapshot-performance.cjs` with the existing browser dependency environment.
 
 The advisors also reported two uncovered compound foreign keys, unused indexes and existing security notices. They were not changed as part of this investigation. Reference: [Supabase foreign-key index advisory](https://supabase.com/docs/guides/database/database-linter?lint=0001_unindexed_foreign_keys). These notices are separate from the measured snapshot bottleneck.
+
+Follow-up: the [performance review](2026-09-14-performance-review.md) of the same afternoon adds execution plans, corrects the generic-plan finding (its cost was planning, not execution) and documents the implemented split into a lean snapshot and per-record history.

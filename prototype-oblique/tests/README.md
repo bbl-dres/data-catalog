@@ -35,6 +35,8 @@ node prototype-oblique/tests/av.cjs
 node prototype-oblique/tests/fields.cjs
 node prototype-oblique/tests/excel.cjs
 node prototype-oblique/tests/loading.cjs
+node prototype-oblique/tests/history-on-demand.cjs
+node prototype-oblique/tests/history-browser.cjs
 node prototype-oblique/tests/auth.cjs
 node prototype-oblique/tests/session-security.cjs
 node prototype-oblique/tests/editing-sql.cjs
@@ -65,6 +67,8 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 | `refx-building-api-import.cjs` / `refx-building-api-browser.cjs` | The reviewed MHTML inventory: 378 API fields, 26 groups, excluded includes and disputed types; guarded rollback/commit, preservation, stale/repeat refusal, audit, projection/Excel and desktop/mobile/PDF. Browser defaults to the isolated snapshot produced by the SQL suite; `REFX_LIVE_READ=1` performs public hosted reads only. |
 | `api-fields.cjs` / `api-fields-browser.cjs` | Independent API/table ownership, optional correspondences, text groups on all three owners, SQL browser/REST validation and denial, revisions/retries/history, visibility migration/hiding, searches, Excel/PDF, separate field/endpoint tabs, four languages and desktop/mobile. Requires PGlite, plus Playwright for the browser suite; hosted requests are intercepted. |
 | `resources.cjs` | Shared loading: early promise rejection, response-body deadlines, single-flight assets, late callbacks, failure/retry, destination validation and immediate callback URL cleanup |
+| `history-on-demand.cjs` | Lean snapshot without change events, `read_history` per owner including owned attributes/fields/values, anonymous access, projection parity with the complete snapshot, one cached read per owner, inherited attribute history, loading/failure states and reload reset; requires PGlite |
+| `history-browser.cjs` | The app loads without history, reads one owner's history per profile, shares it with attribute profiles, and shows the loading and failure states; requires Playwright and PGlite, every hosted request intercepted |
 | `review-regressions.cjs` | Archived required-rule behavior in real SQL, precision-preserving REST number tokens and malformed UTF-8 rejection; requires PGlite |
 | `review-browser.cjs` | Public rendering during delayed Auth SDK loading, failed Swagger CSS/retry, duplicate editor opening, 1,000-row draft keystroke work and stale capability responses; requires Playwright, PGlite and `DIAGRAM_SUPABASE=1` |
 | `review-performance.cjs` | Compare the former lookup loop with shared child enrichment at 250/1,000/3,000 rows; deterministic linear-work assertion and diagnostic timings; requires PGlite |

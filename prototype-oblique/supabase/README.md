@@ -248,7 +248,7 @@ Both `anon` and `authenticated` can SELECT the current catalog, including commen
 
 Direct table INSERT, UPDATE, DELETE and TRUNCATE remain denied. Authenticated changes go through the audited command functions. The service role retains its previous read-only grants. After the security update, future catalog objects created by `postgres` receive no implicit API-role grants; other owners require a separate default-privilege review. The publishable key is intentionally public; database passwords and secret/service-role keys are not shipped.
 
-`catalog.read_snapshot()` projects normalized tables in one consistent statement using **SECURITY INVOKER**, respecting RLS. It returns one JSON object, so PostgREST row limits do not truncate collections. Numeric quality thresholds travel as exact decimal strings. No JSON catalog mirror is stored.
+`catalog.read_snapshot()` projects normalized tables in one consistent statement using **SECURITY INVOKER**, respecting RLS. It returns one JSON object, so PostgREST row limits do not truncate collections. The app calls `read_snapshot(true, false)`: independent API fields included, change events omitted, because history was 65% of the payload and its before/after states are never displayed. `catalog.read_history(record_table, record_id)` returns one owning record's events, including its owned attributes, fields or values, newest first through the partial record indexes. Numeric quality thresholds travel as exact decimal strings. No JSON catalog mirror is stored. The [performance review](../docs/review/2026-09-14-performance-review.md) documents the bottlenecks behind this split.
 
 `js/catalog.js` projects that response for the existing routes, collections, search, diagrams and Excel export. The review workbook uses fixed readable columns; complete canonical records and relationship verification details remain available through the API. See the [Excel contract](../docs/excel-export.md). Attribute-to-field links now require explicit `represents` assertions; the database mode does not infer physical mappings from similar names. Labels follow the selected language, then German, English, French and Italian. Errors never silently fall back to legacy JSON; failed reloads preserve the last validated in-memory snapshot.
 
@@ -278,6 +278,8 @@ node prototype-oblique/tests/catalog-schema.cjs
 node prototype-oblique/tests/catalog-rls.cjs
 node prototype-oblique/tests/catalog-migration.cjs
 node prototype-oblique/tests/catalog-browser.cjs
+node prototype-oblique/tests/history-on-demand.cjs
+node prototype-oblique/tests/history-browser.cjs
 ```
 
 The schema suite first reconciles the [canonical model](../docs/data-model.md) with all current migrations, including dictionary coverage, nullability and table/column counts. It then tests the original schema independently; the RLS suite tests the original member policies. The migration suite reconstructs the historical SQL Editor bundle from the committed migrations in memory and verifies records, child URLs, translations, codes, repeat imports, anonymous reads, denied writes, duplicate-key rejection, Excel completeness and snapshots beyond 1,000 fields. It also checks that a refused import rolls back access changes and preserves existing data.

@@ -27,14 +27,15 @@
     const rowList = tab === 'rows' ? ctx?.rowList || detail.rowsContext(e, route, state) : null;
     const historyList = tab === 'history' ? ctx?.historyList || detail.historyContext(e, route, state) : null;
     const searchList = rowList || historyList;
-    const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: historyList?.total ?? data.history(e.kind, e.identifier).length };
+    const historyState = historyList || data.historyState(e.kind, e.identifier);
+    const counts = { rows: rowList?.total ?? data.sizeOf(e.kind, e), relations: data.relations(e.kind, e).reduce((n, g) => n + g.items.length, 0), history: historyState.loading ? '…' : historyList?.total ?? historyState.items.length };
     const tabsHtml = `<div class="ob-detail-controls"><div class="ob-tabs-frame ob-detail-tabs-frame"><div class="ob-tabs"><div class="ob-tab-list" role="tablist">${tabs.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" class="ob-tab" aria-selected="${tab === id}" aria-controls="panel-${id}" tabindex="${tab === id ? '0' : '-1'}" data-action="set-tab" data-tab="${id}">${esc(label)}${id === 'overview' ? '' : ` (${counts[id]})`}</button>`).join('')}</div>${tab === 'relations' ? `<button type="button" class="ob-button ob-relations-toggle" data-action="toggle-relation-view" aria-controls="panel-relations">${icon(state.relationDiagram ? 'list' : 'branch', 'sm')}${esc(t(state.relationDiagram ? 'detail.relations.showList' : 'detail.relations.showDiagram'))}</button>` : ''}</div></div>${searchList ? `<div class="ob-local-actions">${ui.collectionSearch(searchList.filter, `panel-${tab}`)}<div class="ob-local-menus">${DK.fieldPicker.button(searchList.kind)}</div></div>` : ''}</div>`;
     let panel;
     if (tab === 'overview') panel = detail.overview(e, state);
     else if (tab === 'rows') panel = detail.rows(e, route, state, rowList);
     else if (tab === 'relations') panel = detail.relations(e, state);
     else panel = detail.history(e, state, historyList);
-    return tabsHtml + (searchList ? ui.collectionStatus(searchList) : '') + ui.tabPanel(`panel-${tab}`, `tab-${tab}`, panel);
+    return tabsHtml + (searchList && !searchList.loading ? ui.collectionStatus(searchList) : '') + ui.tabPanel(`panel-${tab}`, `tab-${tab}`, panel);
   };
 
   /* Overview */
@@ -269,20 +270,23 @@
     const columns = fields.map(f => ({ id: f.id, label: t(f.label), compact: f.id === 'date', width: { action: '22%', user: '12rem' }[f.id] }));
     const options = DK.presentation.sortOptions(state, `detail:${e.kind}:history`, 'history');
     const filter = (params.historyFilter || '').trim();
-    const all = data.history(e.kind, e.identifier);
+    const history = data.historyState(e.kind, e.identifier), all = history.items;
     const matches = all.filter(h => data.matchesValues([h.date, fmt(h.date), h.action, h.detail, h.user], filter));
     const items = DK.presentation.sort('history', matches, options.sort);
-    return { kind: 'history', filter, total: all.length, matched: items.length, fields, columns, options, items, paging: ui.pageState(items.length, params) };
+    return { kind: 'history', filter, total: all.length, matched: items.length, fields, columns, options, items, paging: ui.pageState(items.length, params), loading: history.loading, error: history.error };
   };
 
   detail.history = function (e, state, list) {
     // The editor's read-only history keeps its existing full list; public profiles supply paging context.
-    const { fields, columns, options, items, paging } = list || detail.historyContext(e, null, state);
+    const context = list || detail.historyContext(e, null, state);
+    const { fields, columns, options, items, paging } = context;
     const visible = list ? items.slice(paging.from - 1, paging.to) : items;
     const rows = visible.map(h => ui.tr(fields.map(f => ({ html: esc(f.id === 'date' ? fmt(h.date) : h[f.id]),
       cls: f.id === 'date' ? 'ob-cell-nowrap' : f.id === 'detail' ? 'ob-cell-muted' : '' })), null, columns)).join('');
     const noteKey = e.kind === 'attrs' ? 'detail.historyInherited' : e.kind === 'fields' ? 'detail.fieldHistoryInherited' : null;
     const note = noteKey ? `<p class="ob-context-note">${esc(t(noteKey))}</p>` : '';
+    if (context.loading) return note + ui.loading(t('history.loading'));
+    if (context.error) return note + ui.empty(t('history.unavailable'));
     if (!list) return note + ui.table(columns, rows, options);
     return note + (list.matched ? pagedTable(columns, rows, options, paging) : ui.collectionEmpty(list.filter));
   };

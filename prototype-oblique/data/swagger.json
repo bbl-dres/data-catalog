@@ -7532,7 +7532,7 @@
         ],
         "operationId": "read_snapshot",
         "summary": "Read a consistent catalog snapshot",
-        "description": "Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history. An omitted or false argument preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
+        "description": "Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history; add include_history=false to omit change_event, which is how the app loads (it then reads one record’s history with read_history). An empty request preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
         "parameters": [
           {
             "$ref": "#/components/parameters/PublishableKey"
@@ -7551,12 +7551,18 @@
                   "include_api_fields": {
                     "type": "boolean",
                     "default": false
+                  },
+                  "include_history": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "false omits change_event. Only accepted together with include_api_fields."
                   }
                 },
                 "additionalProperties": false
               },
               "example": {
-                "include_api_fields": true
+                "include_api_fields": true,
+                "include_history": false
               }
             }
           }
@@ -7568,6 +7574,96 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CatalogSnapshot"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Gateway or PostgREST error; inspect the HTTP status and response message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rpc/read_history": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Governance"
+        ],
+        "operationId": "read_history",
+        "summary": "Read one record’s history",
+        "description": "Read-only SQL STABLE function. Returns the change events of one owning record and of its owned attributes, fields or values, newest first and without before/after states, under the caller’s RLS permissions. Complete events remain readable through the change_event collection.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
+          {
+            "$ref": "#/components/parameters/ContentProfile"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "record_table",
+                  "record_id"
+                ],
+                "properties": {
+                  "record_table": {
+                    "type": "string",
+                    "enum": [
+                      "domain",
+                      "system",
+                      "business_object",
+                      "data_table",
+                      "code_list",
+                      "data_product",
+                      "data_service"
+                    ],
+                    "description": "Owning table of the record."
+                  },
+                  "record_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Internal UUID of the owning record."
+                  },
+                  "max_events": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000,
+                    "default": 1000,
+                    "description": "Newest events to return."
+                  }
+                },
+                "additionalProperties": false
+              },
+              "example": {
+                "record_table": "business_object",
+                "record_id": "00000000-0000-0000-0000-000000000000"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "History events, newest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HistoryEvent"
+                  }
                 }
               }
             }
@@ -23959,13 +24055,13 @@
       },
       "CatalogSnapshot": {
         "type": "object",
+        "description": "Catalog collections in one object. change_event is present unless the request set include_history to false.",
         "required": [
           "schemaVersion",
           "actor",
           "business_attribute",
           "business_attribute_quality_requirement",
           "business_object",
-          "change_event",
           "code_list",
           "code_value",
           "data_field",
@@ -24099,6 +24195,496 @@
             "items": {
               "$ref": "#/components/schemas/system"
             }
+          }
+        }
+      },
+      "HistoryEvent": {
+        "type": "object",
+        "description": "One change event as returned by read_history: the change_event record without its before/after states.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Internal ID. Immutable internal identity, separate from the public catalog identifier and source identifiers. Alias (DE): Interne ID. Canonical: ChangeEvent.id.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "gen_random_uuid()",
+            "title": "Internal ID",
+            "x-aliases": {
+              "en": "Internal ID",
+              "de": "Interne ID"
+            },
+            "x-canonical-property": "ChangeEvent.id"
+          },
+          "identifier": {
+            "type": "string",
+            "description": "ID. Unique event identifier; never an array position. Alias (DE): Kennung. Canonical: ChangeEvent.identifier.",
+            "x-postgresql-type": "catalog_private.identifier",
+            "x-postgresql-not-null": true,
+            "minLength": 1,
+            "title": "ID",
+            "x-aliases": {
+              "en": "ID",
+              "de": "Kennung"
+            },
+            "x-canonical-property": "ChangeEvent.identifier"
+          },
+          "record_actor_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_domain_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_system_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_business_object_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_code_list_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_code_value_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_quality_requirement_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_business_attribute_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_data_table_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_data_field_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_data_product_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_product_attribute_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_data_service_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_relationship_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "record_lineage_relation_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Catalog entity. Changed catalog record. Alias (DE): Katalogeintrag. Canonical: ChangeEvent.record.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Catalog entity",
+            "x-aliases": {
+              "en": "Catalog entity",
+              "de": "Katalogeintrag"
+            },
+            "x-canonical-property": "ChangeEvent.record"
+          },
+          "occurred_on": {
+            "type": "string",
+            "format": "date",
+            "description": "Date. Known event date. For events with occurredAt, use its UTC calendar date; preserve standalone legacy dates without inventing a timestamp. Alias (DE): Datum. Canonical: ChangeEvent.occurredOn.",
+            "x-postgresql-type": "date",
+            "x-postgresql-not-null": true,
+            "title": "Date",
+            "x-aliases": {
+              "en": "Date",
+              "de": "Datum"
+            },
+            "x-canonical-property": "ChangeEvent.occurredOn"
+          },
+          "occurred_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "Event timestamp. Exact event time when known; normalize to UTC. Its UTC calendar date must equal occurredOn. Keep legacy date-only events without this attribute. Alias (DE): Ereigniszeitpunkt. Canonical: ChangeEvent.occurredAt.",
+            "x-postgresql-type": "timestamp with time zone",
+            "x-postgresql-not-null": false,
+            "title": "Event timestamp",
+            "x-aliases": {
+              "en": "Event timestamp",
+              "de": "Ereigniszeitpunkt"
+            },
+            "x-canonical-property": "ChangeEvent.occurredAt"
+          },
+          "action": {
+            "type": "string",
+            "description": "Change. `created`, `updated`, `imported`, `retired`, `restored`. Preserve unmapped original action wording in summaries. Alias (DE): Änderung. Canonical: ChangeEvent.action.",
+            "x-postgresql-type": "text",
+            "x-postgresql-not-null": true,
+            "title": "Change",
+            "x-aliases": {
+              "en": "Change",
+              "de": "Änderung"
+            },
+            "x-canonical-property": "ChangeEvent.action"
+          },
+          "actor_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Actor. Identified editor when available; this is edit attribution, not approval. Alias (DE): Akteur. Canonical: ChangeEvent.actorId.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Actor",
+            "x-aliases": {
+              "en": "Actor",
+              "de": "Akteur"
+            },
+            "x-canonical-property": "ChangeEvent.actorId"
+          },
+          "actor_name_de": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Edited by (DE). German. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. Alias (DE): Bearbeitet von (DE). Canonical: ChangeEvent.actorName_de.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Edited by (DE)",
+            "x-aliases": {
+              "en": "Edited by (DE)",
+              "de": "Bearbeitet von (DE)"
+            },
+            "x-canonical-property": "ChangeEvent.actorName_de"
+          },
+          "actor_name_it": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Edited by (IT). Italian. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. Alias (DE): Bearbeitet von (IT). Canonical: ChangeEvent.actorName_it.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Edited by (IT)",
+            "x-aliases": {
+              "en": "Edited by (IT)",
+              "de": "Bearbeitet von (IT)"
+            },
+            "x-canonical-property": "ChangeEvent.actorName_it"
+          },
+          "actor_name_fr": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Edited by (FR). French. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. Alias (DE): Bearbeitet von (FR). Canonical: ChangeEvent.actorName_fr.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Edited by (FR)",
+            "x-aliases": {
+              "en": "Edited by (FR)",
+              "de": "Bearbeitet von (FR)"
+            },
+            "x-canonical-property": "ChangeEvent.actorName_fr"
+          },
+          "actor_name_en": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Edited by (EN). English. Name recorded at the time of the edit. Retained after Actor renames and for imported events without actorId; looking up the Actor would show its current name. Preserve known wording without translation or inferred identity. Alias (DE): Bearbeitet von (EN). Canonical: ChangeEvent.actorName_en.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Edited by (EN)",
+            "x-aliases": {
+              "en": "Edited by (EN)",
+              "de": "Bearbeitet von (EN)"
+            },
+            "x-canonical-property": "ChangeEvent.actorName_en"
+          },
+          "summary_de": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Details (DE). German. Change summary. At least one of the four summaries is required. Alias (DE): Details (DE). Canonical: ChangeEvent.summary_de.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Details (DE)",
+            "x-aliases": {
+              "en": "Details (DE)",
+              "de": "Details (DE)"
+            },
+            "x-canonical-property": "ChangeEvent.summary_de"
+          },
+          "summary_it": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Details (IT). Italian. Change summary. At least one of the four summaries is required. Alias (DE): Details (IT). Canonical: ChangeEvent.summary_it.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Details (IT)",
+            "x-aliases": {
+              "en": "Details (IT)",
+              "de": "Details (IT)"
+            },
+            "x-canonical-property": "ChangeEvent.summary_it"
+          },
+          "summary_fr": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Details (FR). French. Change summary. At least one of the four summaries is required. Alias (DE): Details (FR). Canonical: ChangeEvent.summary_fr.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Details (FR)",
+            "x-aliases": {
+              "en": "Details (FR)",
+              "de": "Details (FR)"
+            },
+            "x-canonical-property": "ChangeEvent.summary_fr"
+          },
+          "summary_en": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Details (EN). English. Change summary. At least one of the four summaries is required. Alias (DE): Details (EN). Canonical: ChangeEvent.summary_en.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Details (EN)",
+            "x-aliases": {
+              "en": "Details (EN)",
+              "de": "Details (EN)"
+            },
+            "x-canonical-property": "ChangeEvent.summary_en"
+          },
+          "changed_properties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Changed properties. Canonical property paths, including the exact language suffix for translated text, where known. Alias (DE): Geänderte Attribute. Canonical: ChangeEvent.changedProperties.",
+            "x-postgresql-type": "text[]",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "'{}'::text[]",
+            "title": "Changed properties",
+            "x-aliases": {
+              "en": "Changed properties",
+              "de": "Geänderte Attribute"
+            },
+            "x-canonical-property": "ChangeEvent.changedProperties"
+          },
+          "import_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Import or operation ID. Shared operation identifier grouping related events from an import, batch or multi-record command. Required for new commands emitting multiple events, including relationship/product edits. One generated value is reused across retries; no separate operation entity is required. Alias (DE): Import- oder Vorgangskennung. Canonical: ChangeEvent.importId.",
+            "x-postgresql-type": "catalog_private.identifier",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Import or operation ID",
+            "x-aliases": {
+              "en": "Import or operation ID",
+              "de": "Import- oder Vorgangskennung"
+            },
+            "x-canonical-property": "ChangeEvent.importId"
           }
         }
       },
@@ -51604,7 +52190,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "5466647255810afe09826f71a2e26fc685cd316071b0ef3f0c5a2a6f3ec81a43"
+      "sha256": "cc13bb73a162de451dc7a6d9d990064dddb743a6bae2df8741f3d9bb8caa6063"
     },
     "schema": "catalog",
     "readRole": "anon",
@@ -51678,6 +52264,10 @@
       {
         "file": "20260914020000_catalog_snapshot_api_fields.sql",
         "sha256": "067e283de467973d2958c5ad41639abc697541a9b7dff8aea99589e27f044cf7"
+      },
+      {
+        "file": "20260914030000_catalog_snapshot_history.sql",
+        "sha256": "27fc6c7fb65090090dfc84b730e2f3e3a448688d9fe2122a1062a4a8c5eadd84"
       }
     ]
   }

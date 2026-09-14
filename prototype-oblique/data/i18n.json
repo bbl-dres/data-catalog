@@ -624,6 +624,8 @@
   "api.title": { "de": "API", "fr": "API", "it": "API", "en": "API" },
   "api.loading": { "de": "API-Dokumentation wird geladen…", "fr": "Chargement de la documentation de l'API…", "it": "Caricamento della documentazione dell'API…", "en": "Loading API documentation…" },
   "api.unavailable": { "de": "API-Dokumentation konnte nicht geladen werden.", "fr": "Impossible de charger la documentation de l'API.", "it": "Impossibile caricare la documentazione dell'API.", "en": "API documentation could not be loaded." },
+  "history.loading": { "de": "Verlauf wird geladen…", "fr": "Chargement de l'historique…", "it": "Caricamento della cronologia…", "en": "Loading history…" },
+  "history.unavailable": { "de": "Verlauf konnte nicht geladen werden.", "fr": "Impossible de charger l'historique.", "it": "Impossibile caricare la cronologia.", "en": "History could not be loaded." },
 
   "notfound.title": { "de": "Seite nicht gefunden", "fr": "Page introuvable", "it": "Pagina non trovata", "en": "Page not found" },
   "notfound.text": { "de": "Der Eintrag existiert nicht oder wurde entfernt.", "fr": "L'entrée n'existe pas ou a été supprimée.", "it": "La voce non esiste o è stata rimossa.", "en": "The entry does not exist or has been removed." },

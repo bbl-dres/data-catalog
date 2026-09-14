@@ -98,6 +98,7 @@
       nextIndex[kind] = new Map(items.map(e => [e.identifier, e]));
     });
     Object.assign(data, next);
+    data.resetHistory();
     Object.assign(index, nextIndex);
     data.validate();
   };
@@ -605,11 +606,36 @@
   });
 
   /* history */
-  data.history = function (kind, id) {
-    const key = kind === 'attrs' ? 'objects:' + data.splitChildId(id)?.[0] : kind === 'fields' ? 'tables:' + data.splitChildId(id)?.[0] : `${kind}:${id}`;
-    const time = h => h._record?.occurred_at || h.date;
-    return data.changelog.filter(h => h.entity === key).slice().sort((a, b) => (time(b) > time(a) ? 1 : time(b) < time(a) ? -1 : 0));
+  // Attributes and fields show their owner's history. A Supabase snapshot arrives without change
+  // events; each owner's history is read once on demand and kept until the next catalog load.
+  const historyOwners = { domains: 'domain', systems: 'system', objects: 'business_object', tables: 'data_table', refs: 'code_list', products: 'data_product', apis: 'data_service' };
+  const historyCache = new Map();
+  let historyGeneration = 0;
+  const historyTime = h => h._record?.occurred_at || h.date;
+  // Newest first; same-moment events keep a stable identifier order whichever way they arrived.
+  const sortHistory = items => items.slice().sort((a, b) => (historyTime(b) > historyTime(a) ? 1 : historyTime(b) < historyTime(a) ? -1 : 0)
+    || (a.identifier < b.identifier ? -1 : a.identifier > b.identifier ? 1 : 0));
+  /** Synchronous view of one entity's history as { items, loading, error }; starts the read when needed. */
+  data.historyState = function (kind, id) {
+    const [ownerKind, ownerId] = kind === 'attrs' ? ['objects', data.splitChildId(id)?.[0]] : kind === 'fields' ? ['tables', data.splitChildId(id)?.[0]] : [kind, id];
+    const key = `${ownerKind}:${ownerId}`;
+    if (data.historyLoaded !== false) return { items: sortHistory(data.changelog.filter(h => h.entity === key)), loading: false, error: false };
+    let entry = historyCache.get(key);
+    if (entry && !(entry.error && entry.retryAt <= Date.now())) return entry;
+    const record = data.get(ownerKind, ownerId)?._record;
+    if (!record?.id || !historyOwners[ownerKind]) return { items: [], loading: false, error: false };
+    entry = { items: [], loading: true, error: false };
+    historyCache.set(key, entry);
+    const generation = historyGeneration;
+    DK.catalog.history(DK.catalogConfig, historyOwners[ownerKind], record.id)
+      .then(rows => { entry.items = sortHistory(data.projectHistory(rows)); entry.loading = false; })
+      .catch(err => { console.error(err); Object.assign(entry, { loading: false, error: true, retryAt: Date.now() + 15000 }); })
+      .then(() => { if (generation === historyGeneration) data.onHistory?.(key); });
+    return entry;
   };
+  data.history = (kind, id) => data.historyState(kind, id).items;
+  /** Forget on-demand history when a new catalog snapshot is published. */
+  data.resetHistory = () => { historyCache.clear(); historyGeneration++; };
 
   DK.data = data;
 })(window.DK);

@@ -85,11 +85,11 @@ async function generate(db) {
     ARRAY(SELECT a.attname FROM unnest(k.confkey) WITH ORDINALITY AS key(num,idx) JOIN pg_attribute a ON a.attrelid=k.confrelid AND a.attnum=key.num ORDER BY key.idx) AS target_columns
     FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
     LEFT JOIN pg_class target ON target.oid=k.confrelid WHERE n.nspname='catalog' AND k.contype <> 'n' ORDER BY c.relname,k.conname`)).rows;
-  const rpc = (await db.query(`SELECT p.provolatile, p.prosecdef, p.pronargs, p.prorettype::regtype::text AS result,
+  const rpc = (await db.query(`SELECT p.proname, p.provolatile, p.prosecdef, p.pronargs, p.prorettype::regtype::text AS result,
     has_function_privilege('anon', p.oid, 'EXECUTE') AS executable FROM pg_proc p
-    JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='catalog' AND p.proname='read_snapshot'`)).rows;
-  if (rpc.length !== 2 || rpc.some(r=>r.provolatile !== 's' || r.prosecdef || r.result !== 'jsonb' || !r.executable)
-    || !rpc.some(r=>r.pronargs===0) || !rpc.some(r=>r.pronargs===1)) throw new Error('Snapshot RPC contract changed');
+    JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='catalog' AND p.proname IN ('read_snapshot','read_history')`)).rows;
+  if (rpc.map(r=>`${r.proname}/${r.pronargs}`).sort().join() !== 'read_history/3,read_snapshot/0,read_snapshot/2'
+    || rpc.some(r=>r.provolatile !== 's' || r.prosecdef || r.result !== 'jsonb' || !r.executable)) throw new Error('Read RPC contract changed');
 
   const sourceFiles = migrationFiles().filter(file => !file.endsWith('_catalog_import.sql'));
   const sources = sourceFiles.map(file => ({ file, sha256: createHash('sha256').update(fs.readFileSync(path.join(migrations, file), 'utf8').replace(/\r\n/g, '\n')).digest('hex') }));
@@ -126,14 +126,26 @@ async function generate(db) {
   }
   schemas.SnapshotQualityRequirement = { ...schemas.quality_requirement, properties: { ...schemas.quality_requirement.properties,
     comparison_value: { ...schemas.quality_requirement.properties.comparison_value, type: ['string', 'null'], description: 'Exact numeric comparison value serialized as a decimal string by read_snapshot().' } } };
-  schemas.CatalogSnapshot = { type: 'object', required: ['schemaVersion', ...tables.map(table => table.name)], properties: {
+  schemas.CatalogSnapshot = { type: 'object', description: 'Catalog collections in one object. change_event is present unless the request set include_history to false.', required: ['schemaVersion', ...tables.filter(table => table.name !== 'change_event').map(table => table.name)], properties: {
     schemaVersion: { type: 'integer', const: 1 }, ...Object.fromEntries(tables.map(table => [table.name, { type: 'array', items: ref(table.name === 'quality_requirement' ? 'SnapshotQualityRequirement' : table.name) }]))
   } };
+  schemas.HistoryEvent = { type: 'object', description: 'One change event as returned by read_history: the change_event record without its before/after states.',
+    properties: Object.fromEntries(Object.entries(schemas.change_event.properties).filter(([name]) => !['before', 'after'].includes(name))) };
   paths['/rpc/read_snapshot'] = { post: { security: [],
     tags: ['Snapshot'], operationId: 'read_snapshot', summary: 'Read a consistent catalog snapshot',
-    description: 'Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history. An omitted or false argument preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.',
-    parameters: [param('PublishableKey'), param('ContentProfile')], requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', properties: { include_api_fields: { type: 'boolean', default: false } }, additionalProperties: false }, example: { include_api_fields: true } } } },
+    description: 'Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history; add include_history=false to omit change_event, which is how the app loads (it then reads one record’s history with read_history). An empty request preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.',
+    parameters: [param('PublishableKey'), param('ContentProfile')], requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', properties: { include_api_fields: { type: 'boolean', default: false }, include_history: { type: 'boolean', default: true, description: 'false omits change_event. Only accepted together with include_api_fields.' } }, additionalProperties: false }, example: { include_api_fields: true, include_history: false } } } },
     responses: { '200': { description: 'One snapshot object; numeric quality thresholds are exact decimal strings.', content: { 'application/json': { schema: ref('CatalogSnapshot') } } }, ...errors }
+  } };
+  paths['/rpc/read_history'] = { post: { security: [],
+    tags: ['Governance'], operationId: 'read_history', summary: 'Read one record’s history',
+    description: 'Read-only SQL STABLE function. Returns the change events of one owning record and of its owned attributes, fields or values, newest first and without before/after states, under the caller’s RLS permissions. Complete events remain readable through the change_event collection.',
+    parameters: [param('PublishableKey'), param('ContentProfile')], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', required: ['record_table', 'record_id'], properties: {
+      record_table: { type: 'string', enum: ['domain', 'system', 'business_object', 'data_table', 'code_list', 'data_product', 'data_service'], description: 'Owning table of the record.' },
+      record_id: { type: 'string', format: 'uuid', description: 'Internal UUID of the owning record.' },
+      max_events: { type: 'integer', minimum: 1, maximum: 5000, default: 1000, description: 'Newest events to return.' } }, additionalProperties: false },
+      example: { record_table: 'business_object', record_id: '00000000-0000-0000-0000-000000000000' } } } },
+    responses: { '200': { description: 'History events, newest first.', content: { 'application/json': { schema: { type: 'array', items: ref('HistoryEvent') } } } }, ...errors }
   } };
   parameters.PublishableKey = {name:'apikey',in:'header',required:true,description:'Public project key, not a user credential. This page supplies it automatically; no login or user token is required.',schema:{type:'string',pattern:'^sb_publishable_'}};
   const restServer = [{url:new URL('/functions/v1/catalog-api',config().url).href,description:'Catalog REST API'}];

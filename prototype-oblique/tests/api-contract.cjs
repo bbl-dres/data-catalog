@@ -12,12 +12,12 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
     const spec = await generate(db);
     assert.deepEqual(spec, JSON.parse(fs.readFileSync(output, 'utf8')), 'Regenerate the committed OpenAPI file after schema changes');
     assert.equal(spec.openapi, '3.1.0');
-    assert.equal(Object.keys(spec.paths).length, 36);
+    assert.equal(Object.keys(spec.paths).length, 37);
     const tables = Object.keys(spec.paths).filter(p => !p.slice(1).includes('/')).map(p => p.slice(1));
     const operationIds = new Set();
     for (const [url, operations] of Object.entries(spec.paths)) {
       if(url.endsWith('/{id}'))assert.deepEqual(Object.keys(operations),['get','patch','delete']);
-      else if(url==='/rpc/read_snapshot')assert.deepEqual(Object.keys(operations),['post']);
+      else if(url==='/rpc/read_snapshot'||url==='/rpc/read_history')assert.deepEqual(Object.keys(operations),['post']);
       else if(['change_event','business_attribute_quality_requirement','data_field_quality_requirement'].includes(url.slice(1)))assert.deepEqual(Object.keys(operations),['get'],'Audit and assignment table reads stay read-only');
       else assert.deepEqual(Object.keys(operations),['get','post']);
       for (const operation of Object.values(operations)) {

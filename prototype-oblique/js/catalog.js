@@ -24,7 +24,9 @@
   function project(snapshot) {
     if (snapshot?.schemaVersion !== 1) throw new Error('Unsupported catalog schema version');
     const maps = {};
-    for (const table of tables) {
+    // The initial load omits history; detail pages read one record's events through read_history.
+    const collections = snapshot.change_event === undefined ? tables.filter(table => table !== 'change_event') : tables;
+    for (const table of collections) {
       if (!Array.isArray(snapshot[table])) throw new Error(`Catalog snapshot is missing ${table}`);
       maps[table] = new Map();
       for (const record of snapshot[table]) {
@@ -157,26 +159,36 @@
       const endpoint = endpoints.find(x => x.identifier === 'primary') || endpoints[0];
       Object.assign(e, { endpoints, serviceVersion: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
     });
-    result.changelog = snapshot.change_event.map(r => {
+    const projectEvent = r => {
       const target = Object.entries(kinds).find(([, table]) => r[`record_${table}_id`]);
       const [kind, table] = target || ['other', Object.keys(r).find(key => key.startsWith('record_') && r[key])?.slice(7, -3)];
       let identifier = ref(table, r[`record_${table}_id`]), historyKind = kind;
       const parent = { business_attribute:['business_object','objects'],data_field:['data_table','tables'],code_value:['code_list','refs'],product_attribute:['data_product','products'] }[table];
       if (parent) { const child = resolve(table,r[`record_${table}_id`]); const context = table === 'data_field' && child.data_service_id ? ['data_service','apis'] : parent; identifier = ref(context[0],child[context[0]+'_id']); historyKind = context[1]; }
       return localized({ identifier: r.identifier, entity: `${historyKind}:${identifier}`, date: r.occurred_on, action: { created: 'Erstellt', updated: 'Geändert', imported: 'Importiert', retired: 'Archiviert', restored: 'Wiederhergestellt' }[r.action], importId: r.import_id, _record: r }, { detail: () => text(r, 'summary'), user: () => text(r, 'actor_name') });
-    });
+    };
+    result.changelog = (snapshot.change_event || []).map(projectEvent);
+    result.historyLoaded = Array.isArray(snapshot.change_event);
+    result.projectHistory = rows => rows.map(projectEvent);
     for (const kind of Object.keys(kinds)) result[kind]=result[kind].filter(e=>!e._record.is_archived);
     return result;
   }
 
   const connection = config => DK.resources.catalogConnection(config);
+  const request = (target, body) => ({ method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
+    headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body });
   async function load(config) {
     const target = connection(config), url = new URL('rpc/read_snapshot', target.base);
     try {
-      return project(await (DK.boot?.take(url) || DK.resources.read(url, {
-        method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
-        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{"include_api_fields":true}'
-      })));
+      let snapshot;
+      try {
+        snapshot = await (DK.boot?.take(url) || DK.resources.read(url, request(target, '{"include_api_fields":true,"include_history":false}')));
+      } catch (error) {
+        // A database that predates the optional-history overload rejects the include_history key: load the complete snapshot instead.
+        if (error.code !== 'PGRST202') throw error;
+        snapshot = await DK.resources.read(url, request(target, '{"include_api_fields":true}'));
+      }
+      return project(snapshot);
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('Supabase did not respond within 20 seconds. Please retry.');
       if (error.status) {
@@ -186,5 +198,16 @@
       throw error;
     }
   }
-  DK.catalog = { load, project, connection, orderRows, isRequiredRule, requiredAttributeIds };
+  /** One record's history, newest first. The database includes its owned attributes, fields or values. */
+  async function history(config, recordTable, recordId) {
+    const target = connection(config), url = new URL('rpc/read_history', target.base);
+    const rows = await DK.resources.read(url, {
+      method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
+      headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ record_table: recordTable, record_id: recordId })
+    });
+    if (!Array.isArray(rows)) throw new Error('Unexpected history response');
+    return rows;
+  }
+  DK.catalog = { load, history, project, connection, orderRows, isRequiredRule, requiredAttributeIds };
 })(window.DK);
