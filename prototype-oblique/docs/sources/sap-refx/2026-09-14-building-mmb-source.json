@@ -1,0 +1,2753 @@
+{
+  "source_file": "D:\\SAP RE-FX\\EFD-BBL Modelle (MMB).xlsx",
+  "source_sha256": "7003d5a07a6c7966f1518528d5078d53605bc33065d139f01edbcdf8fd099d3e",
+  "sheet": "AttributeApplicationClass",
+  "range": "A1:AL151",
+  "headers": [
+    "UUID",
+    "Stereotyp",
+    "Name",
+    "Besitzer",
+    "Diagrammvorkommen",
+    "ID",
+    "ID (Quellsystem)",
+    "Umsetzung von Gesetz",
+    "zugewiesene Glossar-Elemente",
+    "zugewiesene Abkürzungen (deprecated)",
+    "externe URL",
+    "externe URL (Anmerkungen)",
+    "Untergrenze",
+    "Obergrenze",
+    "Typ",
+    "ist fachlicher Schlüssel",
+    "Pflichtfeld",
+    "Untermenge von",
+    "ist geordnet",
+    "ist eindeutig",
+    "ist Blatt",
+    "ist statisch",
+    "ist schreibgeschützt",
+    "ist abgeleitet",
+    "ist abgeleitete Vereinigung",
+    "Standardwert",
+    "definiert neu",
+    "realisiert Application Anforderung",
+    "zugeordnet zu Plateau (EA)",
+    "Verantwortliche Rolle(n)",
+    "Realisierung für Gesetz",
+    "verfeinert durch Attribute (Enitity)",
+    "Beschreibung (ROOT PROFILE)",
+    "Beschreibung (MMB_MetaModel)",
+    "Erstellt von",
+    "Erstellt am",
+    "Zuletzt geändert von",
+    "Zuletzt geändert am"
+  ],
+  "notes": [
+    "No ALIAS column exists in this export.",
+    "Workbook remains unchanged. Relevant source cells are preserved verbatim; personnel and diagram metadata are not copied into catalog records.",
+    "Assoziationrolle contains nine association records, not field rows, and is outside this field import."
+  ],
+  "fields": [
+    {
+      "row": 2,
+      "hidden": false,
+      "source": {
+        "UUID": "6d65482b-a90f-825f-8b20-658e03be7604",
+        "Name": "Bezeichnung des GE",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 3,
+      "hidden": false,
+      "source": {
+        "UUID": "6e3010d3-00db-7240-6150-fbc616e69a32",
+        "Name": "Buchungskreis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 4,
+      "hidden": false,
+      "source": {
+        "UUID": "5a766431-22a4-1bbf-f5fb-82eb4b2346d0",
+        "Name": "WirtschaftseinheitID",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 5,
+      "hidden": false,
+      "source": {
+        "UUID": "0832e810-1c76-116d-0ea1-cbcfca313373",
+        "Name": "GebäudeID",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 6,
+      "hidden": false,
+      "source": {
+        "UUID": "4f7cfe30-f31d-a2d3-2d3a-ede61ad5a1a1",
+        "Name": "EGID",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 7,
+      "hidden": false,
+      "source": {
+        "UUID": "55c636a8-e0ba-8f14-ce41-648c1e7753f7",
+        "Name": "EDID",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 8,
+      "hidden": false,
+      "source": {
+        "UUID": "1a9ea708-68c1-0154-9276-f71e51fe006f",
+        "Name": "Strasse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 9,
+      "hidden": false,
+      "source": {
+        "UUID": "9f3bc865-d347-2a39-78bd-80e2845d6309",
+        "Name": "Hausnummer",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 10,
+      "hidden": false,
+      "source": {
+        "UUID": "5a38923f-3718-60eb-ca17-e31a0765a99e",
+        "Name": "Postleitzahl",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 11,
+      "hidden": false,
+      "source": {
+        "UUID": "b8bbd96e-df49-c4ed-bf9e-3569af28db1b",
+        "Name": "Ort",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 12,
+      "hidden": false,
+      "source": {
+        "UUID": "9814a8da-7ab7-2097-d1b5-e2dcc3148afa",
+        "Name": "Gültig ab",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 13,
+      "hidden": false,
+      "source": {
+        "UUID": "9f3d3860-46a1-aed8-877a-65c0aa75b29b",
+        "Name": "Gültig bis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 14,
+      "hidden": false,
+      "source": {
+        "UUID": "beea8158-a299-b3bf-4dd8-7f64afd5326f",
+        "Name": "Gültig ab übergeordnetes Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 15,
+      "hidden": false,
+      "source": {
+        "UUID": "be127c9d-57c7-fdbb-dcf6-3643f50f8886",
+        "Name": "Gültig bis übergeordnetes Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 16,
+      "hidden": false,
+      "source": {
+        "UUID": "ce22dde8-901e-dc08-e338-029d10943eae",
+        "Name": "System- und Anwenderstatus",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 17,
+      "hidden": false,
+      "source": {
+        "UUID": "270129a6-7316-9bbf-43db-9977dc9ac638",
+        "Name": "Baujahr",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 18,
+      "hidden": false,
+      "source": {
+        "UUID": "ee5ab92b-057e-ab58-e190-a93c8505b2dc",
+        "Name": "Umbaujahr",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 19,
+      "hidden": false,
+      "source": {
+        "UUID": "2b60370c-2ad6-e97f-9596-1b99d8a49527",
+        "Name": "Gemeindeschlüssel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 20,
+      "hidden": false,
+      "source": {
+        "UUID": "09d9dfff-f6f3-df9b-fd14-ae5ba98a50e0",
+        "Name": "Gemeinde",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 21,
+      "hidden": false,
+      "source": {
+        "UUID": "61fa765b-66b9-5506-83be-2c175f09bbda",
+        "Name": "Kreis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 22,
+      "hidden": false,
+      "source": {
+        "UUID": "1cc475be-e3ff-634b-aa4b-9ea4337a48d9",
+        "Name": "Bundesland",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 23,
+      "hidden": false,
+      "source": {
+        "UUID": "9eefaf86-2d9a-3ecd-5498-6e6572d5b172",
+        "Name": "Anzahl Geschosse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 24,
+      "hidden": false,
+      "source": {
+        "UUID": "3dec61fb-5b92-b063-4cd7-807d3ece4840",
+        "Name": "Untergeschosse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 25,
+      "hidden": false,
+      "source": {
+        "UUID": "441e743f-7f8c-5273-8938-9395636201d1",
+        "Name": "Textfeld zu Anzahl",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 26,
+      "hidden": false,
+      "source": {
+        "UUID": "3c317449-5ef5-19a1-db29-4ffe641d7fed",
+        "Name": "Erbbaurecht",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 27,
+      "hidden": false,
+      "source": {
+        "UUID": "8ec011de-a3c4-8b50-36d5-40cbff892071",
+        "Name": "Denkmalschutz",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 28,
+      "hidden": false,
+      "source": {
+        "UUID": "5c127b88-701b-c0ea-154e-19ab46152e65",
+        "Name": "Raumschuldnerprinzip",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 29,
+      "hidden": false,
+      "source": {
+        "UUID": "33735490-e1c6-5e10-598c-f62c89c0be0c",
+        "Name": "Detail",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 30,
+      "hidden": false,
+      "source": {
+        "UUID": "42561941-519a-429e-dcde-1de52933103b",
+        "Name": "Bezeichnung Merkmalsklasse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 31,
+      "hidden": false,
+      "source": {
+        "UUID": "45df7274-0bb6-638c-223d-15009983c44e",
+        "Name": "Bezeichnung Merkmalsgruppe",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 32,
+      "hidden": false,
+      "source": {
+        "UUID": "4ffbbc07-05a9-d137-b8bf-7a3f52f62dcf",
+        "Name": "Merkmal",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 33,
+      "hidden": false,
+      "source": {
+        "UUID": "12eb062a-9efa-e310-0c3c-8a515151c409",
+        "Name": "Zusatzwert",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 34,
+      "hidden": false,
+      "source": {
+        "UUID": "a7f84fd9-be15-4187-6212-e0d5a91ba0c0",
+        "Name": "Zutreffend",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 35,
+      "hidden": false,
+      "source": {
+        "UUID": "682ce32c-6c6a-4f34-e65b-0966f89cf6c0",
+        "Name": "Geb. zugeordnet",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 36,
+      "hidden": false,
+      "source": {
+        "UUID": "f148ee3a-e75c-b9e6-770b-4fa4e060a87d",
+        "Name": "Bezeichnung Merkmal",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 37,
+      "hidden": false,
+      "source": {
+        "UUID": "529793c0-ef45-7659-9b3f-18c4fc451152",
+        "Name": "Gültig ab_1702",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 38,
+      "hidden": false,
+      "source": {
+        "UUID": "4817dee6-5650-baea-f17a-e87321916ef4",
+        "Name": "Gültig bis_1703",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 39,
+      "hidden": false,
+      "source": {
+        "UUID": "d4fbb598-f58e-238f-4aa5-9330c329aedc",
+        "Name": "Anzahl Merkmal",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 40,
+      "hidden": false,
+      "source": {
+        "UUID": "da414f3d-25fc-d2c4-1d0b-b530922675d3",
+        "Name": "Zusatzinfo",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 41,
+      "hidden": false,
+      "source": {
+        "UUID": "2e4487a0-3e98-e6ce-be2c-e8a7d5d4880c",
+        "Name": "Merkmalsklasse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 42,
+      "hidden": false,
+      "source": {
+        "UUID": "e5ab0909-67fc-13b0-05be-3ac5c7f6823e",
+        "Name": "Merkmalsgruppe",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 43,
+      "hidden": false,
+      "source": {
+        "UUID": "fef3cba7-fcde-4233-2afa-57ee4917f3b8",
+        "Name": "Notiz",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 44,
+      "hidden": false,
+      "source": {
+        "UUID": "be5dc05b-a3c3-2f6c-ebef-5fba4ac73464",
+        "Name": "Obsolet",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 45,
+      "hidden": false,
+      "source": {
+        "UUID": "14f1adc8-a023-de89-9910-72373b1e8a6b",
+        "Name": "Bemessungsart",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 46,
+      "hidden": false,
+      "source": {
+        "UUID": "7be09bef-18ce-f009-bf82-b412de099af6",
+        "Name": "Bemessungsart Bezeichnung Mittel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 47,
+      "hidden": false,
+      "source": {
+        "UUID": "afd8d42b-c7fc-b4ec-4587-d9b1fa481d6c",
+        "Name": "Verfügbare Bemessungsgrösse",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 48,
+      "hidden": false,
+      "source": {
+        "UUID": "5ea4d542-4f44-074e-bc49-6a29ace6161f",
+        "Name": "Bemessungseinheit",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 49,
+      "hidden": false,
+      "source": {
+        "UUID": "59a21cfa-1a25-8297-6c17-6636c91971cb",
+        "Name": "Bemessung gültig ab",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 50,
+      "hidden": false,
+      "source": {
+        "UUID": "7da8809f-89e0-1c88-e0f0-e5c52af69c8f",
+        "Name": "Bemessung gültig bis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 51,
+      "hidden": false,
+      "source": {
+        "UUID": "e7883eb3-a8f1-c416-a156-0394ea69482b",
+        "Name": "Summenbemessung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 52,
+      "hidden": false,
+      "source": {
+        "UUID": "2527b133-d60d-6a73-3e2f-04db0b541938",
+        "Name": "Gültig",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 53,
+      "hidden": false,
+      "source": {
+        "UUID": "65d16160-6adf-73b6-64d2-6d9dfc144bbe",
+        "Name": "Geschäftsbereich",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 54,
+      "hidden": false,
+      "source": {
+        "UUID": "d5b03cd6-cf86-1f36-d13f-77cfc6ad91f5",
+        "Name": "Profitcenter",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 55,
+      "hidden": false,
+      "source": {
+        "UUID": "1937315c-b6e8-9d26-ef03-ea500e514a8e",
+        "Name": "Geschäftspartnerrolle",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 56,
+      "hidden": false,
+      "source": {
+        "UUID": "59983562-b4ba-59c4-5bbe-a9b45b47078c",
+        "Name": "Beginn Beziehung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 57,
+      "hidden": false,
+      "source": {
+        "UUID": "352d74c6-e4f0-129c-9cc0-0c29e4ffc472",
+        "Name": "Ende Beziehung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 58,
+      "hidden": false,
+      "source": {
+        "UUID": "2495bfa7-8360-b39f-427c-4e36d2c26130",
+        "Name": "Adressart",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 59,
+      "hidden": false,
+      "source": {
+        "UUID": "855854bd-9a79-95f9-c4e1-8e8cc6510db0",
+        "Name": "Rollenart",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 60,
+      "hidden": false,
+      "source": {
+        "UUID": "bf2f3923-4c16-91a3-8b54-73de7b4a744b",
+        "Name": "Bruchteilseigentum",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 61,
+      "hidden": false,
+      "source": {
+        "UUID": "b5f92074-19c1-7d8e-28e3-6ec98ec45893",
+        "Name": "Umrechnungsfaktor für Bruchteilseigentum",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 62,
+      "hidden": false,
+      "source": {
+        "UUID": "5ff8a019-9a37-1c07-2f48-ee32283cdfd3",
+        "Name": "Miteigentumsanteil",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 63,
+      "hidden": false,
+      "source": {
+        "UUID": "0f88d47c-7dcd-3c8c-15a5-fa963ed23f5b",
+        "Name": "Eigentumsanteil",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 64,
+      "hidden": false,
+      "source": {
+        "UUID": "9b955e57-6927-3da6-77bd-8e38c8904900",
+        "Name": "Anlagen/Aufträge/Technische Plätze",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 65,
+      "hidden": false,
+      "source": {
+        "UUID": "8455d25e-1238-ccf0-4918-7447d39f5450",
+        "Name": "Zuordnung ab",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 66,
+      "hidden": false,
+      "source": {
+        "UUID": "c023052c-c8c8-d0d0-99ac-61ce369c5b7a",
+        "Name": "Zuordnung bis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 67,
+      "hidden": false,
+      "source": {
+        "UUID": "44a82769-22d2-0855-3f51-625cff589978",
+        "Name": "Bezeichnung architektonisches Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 68,
+      "hidden": false,
+      "source": {
+        "UUID": "5cc23891-5c12-6d2b-5ec4-d65b5ac120e5",
+        "Name": "Identifikation arch. Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 69,
+      "hidden": false,
+      "source": {
+        "UUID": "4d443145-bbdb-4c0a-80b3-7960b8171019",
+        "Name": "Nummer arch. Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 70,
+      "hidden": false,
+      "source": {
+        "UUID": "081ae057-0015-392b-be84-a42c3e72d876",
+        "Name": "Gültig ab_1735",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 71,
+      "hidden": false,
+      "source": {
+        "UUID": "3e2a76e8-a0c6-1a52-915e-26b6bc8a3a9a",
+        "Name": "Gültig bis_1736",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 72,
+      "hidden": false,
+      "source": {
+        "UUID": "d52a1fdb-c112-b88f-8bd8-b5b12de6b7df",
+        "Name": "Identifikationsnummer der Wiedervorlageregel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "ja",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 73,
+      "hidden": false,
+      "source": {
+        "UUID": "1effb8d1-8cb6-a1fd-96ef-a391c0b1bc9f",
+        "Name": "Beschreibung der Wiedervorlageregel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 74,
+      "hidden": false,
+      "source": {
+        "UUID": "5e0c3317-908c-34f8-7227-be0e65d04875",
+        "Name": "Wiedervorlageregel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 75,
+      "hidden": false,
+      "source": {
+        "UUID": "8e60c873-4d2f-8833-f41d-fa0eaca4cbe0",
+        "Name": "Wiedervorlagegrund",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 76,
+      "hidden": false,
+      "source": {
+        "UUID": "bad0fdae-a1f1-948f-5487-9398f327850d",
+        "Name": "Notiz vorhanden?",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 77,
+      "hidden": false,
+      "source": {
+        "UUID": "00d01ec7-774c-2026-3a0d-9117a440047b",
+        "Name": "Notiz zur Wiedervorlageregel",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 78,
+      "hidden": false,
+      "source": {
+        "UUID": "76ea1471-0528-f41e-c4c6-9be0a9ef8f0f",
+        "Name": "Bezeichnung des Wiedervorlagegrundes",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 79,
+      "hidden": false,
+      "source": {
+        "UUID": "89f28ab3-dbec-03a3-390f-0fc416ffff0a",
+        "Name": "Zusatztext 4",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 80,
+      "hidden": false,
+      "source": {
+        "UUID": "e5a30042-d1ba-f1d9-2526-f6418457882e",
+        "Name": "Übersichtsliste erstellter Dokus",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 81,
+      "hidden": false,
+      "source": {
+        "UUID": "e0bf64e8-2ab0-4971-a3ae-79a9f85510de",
+        "Name": "ESTAT",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 82,
+      "hidden": false,
+      "source": {
+        "UUID": "d75882b3-29b4-d2c2-c32a-56032d53a8b1",
+        "Name": "Archivwürdiges Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 83,
+      "hidden": false,
+      "source": {
+        "UUID": "0a1f18df-274c-b66b-1146-cf631029ba64",
+        "Name": "Sensitives Objekt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 84,
+      "hidden": false,
+      "source": {
+        "UUID": "8d400141-0f81-527d-ef26-d03258d40381",
+        "Name": "Historische Ausstattung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 85,
+      "hidden": false,
+      "source": {
+        "UUID": "99ecb83b-6878-4c0d-45d2-1ce231aeb7c3",
+        "Name": "Abgl. RE/FI-AA",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 86,
+      "hidden": false,
+      "source": {
+        "UUID": "54596a29-8887-b456-7663-554f6d3de3d8",
+        "Name": "Region Geb.Fakt.",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 87,
+      "hidden": false,
+      "source": {
+        "UUID": "7b2b0879-54cf-d969-b3ab-80fa868e01bf",
+        "Name": "Eigentumsart",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::GE Eigentumart",
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 88,
+      "hidden": false,
+      "source": {
+        "UUID": "03ba98b8-d742-7dc7-7748-a7763881c423",
+        "Name": "Gebäudeart Stufe 1",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 89,
+      "hidden": false,
+      "source": {
+        "UUID": "54f52815-4784-1581-850d-aec96ccad314",
+        "Name": "Gebäudeart Stufe 2",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 90,
+      "hidden": false,
+      "source": {
+        "UUID": "3c91e56c-d2e1-c928-d8b7-0aafe1c22e8c",
+        "Name": "Zusatztext 1",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 91,
+      "hidden": false,
+      "source": {
+        "UUID": "80ab6406-f920-b8b6-370b-1794f5c0dd8e",
+        "Name": "Zusatztext 2",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 92,
+      "hidden": false,
+      "source": {
+        "UUID": "94e3a713-689f-afe4-f529-778dd61e66e4",
+        "Name": "Zusatztext 3",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 93,
+      "hidden": false,
+      "source": {
+        "UUID": "35d39826-4e3e-16ff-b3a4-98ffa1a0c00b",
+        "Name": "Zusatztext 5",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 94,
+      "hidden": false,
+      "source": {
+        "UUID": "7845f5bb-ea80-4908-d3c8-595f6ff2acaa",
+        "Name": "Gebäudekategorie",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 95,
+      "hidden": false,
+      "source": {
+        "UUID": "ef06f756-d762-11dd-f692-d4b565468e7b",
+        "Name": "Perimeter",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 96,
+      "hidden": false,
+      "source": {
+        "UUID": "c78e3930-3a8b-f8b8-4879-ee5298c34759",
+        "Name": "Schätzdatum",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 97,
+      "hidden": false,
+      "source": {
+        "UUID": "3f334165-7fed-3d56-daac-ef7e26cadd32",
+        "Name": "Teilportfolio",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 98,
+      "hidden": false,
+      "source": {
+        "UUID": "47bd4570-5bf2-8cf1-f5a7-4be49111fc46",
+        "Name": "Mietermodell",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 99,
+      "hidden": false,
+      "source": {
+        "UUID": "4058a1a6-026e-261a-d6d5-f0bcf5c8b70d",
+        "Name": "Im Speedikon",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 100,
+      "hidden": false,
+      "source": {
+        "UUID": "26996429-67e2-d0c6-4c88-5e2bf5602244",
+        "Name": "Datum von",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 101,
+      "hidden": false,
+      "source": {
+        "UUID": "100da5a0-c2c9-d7c1-8d7d-a11ab6b61929",
+        "Name": "Datum bis",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 102,
+      "hidden": false,
+      "source": {
+        "UUID": "4fdde0e7-06c8-fb7c-5b13-7f557b035807",
+        "Name": "Anzahl m2",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 103,
+      "hidden": false,
+      "source": {
+        "UUID": "e267f196-2237-7adb-f839-5b0021a22441",
+        "Name": "Datum von_1769",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 104,
+      "hidden": false,
+      "source": {
+        "UUID": "8394a4e4-fbab-a236-eff0-f79385ded73c",
+        "Name": "Datum bis_1770",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 105,
+      "hidden": false,
+      "source": {
+        "UUID": "bd4b08ed-41e7-8618-f130-2eb8e24b6677",
+        "Name": "Text",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 106,
+      "hidden": false,
+      "source": {
+        "UUID": "145760fd-a5f2-df9f-8ebb-ff749b91fbd5",
+        "Name": "Bezeichnung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 107,
+      "hidden": false,
+      "source": {
+        "UUID": "934855c7-180b-8554-9834-2c9525233f93",
+        "Name": "Stand",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 108,
+      "hidden": false,
+      "source": {
+        "UUID": "92ad9d56-76f6-fd44-df9b-2708645cf415",
+        "Name": "AP Makro HNF 2.9",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 109,
+      "hidden": false,
+      "source": {
+        "UUID": "a89e0742-e178-afcb-deae-92a1e7036bf5",
+        "Name": "AP Ist",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 110,
+      "hidden": false,
+      "source": {
+        "UUID": "f25fe4ec-fc16-4d4a-90b4-490d82908303",
+        "Name": "MJ/m2 EBF",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 111,
+      "hidden": false,
+      "source": {
+        "UUID": "ba5c26ec-bd35-d425-9638-01cdcfa6367c",
+        "Name": "Objektstrategie",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 112,
+      "hidden": false,
+      "source": {
+        "UUID": "5ae0c6de-a020-a262-7593-51b0727d191e",
+        "Name": "Zustand",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 113,
+      "hidden": false,
+      "source": {
+        "UUID": "4c7c15c1-18e4-6ff9-6a90-b307187e5b60",
+        "Name": "UH-Kategorie",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 114,
+      "hidden": false,
+      "source": {
+        "UUID": "797c3da6-25ef-9c95-867f-beb0adca665b",
+        "Name": "Spezialfall",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 115,
+      "hidden": false,
+      "source": {
+        "UUID": "20bb88a2-c802-c2d2-63e4-0e28fca557f1",
+        "Name": "Wirtschaftlichkeit",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 116,
+      "hidden": false,
+      "source": {
+        "UUID": "85e06e8b-6d47-9f90-098a-191aa32ada21",
+        "Name": "Kunde",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 117,
+      "hidden": false,
+      "source": {
+        "UUID": "5c862ba7-206f-0f58-2865-6ec0156f8a78",
+        "Name": "Bewirtschaftung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 118,
+      "hidden": false,
+      "source": {
+        "UUID": "d2685d67-4763-4fb0-a95f-2f541da3eba0",
+        "Name": "Geb.spezifikation",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 119,
+      "hidden": false,
+      "source": {
+        "UUID": "c162ca36-d2bb-9c3a-f97c-d6fdfd7d01af",
+        "Name": "Energie/Nachh.",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 120,
+      "hidden": false,
+      "source": {
+        "UUID": "6c3a8ae5-cb94-9526-b379-f13578fb7f75",
+        "Name": "Lage",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 121,
+      "hidden": false,
+      "source": {
+        "UUID": "06f3a4ac-2d86-8d4b-a902-5b7160bffb3d",
+        "Name": "Betrieb",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 122,
+      "hidden": false,
+      "source": {
+        "UUID": "54e9d802-1309-af37-d695-ba0501df0d46",
+        "Name": "Total gewichtet 2010",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 123,
+      "hidden": false,
+      "source": {
+        "UUID": "0d2fc457-e2b4-7178-7cf8-02f32bf60e0e",
+        "Name": "Total gewichtet 2024",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 124,
+      "hidden": false,
+      "source": {
+        "UUID": "16262fb4-24ba-c4d0-08da-c45fc241c7f0",
+        "Name": "Bemerkung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 125,
+      "hidden": false,
+      "source": {
+        "UUID": "bbfc3064-edd5-71ce-4fa3-6a2861241ea7",
+        "Name": "Bezeichnung Grundstück",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 126,
+      "hidden": false,
+      "source": {
+        "UUID": "d87dd292-e0fb-978b-b832-f5b3048269f5",
+        "Name": "Gebäudeanteil %",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 127,
+      "hidden": false,
+      "source": {
+        "UUID": "5997761c-7ff4-e77d-fad8-21899110317c",
+        "Name": "Gültig ab_1794",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 128,
+      "hidden": false,
+      "source": {
+        "UUID": "7673c05b-a40d-32f9-846f-27f09ca01ab6",
+        "Name": "Gefährdungszone",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 129,
+      "hidden": false,
+      "source": {
+        "UUID": "d314eda4-c1a0-10da-697c-2ec228d4e995",
+        "Name": "Massn. erforderlich",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 130,
+      "hidden": false,
+      "source": {
+        "UUID": "c7f6cf36-a92f-fb10-9d6f-8fa867797ea5",
+        "Name": "Massnahmen",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 131,
+      "hidden": false,
+      "source": {
+        "UUID": "38ae3d45-860c-2350-eae5-88bfab85dea1",
+        "Name": "Massnahmen umgesetzt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 132,
+      "hidden": false,
+      "source": {
+        "UUID": "b64f9b08-1b20-9922-a83f-0be1c5f0b81f",
+        "Name": "Umsetzungsart",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 133,
+      "hidden": false,
+      "source": {
+        "UUID": "56085eeb-37c5-b384-b69e-85cf38c9d300",
+        "Name": "Repräsentationsfunktion",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 134,
+      "hidden": false,
+      "source": {
+        "UUID": "19fb844d-0ce9-ea60-e4c9-47e9652da715",
+        "Name": "Datum Sicherheitskonzept",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 135,
+      "hidden": false,
+      "source": {
+        "UUID": "7268528a-1d35-937a-cda4-2b747dcbc295",
+        "Name": "Lift vorhanden",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 136,
+      "hidden": false,
+      "source": {
+        "UUID": "dd132abf-104b-d313-000a-837526964ebd",
+        "Name": "Anz. Parkplatz gedeckt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 137,
+      "hidden": false,
+      "source": {
+        "UUID": "8005490e-147a-6edd-1e84-a0bff9a2fdb5",
+        "Name": "Anz. Parkplatz ungedeckt",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 138,
+      "hidden": false,
+      "source": {
+        "UUID": "eb352941-6e20-1a98-fe9d-f7b0fc71ce47",
+        "Name": "Möblierung durch",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 139,
+      "hidden": false,
+      "source": {
+        "UUID": "7bd7888c-35e7-b3ba-be14-117cf263858c",
+        "Name": "Residenz Möbl. repräsentativ",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 140,
+      "hidden": false,
+      "source": {
+        "UUID": "5c0ddcce-ea71-e41d-bb6e-09d3d6a041ca",
+        "Name": "Residenz/DW Möbl. priv. Teil",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 141,
+      "hidden": false,
+      "source": {
+        "UUID": "23c0c638-0e73-b520-f57d-7256f040230d",
+        "Name": "Kanzlei Möblierung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 142,
+      "hidden": false,
+      "source": {
+        "UUID": "d16e15ab-12bd-4cb0-c82a-36325a734adb",
+        "Name": "Letztes Möblierungskonzept",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 143,
+      "hidden": false,
+      "source": {
+        "UUID": "1d5f0c58-265e-107f-4cc8-932545951608",
+        "Name": "Teilersatz-/Ergänzungsmöblierung vom",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 144,
+      "hidden": false,
+      "source": {
+        "UUID": "32a3bb1f-0ee5-1fef-0774-31cd2d7f72dd",
+        "Name": "BAK-Leihgabe",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 145,
+      "hidden": false,
+      "source": {
+        "UUID": "7f09298b-134f-62db-24d5-ec348e725469",
+        "Name": "Residenz Standardliste Nr.",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 146,
+      "hidden": false,
+      "source": {
+        "UUID": "e9fe2cf1-4ea9-0b97-893d-6adbc5bc7ee3",
+        "Name": "Inventarliste Möblierung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 147,
+      "hidden": false,
+      "source": {
+        "UUID": "ee4acacc-3b7d-4f34-3aeb-714c790c2f65",
+        "Name": "Datum Photodokumentation",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 148,
+      "hidden": false,
+      "source": {
+        "UUID": "407a5d59-ccae-c676-080c-b04ded14a414",
+        "Name": "Schadstoffbericht",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 149,
+      "hidden": false,
+      "source": {
+        "UUID": "a31d2c46-f95d-0b6d-fc16-06c444d8a04f",
+        "Name": "Asbest letzte Meldung",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 150,
+      "hidden": false,
+      "source": {
+        "UUID": "be5397ea-8ab9-db38-603c-943186c4b636",
+        "Name": "Asbest letzter Bericht",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    },
+    {
+      "row": 151,
+      "hidden": false,
+      "source": {
+        "UUID": "6099a879-dda2-db3c-0149-de24146d4be9",
+        "Name": "Asbest letzte Massnahme",
+        "Besitzer": "EFD - BBL::Solution Models (SM)::Application Models::Business Application (Unassigned)::Classes::Elements::SAP RE-FX::Gebäude_NS",
+        "ID": null,
+        "ID (Quellsystem)": null,
+        "Typ": null,
+        "ist fachlicher Schlüssel": "nein",
+        "Pflichtfeld": "n/a",
+        "Untergrenze": null,
+        "Obergrenze": null,
+        "Beschreibung (ROOT PROFILE)": null,
+        "Beschreibung (MMB_MetaModel)": null
+      }
+    }
+  ]
+}

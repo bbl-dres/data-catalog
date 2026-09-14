@@ -1,0 +1,605 @@
+{
+  "owner": {
+    "id": "15b65a87-91dd-55af-b2af-8edac587a9aa",
+    "comment": "API-Struktur BUILDING; Zuordnung zu physischen SAP-Spalten noch bestätigen.",
+    "name_de": "Gebäude",
+    "row_version": 70,
+    "technical_name": "VIBDBU"
+  },
+  "fields": [
+    {
+      "id": "c466fac8-d6dc-53fe-ad3c-ea76420fb10a",
+      "kind": "apiField",
+      "name": "Buchungskreis",
+      "group": null,
+      "version": 2,
+      "technical": "COMP_CODE",
+      "identifier": "t-sap-building/COMP_CODE"
+    },
+    {
+      "id": "97d0da79-5259-5e21-b39d-1d9a07cfcc9f",
+      "kind": "apiField",
+      "name": "Nummer der Wirtschaftseinheit",
+      "group": null,
+      "version": 2,
+      "technical": "BUSINESS_ENTITY",
+      "identifier": "t-sap-building/BUSINESS_ENTITY"
+    },
+    {
+      "id": "53a354f2-004a-5d27-8927-99fc8a7e10ef",
+      "kind": "apiField",
+      "name": "Nummer des Gebäudes",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING",
+      "identifier": "t-sap-building/BUILDING"
+    },
+    {
+      "id": "2585cb3c-2d64-5409-9458-1071cf0c40d0",
+      "kind": "apiField",
+      "name": "Ident-Teil Schlüssel, z.B. \"1000/123\"",
+      "group": null,
+      "version": 2,
+      "technical": "IDENT_KEY",
+      "identifier": "t-sap-building/IDENT_KEY"
+    },
+    {
+      "id": "df98c337-1505-5783-9b32-35593a6ac527",
+      "kind": "apiField",
+      "name": "Ident-Teil Objektart, z.B. \"IS\" (Immobilienvertrag)",
+      "group": null,
+      "version": 2,
+      "technical": "IDENT_OBJECT_TYPE",
+      "identifier": "t-sap-building/IDENT_OBJECT_TYPE"
+    },
+    {
+      "id": "3efd19db-edf5-56bb-ada7-a0ec37887fd4",
+      "kind": "apiField",
+      "name": "Ident-Teil des Mandatsobjekts im Mandatsbukrs",
+      "group": null,
+      "version": 2,
+      "technical": "MANDATE_OBJECT_ID",
+      "identifier": "t-sap-building/MANDATE_OBJECT_ID"
+    },
+    {
+      "id": "2d3448b6-6bac-56c6-9be8-a0dacf068840",
+      "kind": "apiField",
+      "name": "Ident-Teil des Mandatsobjekts im Verwaltungsbukrs",
+      "group": null,
+      "version": 2,
+      "technical": "MANDATE_MNG_OBJECT_ID",
+      "identifier": "t-sap-building/MANDATE_MNG_OBJECT_ID"
+    },
+    {
+      "id": "8b4d3ce4-ae56-5b46-bc9e-3494d0beaf9a",
+      "kind": "apiField",
+      "name": "Ident-Teil des Mandatsobjekts im Sondereigentumsbukrs",
+      "group": null,
+      "version": 2,
+      "technical": "MANDATE_CR_OBJECT_ID",
+      "identifier": "t-sap-building/MANDATE_CR_OBJECT_ID"
+    },
+    {
+      "id": "cd28f78e-0897-51c4-b9ad-ff12b16c8465",
+      "kind": "apiField",
+      "name": "Bezeichnung des Gebäudes",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_TEXT",
+      "identifier": "t-sap-building/BUILDING_TEXT"
+    },
+    {
+      "id": "7e2b50e4-c503-5f7c-8acd-245d0919a68c",
+      "kind": "apiField",
+      "name": "Art des Gebäudes",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_TYPE",
+      "identifier": "t-sap-building/BUILDING_TYPE"
+    },
+    {
+      "id": "762c9156-947c-5de3-b11c-03cc9e4fda8f",
+      "kind": "apiField",
+      "name": "Überwiegende Nutzungsart",
+      "group": null,
+      "version": 2,
+      "technical": "MAIN_USAGE_TYPE",
+      "identifier": "t-sap-building/MAIN_USAGE_TYPE"
+    },
+    {
+      "id": "d6511838-73d1-5e8c-85d7-3e3e38de2127",
+      "kind": "apiField",
+      "name": "Funktion des Objektes",
+      "group": null,
+      "version": 2,
+      "technical": "FUNCTION",
+      "identifier": "t-sap-building/FUNCTION"
+    },
+    {
+      "id": "dba2678c-b15a-5826-93d4-ed801c8a5d16",
+      "kind": "apiField",
+      "name": "Lageklasse",
+      "group": null,
+      "version": 2,
+      "technical": "LOCATION_CLASS",
+      "identifier": "t-sap-building/LOCATION_CLASS"
+    },
+    {
+      "id": "17dcddca-e7a8-503d-ad28-692abc4b75b9",
+      "kind": "apiField",
+      "name": "Denkmalschutz",
+      "group": null,
+      "version": 2,
+      "technical": "HAS_HIST_SITE_PROTECTION",
+      "identifier": "t-sap-building/HAS_HIST_SITE_PROTECTION"
+    },
+    {
+      "id": "cde9e927-a397-5e44-afd3-429913f988cf",
+      "kind": "apiField",
+      "name": "Gemeindeschlüssel",
+      "group": null,
+      "version": 2,
+      "technical": "MUNICIPALITY_KEY",
+      "identifier": "t-sap-building/MUNICIPALITY_KEY"
+    },
+    {
+      "id": "b4ea2393-6b55-5776-9971-8dfea58dec96",
+      "kind": "apiField",
+      "name": "Statusschema",
+      "group": null,
+      "version": 2,
+      "technical": "STAT_PROF",
+      "identifier": "t-sap-building/STAT_PROF"
+    },
+    {
+      "id": "fe973e77-9777-50f6-a8bf-495ecc587d13",
+      "kind": "apiField",
+      "name": "Allgemeiner Gebäudezustand",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_CONDITION",
+      "identifier": "t-sap-building/BUILDING_CONDITION"
+    },
+    {
+      "id": "6518e37a-6b52-5be9-833d-4776d5be4529",
+      "kind": "apiField",
+      "name": "Baujahr",
+      "group": null,
+      "version": 2,
+      "technical": "CONSTRUCTION_YEAR",
+      "identifier": "t-sap-building/CONSTRUCTION_YEAR"
+    },
+    {
+      "id": "2df08bd2-e18f-547b-9725-0fffcf60dd8a",
+      "kind": "apiField",
+      "name": "Datum Baubeginn",
+      "group": null,
+      "version": 2,
+      "technical": "BEGIN_CONSTRUCTION_YEAR",
+      "identifier": "t-sap-building/BEGIN_CONSTRUCTION_YEAR"
+    },
+    {
+      "id": "44127c14-6b05-5ac2-a15b-7399e5f7fd19",
+      "kind": "apiField",
+      "name": "Fertigstellung",
+      "group": null,
+      "version": 2,
+      "technical": "COMPLETION_DATE",
+      "identifier": "t-sap-building/COMPLETION_DATE"
+    },
+    {
+      "id": "57225836-b79d-5c3a-b06c-0a0beaf50d17",
+      "kind": "apiField",
+      "name": "Bezugsfertigkeit",
+      "group": null,
+      "version": 2,
+      "technical": "READY_FOR_OCCUPANCY_DATE",
+      "identifier": "t-sap-building/READY_FOR_OCCUPANCY_DATE"
+    },
+    {
+      "id": "8b668bfb-259d-5313-afd6-819b89a90cf8",
+      "kind": "apiField",
+      "name": "Schlussabnahme",
+      "group": null,
+      "version": 2,
+      "technical": "FINAL_INSPECTION_DATE",
+      "identifier": "t-sap-building/FINAL_INSPECTION_DATE"
+    },
+    {
+      "id": "7b549a49-25a9-59ae-b0af-98f9639adc75",
+      "kind": "apiField",
+      "name": "Jahr der Modernisierung",
+      "group": null,
+      "version": 2,
+      "technical": "MODERNIZATION_YEAR",
+      "identifier": "t-sap-building/MODERNIZATION_YEAR"
+    },
+    {
+      "id": "fbb7e6bc-ed69-5f18-b6d5-86f0a03ee646",
+      "kind": "apiField",
+      "name": "Jahr Wiederaufbau",
+      "group": null,
+      "version": 2,
+      "technical": "RECONSTRUCTION_YEAR",
+      "identifier": "t-sap-building/RECONSTRUCTION_YEAR"
+    },
+    {
+      "id": "8b06edaa-ca34-595c-9da7-8bc27064daee",
+      "kind": "apiField",
+      "name": "Datum Bauvoranfrage",
+      "group": null,
+      "version": 2,
+      "technical": "PLANNING_INQUIRY_DATE",
+      "identifier": "t-sap-building/PLANNING_INQUIRY_DATE"
+    },
+    {
+      "id": "0f0560aa-d3bc-5886-8306-5fc2ace69a6e",
+      "kind": "apiField",
+      "name": "Antrag Baugenehmigung",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_PERMIT_APPLIC_DATE",
+      "identifier": "t-sap-building/BUILDING_PERMIT_APPLIC_DATE"
+    },
+    {
+      "id": "cc7598b0-1346-541a-bd86-b29f5ef32378",
+      "kind": "apiField",
+      "name": "Datum Vorbescheid",
+      "group": null,
+      "version": 2,
+      "technical": "PRIOR_NOTICE_DATE",
+      "identifier": "t-sap-building/PRIOR_NOTICE_DATE"
+    },
+    {
+      "id": "54a95ce8-f666-5de0-b956-195ba23b8de7",
+      "kind": "apiField",
+      "name": "Baugenehmigung",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_PERMIT_DATE",
+      "identifier": "t-sap-building/BUILDING_PERMIT_DATE"
+    },
+    {
+      "id": "a64ce34f-bceb-5d79-87b3-2a1bf0e91d25",
+      "kind": "apiField",
+      "name": "Anmerkung zur Baugenehmigung",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_PERMIT_NOTE",
+      "identifier": "t-sap-building/BUILDING_PERMIT_NOTE"
+    },
+    {
+      "id": "26d4e936-208c-5aa2-bf28-28dd1288f2f5",
+      "kind": "apiField",
+      "name": "Kennzeichen Erbbaurecht",
+      "group": null,
+      "version": 2,
+      "technical": "HERITABLE_BLDG_RIGHT_IND",
+      "identifier": "t-sap-building/HERITABLE_BLDG_RIGHT_IND"
+    },
+    {
+      "id": "656b9c76-66e6-5d05-833e-c7016ae2a757",
+      "kind": "apiField",
+      "name": "Übergang Nutzung / Lasten",
+      "group": null,
+      "version": 2,
+      "technical": "TRANSF_USE_AND_ENCUMBR_DATE",
+      "identifier": "t-sap-building/TRANSF_USE_AND_ENCUMBR_DATE"
+    },
+    {
+      "id": "be404d68-f4ce-54d9-b163-b28ca8d512d3",
+      "kind": "apiField",
+      "name": "Geplanter Verkauf",
+      "group": null,
+      "version": 2,
+      "technical": "PLANNED_SALE_DATE",
+      "identifier": "t-sap-building/PLANNED_SALE_DATE"
+    },
+    {
+      "id": "6055f36f-7bc2-57ce-99f2-c4911691a9ad",
+      "kind": "apiField",
+      "name": "Verkaufsdatum",
+      "group": null,
+      "version": 2,
+      "technical": "SALE_DATE",
+      "identifier": "t-sap-building/SALE_DATE"
+    },
+    {
+      "id": "a58261e5-a27f-5bb8-bb08-92a9ac2b5a4f",
+      "kind": "apiField",
+      "name": "Nutzungsende",
+      "group": null,
+      "version": 2,
+      "technical": "USAGE_END_DATE",
+      "identifier": "t-sap-building/USAGE_END_DATE"
+    },
+    {
+      "id": "d07a7524-3a90-57e5-a069-0f9e5ceeb7aa",
+      "kind": "apiField",
+      "name": "Öffentliche Förderung von",
+      "group": null,
+      "version": 2,
+      "technical": "PUBLIC_FUNDING_FROM",
+      "identifier": "t-sap-building/PUBLIC_FUNDING_FROM"
+    },
+    {
+      "id": "fe3de047-3c5f-55b2-8fcb-721720db9396",
+      "kind": "apiField",
+      "name": "Öffentliche Förderung bis",
+      "group": null,
+      "version": 2,
+      "technical": "PUBLIC_FUNDING_TO",
+      "identifier": "t-sap-building/PUBLIC_FUNDING_TO"
+    },
+    {
+      "id": "0665e87a-fb33-57c2-a9be-5bdc1a525ef3",
+      "kind": "apiField",
+      "name": "Verantwortlicher",
+      "group": null,
+      "version": 2,
+      "technical": "RESPONSIBLE",
+      "identifier": "t-sap-building/RESPONSIBLE"
+    },
+    {
+      "id": "061c04e3-fb7b-572f-a772-0165b187fd98",
+      "kind": "apiField",
+      "name": "Berechtigungsgruppe",
+      "group": null,
+      "version": 2,
+      "technical": "AUTHORIZATION_GROUP",
+      "identifier": "t-sap-building/AUTHORIZATION_GROUP"
+    },
+    {
+      "id": "d0ffe9ed-d389-5823-b30e-a77421b48ad9",
+      "kind": "apiField",
+      "name": "Mietspiegel wird verwendet",
+      "group": null,
+      "version": 2,
+      "technical": "USES_REPR_LIST_OF_RENTS",
+      "identifier": "t-sap-building/USES_REPR_LIST_OF_RENTS"
+    },
+    {
+      "id": "4f0196f3-6961-5968-9198-a350cf7b27dd",
+      "kind": "apiField",
+      "name": "Mietspiegel",
+      "group": null,
+      "version": 2,
+      "technical": "REPR_LIST_OF_RENTS",
+      "identifier": "t-sap-building/REPR_LIST_OF_RENTS"
+    },
+    {
+      "id": "d26ccd52-96f4-50f7-a065-8c99760323a2",
+      "kind": "apiField",
+      "name": "Nutzt das Raumschuldnerprinzip",
+      "group": null,
+      "version": 2,
+      "technical": "HAS_CURR_OCC_PRINC",
+      "identifier": "t-sap-building/HAS_CURR_OCC_PRINC"
+    },
+    {
+      "id": "882af51a-e254-5d65-915b-db3edccebf07",
+      "kind": "apiField",
+      "name": "Anzahl der Geschosse",
+      "group": null,
+      "version": 2,
+      "technical": "FLOORS",
+      "identifier": "t-sap-building/FLOORS"
+    },
+    {
+      "id": "929a2fa9-4a2d-5ca3-b8d7-e6cf83c0792f",
+      "kind": "apiField",
+      "name": "Anzahl Untergeschosse",
+      "group": null,
+      "version": 2,
+      "technical": "BASEMENTS",
+      "identifier": "t-sap-building/BASEMENTS"
+    },
+    {
+      "id": "94a83f99-d08b-5dce-8743-68f9196d89b5",
+      "kind": "apiField",
+      "name": "Oberstes Geschoss eines Gebäudes",
+      "group": null,
+      "version": 2,
+      "technical": "TOP_FLOOR",
+      "identifier": "t-sap-building/TOP_FLOOR"
+    },
+    {
+      "id": "253c9bdb-409e-512c-8a6e-ecaa73b59a0d",
+      "kind": "apiField",
+      "name": "Lift bis Geschoss im Gebäude",
+      "group": null,
+      "version": 2,
+      "technical": "ELEVATOR_TO_FLOOR",
+      "identifier": "t-sap-building/ELEVATOR_TO_FLOOR"
+    },
+    {
+      "id": "c9446962-8983-5472-932f-9e1414ab4f9b",
+      "kind": "apiField",
+      "name": "Einheit für Rauminhalt",
+      "group": null,
+      "version": 2,
+      "technical": "UNIT_VOLUME",
+      "identifier": "t-sap-building/UNIT_VOLUME"
+    },
+    {
+      "id": "57ded995-0a46-5f23-8de5-966fab515e67",
+      "kind": "apiField",
+      "name": "ISO-Code Maßeinheit",
+      "group": null,
+      "version": 2,
+      "technical": "UNIT_VOLUME_ISO",
+      "identifier": "t-sap-building/UNIT_VOLUME_ISO"
+    },
+    {
+      "id": "dade9d38-9ecd-5dda-b989-211561994386",
+      "kind": "apiField",
+      "name": "Währungsschlüssel",
+      "group": null,
+      "version": 2,
+      "technical": "CURRENCY",
+      "identifier": "t-sap-building/CURRENCY"
+    },
+    {
+      "id": "21f46f96-2833-5cd8-9d9a-189117cb2edc",
+      "kind": "apiField",
+      "name": "Iso-Code Währung",
+      "group": null,
+      "version": 2,
+      "technical": "CURRENCY_ISO",
+      "identifier": "t-sap-building/CURRENCY_ISO"
+    },
+    {
+      "id": "3296bd1a-c782-5344-a7e6-5236633d2df4",
+      "kind": "apiField",
+      "name": "Bauwert",
+      "group": null,
+      "version": 2,
+      "technical": "BUILDING_VALUE",
+      "identifier": "t-sap-building/BUILDING_VALUE"
+    },
+    {
+      "id": "6d54f18c-b4e8-5bff-89d6-dcc20594e052",
+      "kind": "apiField",
+      "name": "Aktueller Bauwert",
+      "group": null,
+      "version": 2,
+      "technical": "CURRENT_BUILDING_VALUE",
+      "identifier": "t-sap-building/CURRENT_BUILDING_VALUE"
+    },
+    {
+      "id": "71e7eb7d-d3b8-53ab-ad5d-f803bdcc4493",
+      "kind": "apiField",
+      "name": "Einheitswert des Gebäudes",
+      "group": null,
+      "version": 2,
+      "technical": "ASSESSMENT_VALUE",
+      "identifier": "t-sap-building/ASSESSMENT_VALUE"
+    },
+    {
+      "id": "38f8b8a4-7639-5e6e-9975-30597ea575a8",
+      "kind": "apiField",
+      "name": "Basisjahr des Einheitswertes",
+      "group": null,
+      "version": 2,
+      "technical": "ASSESSMENT_VALUE_YEAR",
+      "identifier": "t-sap-building/ASSESSMENT_VALUE_YEAR"
+    },
+    {
+      "id": "12ce4ebd-f6e4-5692-bf4d-feb34ea76c1a",
+      "kind": "apiField",
+      "name": "Art des Versicherungswertes",
+      "group": null,
+      "version": 2,
+      "technical": "INSURANCE_VALUE_TYPE",
+      "identifier": "t-sap-building/INSURANCE_VALUE_TYPE"
+    },
+    {
+      "id": "3ec8180c-9e06-528c-9845-51cd39d53d96",
+      "kind": "apiField",
+      "name": "Betrag des Versicherungswertes",
+      "group": null,
+      "version": 2,
+      "technical": "INSURANCE_VALUE",
+      "identifier": "t-sap-building/INSURANCE_VALUE"
+    },
+    {
+      "id": "28f09b1d-9286-54dc-bbdc-d7b8590e36c3",
+      "kind": "apiField",
+      "name": "Betrag pro Raumeinheit",
+      "group": null,
+      "version": 2,
+      "technical": "AMOUNT_PER_VOLUME",
+      "identifier": "t-sap-building/AMOUNT_PER_VOLUME"
+    },
+    {
+      "id": "87c77295-5704-57c0-8c79-97b4e26971dd",
+      "kind": "apiField",
+      "name": "Datum: Objekt gültig ab",
+      "group": null,
+      "version": 2,
+      "technical": "OBJECT_VALID_FROM",
+      "identifier": "t-sap-building/OBJECT_VALID_FROM"
+    },
+    {
+      "id": "c626ba1c-f515-5732-abc6-9a51d22c1f55",
+      "kind": "apiField",
+      "name": "Datum: Objekt gültig bis",
+      "group": null,
+      "version": 2,
+      "technical": "OBJECT_VALID_TO",
+      "identifier": "t-sap-building/OBJECT_VALID_TO"
+    },
+    {
+      "id": "f21cbe12-fd37-5aca-bb22-592eeb762bdc",
+      "kind": "apiField",
+      "name": "Datum: Gültig ab (effektiv)",
+      "group": null,
+      "version": 2,
+      "technical": "REAL_VALID_FROM",
+      "identifier": "t-sap-building/REAL_VALID_FROM"
+    },
+    {
+      "id": "b83711b5-602c-5e74-b708-3896cea6cf42",
+      "kind": "apiField",
+      "name": "Datum: Gültig bis (effektiv)",
+      "group": null,
+      "version": 2,
+      "technical": "REAL_VALID_TO",
+      "identifier": "t-sap-building/REAL_VALID_TO"
+    },
+    {
+      "id": "54499c07-356e-546d-97ac-cfe261248c0d",
+      "kind": "apiField",
+      "name": "Zuerst erfasst am",
+      "group": null,
+      "version": 2,
+      "technical": "CREATION_DATE",
+      "identifier": "t-sap-building/CREATION_DATE"
+    },
+    {
+      "id": "6eab2708-88d4-5559-81d1-94e3b249005a",
+      "kind": "apiField",
+      "name": "Angelegt um",
+      "group": null,
+      "version": 2,
+      "technical": "CREATION_TIME",
+      "identifier": "t-sap-building/CREATION_TIME"
+    },
+    {
+      "id": "a0fa4ee2-a760-5ecb-af98-da50f03200b9",
+      "kind": "apiField",
+      "name": "Erfasser",
+      "group": null,
+      "version": 2,
+      "technical": "CREATION_USER",
+      "identifier": "t-sap-building/CREATION_USER"
+    },
+    {
+      "id": "ffccfc25-0969-5d38-9f22-ef02fe6d26de",
+      "kind": "apiField",
+      "name": "Zuletzt bearbeitet am",
+      "group": null,
+      "version": 2,
+      "technical": "LASTCHANGE_DATE",
+      "identifier": "t-sap-building/LASTCHANGE_DATE"
+    },
+    {
+      "id": "66a5d795-af07-56f6-94dc-f7d3be1fc736",
+      "kind": "apiField",
+      "name": "Uhrzeit der letzten Bearbeitung",
+      "group": null,
+      "version": 2,
+      "technical": "LASTCHANGE_TIME",
+      "identifier": "t-sap-building/LASTCHANGE_TIME"
+    },
+    {
+      "id": "c8ca2242-b5e3-5941-9356-c1d7b28c50d8",
+      "kind": "apiField",
+      "name": "Mitarbeiterkennung",
+      "group": null,
+      "version": 2,
+      "technical": "LASTCHANGE_USER",
+      "identifier": "t-sap-building/LASTCHANGE_USER"
+    }
+  ]
+}

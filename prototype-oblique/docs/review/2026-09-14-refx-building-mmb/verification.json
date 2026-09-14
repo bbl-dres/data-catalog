@@ -1,0 +1,31 @@
+{
+  "counts": {
+    "active": 150,
+    "groups": 11,
+    "reused": 11,
+    "created": 139,
+    "archived": 55,
+    "assigned": 61,
+    "candidate": 39,
+    "unmatched": 50
+  },
+  "import_id": "refx-building-mmb-20260914-v1",
+  "result_hash": "7bf5b7ae3500a0fe6df2fee8977409c7",
+  "baseline_hash": "4de36a72040597e14552187b435f6b9c",
+  "source_sha256": "7003d5a07a6c7966f1518528d5078d53605bc33065d139f01edbcdf8fd099d3e",
+  "history_events_added": 1,
+  "owner_revision_after": 71,
+  "unchanged_api_fields": 378,
+  "owner_revision_before": 70,
+  "unchanged_relationships": 121,
+  "applied": true,
+  "source_file_unchanged": true,
+  "exact_excel_names_verified": true,
+  "validation": [
+    "Isolated PostgreSQL import, rollback, stale/repeat rejection and preservation checks passed.",
+    "Live Supabase rollback preview preserved full baseline.",
+    "Live commit followed by independent SQL readback matched result hash.",
+    "Local and live-data browser checks passed for exact names/order, 150 rows, default groups, candidate-name search and one batch history entry.",
+    "Auth users, sessions and permissions untouched; one explicit administrator import event."
+  ]
+}

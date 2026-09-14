@@ -1,0 +1,9 @@
+{
+  "mode": "live-read",
+  "fields": 150,
+  "exact_names": true,
+  "group_filter_rows": 19,
+  "batch_history_events": 1,
+  "api_fields_unchanged": 378,
+  "errors": []
+}
