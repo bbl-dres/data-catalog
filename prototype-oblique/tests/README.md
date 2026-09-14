@@ -1,6 +1,10 @@
 # Prototype checks
 
-`catalog-table-grants.cjs` reproduces the direct table write grants found during hosted activation, applies the scoped repair twice, verifies preserved content and SELECT access, and then applies all current incremental migrations with 481 resulting columns and no direct API-role writes. It uses the same PGlite setup as the SQL suites.
+`view-loading.cjs` compares every profile bundle and count with the full SQL snapshot, checks inherited/mapped attributes, conditional versions, read-only grants, rollback, client deduplication, retries and stale responses. `view-loading-browser.cjs` covers index-only navigation, hover prefetch, cold child links, Cache API revalidation, API fields/groups, loading/retry, lazy Excel exports and mobile. The editor and API-field browser suites now use the real index/bundle RPCs as well. Existing full-snapshot fixtures remain supported at the new index route.
+
+Run `node tests/view-loading.cjs` with `PGLITE_MODULE`, and `node tests/view-loading-browser.cjs` with both `PGLITE_MODULE` and `PLAYWRIGHT_MODULE`, from this directory. The public schema now has 20 tables / 483 columns, including the read-only version singleton.
+
+`catalog-table-grants.cjs` reproduces the direct table write grants found during hosted activation, applies the scoped repair twice, verifies preserved content and SELECT access, and then applies all current incremental migrations with 483 resulting columns and no direct API-role writes. It uses the same PGlite setup as the SQL suites.
 
 The [catalog SQL suites](../supabase/README.md#validation) validate the schema, original member RLS and the public SQL Editor import in an isolated PostgreSQL engine. `catalog-schema.cjs` first checks the canonical model's dictionaries, nullability and complete table/column inventory against the current migration chain, then exercises the original schema migration independently. `catalog-browser.cjs` exercises the Supabase adapter against real database output with a mocked REST response, including both Excel export scopes, complete workbook row counts, mobile menu layout and navigation/duplicate guards during export. These checks do not need a hosted administrator credential.
 

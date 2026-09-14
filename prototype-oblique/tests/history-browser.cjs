@@ -27,7 +27,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     const errors = [], snapshotBodies = [], historyBodies = [];
     let failHistory = false, holdHistory = null;
     page.on('pageerror', e => errors.push(e.message));
-    await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_snapshot', route => { snapshotBodies.push(route.request().postDataJSON()); return route.fulfill({ json: lean }); });
+    await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_{snapshot,catalog_index}', route => { snapshotBodies.push(route.request().postDataJSON()); return route.fulfill({ json: lean }); });
     await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_history', async route => {
       const body = route.request().postDataJSON();
       historyBodies.push(body);
@@ -47,7 +47,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     const loaded = () => page.waitForFunction(() => /\(\d+\)$/.test(document.getElementById('tab-history')?.textContent || ''));
 
     await visit(`#/objects/${encodeURIComponent(object.identifier)}`);
-    assert.deepEqual(snapshotBodies, [{ include_api_fields: true, include_history: false }], 'The app requests the snapshot without history');
+    assert.deepEqual(snapshotBodies, [{}], 'The index request accepts a complete fixture without history');
     assert.deepEqual(await page.evaluate(() => [DK.data.historyLoaded, DK.data.changelog.length]), [false, 0]);
     await loaded();
     assert.equal(await historyTab().textContent(), `Verlauf (${expected})`, 'The tab count arrives with the owner history');

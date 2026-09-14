@@ -12,7 +12,7 @@ const tags = {
   business_attribute_quality_requirement: 'Business objects', data_table: 'Data tables', data_field: 'Data tables', data_field_quality_requirement: 'Data tables',
   code_list: 'Reference data', code_value: 'Reference data', data_product: 'Data products', product_attribute: 'Data products',
   data_service: 'APIs', service_endpoint: 'APIs', actor: 'Governance', quality_requirement: 'Governance',
-  relationship: 'Governance', lineage_relation: 'Governance', change_event: 'Governance'
+  relationship: 'Governance', lineage_relation: 'Governance', change_event: 'Governance', catalog_state: 'Governance'
 };
 const output = path.join(root, 'data/swagger.json');
 const ref = name => ({ $ref: '#/components/schemas/' + name });
@@ -87,8 +87,8 @@ async function generate(db) {
     LEFT JOIN pg_class target ON target.oid=k.confrelid WHERE n.nspname='catalog' AND k.contype <> 'n' ORDER BY c.relname,k.conname`)).rows;
   const rpc = (await db.query(`SELECT p.proname, p.provolatile, p.prosecdef, p.pronargs, p.prorettype::regtype::text AS result,
     has_function_privilege('anon', p.oid, 'EXECUTE') AS executable FROM pg_proc p
-    JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='catalog' AND p.proname IN ('read_snapshot','read_history')`)).rows;
-  if (rpc.map(r=>`${r.proname}/${r.pronargs}`).sort().join() !== 'read_history/3,read_snapshot/0,read_snapshot/2'
+    JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='catalog' AND p.proname IN ('read_snapshot','read_history','read_catalog_index','read_record')`)).rows;
+  if (rpc.map(r=>`${r.proname}/${r.pronargs}`).sort().join() !== 'read_catalog_index/1,read_history/3,read_record/3,read_snapshot/0,read_snapshot/2'
     || rpc.some(r=>r.provolatile !== 's' || r.prosecdef || r.result !== 'jsonb' || !r.executable)) throw new Error('Read RPC contract changed');
 
   const sourceFiles = migrationFiles().filter(file => !file.endsWith('_catalog_import.sql'));
@@ -126,14 +126,15 @@ async function generate(db) {
   }
   schemas.SnapshotQualityRequirement = { ...schemas.quality_requirement, properties: { ...schemas.quality_requirement.properties,
     comparison_value: { ...schemas.quality_requirement.properties.comparison_value, type: ['string', 'null'], description: 'Exact numeric comparison value serialized as a decimal string by read_snapshot().' } } };
-  schemas.CatalogSnapshot = { type: 'object', description: 'Catalog collections in one object. change_event is present unless the request set include_history to false.', required: ['schemaVersion', ...tables.filter(table => table.name !== 'change_event').map(table => table.name)], properties: {
-    schemaVersion: { type: 'integer', const: 1 }, ...Object.fromEntries(tables.map(table => [table.name, { type: 'array', items: ref(table.name === 'quality_requirement' ? 'SnapshotQualityRequirement' : table.name) }]))
+  const snapshotTables = tables.filter(table => table.name !== 'catalog_state');
+  schemas.CatalogSnapshot = { type: 'object', description: 'Legacy catalog collections. change_event is present unless include_history=false. CatalogState is exposed separately.', required: ['schemaVersion', ...snapshotTables.filter(table => table.name !== 'change_event').map(table => table.name)], properties: {
+    schemaVersion: { type: 'integer', const: 1 }, ...Object.fromEntries(snapshotTables.map(table => [table.name, { type: 'array', items: ref(table.name === 'quality_requirement' ? 'SnapshotQualityRequirement' : table.name) }]))
   } };
   schemas.HistoryEvent = { type: 'object', description: 'One change event as returned by read_history: the change_event record without its before/after states.',
     properties: Object.fromEntries(Object.entries(schemas.change_event.properties).filter(([name]) => !['before', 'after'].includes(name))) };
   paths['/rpc/read_snapshot'] = { post: { security: [],
     tags: ['Snapshot'], operationId: 'read_snapshot', summary: 'Read a consistent catalog snapshot',
-    description: 'Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history; add include_history=false to omit change_event, which is how the app loads (it then reads one record’s history with read_history). An empty request preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.',
+    description: 'Read-only SQL STABLE function for complete catalog exports and legacy clients. Pass include_api_fields=true for independent API fields; include_history=false omits change_event. The app starts with read_catalog_index and loads profiles through read_record. An empty request preserves the table-field-only legacy snapshot. No records are modified; table pagination parameters do not apply.',
     parameters: [param('PublishableKey'), param('ContentProfile')], requestBody: { required: false, content: { 'application/json': { schema: { type: 'object', properties: { include_api_fields: { type: 'boolean', default: false }, include_history: { type: 'boolean', default: true, description: 'false omits change_event. Only accepted together with include_api_fields.' } }, additionalProperties: false }, example: { include_api_fields: true, include_history: false } } } },
     responses: { '200': { description: 'One snapshot object; numeric quality thresholds are exact decimal strings.', content: { 'application/json': { schema: ref('CatalogSnapshot') } } }, ...errors }
   } };
@@ -147,6 +148,35 @@ async function generate(db) {
       example: { record_table: 'business_object', record_id: '00000000-0000-0000-0000-000000000000' } } } },
     responses: { '200': { description: 'History events, newest first.', content: { 'application/json': { schema: { type: 'array', items: ref('HistoryEvent') } } } }, ...errors }
   } };
+  const revision = { type: 'string', pattern: '^[1-9][0-9]*$', description: 'Exact bigint revision encoded as decimal text.' };
+  const versionProperties = { schemaVersion: { type: 'integer', const: 1 }, catalogVersion: revision };
+  schemas.CatalogNotModified = { type: 'object', required: ['schemaVersion','catalogVersion','notModified'],
+    properties: { ...versionProperties, notModified: { const: true } } };
+  const parentTables = ['actor','domain','system','business_object','data_table','code_list','data_product','data_service','service_endpoint','quality_requirement'];
+  const structural = { ...schemas.relationship,
+    properties: Object.fromEntries(Object.entries(schemas.relationship.properties).filter(([key]) => !['comment','rule_notes_de','rule_notes_fr','rule_notes_it','rule_notes_en','documentation_links'].includes(key))) };
+  schemas.CatalogIndex = { type: 'object', required: ['schemaVersion','catalogVersion','scope','childCounts','relationship',...parentTables],
+    properties: { ...versionProperties, scope: { const: 'index' }, childCounts: { type: 'object', additionalProperties: { type: 'integer', minimum: 0 } },
+      relationship: { type: 'array', items: structural }, ...Object.fromEntries(parentTables.map(table => [table, schemas.CatalogSnapshot.properties[table]])) } };
+  schemas.CatalogCounterpart = { type: 'object', required: ['id','identifier','_counterpart'], description: 'Minimal child for relationship labels. Its owner inventory must be loaded before editing or showing the child profile.',
+    properties: { _counterpart: { const: true }, id: { type: 'string', format: 'uuid' }, identifier: { type: 'string' },
+      ...Object.fromEntries(['name_de','name_fr','name_it','name_en','status','technical_name'].map(key => [key, { type: ['string','null'] }])),
+      is_archived: { type: 'boolean' }, ...Object.fromEntries(['business_object_id','data_table_id','data_service_id','code_list_id','data_product_id'].map(key => [key, { type: ['string','null'], format: 'uuid' }])) } };
+  const ownerSchema = { type: 'string', enum: ['domain','system','business_object','data_table','code_list','data_product','data_service'] };
+  schemas.CatalogRecord = { type: 'object', required: ['schemaVersion','catalogVersion','scope','recordTable','recordId','inheritedAttributes'],
+    properties: { ...versionProperties, scope: { const: 'record' }, recordTable: ownerSchema, recordId: { type: 'string', format: 'uuid' },
+      inheritedAttributes: { type: 'object', description: 'Inherited attribute UUID to defining business object UUID.', additionalProperties: { type: 'string', format: 'uuid' } },
+      ...Object.fromEntries(snapshotTables.filter(t => t.name !== 'change_event').map(({ name }) => [name, { type: 'array', items:
+        ['business_attribute','data_field','code_value','product_attribute'].includes(name) ? { anyOf: [ref(name),ref('CatalogCounterpart')] } : ref(name) }])) } };
+  for (const [rpcName, responseSchema, properties, required] of [
+    ['read_catalog_index','CatalogIndex',{ if_version: revision },[]],
+    ['read_record','CatalogRecord',{ record_table: ownerSchema, record_id: { type: 'string', format: 'uuid' }, if_version: revision },['record_table','record_id']]
+  ]) paths['/rpc/' + rpcName] = { post: { security: [], tags: ['Snapshot'], operationId: rpcName,
+    summary: rpcName === 'read_catalog_index' ? 'Read the catalog index' : 'Read one profile bundle',
+    description: 'Public STABLE SECURITY INVOKER read. Revalidate a cached response with if_version; an unchanged catalog returns CatalogNotModified. Merge bundles only with an index at the same revision. The index contains parents/counts; bundles include archived owned rows, inherited attributes, evidence and minimal counterpart children. No catalog content is modified.',
+    parameters: [param('PublishableKey'),param('ContentProfile')],
+    requestBody: { required: required.length > 0, content: { 'application/json': { schema: { type: 'object', properties, required, additionalProperties: false } } } },
+    responses: { '200': { description: 'Versioned content or an unchanged revision.', content: { 'application/json': { schema: { oneOf: [ref(responseSchema),ref('CatalogNotModified')] } } } }, ...errors } } };
   parameters.PublishableKey = {name:'apikey',in:'header',required:true,description:'Public project key, not a user credential. This page supplies it automatically; no login or user token is required.',schema:{type:'string',pattern:'^sb_publishable_'}};
   const restServer = [{url:new URL('/functions/v1/catalog-api',config().url).href,description:'Catalog REST API'}];
   parameters.RecordId = {name:'id',in:'path',required:true,description:'Internal UUID returned by the read/create operation.',schema:{type:'string',format:'uuid'}};

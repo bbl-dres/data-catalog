@@ -95,7 +95,8 @@
     r.entity = null;
     if (r.view === 'list' && r.params.domain && (!data.contentKinds().includes(r.kind) || !data.domainOf(r.params.domain))) r.view = 'notfound';
     if (r.view === 'detail') {
-      const e = data.get(r.kind, r.id);
+      r.recordState = data.recordState(r.kind, r.id);
+      const e = r.recordState.entity;
       if (e) r.entity = Object.assign({ kind: r.kind }, e); else r.view = 'notfound';
     }
     return r;
@@ -546,15 +547,23 @@
 
   /* exports */
   async function doExport(id, label) {
-    if (id === 'diagram-pdf') { DK.diagramExport.open(route, ctx); return; }
+    if (id === 'diagram-pdf') { if (!route.recordState?.loading && !route.recordState?.error) DK.diagramExport.open(route, ctx); return; }
     if (id === 'xlsx' || id === 'xlsx-all') {
       if (state.exporting) return;
       try {
-        const plan = DK.excel.plan(route, ctx, window.location.href, { scope: id === 'xlsx-all' ? 'catalog' : 'selection' });
+        const exportRoute = { ...route }, exportContext = ctx, exportUrl = window.location.href;
         state.exporting = true;
         app.render();
         // Paint the status before synchronous workbook preparation starts.
         await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
+        let plan;
+        if (id === 'xlsx-all' && data.tiered) {
+          const catalog = await DK.catalog.snapshot(DK.catalogConfig);
+          plan = data.withCatalog(catalog, () => DK.excel.plan(exportRoute, exportContext, exportUrl, { scope: 'catalog' }));
+        } else {
+          if (exportRoute.view === 'detail') exportRoute.entity = { kind: exportRoute.kind, ...await data.loadRecord(exportRoute.kind, exportRoute.id) };
+          plan = DK.excel.plan(exportRoute, exportContext, exportUrl, { scope: id === 'xlsx-all' ? 'catalog' : 'selection' });
+        }
         await DK.excel.download(plan);
         ui.toast(t('excel.ready'));
       } catch (error) {
@@ -642,6 +651,7 @@
     if (state.menu && !['menu', 'help-toggle'].includes(el.dataset.action) && !el.closest('.ob-menu, .ob-popover')) setMenu(null);
     if (el.dataset.action.startsWith('graph-')) { DK.graph.action(el, e); return; }
     switch (el.dataset.action) {
+      case 'retry-record': data.retryRecord(route.kind, route.id); app.render(); return;
       case 'auth-open':
         closeTransient();
         DK.auth.open(); return;
@@ -872,6 +882,7 @@
       if (!DK.catalogConfig) throw new Error('Missing catalog connection configuration');
       // On-demand history arrives after the profile rendered: refresh the page that waits for it.
       data.onHistory = () => { if (route?.view === 'detail') app.render(); };
+      data.onRecord = () => { if (route && !DK.editor?.activeFor(route)) app.render(); };
       await data.load('data/');
     } catch (err) {
       // The dictionary is part of the failed load, so this bootstrap fallback must stand on its own.
@@ -942,6 +953,17 @@
     }, { capture: true, passive: true });
     document.addEventListener('keydown', onKeydown);
     document.addEventListener('focusin', onFocusin);
+    const prefetchRecord = event => {
+      if (!data.tiered || DK.editor?.activeFor(route)) return;
+      const link = event.target.closest('a[href], [data-href]');
+      const href = link?.getAttribute('href') || link?.dataset.href;
+      if (!href?.startsWith('#/')) return;
+      if (event.relatedTarget && link.contains(event.relatedTarget)) return;
+      const target = router.parse(href);
+      if (target.view === 'detail') data.recordState(target.kind, target.id);
+    };
+    document.addEventListener('pointerover', prefetchRecord);
+    document.addEventListener('focusin', prefetchRecord);
     document.addEventListener('focusout', onFocusout);
     document.addEventListener('mousedown', e => { if (e.target.closest('#search-suggest')) e.preventDefault(); });
     document.addEventListener('pointerdown', DK.graph.onPointerDown);

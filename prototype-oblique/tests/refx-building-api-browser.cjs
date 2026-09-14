@@ -8,7 +8,7 @@ const {createServer,chromium,settle}=require('./browser-helpers.cjs');
  if(process.env.REFX_LIVE_READ!=='1'){
   const snapshot=JSON.parse(fs.readFileSync(path.join(os.tmpdir(),'refx-building-import-snapshot.json'),'utf8'));
   await page.route('https://zicluerzbevodlmtbxow.supabase.co/**',route=>{
-   if(new URL(route.request().url()).pathname==='/rest/v1/rpc/read_snapshot')return route.fulfill({json:snapshot});
+   if(['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(new URL(route.request().url()).pathname))return route.fulfill({json:snapshot});
    throw Error('Unexpected hosted request');
   });
  }

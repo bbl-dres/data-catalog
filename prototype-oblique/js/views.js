@@ -132,8 +132,8 @@
     const ctx = {
       route, state, entity: route.entity, kind: isDomain ? 'objects' : route.kind, mode, isDomain,
       isList: route.view === 'list' || (isDomain && mode !== 'overview'),
-      isRows: route.view === 'detail' && !isDomain && DK.detail.resolveTab(route.entity, route.params.tab) === 'rows',
-      isHistory: route.view === 'detail' && !isDomain && DK.detail.resolveTab(route.entity, route.params.tab) === 'history',
+      isRows: route.view === 'detail' && !isDomain && !route.recordState?.loading && !route.recordState?.error && DK.detail.resolveTab(route.entity, route.params.tab) === 'rows',
+      isHistory: route.view === 'detail' && !isDomain && !route.recordState?.loading && !route.recordState?.error && DK.detail.resolveTab(route.entity, route.params.tab) === 'history',
       groups: [], columns: [], groupOptions: [], groupLabel: '', groupBy: null, actions: [], crumbs: [], title: '',
       filter: isDomain && mode === 'overview' ? '' : (route.params.filter || '').trim(), total: 0, matched: 0,
       domain: isDomain ? route.entity : route.view === 'list' && route.params.domain ? data.domainOf(route.params.domain) : null,
@@ -225,6 +225,7 @@
       if (route.view === 'detail' && e.kind === 'products') ctx.actions.push(A('dcat', t('toolbar.export.dcat')));
     }
     ctx.canPrint = ctx.actions.length > 0 && ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis'].includes(route.kind);
+    if (route.recordState?.loading || route.recordState?.error) { ctx.canPrint = false; ctx.actions = []; }
     return ctx;
   };
 
@@ -414,7 +415,7 @@
     domainTable.minWidth = 480;
     const domainValues = d => {
       const objs = data.objectsOfDomain(d);
-      return [d.name, d.responsibleOrg, objs.length, objs.reduce((sum, o) => sum + o.attributes.length, 0)];
+      return [d.name, d.responsibleOrg, objs.length, objs.reduce((sum, o) => sum + data.sizeOf('objects', o), 0)];
     };
     const domainRows = ui.sortRows(data.domains, domainTable.sort, domainValues).map(d => {
       const v = domainValues(d);

@@ -1,4 +1,8 @@
 {
+  "record.loading": {"de":"Eintrag wird geladen…","fr":"Chargement de l’entrée…","it":"Caricamento della voce…","en":"Loading entry…"},
+  "record.unavailable": {"de":"Eintrag konnte nicht geladen werden.","fr":"Impossible de charger l’entrée.","it":"Impossibile caricare la voce.","en":"Entry could not be loaded."},
+  "record.retry": {"de":"Erneut versuchen","fr":"Réessayer","it":"Riprova","en":"Try again"},
+  "record.exportChanged": {"de":"Der Katalog wurde geändert. Bitte öffnen Sie die Druckvorschau erneut.","fr":"Le catalogue a changé. Rouvrez l’aperçu avant impression.","it":"Il catalogo è cambiato. Riapri l’anteprima di stampa.","en":"The catalog changed. Please reopen the print preview."},
   "fact.propertyGroup": {"de":"Gruppe","fr":"Groupe","it":"Gruppo","en":"Group"},
   "apiFields.empty": {"de":"Noch keine API-Felder dokumentiert.","fr":"Aucun champ API documenté pour le moment.","it":"Nessun campo API ancora documentato.","en":"No API fields documented yet."},
   "apiFields.unavailable": {"de":"API-Felder können hier noch nicht bearbeitet werden.","fr":"Les champs API ne peuvent pas encore être modifiés ici.","it":"I campi API non possono ancora essere modificati qui.","en":"API field editing is not available here yet."},

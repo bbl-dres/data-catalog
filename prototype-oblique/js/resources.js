@@ -41,5 +41,43 @@
     pending.set(key, promise);
     return promise;
   }
-  DK.resources = { read, asset, catalogConnection };
+  // Cache only public, versioned reads. A cached value is never used without server revalidation.
+  // Storage denial/quota failures leave the ordinary network path available.
+  const catalogReads = new Map();
+  async function catalogRead(config, rpc, body = {}) {
+    const target = catalogConnection(config), url = new URL('rpc/' + rpc, target.base);
+    const cacheUrl = new URL(url);
+    Object.entries(body).forEach(([key, value]) => cacheUrl.searchParams.set(key, value));
+    const key = cacheUrl.href;
+    if (catalogReads.has(key)) return catalogReads.get(key);
+    const promise = (async () => {
+      let cache, cached;
+      try {
+        cache = await globalThis.caches?.open('dk-catalog-v1');
+        cached = await (await cache?.match(key))?.json();
+        if (cached?.schemaVersion !== 1 || !cached.catalogVersion || cached.notModified
+          || cached.scope !== (rpc === 'read_catalog_index' ? 'index' : 'record')
+          || rpc === 'read_record' && (cached.recordId !== body.record_id || cached.recordTable !== body.record_table)) cached = null;
+      } catch { cached = null; }
+      const fetchValue = args => read(url, { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+      let value = await fetchValue({ ...body, ...(cached ? { if_version: cached.catalogVersion } : {}) });
+      if (value?.notModified) {
+        if (cached && value.catalogVersion === cached.catalogVersion) return cached;
+        value = await fetchValue(body);
+        if (value?.notModified) throw new Error('Unexpected conditional catalog response');
+      }
+      if (cache && value?.schemaVersion === 1 && value.catalogVersion && value.scope) {
+        try {
+          await cache.put(key, new Response(JSON.stringify(value), { headers: { 'Content-Type': 'application/json' } }));
+          const keys = await cache.keys();
+          for (const expired of keys.slice(0, Math.max(0, keys.length - 64))) await cache.delete(expired);
+        } catch { /* Public reads still work when browser storage is unavailable. */ }
+      }
+      return value;
+    })().finally(() => catalogReads.delete(key));
+    catalogReads.set(key, promise);
+    return promise;
+  }
+  DK.resources = { read, asset, catalogConnection, catalogRead };
 })(window.DK = window.DK || {});

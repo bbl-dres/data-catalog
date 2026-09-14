@@ -12,13 +12,13 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
     const spec = await generate(db);
     assert.deepEqual(spec, JSON.parse(fs.readFileSync(output, 'utf8')), 'Regenerate the committed OpenAPI file after schema changes');
     assert.equal(spec.openapi, '3.1.0');
-    assert.equal(Object.keys(spec.paths).length, 37);
+    assert.equal(Object.keys(spec.paths).length, 40);
     const tables = Object.keys(spec.paths).filter(p => !p.slice(1).includes('/')).map(p => p.slice(1));
     const operationIds = new Set();
     for (const [url, operations] of Object.entries(spec.paths)) {
       if(url.endsWith('/{id}'))assert.deepEqual(Object.keys(operations),['get','patch','delete']);
-      else if(url==='/rpc/read_snapshot'||url==='/rpc/read_history')assert.deepEqual(Object.keys(operations),['post']);
-      else if(['change_event','business_attribute_quality_requirement','data_field_quality_requirement'].includes(url.slice(1)))assert.deepEqual(Object.keys(operations),['get'],'Audit and assignment table reads stay read-only');
+      else if(url.startsWith('/rpc/read_'))assert.deepEqual(Object.keys(operations),['post']);
+      else if(['change_event','catalog_state','business_attribute_quality_requirement','data_field_quality_requirement'].includes(url.slice(1)))assert.deepEqual(Object.keys(operations),['get'],'Audit, state and assignment table reads stay read-only');
       else assert.deepEqual(Object.keys(operations),['get','post']);
       for (const operation of Object.values(operations)) {
         assert(!operationIds.has(operation.operationId)); operationIds.add(operation.operationId);
@@ -108,8 +108,14 @@ const { generate, config, output } = require('../supabase/generate-openapi.cjs')
     } else {
       evidence.snapshot = (await db.query('SELECT catalog.read_snapshot() AS value')).rows[0].value;
       for (const table of tables) evidence.tables[table] = (await db.query(`SELECT coalesce(jsonb_agg(t), '[]'::jsonb) AS rows FROM catalog.${table} t`)).rows[0].rows;
+      evidence.index = (await db.query('SELECT catalog.read_catalog_index() value')).rows[0].value;
+      evidence.notModified = (await db.query('SELECT catalog.read_catalog_index($1) value',[evidence.index.catalogVersion])).rows[0].value;
+      evidence.records = [];
+      for (const table of ['domain','system','business_object','data_table','code_list','data_product','data_service']) {
+        for (const row of evidence.tables[table]) evidence.records.push((await db.query('SELECT catalog.read_record($1,$2) value',[table,row.id])).rows[0].value);
+      }
     }
-    for (const table of tables) for (const row of [...evidence.tables[table], ...evidence.snapshot[table]]) {
+    for (const table of tables) for (const row of [...evidence.tables[table], ...(evidence.snapshot[table] || [])]) {
       assert.deepEqual(Object.keys(row).sort(), Object.keys(spec.components.schemas[table].properties).sort(), table + ' response columns');
     }
     const folder = path.join(os.tmpdir(), 'oblique-api-review'); fs.mkdirSync(folder, { recursive: true });

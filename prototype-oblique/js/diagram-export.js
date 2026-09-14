@@ -236,6 +236,23 @@
   }
   function update(session) {
     if (!session.assets || current !== session || session.busy) return;
+    const loading = diagram.usesRows(session.settings) && session.loadRows?.(session.scope, session.language);
+    if (loading) {
+      session.busy = true; controls(session);
+      session.pagesHost.innerHTML = ui.loading(t(session, 'record.loading'));
+      loading.then(() => {
+        if (current !== session) return;
+        session.snapshot = diagram.scoped(session.catalogs, session.language, session.scope);
+        session.busy = false;
+        update(session);
+      }).catch(failure => {
+        if (current !== session) return;
+        session.busy = false; session.layout = null; session.pagesHost.replaceChildren();
+        error(session, failure.message); controls(session);
+        session.dialog.querySelector('[data-diagram-action="retry"]').hidden = false;
+      });
+      return;
+    }
     renderControls(session);
     try {
       session.layout = diagram.layout(session.snapshot, session.settings, session.measure);

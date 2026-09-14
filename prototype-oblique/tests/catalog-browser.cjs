@@ -21,7 +21,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
       page.on('response', response => {
         if (response.url().endsWith('/rpc/read_snapshot')) liveChecks.push(response.json().then(actual => { assert.deepEqual(actual, snapshot, 'Hosted snapshot must match the tested import'); }));
       });
-    } else await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_snapshot', route => route.fulfill({ json: snapshot }));
+    } else await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_{snapshot,catalog_index}', route => route.fulfill({ json: snapshot }));
     const visit = async hash => {
       await page.goto(base + hash);
       await page.locator('#page-content h1').waitFor();
@@ -94,7 +94,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.deepEqual(catalogJsonRequests, [], 'Supabase mode never fetches the legacy catalog files');
     await Promise.all(liveChecks);
     page.removeAllListeners('response');
-    await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_snapshot', route => route.fulfill({ status: 503, json: { message: 'Unavailable' } }));
+    await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/rpc/read_{snapshot,catalog_index}', route => route.fulfill({ status: 503, json: { message: 'Unavailable' } }));
     await page.reload();
     await page.getByText('Datenkatalog konnte nicht geladen werden', { exact: true }).waitFor();
     assert.equal(await page.locator('#page-content').count(), 0, 'No silent fallback to stale JSON data');

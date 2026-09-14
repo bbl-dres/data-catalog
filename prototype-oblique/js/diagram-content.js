@@ -149,7 +149,31 @@
       scope.facet = entity.kind === 'tables' ? 'system' : 'domain';
       scope.value = initial.entities[0]?.facetValues[scope.facet]?.id || '';
     }
-    return { catalogs, scope };
+    const loaded = new Set(), version = data.catalogVersion;
+    // The print workspace can expand from one profile to a collection. Fetch the rows for
+    // that scope before a row layout/export, instead of freezing empty index placeholders.
+    const loadRows = data.tiered ? (nextScope, lang) => {
+      const selected = diagram.scoped(catalogs, lang, nextScope).entities;
+      const missing = selected.filter(entity => !loaded.has(nextScope.kind + ':' + entity.id));
+      if (!missing.length) return null;
+      return (async () => {
+        let position = 0;
+        await Promise.all(Array.from({ length: Math.min(4, missing.length) }, async () => {
+          while (position < missing.length) {
+            const entity = missing[position++];
+            await data.loadRecord(nextScope.kind, entity.id);
+          }
+        }));
+        if (data.catalogVersion !== version) throw new Error(ui.t('record.exportChanged'));
+        for (const language of data.config.app.languages) {
+          const snapshot = ui.withLanguage(data.i18n, language, () => content(nextScope.kind, data.list(nextScope.kind), language, ui.t('print.kind.' + nextScope.kind)));
+          snapshot.createdAt = createdAt;
+          Object.defineProperty(catalogs[language], nextScope.kind, { value: snapshot, enumerable: true, configurable: true });
+        }
+        missing.forEach(entity => loaded.add(nextScope.kind + ':' + entity.id));
+      })();
+    } : null;
+    return { catalogs, scope, loadRows };
   };
   diagram.scoped = (catalogs, language, scope) => {
     const original = catalogs[language][scope.kind];

@@ -9,6 +9,9 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
  browser=await chromium.launch({channel:process.env.PLAYWRIGHT_CHANNEL||'msedge',headless:true});
  const context=await browser.newContext({viewport:{width:1440,height:1000}}),errors=[];
  await context.route(project+'/**',async route=>{const req=route.request(),url=new URL(req.url());
+  if(url.pathname==='/rest/v1/rpc/read_catalog_index')return route.fulfill({json:(await db.query('SELECT catalog.read_catalog_index($1) s',[req.postDataJSON().if_version || null])).rows[0].s});
+  if(url.pathname==='/rest/v1/rpc/read_record'){const b=req.postDataJSON();return route.fulfill({json:(await db.query('SELECT catalog.read_record($1,$2,$3) s',[b.record_table,b.record_id,b.if_version || null])).rows[0].s});}
+  if(url.pathname==='/rest/v1/rpc/read_history'){const b=req.postDataJSON();return route.fulfill({json:(await db.query('SELECT catalog.read_history($1,$2) s',[b.record_table,b.record_id])).rows[0].s});}
   if(url.pathname==='/rest/v1/rpc/read_snapshot')return route.fulfill({json:(await db.query('SELECT catalog.read_snapshot(true) s')).rows[0].s});
   if(url.pathname==='/rest/v1/rpc/edit_capabilities')return route.fulfill({json:{version:1,can_edit:true,access_options:true,api_fields:true,property_groups:true}});
   if(url.pathname==='/rest/v1/rpc/save_entry'){try{return route.fulfill({json:await request(db,req.postDataJSON())});}catch(e){return route.fulfill({status:400,json:{code:e.code,message:e.message}});}}
@@ -17,7 +20,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   throw Error('Unexpected hosted request '+url.pathname);
  });
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
- const goto=async hash=>{await page.goto(base+hash);await page.locator('#page-content h1').waitFor();await settle(page);};
+ const goto=async hash=>{await page.goto(base+hash);await page.locator('#page-content h1').waitFor();await page.waitForFunction(()=>!DK.app.route.recordState?.loading);await settle(page);};
  const tab=async name=>page.locator(`[data-edit="tab"][data-tab="${name}"]`).click();
  const edit=async()=>{await page.locator('[data-edit="start"]').click();await page.locator('#catalog-editor').waitFor();};
  const save=async()=>{await page.locator('[data-edit="save"]').click();await page.locator('#catalog-editor').waitFor({state:'detached'});};

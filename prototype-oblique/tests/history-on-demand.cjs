@@ -129,11 +129,11 @@ const { database, runtime } = require('./catalog-test-helpers.cjs');
     check(DK.data.history('attrs', attributeId).map(shape), loaded.items.map(shape), 'Reloaded history matches');
 
     // A database without the optional-history overload rejects the new key; the app falls back to the complete snapshot.
-    const legacy = runtime(full, undefined, (url, options) => url.includes('/rpc/read_snapshot') && options.body.includes('include_history') ? { status: 404, error: { code: 'PGRST202', message: 'Could not find the function' } } : undefined);
+    const legacy = runtime(full, undefined, (url, options) => url.includes('/rpc/read_catalog_index') || url.includes('/rpc/read_snapshot') && options.body.includes('include_history') ? { status: 404, error: { code: 'PGRST202', message: 'Could not find the function' } } : undefined);
     await legacy.DK.data.load('data/');
     check(legacy.requests.filter(r => r.url.includes('/rpc/read_snapshot')).map(r => r.options.body), ['{"include_api_fields":true,"include_history":false}', '{"include_api_fields":true}'], 'One retry with the legacy request body');
     check([legacy.DK.data.historyLoaded, legacy.DK.data.history('objects', sample.record.identifier).map(shape)], [true, loaded.items.map(shape)], 'The complete snapshot keeps preloaded history');
-    const missing = runtime(full, undefined, url => url.includes('/rpc/read_snapshot') ? { status: 404, error: { code: 'PGRST202', message: 'Could not find the function' } } : undefined);
+    const missing = runtime(full, undefined, url => /\/rpc\/read_(snapshot|catalog_index)/.test(url) ? { status: 404, error: { code: 'PGRST202', message: 'Could not find the function' } } : undefined);
     await assert.rejects(missing.DK.data.load('data/'), /Supabase HTTP 404\. Apply the catalog public-read and import migrations/); checks++;
     console.log(`history-on-demand: ${checks} checks, ${owners} owners with history`);
   } finally { await db.close(); }

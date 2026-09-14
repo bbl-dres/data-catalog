@@ -55,7 +55,7 @@ function serve(snapshotText, port = 0) {
       headers['Content-Length'] = body.length; // without a length the throttled HTTP/2 connection processed responses one at a time
       res.writeHead(status, headers); res.end(body);
     };
-    if (req.method === 'POST' && pathname === '/rest/v1/rpc/read_snapshot') { send(200, Buffer.from(snapshotText), 'application/json', false); return; }
+    if (req.method === 'POST' && ['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(pathname)) { send(200, Buffer.from(snapshotText), 'application/json', false); return; }
     if (pathname === '/js/catalog-config.js') {
       const origin = `${h2 ? 'https' : 'http'}://127.0.0.1:${server.address().port}`;
       send(200, Buffer.from(useJson ? "window.DK = window.DK || {}; window.DK.catalogConfig = { provider: 'json' };" : `window.DK = window.DK || {}; window.DK.catalogConfig = Object.freeze({ provider: 'supabase', url: '${origin}', publishableKey: 'sb_publishable_local' });`), 'application/javascript', true); return;

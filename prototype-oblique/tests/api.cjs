@@ -21,7 +21,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
       const request = route.request(), url = new URL(request.url());
       requests.push({ path: url.pathname, query: url.searchParams, method: request.method(), headers: request.headers(), body: request.postData() });
       if (url.pathname.endsWith('/redirect-target')) { redirectedRequests++; return route.fulfill({ json: [] }); }
-      if (url.pathname.endsWith('/rpc/read_snapshot')) return route.fulfill({ json: snapshot });
+      if (['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(url.pathname)) return route.fulfill({ json: snapshot });
       if (url.pathname.endsWith('/business_object') && request.method() === 'GET') {
         if (redirectRead) return route.fulfill({ status: 307, headers: { Location: '/rest/v1/redirect-target' } });
         return rejectRead ? route.fulfill({ status: 503, json: { message: 'Temporary test outage' } })
@@ -32,7 +32,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     await page.route('https://untrusted.invalid/**', () => { throw new Error('Swagger must ignore query configuration'); });
     await page.goto(`http://127.0.0.1:${server.address().port}/?url=https://untrusted.invalid/spec.json&configUrl=https://untrusted.invalid/config.json#/api`);
     await page.locator('#swagger-ui .ob-swagger-content[aria-busy="false"]').waitFor();
-    assert.equal(await page.locator('#swagger-ui .opblock').count(), 84);
+    assert.equal(await page.locator('#swagger-ui .opblock').count(), 88);
     assert.equal(await page.locator('#swagger-ui .opblock-get .authorization__btn').count(), 0, 'Public GETs have no auth lock');
     assert.equal(await page.locator('#operations-Snapshot-read_snapshot .authorization__btn').count(), 0, 'Read-only POST snapshot is public');
     assert.equal(await page.locator('#swagger-ui .opblock .authorization__btn').count(), 48, 'Only 48 write operations show auth locks');
@@ -76,7 +76,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.equal(snapshotRead.method, 'POST');
     assert.equal(snapshotRead.headers['content-profile'], 'catalog');
     assert(!snapshotRead.headers.authorization);
-    assert.deepEqual(JSON.parse(snapshotRead.body || '{}'), {});
+    assert.deepEqual(JSON.parse(snapshotRead.body || '{}'), { include_api_fields: true, include_history: false });
     assert.match(await rpc.locator('.live-responses-table').innerText(), /schemaVersion/);
     await rpc.locator('.opblock-summary-control').click();
     for (const width of [390, 320, 1600]) {
@@ -93,7 +93,7 @@ const { createServer, settle, chromium } = require('./browser-helpers.cjs');
     assert.equal(redirectedRequests, 0, 'Swagger preserves redirect refusal through its HTTP client');
     assert.deepEqual(errors, []);
     assert.deepEqual(await page.evaluate(() => window.securityViolations), [], 'Swagger works without relaxing the script policy');
-    console.log('PASS: 84 documented API operations, automatic public-key reads, schema headers, filter/projection/pagination, snapshot POST, retry, retained state and 320–1600 px layouts.');
+    console.log('PASS: 88 documented API operations, automatic public-key reads, schema headers, filter/projection/pagination, snapshot POST, retry, retained state and 320–1600 px layouts.');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

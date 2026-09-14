@@ -15,7 +15,7 @@ async function workspace(options = {}) {
     const db = await require('./catalog-test-helpers.cjs').database();
     try {
       const snapshot = (await db.query('SELECT catalog.read_snapshot() AS snapshot')).rows[0].snapshot;
-      await page.route('**/rest/v1/rpc/read_snapshot', route => route.fulfill({ json: snapshot }));
+      await page.route('**/rest/v1/rpc/read_{snapshot,catalog_index}', route => route.fulfill({ json: snapshot }));
     } finally { await db.close(); }
   }
   const errors = []; page.on('pageerror', error => errors.push(error.message));

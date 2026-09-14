@@ -30,7 +30,7 @@
       catch (err) { throw new Error(file + ': ' + (err.name === 'SyntaxError' ? 'invalid JSON: ' : '') + err.message); }
     })), provider === 'supabase' ? DK.catalog.load(DK.catalogConfig) : null]);
     // Validate a complete snapshot before publishing it; a failed reload keeps the old catalog usable.
-    const next = { ...Object.fromEntries(entries), ...catalog, catalogSnapshot: catalog?.catalogSnapshot || null };
+    const next = { ...Object.fromEntries(entries), ...catalog, tiered: catalog?.tiered || false, catalogSnapshot: catalog?.catalogSnapshot || null };
     const nextIndex = {};
     const record = (value, at) => {
       if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error(at + ': expected an object');
@@ -100,7 +100,102 @@
     Object.assign(data, next);
     data.resetHistory();
     Object.assign(index, nextIndex);
+    data.resetRecords();
     data.validate();
+  };
+
+  /* Versioned, single-flight profile bundles. Only complete owners are considered loaded;
+     counterpart rows can supply relation labels without pretending to be an owner's inventory. */
+  const recordCache = new Map();
+  let indexSnapshot = null, recordGeneration = 0, refreshingIndex = null;
+  const recordOwner = (kind, id) => kind === 'attrs' ? ['objects', data.splitChildId(id)?.[0]]
+    : kind === 'fields' ? ['tables', data.splitChildId(id)?.[0]] : [kind, id];
+  const publishCatalog = catalog => {
+    Object.assign(data, catalog);
+    for (const kind of KINDS) index[kind] = new Map(data[kind].map(entity => [entity.identifier, entity]));
+  };
+  const publishRecords = () => publishCatalog(DK.catalog.projectRecord(indexSnapshot,
+    [...recordCache.values()].filter(entry => entry.bundle?.catalogVersion === indexSnapshot.catalogVersion).map(entry => entry.bundle)));
+  data.resetRecords = () => {
+    recordGeneration++;
+    recordCache.clear();
+    refreshingIndex = null;
+    indexSnapshot = data.tiered ? data.catalogSnapshot : null;
+  };
+  async function refreshIndex(generation) {
+    if (!refreshingIndex) {
+      const pending = DK.catalog.load(DK.catalogConfig).then(catalog => {
+        if (generation !== recordGeneration) return;
+        if (!catalog.tiered) throw new Error('Expected a versioned catalog index');
+        indexSnapshot = catalog.catalogSnapshot;
+        for (const [key, entry] of recordCache) if (entry.bundle && entry.bundle.catalogVersion !== catalog.catalogVersion) recordCache.delete(key);
+        data.resetHistory();
+        publishRecords();
+        data.onRecord?.();
+      }).finally(() => { if (refreshingIndex === pending) refreshingIndex = null; });
+      refreshingIndex = pending;
+    }
+    await refreshingIndex;
+  }
+  data.recordState = function (kind, id) {
+    const [ownerKind, ownerId] = recordOwner(kind, id), parent = data.get(ownerKind, ownerId);
+    if (!data.tiered || !parent?._record?.id) return { entity: data.get(kind, id), loading: false, error: false };
+    const key = ownerKind + ':' + ownerId;
+    let entry = recordCache.get(key);
+    if (!entry || entry.error && entry.retryAt <= Date.now()) {
+      entry = { loading: true, error: false };
+      recordCache.set(key, entry);
+      const generation = recordGeneration;
+      entry.promise = (async () => {
+        // A concurrent edit between tier reads is retried against a fresh index, never merged silently.
+        for (let attempt = 0; attempt < 3; attempt++) {
+          const bundle = await DK.catalog.record(DK.catalogConfig, DK.catalog.kinds[ownerKind], parent._record.id);
+          if (generation !== recordGeneration) return;
+          if (bundle.catalogVersion !== indexSnapshot.catalogVersion) await refreshIndex(generation);
+          if (generation !== recordGeneration) return;
+          if (bundle.catalogVersion !== indexSnapshot.catalogVersion) continue;
+          entry.bundle = bundle;
+          recordCache.set(key, entry);
+          publishRecords();
+          entry.loading = false;
+          return;
+        }
+        throw new Error('Catalog changed while loading this record. Please retry.');
+      })().catch(error => {
+        console.error(error);
+        Object.assign(entry, { loading: false, error: true, retryAt: Date.now() + 15000 });
+      }).then(() => { if (generation === recordGeneration) data.onRecord?.(key); });
+    }
+    const entity = data.get(kind, id);
+    // Keep a deep link open until its owner's bundle determines whether the child exists.
+    const placeholder = ['attrs','fields'].includes(kind) ? {
+      identifier: id, name: data.splitChildId(id)?.[1], labels: {}, object: kind === 'attrs' ? ownerId : undefined,
+      table: kind === 'fields' ? ownerId : undefined, domain: parent.domain, system: parent.system,
+    } : parent;
+    return { ...entry, entity: entity || (entry.loading || entry.error ? placeholder : null) };
+  };
+  data.loadRecord = async (kind, id) => {
+    const generation = recordGeneration;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const entry = data.recordState(kind, id);
+      await entry.promise;
+      if (generation !== recordGeneration) throw new Error('Catalog reloaded while loading the record');
+      const current = data.recordState(kind, id);
+      if (current.error || !current.entity) throw new Error('Record could not be loaded');
+      if (!current.loading) return current.entity;
+    }
+    throw new Error('Catalog changed while loading the record');
+  };
+  data.retryRecord = (kind, id) => {
+    const owner = recordOwner(kind, id);
+    const entry = recordCache.get(owner.join(':'));
+    if (entry?.error) recordCache.delete(owner.join(':'));
+    return data.recordState(kind, id);
+  };
+  /** Full catalog exports use a temporary synchronous projection; they never populate the live store. */
+  data.withCatalog = (catalog, action) => {
+    const saved = Object.fromEntries([...KINDS, 'catalogSnapshot', 'projectHistory', 'historyLoaded', 'changelog', 'catalogVersion', 'tiered'].map(key => [key, data[key]]));
+    try { publishCatalog(catalog); return action(); } finally { publishCatalog(saved); }
   };
 
   /** Report dangling cross-references once. The UI tolerates them, but the content should be fixed. */
@@ -285,6 +380,7 @@
   data.apisOfSystem = s => data.apis.filter(a => a.system === s.identifier);
 
   data.sizeOf = function (kind, e) {
+    if (['objects', 'tables', 'apis', 'refs', 'products'].includes(kind) && e.childCount != null) return e.childCount;
     switch (kind) {
       case 'objects': return e.attributes.length;
       case 'tables': case 'apis': return e.fields.length;
@@ -312,13 +408,13 @@
   /** Table cells [col2, description, col4] of a section row; the status column is added by the view. */
   data.cols = function (kind, e) {
     switch (kind) {
-      case 'objects': return [e.responsibleOrg, e.description, String(e.attributes.length)];
-      case 'tables': return [data.nameOf('systems', e.system), e.description, String(e.fields.length)];
+      case 'objects': return [e.responsibleOrg, e.description, String(data.sizeOf(kind, e))];
+      case 'tables': return [data.nameOf('systems', e.system), e.description, String(data.sizeOf(kind, e))];
       case 'domains': return [e.responsibleOrg, e.description, String(data.objectsOfDomain(e).length)];
       case 'systems': return [e.technology, e.description, String(data.tablesOfSystem(e).length)];
       case 'products': return [e.accessRights, e.description, e.format];
       case 'apis': return [[data.nameOf('systems', e.system), data.serviceVersionOf(e)].filter(Boolean).join(' · '), e.description, e.protocol];
-      default: return [e.normReference, e.description, e.values.length ? String(e.values.length) : '–'];
+      default: return [e.normReference, e.description, data.sizeOf(kind, e) ? String(data.sizeOf(kind, e)) : '–'];
     }
   };
   /** Raw column order shared by collection sorting and Excel export. */
@@ -408,7 +504,7 @@
     const link = {
       tables: x => ({ name: data.displayName('tables', x), sub: data.nameOf('systems', x.system), href: href('tables', x.identifier) }),
       refs: r => ({ name: r.name, sub: r.normReference, href: href('refs', r.identifier) }),
-      objects: o => ({ name: o.name, sub: `${o.attributes.length} ${t('unit.attributes')}`, href: href('objects', o.identifier) }),
+      objects: o => ({ name: o.name, sub: `${data.sizeOf('objects', o)} ${t('unit.attributes')}`, href: href('objects', o.identifier) }),
       domains: d => ({ name: d.name, sub: d.responsibleOrg, href: href('domains', d.identifier) }),
       systems: s => ({ name: s.name, sub: s.technology, href: href('systems', s.identifier) }),
       products: p => ({ name: p.name, sub: p.accessRights, href: href('products', p.identifier) }),
@@ -628,7 +724,7 @@
     historyCache.set(key, entry);
     const generation = historyGeneration;
     DK.catalog.history(DK.catalogConfig, historyOwners[ownerKind], record.id)
-      .then(rows => { entry.items = sortHistory(data.projectHistory(rows)); entry.loading = false; })
+      .then(rows => { entry.items = sortHistory(data.projectHistory(rows, key)); entry.loading = false; })
       .catch(err => { console.error(err); Object.assign(entry, { loading: false, error: true, retryAt: Date.now() + 15000 }); })
       .then(() => { if (generation === historyGeneration) data.onHistory?.(key); });
     return entry;

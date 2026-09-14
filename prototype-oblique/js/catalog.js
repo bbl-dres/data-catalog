@@ -88,7 +88,7 @@
     };
     const sourceIndex = index(snapshot.relationship.filter(active), link => [link.source_data_product_id, link.source_data_table_id, link.source_business_object_id]);
     const linked = (r, type, targetTable) => (sourceIndex.get(r.id) || []).filter(link => link.relationship_type === type).map(link => ref(targetTable, link[`target_${targetTable}_id`])).filter(Boolean);
-    const result = { catalogSnapshot: snapshot };
+    const result = { catalogSnapshot: snapshot, catalogVersion: snapshot.catalogVersion, tiered: snapshot.scope === 'index' };
     for (const [kind, table] of Object.entries(kinds)) result[kind] = snapshot[table].map(base);
     const byId = Object.fromEntries(Object.entries(kinds).map(([kind, table]) => [table, new Map(result[kind].map(e => [e._record.id, e]))]));
     const owner = (table, id) => {
@@ -159,7 +159,10 @@
       const endpoint = endpoints.find(x => x.identifier === 'primary') || endpoints[0];
       Object.assign(e, { endpoints, serviceVersion: e._record.service_version, protocol: endpoint?.protocol, endpointURL: endpoint?.url, documentation: e.informationUrls[0], accessRights: e._record.access_notes || e._record.access_mode });
     });
-    const projectEvent = r => {
+    const projectEvent = (r, ownerKey) => {
+      if (ownerKey) return localized({ identifier: r.identifier, entity: ownerKey, date: r.occurred_on,
+        action: { created: 'Erstellt', updated: 'Geändert', imported: 'Importiert', retired: 'Archiviert', restored: 'Wiederhergestellt' }[r.action],
+        importId: r.import_id, _record: r }, { detail: () => text(r, 'summary'), user: () => text(r, 'actor_name') });
       const target = Object.entries(kinds).find(([, table]) => r[`record_${table}_id`]);
       const [kind, table] = target || ['other', Object.keys(r).find(key => key.startsWith('record_') && r[key])?.slice(7, -3)];
       let identifier = ref(table, r[`record_${table}_id`]), historyKind = kind;
@@ -167,9 +170,12 @@
       if (parent) { const child = resolve(table,r[`record_${table}_id`]); const context = table === 'data_field' && child.data_service_id ? ['data_service','apis'] : parent; identifier = ref(context[0],child[context[0]+'_id']); historyKind = context[1]; }
       return localized({ identifier: r.identifier, entity: `${historyKind}:${identifier}`, date: r.occurred_on, action: { created: 'Erstellt', updated: 'Geändert', imported: 'Importiert', retired: 'Archiviert', restored: 'Wiederhergestellt' }[r.action], importId: r.import_id, _record: r }, { detail: () => text(r, 'summary'), user: () => text(r, 'actor_name') });
     };
-    result.changelog = (snapshot.change_event || []).map(projectEvent);
+    result.changelog = (snapshot.change_event || []).map(r => projectEvent(r));
     result.historyLoaded = Array.isArray(snapshot.change_event);
-    result.projectHistory = rows => rows.map(projectEvent);
+    result.projectHistory = (rows, ownerKey) => rows.map(r => projectEvent(r, ownerKey));
+    if (snapshot.scope === 'index') for (const kind of Object.keys(kinds)) {
+      for (const entity of result[kind]) entity.childCount = snapshot.childCounts[entity._record.id] || 0;
+    }
     for (const kind of Object.keys(kinds)) result[kind]=result[kind].filter(e=>!e._record.is_archived);
     return result;
   }
@@ -177,18 +183,44 @@
   const connection = config => DK.resources.catalogConnection(config);
   const request = (target, body) => ({ method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
     headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body });
-  async function load(config) {
-    const target = connection(config), url = new URL('rpc/read_snapshot', target.base);
-    try {
-      let snapshot;
-      try {
-        snapshot = await (DK.boot?.take(url) || DK.resources.read(url, request(target, '{"include_api_fields":true,"include_history":false}')));
-      } catch (error) {
-        // A database that predates the optional-history overload rejects the include_history key: load the complete snapshot instead.
-        if (error.code !== 'PGRST202') throw error;
-        snapshot = await DK.resources.read(url, request(target, '{"include_api_fields":true}'));
+  /** Both tiers share the full projection's localization, ordering and inheritance rules. */
+  function projectIndex(snapshot) {
+    if (snapshot?.scope !== 'index') return project(snapshot); // Complete fixtures / legacy deployments.
+    if (!snapshot.catalogVersion || !snapshot.childCounts) throw new Error('Invalid catalog index');
+    const empty = Object.fromEntries(tables.filter(table => table !== 'change_event').map(table => [table, []]));
+    return project({ ...empty, ...snapshot });
+  }
+  function projectRecord(index, bundles) {
+    const merged = { ...index };
+    for (const table of tables.filter(t => t !== 'change_event')) {
+      const key = r => r.id || JSON.stringify(r);
+      const rows = new Map((index[table] || []).map(r => [key(r), r]));
+      for (const bundle of bundles) for (const row of bundle[table] || []) {
+        // A link-label projection cannot replace a complete row from another cached owner.
+        if (!row._counterpart || !rows.has(key(row))) rows.set(key(row), row);
       }
-      return project(snapshot);
+      merged[table] = [...rows.values()];
+    }
+    return projectIndex(merged);
+  }
+  async function snapshot(config) {
+    const target = connection(config), url = new URL('rpc/read_snapshot', target.base);
+    try { return project(await DK.resources.read(url, request(target, '{"include_api_fields":true,"include_history":false}'))); }
+    catch (error) {
+      if (error.code !== 'PGRST202') throw error;
+      return project(await DK.resources.read(url, request(target, '{"include_api_fields":true}')));
+    }
+  }
+  async function load(config) {
+    const target = connection(config), url = new URL('rpc/read_catalog_index', target.base);
+    try {
+      try {
+        return projectIndex(await (DK.boot?.take(url) || DK.resources.catalogRead(config, 'read_catalog_index')));
+      } catch (error) {
+        // Keep the app usable during a rolling deployment where the new RPC is not installed yet.
+        if (error.code !== 'PGRST202') throw error;
+        return await snapshot(config);
+      }
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('Supabase did not respond within 20 seconds. Please retry.');
       if (error.status) {
@@ -197,6 +229,12 @@
       }
       throw error;
     }
+  }
+  async function record(config, recordTable, recordId) {
+    const value = await DK.resources.catalogRead(config, 'read_record', { record_table: recordTable, record_id: recordId });
+    if (value?.scope !== 'record' || value.schemaVersion !== 1 || !value.catalogVersion
+      || value.recordTable !== recordTable || value.recordId !== recordId) throw new Error('Unexpected record response');
+    return value;
   }
   /** One record's history, newest first. The database includes its owned attributes, fields or values. */
   async function history(config, recordTable, recordId) {
@@ -209,5 +247,5 @@
     if (!Array.isArray(rows)) throw new Error('Unexpected history response');
     return rows;
   }
-  DK.catalog = { load, history, project, connection, orderRows, isRequiredRule, requiredAttributeIds };
+  DK.catalog = { load, record, snapshot, history, project, projectIndex, projectRecord, kinds, connection, orderRows, isRequiredRule, requiredAttributeIds };
 })(window.DK);

@@ -1264,13 +1264,22 @@ An endpoint belongs to one DataService and has a stable identifier within that s
 
 Request/response inventories are not automatically physical DataFields.
 
+### CatalogState
+
+Infrastructure for conditional public reads. This singleton is separate from authored records and has no editor, identity, history or business relationships. The existing statement trigger advances the version in the same transaction as a catalog write; rollback restores it. API roles have SELECT access only. The new index and bundle RPCs expose this bigint as a decimal string, `catalogVersion`. The legacy snapshot and history RPC shapes remain unchanged.
+
+| Attribute | EN alias | DE alias | Standard | Type | Cardinality | Description |
+|---|---|---|---|---|---|---|
+| `singleton` | Singleton | Einzelzeile | — | Boolean | 1 | Always true; primary key and CHECK permit at most one row. The migration creates it. |
+| `version` | Version | Version | — | Integer | 1 | Positive transactional revision, advanced by catalog writes. Not a source edition or authored record version. |
+
 ## Physical schema and constraints
 
 ### Reviewed schema baseline
 
-The eighteen migrations in [supabase/migrations](../supabase/migrations/), ending with `20260914020000_catalog_snapshot_api_fields.sql`, define **19 public `catalog` tables, 481 columns and 86 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 481 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 14 September 2026.
+The migrations in [supabase/migrations](../supabase/migrations/), ending with `20260914040000_catalog_view_loading.sql`, define **20 public `catalog` tables, 483 columns and 86 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint, two quality-assignment junctions and the operational CatalogState singleton account for the remaining four. All columns are covered by the dictionaries and explicit mappings below. The previously deployed baseline has 19 tables and 481 columns; the new version singleton is delivered with the view-loading migration.
 
-These counts match the deployed schema verified on 14 September. The [earlier hosted comparison](#documented-deployed-visible-and-editable) records gaps resolved during activation. Schema completeness does not establish source-content readiness. The simple propertyGroup attribute is included; proposed group registries and structured business-key extensions remain excluded until implemented. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
+The earlier 19-table baseline matches the deployed schema verified on 14 September. The [earlier hosted comparison](#documented-deployed-visible-and-editable) records gaps resolved during activation. Schema completeness does not establish source-content readiness. The simple propertyGroup attribute is included; proposed group registries and structured business-key extensions remain excluded. Authentication, access policies, command receipts, import markers and private user attribution remain private operational storage; CatalogState is the deliberately public, read-only infrastructure exception.
 
 | Dictionary / collection | SQL table | Columns |
 |---|---|---:|
@@ -1278,6 +1287,7 @@ These counts match the deployed schema verified on 14 September. The [earlier ho
 | [BusinessAttribute](#businessattribute) | `business_attribute` | 34 |
 | BusinessAttribute.qualityRequirementIds | `business_attribute_quality_requirement` | 2 |
 | [BusinessObject](#businessobject) | `business_object` | 29 |
+| [CatalogState](#catalogstate) | `catalog_state` | 2 |
 | [ChangeEvent](#changeevent) | `change_event` | 33 |
 | [CodeList](#codelist) | `code_list` | 24 |
 | [CodeValue](#codevalue) | `code_value` | 25 |
@@ -1293,7 +1303,7 @@ These counts match the deployed schema verified on 14 September. The [earlier ho
 | [Relationship](#relationship) | `relationship` | 29 |
 | [ServiceEndpoint](#serviceendpoint) | `service_endpoint` | 19 |
 | [System](#system) | `system` | 29 |
-| **Total** | **19 tables** | **481** |
+| **Total** | **20 tables** | **483** |
 
 ### Dictionary-to-storage mapping
 

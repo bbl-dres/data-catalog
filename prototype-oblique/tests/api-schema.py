@@ -16,6 +16,11 @@ for model in components['schemas'].values():
 snapshot_schema = {'$ref': '#/components/schemas/CatalogSnapshot', 'components': components}
 Draft202012Validator(snapshot_schema, format_checker=FormatChecker()).validate(evidence['snapshot'])
 count = 0
+for name, values in [('CatalogIndex', [evidence.get('index')]), ('CatalogNotModified', [evidence.get('notModified')]), ('CatalogRecord', evidence.get('records', []))]:
+    schema = {'$ref': f'#/components/schemas/{name}', 'components': components}
+    for value in values:
+        if value is not None:
+            Draft202012Validator(schema, format_checker=FormatChecker()).validate(value)
 for name, rows in evidence['tables'].items():
     schema = {'type': 'array', 'items': {'$ref': f'#/components/schemas/{name}'}, 'components': components}
     Draft202012Validator(schema, format_checker=FormatChecker()).validate(rows)

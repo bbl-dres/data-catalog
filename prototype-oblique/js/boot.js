@@ -25,6 +25,7 @@
   if (config.provider !== 'supabase') return;
   let target;
   try { target = DK.resources.catalogConnection(config); } catch { return; }
-  start(new URL('rpc/read_snapshot', target.base), { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
-    headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{"include_api_fields":true,"include_history":false}' });
+  const url = new URL('rpc/read_catalog_index', target.base), promise = DK.resources.catalogRead(config, 'read_catalog_index');
+  promise.catch(() => {});
+  pending.set(key(url), promise);
 })(window.DK);

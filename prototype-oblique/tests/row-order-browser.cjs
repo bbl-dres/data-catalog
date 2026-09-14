@@ -22,7 +22,7 @@ const project = 'https://zicluerzbevodlmtbxow.supabase.co';
     const saves = [];
     await context.route(project+'/**', async route => {
       const req = route.request(), path = new URL(req.url()).pathname;
-      if (path === '/rest/v1/rpc/read_snapshot') return route.fulfill({ json: await snapshot() });
+      if (['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(path)) return route.fulfill({ json: await snapshot() });
       if (path === '/rest/v1/rpc/edit_capabilities') return route.fulfill({ json: { version: 1, can_edit: true } });
       if (path === '/rest/v1/rpc/save_entry') {
         const args = req.postDataJSON(); saves.push(args);

@@ -22,7 +22,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   const context=await browser.newContext({viewport:{width:1440,height:1000}});let oldSchema=false,saves=0;
   await context.route('https://zicluerzbevodlmtbxow.supabase.co/**',async route=>{
    const req=route.request(),url=new URL(req.url());
-   if(url.pathname==='/rest/v1/rpc/read_snapshot'){
+   if(['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(url.pathname)){
     const snapshot=(await db.query('SELECT catalog.read_snapshot() AS s')).rows[0].s;
     if(oldSchema)for(const table of ['data_table','data_product','data_service'])snapshot[table].forEach(r=>delete r.access_options);
     return route.fulfill({json:snapshot});

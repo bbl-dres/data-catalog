@@ -21,6 +21,8 @@
   };
 
   detail.render = function (e, route, state, ctx) {
+    if (route.recordState?.loading) return ui.loading(t('record.loading'));
+    if (route.recordState?.error) return ui.empty(t('record.unavailable')) + '<button type="button" class="ob-button" data-action="retry-record">' + esc(t('record.retry')) + '</button>';
     if (e.kind === 'domains') return DK.views.collection(ctx || DK.views.context({ ...route, view: 'detail', kind: 'domains', entity: e }, state));
     const tabs = detail.tabs(e);
     const tab = detail.resolveTab(e, route.params.tab);

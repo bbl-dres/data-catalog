@@ -1,0 +1,116 @@
+/* Real RPC output through the browser, including Cache API, lazy exports and failures. */
+const assert = require('node:assert/strict');
+const { database } = require('./catalog-test-helpers.cjs');
+const { createServer, settle, chromium } = require('./browser-helpers.cjs');
+(async () => {
+  const db = await database(), server = createServer({ catalogProvider: 'supabase' });
+  let browser;
+  try {
+    await db.exec("INSERT INTO catalog.data_field(identifier,name_de,data_service_id,technical_name,technical_name_kind,source_data_type,data_type_scope,property_group) SELECT 'api-browser/field','API Browserfeld',id,'BROWSER_FIELD','apiField','string','serviceSchema','BROWSER_GROUP' FROM catalog.data_service WHERE NOT is_archived LIMIT 1");
+    const full = (await db.query('SELECT catalog.read_snapshot(true,false) s')).rows[0].s;
+    const table = full.data_table.find(t => !t.is_archived && full.data_field.some(f=>f.data_table_id===t.id && !f.is_archived));
+    const other = full.data_table.find(t => !t.is_archived && t.id!==table.id && full.data_field.some(f=>f.data_table_id===t.id && !f.is_archived));
+    const field = full.data_field.find(f => f.data_table_id===table.id && !f.is_archived);
+    const apiId = full.data_field.find(f=>f.identifier==='api-browser/field').data_service_id;
+    const api = full.data_service.find(r=>r.id===apiId);
+    await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+    const base = 'http://127.0.0.1:' + server.address().port + '/';
+    browser = await chromium.launch({ channel: process.env.PLAYWRIGHT_CHANNEL || (process.platform==='win32'?'msedge':undefined), headless:true });
+    const page = await browser.newPage({ viewport:{width:1440,height:900} });
+    const errors=[], requests=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    let held=null, failing=null, snapshotHold=null;
+    await page.route('https://zicluerzbevodlmtbxow.supabase.co/rest/v1/**',async route=>{
+      const rpc = new URL(route.request().url()).pathname.split('/').pop(), body=route.request().postDataJSON() || {};
+      const entry={rpc,body};requests.push(entry);
+      if (rpc==='read_record' && body.record_id===failing) return route.fulfill({status:503,json:{message:'Unavailable'}});
+      if (rpc==='read_record' && body.record_id===held?.id) await held.promise;
+      let value;
+      if (rpc==='read_catalog_index') value=(await db.query('SELECT catalog.read_catalog_index($1) s',[body.if_version || null])).rows[0].s;
+      else if (rpc==='read_record') value=(await db.query('SELECT catalog.read_record($1,$2,$3) s',[body.record_table,body.record_id,body.if_version || null])).rows[0].s;
+      else if (rpc==='read_history') value=(await db.query('SELECT catalog.read_history($1,$2) s',[body.record_table,body.record_id])).rows[0].s;
+      else if (rpc==='read_snapshot') { if(snapshotHold)await snapshotHold;value=full; }
+      else throw new Error('Unexpected public RPC: '+rpc);
+      entry.bytes=Buffer.byteLength(JSON.stringify(value));entry.notModified=value.notModified===true;
+      await route.fulfill({json:value});
+    });
+    const visit=async hash=>{await page.goto(base+hash);await page.locator('#page-content h1').waitFor();await settle(page);};
+    await visit('#/tables?view=table');
+    assert.deepEqual(requests.map(r=>r.rpc),['read_catalog_index'],'Lists load just the index');
+    assert.equal(await page.evaluate(()=>DK.data.tables.flatMap(t=>t.fields).length),0);
+    const tableFields=full.data_field.filter(f=>f.data_table_id===table.id&&!f.is_archived).length;
+    assert.equal(await page.evaluate(id=>DK.data.sizeOf('tables',DK.data.get('tables',id)),table.identifier),tableFields);
+    const href=await page.evaluate(id=>DK.router.entityHref('tables',id,{tab:'rows'}),table.identifier);
+    // Hover/focus share a single request, even before navigation.
+    const link=page.locator('a[href]').filter({hasText:table.name_de}).first();
+    await link.hover();
+    await page.waitForFunction(id=>!DK.data.recordState('tables',id).loading,table.identifier);
+    const ownerReads=()=>requests.filter(r=>r.rpc==='read_record'&&r.body.record_id===table.id);
+    assert.equal(ownerReads().length,1);
+    await visit(href);
+    await page.locator('#panel-rows tbody tr').first().waitFor();
+    assert.equal(ownerReads().length,1,'Profile uses the prefetched bundle');
+    const childHref=await page.evaluate(([owner,id])=>DK.router.entityHref('fields',DK.data.childId(owner,DK.data.get('tables',owner).fields.find(f=>f._record.id===id).identifier)),[table.identifier,field.id]);
+    await visit(childHref);
+    await page.locator('#panel-overview').waitFor();
+    assert.equal(ownerReads().length,1,'Child reuses its owner');
+    await page.reload();
+    await page.locator('#panel-overview').waitFor();
+    assert(requests.filter(r=>r.rpc==='read_catalog_index').at(-1).notModified,'Reload conditionally revalidates the index');
+    assert(ownerReads().at(-1).notModified,'Cold child link revalidates the cached owner');
+    assert(ownerReads().at(-1).bytes<150,'Unchanged bundle downloads only its revision');
+    await visit('#/apis/'+encodeURIComponent(api.identifier)+'?tab=rows');
+    await page.locator('#panel-rows tbody tr').first().waitFor();
+    assert.match(await page.locator('#panel-rows').innerText(),/API Browserfeld/);
+    assert.match(await page.locator('#panel-rows').innerText(),/BROWSER_GROUP/);
+    let release;
+    held={id:other.id,promise:new Promise(resolve=>{release=resolve;})};
+    await visit('#/tables/'+encodeURIComponent(other.identifier)+'?tab=rows');
+    await page.locator('#page-content .ob-loading').waitFor();
+    release();held=null;
+    await page.locator('#panel-rows tbody tr').first().waitFor();
+    // Simulate a saved catalog revision; reopening forces index refresh and drops other owners.
+    await db.exec('UPDATE catalog.data_table SET comment=comment WHERE false');
+    failing=other.id;
+    await page.reload();
+    await page.locator('[data-action="retry-record"]').waitFor();
+    failing=null;
+    await page.locator('[data-action="retry-record"]').click();
+    await page.locator('#panel-rows tbody tr').first().waitFor();
+    assert.equal(requests.filter(r=>r.rpc==='read_snapshot').length,0,'No full snapshot before catalog export');
+    await page.evaluate(()=>{DK.excel.download=async plan=>{window.exportedPlan=plan;};});
+    await page.locator('[data-action="menu"][data-menu="actions"]').click();
+    await page.locator('[data-export="xlsx"]').click();
+    await page.waitForFunction(()=>window.exportedPlan);
+    assert.equal(requests.filter(r=>r.rpc==='read_snapshot').length,0,'Selection export uses the owner');
+    let finishSnapshot;
+    snapshotHold=new Promise(resolve=>{finishSnapshot=resolve;});
+    await page.locator('[data-action="menu"][data-menu="actions"]').click();
+    await page.locator('[data-export="xlsx-all"]').click();
+    await page.waitForFunction(()=>DK.app.state.exporting);
+    await page.locator('#loading:not([hidden])').waitFor();
+    finishSnapshot();snapshotHold=null;
+    await page.waitForFunction(()=>window.exportedPlan?.filename.includes('gesamt')&&!DK.app.state.exporting);
+    assert.equal(requests.filter(r=>r.rpc==='read_snapshot').length,1);
+    const inventory=await page.evaluate(()=>({counts:Object.fromEntries(window.exportedPlan.sheets.map(s=>[s.kind,s.rows.length])),tiered:DK.data.tiered,loaded:DK.data.tables.flatMap(t=>t.fields).length}));
+    assert(inventory.tiered && inventory.loaded<full.data_field.length,'Catalog export does not populate the live index');
+    assert.equal(inventory.counts.fields,full.data_field.filter(f=>f.data_table_id&&!f.is_archived&&!full.data_table.find(t=>t.id===f.data_table_id).is_archived).length);
+    assert.equal(inventory.counts.apiFields,1);
+    // The print workspace expands beyond the current profile without a full-catalog download.
+    const printed=await page.evaluate(async()=>{
+      const captured=DK.diagram.capture(DK.app.route,DK.views.context(DK.app.route,DK.app.state),'de');
+      const scope={kind:'tables',facet:'',value:'',entityId:'',query:''};
+      await captured.loadRows(scope,'de');
+      const snapshot=DK.diagram.scoped(captured.catalogs,'de',scope);
+      return snapshot.entities.reduce((n,e)=>n+e.rows.length,0);
+    });
+    assert.equal(printed,inventory.counts.fields,'Expanded print scope has complete rows');
+    assert.equal(requests.filter(r=>r.rpc==='read_snapshot').length,1,'Print expansion uses owner bundles');
+    await page.setViewportSize({width:390,height:844});
+    await visit('#/apis/'+encodeURIComponent(api.identifier)+'?tab=rows');
+    await page.locator('#panel-rows tbody tr').first().waitFor();
+    assert.deepEqual(errors,[]);
+    console.log('Browser tiers: index-only lists, server counts, prefetch/child reuse, conditional reload, independent API fields/groups, loading/retry, selection/catalog exports and mobile passed.');
+    console.log(JSON.stringify({indexBytes:requests.find(r=>r.rpc==='read_catalog_index').bytes,conditionalIndexBytes:requests.find(r=>r.rpc==='read_catalog_index'&&r.notModified).bytes,requests:requests.length}));
+  } finally {await browser?.close();await new Promise(resolve=>server.close(resolve));await db.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

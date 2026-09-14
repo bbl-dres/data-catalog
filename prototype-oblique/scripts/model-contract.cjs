@@ -3,7 +3,7 @@
 const fs = require('node:fs'), path = require('node:path');
 const root = path.resolve(__dirname, '..'), source = path.join(root, 'docs/data-model.md');
 const snake = value => value.replace(/(?<!^)[A-Z]/g, c => '_' + c).toLowerCase();
-const tables = ['Actor','BusinessAttribute','BusinessObject','ChangeEvent','CodeList','CodeValue','DataField','DataProduct','DataService','DataTable','Domain','LineageRelation','ProductAttribute','QualityRequirement','Relationship','System','ServiceEndpoint'];
+const tables = ['Actor','BusinessAttribute','BusinessObject','CatalogState','ChangeEvent','CodeList','CodeValue','DataField','DataProduct','DataService','DataTable','Domain','LineageRelation','ProductAttribute','QualityRequirement','Relationship','System','ServiceEndpoint'];
 function read(text = fs.readFileSync(source, 'utf8')) {
   const definitions = {}, projections = {};
   let section;

@@ -56,7 +56,10 @@
       await checkCapability(true);
       if (requestedRoute !== routeKey(DK.app.route) || requestedUser !== DK.auth.user?.id) return;
       if (!capability) { ui.toast(t('edit.unavailable')); return; }
-      try { await DK.data.load('data/'); }
+      try {
+        await DK.data.load('data/');
+        if (!create) await DK.data.loadRecord(DK.app.route.kind, DK.app.route.id);
+      }
       catch { ui.toast(t('edit.network')); return; }
       if (draft || requestedRoute !== routeKey(DK.app.route) || requestedUser !== DK.auth.user?.id) return;
       DK.app.render();
@@ -236,6 +239,7 @@
     owner.busy = true; render();
     try {
       await DK.data.load('data/');
+      await DK.data.loadRecord(owner.kind, owner.saved.identifier || owner.root.original?.identifier);
       if (draft !== owner) return;
       const target = owner.root.original ? null : DK.router.entityHref(owner.kind,owner.saved.identifier);
       draft = null;

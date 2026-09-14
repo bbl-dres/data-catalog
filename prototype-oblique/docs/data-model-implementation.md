@@ -381,7 +381,7 @@ Group import/batch events with the existing ChangeEvent `importId`, following th
 
 ## Read models
 
-The following are target read-model requirements. The current application loads one read_snapshot and performs search, sorting and pagination in the browser. Its complete assertion/domain/group projections are not all implemented; see [current limits](#current-limits-relevant-to-editors).
+The following are target read-model requirements. The application uses a parent index and per-owner bundles; search, sorting and pagination remain in the browser. Complete assertion/domain/group projections are not all implemented; see [current limits](#current-limits-relevant-to-editors).
 
 Search, diagrams, inverse lists and counts are derived from authoritative records. They are not separately editable metadata.
 

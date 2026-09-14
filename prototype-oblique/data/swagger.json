@@ -1420,6 +1420,115 @@
         }
       }
     },
+    "/catalog_state": {
+      "get": {
+        "security": [],
+        "tags": [
+          "Governance"
+        ],
+        "operationId": "list_catalog_state",
+        "summary": "Read catalog_state",
+        "description": "Singleton catalog revision. Public read access; maintained transactionally by catalog write triggers. Column filters use PostgREST operator prefixes such as eq., ilike., in. or is.null; multiple filters combine with AND.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptProfile"
+          },
+          {
+            "$ref": "#/components/parameters/Select"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Or"
+          },
+          {
+            "$ref": "#/components/parameters/Prefer"
+          },
+          {
+            "name": "singleton",
+            "in": "query",
+            "description": "Filter singleton: operator.value (for example eq.value or is.null). Singleton. Always true; primary key and CHECK permit at most one row. The migration creates it. Alias (DE): Einzelzeile. Canonical: CatalogState.singleton.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Filter version: operator.value (for example eq.value or is.null). Version. Positive transactional revision, advanced by catalog writes. Not a source edition or authored record version. Alias (DE): Version. Canonical: CatalogState.version.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Array of catalog records. Selected columns and embedded resources can change its shape.",
+            "headers": {
+              "Content-Range": {
+                "description": "Returned row range and requested total (or *).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/catalog_state"
+                  }
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Array of catalog records. Selected columns and embedded resources can change its shape.",
+            "headers": {
+              "Content-Range": {
+                "description": "Returned row range and requested total (or *).",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/catalog_state"
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Gateway or PostgREST error; inspect the HTTP status and response message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/change_event": {
       "get": {
         "security": [],
@@ -7532,7 +7641,7 @@
         ],
         "operationId": "read_snapshot",
         "summary": "Read a consistent catalog snapshot",
-        "description": "Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history; add include_history=false to omit change_event, which is how the app loads (it then reads one record’s history with read_history). An empty request preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
+        "description": "Read-only SQL STABLE function for complete catalog exports and legacy clients. Pass include_api_fields=true for independent API fields; include_history=false omits change_event. The app starts with read_catalog_index and loads profiles through read_record. An empty request preserves the table-field-only legacy snapshot. No records are modified; table pagination parameters do not apply.",
         "parameters": [
           {
             "$ref": "#/components/parameters/PublishableKey"
@@ -7664,6 +7773,159 @@
                   "items": {
                     "$ref": "#/components/schemas/HistoryEvent"
                   }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Gateway or PostgREST error; inspect the HTTP status and response message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rpc/read_catalog_index": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Snapshot"
+        ],
+        "operationId": "read_catalog_index",
+        "summary": "Read the catalog index",
+        "description": "Public STABLE SECURITY INVOKER read. Revalidate a cached response with if_version; an unchanged catalog returns CatalogNotModified. Merge bundles only with an index at the same revision. The index contains parents/counts; bundles include archived owned rows, inherited attributes, evidence and minimal counterpart children. No catalog content is modified.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
+          {
+            "$ref": "#/components/parameters/ContentProfile"
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "if_version": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*$",
+                    "description": "Exact bigint revision encoded as decimal text."
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versioned content or an unchanged revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CatalogIndex"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CatalogNotModified"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Gateway or PostgREST error; inspect the HTTP status and response message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rpc/read_record": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Snapshot"
+        ],
+        "operationId": "read_record",
+        "summary": "Read one profile bundle",
+        "description": "Public STABLE SECURITY INVOKER read. Revalidate a cached response with if_version; an unchanged catalog returns CatalogNotModified. Merge bundles only with an index at the same revision. The index contains parents/counts; bundles include archived owned rows, inherited attributes, evidence and minimal counterpart children. No catalog content is modified.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PublishableKey"
+          },
+          {
+            "$ref": "#/components/parameters/ContentProfile"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "record_table": {
+                    "type": "string",
+                    "enum": [
+                      "domain",
+                      "system",
+                      "business_object",
+                      "data_table",
+                      "code_list",
+                      "data_product",
+                      "data_service"
+                    ]
+                  },
+                  "record_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "if_version": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*$",
+                    "description": "Exact bigint revision encoded as decimal text."
+                  }
+                },
+                "required": [
+                  "record_table",
+                  "record_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versioned content or an unchanged revision.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/CatalogRecord"
+                    },
+                    {
+                      "$ref": "#/components/schemas/CatalogNotModified"
+                    }
+                  ]
                 }
               }
             }
@@ -13334,6 +13596,57 @@
           {
             "name": "business_object_system_of_record_id_fkey",
             "definition": "FOREIGN KEY (system_of_record_id) REFERENCES catalog.system(id) ON DELETE RESTRICT"
+          }
+        ]
+      },
+      "catalog_state": {
+        "type": "object",
+        "description": "Singleton catalog revision. Public read access; maintained transactionally by catalog write triggers.",
+        "properties": {
+          "singleton": {
+            "type": "boolean",
+            "description": "Singleton. Always true; primary key and CHECK permit at most one row. The migration creates it. Alias (DE): Einzelzeile. Canonical: CatalogState.singleton.",
+            "x-postgresql-type": "boolean",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "true",
+            "title": "Singleton",
+            "x-aliases": {
+              "en": "Singleton",
+              "de": "Einzelzeile"
+            },
+            "x-canonical-property": "CatalogState.singleton"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Version. Positive transactional revision, advanced by catalog writes. Not a source edition or authored record version. Alias (DE): Version. Canonical: CatalogState.version.",
+            "x-postgresql-type": "bigint",
+            "x-postgresql-not-null": true,
+            "x-postgresql-default": "1",
+            "title": "Version",
+            "x-aliases": {
+              "en": "Version",
+              "de": "Version"
+            },
+            "x-canonical-property": "CatalogState.version"
+          }
+        },
+        "x-postgresql-primary-key": [
+          "singleton"
+        ],
+        "x-postgresql-foreign-keys": [],
+        "x-postgresql-constraints": [
+          {
+            "name": "catalog_state_pkey",
+            "definition": "PRIMARY KEY (singleton)"
+          },
+          {
+            "name": "catalog_state_singleton_check",
+            "definition": "CHECK (singleton)"
+          },
+          {
+            "name": "catalog_state_version_check",
+            "definition": "CHECK ((version > 0))"
           }
         ]
       },
@@ -24055,7 +24368,7 @@
       },
       "CatalogSnapshot": {
         "type": "object",
-        "description": "Catalog collections in one object. change_event is present unless the request set include_history to false.",
+        "description": "Legacy catalog collections. change_event is present unless include_history=false. CatalogState is exposed separately.",
         "required": [
           "schemaVersion",
           "actor",
@@ -24685,6 +24998,1013 @@
               "de": "Import- oder Vorgangskennung"
             },
             "x-canonical-property": "ChangeEvent.importId"
+          }
+        }
+      },
+      "CatalogNotModified": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "catalogVersion",
+          "notModified"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "catalogVersion": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "Exact bigint revision encoded as decimal text."
+          },
+          "notModified": {
+            "const": true
+          }
+        }
+      },
+      "CatalogIndex": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "catalogVersion",
+          "scope",
+          "childCounts",
+          "relationship",
+          "actor",
+          "domain",
+          "system",
+          "business_object",
+          "data_table",
+          "code_list",
+          "data_product",
+          "data_service",
+          "service_endpoint",
+          "quality_requirement"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "catalogVersion": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "Exact bigint revision encoded as decimal text."
+          },
+          "scope": {
+            "const": "index"
+          },
+          "childCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "relationship": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "description": "Catalog relationship record. SQL checks and triggers enforce additional rules; x-postgresql annotations are descriptive, not JSON Schema validation rules.",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Internal ID. Immutable internal identity, separate from the public catalog identifier and source identifiers. Alias (DE): Interne ID. Canonical: Relationship.id.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": true,
+                  "x-postgresql-default": "gen_random_uuid()",
+                  "title": "Internal ID",
+                  "x-aliases": {
+                    "en": "Internal ID",
+                    "de": "Interne ID"
+                  },
+                  "x-canonical-property": "Relationship.id"
+                },
+                "identifier": {
+                  "type": "string",
+                  "description": "ID. Stable and unique within its kind. Child identifiers distinguish records across owners. Alias (DE): Kennung. Canonical: Relationship.identifier.",
+                  "x-postgresql-type": "catalog_private.identifier",
+                  "x-postgresql-not-null": true,
+                  "minLength": 1,
+                  "title": "ID",
+                  "x-aliases": {
+                    "en": "ID",
+                    "de": "Kennung"
+                  },
+                  "x-canonical-property": "Relationship.identifier"
+                },
+                "row_version": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Edit revision. Automatically maintained edit revision; initially 1 and advanced on stored changes, including owned edits. Separate from catalog definition version. Alias (DE): Bearbeitungsrevision. Canonical: Relationship.rowVersion.",
+                  "x-postgresql-type": "catalog_private.safe_integer",
+                  "x-postgresql-not-null": true,
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "x-postgresql-default": "1",
+                  "title": "Edit revision",
+                  "x-aliases": {
+                    "en": "Edit revision",
+                    "de": "Bearbeitungsrevision"
+                  },
+                  "x-canonical-property": "Relationship.rowVersion"
+                },
+                "created_on": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date",
+                  "description": "Created. Date the catalog record was created; unknown historical dates remain unknown. Alias (DE): Erstellt am. Canonical: Relationship.createdOn.",
+                  "x-postgresql-type": "date",
+                  "x-postgresql-not-null": false,
+                  "title": "Created",
+                  "x-aliases": {
+                    "en": "Created",
+                    "de": "Erstellt am"
+                  },
+                  "x-canonical-property": "Relationship.createdOn"
+                },
+                "modified_on": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date",
+                  "description": "Last modified. Date the catalog record last changed; not before createdOn. History and edit revision establish order. Alias (DE): Zuletzt geändert am. Canonical: Relationship.modifiedOn.",
+                  "x-postgresql-type": "date",
+                  "x-postgresql-not-null": false,
+                  "title": "Last modified",
+                  "x-aliases": {
+                    "en": "Last modified",
+                    "de": "Zuletzt geändert am"
+                  },
+                  "x-canonical-property": "Relationship.modifiedOn"
+                },
+                "source_business_object_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source. Must satisfy the signature table below. Alias (DE): Quelle. Canonical: Relationship.source.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source",
+                  "x-aliases": {
+                    "en": "Source",
+                    "de": "Quelle"
+                  },
+                  "x-canonical-property": "Relationship.source"
+                },
+                "source_data_product_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source. Must satisfy the signature table below. Alias (DE): Quelle. Canonical: Relationship.source.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source",
+                  "x-aliases": {
+                    "en": "Source",
+                    "de": "Quelle"
+                  },
+                  "x-canonical-property": "Relationship.source"
+                },
+                "source_data_table_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source. Must satisfy the signature table below. Alias (DE): Quelle. Canonical: Relationship.source.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source",
+                  "x-aliases": {
+                    "en": "Source",
+                    "de": "Quelle"
+                  },
+                  "x-canonical-property": "Relationship.source"
+                },
+                "source_data_field_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source. Must satisfy the signature table below. Alias (DE): Quelle. Canonical: Relationship.source.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source",
+                  "x-aliases": {
+                    "en": "Source",
+                    "de": "Quelle"
+                  },
+                  "x-canonical-property": "Relationship.source"
+                },
+                "source_data_service_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source. Must satisfy the signature table below. Alias (DE): Quelle. Canonical: Relationship.source.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source",
+                  "x-aliases": {
+                    "en": "Source",
+                    "de": "Quelle"
+                  },
+                  "x-canonical-property": "Relationship.source"
+                },
+                "target_business_object_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Target. Must resolve; cannot identify the same kind and record as source. Alias (DE): Ziel. Canonical: Relationship.target.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Target",
+                  "x-aliases": {
+                    "en": "Target",
+                    "de": "Ziel"
+                  },
+                  "x-canonical-property": "Relationship.target"
+                },
+                "target_business_attribute_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Target. Must resolve; cannot identify the same kind and record as source. Alias (DE): Ziel. Canonical: Relationship.target.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Target",
+                  "x-aliases": {
+                    "en": "Target",
+                    "de": "Ziel"
+                  },
+                  "x-canonical-property": "Relationship.target"
+                },
+                "target_data_table_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Target. Must resolve; cannot identify the same kind and record as source. Alias (DE): Ziel. Canonical: Relationship.target.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Target",
+                  "x-aliases": {
+                    "en": "Target",
+                    "de": "Ziel"
+                  },
+                  "x-canonical-property": "Relationship.target"
+                },
+                "target_data_field_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Target. Must resolve; cannot identify the same kind and record as source. Alias (DE): Ziel. Canonical: Relationship.target.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Target",
+                  "x-aliases": {
+                    "en": "Target",
+                    "de": "Ziel"
+                  },
+                  "x-canonical-property": "Relationship.target"
+                },
+                "target_data_service_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Target. Must resolve; cannot identify the same kind and record as source. Alias (DE): Ziel. Canonical: Relationship.target.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Target",
+                  "x-aliases": {
+                    "en": "Target",
+                    "de": "Ziel"
+                  },
+                  "x-canonical-property": "Relationship.target"
+                },
+                "relationship_type": {
+                  "type": "string",
+                  "description": "Relationship type. Controlled English token from the signature table below. Alias (DE): Beziehungstyp. Canonical: Relationship.relationshipType.",
+                  "x-postgresql-type": "text",
+                  "x-postgresql-not-null": true,
+                  "title": "Relationship type",
+                  "x-aliases": {
+                    "en": "Relationship type",
+                    "de": "Beziehungstyp"
+                  },
+                  "x-canonical-property": "Relationship.relationshipType"
+                },
+                "source_endpoint_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "uuid",
+                  "description": "Source endpoint. Endpoint within the source DataService. Required for assesses; optional for exposes; prohibited for all other relationship types. Alias (DE): Quellendpunkt. Canonical: Relationship.sourceEndpointId.",
+                  "x-postgresql-type": "uuid",
+                  "x-postgresql-not-null": false,
+                  "title": "Source endpoint",
+                  "x-aliases": {
+                    "en": "Source endpoint",
+                    "de": "Quellendpunkt"
+                  },
+                  "x-canonical-property": "Relationship.sourceEndpointId"
+                },
+                "verification_status": {
+                  "type": "string",
+                  "description": "Verification status. `candidate`, `confirmed`, `rejected`, `obsolete`; defaults to candidate. This is the sole relationship review lifecycle. Rejected/obsolete records remain available in history and review tools. Alias (DE): Prüfstatus. Canonical: Relationship.verificationStatus.",
+                  "x-postgresql-type": "text",
+                  "x-postgresql-not-null": true,
+                  "x-postgresql-default": "'candidate'::text",
+                  "title": "Verification status",
+                  "x-aliases": {
+                    "en": "Verification status",
+                    "de": "Prüfstatus"
+                  },
+                  "x-canonical-property": "Relationship.verificationStatus"
+                },
+                "coverage": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Coverage. `full`, `partial`, `unknown`; required for realizes, represents, correspondsTo and exposes, absent for all other relationship types. Describes source coverage of the documented target scope; partial needs a rule note. Alias (DE): Abdeckung. Canonical: Relationship.coverage.",
+                  "x-postgresql-type": "text",
+                  "x-postgresql-not-null": false,
+                  "title": "Coverage",
+                  "x-aliases": {
+                    "en": "Coverage",
+                    "de": "Abdeckung"
+                  },
+                  "x-canonical-property": "Relationship.coverage"
+                },
+                "support_status": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Requirement support. For assesses only: `notAssessed`, `supported`, `partial`, `missing`. Required for that type; confirmed requires a value other than notAssessed. Alias (DE): Unterstützung der Anforderung. Canonical: Relationship.supportStatus.",
+                  "x-postgresql-type": "text",
+                  "x-postgresql-not-null": false,
+                  "title": "Requirement support",
+                  "x-aliases": {
+                    "en": "Requirement support",
+                    "de": "Unterstützung der Anforderung"
+                  },
+                  "x-canonical-property": "Relationship.supportStatus"
+                },
+                "assessed_service_version": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Assessed service version. Exact source service release assessed for exposes/assesses; absent for other types. Required when known; never invented. Evidence must identify its documentation scope even when no release number exists. Alias (DE): Bewertete Schnittstellenversion. Canonical: Relationship.assessedServiceVersion.",
+                  "x-postgresql-type": "catalog_private.nonempty_text",
+                  "x-postgresql-not-null": false,
+                  "minLength": 1,
+                  "title": "Assessed service version",
+                  "x-aliases": {
+                    "en": "Assessed service version",
+                    "de": "Bewertete Schnittstellenversion"
+                  },
+                  "x-canonical-property": "Relationship.assessedServiceVersion"
+                },
+                "is_archived": {
+                  "type": "boolean",
+                  "description": "Archived. Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. Alias (DE): Archiviert. Canonical: Relationship.isArchived.",
+                  "x-postgresql-type": "boolean",
+                  "x-postgresql-not-null": true,
+                  "x-postgresql-default": "false",
+                  "title": "Archived",
+                  "x-aliases": {
+                    "en": "Archived",
+                    "de": "Archiviert"
+                  },
+                  "x-canonical-property": "Relationship.isArchived"
+                },
+                "edited_at": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "format": "date-time",
+                  "description": "Last edit timestamp. Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. Alias (DE): Zeitpunkt der letzten Bearbeitung. Canonical: Relationship.editedAt.",
+                  "x-postgresql-type": "timestamp with time zone",
+                  "x-postgresql-not-null": false,
+                  "title": "Last edit timestamp",
+                  "x-aliases": {
+                    "en": "Last edit timestamp",
+                    "de": "Zeitpunkt der letzten Bearbeitung"
+                  },
+                  "x-canonical-property": "Relationship.editedAt"
+                }
+              },
+              "x-postgresql-primary-key": [
+                "id"
+              ],
+              "x-postgresql-foreign-keys": [
+                {
+                  "columns": [
+                    "source_business_object_id"
+                  ],
+                  "table": "business_object",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "source_data_field_id"
+                  ],
+                  "table": "data_field",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "source_data_product_id"
+                  ],
+                  "table": "data_product",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "source_data_service_id"
+                  ],
+                  "table": "data_service",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "source_data_service_id",
+                    "source_endpoint_id"
+                  ],
+                  "table": "service_endpoint",
+                  "referencedColumns": [
+                    "data_service_id",
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "source_data_table_id"
+                  ],
+                  "table": "data_table",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "target_business_attribute_id"
+                  ],
+                  "table": "business_attribute",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "target_business_object_id"
+                  ],
+                  "table": "business_object",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "target_data_field_id"
+                  ],
+                  "table": "data_field",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "target_data_service_id"
+                  ],
+                  "table": "data_service",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                },
+                {
+                  "columns": [
+                    "target_data_table_id"
+                  ],
+                  "table": "data_table",
+                  "referencedColumns": [
+                    "id"
+                  ]
+                }
+              ],
+              "x-postgresql-constraints": [
+                {
+                  "name": "relationship_check_1",
+                  "definition": "CHECK (((row_version)::bigint > 0))"
+                },
+                {
+                  "name": "relationship_check_10",
+                  "definition": "CHECK (catalog_private.valid_documentation_links(documentation_links))"
+                },
+                {
+                  "name": "relationship_check_11",
+                  "definition": "CHECK ((modified_on >= created_on))"
+                },
+                {
+                  "name": "relationship_check_12",
+                  "definition": "CHECK ((((relationship_type = 'realizes'::text) AND (source_data_table_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'represents'::text) AND (source_data_field_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'correspondsTo'::text) AND (source_data_field_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'exposes'::text) AND (source_data_service_id IS NOT NULL) AND (target_data_field_id IS NOT NULL)) OR ((relationship_type = 'assesses'::text) AND (source_data_service_id IS NOT NULL) AND (target_business_attribute_id IS NOT NULL)) OR ((relationship_type = 'basedOn'::text) AND (source_data_product_id IS NOT NULL) AND (target_business_object_id IS NOT NULL)) OR ((relationship_type = 'sourcedFrom'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_table_id IS NOT NULL)) OR ((relationship_type = 'servedBy'::text) AND (source_data_product_id IS NOT NULL) AND (target_data_service_id IS NOT NULL)) OR ((relationship_type = ANY (ARRAY['measuredFor'::text, 'specializes'::text])) AND (source_business_object_id IS NOT NULL) AND (target_business_object_id IS NOT NULL))))"
+                },
+                {
+                  "name": "relationship_check_13",
+                  "definition": "CHECK ((source_data_field_id <> target_data_field_id))"
+                },
+                {
+                  "name": "relationship_check_14",
+                  "definition": "CHECK ((source_business_object_id <> target_business_object_id))"
+                },
+                {
+                  "name": "relationship_check_15",
+                  "definition": "CHECK (((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text])) = (coverage IS NOT NULL)))"
+                },
+                {
+                  "name": "relationship_check_16",
+                  "definition": "CHECK (((relationship_type = 'assesses'::text) = (support_status IS NOT NULL)))"
+                },
+                {
+                  "name": "relationship_check_17",
+                  "definition": "CHECK ((((relationship_type = 'assesses'::text) AND (source_endpoint_id IS NOT NULL)) OR (relationship_type = 'exposes'::text) OR ((relationship_type <> ALL (ARRAY['assesses'::text, 'exposes'::text])) AND (source_endpoint_id IS NULL))))"
+                },
+                {
+                  "name": "relationship_check_18",
+                  "definition": "CHECK (((relationship_type = ANY (ARRAY['exposes'::text, 'assesses'::text])) OR (assessed_service_version IS NULL)))"
+                },
+                {
+                  "name": "relationship_check_19",
+                  "definition": "CHECK (((relationship_type <> 'assesses'::text) OR (verification_status <> 'confirmed'::text) OR (support_status <> 'notAssessed'::text)))"
+                },
+                {
+                  "name": "relationship_check_2",
+                  "definition": "CHECK (isfinite(created_on))"
+                },
+                {
+                  "name": "relationship_check_20",
+                  "definition": "CHECK ((((coverage IS DISTINCT FROM 'partial'::text) AND COALESCE((support_status <> ALL (ARRAY['partial'::text, 'missing'::text])), true)) OR (num_nonnulls(rule_notes_de, rule_notes_it, rule_notes_fr, rule_notes_en) > 0)))"
+                },
+                {
+                  "name": "relationship_check_21",
+                  "definition": "CHECK (((verification_status <> 'confirmed'::text) OR (num_nonnulls(rule_notes_de, rule_notes_it, rule_notes_fr, rule_notes_en) > 0) OR (jsonb_array_length(documentation_links) > 0)))"
+                },
+                {
+                  "name": "relationship_check_3",
+                  "definition": "CHECK (isfinite(modified_on))"
+                },
+                {
+                  "name": "relationship_check_4",
+                  "definition": "CHECK ((num_nonnulls(source_business_object_id, source_data_product_id, source_data_table_id, source_data_field_id, source_data_service_id) = 1))"
+                },
+                {
+                  "name": "relationship_check_5",
+                  "definition": "CHECK ((num_nonnulls(target_business_object_id, target_business_attribute_id, target_data_table_id, target_data_field_id, target_data_service_id) = 1))"
+                },
+                {
+                  "name": "relationship_check_6",
+                  "definition": "CHECK ((relationship_type = ANY (ARRAY['realizes'::text, 'represents'::text, 'correspondsTo'::text, 'exposes'::text, 'assesses'::text, 'basedOn'::text, 'sourcedFrom'::text, 'servedBy'::text, 'measuredFor'::text, 'specializes'::text])))"
+                },
+                {
+                  "name": "relationship_check_7",
+                  "definition": "CHECK ((verification_status = ANY (ARRAY['candidate'::text, 'confirmed'::text, 'rejected'::text, 'obsolete'::text])))"
+                },
+                {
+                  "name": "relationship_check_8",
+                  "definition": "CHECK ((coverage = ANY (ARRAY['full'::text, 'partial'::text, 'unknown'::text])))"
+                },
+                {
+                  "name": "relationship_check_9",
+                  "definition": "CHECK ((support_status = ANY (ARRAY['notAssessed'::text, 'supported'::text, 'partial'::text, 'missing'::text])))"
+                },
+                {
+                  "name": "relationship_identifier_key",
+                  "definition": "UNIQUE (identifier)"
+                },
+                {
+                  "name": "relationship_pkey",
+                  "definition": "PRIMARY KEY (id)"
+                },
+                {
+                  "name": "relationship_source_business_object_id_fkey",
+                  "definition": "FOREIGN KEY (source_business_object_id) REFERENCES catalog.business_object(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_source_data_field_id_fkey",
+                  "definition": "FOREIGN KEY (source_data_field_id) REFERENCES catalog.data_field(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_source_data_product_id_fkey",
+                  "definition": "FOREIGN KEY (source_data_product_id) REFERENCES catalog.data_product(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_source_data_service_id_fkey",
+                  "definition": "FOREIGN KEY (source_data_service_id) REFERENCES catalog.data_service(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_source_data_service_id_source_endpoint_id_fkey",
+                  "definition": "FOREIGN KEY (source_data_service_id, source_endpoint_id) REFERENCES catalog.service_endpoint(data_service_id, id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_source_data_table_id_fkey",
+                  "definition": "FOREIGN KEY (source_data_table_id) REFERENCES catalog.data_table(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_target_business_attribute_id_fkey",
+                  "definition": "FOREIGN KEY (target_business_attribute_id) REFERENCES catalog.business_attribute(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_target_business_object_id_fkey",
+                  "definition": "FOREIGN KEY (target_business_object_id) REFERENCES catalog.business_object(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_target_data_field_id_fkey",
+                  "definition": "FOREIGN KEY (target_data_field_id) REFERENCES catalog.data_field(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_target_data_service_id_fkey",
+                  "definition": "FOREIGN KEY (target_data_service_id) REFERENCES catalog.data_service(id) ON DELETE RESTRICT"
+                },
+                {
+                  "name": "relationship_target_data_table_id_fkey",
+                  "definition": "FOREIGN KEY (target_data_table_id) REFERENCES catalog.data_table(id) ON DELETE RESTRICT"
+                }
+              ]
+            }
+          },
+          "actor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/actor"
+            }
+          },
+          "domain": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/domain"
+            }
+          },
+          "system": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/system"
+            }
+          },
+          "business_object": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/business_object"
+            }
+          },
+          "data_table": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_table"
+            }
+          },
+          "code_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/code_list"
+            }
+          },
+          "data_product": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_product"
+            }
+          },
+          "data_service": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_service"
+            }
+          },
+          "service_endpoint": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/service_endpoint"
+            }
+          },
+          "quality_requirement": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SnapshotQualityRequirement"
+            }
+          }
+        }
+      },
+      "CatalogCounterpart": {
+        "type": "object",
+        "required": [
+          "id",
+          "identifier",
+          "_counterpart"
+        ],
+        "description": "Minimal child for relationship labels. Its owner inventory must be loaded before editing or showing the child profile.",
+        "properties": {
+          "_counterpart": {
+            "const": true
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "identifier": {
+            "type": "string"
+          },
+          "name_de": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name_fr": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name_it": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name_en": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "technical_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_archived": {
+            "type": "boolean"
+          },
+          "business_object_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "data_table_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "data_service_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "code_list_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "data_product_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
+      "CatalogRecord": {
+        "type": "object",
+        "required": [
+          "schemaVersion",
+          "catalogVersion",
+          "scope",
+          "recordTable",
+          "recordId",
+          "inheritedAttributes"
+        ],
+        "properties": {
+          "schemaVersion": {
+            "type": "integer",
+            "const": 1
+          },
+          "catalogVersion": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "description": "Exact bigint revision encoded as decimal text."
+          },
+          "scope": {
+            "const": "record"
+          },
+          "recordTable": {
+            "type": "string",
+            "enum": [
+              "domain",
+              "system",
+              "business_object",
+              "data_table",
+              "code_list",
+              "data_product",
+              "data_service"
+            ]
+          },
+          "recordId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "inheritedAttributes": {
+            "type": "object",
+            "description": "Inherited attribute UUID to defining business object UUID.",
+            "additionalProperties": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "actor": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/actor"
+            }
+          },
+          "business_attribute": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/business_attribute"
+                },
+                {
+                  "$ref": "#/components/schemas/CatalogCounterpart"
+                }
+              ]
+            }
+          },
+          "business_attribute_quality_requirement": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/business_attribute_quality_requirement"
+            }
+          },
+          "business_object": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/business_object"
+            }
+          },
+          "code_list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/code_list"
+            }
+          },
+          "code_value": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/code_value"
+                },
+                {
+                  "$ref": "#/components/schemas/CatalogCounterpart"
+                }
+              ]
+            }
+          },
+          "data_field": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/data_field"
+                },
+                {
+                  "$ref": "#/components/schemas/CatalogCounterpart"
+                }
+              ]
+            }
+          },
+          "data_field_quality_requirement": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_field_quality_requirement"
+            }
+          },
+          "data_product": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_product"
+            }
+          },
+          "data_service": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_service"
+            }
+          },
+          "data_table": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/data_table"
+            }
+          },
+          "domain": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/domain"
+            }
+          },
+          "lineage_relation": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/lineage_relation"
+            }
+          },
+          "product_attribute": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/product_attribute"
+                },
+                {
+                  "$ref": "#/components/schemas/CatalogCounterpart"
+                }
+              ]
+            }
+          },
+          "quality_requirement": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/quality_requirement"
+            }
+          },
+          "relationship": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/relationship"
+            }
+          },
+          "service_endpoint": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/service_endpoint"
+            }
+          },
+          "system": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/system"
+            }
           }
         }
       },
@@ -52190,7 +53510,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "cc13bb73a162de451dc7a6d9d990064dddb743a6bae2df8741f3d9bb8caa6063"
+      "sha256": "861389c9b994dc6befa8d9d87f3c04f45c308089f772ef6a8757504499181759"
     },
     "schema": "catalog",
     "readRole": "anon",
@@ -52268,6 +53588,10 @@
       {
         "file": "20260914030000_catalog_snapshot_history.sql",
         "sha256": "27fc6c7fb65090090dfc84b730e2f3e3a448688d9fe2122a1062a4a8c5eadd84"
+      },
+      {
+        "file": "20260914040000_catalog_view_loading.sql",
+        "sha256": "9dd176516e263aa41d33d3fbbf5ba1003b6195d042a295db7af2d80aaba6535e"
       }
     ]
   }

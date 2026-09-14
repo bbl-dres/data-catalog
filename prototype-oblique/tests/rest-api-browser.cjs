@@ -21,7 +21,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   await context.addInitScript(()=>{window.copiedToken=null;Object.defineProperty(navigator,'clipboard',{value:{writeText:async value=>{if(window.clipboardDenied)throw Error('Clipboard unavailable');window.copiedToken=value;}}});});
   await context.route(project+'/**',async route=>{
    const req=route.request(),url=new URL(req.url());
-   if(url.pathname==='/rest/v1/rpc/read_snapshot')return route.fulfill({json:(await db.query('SELECT catalog.read_snapshot() AS s')).rows[0].s});
+   if(['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(url.pathname))return route.fulfill({json:(await db.query('SELECT catalog.read_snapshot() AS s')).rows[0].s});
    if(url.pathname==='/rest/v1/rpc/edit_capabilities')return route.fulfill({json:{version:1,can_edit:true}});
    if(url.pathname==='/auth/v1/token')return route.fulfill({json:{access_token:currentToken,refresh_token:crypto.randomUUID(),token_type:'bearer',expires_in:3600,user:identity}});
    if(url.pathname==='/auth/v1/user')return route.fulfill({json:identity});

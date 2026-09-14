@@ -16,6 +16,18 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   let saves=[],failAfterSave=false,failReload=false,holdSave=null,authCalls=[];
   await context.route(project+'/**',async route=>{
    const req=route.request(),url=new URL(req.url());
+   if(url.pathname==='/rest/v1/rpc/read_catalog_index'){
+    if(failReload)return route.abort();
+    return route.fulfill({json:(await db.query('SELECT catalog.read_catalog_index($1) s',[req.postDataJSON().if_version || null])).rows[0].s});
+   }
+   if(url.pathname==='/rest/v1/rpc/read_record'){
+    const body=req.postDataJSON();
+    return route.fulfill({json:(await db.query('SELECT catalog.read_record($1,$2,$3) s',[body.record_table,body.record_id,body.if_version || null])).rows[0].s});
+   }
+   if(url.pathname==='/rest/v1/rpc/read_history'){
+    const body=req.postDataJSON();
+    return route.fulfill({json:(await db.query('SELECT catalog.read_history($1,$2) s',[body.record_table,body.record_id])).rows[0].s});
+   }
    if(url.pathname==='/rest/v1/rpc/read_snapshot'){
     assert.equal(req.headers().authorization,undefined);
     if(failReload)return route.abort();

@@ -37,5 +37,36 @@ const resources=context.window.DK.resources;
     assert(!/private|sb_flow_id|error_description/.test(location.href),'Callback secrets are scrubbed before waiting for the SDK');
     assert.equal(new URL(location.href).search,'?keep=1','Unrelated hosting parameters are retained');
   }
-  console.log('Resources: early rejection handling, body timeout, deduplication, stale callbacks, script/style retry and immediate Auth callback cleanup passed.');
+  const storage = new Map(), requests = [];
+  context.Response = Response;
+  context.caches = { open: async () => ({
+    match: async key => storage.get(String(key))?.clone(),
+    put: async (key, response) => { storage.set(String(key), response); },
+    keys: async () => [...storage.keys()], delete: async key => storage.delete(String(key)),
+  }) };
+  const config = { url:'https://cache.example', publishableKey:'sb_publishable_test' };
+  const value = { schemaVersion:1, scope:'index', catalogVersion:'9007199254740993', childCounts:{} };
+  let answer = value, release;
+  context.fetch = async (url, options) => {
+    requests.push({url:String(url),body:JSON.parse(options.body),headers:options.headers});
+    if(release==='wait')await new Promise(resolve=>{release=resolve;});
+    return {ok:true,json:async()=>answer};
+  };
+  assert.deepEqual(await resources.catalogRead(config,'read_catalog_index'),value);
+  answer = {schemaVersion:1,catalogVersion:value.catalogVersion,notModified:true};
+  assert.deepEqual(await resources.catalogRead(config,'read_catalog_index'),value);
+  assert.deepEqual(requests.at(-1).body,{if_version:'9007199254740993'},'Exact bigint revision survives browser storage');
+  release='wait';
+  const readA=resources.catalogRead(config,'read_catalog_index'),readB=resources.catalogRead(config,'read_catalog_index');
+  while(typeof release!=='function')await new Promise(resolve=>setTimeout(resolve,0));
+  release();await Promise.all([readA,readB]);
+  assert.equal(requests.length,3,'Concurrent conditional reads share one request');
+  assert.equal(requests[0].headers.Authorization,undefined,'Public cache requests carry no session credentials');
+  answer=value;
+  await resources.catalogRead({...config,url:'https://other.example'},'read_catalog_index');
+  assert.deepEqual(requests.at(-1).body,{},'Project URL partitions the cache');
+  context.caches.open=async()=>{throw new Error('Storage denied');};
+  assert.deepEqual(await resources.catalogRead(config,'read_catalog_index'),value);
+  assert.deepEqual(requests.at(-1).body,{},'Unavailable storage falls back to a network read');
+  console.log('Resources: early rejection, body timeout, asset retry, Auth callback cleanup, conditional public caching, exact revisions, project isolation, deduplication and storage denial passed.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

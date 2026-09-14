@@ -52,7 +52,7 @@ async function checkCanonicalModel() {
         for (const column of mapped) covered.add(column.table_name + '.' + column.column_name);
       }
     }
-    assert.equal(dictionaries.size, 17, '16 core dictionaries plus owned ServiceEndpoint');
+    assert.equal(dictionaries.size, 18, '16 core dictionaries plus owned ServiceEndpoint and operational CatalogState');
     assert.deepEqual([...covered].sort(), actual.map(column => column.table_name + '.' + column.column_name).sort(), 'Every current SQL column is documented');
     const inventory = Object.fromEntries([...model.matchAll(/^\|[^\n]+\| `([a-z_]+)` \| (\d+) \|$/gm)].map(([, table, count]) => [table, Number(count)]));
     const expected = {};

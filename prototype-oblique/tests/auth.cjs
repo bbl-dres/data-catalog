@@ -32,7 +32,7 @@ const session = () => ({ access_token: jwt(Math.floor(Date.now() / 1000) + 3600)
     context.on('page', page => { page.on('pageerror', error => errors.push(error.message)); page.setDefaultTimeout(10000); });
     await context.route(project + '/**', async route => {
       const request = route.request(), url = new URL(request.url());
-      if (url.pathname === '/rest/v1/rpc/read_snapshot') {
+      if (['/rest/v1/rpc/read_snapshot','/rest/v1/rpc/read_catalog_index'].includes(url.pathname)) {
         assert.equal(request.headers().authorization, undefined, 'Public catalog requests stay anonymous');
         return route.fulfill({ json: snapshot });
       }
