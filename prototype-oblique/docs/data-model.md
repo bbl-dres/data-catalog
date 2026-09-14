@@ -2,7 +2,7 @@
 
 **Canonical specification · review baseline: 14 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
 
-**Review status:** the 19 public tables and 481 columns are deployed and reconciled with the repository, including independent API field ownership and optional property groups. [14 September verification](review/2026-09-14-api-fields-groups.md). Editing activation and session-security review are completed; a real localhost save/history/restore passed. The REST Edge Function and operational Auth/header follow-ups remain in the [queue](todo.md). The earlier read-only comparison below is retained as historical evidence. Business sufficiency and content readiness remain distinct from structural validation.
+**Review status:** the 20 public tables and 483 columns are deployed and reconciled with the repository, including independent API field ownership, optional property groups and the read-only catalog version singleton. [View-loading verification](review/2026-09-14-view-loading-implementation.md). Editing activation and session-security review are completed; a real localhost save/history/restore passed. The REST Edge Function and operational Auth/header follow-ups remain in the [queue](todo.md). The earlier read-only comparison below is retained as historical evidence. Business sufficiency and content readiness remain distinct from structural validation.
 
 ## Vision and purpose
 
@@ -108,7 +108,7 @@ The missing-column inventory is grouped by identical shape. Each of the 40 named
 | `business_attribute`, `data_field`, `code_value`, `product_attribute` | `edited_at`, `sort_order`, `is_archived` | 12 |
 | `service_endpoint` | `sort_order`, `is_archived`, `row_version`, `created_on`, `modified_on`, `edited_at` | 6 |
 
-This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/481 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
+This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 20 tables/483 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
 
 ### System of record
 
@@ -1277,9 +1277,9 @@ Infrastructure for conditional public reads. This singleton is separate from aut
 
 ### Reviewed schema baseline
 
-The migrations in [supabase/migrations](../supabase/migrations/), ending with `20260914040000_catalog_view_loading.sql`, define **20 public `catalog` tables, 483 columns and 86 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint, two quality-assignment junctions and the operational CatalogState singleton account for the remaining four. All columns are covered by the dictionaries and explicit mappings below. The previously deployed baseline has 19 tables and 481 columns; the new version singleton is delivered with the view-loading migration.
+The migrations in [supabase/migrations](../supabase/migrations/), ending with `20260914040000_catalog_view_loading.sql`, define **20 public `catalog` tables, 483 columns and 86 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint, two quality-assignment junctions and the operational CatalogState singleton account for the remaining four. All columns are covered by the dictionaries and explicit mappings below. This schema is deployed on Data Catalog; the view-loading migration is recorded as `20260914153224_catalog_view_loading`.
 
-The earlier 19-table baseline matches the deployed schema verified on 14 September. The [earlier hosted comparison](#documented-deployed-visible-and-editable) records gaps resolved during activation. Schema completeness does not establish source-content readiness. The simple propertyGroup attribute is included; proposed group registries and structured business-key extensions remain excluded. Authentication, access policies, command receipts, import markers and private user attribution remain private operational storage; CatalogState is the deliberately public, read-only infrastructure exception.
+The [14 September verification](review/2026-09-14-view-loading-implementation.md#hosted-rollout) confirms the current hosted schema, public reads and preserved content. The [earlier hosted comparison](#documented-deployed-visible-and-editable) records gaps resolved during activation. Schema completeness does not establish source-content readiness. The simple propertyGroup attribute is included; proposed group registries and structured business-key extensions remain excluded. Authentication, access policies, command receipts, import markers and private user attribution remain private operational storage; CatalogState is the deliberately public, read-only infrastructure exception.
 
 | Dictionary / collection | SQL table | Columns |
 |---|---|---:|

@@ -36,6 +36,41 @@ Passing checks include the new `view-loading.cjs` and `view-loading-browser.cjs`
 
 ## Hosted rollout
 
-Read-only MCP inspection confirmed project `zicluerzbevodlmtbxow`, the existing 19-table / 481-column baseline, the expected write-serialization function, and no existing `catalog_view_loading` migration, version table or new read RPCs. The latest recorded migration is `20260914150059_catalog_snapshot_history`.
+Applied to Data Catalog (`zicluerzbevodlmtbxow`) through the Supabase MCP after explicit user approval. `list_migrations` records **`20260914153224_catalog_view_loading`**, applied on 14 September 2026 at 15:32:24 UTC. Preflight found no migration of that name, no version table and neither new RPC. The tested file's SHA-256 was `9DD176516E263AA41D33D3FBBF5BA1003B6195D042A295DB7AF2D80AABA6535E`; only its outer `BEGIN` / `COMMIT` lines were removed for the tool, retaining `NOTIFY pgrst, 'reload schema'`. No extra schema reload was needed.
 
-The new migration is prepared but has not been applied to the hosted project. Apply it once through the Supabase MCP with its outer `BEGIN` / `COMMIT` removed, retaining `NOTIFY pgrst, 'reload schema'`. Verify the two RPC signatures, version-table read-only grants, versioned index/profile responses, conditional `notModified` responses, the legacy snapshot/history contracts and unchanged content. Then release the frontend assets. No commits or pushes were made during this implementation.
+SQL verification confirmed:
+
+- 20 catalog tables / 483 columns; one `catalog_state` row with `singleton=true`, `version=1`.
+- `read_catalog_index(if_version text)` and `read_record(record_table text, record_id uuid, if_version text)` exist as STABLE SECURITY INVOKER functions.
+- Both `read_snapshot` overloads and `read_history(record_table text, record_id uuid, max_events integer)` remain present; the history index exists, the no-history snapshot omits `change_event`, and the building history returns 70 events.
+- `anon`, `authenticated` and `service_role` have SELECT only on the version table. Their role settings remain respectively `statement_timeout=3s`, `statement_timeout=8s` and no role settings. No Auth or timeout configuration changed.
+- Before and after all verification, `md5(catalog.read_snapshot(true,true)::text)` was **`7bf5b7ae3500a0fe6df2fee8977409c7`**. Catalog content is preserved; hosted verification performed no test writes.
+
+Public POST requests used the publishable key from `js/catalog-config.js`, `Content-Profile: catalog` and JSON bodies:
+
+| Read | HTTP | Response bytes | Verified content |
+|---|---:|---:|---|
+| `read_catalog_index {}` | 200 | 286,453 | Version `"1"`; no child or history arrays |
+| Index with `if_version: "1"` | 200 | 64 | `notModified: true` |
+| RE-FX building table bundle | 200 | 409,865 | 205 owned fields, 150 active, 11 groups |
+| RE-FX building API bundle | 200 | 637,915 | 378 owned fields, 26 groups |
+| Each bundle with `if_version: "1"` | 200 | 64 each | `notModified: true` |
+| `read_snapshot` with API fields, without history | 200 | 3,670,182 | 1,138 fields; no `change_event` |
+| Legacy `read_snapshot {}` | 500, then 200 on retry | 8,996,808 on success | `change_event` present, 1,865 events |
+| Building `read_history` | 200 | 76,109 | JSON array of 70 events |
+
+The index reduces startup response bytes by **92.2%** compared with the full snapshot without history. Measured index HTTP time was 920 ms initially and 174 ms on a later request; conditional index time was 93 ms. A separate hosted `EXPLAIN ANALYZE` measured 259 ms for the index query. These are individual measurements, not latency percentiles; the proposal's sub-100-ms database target was not demonstrated by this run. Table/API bundle HTTP reads took 219/262 ms. Byte counts are decoded JSON response sizes, not compressed wire sizes.
+
+Live read-only browser checks of the local frontend passed for the 150 exact Excel names, default groups and group filtering, the single batch-import history entry, 378 independent API fields, all 28 API PDF layout pages, and desktop/mobile layouts. Local suites separately verified Cache API reuse/revalidation and transactional version changes under isolated writes.
+
+**Deviation:** the unchanged legacy full-history snapshot returned PostgreSQL `57014` (statement timeout) once; its retry returned HTTP 200 in 3,178 ms including network/transfer time. All new index/bundle reads, the export snapshot without history and the owner history succeeded. `query_logs` counted **one** matching `postgres_logs.event_message` between **15:32:24 and 15:33:49 UTC**:
+
+```sql
+select source, count() as entries,
+       countIf(positionCaseInsensitive(event_message,
+         'canceling statement due to statement timeout') > 0) as timeout_count
+from logs where source = 'postgres_logs' group by source;
+-- entries=2, timeout_count=1
+```
+
+An initial diagnostic searched `log_attributes` and returned zero; inspecting all log columns failed in the backend. The corrected query above searches the top-level `event_message` and is the reported count. The legacy full-history endpoint therefore retains a performance limitation; the new frontend startup does not call it. No additional migrations or timeout changes were made to address that separate path. The hosted database migration is complete; frontend publishing remains a separate release step. This task did not commit, push or publish the frontend.

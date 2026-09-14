@@ -2,7 +2,7 @@
 
 `view-loading.cjs` compares every profile bundle and count with the full SQL snapshot, checks inherited/mapped attributes, conditional versions, read-only grants, rollback, client deduplication, retries and stale responses. `view-loading-browser.cjs` covers index-only navigation, hover prefetch, cold child links, Cache API revalidation, API fields/groups, loading/retry, lazy Excel exports and mobile. The editor and API-field browser suites now use the real index/bundle RPCs as well. Existing full-snapshot fixtures remain supported at the new index route.
 
-Run `node tests/view-loading.cjs` with `PGLITE_MODULE`, and `node tests/view-loading-browser.cjs` with both `PGLITE_MODULE` and `PLAYWRIGHT_MODULE`, from this directory. The public schema now has 20 tables / 483 columns, including the read-only version singleton.
+Run `node tests/view-loading.cjs` with `PGLITE_MODULE`, and `node tests/view-loading-browser.cjs` with both `PGLITE_MODULE` and `PLAYWRIGHT_MODULE`, from the prototype root. The public schema now has 20 tables / 483 columns, including the read-only version singleton.
 
 `catalog-table-grants.cjs` reproduces the direct table write grants found during hosted activation, applies the scoped repair twice, verifies preserved content and SELECT access, and then applies all current incremental migrations with 483 resulting columns and no direct API-role writes. It uses the same PGlite setup as the SQL suites.
 

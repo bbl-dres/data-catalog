@@ -53510,7 +53510,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "861389c9b994dc6befa8d9d87f3c04f45c308089f772ef6a8757504499181759"
+      "sha256": "16a4593c9a63e03d05d770f3f60ec5d1c4ba6d3d950735af4cb9370a048a84a7"
     },
     "schema": "catalog",
     "readRole": "anon",
