@@ -66,7 +66,7 @@
     const base = r => localized({ identifier: r.identifier, labels: labels(r), _record: r,
       _relationships: (relationshipIndex.get(r.id) || []).slice(),
       status: status[r.status], version: r.version, versionDate: r.version_date, created: r.created_on, modified: r.modified_on,
-      sortOrder: r.sort_order, comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
+      sortOrder: r.sort_order, propertyGroup: r.property_group, comment: r.comment, classification: classification[r.classification], personalData: r.contains_personal_data,
       informationUrls: (r.documentation_links || []).filter(l => l.purpose !== 'terminology').map(l => l.url),
       documentationLinks: r.documentation_links || [], contact: { url: (r.responsible_organisation || r.authority_organisation)?.websiteUrl },
       domain: visibleRef('domain', r.domain_id), system: visibleRef('system', r.system_id),
@@ -97,6 +97,7 @@
     result.systems.forEach(e => Object.assign(e, { technology: e._record.technology, informationUrl: e.informationUrls[0] }));
     result.objects.forEach(e => Object.assign(e, { attributes: [], termdat: e.documentationLinks.filter(l => l.purpose === 'terminology').map(l => localized({ id: l.externalIdentifier, url: l.url }, { name: () => text(l, 'title') || l.url })) }));
     result.tables.forEach(e => Object.assign(e, { fields: [], technicalName: e._record.technical_name, realizes: linked(e._record, 'realizes', 'business_object')[0] }));
+    result.apis.forEach(e => { e.fields = []; });
     result.refs.forEach(e => Object.assign(e, { values: [], businessObject: visibleRef('business_object', e._record.business_object_id) }));
     result.products.forEach(e => Object.assign(e, { attributes: [], basedOn: linked(e._record, 'basedOn', 'business_object'), sourcedFrom: linked(e._record, 'sourcedFrom', 'data_table'), servedBy: linked(e._record, 'servedBy', 'data_service'),
       accessRights: e._record.access_notes || e._record.access_mode, license: e._record.license_notes || e._record.license_uri, format: e._record.formats.join(', '), accrualPeriodicity: frequencies[e._record.update_frequency] }));
@@ -135,7 +136,7 @@
     };
     result.objects.forEach(inheritAttributes);
     for (const r of ownedRows('data_field')) {
-      const parent = owner('data_table', r.data_table_id), e = base(r);
+      const parent = r.data_service_id ? owner('data_service', r.data_service_id) : owner('data_table', r.data_table_id), e = base(r);
       Object.assign(e, { identifier: childId(r, parent), technicalName: r.technical_name, dataType: r.source_data_type, technicalNameKind: r.technical_name_kind, dataTypeKind: r.data_type_scope,
         keyRoles: r.key_roles, keyRole: r.key_roles?.includes('primary') ? 'PK' : r.key_roles?.includes('foreign') ? 'FK' : null, mandatory: r.is_required, codeList: visibleRef('code_list', r.code_list_id), appliesToObjectTypes: r.applies_to_type_names });
       parent.fields.push(e);
@@ -161,7 +162,7 @@
       const [kind, table] = target || ['other', Object.keys(r).find(key => key.startsWith('record_') && r[key])?.slice(7, -3)];
       let identifier = ref(table, r[`record_${table}_id`]), historyKind = kind;
       const parent = { business_attribute:['business_object','objects'],data_field:['data_table','tables'],code_value:['code_list','refs'],product_attribute:['data_product','products'] }[table];
-      if (parent) { const child = resolve(table,r[`record_${table}_id`]); identifier = ref(parent[0],child[parent[0]+'_id']); historyKind = parent[1]; }
+      if (parent) { const child = resolve(table,r[`record_${table}_id`]); const context = table === 'data_field' && child.data_service_id ? ['data_service','apis'] : parent; identifier = ref(context[0],child[context[0]+'_id']); historyKind = context[1]; }
       return localized({ identifier: r.identifier, entity: `${historyKind}:${identifier}`, date: r.occurred_on, action: { created: 'Erstellt', updated: 'Geändert', imported: 'Importiert', retired: 'Archiviert', restored: 'Wiederhergestellt' }[r.action], importId: r.import_id, _record: r }, { detail: () => text(r, 'summary'), user: () => text(r, 'actor_name') });
     });
     for (const kind of Object.keys(kinds)) result[kind]=result[kind].filter(e=>!e._record.is_archived);
@@ -174,7 +175,7 @@
     try {
       return project(await (DK.boot?.take(url) || DK.resources.read(url, {
         method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
-        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}'
+        headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{"include_api_fields":true}'
       })));
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('Supabase did not respond within 20 seconds. Please retry.');

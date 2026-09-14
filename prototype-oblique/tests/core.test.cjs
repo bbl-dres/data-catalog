@@ -113,11 +113,12 @@ test('web and print visibility choices exclude detailed metadata without removin
   const { presentation: p } = await loaded();
   for (const kind of ['objects', 'tables', 'domains', 'systems', 'refs', 'products', 'apis', 'attrs', 'fields', 'values', 'productAttrs', 'endpoints']) {
     const ids = [...p.choices(kind)].map(field => field.id);
-    assert(ids.length <= (kind === 'fields' ? 16 : 15), kind + ': bounded browsing choices, including row order and status');
+    assert(ids.length <= (kind === 'fields' ? 18 : kind === 'attrs' ? 16 : 15), kind + ': bounded browsing choices, including group, row order and status');
     const owned = ['attrs', 'fields', 'values', 'productAttrs', 'endpoints', 'tables'].includes(kind);
     assert.equal(ids.includes('sortOrder'), owned, kind + ': row order belongs to owned rows');
     assert(!p.defaults(kind).includes('sortOrder'), kind + ': row order is hidden by default');
-    for (const id of ['identifier', 'comment', 'created', 'modified', 'versionDate', 'informationUrls', 'classification', 'personalData', 'sourcePath', 'semanticName']) assert(!ids.includes(id), kind + ': omit ' + id);
+    for (const id of ['identifier', 'comment', 'created', 'modified', 'versionDate', 'informationUrls', 'classification', 'personalData', 'semanticName']) assert(!ids.includes(id), kind + ': omit ' + id);
+    assert.equal(ids.includes('sourcePath'), kind === 'fields', 'Field paths disambiguate API structures');
     assert(p.defaults(kind).every(id => ids.includes(id)), 'Defaults are selectable');
   }
   p.save('objects', ['name', 'version', 'comment', 'identifier']);
@@ -145,8 +146,8 @@ test('shared visibility merges semantic fields while preserving names and mixed 
     assert(choices.filter(choice => ['entry.name', 'name'].includes(choice.id)).every(choice => choice.required && choice.checked));
     if (kind === 'objects') assert(choices.find(choice => choice.id === 'responsibleOrg').mixed);
     if (kind === 'apis') {
-      assert.equal(choices.find(choice => choice.id === 'protocol').targets.length, 2, 'Protocol aliases share one control');
-      assert.equal(choices.find(choice => choice.id === 'endpointURL').targets.length, 2, 'Endpoint URL aliases share one control');
+      assert.equal(choices.find(choice => choice.id === 'protocol').targets.length, 1, 'Protocol belongs to the API, not its independent fields');
+      assert.equal(choices.find(choice => choice.id === 'endpointURL').targets.length, 1, 'Endpoint URL belongs to the API');
     }
     assert.deepEqual([...p.selected(kind)], [...p.defaults(kind)], 'Merging never changes saved preferences');
   }
@@ -1187,7 +1188,7 @@ test('the tree collapses a branch that the current page opened', async () => {
 test('field lists separate aliases and technical names while retaining hidden-column search and stable links', async () => {
   const {data,presentation:p,detail,router}=await loaded();
   const table={...data.get('tables','t-sap-building'),kind:'tables'};
-  const defaults=p.defaults('fields');assert.deepEqual([...defaults].slice(0,2),['name','code']);assert.equal(defaults.at(-1),'status');
+  const defaults=p.defaults('fields');assert.deepEqual([...defaults].slice(0,3),['propertyGroup','name','code']);assert.equal(defaults.at(-1),'status');
   const row=detail.rowsData(table).rows.find(r=>r.values.code==='BUILDING');
   assert.equal(row.values.name,'Nummer des Gebäudes');assert.equal(row.values.code,'BUILDING');assert.equal(row.href,router.entityHref('fields','t-sap-building/BUILDING'));
   const code=p.definitions('fields').find(f=>f.id==='code');assert.equal(code.href(row.entity),row.href);
@@ -1202,11 +1203,22 @@ test('split field-name preferences migrate once and respect later hiding and def
     const saved=new Map([['datenkatalog.visibleFields',JSON.stringify({version,kinds:{fields:['name','type','key','codeList','status'],objects:['name','version']}})]]);
     const localStorage={getItem:key=>saved.get(key),setItem:(key,value)=>saved.set(key,value)};
     let p=runtime(()=>{},{localStorage}).presentation;
-    assert.deepEqual([...p.selected('fields')],['name','code','type','key','codeList','status']);
+    assert.deepEqual([...p.selected('fields')],['propertyGroup','name','code','type','key','codeList','status']);
     assert.deepEqual([...p.selected('objects')],['name','version']);
-    assert.equal(JSON.parse(saved.get('datenkatalog.visibleFields')).version,3);
+    assert.equal(JSON.parse(saved.get('datenkatalog.visibleFields')).version,4);
     p.save('fields',['name','status']);p=runtime(()=>{},{localStorage}).presentation;
     assert.deepEqual([...p.selected('fields')],['name','status']);
     p.save('fields',p.defaults('fields'));assert(p.selected('fields').includes('code'));
   }
+});
+
+test('group visibility migrates v3 once for attributes and fields and respects hiding', () => {
+  const saved=new Map([['datenkatalog.visibleFields',JSON.stringify({version:3,kinds:{attrs:['name','status'],fields:['name','code','status']}})]]);
+  const localStorage={getItem:key=>saved.get(key),setItem:(key,value)=>saved.set(key,value)};
+  let p=runtime(()=>{},{localStorage}).presentation;
+  for(const kind of ['attrs','fields'])assert(p.selected(kind).includes('propertyGroup'));
+  assert.equal(JSON.parse(saved.get('datenkatalog.visibleFields')).version,4);
+  for(const kind of ['attrs','fields'])p.save(kind,p.selected(kind).filter(id=>id!=='propertyGroup'));
+  p=runtime(()=>{},{localStorage}).presentation;
+  for(const kind of ['attrs','fields']){assert(!p.selected(kind).includes('propertyGroup'));assert(p.defaults(kind).includes('propertyGroup'));}
 });

@@ -1,8 +1,8 @@
 # Catalog model implementation guide
 
-**Implementation companion · reviewed 13 September 2026.** The [canonical data model](data-model.md) owns entities, attributes, semantics, physical schema mapping, keys, constraints and the ER diagram. This guide explains the current app/API, storage implementation and frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
+**Implementation companion · reviewed 14 September 2026.** The [canonical data model](data-model.md) owns entities, attributes, semantics, physical schema mapping, keys, constraints and the ER diagram. This guide explains the current app/API, storage implementation and frozen JSON import inputs. Sections describing later read models, batch imports and standards publication remain design requirements, not released features.
 
-The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. The read-only hosted audit on 13 September confirmed public snapshot reads, 40 missing editing/CRUD columns across 16 tables, an unavailable `catalog-api` Edge Function and disabled public signup. The canonical [coverage matrix](data-model.md#documented-deployed-visible-and-editable) records the exact evidence and access limits. Follow [hosted activation](api.md#activation) before treating implemented write paths as usable; authenticated writes were not tested in that audit. Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
+The [Supabase implementation](../supabase/README.md) includes normalized storage, integrity guards, public reads, deterministic import, snapshot loading, browser edit commands and REST CRUD. Browser editing was activated on 13 September, and independent API fields/property groups were deployed on 14 September with unchanged existing content. The canonical [coverage matrix](data-model.md#documented-deployed-visible-and-editable) retains the earlier read-only audit as historical evidence. The standard REST Edge Function still needs [separate activation](api.md#activation). Catalog JSON files remain frozen import inputs and test fixtures. Login identities, permissions and private audit attribution are operational configuration, separate from Actor records. Server-side search, general batch-import tooling, quality execution, lineage visualization/ingestion and standards publication remain later work.
 
 ## Purpose and reading guide
 
@@ -19,7 +19,7 @@ Implementation details may evolve without changing the model. A change to entity
 
 ## Prototype coverage
 
-All 16 core entities have SQL storage and public read access. The 15 mutable core entities plus owned ServiceEndpoint have REST CRUD after activation; ChangeEvent remains append-only. The table describes implemented browser editors, not verified hosted saves. The 13 September audit found editing-schema and CRUD-function activation incomplete. A stored kind need not have a dedicated collection page or imported rows.
+All 16 core entities have SQL storage and public read access. The 15 mutable core entities plus owned ServiceEndpoint have REST CRUD after Edge Function activation; ChangeEvent remains append-only. Browser editing is active, and the schema through API fields/property groups was verified on 14 September. The table describes implemented browser coverage. A stored kind need not have a dedicated collection page or imported rows.
 
 Entity meanings belong to the [conceptual overview](data-model.md#entity-overview). The [source inventory](#source-inventory) records the historical JSON inputs, not the current source of catalog truth.
 
@@ -31,9 +31,9 @@ Entity meanings belong to the [conceptual overview](data-model.md#entity-overvie
 | [ChangeEvent](data-model.md#changeevent) | `change_event`, read-only | History display; commands create events. |
 | [CodeList](data-model.md#codelist) | `code_list`, CRUD | Collection, profile and owned-code editing. |
 | [CodeValue](data-model.md#codevalue) | `code_value`, CRUD | Rows in the owning code list; no independent profile. |
-| [DataField](data-model.md#datafield) | `data_field`, CRUD | Table rows and field profiles. Complete quality assignments use REST. |
+| [DataField](data-model.md#datafield) | `data_field`, CRUD | Independent rows in the owning table or API, with optional Gruppe. Table fields have profiles; API fields stay within their owner. Complete quality assignments use REST. |
 | [DataProduct](data-model.md#dataproduct) | `data_product`, CRUD | Collection, profile and product-attribute editing. |
-| [DataService](data-model.md#dataservice) | `data_service`, CRUD | API collection/profile; owned endpoint edits. Verification changes use REST. |
+| [DataService](data-model.md#dataservice) | `data_service`, CRUD | API collection/profile with independent field and endpoint editing. Verification changes use REST. |
 | [DataTable](data-model.md#datatable) | `data_table`, CRUD | Collection, profile and field editing. |
 | [Domain](data-model.md#domain) | `domain`, CRUD | Collection/profile editing with derived membership. |
 | [LineageRelation](data-model.md#lineagerelation) | `lineage_relation`, CRUD | No dedicated editor, ingestion or lineage view. |
@@ -51,7 +51,7 @@ ServiceEndpoint is stored in `service_endpoint` with its own UUID, revision, ord
 - Endpoint check results and evidence quality require human review. Generic command history is not an operation test report.
 - `save_entry` records the Required shortcut as a boolean and may create its shared rule without a separate rule-creation event. It does not retain a complete before/after assignment-ID set. REST quality assignment writes do retain that set. See [audit formats](#audit-snapshots-and-event-grouping).
 - The current projection can show one realisation for a table, including candidate mappings, and does not implement the full multi-domain/confirmation-aware read model below. Complete assertions remain in SQL/snapshot/API data. There is no automatic impact review or quality execution.
-- The structured property-set and business-key design is a [proposed next revision](data-model.md#property-sets-and-business-keys). Current grouping/key-role comments and parsing are compatibility behavior; no corresponding new fields or migrations have been implemented.
+- The [group decision](data-model.md#property-sets-and-business-keys) uses optional authored property_group text on business attributes and table/API fields. The Gruppe column is on by default and can be hidden with Ansicht. Structured business keys remain proposed. Existing comment-based grouping proposals are preserved without automatic conversion.
 
 ## Physical ER review diagram
 
@@ -69,7 +69,7 @@ Each core entity has its own table and internal `id uuid` primary key. Map the a
 |---|---|
 | Actor, Domain, System | `actor`, `domain`, `system`. |
 | BusinessObject, BusinessAttribute | `business_object`, `business_attribute`; typed object/domain FKs. |
-| DataTable, DataField | `data_table`, `data_field`; fields have a required table owner. |
+| DataTable, DataField | `data_table`, `data_field`; each field has exactly one table or API owner; the records and schemas stay independent. |
 | CodeList, CodeValue | `code_list`, `code_value`; each code belongs to one CodeList. |
 | DataProduct, ProductAttribute, DataService | `data_product`, `product_attribute`, `data_service`; product attributes have a required product owner. |
 | QualityRequirement | `quality_requirement`; assignments use `business_attribute_quality_requirement` and `data_field_quality_requirement` junctions with composite PKs over their two endpoint FKs. |
@@ -246,7 +246,7 @@ The canonical [dictionaries](data-model.md#entity-definitions) enumerate every s
 
 | Surface | Meaning and implementation |
 |---|---|
-| Collection / owned rows | The default and selectable columns in [presentation.js](../js/presentation.js). Attribute and field rows also link to independent profiles; code values and product attributes stay within their owner. Endpoint column definitions exist but are not connected to a normal service rows tab. |
+| Collection / owned rows | The default and selectable columns in [presentation.js](../js/presentation.js). Business attributes and table fields link to independent profiles; API fields, code values and product attributes stay within their owner. API fields use the service's Felder tab; endpoints have a separate editor tab. Gruppe defaults to visible on business attributes and both field inventories. |
 | Profile | Heading/description, key facts, responsibility/protection and system metadata in [detail.js](../js/detail.js). System metadata is part of the overview; there is no separate `detail.metadata` renderer. |
 | Relations | Derived groups from [data.js](../js/data.js), not a full browser of Relationship rows and verification evidence. |
 | Form | Authenticated root/owned editing from [edit-schema.js](../js/edit-schema.js) and [editor.js](../js/editor.js). Names/descriptions are authored one language at a time. |
@@ -271,7 +271,7 @@ Empty displayed values use an em dash. An omitted property below means no dedica
 | CodeValue | Owner table shows code/name with optional description; no independent profile or code hierarchy | Code, translated name/description and short name, comments/links. Short names are retained in presentation/source fields but not offered in the normal column chooser; `parentCodeValueId` uses REST |
 | DataProduct | Collection/profile, access, format, refresh, licence, attribute count and related objects/tables/services | General fields, access, landing page, formats, licence, update frequency and owned attributes. Landing page is editable but is not wired to the profile's obtain-product action |
 | ProductAttribute | Owner rows show name/description/type, with optional requiredness/code columns. No business-attribute binding or full contract constraints displayed | Translated name/description, semantic name, descriptive value specification, requiredness, comments/links. `businessAttributeId`, contract bounds and rule notes use REST |
-| DataService | Collection/profile, system, service release, protocol, endpoint count and access; no normal endpoint rows tab | General fields, system/domain, technical name, source service version, purpose, access and endpoint-description URLs. Definition version is edited separately; endpoints have an owned-row editor |
+| DataService | Collection/profile, system, service release, protocol, endpoint count, access and independent Felder tab | General fields, system/domain, technical name, source service version, purpose, access and endpoint-description URLs. Definition version is edited separately; fields and endpoints have separate owned-row tabs |
 | ServiceEndpoint | Profile protocol/base URL use the primary or first active endpoint. All active endpoint operations, methods, paths and capabilities also appear as expandable access descriptions; no normal endpoint rows tab | Owned-row editor provides URL/path/operation, protocol/method, environment, read-only/bulk flags and authentication methods; verification changes use REST |
 | AccessOption on DataTable / DataProduct / DataService | Expandable descriptions via [access-options.js](../js/access-options.js); same optional web/PDF field, plus an authored-entry Excel sheet | Dedicated editor tab for titles, format, status, URLs, access instructions, terms, comment, order and archive/restore. Owned JSONB list uses parent revision/history and existing REST PATCH; [activation required](../supabase/README.md#access-options-bereitstellungsformen) |
 | Actor | Referenced owner/steward/custodian names and links; existing actors appear in form selectors | No standalone management form; REST after activation |
@@ -314,7 +314,7 @@ Maintain these types as application configuration with an English token, permitt
 | A documented building DataTable | `realizes` | Building BusinessObject | Preserve the source mapping and its uncertainty. |
 | Operational measurement BusinessObject | `measuredFor` | Building BusinessObject | Proposed example only; no such assertion is currently stored or confirmed. |
 
-The TERMDAT “Messwert” link remains an owned DocumentationLink with purpose `terminology`. A field's owning table, a table's system, a code list's classified business object and a field's code list remain direct FKs. Do not mirror them as Relationship rows. Other business association types may be added when their meaning and endpoint signatures are agreed; a vague relatedTo type is not part of this initial set.
+The TERMDAT “Messwert” link remains an owned DocumentationLink with purpose `terminology`. A field's owning table or API, a table's system, a code list's classified business object and a field's code list remain direct FKs. Do not mirror them as Relationship rows. Other business association types may be added when their meaning and endpoint signatures are agreed; a vague relatedTo type is not part of this initial set.
 
 ## Editing, review and imports
 
@@ -457,7 +457,7 @@ Other current and planned groups follow these rules:
 | DataTable / related tables | Other tables with the same business-object mapping; this is shared meaning, not a physical FK or data flow. |
 | DataTable / code lists | Distinct DataField.codeListId values when recorded; today's fallback uses CodeList.businessObjectId. Keep fallback applicability separate from confirmed field use. |
 | CodeList / used in tables | Inverse of fields' explicit codeListId links. Today's renderer falls back to the associated business object's tables when no direct use exists; mark that fallback as business context, never as verified use. |
-| DataField / context | Owning DataTable, its System, explicit code list and table's business mappings. No duplicated field-level system/business-object FK. |
+| DataField / context | Owning DataTable or DataService, its System and explicit code list. Table business mappings do not transfer to independent API fields. No duplicated field-level system/business-object FK. |
 | DataService / products and system | Inverse servedBy Relationship records and direct systemId. Service absence/availability is not a lineage assertion. |
 | Terminology | DocumentationLink values with purpose = terminology; current TERMDAT groups are external links, including inherited object terminology. Attribute-specific name matches remain suggestions. |
 

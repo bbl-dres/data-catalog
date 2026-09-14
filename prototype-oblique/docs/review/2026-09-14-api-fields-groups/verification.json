@@ -1,0 +1,239 @@
+{
+  "project": "zicluerzbevodlmtbxow",
+  "date": "2026-09-14",
+  "fingerprint_query": "WITH snapshot AS (SELECT catalog.read_snapshot() AS s)\nSELECT x.key AS table_name, count(v.value)::int AS records,\nmd5(coalesce(jsonb_agg(CASE WHEN x.key='data_field' THEN v.value-'property_group'-'data_service_id' WHEN x.key='business_attribute' THEN v.value-'property_group' ELSE v.value END ORDER BY v.value->>'id',v.value::text) FILTER (WHERE v.value IS NOT NULL),'[]'::jsonb)::text) AS content_hash\nFROM snapshot CROSS JOIN LATERAL jsonb_each(s) x LEFT JOIN LATERAL jsonb_array_elements(CASE WHEN jsonb_typeof(x.value)='array' THEN x.value ELSE '[]'::jsonb END) v ON true WHERE jsonb_typeof(x.value)='array' GROUP BY x.key ORDER BY x.key;",
+  "preserved": true,
+  "before": [
+    {
+      "table_name": "actor",
+      "records": 11,
+      "content_hash": "420fa4f8f1977b7231c2eeac3f404c2d"
+    },
+    {
+      "table_name": "business_attribute",
+      "records": 295,
+      "content_hash": "105519a4f14c5184a8103e989594c0f7"
+    },
+    {
+      "table_name": "business_attribute_quality_requirement",
+      "records": 187,
+      "content_hash": "da8c8eb976fe982b4929891fc2e7e38f"
+    },
+    {
+      "table_name": "business_object",
+      "records": 42,
+      "content_hash": "1b71a64232871bbb6ae4cb10d2d882fb"
+    },
+    {
+      "table_name": "change_event",
+      "records": 1864,
+      "content_hash": "711dd2a0877192c0f3fe2edf374c7eef"
+    },
+    {
+      "table_name": "code_list",
+      "records": 95,
+      "content_hash": "1ec2540e60f78cd3a4cbc60ccc88996d"
+    },
+    {
+      "table_name": "code_value",
+      "records": 2120,
+      "content_hash": "bfb7015eebf083722073dd8fd45088cb"
+    },
+    {
+      "table_name": "data_field",
+      "records": 621,
+      "content_hash": "506449574e3068270cb3fc07f8c6ba5b"
+    },
+    {
+      "table_name": "data_field_quality_requirement",
+      "records": 0,
+      "content_hash": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table_name": "data_product",
+      "records": 5,
+      "content_hash": "1517862f5f910911e88f13ead89dbe98"
+    },
+    {
+      "table_name": "data_service",
+      "records": 7,
+      "content_hash": "e63040e83bb81473eb9fbab99f82d50f"
+    },
+    {
+      "table_name": "data_table",
+      "records": 30,
+      "content_hash": "df0734045de93b8b0a3c52f5d0fc6939"
+    },
+    {
+      "table_name": "domain",
+      "records": 7,
+      "content_hash": "3421f93104065bec038d328f8277d385"
+    },
+    {
+      "table_name": "lineage_relation",
+      "records": 0,
+      "content_hash": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table_name": "product_attribute",
+      "records": 12,
+      "content_hash": "8fe38cbe0b3cfb7f3a430e4f2eb72826"
+    },
+    {
+      "table_name": "quality_requirement",
+      "records": 31,
+      "content_hash": "89508659c2f2def36ee0fbc5ef730a92"
+    },
+    {
+      "table_name": "relationship",
+      "records": 121,
+      "content_hash": "9323b74b9b68fec57b6285c99ac16011"
+    },
+    {
+      "table_name": "service_endpoint",
+      "records": 7,
+      "content_hash": "f1b263938f20754a36815d9ad9eb38a0"
+    },
+    {
+      "table_name": "system",
+      "records": 4,
+      "content_hash": "b7e7bf27315e13fe820ed51d9177070b"
+    }
+  ],
+  "after": [
+    {
+      "table_name": "actor",
+      "records": 11,
+      "content_hash": "420fa4f8f1977b7231c2eeac3f404c2d"
+    },
+    {
+      "table_name": "business_attribute",
+      "records": 295,
+      "content_hash": "105519a4f14c5184a8103e989594c0f7"
+    },
+    {
+      "table_name": "business_attribute_quality_requirement",
+      "records": 187,
+      "content_hash": "da8c8eb976fe982b4929891fc2e7e38f"
+    },
+    {
+      "table_name": "business_object",
+      "records": 42,
+      "content_hash": "1b71a64232871bbb6ae4cb10d2d882fb"
+    },
+    {
+      "table_name": "change_event",
+      "records": 1864,
+      "content_hash": "711dd2a0877192c0f3fe2edf374c7eef"
+    },
+    {
+      "table_name": "code_list",
+      "records": 95,
+      "content_hash": "1ec2540e60f78cd3a4cbc60ccc88996d"
+    },
+    {
+      "table_name": "code_value",
+      "records": 2120,
+      "content_hash": "bfb7015eebf083722073dd8fd45088cb"
+    },
+    {
+      "table_name": "data_field",
+      "records": 621,
+      "content_hash": "506449574e3068270cb3fc07f8c6ba5b"
+    },
+    {
+      "table_name": "data_field_quality_requirement",
+      "records": 0,
+      "content_hash": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table_name": "data_product",
+      "records": 5,
+      "content_hash": "1517862f5f910911e88f13ead89dbe98"
+    },
+    {
+      "table_name": "data_service",
+      "records": 7,
+      "content_hash": "e63040e83bb81473eb9fbab99f82d50f"
+    },
+    {
+      "table_name": "data_table",
+      "records": 30,
+      "content_hash": "df0734045de93b8b0a3c52f5d0fc6939"
+    },
+    {
+      "table_name": "domain",
+      "records": 7,
+      "content_hash": "3421f93104065bec038d328f8277d385"
+    },
+    {
+      "table_name": "lineage_relation",
+      "records": 0,
+      "content_hash": "d751713988987e9331980363e24189ce"
+    },
+    {
+      "table_name": "product_attribute",
+      "records": 12,
+      "content_hash": "8fe38cbe0b3cfb7f3a430e4f2eb72826"
+    },
+    {
+      "table_name": "quality_requirement",
+      "records": 31,
+      "content_hash": "89508659c2f2def36ee0fbc5ef730a92"
+    },
+    {
+      "table_name": "relationship",
+      "records": 121,
+      "content_hash": "9323b74b9b68fec57b6285c99ac16011"
+    },
+    {
+      "table_name": "service_endpoint",
+      "records": 7,
+      "content_hash": "f1b263938f20754a36815d9ad9eb38a0"
+    },
+    {
+      "table_name": "system",
+      "records": 4,
+      "content_hash": "b7e7bf27315e13fe820ed51d9177070b"
+    }
+  ],
+  "verification": [
+    {
+      "verification": {
+        "rls_enabled": true,
+        "capabilities": {
+          "version": 1,
+          "can_edit": false,
+          "api_fields": true,
+          "access_options": true,
+          "property_groups": true
+        },
+        "catalog_tables": 19,
+        "catalog_columns": 481,
+        "groups_assigned": 0,
+        "api_owned_fields": 0,
+        "field_constraints": [
+          {
+            "name": "data_field_api_scope_check",
+            "definition": "CHECK (((data_service_id IS NULL) OR ((technical_name_kind = 'apiField'::text) AND ((data_type_scope IS NULL) OR (data_type_scope = 'serviceSchema'::text)))))"
+          },
+          {
+            "name": "data_field_owner_check",
+            "definition": "CHECK ((num_nonnulls(data_table_id, data_service_id) = 1))"
+          }
+        ],
+        "direct_writes_denied": true
+      }
+    }
+  ],
+  "migrations": [
+    {
+      "version": "20260914101146",
+      "name": "catalog_api_fields"
+    },
+    {
+      "version": "20260914101153",
+      "name": "catalog_property_groups"
+    }
+  ]
+}

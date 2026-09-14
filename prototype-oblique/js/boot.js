@@ -26,5 +26,5 @@
   let target;
   try { target = DK.resources.catalogConnection(config); } catch { return; }
   start(new URL('rpc/read_snapshot', target.base), { method: 'POST', cache: 'no-store', credentials: 'omit', redirect: 'error',
-    headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{}' });
+    headers: { apikey: target.key, 'Content-Profile': 'catalog', 'Content-Type': 'application/json' }, body: '{"include_api_fields":true}' });
 })(window.DK);

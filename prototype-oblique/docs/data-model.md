@@ -1,8 +1,8 @@
 # Catalog data model
 
-**Canonical specification · review baseline: 13 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
+**Canonical specification · review baseline: 14 September 2026.** This is the authoritative document for the catalog's scope, entities, attributes, relationships, keys, cardinalities and validation rules. It includes the physical schema mapping and ER diagram so the schema can be reviewed in one place.
 
-**Review status:** the 19 public tables and 478 columns are deployed and reconciled with the repository. Editing activation and session-security review are completed; a real localhost save/history/restore passed. The REST Edge Function and operational Auth/header follow-ups remain in the [queue](todo.md). The earlier read-only comparison below is retained as historical evidence. Business sufficiency and content readiness remain distinct from structural validation.
+**Review status:** the 19 public tables and 481 columns are deployed and reconciled with the repository, including independent API field ownership and optional property groups. [14 September verification](review/2026-09-14-api-fields-groups.md). Editing activation and session-security review are completed; a real localhost save/history/restore passed. The REST Edge Function and operational Auth/header follow-ups remain in the [queue](todo.md). The earlier read-only comparison below is retained as historical evidence. Business sufficiency and content readiness remain distinct from structural validation.
 
 ## Vision and purpose
 
@@ -67,7 +67,7 @@ These items distinguish the model contract from current app/tooling coverage. De
 |---|---|
 | Audit completeness | REST quality changes retain full assignment IDs. The browser Required shortcut records a boolean and may create a shared rule without a separate creation event. Endpoint history targets its service, with the endpoint row in the snapshot; complete owner-aggregate snapshots are not implemented. Review whether this is sufficient before editing begins. |
 | Browser field coverage | Forms cover a subset of the schema. General rule definitions/assignments, contact overrides and geometric details are not fully presented. Actor/rule management, full quality assignments, relationship/lineage editing and service verification changes have repository REST support awaiting activation. See the [coverage matrix](#documented-deployed-visible-and-editable) and [detailed frontend mapping](data-model-implementation.md#current-presentation-mapping). |
-| Property sets and business keys | Live comments carry grouping and key-role conventions that the current dictionaries do not model structurally. The [next-revision decisions](#property-sets-and-business-keys) define the intended meaning and transition; they are not new deployed fields. |
+| Property sets and business keys | Optional propertyGroup text now supports flexible grouping on business attributes and table/API fields. Existing grouping comments remain unchanged. Structured group registries, business-key composition and reference targets remain proposals in the [model decisions](#property-sets-and-business-keys). |
 | Presentation semantics | Business value types are collapsed to broad display labels; geometric details are hidden. Retired is still labelled Archiviert. Definition and service versions now have separate labels and values. The model's type, version and lifecycle distinctions remain authoritative; these displays need correction. |
 | Review evidence | The database checks shapes, tokens and selected evidence requirements. It does not verify that a source statement is true or that an endpoint check actually occurred. Generic change history is not a test report; review evidence must identify its scope. |
 | Derived relationship views | The complete confirmation-aware, multi-domain read model remains a target. The current projection may show a candidate realization and reduce a table's mappings to one. Do not treat that display as proof of complete or confirmed coverage. |
@@ -77,7 +77,7 @@ These items distinguish the model contract from current app/tooling coverage. De
 
 ### Documented, deployed, visible and editable
 
-**Current deployment update, 13 September 2026:** all numbered migrations through catalog_session_security are applied. Archive/order/revision, system-of-record and access-options columns exist. RLS, denied direct writes, public reads and permanent-account session authorization are verified; Archivgut was saved and restored in the real localhost app. See the [activation record](review/2026-09-13-editing-activation.md) and [security review](review/2026-09-13-security-review.md). The following matrix and missing-column inventory describe the earlier read-only audit, before activation, and are not the current deployment status.
+**Current deployment update, 14 September 2026:** all numbered migrations through catalog_snapshot_api_fields are applied. Archive/order/revision, system-of-record, access-options, API field ownership and group columns exist. RLS, denied direct writes and public reads were verified after the latest migrations; permanent-account session authorization and a real localhost save/restore were verified during editing activation. See the [latest deployment record](review/2026-09-14-api-fields-groups.md), [activation record](review/2026-09-13-editing-activation.md) and [security review](review/2026-09-13-security-review.md). The following matrix and missing-column inventory describe the earlier read-only audit, before activation, and are not the current deployment status.
 
 **Evidence date: 13 September 2026; project `zicluerzbevodlmtbxow`.** “Documented” describes the canonical contract and repository implementation. “Deployed” describes public read observations on that date. “Visible” describes the checked repository frontend using the live snapshot, including selectable columns where stated; it is not a claim that every hosted website has the same assets. “Editable” identifies implemented forms/API paths, **not working hosted saves**: the editing schema is incomplete and the CRUD function is unavailable. No authenticated write was attempted.
 
@@ -108,7 +108,7 @@ The missing-column inventory is grouped by identical shape. Each of the 40 named
 | `business_attribute`, `data_field`, `code_value`, `product_attribute` | `edited_at`, `sort_order`, `is_archived` | 12 |
 | `service_endpoint` | `sort_order`, `is_archived`, `row_version`, `created_on`, `modified_on`, `edited_at` | 6 |
 
-This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/478 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
+This shape is consistent with the September 12 editing/CRUD migrations not having been applied; the migration ledger was not inspected. The public snapshot RPC succeeded. That hosted comparison used the earlier 472-column baseline; it does not include the two system-of-record columns added afterwards. The current local canonical-schema suite checks 19 tables/481 columns. Public API access cannot certify deployed CHECK constraints, FK definitions, triggers, private attribution tables or write permissions. Recheck the matrix after deployment and record a new evidence date instead of treating these observations as permanent state.
 
 ### System of record
 
@@ -138,7 +138,9 @@ DataTable lists (including system profiles), attribute and field tables default 
 
 ### Property sets and business keys
 
-**Earlier optional model proposal:** represent property-set membership, business-key composition and business-reference targets as explicit metadata. The user explicitly kept the current spatial cleanup to FK-labelled attributes on 13 September 2026; explicit targets are not part of the current implementation scope. The following defines the proposed meaning for owner review. It is outside the current 19-table/478-column baseline: no new SQL columns, REST properties or frontend behavior are implied by this documentation change. The physical design, dictionaries, migration and API/editor changes must be delivered together after that review.
+**Current group decision, 14 September 2026:** use optional free-text `propertyGroup` on BusinessAttribute and DataField, including API-owned fields. The Gruppe column is visible by default and can be hidden through Ansicht; searching and sorting include it, and Excel/PDF exports retain it. Existing visibility preferences receive the column once; later hiding is respected. Group labels have no separate identity, translations, constraints, ownership or order. Existing sortOrder remains the row sequence. Examples observed in the supplied SAP screenshots are `REBDBUFLDS` and `REBPADDRESSFLDS` (labelled Struktur), while the API documentation uses `BUILDING` and `OBJECT_ADDRESS`. These are examples of valid labels, not automatic physical mappings. Existing comment-based property-set proposals are preserved; this change does not populate groups from comments. This decision supersedes only the property-set entity proposal below.
+
+**Earlier optional model proposal:** represent property-set membership, business-key composition and business-reference targets as explicit metadata. The user explicitly kept the current spatial cleanup to FK-labelled attributes on 13 September 2026; explicit targets are not part of the current implementation scope. The following defines the proposed meaning for owner review. It is outside the current 19-table/481-column baseline: no new SQL columns, REST properties or frontend behavior are implied by this documentation change. The physical design, dictionaries, migration and API/editor changes must be delivered together after that review.
 
 | Topic | Proposed decision | Integrity and review boundary |
 |---|---|---|
@@ -480,6 +482,7 @@ Derived `kind = businessAttribute`. The table lists its complete attributes and 
 | `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
 | `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `propertyGroup` | Group | Gruppe | — | Text | 0..1 | Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. |
 | `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
 | `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
 | `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -660,6 +663,8 @@ Derived context: status, authority and domain from CodeList. CodeList/CodeValue 
 
 ### DataField
 
+**API fields, 14 September 2026:** table fields and API fields are independent records. Each field has exactly one immutable owner: a DataTable or a DataService. An API may have zero fields, and a field needs no correspondence to another schema. API-owned fields use `technicalNameKind = apiField`; documented types use `dataTypeScope = serviceSchema`. Their names, paths, types, requiredness, nullability and code lists are authored independently. `correspondsTo` may optionally connect separate field records; no relationship or copying is inferred from names, systems or ownership. Existing table inventories are preserved, including legacy API-derived inventories. An empty API list means no API fields have been documented, not confirmed absence of capability. Nesting and request/response context may be recorded in sourcePath and the description. This revision adds ownership, browsing and editing; a comparison interface and relationship editing remain separate work.
+
 Derived `kind = dataField`. The table lists its complete attributes and identity. Has a stable catalog identifier independent of its source name or array position.
 
 | Attribute | Alias (EN) | Alias (DE) | Key | Format | Cardinality | Constraints and description |
@@ -670,6 +675,7 @@ Derived `kind = dataField`. The table lists its complete attributes and identity
 | `editedAt` | Last edit timestamp | Zeitpunkt der letzten Bearbeitung | — | Timestamp | 0..1 | Server time of the latest app/REST edit; unknown for earlier imports. Separate from source freshness, definition version and historical dates. |
 | `isArchived` | Archived | Archiviert | — | Boolean | 1 | Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. |
 | `sortOrder` | Row order | Zeilenreihenfolge | — | Integer | 1 | Display order within the owner, from 0 through 2147483647 (SQL integer); defaults to 0. Reordering preserves row identity. Ties are permitted. |
+| `propertyGroup` | Group | Gruppe | — | Text | 0..1 | Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. |
 | `createdOn` | Created | Erstellt am | — | Date | 0..1 | Date the catalog record was created; unknown historical dates remain unknown. Do not copy a parent date as a child assertion. |
 | `modifiedOn` | Last modified | Zuletzt geändert am | — | Date | 0..1 | Date the catalog record last changed; not before createdOn. History and edit revision establish order. Do not copy a parent date as a child assertion. |
 | `name_de` | Name (DE) | Name (DE) | — | Text | 0..1 | German name; at least one language is required. Not an identifier. |
@@ -692,7 +698,8 @@ Derived `kind = dataField`. The table lists its complete attributes and identity
 | `contactActorId` | Contact | Kontakt | FK | UUID → Actor | 0..1 | Optional managed contact with name and website/contact page. External links may stay in responsibleOrganisation. Apply only the documented parent fallback. |
 | `classification` | Classification | Klassifizierung | — | Enum | 0..1 | `public`, `internal`, `confidential`, `secret`. Classification of the described information, separate from technical access. |
 | `containsPersonalData` | Personal data | Personendaten | — | Boolean | 0..1 | Whether the described data contains personal data. Listing a catalog contact does not establish this for the underlying dataset. |
-| `dataTableId` | Data table | Datentabelle | FK | UUID → DataTable | 1 | Owning technical structure. |
+| `dataTableId` | Data table | Datentabelle | FK | UUID → DataTable | 0..1 | Owning technical structure. Exactly one of dataTableId and dataServiceId is required; ownership is immutable. |
+| `dataServiceId` | Data service | Datendienst | FK | UUID → DataService | 0..1 | Owning API for an independent API field. Exactly one of dataTableId and dataServiceId is required; no table-field relation is required. Ownership is immutable. |
 | `technicalName` | Technical name | Technischer Name | — | Text | 1 | Exact documented source field name, preserving case. Never translated. |
 | `technicalNameKind` | Technical name kind | Art des technischen Namens | — | Enum | 1 | `physicalColumn`, `modelAttribute`, `apiField`, `dataSourceField`, `unknown`. |
 | `sourcePath` | Source path | Quellpfad | — | Text | 0..1 | Documented nesting or path context when the name is ambiguous. Not a guessed flattened column. |
@@ -705,7 +712,7 @@ Derived `kind = dataField`. The table lists its complete attributes and identity
 | `codeListId` | Code list | Werteliste | FK | UUID → CodeList | 0..1 | Verified source vocabulary; never infer service wire codes from a similarly named model enumeration. |
 | `appliesToTypeNames` | Applies to model types | Gilt für Modelltypen | — | Text[] | 0..* | Exact documented source type names using the field; descriptive text, not references to a catalog type registry. Use the documented source declaration to establish membership. The DataTable has no stored type set. |
 
-Duplicate source names may remain as separately identified draft records with evidence of the ambiguity. Domain and system derive through the table. Parent descriptions, comments and provenance are not copied as field-specific facts. Business correspondence belongs to Relationship.
+Duplicate source names may remain as separately identified draft records with evidence of the ambiguity. Domain and system derive through the owning table or API. Parent descriptions, comments and provenance are not copied as field-specific facts. Business correspondence belongs to Relationship.
 
 Derived context: system and domains from DataTable; effective roles and sensitivity use the documented fallback. Status is independent; parent dates and history remain labelled parent context.
 
@@ -1261,20 +1268,20 @@ Request/response inventories are not automatically physical DataFields.
 
 ### Reviewed schema baseline
 
-The fifteen migrations in [supabase/migrations](../supabase/migrations/), ending with `20260913070000_catalog_table_order.sql`, define **19 public `catalog` tables, 478 columns and 85 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 478 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 13 September 2026.
+The eighteen migrations in [supabase/migrations](../supabase/migrations/), ending with `20260914020000_catalog_snapshot_api_fields.sql`, define **19 public `catalog` tables, 481 columns and 86 foreign-key constraints**. The 16 core entities occupy 16 tables; ServiceEndpoint and the two quality-assignment junctions account for the remaining three. All 481 columns are covered by the entity/value dictionaries and the explicit reference/collection mappings below. The generated API contract was checked against an isolated database built from those migrations on 14 September 2026.
 
-These counts describe the repository schema. The [13 September hosted comparison](#documented-deployed-visible-and-editable) identified 40 missing columns from the earlier baseline, and the two new system-of-record columns are also absent. These counts do not establish deployed completeness or source-content readiness. Proposed property-set/business-key extensions are excluded from this inventory and diagram until their physical design is implemented. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
+These counts match the deployed schema verified on 14 September. The [earlier hosted comparison](#documented-deployed-visible-and-editable) records gaps resolved during activation. Schema completeness does not establish source-content readiness. The simple propertyGroup attribute is included; proposed group registries and structured business-key extensions remain excluded until implemented. Authentication, access policies, command receipts, import markers and private user attribution are operational storage outside the public catalog model; their implementation belongs to the [database guide](../supabase/README.md) and [write contract](data-model-implementation.md#transactional-write-contract).
 
 | Dictionary / collection | SQL table | Columns |
 |---|---|---:|
 | [Actor](#actor) | `actor` | 18 |
-| [BusinessAttribute](#businessattribute) | `business_attribute` | 33 |
+| [BusinessAttribute](#businessattribute) | `business_attribute` | 34 |
 | BusinessAttribute.qualityRequirementIds | `business_attribute_quality_requirement` | 2 |
 | [BusinessObject](#businessobject) | `business_object` | 29 |
 | [ChangeEvent](#changeevent) | `change_event` | 33 |
 | [CodeList](#codelist) | `code_list` | 24 |
 | [CodeValue](#codevalue) | `code_value` | 25 |
-| [DataField](#datafield) | `data_field` | 39 |
+| [DataField](#datafield) | `data_field` | 41 |
 | DataField.qualityRequirementIds | `data_field_quality_requirement` | 2 |
 | [DataProduct](#dataproduct) | `data_product` | 35 |
 | [DataService](#dataservice) | `data_service` | 36 |
@@ -1286,7 +1293,7 @@ These counts describe the repository schema. The [13 September hosted comparison
 | [Relationship](#relationship) | `relationship` | 29 |
 | [ServiceEndpoint](#serviceendpoint) | `service_endpoint` | 19 |
 | [System](#system) | `system` | 29 |
-| **Total** | **19 tables** | **478** |
+| **Total** | **19 tables** | **481** |
 
 ### Dictionary-to-storage mapping
 
@@ -1359,6 +1366,7 @@ erDiagram
         uuid data_owner_id FK "NULL; actor.id"
         uuid data_steward_id FK "NULL; actor.id"
         uuid contact_actor_id FK "NULL; actor.id"
+        text property_group "NULL; authored group"
         uuid business_object_id FK, UK "business_object.id; U1"
         text semantic_name UK "U1"
         jsonb value_specification "NULL"
@@ -1461,7 +1469,9 @@ erDiagram
         uuid data_steward_id FK "NULL; actor.id"
         uuid data_custodian_id FK "NULL; actor.id"
         uuid contact_actor_id FK "NULL; actor.id"
-        uuid data_table_id FK "data_table.id"
+        text property_group "NULL; authored group"
+        uuid data_table_id FK "NULL; exactly one field owner"
+        uuid data_service_id FK "NULL; exactly one field owner"
         text technical_name
         text technical_name_kind
         text source_path "NULL"
@@ -1692,7 +1702,8 @@ erDiagram
     system o|..o{ business_attribute : authoritative_override
     system ||..o{ data_table : contains
     system o|..o{ data_service : provides
-    data_table ||..o{ data_field : describes
+    data_table |o..o{ data_field : describes
+    data_service |o..o{ data_field : owns
     code_list ||..o{ code_value : contains
     code_value o|..o{ code_value : parent_in_same_list
     code_list o|..o{ business_attribute : constrains

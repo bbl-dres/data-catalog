@@ -48,8 +48,8 @@
     refs: ['name', 'normReference', 'description', 'valueCount', 'status'],
     products: ['name', 'accessRights', 'description', 'format', 'attributeCount', 'status'],
     apis: ['name', 'system', 'serviceVersion', 'description', 'protocol', 'endpointCount', 'status'],
-    attrs: ['name', 'type', 'key', 'codeList', 'status'],
-    fields: ['name', 'code', 'type', 'key', 'codeList', 'status'],
+    attrs: ['propertyGroup', 'name', 'type', 'key', 'codeList', 'status'],
+    fields: ['propertyGroup', 'name', 'code', 'type', 'key', 'codeList', 'status'],
     values: ['code', 'name'], productAttrs: ['name', 'description', 'type'], endpoints: ['name', 'type', 'description'],
     history: ['date', 'action', 'detail', 'user'],
   };
@@ -60,10 +60,11 @@
     refs: ['domain', 'responsibleOrg'], products: ['domain', ...responsibility, ...protection],
     apis: ['domain', ...responsibility, 'dataCustodian', ...protection],
   };
-  const childOf = { objects: 'attrs', tables: 'fields', refs: 'values', products: 'productAttrs', apis: 'endpoints', systems: 'tables' };
+  const childOf = { objects: 'attrs', tables: 'fields', refs: 'values', products: 'productAttrs', apis: 'fields', systems: 'tables' };
   const nameLabels = Object.fromEntries(Object.keys(defaults).map(kind => [kind, kind === 'endpoints' ? 'visibility.endpoint' : 'col.name']));
   const rowFields = kind => [
     field('sortOrder', 'excel.sortOrder', e => e._record?.sort_order ?? e.sort_order ?? e.sortOrder ?? null, 'number'),
+    field('propertyGroup', 'fact.propertyGroup', e => e._record?.property_group ?? e.propertyGroup ?? null),
     field('code', kind === 'fields' ? 'fact.technicalName' : 'print.column.code', e => e.technicalName ?? e.code ?? e.operation_name, 'text', kind === 'fields' ? { href: e => e.table ? DK.router.entityHref('fields', e.identifier) : null } : {}),
     field('type', kind === 'fields' ? 'col.dataType' : kind === 'endpoints' ? 'fact.protocol' : 'col.valueType', e => e.dataType || e.valueType || e.protocol, 'text', { sharedId: kind === 'endpoints' ? 'protocol' : 'type' }),
     field('required', kind === 'attrs' ? 'fact.requiredRule' : 'col.mandatory', e => e.mandatory, 'boolean'),
@@ -76,8 +77,8 @@
     ...(kind === 'endpoints' ? [field('description', 'col.description', e => ui.localized(e, 'description_') || e.description, 'long')] : []),
   ].map(f => f.id === 'nullable' ? { ...f, type: 'boolean' } : f);
   const rowExtras = {
-    attrs: ['sortOrder', 'description', 'required', 'systemOfRecord', 'normReference', 'semanticName', ...responsibility, ...protection],
-    fields: ['sortOrder', 'description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
+    attrs: ['sortOrder', 'propertyGroup', 'description', 'required', 'systemOfRecord', 'normReference', 'semanticName', ...responsibility, ...protection],
+    fields: ['sortOrder', 'propertyGroup', 'description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', ...protection],
     values: ['sortOrder', 'description', 'shortName', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
     productAttrs: ['sortOrder', 'required', 'semanticName', 'code', 'source', 'identifier', 'comment', 'informationUrls', 'created', 'modified'],
     endpoints: ['sortOrder', 'code', 'http_method', 'relative_path', 'url'],
@@ -91,8 +92,8 @@
     refs: ['domain', 'responsibleOrg', 'version'],
     products: ['domain', ...responsibility, 'version', 'accessOptions'],
     apis: ['domain', ...responsibility, 'dataCustodian', 'accessRights', 'endpointURL', 'accessOptions'],
-    attrs: ['sortOrder', 'description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
-    fields: ['sortOrder', 'description', 'code', 'required', 'nullable', 'unit', ...responsibility, 'dataCustodian', 'version'],
+    attrs: ['sortOrder', 'propertyGroup', 'description', 'required', 'systemOfRecord', 'normReference', ...responsibility, 'version'],
+    fields: ['sortOrder', 'propertyGroup', 'description', 'code', 'required', 'nullable', 'unit', 'sourcePath', ...responsibility, 'dataCustodian', 'version'],
     values: ['sortOrder', 'description'], productAttrs: ['sortOrder', 'required', 'code'],
     endpoints: ['sortOrder', 'http_method', 'relative_path', 'url'],
   };
@@ -101,7 +102,7 @@
     'format', 'accessRights', 'accessOptions', 'code', 'type', 'unit', 'key', 'required', 'nullable', 'codeList', 'version',
     'attributeCount', 'fieldCount', 'objectCount', 'tableCount', 'apiCount', 'valueCount', 'endpointCount', 'status'];
   // Attribute and source-field tables share one sequence with their Ansicht controls.
-  const attributeFieldOrder = ['sortOrder', 'name', 'code', 'description', 'type', 'key', 'required', 'nullable',
+  const attributeFieldOrder = ['sortOrder', 'propertyGroup', 'name', 'code', 'sourcePath', 'description', 'type', 'key', 'required', 'nullable',
     'codeList', 'unit', 'normReference', 'systemOfRecord', ...responsibility, 'dataCustodian', 'version', 'status'];
   // Relative widths carry the same reading priorities into CSS tables and physical PDF columns.
   // Short enumerated values (organisations, systems, norm references) reserve 14 em so compounds
@@ -140,7 +141,7 @@
     if (!preferences) {
       try {
         const value = JSON.parse(DK.preferences?.read('visibleFields') || 'null');
-        preferences = [1, 2, 3].includes(value?.version) && value.kinds && typeof value.kinds === 'object' && !Array.isArray(value.kinds) ? value.kinds : {};
+        preferences = [1, 2, 3, 4].includes(value?.version) && value.kinds && typeof value.kinds === 'object' && !Array.isArray(value.kinds) ? value.kinds : {};
         // Status was unavailable for these rows in v1. Add it once while retaining
         // other choices; v2 preserves an explicit decision to hide it thereafter.
         if (value?.version === 1) {
@@ -150,7 +151,10 @@
         // columns once; subsequent explicit visibility choices remain persistent.
         if ([1, 2].includes(value?.version)) {
           if (Array.isArray(preferences.fields) && !preferences.fields.includes('code')) preferences.fields.push('code');
-          DK.preferences?.write('visibleFields', JSON.stringify({ version: 3, kinds: preferences }));
+        }
+        if ([1, 2, 3].includes(value?.version)) {
+          for (const kind of ['attrs', 'fields']) if (Array.isArray(preferences[kind]) && !preferences[kind].includes('propertyGroup')) preferences[kind].push('propertyGroup');
+          DK.preferences?.write('visibleFields', JSON.stringify({ version: 4, kinds: preferences }));
         }
       }
       catch { preferences = {}; }
@@ -167,7 +171,7 @@
     const next = normalize(kind, ids);
     if (JSON.stringify(stored()[kind]) === JSON.stringify(next)) return;
     stored()[kind] = next;
-    DK.preferences?.write('visibleFields', JSON.stringify({ version: 3, kinds: preferences }));
+    DK.preferences?.write('visibleFields', JSON.stringify({ version: 4, kinds: preferences }));
   }
   /** Share controls by semantic ID, retaining distinct names and each underlying selection. */
   function mergeFields(groups) {

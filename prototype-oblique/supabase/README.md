@@ -65,7 +65,13 @@ The local invitation callback and error-message tests pass with the real SDK and
 
 ## Apply to the existing project
 
-All numbered schema changes through `catalog_table_order` are already applied to Data Catalog. The sections below describe their dependencies for recovery or a fresh project; they are not a pending deployment queue. Current status: [security review](../docs/review/2026-09-13-security-review.md).
+All numbered schema changes through `catalog_snapshot_api_fields` are already applied to Data Catalog. The sections below describe their dependencies for recovery or a fresh project; they are not a pending deployment queue. Current schema: **19 catalog tables / 481 columns**. [Latest import and compatibility verification](../docs/review/2026-09-14-refx-building-api.md).
+
+### API fields and property groups
+
+The RE-FX Building API now has 378 documented fields. Apply [snapshot compatibility](migrations/20260914020000_catalog_snapshot_api_fields.sql) after the group migration: updated clients POST `{"include_api_fields":true}` to read the complete snapshot; legacy empty requests retain table-owned fields only. The function-only migration is applied as **20260914124500**. It preserves data and write permissions. [Source review and verification](../docs/review/2026-09-14-refx-building-api.md).
+
+Apply [catalog_api_fields](migrations/20260914000000_catalog_api_fields.sql) after table ordering, then [catalog_property_groups](migrations/20260914010000_catalog_property_groups.sql). They add independent API-owned field records using an exclusive table/API owner, plus optional free-text groups on business attributes and both field inventories. Browser and REST commands preserve immutable owners, revisions, history and existing permissions. No data is copied or reassigned. Both were applied through MCP on 14 September 2026 as **20260914101146** and **20260914101153**; all 19 collection fingerprints were preserved. See the [deployment record](../docs/review/2026-09-14-api-fields-groups.md).
 
 ### Required-rule correction
 
@@ -81,7 +87,7 @@ Applied through Supabase MCP on 13 September 2026. All 477 then-current column c
 
 ### Row ordering
 
-[catalog table ordering](migrations/20260913070000_catalog_table_order.sql) is applied via MCP as **20260913190314**. The current schema is **19 catalog tables / 478 columns**. It adds DataTable.sortOrder with integer validation and guarded browser/REST edit support, preserving RLS and denied direct writes. The 30 table and 621 field ranks were separately curated through audited RPCs. [Deployment and verification](../docs/review/2026-09-13-source-order.md).
+[catalog table ordering](migrations/20260913070000_catalog_table_order.sql) is applied via MCP as **20260913190314**. That migration established **19 catalog tables / 478 columns**. It adds DataTable.sortOrder with integer validation and guarded browser/REST edit support, preserving RLS and denied direct writes. The 30 table and 621 field ranks were separately curated through audited RPCs. [Deployment and verification](../docs/review/2026-09-13-source-order.md).
 
 Apply [catalog row ordering](migrations/20260913010000_catalog_row_order.sql) after the system-of-record migration below. It changes command behavior only: omitted child ranks append consistently through both `save_entry` and REST CRUD. Existing columns, ranks, permissions and identities remain unchanged. The command lock, history and idempotency receipt cover the allocated rank. Explicit zero and ties remain valid; null is rejected. See the [canonical contract](../docs/data-model.md#row-order).
 
@@ -201,10 +207,13 @@ The migration adds `access_options` JSONB lists to `data_table`, `data_product` 
 | [import-manifest.json](import-manifest.json) | Source SHA-256 hashes, all allocated identities and expected counts. Retain with backups. |
 | [20260913050000_catalog_session_security.sql](migrations/20260913050000_catalog_session_security.sql) | Current account/session checks for both write RPCs, retired membership-helper execution and closed future public-schema grants. Applied through MCP on 13 September 2026. |
 | [20260913060000_catalog_specializations.sql](migrations/20260913060000_catalog_specializations.sql) | Typed BusinessObject specialization, uniqueness and cycle guard. Applied via MCP as 20260913175334; existing content and ACLs preserved. |
-| [20260913070000_catalog_table_order.sql](migrations/20260913070000_catalog_table_order.sql) | DataTable display rank and guarded edit/API support. Applied via MCP as 20260913190314; schema now 478 columns. |
+| [20260913070000_catalog_table_order.sql](migrations/20260913070000_catalog_table_order.sql) | DataTable display rank and guarded edit/API support. Applied via MCP as 20260913190314; established 478 columns. |
+| [20260914000000_catalog_api_fields.sql](migrations/20260914000000_catalog_api_fields.sql) | Independent API-owned fields, exclusive immutable ownership and guarded field/endpoint editing. Applied via MCP as 20260914101146. |
+| [20260914010000_catalog_property_groups.sql](migrations/20260914010000_catalog_property_groups.sql) | Optional text groups on business attributes and fields. Applied via MCP as 20260914101153; current schema has 481 columns. |
+| [20260914020000_catalog_snapshot_api_fields.sql](migrations/20260914020000_catalog_snapshot_api_fields.sql) | Explicit API-field snapshot opt-in and consistent legacy snapshots. Applied via MCP as 20260914124500; no stored content changed. |
 | [archive/](archive/README.md) | The 22 content updates applied on 7 September 2026, preserved unchanged with their original replay order and evidence. |
 
-For a **fresh project**, apply all fifteen numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
+For a **fresh project**, apply all eighteen numbered migrations in order. The grant repair in `repairs/` is operational recovery for observed hosted ACL drift, not a numbered setup migration. The schema uses PostgreSQL 15+ and existing Supabase roles, without extensions or new Auth users. These migrations restore the original import; later curated content requires the archived updates and their documented prerequisites, or a database backup.
 
 Cleanup review: every numbered SQL migration remains required by the rebuild chain; the 22 archived content operations are also used by regression tests. Applying a migration does not make its source obsolete. The repair remains a tested tool for existing grant drift.
 

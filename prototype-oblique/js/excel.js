@@ -4,9 +4,9 @@
   const { ui, data, router } = DK, t = ui.t, excel = {};
   const libraryUrl = typeof document === 'undefined' ? '' : new URL('../vendor/exceljs/exceljs.min.js', document.currentScript.src).href;
   let loading;
-  const kinds = ['domains','systems','objects','attrs','tables','fields','refs','values','products','apis','endpoints'];
-  const colours = { domains:'1D4ED8',systems:'1D4ED8',objects:'C2410C',attrs:'C2410C',tables:'596978',fields:'596978',refs:'047857',values:'047857',products:'6D28D9',apis:'6D28D9',endpoints:'6D28D9' };
-  const labels = { domains:'excel.domains',systems:'excel.systems',objects:'print.kind.objects',tables:'print.kind.tables',refs:'print.kind.refs',products:'print.kind.products',attrs:'col.attributes', fields:'col.fields', values:'col.values', apis:'excel.apis', endpoints:'excel.endpoints' };
+  const kinds = ['domains','systems','objects','attrs','tables','fields','refs','values','products','apis','apiFields','endpoints'];
+  const colours = { domains:'1D4ED8',systems:'1D4ED8',objects:'C2410C',attrs:'C2410C',tables:'596978',fields:'596978',refs:'047857',values:'047857',products:'6D28D9',apis:'6D28D9',apiFields:'6D28D9',endpoints:'6D28D9' };
+  const labels = { domains:'excel.domains',systems:'excel.systems',objects:'print.kind.objects',tables:'print.kind.tables',refs:'print.kind.refs',products:'print.kind.products',attrs:'col.attributes', fields:'col.fields', values:'col.values', apis:'excel.apis', apiFields:'apiFields.title', endpoints:'excel.endpoints' };
   const nameLabel = { domains:'fact.domain',systems:'fact.system',objects:'col.object',attrs:'col.attribute',tables:'fact.table',fields:'col.field',refs:'col.codeList',values:'col.label',products:'excel.product',apis:'excel.api',endpoints:'excel.endpoint' };
   const sheetName = kind => labels[kind] ? t(labels[kind]) : data.kindDef(kind).plural;
   const empty = value => value == null ? null : typeof value === 'object' ? JSON.stringify(value) : value;
@@ -17,6 +17,7 @@
   const canonicalId = e => e?._record?.identifier || e?.identifier || null;
   const lookup = (kind,id) => kind==='attrs' ? data.attr(id) : kind==='fields' ? data.field(id) : data.get(kind,id);
   function columns(kind) {
+    if(kind==='apiFields')return columns('fields').map(c=>c.key==='dataTableId'?{...c,key:'dataServiceId',label:t('excel.dataService')}:c.key==='dataTableName'?{...c,key:'dataServiceName',label:t('excel.dataService')}:c);
     const out=[];
     const c=(key,label,width=24,block='content',type,hidden=false)=>{out.push({key,label:t(label),width,block,type,hidden});};
     const ref=(key,label)=>{c(key+'Id',label,32,'context',undefined,true);c(key+'Name',label,25,'context');};
@@ -28,6 +29,7 @@
     if(kind==='values')ref('codeList','col.codeList');
     if(kind==='endpoints')ref('dataService','excel.dataService');
     if(['attrs','fields','values','endpoints','tables'].includes(kind))c('sortOrder','excel.sortOrder',18,'entry','number');
+    if(['attrs','fields'].includes(kind))c('propertyGroup','fact.propertyGroup',24,'entry');
     c('id','excel.internalId',36,'entry',undefined,true);
     c('identifier','fact.identifier',28,'entry');
     if(kind==='values')c('code','col.code',16,'entry');
@@ -75,7 +77,7 @@
     const dom=data.domainForEntity(parent?.kind || kind,parent || e), sys=data.sysOf(e.system || parent?.system);
     const values={id:identity(e),identifier:canonicalId(e),name:(kind==='fields'?e.label:null) || e.name || e.label || e.operation_name || e.identifier || e.url,
       domainId:identity(dom),domainName:dom?.name,systemId:identity(sys),systemName:sys?.name,
-      sortOrder:r.sort_order ?? e.sortOrder ?? null,description:e.description,
+      sortOrder:r.sort_order ?? e.sortOrder ?? null,propertyGroup:r.property_group ?? e.propertyGroup ?? null,description:e.description,
       responsibleOrganisationName:e.responsibleOrg || (['values','attrs'].includes(kind)?parent?.responsibleOrg:null),
       technicalName:r.technical_name ?? e.technicalName,comment:r.comment ?? e.comment ?? e.note,
       documentationLinks:(e.informationUrls || []).join('; '), status:e.status,version:e._record?r.version:e.version,createdOn:r.created_on ?? e.created,
@@ -123,13 +125,18 @@
       :!collection&&route.entity?[{...route.entity,kind:route.entity.kind || route.kind}]:(ctx.groups || []).flatMap(g=>DK.presentation.sort(rootKind,g.items,DK.presentation.sortOptions(state,`list:${rootKind}`,rootKind).sort).map(e=>({...e,kind:rootKind})));
     const byKind=new Map(), relationSources=new Map(), accessOwners=new Map();
     const relate=(kind,e)=>relationSources.set(`${kind}:${canonicalId(e)}`,{...e,kind});
-    const add=(kind,e,parent)=>{if(!byKind.has(kind))byKind.set(kind,[]);byKind.get(kind).push(rowValues(kind,e,parent));if(DK.accessOptions?.supports(kind))accessOwners.set(kind+':'+identity(e),{...e,kind});};
+    const add=(kind,e,parent)=>{if(!byKind.has(kind))byKind.set(kind,[]);byKind.get(kind).push(rowValues(kind==='apiFields'?'fields':kind,e,parent));if(DK.accessOptions?.supports(kind))accessOwners.set(kind+':'+identity(e),{...e,kind});};
     const children=(e)=> {
+      if(e.kind==='apis') {
+        const fields=(e.fields || []).map((field,index)=>data.apiFieldEntity(e,field,index));
+        const sort=!catalog&&route.entity?.identifier===e.identifier ? state.tableSorts?.['detail:apis:rows'] : null;
+        (sort?DK.presentation.sort('fields',fields,sort):fields).forEach(field=>add('apiFields',field,e));
+      }
       const items=e.kind==='domains'?alpha('objects',data.membersOfDomain('objects',e)):e.kind==='systems'?alpha('tables',data.tablesOfSystem(e))
         :e.kind==='objects'||e.kind==='products'?e.attributes:e.kind==='tables'?e.fields:e.kind==='refs'?e.values:e.kind==='apis'?e.endpoints || []:[];
       const childKind={domains:'objects',systems:'tables',objects:'attrs',products:'attrs',tables:'fields',refs:'values',apis:'endpoints'}[e.kind];
       const enriched=items.map((item,position)=>e.kind==='objects'?data.attributeEntity(e,item):e.kind==='tables'?data.fieldEntity(e,item,position):item);
-      const sort=!catalog&&route.entity?.identifier===e.identifier ? state.tableSorts?.[`detail:${e.kind}:rows`] : null;
+      const sort=!catalog&&e.kind!=='apis'&&route.entity?.identifier===e.identifier ? state.tableSorts?.[`detail:${e.kind}:rows`] : null;
       const ordered=sort?DK.presentation.sort(e.kind==='products'?'productAttrs':childKind,enriched,sort):enriched;
       ordered.forEach(item=>{add(childKind,item,e);if(['objects','tables'].includes(childKind) || childKind==='fields' || childKind==='attrs'&&e.kind==='objects')relate(childKind,item);});
     };

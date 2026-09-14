@@ -6,7 +6,7 @@
   const t = ui.t, esc = ui.esc, icon = ui.icon, fmt = ui.fmtDate;
   const detail = {};
 
-  detail.rowsLabel = e => data.kindDef(e.kind).rows;
+  detail.rowsLabel = e => e.kind === 'apis' ? t('col.fields') : data.kindDef(e.kind).rows;
 
   detail.tabs = function (e) {
     if (e.kind === 'domains') return [['overview', t('detail.tab.overview')], ['tiles', t('toolbar.tiles')], ['table', t('toolbar.table')]];
@@ -57,6 +57,7 @@
         ? internal(t('fact.systemOfRecord'), name, 'systems', system.identifier)
         : plain(t('fact.systemOfRecord'), name));
     }
+    if (['attrs','fields'].includes(e.kind)) primary.push(plain(t('fact.propertyGroup'), e.propertyGroup));
     switch (e.kind) {
       case 'systems':
         primary.push(plain(t('fact.technology'), e.technology));
@@ -188,12 +189,12 @@
     const kind = DK.presentation.childOf[e.kind];
     if (!kind) return { columns: [], rows: [] };
     const fields = DK.presentation.definitions(kind);
-    const items = e.kind === 'systems' ? data.tablesOfSystem(e) : e.kind === 'tables' ? e.fields : e.kind === 'refs' ? e.values : e.attributes || [];
+    const items = e.kind === 'systems' ? data.tablesOfSystem(e) : ['tables', 'apis'].includes(e.kind) ? e.fields : e.kind === 'refs' ? e.values : e.attributes || [];
     const rows = items.map((item, position) => {
       const href = e.kind === 'objects' ? router.entityHref('attrs', data.attributeEntity(e, item).identifier)
         : e.kind === 'tables' ? router.entityHref('fields', data.childId(e.identifier, data.fieldId(item)))
         : e.kind === 'systems' ? router.entityHref('tables', item.identifier) : null;
-      const entity = kind === 'fields' ? data.fieldEntity(e, item, position)
+      const entity = kind === 'fields' ? (e.kind === 'apis' ? data.apiFieldEntity(e, item, position) : data.fieldEntity(e, item, position))
         : kind === 'attrs' ? data.attributeEntity(e, item) : item;
       const values = DK.presentation.values(kind, entity);
       return { entity, href, values,
@@ -220,7 +221,7 @@
   };
 
   detail.rows = function (e, route, state, list = detail.rowsContext(e, route, state)) {
-    if (!list.total) return ui.empty(t('detail.noRows', { what: detail.rowsLabel(e) }));
+    if (!list.total) return ui.empty(t(e.kind === 'apis' ? 'apiFields.empty' : 'detail.noRows', { what: detail.rowsLabel(e) }));
     if (!list.matched) return ui.collectionEmpty(list.filter);
     const { columns, options, paging } = list;
     const rows = list.rows.map(r => ui.tr(r.cells, r.href, columns)).join('');

@@ -14,7 +14,7 @@
   /** Entity kinds in canonical display order (also the URL section names). */
   const KINDS = ['domains', 'systems', 'objects', 'tables', 'refs', 'products', 'apis'];
   /** Embedded lists that must exist on every entity of a kind. */
-  const LISTS = { objects: ['attributes', 'termdat'], tables: ['fields'], refs: ['values'], products: ['attributes', 'basedOn', 'sourcedFrom', 'servedBy'] };
+  const LISTS = { objects: ['attributes', 'termdat'], tables: ['fields'], apis: ['fields'], refs: ['values'], products: ['attributes', 'basedOn', 'sourcedFrom', 'servedBy'] };
 
   const data = { kinds: KINDS, navModelOverride: null };
   const index = {};
@@ -68,7 +68,7 @@
         const at = `${file}[${i}].${list}`;
         if (e[list] == null) e[list] = [];
         array(e[list], at);
-        if (kind === 'tables' && list === 'fields') {
+        if (['tables', 'apis'].includes(kind) && list === 'fields') {
           const seen = new Set();
           e.fields.forEach((f, j) => {
             record(f, `${at}[${j}]`);
@@ -225,6 +225,16 @@
     };
   };
   data.objOf = id => data.get('objects', id);
+  /** Independent API row context. A table counterpart is deliberately not inferred. */
+  data.apiFieldEntity = (api, field, position) => ({
+    ...field, identifier: data.childId(api.identifier, data.fieldId(field)), fieldId: data.fieldId(field), api: api.identifier,
+    label: ui.localized(field.labels), name: data.displayName('fields', field), position: position + 1,
+    system: api.system, domain: api.domain,
+    responsibleOrg: field.responsibleOrg || api.responsibleOrg, contact: field.responsibleOrg ? field.contact : api.contact,
+    dataOwner: field.dataOwner || api.dataOwner, dataSteward: field.dataSteward || api.dataSteward,
+    dataCustodian: field.dataCustodian || api.dataCustodian, classification: field.classification ?? api.classification,
+    personalData: field.personalData ?? api.personalData,
+  });
   data.sysOf = id => data.get('systems', id);
   // Retain the label of an archived designation without linking to a hidden profile.
   data.systemOfRecordOf = e => {
@@ -237,7 +247,7 @@
   data.supportsCustodian = kind => ['systems', 'tables', 'fields', 'apis'].includes(kind);
   data.custodianOf = function (kind, e) {
     if (!data.supportsCustodian(kind)) return '';
-    if (kind === 'fields') return e.dataCustodian || data.custodianOf('tables', data.get('tables', e.table));
+    if (kind === 'fields') return e.dataCustodian || (e.api ? data.custodianOf('apis', data.get('apis', e.api)) : data.custodianOf('tables', data.get('tables', e.table)));
     if (kind === 'tables') {
       const system = data.sysOf(e.system);
       return e.dataCustodian || (system && system.dataCustodian) || '';
@@ -276,7 +286,7 @@
   data.sizeOf = function (kind, e) {
     switch (kind) {
       case 'objects': return e.attributes.length;
-      case 'tables': return e.fields.length;
+      case 'tables': case 'apis': return e.fields.length;
       case 'refs': return e.values.length;
       case 'products': return e.attributes.length;
       case 'domains': return data.objectsOfDomain(e).length;

@@ -70,7 +70,8 @@ const { workspace } = require('./print-test-helpers.cjs');
 
     await visit('#/systems/gwr'); await open();
     await page.evaluate(() => { window.printTest.settings.filters.status = ['missing-status']; });
-    await choose('[data-diagram-setting="paper"]', 'A4');
+    // Keep width validation from masking the unmatched-filter regression.
+    await choose('[data-diagram-setting="paper"]', 'A2');
     await page.locator('[data-diagram-action="filters"]').click();
     await page.locator('#diagram-filter-find').fill('Status');
     assert(await page.locator('[data-diagram-facet="status"]').isVisible(), 'Filter search matches facet headings');
@@ -93,7 +94,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     assert.equal(await page.locator('#diagram-summary').innerText(), 'Vorschau nicht verfügbar');
     assert.equal(await page.locator('#diagram-sheets svg').count(), 0);
     await page.evaluate(() => { DK.diagram.layout = window.normalLayout; });
-    await choose('[data-diagram-setting="paper"]', 'A4');
+    await choose('[data-diagram-setting="paper"]', 'A2');
     assert(await page.locator('#diagram-zoom-mode').isEnabled());
     await close();
     console.log('PASS: unmatched filters remain restrictive; empty and failed previews recover without stale controls');
@@ -111,8 +112,8 @@ const { workspace } = require('./print-test-helpers.cjs');
       const catalogs = DK.diagram.capture({ params: {} }, { isList: true, kind: 'products', title: 'Products', groups: [{ items: DK.data.products }] }, 'de').catalogs;
       const endpoint = DK.data.apis.flatMap(e => e.endpoints || []).find(e => e.http_method);
       const apiRows = catalogs.de.apis.entities.flatMap(e => e.rows);
-      const details = endpoint && apiRows.find(e => e.uuid === endpoint.id)?.description;
-      if (endpoint && ![endpoint.http_method, endpoint.relative_path, endpoint.operation_name].every(value => !value || details?.includes(value))) problems.push('Missing API operation details');
+      if (apiRows.length !== DK.data.apis.reduce((sum,e)=>sum+e.fields.length,0)) problems.push('Missing independent API field rows');
+      if (endpoint && apiRows.some(e => e.uuid === endpoint.id)) problems.push('An endpoint was displayed as an API field');
       const table = { ...DK.data.tables.find(e => e.realizes), kind: 'tables' };
       const profile = DK.diagram.capture({ entity: table, params: { domain: 'bau' } }, { kind: 'tables', isList: false, title: table.name }, 'de');
       const scoped = DK.diagram.scoped(profile.catalogs, 'de', profile.scope);
@@ -147,7 +148,7 @@ const { workspace } = require('./print-test-helpers.cjs');
     if (process.env.DIAGRAM_SUPABASE === '1') assert(content.endpointsChecked);
     await download('review-products');
     await close();
-    console.log('PASS: source product links, API operations, detail scope and 64 additional section layouts');
+    console.log('PASS: source product links, independent API field rows, detail scope and 64 additional section layouts');
 
     await visit('#/tables');
     await page.evaluate(() => { window.normalLoad = DK.pdf.load; window.pendingLoads = []; DK.pdf.load = () => new Promise(resolve => window.pendingLoads.push(resolve)); });

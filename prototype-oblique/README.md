@@ -23,6 +23,7 @@ Data catalog for the Swiss Federal Office for Buildings and Logistics (BBL) that
 - Home page with a prominent search form, KPI cards, domain overview and latest changes.
 - Seven catalog sections with a navigation tree, tile or sortable table view, and grouping by domain, responsibility, system, source, access or status.
 - Profile pages with tabs for overview, attributes or fields or values, an interactive relationship diagram with zoom/pan/selection/fullscreen and a table alternative, and history.
+- Independent API field inventories with optional table-field correspondences. Flexible **Gruppe** text on business attributes, table fields and API fields is visible by default and hideable in **Ansicht**.
 - Domain pages with Übersicht, Kacheln and Tabelle, sharing collection search, grouping, sorting and filtered export. See [domain browsing](docs/behavior.md#navigation-and-collections).
 - Relevance-ranked, umlaut-tolerant search with grouped suggestions, domain/type filters, one sortable result table with global pagination, and an optional, cited AI-answer demo. See [search options](docs/behavior.md#global-search).
 - Handbook with chapter navigation and a native video player, an [OpenAPI 3.1 reference](docs/api.md) with public reads and authenticated CRUD in Swagger UI, and a help and contact popover. Users can copy their expiring API access token from Account; no database or Supabase dashboard access is needed. CRUD requires the SQL migration and catalog-api function deployment.

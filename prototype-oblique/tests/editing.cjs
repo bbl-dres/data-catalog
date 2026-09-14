@@ -93,7 +93,7 @@ const jwt=()=>[{alg:'HS256',typ:'JWT'},{sub:uid,role:'authenticated',exp:Math.fl
   // Endpoint rows do not have translated names. Verify their real SQL defaults,
   // inline validation, persistence and public projection through the same UI.
   await page.evaluate(()=>{location.hash='#/apis';});await page.locator('[data-edit="create"]').waitFor();await click('create');await page.locator('#catalog-editor').waitFor();
-  await field('name').fill('Browser API');await page.locator('[data-edit="tab"][data-tab="rows"]').click();await click('add-row');await click('save');await message('edit.validation');
+  await field('name').fill('Browser API');await page.locator('[data-edit="tab"][data-tab="endpoints"]').click();await click('add-row');await click('save');await message('edit.validation');
   await page.locator('[data-edit-field="url"]').fill('https://example.org/catalog');await page.locator('[data-edit-field="http_method"]').selectOption('GET');await save();
   assert.equal((await db.query("SELECT url FROM catalog.service_endpoint WHERE url='https://example.org/catalog'")).rows.length,1);
   // Losing the session keeps the draft. Signing back into the same account

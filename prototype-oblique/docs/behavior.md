@@ -1,5 +1,9 @@
 # Application behavior
 
+API profiles include a **Felder** tab for independently documented API fields. It can remain empty, showing “Noch keine API-Felder dokumentiert.” Adding or editing a field requires no Datentabelle counterpart. The editor keeps API fields and endpoints in separate tabs and preserves both in one save. API fields are edited within their owner, without standalone field-profile routes in this revision.
+
+**Gruppe** is optional free text on Geschäftsobjekt attributes, Datentabelle fields and API fields. Its table column is visible by default and can be hidden in **Ansicht**. The label can describe a property set, technical table/structure or another local grouping. Search includes the group even when hidden; sorting the column changes view order without changing saved row ranks. Existing saved column preferences gain Gruppe once, then respect later hiding. The value is also available in row editing, attribute/table-field profiles and Excel/PDF exports. No group registry, automatic assignments or grouped section headings are introduced.
+
 These are the current interaction contracts. Module ownership and route construction are in [architecture.md](architecture.md); layout and visual states are in [design-system.md](design-system.md). The [test guide](../tests/README.md) maps these contracts to executable checks.
 
 ## Handbook
@@ -127,7 +131,7 @@ The graph suite checks overlap, paging, selection, keyboard/touch input, print a
 
 ## Data model PDF export
 
-**Print** beside **Export** opens the output-only PDF workspace. Collections inherit their current Tiles/Table layout, fields, grouping, search scope and entry order; Table becomes print List. List always includes the complete attributes, fields, values or endpoints of the selected entries, independently of web child-row filtering and pagination. Domain/system entry points select their business objects/tables. Detail pages default to List. APIs include documented endpoints and operation details; products include attributes, business-object members, source tables and serving APIs. The selector offers Tiles and List; Raster is not offered. The Export dropdown has no PDF options.
+**Print** beside **Export** opens the output-only PDF workspace. Collections inherit their current Tiles/Table layout, fields, grouping, search scope and entry order; Table becomes print List. List always includes the complete attributes, fields or values of the selected entries, independently of web child-row filtering and pagination. Domain/system entry points select their business objects/tables. Detail pages default to List. APIs include independently documented fields and default to landscape; products include attributes, business-object members, source tables and serving APIs. The selector offers Tiles and List; Raster is not offered. The Export dropdown has no PDF options.
 
 ### Scope and filters
 
@@ -173,7 +177,7 @@ The API view renders the generated public-read and authenticated CRUD contract. 
 
 ## Excel export
 
-The Export menu offers **Excel: This view** and **Excel: Entire catalog**. A collection exports every matching entry across pages and collapsed groups, in the selected order. A profile exports its own row, direct child rows and relationships. Domain profiles include business objects without their attributes; system profiles include tables without their fields. API profiles include documented endpoints. Related neighbours are not expanded. Profile child exports include all saved child rows, regardless of child filtering or pagination.
+The Export menu offers **Excel: This view** and **Excel: Entire catalog**. A collection exports every matching entry across pages and collapsed groups, in the selected order. A profile exports its own row, direct child rows and relationships. Domain profiles include business objects without their attributes; system profiles include tables without their fields. API profiles include independent field and endpoint sheets. Related neighbours are not expanded. Profile child exports include all saved child rows, regardless of child filtering or pagination.
 
 The entire catalog includes all browsable root kinds, owned rows and profile relationships. Roots sort alphabetically; children use their saved order. It is a review workbook, not a complete metadata backup. History and complete canonical records remain in the catalog/API; imported source payloads remain in the retained archives. See the [Excel export contract](excel-export.md) for scope and column mappings.
 

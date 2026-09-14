@@ -36,6 +36,7 @@ bind('DataTable.databaseName', 'edit.databaseName visibility.database');
 bind('DataTable.schemaName', 'edit.schemaName visibility.schema');
 bind('DataField.dataTableId', 'fact.table col.table');
 bind('DataField.technicalNameKind', 'edit.technicalNameKind');
+bind('BusinessAttribute.propertyGroup', 'fact.propertyGroup');
 bind('DataField.sourcePath', 'edit.sourcePath visibility.sourcePath');
 bind('DataField.sourceDataType', 'edit.sourceDataType col.dataType excel.dataType');
 bind('DataField.dataTypeScope', 'edit.dataTypeScope');

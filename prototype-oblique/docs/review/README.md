@@ -4,6 +4,8 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [14 September 2026 — RE-FX Building API fields](2026-09-14-refx-building-api.md) | 378 documented API fields in 26 groups, explicit source-conflict handling, audited import and legacy snapshot compatibility; unchanged table inventories and relations. |
+| [14 September 2026 — API fields and property groups](2026-09-14-api-fields-groups.md) | Independent API field inventories, optional relations, default-visible flexible groups, editing/exports and verified hosted schema deployment with unchanged content. |
 | [13 September 2026 — Gebäude condition and heritage](2026-09-13-building-condition-heritage.md) | Two approved attributes, candidate RE-FX source links and interim text representation; four audited commands. |
 | [13 September 2026 — Gebäude classification bindings](2026-09-13-building-classifications.md) | Two separate Gebäudeart code attributes, GBAUP/GKLAS bindings, retained source lists and five audited commands. |
 | [13 September 2026 — Catalog refinement](2026-09-13-catalog-refinement.md) | Building measurements/storeys, four accuracy categories, concise comments, scoped BBL responsibilities, candidate attribute/table mappings and consistent section layout; 297 audited commands. |

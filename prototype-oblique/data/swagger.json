@@ -714,6 +714,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "property_group",
+            "in": "query",
+            "description": "Filter property_group: operator.value (for example eq.value or is.null). Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: BusinessAttribute.propertyGroup.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2862,7 +2871,7 @@
           {
             "name": "data_table_id",
             "in": "query",
-            "description": "Filter data_table_id: operator.value (for example eq.value or is.null). Data table. Owning technical structure. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
+            "description": "Filter data_table_id: operator.value (for example eq.value or is.null). Data table. Owning technical structure. Exactly one of dataTableId and dataServiceId is required; ownership is immutable. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
             "required": false,
             "schema": {
               "type": "string"
@@ -2980,6 +2989,24 @@
             "name": "is_archived",
             "in": "query",
             "description": "Filter is_archived: operator.value (for example eq.value or is.null). Archived. Defaults to false. Hides the entry from normal browsing while retaining identity, references and history; independent of status/verification. Alias (DE): Archiviert. Canonical: DataField.isArchived.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "data_service_id",
+            "in": "query",
+            "description": "Filter data_service_id: operator.value (for example eq.value or is.null). Data service. Owning API for an independent API field. Exactly one of dataTableId and dataServiceId is required; no table-field relation is required. Ownership is immutable. Alias (DE): Datendienst. Canonical: DataField.dataServiceId.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "property_group",
+            "in": "query",
+            "description": "Filter property_group: operator.value (for example eq.value or is.null). Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: DataField.propertyGroup.",
             "required": false,
             "schema": {
               "type": "string"
@@ -7505,7 +7532,7 @@
         ],
         "operationId": "read_snapshot",
         "summary": "Read a consistent catalog snapshot",
-        "description": "Read-only SQL STABLE function used by the prototype. Returns all catalog collections in one statement under the caller’s RLS permissions. It accepts no arguments and does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
+        "description": "Read-only SQL STABLE function used by the prototype. Returns catalog collections in one statement under the caller’s RLS permissions. Pass include_api_fields=true for independent API fields and their dependent assertions/history. An omitted or false argument preserves the table-field-only snapshot for legacy clients. Does not modify records. Table pagination parameters do not apply; prefer individual table reads for integrations needing a subset.",
         "parameters": [
           {
             "$ref": "#/components/parameters/PublishableKey"
@@ -7520,9 +7547,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "properties": {
+                  "include_api_fields": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
                 "additionalProperties": false
               },
-              "example": {}
+              "example": {
+                "include_api_fields": true
+              }
             }
           }
         },
@@ -12260,6 +12295,22 @@
               "de": "Führendes System"
             },
             "x-canonical-property": "BusinessAttribute.systemOfRecordId"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: BusinessAttribute.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "BusinessAttribute.propertyGroup"
           }
         },
         "x-postgresql-primary-key": [
@@ -15606,11 +15657,14 @@
             "x-canonical-property": "DataField.containsPersonalData"
           },
           "data_table_id": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid",
-            "description": "Data table. Owning technical structure. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
+            "description": "Data table. Owning technical structure. Exactly one of dataTableId and dataServiceId is required; ownership is immutable. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
             "x-postgresql-type": "uuid",
-            "x-postgresql-not-null": true,
+            "x-postgresql-not-null": false,
             "title": "Data table",
             "x-aliases": {
               "en": "Data table",
@@ -15812,6 +15866,38 @@
               "de": "Archiviert"
             },
             "x-canonical-property": "DataField.isArchived"
+          },
+          "data_service_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Data service. Owning API for an independent API field. Exactly one of dataTableId and dataServiceId is required; no table-field relation is required. Ownership is immutable. Alias (DE): Datendienst. Canonical: DataField.dataServiceId.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Data service",
+            "x-aliases": {
+              "en": "Data service",
+              "de": "Datendienst"
+            },
+            "x-canonical-property": "DataField.dataServiceId"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: DataField.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "DataField.propertyGroup"
           }
         },
         "x-postgresql-primary-key": [
@@ -15856,6 +15942,15 @@
           },
           {
             "columns": [
+              "data_service_id"
+            ],
+            "table": "data_service",
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "columns": [
               "data_steward_id"
             ],
             "table": "actor",
@@ -15874,6 +15969,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_field_api_scope_check",
+            "definition": "CHECK (((data_service_id IS NULL) OR ((technical_name_kind = 'apiField'::text) AND ((data_type_scope IS NULL) OR (data_type_scope = 'serviceSchema'::text)))))"
+          },
           {
             "name": "data_field_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -15959,6 +16058,10 @@
             "definition": "FOREIGN KEY (data_owner_id) REFERENCES catalog.actor(id) ON DELETE RESTRICT"
           },
           {
+            "name": "data_field_data_service_id_fkey",
+            "definition": "FOREIGN KEY (data_service_id) REFERENCES catalog.data_service(id) ON DELETE RESTRICT"
+          },
+          {
             "name": "data_field_data_steward_id_fkey",
             "definition": "FOREIGN KEY (data_steward_id) REFERENCES catalog.actor(id) ON DELETE RESTRICT"
           },
@@ -15969,6 +16072,10 @@
           {
             "name": "data_field_identifier_key",
             "definition": "UNIQUE (identifier)"
+          },
+          {
+            "name": "data_field_owner_check",
+            "definition": "CHECK ((num_nonnulls(data_table_id, data_service_id) = 1))"
           },
           {
             "name": "data_field_pkey",
@@ -25439,6 +25546,22 @@
             },
             "x-canonical-property": "BusinessAttribute.systemOfRecordId"
           },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: BusinessAttribute.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "BusinessAttribute.propertyGroup"
+          },
           "quality_requirement_ids": {
             "title": "Data quality requirements",
             "x-aliases": {
@@ -26071,6 +26194,22 @@
             },
             "x-canonical-property": "BusinessAttribute.businessObjectId"
           },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: BusinessAttribute.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "BusinessAttribute.propertyGroup"
+          },
           "semantic_name": {
             "type": "string",
             "description": "Semantic name. Stable English name, unique within the owner, for example `constructionYear`. Independent of localized labels. Alias (DE): Semantischer Name. Canonical: BusinessAttribute.semanticName.",
@@ -26700,6 +26839,22 @@
               "de": "Personendaten"
             },
             "x-canonical-property": "BusinessAttribute.containsPersonalData"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: BusinessAttribute.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "BusinessAttribute.propertyGroup"
           },
           "semantic_name": {
             "type": "string",
@@ -31922,11 +32077,14 @@
             "x-canonical-property": "DataField.containsPersonalData"
           },
           "data_table_id": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid",
-            "description": "Data table. Owning technical structure. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
+            "description": "Data table. Owning technical structure. Exactly one of dataTableId and dataServiceId is required; ownership is immutable. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
             "x-postgresql-type": "uuid",
-            "x-postgresql-not-null": true,
+            "x-postgresql-not-null": false,
             "title": "Data table",
             "x-aliases": {
               "en": "Data table",
@@ -32129,6 +32287,38 @@
             },
             "x-canonical-property": "DataField.isArchived"
           },
+          "data_service_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Data service. Owning API for an independent API field. Exactly one of dataTableId and dataServiceId is required; no table-field relation is required. Ownership is immutable. Alias (DE): Datendienst. Canonical: DataField.dataServiceId.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Data service",
+            "x-aliases": {
+              "en": "Data service",
+              "de": "Datendienst"
+            },
+            "x-canonical-property": "DataField.dataServiceId"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: DataField.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "DataField.propertyGroup"
+          },
           "quality_requirement_ids": {
             "title": "Data quality requirements",
             "x-aliases": {
@@ -32188,6 +32378,15 @@
           },
           {
             "columns": [
+              "data_service_id"
+            ],
+            "table": "data_service",
+            "referencedColumns": [
+              "id"
+            ]
+          },
+          {
+            "columns": [
               "data_steward_id"
             ],
             "table": "actor",
@@ -32206,6 +32405,10 @@
           }
         ],
         "x-postgresql-constraints": [
+          {
+            "name": "data_field_api_scope_check",
+            "definition": "CHECK (((data_service_id IS NULL) OR ((technical_name_kind = 'apiField'::text) AND ((data_type_scope IS NULL) OR (data_type_scope = 'serviceSchema'::text)))))"
+          },
           {
             "name": "data_field_check_1",
             "definition": "CHECK (((row_version)::bigint > 0))"
@@ -32291,6 +32494,10 @@
             "definition": "FOREIGN KEY (data_owner_id) REFERENCES catalog.actor(id) ON DELETE RESTRICT"
           },
           {
+            "name": "data_field_data_service_id_fkey",
+            "definition": "FOREIGN KEY (data_service_id) REFERENCES catalog.data_service(id) ON DELETE RESTRICT"
+          },
+          {
             "name": "data_field_data_steward_id_fkey",
             "definition": "FOREIGN KEY (data_steward_id) REFERENCES catalog.actor(id) ON DELETE RESTRICT"
           },
@@ -32301,6 +32508,10 @@
           {
             "name": "data_field_identifier_key",
             "definition": "UNIQUE (identifier)"
+          },
+          {
+            "name": "data_field_owner_check",
+            "definition": "CHECK ((num_nonnulls(data_table_id, data_service_id) = 1))"
           },
           {
             "name": "data_field_pkey",
@@ -32773,17 +32984,52 @@
             "x-canonical-property": "DataField.containsPersonalData"
           },
           "data_table_id": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "uuid",
-            "description": "Data table. Owning technical structure. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
+            "description": "Data table. Owning technical structure. Exactly one of dataTableId and dataServiceId is required; ownership is immutable. Alias (DE): Datentabelle. Canonical: DataField.dataTableId.",
             "x-postgresql-type": "uuid",
-            "x-postgresql-not-null": true,
+            "x-postgresql-not-null": false,
             "title": "Data table",
             "x-aliases": {
               "en": "Data table",
               "de": "Datentabelle"
             },
             "x-canonical-property": "DataField.dataTableId"
+          },
+          "data_service_id": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "Data service. Owning API for an independent API field. Exactly one of dataTableId and dataServiceId is required; no table-field relation is required. Ownership is immutable. Alias (DE): Datendienst. Canonical: DataField.dataServiceId.",
+            "x-postgresql-type": "uuid",
+            "x-postgresql-not-null": false,
+            "title": "Data service",
+            "x-aliases": {
+              "en": "Data service",
+              "de": "Datendienst"
+            },
+            "x-canonical-property": "DataField.dataServiceId"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: DataField.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "DataField.propertyGroup"
           },
           "technical_name": {
             "type": "string",
@@ -32982,7 +33228,6 @@
           }
         },
         "required": [
-          "data_table_id",
           "technical_name",
           "technical_name_kind"
         ],
@@ -33465,6 +33710,22 @@
               "de": "Personendaten"
             },
             "x-canonical-property": "DataField.containsPersonalData"
+          },
+          "property_group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Group. Optional authored group label, such as a property set, technical table/structure ID or local grouping. One flexible value; no group entity, vocabulary, hierarchy or inheritance. Null means ungrouped. Alias (DE): Gruppe. Canonical: DataField.propertyGroup.",
+            "x-postgresql-type": "catalog_private.nonempty_text",
+            "x-postgresql-not-null": false,
+            "minLength": 1,
+            "title": "Group",
+            "x-aliases": {
+              "en": "Group",
+              "de": "Gruppe"
+            },
+            "x-canonical-property": "DataField.propertyGroup"
           },
           "technical_name": {
             "type": "string",
@@ -51343,7 +51604,7 @@
     "generator": "supabase/generate-openapi.cjs",
     "canonicalModel": {
       "file": "docs/data-model.md",
-      "sha256": "ca4440bb0f2e23533a4d331954bd63f6205341eecc85b26e83e36b221a082c25"
+      "sha256": "5466647255810afe09826f71a2e26fc685cd316071b0ef3f0c5a2a6f3ec81a43"
     },
     "schema": "catalog",
     "readRole": "anon",
@@ -51405,6 +51666,18 @@
       {
         "file": "20260913070000_catalog_table_order.sql",
         "sha256": "e488af55ca8eced7a9cd06137d9371d0a9d48453b727b2e867e96619a8085791"
+      },
+      {
+        "file": "20260914000000_catalog_api_fields.sql",
+        "sha256": "0d0ebdbbce2bba6c668ca0772aa8245710fbd2fac4d55bdcd857d7f615d87e4e"
+      },
+      {
+        "file": "20260914010000_catalog_property_groups.sql",
+        "sha256": "301308698936ed932d6bea08b02146f5077b9e2885f92d02bea7ac2769604f14"
+      },
+      {
+        "file": "20260914020000_catalog_snapshot_api_fields.sql",
+        "sha256": "067e283de467973d2958c5ad41639abc697541a9b7dff8aea99589e27f044cf7"
       }
     ]
   }

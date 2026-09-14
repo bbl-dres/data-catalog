@@ -1,0 +1,14 @@
+{
+  "mode": "live-read",
+  "fields": 378,
+  "groups": 26,
+  "address_fields": 17,
+  "tax_fields": 16,
+  "input_fields": 1,
+  "pdf": {
+    "rows": 378,
+    "pages": 28,
+    "orientation": "landscape"
+  },
+  "errors": []
+}

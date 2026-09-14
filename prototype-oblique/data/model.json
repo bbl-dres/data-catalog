@@ -8,7 +8,7 @@
     "fields":   { "singular": "Feld",           "plural": "Felder",           "description": "Felder beschreiben die einzelnen Spalten einer Datentabelle.", "en": "Data field", "icon": "tag", "file": null, "rows": "" },
     "refs":     { "singular": "Werteliste",     "plural": "Referenzdaten",    "description": "Referenzdaten sind abgestimmte Wertelisten und Codes für die einheitliche Verwendung von Attributwerten.", "en": "Code List / skos:ConceptScheme", "icon": "file_list", "file": "codelists.json", "rows": "Werte" },
     "products": { "singular": "Datenprodukt",   "plural": "Datenprodukte",    "description": "Datenprodukte bündeln dokumentierte Daten für einen definierten fachlichen Zweck, einschliesslich Zugang, Format und Aktualisierung.", "en": "dcat:Dataset",                   "icon": "briefcase", "file": "products.json",  "rows": "Attribute" },
-    "apis":     { "singular": "API",            "plural": "API-Verzeichnis",  "description": "Das API-Verzeichnis beschreibt Schnittstellen, über die Datenprodukte und weitere Datenbestände maschinell bereitgestellt werden.", "en": "dcat:DataService",               "icon": "branch",    "file": "apis.json",      "rows": "" }
+    "apis":     { "singular": "API",            "plural": "API-Verzeichnis",  "description": "Das API-Verzeichnis beschreibt Schnittstellen, über die Datenprodukte und weitere Datenbestände maschinell bereitgestellt werden.", "en": "dcat:DataService",               "icon": "branch",    "file": "apis.json",      "rows": "Felder" }
   },
   "navModels": {
     "entity":    ["objects", "tables", "refs", "products", "apis"],

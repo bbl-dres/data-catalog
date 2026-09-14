@@ -1,0 +1,209 @@
+{
+  "source": "Building Master Data - Get Detail - SAP API Dokumentation Bund - Confluence.mhtml",
+  "source_sha256": "4d3a9f871da5339dfb518f9fb9c0ffb9de44d9dfebd61c4cb75f1d4884795358",
+  "project": "zicluerzbevodlmtbxow",
+  "command_id": "1b230328-85f1-548b-b805-fc195d921dde",
+  "rollback_preview": {
+    "groups": 26,
+    "response": {
+      "id": "47bcb613-759b-5882-9833-9a7239cdba2d",
+      "identifier": "api-sap-building",
+      "row_version": 4
+    },
+    "new_events": 378,
+    "result_hash": "c2cb84b127329a68f2b63595de8731fd",
+    "baseline_hash": "4a3c2a7838d663fbc6fa2dae0c8c1439",
+    "source_sha256": "4d3a9f871da5339dfb518f9fb9c0ffb9de44d9dfebd61c4cb75f1d4884795358",
+    "inserted_fields": 378,
+    "owner_revision_after": 4,
+    "owner_revision_before": 3,
+    "unchanged_relationships": 121,
+    "unchanged_existing_fields": 621,
+    "unchanged_previous_events": 1864
+  },
+  "rollback_readback": {
+    "snapshot_hash": "4a3c2a7838d663fbc6fa2dae0c8c1439",
+    "api_fields": 0
+  },
+  "committed": {
+    "groups": 26,
+    "response": {
+      "id": "47bcb613-759b-5882-9833-9a7239cdba2d",
+      "identifier": "api-sap-building",
+      "row_version": 4
+    },
+    "new_events": 378,
+    "result_hash": "4de36a72040597e14552187b435f6b9c",
+    "baseline_hash": "4a3c2a7838d663fbc6fa2dae0c8c1439",
+    "source_sha256": "4d3a9f871da5339dfb518f9fb9c0ffb9de44d9dfebd61c4cb75f1d4884795358",
+    "inserted_fields": 378,
+    "owner_revision_after": 4,
+    "owner_revision_before": 3,
+    "unchanged_relationships": 121,
+    "unchanged_existing_fields": 621,
+    "unchanged_previous_events": 1864
+  },
+  "postflight": {
+    "groups": [
+      {
+        "fields": 66,
+        "first_rank": 1010,
+        "property_group": "BUILDING"
+      },
+      {
+        "fields": 17,
+        "first_rank": 2010,
+        "property_group": "OBJECT_ADDRESS"
+      },
+      {
+        "fields": 7,
+        "first_rank": 3010,
+        "property_group": "ARCH_REL"
+      },
+      {
+        "fields": 11,
+        "first_rank": 4010,
+        "property_group": "ARCH_RELMS"
+      },
+      {
+        "fields": 17,
+        "first_rank": 5010,
+        "property_group": "CHARACT"
+      },
+      {
+        "fields": 18,
+        "first_rank": 6010,
+        "property_group": "COSETTLE_PARAM"
+      },
+      {
+        "fields": 26,
+        "first_rank": 7010,
+        "property_group": "COSETTLE_RULE"
+      },
+      {
+        "fields": 7,
+        "first_rank": 8010,
+        "property_group": "CUS_DATA_0MM"
+      },
+      {
+        "fields": 12,
+        "first_rank": 9010,
+        "property_group": "CUS_DATA_7GE"
+      },
+      {
+        "fields": 8,
+        "first_rank": 10010,
+        "property_group": "CUS_DATA_BU1"
+      },
+      {
+        "fields": 10,
+        "first_rank": 11010,
+        "property_group": "CUS_DATA_BU2"
+      },
+      {
+        "fields": 8,
+        "first_rank": 12010,
+        "property_group": "CUS_DATA_BU3"
+      },
+      {
+        "fields": 27,
+        "first_rank": 13010,
+        "property_group": "CUS_DATA_0BU"
+      },
+      {
+        "fields": 1,
+        "first_rank": 14010,
+        "property_group": "CUS_DATA_GENERAL"
+      },
+      {
+        "fields": 10,
+        "first_rank": 15010,
+        "property_group": "INFRASTRUCTURE"
+      },
+      {
+        "fields": 12,
+        "first_rank": 16010,
+        "property_group": "MEASUREMENT"
+      },
+      {
+        "fields": 17,
+        "first_rank": 17010,
+        "property_group": "OBJ_ASSIGN"
+      },
+      {
+        "fields": 7,
+        "first_rank": 18010,
+        "property_group": "OPTION_RATE"
+      },
+      {
+        "fields": 13,
+        "first_rank": 19010,
+        "property_group": "PARTNER"
+      },
+      {
+        "fields": 16,
+        "first_rank": 20010,
+        "property_group": "PROP_TAX"
+      },
+      {
+        "fields": 16,
+        "first_rank": 21010,
+        "property_group": "RESUBM_DATE"
+      },
+      {
+        "fields": 12,
+        "first_rank": 22010,
+        "property_group": "RESUBM_RULE"
+      },
+      {
+        "fields": 14,
+        "first_rank": 23010,
+        "property_group": "RETURN"
+      },
+      {
+        "fields": 9,
+        "first_rank": 24010,
+        "property_group": "STATUS"
+      },
+      {
+        "fields": 16,
+        "first_rank": 25010,
+        "property_group": "TERM_ORG_ASSIGNMENT"
+      },
+      {
+        "fields": 1,
+        "first_rank": 26010,
+        "property_group": "Eingabeparameter"
+      }
+    ],
+    "api_fields": 378,
+    "new_events": 378,
+    "field_checks": {
+      "all_draft": true,
+      "all_api_field": true,
+      "unknown_types": 82,
+      "required_fields": 1,
+      "known_nullability": 0,
+      "all_initial_revision": true
+    },
+    "table_fields": 621,
+    "relationships": 121,
+    "snapshot_hash": "4de36a72040597e14552187b435f6b9c",
+    "owner_revision": 4
+  },
+  "compatibility_migration": {
+    "name": "catalog_snapshot_api_fields",
+    "version": "20260914124500",
+    "full_snapshot_preserved": true,
+    "legacy_fields": 621,
+    "complete_fields": 999
+  },
+  "browser": {
+    "updated_local_frontend_with_live_data": "passed",
+    "old_public_demo": "passed",
+    "tables": 30,
+    "apis": 7,
+    "pdf_fields": 378,
+    "pdf_pages": 28
+  }
+}

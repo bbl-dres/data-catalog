@@ -31,7 +31,7 @@
     const status = !['code_value','product_attribute'].includes(table);
     const controlled = !['code_list','code_value','product_attribute'].includes(table);
     return [
-      ['detail.facts', [...(status ? [select('status','fact.status',['draft','valid','retired'],{required:true})] : []), ...(specs[table] || []),field('links','fact.moreInformation','urls')]],
+      ['detail.facts', [...(status ? [select('status','fact.status',['draft','valid','retired'],{required:true})] : []), ...(['business_attribute','data_field'].includes(table) ? [field('property_group','fact.propertyGroup')] : []), ...(specs[table] || []),field('links','fact.moreInformation','urls')]],
       ...(!['domain','code_list','code_value','product_attribute'].includes(table) ? [['detail.protection',protection]] : []),
       ...(controlled ? [['detail.contacts',[...governance,...(['system','data_table','data_field','data_service'].includes(table) ? [ref('data_custodian_id','detail.dataCustodian','actor')] : [])]]] : []),
       ...(status ? [['edit.definitionVersion',[field('version','fact.version'),field('version_date','edit.versionDate','date')]]] : []),

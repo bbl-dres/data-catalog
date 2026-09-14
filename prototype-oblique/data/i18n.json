@@ -1,4 +1,9 @@
 {
+  "fact.propertyGroup": {"de":"Gruppe","fr":"Groupe","it":"Gruppo","en":"Group"},
+  "apiFields.empty": {"de":"Noch keine API-Felder dokumentiert.","fr":"Aucun champ API documenté pour le moment.","it":"Nessun campo API ancora documentato.","en":"No API fields documented yet."},
+  "apiFields.unavailable": {"de":"API-Felder können hier noch nicht bearbeitet werden.","fr":"Les champs API ne peuvent pas encore être modifiés ici.","it":"I campi API non possono ancora essere modificati qui.","en":"API field editing is not available here yet."},
+  "apiFields.title": {"de":"API-Felder","fr":"Champs API","it":"Campi API","en":"API fields"},
+  "excel.definition.apiFields": {"de":"Eigenständige Felder einer API. Zuordnungen zu Datentabellen sind optional.","fr":"Champs indépendants d’une API. Les correspondances avec des tables sont facultatives.","it":"Campi indipendenti di un’API. Le corrispondenze con le tabelle sono facoltative.","en":"Independent API fields. Mappings to table fields are optional."},
   "detail.sharedAttributes": {"de":"Gemeinsame Attribute werden hier gepflegt:","fr":"Les attributs communs sont gérés ici :","it":"Gli attributi condivisi sono gestiti qui:","en":"Shared attributes are maintained here:"},
   "rel.specializationOf": {"de":"Spezialisierung von","fr":"Spécialisation de","it":"Specializzazione di","en":"Specialization of"},
   "rel.specializations": {"de":"Spezialisierungen","fr":"Spécialisations","it":"Specializzazioni","en":"Specializations"},

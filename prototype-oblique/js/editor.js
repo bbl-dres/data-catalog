@@ -3,6 +3,11 @@
   'use strict';
   const ui = DK.ui, t = ui.t, esc = ui.esc, schema = DK.editSchema;
   let draft = null, capability = false, capabilityUser = null, checking = null, confirmDialog = null;
+  let apiFieldCapability = false;
+  const apiField = r => r.table === 'data_field' && !!r.value.data_service_id;
+  const groupsFor = r => schema.groups(r.table).map(([name,fields]) => [name, apiField(r) ? fields.filter(f => !['technical_name_kind','data_type_scope'].includes(f.key)) : fields]);
+  const childTable = () => draft.root.table === 'data_service' ? draft.tab === 'endpoints' ? 'service_endpoint' : 'data_field' : schema.children[draft.root.table]?.[0];
+  const rowGroup = () => draft.rows.filter(r => r.table === childTable());
   let opening = false, capabilityGeneration = 0;
   let accessCapability = false;
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -34,10 +39,10 @@
     const id = DK.auth.user?.id || null;
     if (!force && id === capabilityUser) return checking;
     const generation = ++capabilityGeneration;
-    capabilityUser = id; capability = false; accessCapability = false;
+    capabilityUser = id; capability = false; accessCapability = false; apiFieldCapability = false;
     if (!id) { if (DK.app && DK.data.config) render(); return; }
     checking = (async()=>{
-      try { const result = await DK.auth.editRequest('edit_capabilities'); if (generation === capabilityGeneration && DK.auth.user?.id === id) { capability = result.version === 1 && result.can_edit === true; accessCapability = result.access_options === true; } }
+      try { const result = await DK.auth.editRequest('edit_capabilities'); if (generation === capabilityGeneration && DK.auth.user?.id === id) { capability = result.version === 1 && result.can_edit === true; accessCapability = result.access_options === true; apiFieldCapability = result.api_fields === true; } }
       catch { /* Missing migration or lost session must never enable editing. */ }
       finally { if (DK.app && DK.data.config) render(); }
     })();
@@ -63,6 +68,7 @@
       const child = schema.children[table], requiredIds = DK.catalog.requiredAttributeIds(snapshot());
       draft = {root:row(table,original,!create,requiredIds),rows:child ? DK.catalog.orderRows(snapshot()[child[0]].filter(x=>x[child[1]] === original.id)).map(x=>row(child[0],x,true,requiredIds)) : [],
         routeKey:routeKey(route),hash:location.hash,kind:route.kind,entity:create ? null : route.entity,lang:ui.language(),tab:'overview',page:0,filter:'',showArchived:false,expanded:new Set(),errors:{},busy:false,saved:null,request:null,userId:DK.auth.user.id};
+      if (table === 'data_service') draft.rows.push(...DK.catalog.orderRows(snapshot().data_field.filter(x => x.data_service_id === original.id)).map(x => row('data_field',x)));
       render(`edit-${draft.root.value.id}-name`);
     } finally { opening = false; }
   }
@@ -95,19 +101,20 @@
   }
   function rowFields(table) {
     const all = schema.groups(table).flatMap(([,f])=>f);
-    const keys = table === 'service_endpoint' ? ['url','operation_name','http_method','environment'] : table === 'code_value' ? ['code','name'] : table === 'data_field' ? ['name','technical_name','source_data_type','is_required','code_list_id'] : table === 'business_attribute' ? ['name','valueType','keyRole','required','code_list_id'] : ['name','valueType','is_required'];
+    const keys = table === 'service_endpoint' ? ['url','operation_name','http_method','environment'] : table === 'code_value' ? ['code','name'] : table === 'data_field' ? ['property_group','name','technical_name','source_data_type','is_required','code_list_id'] : table === 'business_attribute' ? ['property_group','name','valueType','keyRole','required','code_list_id'] : ['name','valueType','is_required'];
     return keys.map(k=>k === 'name' ? schema.field('name','edit.name','text',{required:true}) : all.find(f=>f.key === k));
   }
-  function matchingRows() { return draft.rows.filter(r=>(draft.showArchived || !r.value.is_archived) && (!draft.filter || [label(r.value),r.value.code,r.value.technical_name,r.value.url,r.value.operation_name].join(' ').toLocaleLowerCase().includes(draft.filter.toLocaleLowerCase()))); }
+  function matchingRows() { return rowGroup().filter(r=>(draft.showArchived || !r.value.is_archived) && (!draft.filter || [label(r.value),r.value.code,r.value.technical_name,r.value.property_group,r.value.source_path,r.value.url,r.value.operation_name].join(' ').toLocaleLowerCase().includes(draft.filter.toLocaleLowerCase()))); }
   function rowsPanel() {
+    if (draft.root.table === 'data_service' && draft.tab === 'rows' && !apiFieldCapability) return `<p class="ob-edit-hint">${esc(t('apiFields.unavailable'))}</p>`;
     const matches = matchingRows(), pages = Math.max(1,Math.ceil(matches.length/25)); draft.page = Math.min(draft.page,pages-1);
-    const childTable = schema.children[draft.root.table][0], fields = rowFields(childTable);
+    const fields = rowFields(childTable());
     const rows = matches.slice(draft.page*25,(draft.page+1)*25);
     return `<div class="ob-edit-row-tools"><label>${esc(t('edit.searchRows'))}<input class="ob-input" type="search" id="edit-row-search" value="${esc(draft.filter)}" data-edit-filter></label><label class="ob-check"><input type="checkbox" data-edit-archived${draft.showArchived ? ' checked' : ''}> ${esc(t('edit.showArchived'))}</label>${button('add-row','edit.addRow')}</div>
       <div class="ob-edit-table-scroll" tabindex="0" role="region" aria-label="${esc(t('edit.rows'))}"><table class="ob-edit-table"><thead><tr><th>${esc(t('edit.order'))}</th>${fields.map(f=>`<th>${esc(t(f.label))}</th>`).join('')}<th>${esc(t('edit.actions'))}</th></tr></thead><tbody>${rows.map(r=>{
         const pos = matches.indexOf(r), archived = r.value.is_archived;
         return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === matches.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="${!draft.filter}" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
-        ${draft.expanded.has(r.value.id) ? `<tr><td colspan="${fields.length+2}"><div class="ob-edit-row-detail">${r.table === 'service_endpoint' ? '' : control(r,schema.field('description','edit.description','textarea'))}${schema.groups(r.table).map(([name,group])=>`<section><h3>${esc(t(name))}</h3>${group.filter(f=>!fields.some(x=>x.key === f.key)).map(f=>control(r,f)).join('')}</section>`).join('')}</div></td></tr>` : ''}`;
+        ${draft.expanded.has(r.value.id) ? `<tr><td colspan="${fields.length+2}"><div class="ob-edit-row-detail">${r.table === 'service_endpoint' ? '' : control(r,schema.field('description','edit.description','textarea'))}${groupsFor(r).map(([name,group])=>`<section><h3>${esc(t(name))}</h3>${group.filter(f=>!fields.some(x=>x.key === f.key)).map(f=>control(r,f)).join('')}</section>`).join('')}</div></td></tr>` : ''}`;
       }).join('')}</tbody></table></div>${!rows.length ? `<p>${esc(t('edit.noRows'))}</p>` : ''}
       <div class="ob-edit-pagination">${button('previous','edit.previous',draft.page === 0 ? 'disabled' : '')}<span>${draft.page+1} / ${pages} · ${matches.length} ${esc(t('edit.rows'))}</span>${button('next','edit.next',draft.page+1 >= pages ? 'disabled' : '')}</div><p class="ob-edit-hint">${esc(t('edit.archiveHint'))}</p>`;
   }
@@ -144,8 +151,8 @@
   }
   function renderEditor(route,state) {
     const count = dirtyCount(), canSave = capability && DK.auth.user?.id === draft.userId;
-    const tabs = [['overview','detail.tab.overview'],...(schema.children[draft.root.table] ? [['rows','edit.rows']] : []),...(DK.accessOptions.supports(draft.kind) ? [['access','access.title']] : []),...(draft.entity ? [['relations','detail.tab.relations'],['history','detail.tab.history']] : [])];
-    const panel = draft.tab === 'overview' ? overview(draft.root) : draft.tab === 'rows' ? rowsPanel() : draft.tab === 'access' ? accessPanel() : draft.tab === 'relations' ? `<p class="ob-edit-hint">${esc(t('edit.relationsReadOnly'))}</p>${DK.detail.relations(draft.entity,state)}` : DK.detail.history(draft.entity,state);
+    const tabs = [['overview','detail.tab.overview'],...(schema.children[draft.root.table] ? [['rows',draft.kind === 'apis' ? 'col.fields' : 'edit.rows']] : []),...(draft.kind === 'apis' ? [['endpoints','excel.endpoints']] : []),...(DK.accessOptions.supports(draft.kind) ? [['access','access.title']] : []),...(draft.entity ? [['relations','detail.tab.relations'],['history','detail.tab.history']] : [])];
+    const panel = draft.tab === 'overview' ? overview(draft.root) : ['rows','endpoints'].includes(draft.tab) ? rowsPanel() : draft.tab === 'access' ? accessPanel() : draft.tab === 'relations' ? `<p class="ob-edit-hint">${esc(t('edit.relationsReadOnly'))}</p>${DK.detail.relations(draft.entity,state)}` : DK.detail.history(draft.entity,state);
     return `<div id="catalog-editor" class="ob-editor" aria-busy="${draft.busy}"><div class="ob-edit-toolbar"><h1>${esc(t(draft.root.original ? 'edit.editEntry' : 'edit.createEntry'))}</h1><div class="ob-edit-save-actions"><span id="edit-unsaved" role="status" aria-live="polite">${esc(t('edit.unsaved',{count}))}</span>${button('discard','edit.discard',draft.busy ? 'disabled' : '')}${button(draft.saved ? 'reload' : 'save',draft.saved ? 'edit.reload' : draft.busy ? 'edit.saving' : 'edit.save',draft.busy || !canSave || (!count && !draft.saved) ? 'disabled' : '',true)}</div></div>
       ${!canSave ? `<p class="ob-edit-notice" role="alert">${esc(t('edit.sessionLost'))} ${button('login','auth.signIn')}</p>` : ''}
       <p id="edit-message" class="ob-edit-notice" role="alert"${draft.message ? '' : ' hidden'}>${draft.message ? esc(t(draft.message)) : ''}</p>
@@ -160,6 +167,7 @@
     if (!f) return;
     const language = input.dataset.editLang;
     schema.write(r.value,f,input.type === 'checkbox' ? input.checked : input.value,language,r.table);
+    if (apiField(r) && f.key === 'source_data_type') r.value.data_type_scope = r.value.source_data_type ? 'serviceSchema' : null;
     refreshPatch(r);
     if (r.table === 'access_option') refreshPatch(draft.root);
     draft.request = null; draft.message = null;
@@ -211,7 +219,7 @@
     if (!first) return true;
     const target = all.find(r=>first.startsWith(controlId(r,'')));
     if (target?.table === 'access_option') draft.tab = 'access';
-    else if (target !== draft.root) { draft.tab = 'rows'; draft.filter=''; draft.showArchived=true; draft.page=Math.floor(draft.rows.indexOf(target)/25); draft.expanded.add(target.value.id); }
+    else if (target !== draft.root) { draft.tab = target?.table === 'service_endpoint' ? 'endpoints' : 'rows'; draft.filter=''; draft.showArchived=true; draft.page=Math.floor(rowGroup().indexOf(target)/25); draft.expanded.add(target.value.id); }
     else draft.tab='overview';
     draft.message='edit.validation'; render(first); return false;
   }
@@ -239,7 +247,7 @@
     if (!draft || draft.busy || draft.saved || !capability || draft.userId !== DK.auth.user?.id || !dirtyCount() || !validate()) return;
     const owner = draft;
     if (!owner.request) owner.request = {p_command_id:crypto.randomUUID(),p_table:owner.root.table,p_id:owner.root.value.id,p_expected_version:owner.root.original?.row_version || 0,p_patch:patch(owner.root),
-      p_children:owner.rows.filter(r=>!r.original || Object.keys(patch(r)).length).map(r=>({id:r.value.id,expected_version:r.original?.row_version || 0,patch:patch(r)}))};
+      p_children:owner.rows.filter(r=>!r.original || Object.keys(patch(r)).length).map(r=>({id:r.value.id,expected_version:r.original?.row_version || 0,patch:patch(r),...(r.table === 'data_field' && owner.root.table === 'data_service' ? {table:'data_field'} : {})}))};
     owner.busy=true;owner.message=null;render();
     try { owner.saved = await DK.auth.editRequest('save_entry',owner.request); await reloadSaved(owner); }
     catch (error) { if (draft !== owner) return; owner.busy=false;owner.message=errorMessage(error);render();document.getElementById('edit-message')?.scrollIntoView({block:'nearest'}); }
@@ -265,7 +273,7 @@
     const members = new Set(visible);
     visible.splice(to,0,visible.splice(from,1)[0]);
     let i=0; draft.rows=draft.rows.map(r=>members.has(r)?visible[i++]:r);
-    draft.rows.forEach((r,i)=>{r.value.sort_order=i+1;refreshPatch(r);});
+    rowGroup().forEach((r,i)=>{r.value.sort_order=i+1;refreshPatch(r);});
     draft.page=Math.floor(to/25);draft.request=null;render();
     document.querySelector(`[data-edit="up"][data-row="${id}"]`)?.focus({preventScroll:true});
   }
@@ -282,10 +290,13 @@
     else if(action==='reload')reloadSaved(draft);
     else if(action==='discard')confirmDiscard();
     else if(action==='login')DK.auth.open();
-    else if(action==='tab'){draft.tab=el.dataset.tab;render('edit-tab-'+draft.tab);}
+    else if(action==='tab'){draft.tab=el.dataset.tab;draft.filter='';draft.page=0;render('edit-tab-'+draft.tab);}
     else if(action.startsWith('access-')) editAccess(action,el.dataset.row);
     else if(action==='add-row'){
-      const table=schema.children[draft.root.table][0],value=schema.defaults(table,draft.lang);value.sort_order=draft.rows.length ? Math.max(...draft.rows.map(x=>x.value.sort_order||0))+1 : 1;
+      const table=childTable();
+      if (table === 'data_field' && draft.root.table === 'data_service' && !apiFieldCapability) return;
+      const value=schema.defaults(table,draft.lang);value.sort_order=rowGroup().length ? Math.max(...rowGroup().map(x=>x.value.sort_order||0))+1 : 1;
+      if (table === 'data_field' && draft.root.table === 'data_service') { value.data_service_id=draft.root.value.id; value.technical_name_kind='apiField'; }
       if(value.sort_order>2147483647){ui.toast(t('edit.orderLimit'));return;}
       draft.rows.push(row(table,value,false));draft.filter='';draft.showArchived=false;draft.page=Math.floor((matchingRows().length-1)/25);draft.request=null;render(`edit-${value.id}-${table==='code_value'?'code':table==='service_endpoint'?'url':'name'}`);
     } else if(action==='archive'||action==='restore'){

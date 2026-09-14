@@ -13,7 +13,7 @@
     const wrap = (value, available, size = fontSize, bold = false) => diagram.wrap(value, available, size, bold, measure);
     const countSummary = (entries, rows) => [
       `${entries} ${t(snapshot.kind === 'apis' ? 'unit.apis' : 'print.kind.' + snapshot.kind)}`,
-      diagram.usesRows(settings) ? `${rows} ${t({ objects: 'col.attributes', tables: 'col.fields', refs: 'col.values', apis: 'visibility.endpoints' }[snapshot.kind] || 'print.rows')}` : '',
+      diagram.usesRows(settings) ? `${rows} ${t({ objects: 'col.attributes', tables: 'col.fields', refs: 'col.values', apis: 'col.fields' }[snapshot.kind] || 'print.rows')}` : '',
     ].filter(Boolean).join(' · ');
     const entities = diagram.exportEntities(snapshot, settings), groups = diagram.groups(snapshot, settings.groupBy, entities);
     const fieldCount = entities.reduce((sum, e) => sum + e.rows.length, 0), profile = !tiles && settings.layout !== 'list' && entities.length === 1;
@@ -42,7 +42,7 @@
     const legendY = footerY - 18 - legend.length * 10, bodyBottom = legendY - 18, bodyHeight = bodyBottom - bodyTop;
     if (bodyHeight < 120) throw new Error(snapshot.labels.tooLong);
     const list = settings.layout === 'list' || profile, continuousList = settings.layout === 'list';
-    const detailTitle = t({ objects: 'col.attributes', tables: 'col.fields', refs: 'col.values', apis: 'visibility.endpoints' }[snapshot.kind] || 'print.rows');
+    const detailTitle = t({ objects: 'col.attributes', tables: 'col.fields', refs: 'col.values', apis: 'col.fields' }[snapshot.kind] || 'print.rows');
     const entityFields = diagram.selectedFields(snapshot, settings, true), rowFields = diagram.selectedFields(snapshot, settings);
     // Long entry descriptions belong in the introduction, not on every attribute row.
     const tableFields = tiles ? [] : [...(continuousList ? entityFields.filter(f => f.id !== 'description').map(f => ({ ...f, id: 'entity.' + f.id,

@@ -126,7 +126,7 @@
     });
     if (!session.snapshot.groupings.some(g => g.id === session.settings.groupBy)) session.settings.groupBy = session.snapshot.defaultGroupBy;
     if (!session.customLayout) session.settings.layout = diagram.defaultLayout(scope.kind);
-    if (!session.customOrientation) session.settings.orientation = session.settings.layout === 'list' ? 'portrait' : 'landscape';
+    if (!session.customOrientation) session.settings.orientation = diagram.defaultOrientation(scope.kind, session.settings.layout);
     if (!session.customTitle) session.settings.title = session.snapshot.title;
     session.expanded.add(scope.kind);
     if (scope.facet) session.expanded.add(`${scope.kind}:${scope.facet}:${scope.value}`);
@@ -323,7 +323,7 @@
     session.settings[name] = value;
     if (name === 'layout') {
       session.customLayout = true;
-      if (!session.customOrientation) session.settings.orientation = value === 'list' ? 'portrait' : 'landscape';
+      if (!session.customOrientation) session.settings.orientation = diagram.defaultOrientation(session.snapshot.kind, value);
     }
     if (name === 'orientation') session.customOrientation = true;
     session.page = 0; update(session);
@@ -454,7 +454,7 @@
     const language = DK.app.state.lang, snapshot = diagram.scoped(captured.catalogs, language, captured.scope), settings = diagram.defaults(snapshot);
     if (ctx.isList) settings.layout = ctx.mode === 'table' ? 'list' : 'tiles';
     else if (ctx.isRows) settings.layout = 'list';
-    settings.orientation = settings.layout === 'list' ? 'portrait' : 'landscape';
+    settings.orientation = diagram.defaultOrientation(snapshot.kind, settings.layout);
     settings.selected = captured.catalogs[language][snapshot.kind].entities.map(e => e.id);
     if (snapshot.groupings.some(group => group.id === ctx.groupBy)) settings.groupBy = ctx.groupBy;
     else if (route.entity) settings.groupBy = 'none';

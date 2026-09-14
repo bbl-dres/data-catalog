@@ -9,6 +9,7 @@
   diagram.classificationLabel = (snapshot, value) => diagram.classifications.includes(diagram.classification(value))
     ? diagram.t(snapshot, 'print.classification.' + diagram.classification(value)) : value || '—';
   diagram.defaultLayout = () => 'list';
+  diagram.defaultOrientation = (kind, layout) => layout === 'list' && kind !== 'apis' ? 'portrait' : 'landscape';
   diagram.usesRows = settings => settings.layout === 'grid' || settings.layout === 'list';
   const clone = value => JSON.parse(JSON.stringify(value));
   const translate = (dictionary, key, params = {}) => Object.entries(params).reduce((value, [name, replacement]) => value.split('{' + name + '}').join(replacement), dictionary[key] || key);
@@ -46,10 +47,9 @@
       facetValues[id] = { id: value || '', title: label || ui.t('diagram.unspecified') };
     }
     let rows = kind === 'tables' ? entity.fields : kind === 'refs' ? entity.values : entity.attributes;
-    if (kind === 'apis') rows = entity.endpoints?.length ? entity.endpoints : (entity.endpointURL ? [{ identifier: 'primary', url: entity.endpointURL, protocol: entity.protocol,
-      operation_name: entity.operationName || entity.operation, http_method: entity.httpMethod, relative_path: entity.relativePath || entity.documentedPath }] : []);
+    if (kind === 'apis') rows = entity.fields;
     rows = (rows || []).map((row, index) => rowContent(kind, kind === 'tables' ? data.fieldEntity(entity, row, index)
-      : kind === 'objects' ? data.attributeEntity(entity, row) : row, index));
+      : kind === 'objects' ? data.attributeEntity(entity, row) : kind === 'apis' ? data.apiFieldEntity(entity, row, index) : row, index));
     if (kind === 'products') for (const [relation, targetKind] of [['basedOn', 'objects'], ['sourcedFrom', 'tables'], ['servedBy', 'apis']]) {
       for (const id of new Set(entity[relation] || [])) {
         const target = data.get(targetKind, id), name = target ? data.displayName(targetKind, target) : id;
@@ -96,8 +96,8 @@
     const groupings = data.groupOptions(kind).map(option => ({ ...grouping(option.id), label: option.label }));
     const labels = Object.fromEntries(['continued', 'emptyFields', 'page', 'documentId', 'version', 'created', 'selection', 'legend', 'tooLong', 'noSelection', 'noFilterMatches', 'filters', 'scope', 'fieldCount'].map(key => [key, ui.t('diagram.' + key)]));
     labels.legend = ui.t('diagram.legend', { identifier: ui.t('fact.identifier') });
-    Object.assign(labels, { name: ui.t(kind === 'apis' ? 'print.endpoint' : 'col.name'),
-      type: ui.t(kind === 'apis' ? 'print.protocol' : kind === 'tables' ? 'col.dataType' : kind === 'products' ? 'print.componentType' : 'col.valueType'),
+    Object.assign(labels, { name: ui.t('col.name'),
+      type: ui.t(['tables', 'apis'].includes(kind) ? 'col.dataType' : kind === 'products' ? 'print.componentType' : 'col.valueType'),
       key: ui.t(kind === 'objects' ? 'fact.businessKey' : 'col.key'), code: ui.t('print.column.code'), codeList: ui.t('print.column.codeList'), description: ui.t('col.description') });
     return clone({ templateVersion: diagram.templateVersion, createdAt: new Date().toISOString(), language, dictionary,
       kind, title, scope: ui.t('print.kind.' + kind), entityLabel: data.kindDef(kind).singular,
@@ -164,7 +164,7 @@
   };
   diagram.parentScope = scope => scope.entityId ? { kind: scope.kind, facet: scope.facet, value: scope.value, entityId: '' }
     : scope.facet ? { kind: scope.kind, facet: '', value: '', entityId: '' } : null;
-  diagram.defaults = snapshot => ({ paper: 'A3', orientation: diagram.defaultLayout(snapshot.kind) === 'list' ? 'portrait' : 'landscape', scale: 100, layout: diagram.defaultLayout(snapshot.kind), title: snapshot.title, documentId: '', version: '',
+  diagram.defaults = snapshot => ({ paper: 'A3', orientation: diagram.defaultOrientation(snapshot.kind, diagram.defaultLayout(snapshot.kind)), scale: 100, layout: diagram.defaultLayout(snapshot.kind), title: snapshot.title, documentId: '', version: '',
     documentStatus: 'draft', classification: '', overview: 'auto', columns: DK.presentation.selected(snapshot.rowKind), entityColumns: DK.presentation.selected(snapshot.kind), groupBy: snapshot.defaultGroupBy,
     filters: Object.fromEntries(snapshot.facets.map(facet => [facet.id, []])), selected: snapshot.entities.map(e => e.id) });
   diagram.selectedFields = (snapshot, settings, parent = false) => (parent ? snapshot.entityFields : snapshot.rowFields)
