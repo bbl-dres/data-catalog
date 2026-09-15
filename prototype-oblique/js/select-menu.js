@@ -18,16 +18,9 @@
       if (!active) return;
       const { button, menu } = active;
       if (!button.isConnected || !button.checkVisibility()) { close(); return; }
-      const bounds = button.getBoundingClientRect(), viewport = window.visualViewport;
-      const style = getComputedStyle(root), inset = parseFloat(style.getPropertyValue('--ob-space-sm')), offset = parseFloat(style.getPropertyValue('--ob-menu-offset'));
-      const top = viewport?.scale === 1 ? viewport.offsetTop : 0;
-      const height = viewport?.scale === 1 ? viewport.height : innerHeight;
-      menu.style.maxHeight = Math.max(0, height - inset * 2) + 'px';
-      menu.style.minWidth = Math.min(bounds.width, innerWidth - inset * 2) + 'px';
-      menu.style.left = Math.max(inset, Math.min(bounds.left, innerWidth - menu.offsetWidth - inset)) + 'px';
-      const below = bounds.bottom + offset;
-      const y = below + menu.offsetHeight <= top + height - inset ? below : bounds.top - menu.offsetHeight - offset;
-      menu.style.top = Math.max(top + inset, Math.min(y, top + height - menu.offsetHeight - inset)) + 'px';
+      const inset = parseFloat(getComputedStyle(root).getPropertyValue('--ob-space-sm'));
+      menu.style.minWidth = Math.min(button.getBoundingClientRect().width, innerWidth - inset * 2) + 'px'; // at least as wide as its trigger
+      ui.anchorPopover(menu, button);
     }
     function show(select, button, last = false) {
       if (button.disabled) return;

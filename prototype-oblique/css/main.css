@@ -114,15 +114,15 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-logo-acronym, .ob-logo-title { font-weight: var(--ob-font-weight-bold); }
 .ob-logo-title { display: none; }
 .ob-header-tools { display: flex; flex: none; align-items: center; gap: var(--ob-space-xs); margin-left: auto; padding-left: var(--ob-space-default); }
-.ob-avatar { width: var(--ob-avatar-size); height: var(--ob-avatar-size); margin-left: var(--ob-space-sm); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--ob-color-avatar-bg); color: var(--ob-color-text-inverse); font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-semibold); }
+.ob-avatar { width: var(--ob-avatar-size); height: var(--ob-avatar-size); margin-left: var(--ob-space-sm); border-radius: var(--ob-radius-circle); display: flex; align-items: center; justify-content: center; background: var(--ob-color-avatar-bg); color: var(--ob-color-text-inverse); font-size: var(--ob-font-size-xs); font-weight: var(--ob-font-weight-semibold); }
 .ob-header-search { position: relative; }
 #header-search-field { position: absolute; right: 0; top: calc(-1 * var(--ob-border-width-xs)); width: min(var(--ob-header-search-width), calc(100vw - var(--ob-space-xl))); padding-right: calc(var(--ob-control-height) + var(--ob-space-xs)); background: var(--ob-color-bg); }
-.ob-header-search > button { position: relative; z-index: 1; }
+.ob-header-search > button { position: relative; z-index: var(--ob-z-local); } /* above the absolutely positioned field that follows it */
 .ob-header-search .ob-toolbar { margin: 0; padding: 0; border: 0; display: block; }
 .ob-header-search .ob-search { min-width: 0; }
 .ob-header-search .ob-search-input { height: var(--ob-control-height); padding-left: var(--ob-control-height); padding-right: var(--ob-control-height); }
 .ob-header-search .ob-search-icon { left: var(--ob-space-sm); }
-.ob-header-search .ob-search-clear { width: var(--ob-control-height-sm); height: var(--ob-control-height); }
+.ob-header-search .ob-search-clear { width: var(--ob-control-height); height: var(--ob-control-height); }
 .ob-header-search .ob-suggest { min-width: 100%; }
 .ob-navigation-toggle.ob-button { display: none; }
 @media (max-width: 960px) {
@@ -213,12 +213,11 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 .ob-search-control { position: relative; min-width: 0; }
 .ob-search-icon { position: absolute; left: calc((var(--ob-touch-target) - var(--ob-icon-size-lg)) / 2); top: 50%; transform: translateY(-50%); color: var(--ob-color-text); pointer-events: none; }
 .ob-search-input {
-  width: 100%; height: var(--ob-control-height-lg); padding: 0 var(--ob-touch-target);
+  width: 100%; height: var(--ob-control-height); padding: 0 var(--ob-touch-target);
   -webkit-appearance: none; appearance: none;
 }
 .ob-search-input, .ob-search-input::placeholder { text-overflow: ellipsis; } /* an overlong translated placeholder ends with an ellipsis, not a cut glyph */
 .ob-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
-.ob-search-input:focus-visible { box-shadow: var(--ob-focus-ring); }
 .ob-search-clear {
   position: absolute; right: var(--ob-space-xs); top: 50%; transform: translateY(-50%);
 }
@@ -254,7 +253,7 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 
 /* Home search: same combobox, with a visible submit action and room for discovery. */
 /* Share the page gutter; the hero needs only the standard gap to the summary tiles. */
-.ob-page-search { position: relative; z-index: 1; }
+.ob-page-search { position: relative; z-index: var(--ob-z-local); } /* the suggestion list overlays the summary cards and tables that follow */
 .ob-home-search { margin-bottom: var(--ob-space-lg); }
 .ob-home-search h1 { margin: 0 0 var(--ob-space-sm); }
 .ob-home-search > p { margin: 0 0 var(--ob-space-default); }
@@ -324,7 +323,7 @@ code { font-family: var(--ob-font-family-code); letter-spacing: 0; }
 /* Sticky within the full-height divider, so long pages keep the grip in view.
    Its background masks the center line between the two short grip strokes. */
 .ob-sidebar-resizer::before {
-  content: ''; display: block; position: sticky; z-index: 1;
+  content: ''; display: block; position: sticky; z-index: var(--ob-z-local);
   top: calc((100dvh + var(--ob-header-height) - var(--ob-sidebar-resize-grip-height)) / 2);
   width: var(--ob-sidebar-resize-grip-width); height: var(--ob-sidebar-resize-grip-height); margin-inline: auto;
   border-inline: var(--ob-border-width-xs) solid var(--ob-color-graphic); background: var(--ob-color-bg);
@@ -368,7 +367,6 @@ button.ob-tree-link { width: 100%; }
 .ob-rail-item { display: flex; align-items: center; justify-content: center; width: 100%; height: var(--ob-touch-target); padding: 0; border: 0; border-left: var(--ob-border-width-md) solid transparent; background: transparent; color: var(--ob-color-text-secondary); cursor: pointer; }
 .ob-rail-item:hover, .ob-rail-item.is-active, .ob-rail-item[aria-expanded=true] { background: var(--ob-color-surface); color: var(--ob-color-text); }
 .ob-rail-item.is-active { border-left-color: var(--ob-color-accent); }
-.ob-rail-item:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 .ob-sidebar-flyout { position: absolute; top: var(--ob-sidebar-heading-height); left: 100%; width: var(--ob-sidebar-flyout-width); max-height: calc(100dvh - var(--ob-header-height) - var(--ob-sidebar-heading-height) - var(--ob-footer-height)); overflow: auto; z-index: var(--ob-z-controls); border: var(--ob-border-width-xs) solid var(--ob-color-border); background: var(--ob-color-bg); box-shadow: var(--ob-shadow-lg); }
 .ob-content { grid-column: 2; grid-row: 1; min-width: 0; padding: var(--ob-space-sm) var(--ob-content-padding-x) var(--ob-space-3xl); container: workspace / inline-size; } /* the page end reserves the floating back-to-top footprint above the footer */
 .ob-workspace.ob-workspace--standalone { display: block; }
@@ -419,11 +417,10 @@ button.ob-tree-link { width: 100%; }
    edge shadows show the hidden side(s), the hint names the gesture until the table was scrolled, and the
    scroller is a focusable region (app.js) so keyboard users can scroll it too. */
 .ob-table-scroll { position: relative; }
-.ob-table-scroll::before, .ob-table-scroll::after { content: ''; position: absolute; top: 0; bottom: 0; z-index: 1; width: var(--ob-table-scroll-shadow-width); pointer-events: none; opacity: 0; transition: opacity var(--ob-duration-micro) var(--ob-easing-standard); }
+.ob-table-scroll::before, .ob-table-scroll::after { content: ''; position: absolute; top: 0; bottom: 0; width: var(--ob-table-scroll-shadow-width); pointer-events: none; opacity: 0; transition: opacity var(--ob-duration-micro) var(--ob-easing-standard); }
 .ob-table-scroll::before { left: 0; background: linear-gradient(to right, var(--ob-color-scroll-shadow), transparent); }
 .ob-table-scroll::after { right: 0; background: linear-gradient(to left, var(--ob-color-scroll-shadow), transparent); }
 .ob-table-scroll.has-more-start::before, .ob-table-scroll.has-more-end::after { opacity: 1; }
-.ob-table-wrap:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--ob-focus-width) var(--ob-color-focus); }
 .ob-table-scroll-hint { display: flex; align-items: center; gap: var(--ob-space-xs); margin: 0 0 var(--ob-space-sm); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); }
 .ob-table-scroll-hint .ob-icon { color: var(--ob-color-text-tertiary); }
 .ob-search-sort .ob-select { flex: 1 1 auto; min-width: 0; }
@@ -491,11 +488,11 @@ button.ob-tree-link { width: 100%; }
 .ob-view-description, .ob-detail-description { margin-top: var(--ob-space-sm); color: var(--ob-color-text-secondary); }
 .ob-detail-description { white-space: pre-line; }
 .ob-actions-menu { flex: none; }
-.ob-collection-controls, .ob-detail-controls { display: flex; align-items: flex-end; gap: var(--ob-space-default); margin-bottom: var(--ob-space-lg); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
-.ob-tabs-frame { position: relative; min-width: 0; overflow: hidden; }
-.ob-collection-tabs-frame, .ob-detail-tabs-frame { flex: 1; margin-bottom: calc(-1 * var(--ob-border-width-xs)); }
-.ob-tabs { display: flex; overflow-x: auto; overflow-y: hidden; scroll-padding-inline: var(--ob-space-lg); scrollbar-width: none; } /* a focused tab scrolls clear of the end fade */
-.ob-tabs::-webkit-scrollbar { display: none; }
+.ob-view-controls { display: flex; align-items: flex-end; gap: var(--ob-space-default); margin-bottom: var(--ob-space-lg); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+.ob-tabs-frame { position: relative; flex: 1; min-width: 0; margin-bottom: calc(-1 * var(--ob-border-width-xs)); overflow: hidden; } /* the selected tab's underline sits on the controls divider */
+/* The profile tab list (graph.css) is the same scroll strip inside a frame that also holds the relationship toggle. A focused tab scrolls clear of the end fade. */
+.ob-tabs, .ob-tab-list { display: flex; overflow-x: auto; overflow-y: hidden; scroll-padding-inline: var(--ob-space-lg); scrollbar-width: none; }
+.ob-tabs::-webkit-scrollbar, .ob-tab-list::-webkit-scrollbar { display: none; }
 .ob-tab { display: inline-flex; align-items: center; justify-content: center; gap: var(--ob-space-sm); min-height: var(--ob-tab-min-height); padding: var(--ob-space-sm) var(--ob-space-md); border: 0; border-bottom: var(--ob-border-width-sm) solid transparent; background: transparent; color: var(--ob-color-text); font-size: var(--ob-font-size-md); line-height: var(--ob-line-height-md); letter-spacing: var(--ob-letter-spacing-wide); cursor: pointer; white-space: nowrap; }
 .ob-tab:hover { background: var(--ob-color-surface); }
 .ob-tab[aria-selected=true] { border-bottom-color: var(--ob-color-accent); }
@@ -504,15 +501,15 @@ button.ob-tree-link { width: 100%; }
 .ob-collection-search { position: relative; width: var(--ob-collection-search-width); min-width: 0; }
 .ob-collection-status { margin: 0 0 var(--ob-space-md); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); color: var(--ob-color-text-secondary); }
 @container workspace (max-width: 880px) {
-  .ob-collection-controls, .ob-detail-controls { flex-wrap: wrap; gap: var(--ob-space-sm); }
-  .ob-collection-tabs-frame, .ob-detail-tabs-frame { flex-basis: 100%; }
+  .ob-view-controls { flex-wrap: wrap; gap: var(--ob-space-sm); }
+  .ob-tabs-frame { flex-basis: 100%; }
   .ob-local-actions { flex: 1 1 100%; flex-wrap: wrap; min-width: 0; }
   .ob-collection-search { flex: 1 1 var(--ob-collection-search-width); max-width: 100%; }
   .ob-local-menus { margin-left: auto; }
   /* When actions wrap, the divider belongs to the tab row alone. */
-  :is(.ob-collection-controls, .ob-detail-controls):has(.ob-local-actions) { border-bottom: 0; }
-  :is(.ob-collection-controls, .ob-detail-controls):has(.ob-local-actions) .ob-tabs-frame { margin-bottom: 0; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
-  :is(.ob-collection-controls, .ob-detail-controls):has(.ob-local-actions) .ob-tabs { margin-bottom: calc(-1 * var(--ob-border-width-xs)); }
+  .ob-view-controls:has(.ob-local-actions) { border-bottom: 0; }
+  .ob-view-controls:has(.ob-local-actions) .ob-tabs-frame { margin-bottom: 0; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
+  .ob-view-controls:has(.ob-local-actions) .ob-tabs { margin-bottom: calc(-1 * var(--ob-border-width-xs)); }
   /* Preserve the single-row action inset (4 px margin + 1 px divider).
      The wrapper-to-content gap remains 24 px; visible actions stay 29 px above it. */
   .ob-local-actions { margin-bottom: calc(var(--ob-space-xs) + var(--ob-border-width-xs)); }
@@ -572,13 +569,12 @@ button.ob-tree-link { width: 100%; }
 .ob-comment { white-space: pre-line; }
 
 .ob-context-note { max-width: var(--ob-prose-max-width); margin-bottom: var(--ob-space-default); padding: var(--ob-space-sm) var(--ob-space-md); background: var(--ob-color-surface); color: var(--ob-color-text-secondary); font-size: var(--ob-font-size-sm); line-height: var(--ob-line-height-sm); }
-/* A panel is a keyboard stop only when it has no focusable content (ui.tabPanel); its ring stays inside the column and clear of the sticky header. */
+/* A panel is a keyboard stop only when it has no focusable content (ui.tabPanel); its inset ring (components.css) stays inside the column and clear of the sticky header. */
 [role="tabpanel"] { scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
-[role="tabpanel"]:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 .ob-detail-rows { scroll-margin-top: calc(var(--ob-header-height) + var(--ob-space-default)); }
 /* Sticky column headers need an unclipped ancestor; a table that scrolls sideways gives them up for the scroller. */
 .ob-detail-rows .ob-table-region:not(.is-scrollable) .ob-table-wrap { overflow: visible; }
-.ob-detail-rows th { position: sticky; top: var(--ob-header-height); z-index: 1; background: var(--ob-color-surface); box-shadow: 0 var(--ob-border-width-xs) var(--ob-color-border-strong); }
+.ob-detail-rows th { position: sticky; top: var(--ob-header-height); z-index: var(--ob-z-local); background: var(--ob-color-surface); box-shadow: 0 var(--ob-border-width-xs) var(--ob-color-border-strong); }
 .ob-detail-rows .ob-table-region.is-scrollable th { position: static; }
 .ob-detail-rows td { overflow-wrap: anywhere; }
 
@@ -789,7 +785,7 @@ button.ob-tree-link { width: 100%; }
   .ob-sidebar-slot--global { display: block; }
   .ob-sidebar-slot--global .ob-drawer-tools { margin-top: auto; }
   .ob-tree-panel { display: none; }
-  .ob-tree-panel.is-mobile-open { display: flex; position: fixed; inset: 0 auto 0 0; z-index: calc(var(--ob-z-overlay) + 1); width: min(var(--ob-drawer-width), calc(100vw - var(--ob-space-3xl))); height: 100dvh; max-height: none; padding: 0; box-shadow: var(--ob-shadow-lg); }
+  .ob-tree-panel.is-mobile-open { display: flex; position: fixed; inset: 0 auto 0 0; z-index: var(--ob-z-overlay-top); width: min(var(--ob-drawer-width), calc(100vw - var(--ob-space-3xl))); height: 100dvh; max-height: none; padding: 0; box-shadow: var(--ob-shadow-lg); }
   .ob-drawer-header { display: flex; flex: none; align-items: center; justify-content: space-between; height: var(--ob-drawer-header-height); padding: 0 var(--ob-space-sm) 0 var(--ob-space-default); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
   .ob-drawer-header h2 { font-size: var(--ob-font-size-md); }
   .ob-drawer-header .ob-button { width: var(--ob-touch-target); height: var(--ob-touch-target); }
@@ -871,7 +867,7 @@ button.ob-tree-link { width: 100%; }
   .ob-detail-section-toggle > .ob-icon { display: none; }
   .ob-page-search { display: none; }
   #search-options-host, .ob-search-answer > button { display: none; }
-  .ob-collection-controls, .ob-detail-controls { display: none; }
+  .ob-view-controls { display: none; }
   body { background: var(--ob-white); color: var(--ob-black); font-size: 11pt; }
   .ob-header-tools, .ob-main-nav, .ob-breadcrumb, .ob-toolbar, .ob-tree-panel, .ob-footer, .ob-back-to-top, .ob-toast-region,
   .ob-tabs-frame, .ob-pager, .ob-skip-link, .ob-mobile-navigation, .ob-drawer-backdrop, .ob-page-actions, .ob-actions-menu { display: none !important; }
@@ -906,11 +902,11 @@ button.ob-tree-link { width: 100%; }
 @media (forced-colors: active) {
   .ob-icon, .ob-disclosure > summary::before { forced-color-adjust: none; background-color: currentColor; }
   .ob-table-scroll::before, .ob-table-scroll::after { content: none; } /* the hint text and the focusable region remain */
-  .ob-card, .ob-badge, .ob-chip { outline: var(--ob-border-width-xs) solid CanvasText; outline-offset: -1px; }
+  .ob-card, .ob-badge, .ob-chip { outline: var(--ob-border-width-xs) solid CanvasText; outline-offset: calc(-1 * var(--ob-border-width-xs)); }
   .ob-tree-panel.is-mobile-open { border-right: var(--ob-border-width-xs) solid CanvasText; }
   .ob-footer { border-top: var(--ob-border-width-xs) solid CanvasText; }
   :focus-visible, .ob-swagger .swagger-ui :focus-visible { outline: var(--ob-focus-width) solid Highlight; outline-offset: var(--ob-border-width-sm); box-shadow: none; }
-  .ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible, .ob-menu-item:focus-visible, .ob-rail-item:focus-visible, .ob-disclosure > summary:focus-visible { outline-offset: calc(-1 * var(--ob-focus-width)); }
+  .ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible, .ob-menu-item:focus-visible, .ob-rail-item:focus-visible, .ob-disclosure > summary:focus-visible, [role="tabpanel"]:focus-visible, .ob-table-wrap:focus-visible { outline-offset: calc(-1 * var(--ob-focus-width)); }
   .ob-sidebar-resizer:focus-visible { outline: none; } /* its single line remains the indicator */
   .ob-main-nav-item, .ob-tab { border-bottom-color: Canvas; }
   .ob-main-nav-item[aria-current="page"], .ob-tab[aria-selected=true] { border-bottom-color: Highlight; }

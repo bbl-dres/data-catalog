@@ -57,6 +57,7 @@ node prototype-oblique/tests/print-tiles.cjs
 node prototype-oblique/tests/print-mobile.cjs
 node prototype-oblique/tests/print-menus.cjs
 node prototype-oblique/tests/design-consistency.cjs
+node prototype-oblique/tests/layering.cjs
 node prototype-oblique/tests/sidebar.cjs
 node prototype-oblique/tests/polish.cjs
 node prototype-oblique/tests/contrast.cjs
@@ -68,6 +69,8 @@ Edge must already be installed for `msedge`. On other platforms, omit `PLAYWRIGH
 
 | Suite | Purpose |
 |---|---|
+| `layering.cjs` | Layer map: every z-index resolves to a `--ob-z-*` token, edge shadows carry none, focusable scroll regions share the inset ring; suggestions, field picker, select menus and print popovers share the `--ob-menu-offset` gap, a short viewport caps the print popover below its trigger, wrapping buttons keep the control height, the drawer sits above its backdrop; requires Playwright |
+| `gwr-entrance-import.cjs` / `gwr-entrance-browser.cjs` | GWR Gebäudeeingang: 10 attributes, seven required assignments, nine source-field links, one table link, 22 history events, preserved content, rollback/stale/repeat refusal, lazy reads and Excel; desktop/320px profile/source/code-list navigation. Requires PGlite, plus Playwright for browser checks. `GWR_ENTRANCE_LIVE_READ=1` enables public hosted reads. |
 | `refx-building-api-import.cjs` / `refx-building-api-browser.cjs` | The reviewed MHTML inventory: 378 API fields, 26 groups, excluded includes and disputed types; guarded rollback/commit, preservation, stale/repeat refusal, audit, projection/Excel and desktop/mobile/PDF. Browser defaults to the isolated snapshot produced by the SQL suite; `REFX_LIVE_READ=1` performs public hosted reads only. |
 | `api-fields.cjs` / `api-fields-browser.cjs` | Independent API/table ownership, optional correspondences, text groups on all three owners, SQL browser/REST validation and denial, revisions/retries/history, visibility migration/hiding, searches, Excel/PDF, separate field/endpoint tabs, four languages and desktop/mobile. Requires PGlite, plus Playwright for the browser suite; hosted requests are intercepted. |
 | `resources.cjs` | Shared loading: early promise rejection, response-body deadlines, single-flight assets, late callbacks, failure/retry, destination validation and immediate callback URL cleanup |

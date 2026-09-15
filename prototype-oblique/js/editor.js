@@ -14,7 +14,7 @@
   const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
   const snapshot = () => DK.data.catalogSnapshot;
   const label = record => ui.localized(record,'name_') || record.identifier || '';
-  const button = (action,text,attrs = '',primary = false) => `<button type="button" class="ob-button${primary ? ' ob-button--primary' : ''}" data-edit="${action}" ${attrs}>${esc(t(text))}</button>`;
+  const button = (action,text,attrs = '',primary = false,wrap = false) => `<button type="button" class="ob-button${primary ? ' ob-button--primary' : ''}${wrap ? ' ob-button--wrap' : ''}" data-edit="${action}" ${attrs}>${esc(t(text))}</button>`;
   const iconButton = (action,text,glyph,attrs = '') => `<button type="button" class="ob-button ob-edit-icon" data-edit="${action}" title="${esc(t(text))}" aria-label="${esc(t(text))}" ${attrs}>${glyph}</button>`;
   function computePatch(row) {
     return Object.fromEntries(Object.entries(row.value).filter(([key,value])=>key !== 'id' && key !== 'identifier' && !['row_version','created_on','modified_on','edited_at'].includes(key) &&
@@ -76,7 +76,7 @@
     } finally { opening = false; }
   }
   function optionLabel(value) { const key = 'edit.value.'+value; return t(key) === key ? value : t(key); }
-  function control(row,f) {
+  function control(row,f,hiddenLabel = false) {
     const r = row.value, id = controlId(row,f.key), value = schema.read(r,f.key,draft.lang,row.table);
     const changed = !row.original || !same(value,schema.read(row.original,f.key,draft.lang,row.table));
     const error = draft.errors[id];
@@ -94,7 +94,7 @@
     } else if (f.type === 'checkbox') input = `<input class="ob-check-input" type="checkbox" ${attrs}${value ? ' checked' : ''}>`;
     else if (['textarea','lines','urls'].includes(f.type)) input = `<textarea class="ob-input" rows="${f.key === 'description' ? 3 : 2}" ${attrs}>${esc(value)}</textarea>`;
     else input = `<input class="ob-input" type="${['date','url','number'].includes(f.type) ? f.type : 'text'}" value="${esc(value)}" ${attrs}>`;
-    return `<div class="ob-edit-field ob-form-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}">${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
+    return `<div class="ob-edit-field ob-form-field${changed ? ' is-changed' : ''}" data-edit-wrapper="${id}"><label for="${id}"${hiddenLabel ? ' class="ob-sr-only"' : ''}>${esc(t(f.label))}${f.required ? ' *' : ''}<span class="ob-edit-changed"${changed ? '' : ' hidden'}>${esc(t('edit.changed'))}</span></label>${input}${hint ? `<span id="${id}-hint" class="ob-edit-hint">${esc(t('edit.onePerLine'))}</span>` : ''}<span id="${id}-error" class="ob-edit-field-error"${error ? '' : ' hidden'}>${error ? esc(t(error)) : ''}</span></div>`;
   }
   const titleFields = row => [schema.field('name','edit.name','text',{required:true}),schema.field('description','edit.description','textarea')].map(f=>control(row,f)).join('');
   function overview(row) {
@@ -116,7 +116,7 @@
     return `<div class="ob-edit-row-tools"><label>${esc(t('edit.searchRows'))}<input class="ob-input" type="search" id="edit-row-search" value="${esc(draft.filter)}" data-edit-filter></label><label class="ob-check"><input type="checkbox" data-edit-archived${draft.showArchived ? ' checked' : ''}> ${esc(t('edit.showArchived'))}</label>${button('add-row','edit.addRow')}</div>
       <div class="ob-edit-table-scroll" tabindex="0" role="region" aria-label="${esc(t('edit.rows'))}"><table class="ob-edit-table"><thead><tr><th>${esc(t('edit.order'))}</th>${fields.map(f=>`<th>${esc(t(f.label))}</th>`).join('')}<th>${esc(t('edit.actions'))}</th></tr></thead><tbody>${rows.map(r=>{
         const pos = matches.indexOf(r), archived = r.value.is_archived;
-        return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === matches.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="${!draft.filter}" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
+        return `<tr data-edit-row="${r.value.id}"${archived ? ' class="is-archived"' : ''}><td><div class="ob-edit-order">${iconButton('up','edit.up','↑',`data-row="${r.value.id}"${pos === 0 || draft.filter ? ' disabled' : ''}`)}${iconButton('down','edit.down','↓',`data-row="${r.value.id}"${pos === matches.length-1 || draft.filter ? ' disabled' : ''}`)}<button type="button" class="ob-button ob-edit-drag" draggable="${!draft.filter}" data-drag-row="${r.value.id}" aria-label="${esc(t('edit.drag'))}">⋮⋮</button></div></td>${fields.map(f=>`<td>${control(r,f,true)}</td>`).join('')}<td><div class="ob-edit-row-actions">${button('row-details','edit.details',`data-row="${r.value.id}" aria-expanded="${draft.expanded.has(r.value.id)}"`)}${iconButton(archived ? 'restore' : 'archive',archived ? 'edit.restore' : 'edit.remove',archived ? '↶' : '×',`data-row="${r.value.id}"`)}</div>${!r.original ? `<span class="ob-edit-changed">${esc(t('edit.new'))}</span>` : archived ? `<span>${esc(t('edit.archived'))}</span>` : ''}</td></tr>
         ${draft.expanded.has(r.value.id) ? `<tr><td colspan="${fields.length+2}"><div class="ob-edit-row-detail">${r.table === 'service_endpoint' ? '' : control(r,schema.field('description','edit.description','textarea'))}${groupsFor(r).map(([name,group])=>`<section><h3>${esc(t(name))}</h3>${group.filter(f=>!fields.some(x=>x.key === f.key)).map(f=>control(r,f)).join('')}</section>`).join('')}</div></td></tr>` : ''}`;
       }).join('')}</tbody></table></div>${!rows.length ? `<p>${esc(t('edit.noRows'))}</p>` : ''}
       <div class="ob-edit-pagination">${button('previous','edit.previous',draft.page === 0 ? 'disabled' : '')}<span>${draft.page+1} / ${pages} · ${matches.length} ${esc(t('edit.rows'))}</span>${button('next','edit.next',draft.page+1 >= pages ? 'disabled' : '')}</div><p class="ob-edit-hint">${esc(t('edit.archiveHint'))}</p>`;
@@ -262,7 +262,7 @@
     if (confirmDialog?.open) return;
     const focus = document.activeElement;
     confirmDialog = document.createElement('dialog'); confirmDialog.className='ob-edit-confirm ob-dialog';confirmDialog.setAttribute('aria-labelledby','edit-discard-title');
-    confirmDialog.innerHTML=`<h2 id="edit-discard-title">${esc(t('edit.discardTitle'))}</h2><p>${esc(t('edit.discardHint',{count:dirtyCount()}))}</p><div>${button('keep','edit.keepEditing')}${button('confirm','edit.discard','',true)}</div>`;
+    confirmDialog.innerHTML=`<h2 id="edit-discard-title">${esc(t('edit.discardTitle'))}</h2><p>${esc(t('edit.discardHint',{count:dirtyCount()}))}</p><div>${button('keep','edit.keepEditing','',false,true)}${button('confirm','edit.discard','',true,true)}</div>`;
     document.body.append(confirmDialog);
     const close = accepted => {confirmDialog.close();confirmDialog.remove();confirmDialog=null;if (accepted) next();else focus?.focus({preventScroll:true});};
     confirmDialog.addEventListener('cancel',event=>{event.preventDefault();close(false);});

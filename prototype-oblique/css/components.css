@@ -2,8 +2,9 @@
 
 :focus-visible { outline: none; box-shadow: var(--ob-focus-ring); }
 a:focus-visible { border-radius: var(--ob-radius-md); }
-/* Controls inside scroll containers use an inset ring so it is never clipped. */
-.ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible, .ob-menu-item:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
+/* Controls inside scroll containers, and focusable scroll regions themselves, use an inset ring so it is never clipped.
+   The forced-colors block at the end of main.css lists the same selectors with an inset outline. */
+.ob-main-nav-item:focus-visible, .ob-tab:focus-visible, .ob-tree-link:focus-visible, .ob-tree-toggle:focus-visible, .ob-table-sort:focus-visible, .ob-suggest-option:focus-visible, .ob-menu-item:focus-visible, .ob-rail-item:focus-visible, .ob-disclosure > summary:focus-visible, [role="tabpanel"]:focus-visible, .ob-table-wrap:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 
 /* Buttons */
 .ob-button {
@@ -34,6 +35,8 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 .ob-button--icon.ob-button--outlined { border-color: var(--ob-color-border-control); background: var(--ob-color-bg); }
 .ob-button--icon.ob-button--outlined:hover:not(:disabled) { background: var(--ob-color-surface); }
 .ob-button--pager { width: var(--ob-control-height); height: var(--ob-control-height); padding: 0; } /* follows the shared control height like the page-size select beside it */
+/* Labels that may wrap (dialog and popover actions, empty-state recovery, submit buttons with long translations) keep the control height as a minimum. */
+.ob-button--wrap, .ob-choice-popover-actions .ob-button, .ob-empty-action .ob-button { height: auto; min-height: var(--ob-control-height); max-width: 100%; padding-block: var(--ob-space-xs); white-space: normal; }
 .ob-language-select { min-width: var(--ob-language-select-min-width); }
 
 /* Badge / chip */
@@ -57,7 +60,6 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 .ob-disclosure > summary::-webkit-details-marker { display: none; }
 .ob-disclosure > summary::before { content: ''; flex: none; width: var(--ob-icon-size-xs); height: var(--ob-icon-size-xs); background: currentColor; mask: var(--ob-icon-chevron_down) center / contain no-repeat; }
 .ob-disclosure[open] > summary::before { transform: rotate(180deg); }
-.ob-disclosure > summary:focus-visible { box-shadow: var(--ob-focus-ring-inset); }
 
 /* Shared input/select foundation; search owns its icon clearances. */
 .ob-input, .ob-select {
@@ -104,7 +106,6 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 .ob-choice-popover-body { display: flex; flex-direction: column; gap: var(--ob-space-sm); min-height: 0; overflow: auto; overscroll-behavior: contain; padding: var(--ob-space-xs); }
 .ob-choice-popover-body > * { flex: none; }
 .ob-choice-popover-actions { display: flex; flex: none; flex-wrap: wrap; justify-content: flex-end; gap: var(--ob-space-sm); padding-top: var(--ob-space-default); }
-.ob-choice-popover-actions .ob-button { height: auto; min-height: var(--ob-control-height); white-space: normal; }
 
 /* Native checkboxes share spacing and touch sizing across filter groups. */
 .ob-check { display: flex; align-items: center; gap: var(--ob-space-sm); min-height: var(--ob-control-height); padding-block: var(--ob-space-xs); cursor: pointer; }
@@ -114,7 +115,7 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 /* Quiet icon actions inside inputs and notices, with one interaction state. */
 .ob-icon-button {
   display: inline-flex; align-items: center; justify-content: center; flex: none;
-  width: var(--ob-control-height-sm); height: var(--ob-control-height-sm); padding: 0;
+  width: var(--ob-control-height); height: var(--ob-control-height); padding: 0;
   border: 0; border-radius: var(--ob-radius-sm); background: transparent;
   color: var(--ob-color-text-secondary); cursor: pointer;
 }
@@ -135,7 +136,6 @@ a.ob-button:is(:hover, :focus, :active) { color: var(--ob-color-text); } /* link
 .ob-empty { padding: var(--ob-space-3xl) var(--ob-space-lg); text-align: center; color: var(--ob-color-text-secondary); border: var(--ob-border-width-xs) solid var(--ob-color-border-strong); overflow-wrap: anywhere; }
 .ob-empty-title { font-size: var(--ob-font-size-lg); font-weight: var(--ob-font-weight-bold); letter-spacing: 0; color: var(--ob-color-text); margin-bottom: var(--ob-space-sm); }
 .ob-empty-action { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--ob-space-sm); margin-top: var(--ob-space-md); }
-.ob-empty-action .ob-button { height: auto; min-height: var(--ob-control-height); max-width: 100%; padding-block: var(--ob-space-xs); white-space: normal; }
 .ob-empty--plain { padding: var(--ob-space-default); border: 0; }
 
 /* Shared loading status; the overlay leaves navigation usable during exports. */

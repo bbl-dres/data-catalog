@@ -1,0 +1,199 @@
+{
+  "z .ob-header": {
+    "z": "101",
+    "pos": "sticky"
+  },
+  "z .ob-tree-panel": {
+    "z": "10",
+    "pos": "sticky"
+  },
+  "z .ob-sidebar-resizer": {
+    "z": "10",
+    "pos": "absolute"
+  },
+  "z .ob-back-to-top": {
+    "z": "200",
+    "pos": "fixed"
+  },
+  "z .ob-toast-region": {
+    "z": "1400",
+    "pos": "fixed"
+  },
+  "z #loading": {
+    "z": "1005",
+    "pos": "fixed"
+  },
+  "z .ob-skip-link": {
+    "z": "1005",
+    "pos": "absolute"
+  },
+  "z .ob-detail-rows th": {
+    "z": "1",
+    "pos": "static"
+  },
+  "z .ob-header-search > button": {
+    "z": "1",
+    "pos": "relative"
+  },
+  "z .ob-sidebar-resizer::before": {
+    "z": "1",
+    "pos": "sticky",
+    "opacity": "1"
+  },
+  "z .ob-table-scroll::after": {
+    "z": "1",
+    "pos": "absolute",
+    "opacity": "0.685228"
+  },
+  "table-wrap focus ring": {
+    "el": "ob-table-wrap",
+    "shadow": "rgb(134, 85, 246) 0px 0px 0px 3px inset"
+  },
+  "z .ob-page-search": {
+    "z": "1",
+    "pos": "relative"
+  },
+  "z .ob-suggest": {
+    "z": "200",
+    "pos": "absolute"
+  },
+  "suggest offset": {
+    "gap": 4
+  },
+  "field-picker offset": {
+    "gap": 8,
+    "rightAlign": 0,
+    "width": 395,
+    "maxHeight": "552px"
+  },
+  "field-picker action buttons": [
+    {
+      "h": 32,
+      "pad": "0px",
+      "ws": "normal",
+      "cls": "ob-button"
+    },
+    {
+      "h": 32,
+      "pad": "0px",
+      "ws": "normal",
+      "cls": "ob-button"
+    }
+  ],
+  "empty action buttons": [
+    {
+      "h": 32,
+      "pad": "4px",
+      "ws": "normal",
+      "tag": "BUTTON"
+    }
+  ],
+  "tab strip": {
+    "list": {
+      "ox": "auto",
+      "sw": "none",
+      "display": "flex"
+    },
+    "frame": {
+      "flex": "1 1 0%",
+      "mb": "-1px",
+      "cls": "ob-tabs-frame ob-detail-tabs-frame"
+    },
+    "controls": "ob-detail-controls"
+  },
+  "graph lines": {
+    "sw": "1.5px",
+    "stroke": "rgb(130, 142, 154)"
+  },
+  "graph circles": [
+    [
+      ".ob-graph-hub-orbit",
+      "50%"
+    ],
+    [
+      ".ob-graph-bubble",
+      "50%"
+    ],
+    [
+      ".ob-avatar",
+      null
+    ]
+  ],
+  "collection frame": {
+    "flex": "1 1 0%",
+    "mb": "-1px",
+    "cls": "ob-tabs-frame ob-collection-tabs-frame",
+    "controls": "ob-collection-controls"
+  },
+  "export header caption": {
+    "w": "1px",
+    "h": "1px",
+    "pos": "absolute",
+    "clip": "inset(50%)",
+    "cls": ""
+  },
+  "export backdrop": "rgba(19, 27, 34, 0.42)",
+  "export popover offset": {
+    "gap": 4,
+    "leftAlign": -47.5,
+    "width": 380
+  },
+  "export popover actions": [
+    {
+      "h": 32,
+      "pad": "0px",
+      "ws": "normal"
+    },
+    {
+      "h": 32,
+      "pad": "0px",
+      "ws": "normal"
+    }
+  ],
+  "select menu offset": {
+    "gap": 4,
+    "leftAlign": 0,
+    "maxHeight": "884px",
+    "minWidth": "65.6875px"
+  },
+  "export popover short viewport": {
+    "triggerTop": 114.5625,
+    "triggerBottom": 146.5625,
+    "popTop": 8,
+    "popBottom": 412,
+    "popHeight": 404,
+    "inner": 420,
+    "above": false,
+    "overlapsTrigger": true
+  },
+  "download button 390px": {
+    "h": 44,
+    "minH": "44px",
+    "pad": "4px",
+    "ws": "normal",
+    "cls": "ob-button ob-button--primary"
+  },
+  "close export": "closed",
+  "mobile table scroll": {
+    "cls": "ob-table-scroll has-more-end",
+    "afterZ": "1",
+    "afterOpacity": "0.441321",
+    "afterW": "24px"
+  },
+  "z drawer": {
+    "z": "1006",
+    "pos": "fixed"
+  },
+  "z backdrop": {
+    "z": "1005",
+    "pos": "fixed"
+  },
+  "auth submit": {
+    "h": 32,
+    "minH": "32px",
+    "pad": "0px",
+    "ws": "normal",
+    "cls": "ob-button ob-button--primary ob-auth-submit",
+    "backdrop": "rgba(19, 27, 34, 0.5)"
+  }
+}

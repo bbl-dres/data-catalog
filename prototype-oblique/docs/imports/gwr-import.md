@@ -12,12 +12,14 @@ GWR is a source system under **Datentabellen → GWR** (`#/systems/gwr`). The se
 | Arbeiten | 10 | Projekt Management | Bauarbeiten |
 | Gebäude | 39 | Architektonische Sicht | Gebäude |
 | Wärmeerzeugungsanlage | 17 | Energie | Unmapped |
-| Gebäudeeingang | 9 | Architektonische Sicht | Unmapped |
+| Gebäudeeingang | 9 | Architektonische Sicht | Gebäudeeingang (added 15 September 2026) |
 | Wohnung | 24 | Mieter Management | Wohnung |
 | Strasse | 10 | Architektonische Sicht | Unmapped |
 | **Total** | **146** | | |
 
 The `GWR_*` technical names are local catalog aliases, not claimed physical database table names. The domain and business-object mappings are prototype decisions. No business objects are fabricated to fill the unmapped cases; the source domain remains available independently. Described entities without their own feature section, such as Erhebungsstelle and Strassenabschnitt, are not imported as empty invented schemas.
+
+On 15 September 2026, the [Gebäudeeingang content addition](gwr-entrance.md) creates a draft business profile with the nine documented entrance attributes plus EGID as the building reference. It links the existing table and its fields in the live database; the original import script and frozen JSON fixtures retain their historical mapping.
 
 Entity descriptions copy the exact definition paragraphs from **Beschreibung der Entitäten**, rather than summarising the field sections. For Arbeiten and Wärmeerzeugungsanlage, which lack a short boxed definition, the original explanatory paragraphs are used (both scope paragraphs for the latter). Whitespace is normalised and paragraph boundaries are retained; visible source spelling, including `jeg¬licher` in the building definition, is preserved. The table's Quelldokument link opens the exact definition anchor; `fieldsSourceUrl` separately identifies its feature section. The import validates unique paragraph matches so future source changes cannot silently select a different passage.
 

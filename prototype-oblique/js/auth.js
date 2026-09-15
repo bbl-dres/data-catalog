@@ -180,7 +180,7 @@
       <p id="auth-description" class="ob-auth-description">${esc(t(description))}</p>
       <form id="auth-form"><div class="ob-auth-fields">${adminRecovery ? '' : content}</div>
         <p id="auth-message" class="ob-auth-message" role="status" aria-live="polite" aria-atomic="true" hidden></p>
-        ${adminRecovery ? '' : `<button type="submit" class="ob-button ob-button--primary ob-auth-submit" data-label="${submit}">${esc(t(submit))}</button>`}
+        ${adminRecovery ? '' : `<button type="submit" class="ob-button ob-button--primary ob-button--wrap ob-auth-submit" data-label="${submit}">${esc(t(submit))}</button>`}
       </form>
       <div class="ob-auth-secondary">${mode === 'login' ? `<button type="button" class="ob-button ob-button--link" data-auth="reset">${esc(t('auth.forgotPassword'))}</button>` : mode === 'reset' ? `<button type="button" class="ob-button ob-button--link" data-auth="login">${esc(t('auth.backToLogin'))}</button>` : mode === 'account' ? `<button type="button" class="ob-button ob-button--link" data-auth="password">${esc(t('auth.changePassword'))}</button>` : ''}</div>${mode === 'account' ? tokenPanel() : ''}`;
     if (!dialog.open) dialog.showModal();

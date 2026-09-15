@@ -2,14 +2,13 @@
 .ob-export-open { overflow: hidden; }
 .ob-export-dialog { position: fixed; inset: var(--ob-visual-viewport-top) 0 auto; width: 100%; height: var(--ob-visual-viewport-height); max-width: none; max-height: none; margin: 0; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); border: 0; color: var(--ob-color-text); background: var(--ob-color-bg); overflow: auto; overscroll-behavior: contain; }
 .ob-export-dialog[open] { display: flex; flex-direction: column; }
-.ob-export-dialog::backdrop { background: var(--ob-color-backdrop); }
+.ob-export-dialog::backdrop { background: var(--ob-color-modal-backdrop); }
 .ob-export-dialog :is(input, select, button) { max-width: 100%; }
 /* The bands keep full-width dividers while their content centres within the catalog's 1600px bound, like .ob-footer-inner. */
 .ob-export-header, .ob-export-toolbar, .ob-export-filterbar { display: flex; flex: none; align-items: center; gap: var(--ob-space-md); padding: var(--ob-space-sm) max(var(--ob-export-inset), calc((100% - var(--ob-content-max-width)) / 2 + var(--ob-export-inset))); }
 .ob-export-header { justify-content: space-between; }
 .ob-export-header h2 { min-width: 0; overflow-wrap: anywhere; font-size: var(--ob-font-size-xl); }
 .ob-export-header-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ob-space-sm); min-width: 0; }
-.ob-export-header-actions > .ob-export-control > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 /* Both groups share one wrapping row; a wrapped end group starts flush left instead of hanging right. */
 .ob-export-toolbar { flex-wrap: wrap; justify-content: space-between; align-items: flex-start; padding-bottom: var(--ob-space-default); border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
 .ob-export-tools-panel { flex: none; min-height: 0; }
@@ -26,7 +25,7 @@
 .ob-export-layout .ob-button:last-child { border-start-end-radius: var(--ob-radius-sm); border-end-end-radius: var(--ob-radius-sm); }
 .ob-export-layout .ob-button + .ob-button { margin-inline-start: calc(-1 * var(--ob-border-width-xs)); }
 .ob-export-layout .ob-button[aria-pressed="true"] { background: var(--ob-color-action); color: var(--ob-color-text-inverse); }
-.ob-export-layout .ob-button:focus-visible { position: relative; z-index: 1; }
+.ob-export-layout .ob-button:focus-visible { position: relative; z-index: var(--ob-z-local); } /* the ring paints over the neighbouring segment's border */
 .ob-field-group { display: flex; flex-direction: column; gap: var(--ob-space-sm); margin: 0; padding: 0; border: 0; }
 .ob-export-preview-tools output { align-self: flex-end; line-height: var(--ob-control-height); min-width: var(--ob-space-2xl); text-align: center; font-variant-numeric: tabular-nums; }
 .ob-export-filterbar { flex-wrap: wrap; border-bottom: var(--ob-border-width-xs) solid var(--ob-color-border); }
@@ -88,7 +87,6 @@ button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
   .ob-export-header { flex-wrap: wrap; }
   .ob-export-header-actions { width: 100%; display: grid; grid-template-columns: auto auto minmax(0, 1fr); }
   .ob-export-header-actions .ob-button { padding-inline: var(--ob-space-sm); }
-  .ob-export-header-actions [data-diagram-action="download"] { height: auto; min-height: var(--ob-touch-target); padding-block: var(--ob-space-xs); white-space: normal; }
   .ob-export-toolbar { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ob-export-toolbar-start, .ob-export-toolbar-end { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: var(--ob-space-sm); }
   .ob-export-toolbar-start > .ob-export-toolbar-divider { border-inline-end: 0; padding-inline-end: 0; }
@@ -97,6 +95,6 @@ button.ob-export-chip:hover { border-color: var(--ob-color-border-strong); }
   .ob-export-preview-tools { grid-column: 1 / -1; }
   .ob-export-preview-tools > .ob-export-control { flex: 1; }
   .ob-export-filterbar > p { width: 100%; }
-  .ob-export-popover-actions .ob-button { flex: 1; white-space: normal; height: auto; min-height: var(--ob-touch-target); padding-block: var(--ob-space-xs); }
+  .ob-export-popover-actions .ob-button { flex: 1; } /* wrapping and the 44px minimum come from the shared popover actions */
 }
 @media print { .ob-export-dialog, .ob-pdf-render { display: none !important; } }

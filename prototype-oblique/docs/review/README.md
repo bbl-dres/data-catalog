@@ -4,6 +4,7 @@ Review records capture findings, fixes, validation and remaining limitations. Ke
 
 | Review | Scope |
 | --- | --- |
+| [15 September 2026 — Layering, tokens and shared styles](2026-09-15-design-token-review.md) | Design review of z-index, token coverage and duplicated styles: a documented layer map with `--ob-z-local` and `--ob-z-overlay-top`, 16 unused tokens and two duplicate aliases removed, one focus-ring list, shared wrapping-button, view-controls and tab-strip rules, one visually-hidden rule, and one popover anchoring helper replacing three implementations; before/after measurements and suite runs. |
 | [14 September 2026 — Snapshot load timeouts](2026-09-14-snapshot-performance.md) | Read-only investigation: confirmed database timeouts, 10.5 MB initial snapshot, history payload and sort spills, browser timings and measured optimization candidates. |
 | [14 September 2026 — RE-FX Gebäude Excel inventory](2026-09-14-refx-building-mmb.md) | 150 exact Excel names as Draft, 61 API working matches, 89 unresolved IDs, 55 archived old fields, and one table-level batch event. |
 | [14 September 2026 — RE-FX Building API fields](2026-09-14-refx-building-api.md) | 378 documented API fields in 26 groups, explicit source-conflict handling, audited import and legacy snapshot compatibility; unchanged table inventories and relations. |

@@ -1,0 +1,201 @@
+{
+  "source_file": "Merkmalskatalog.mhtml",
+  "source_sha256": "a731e2c6756c4eb7b255598add4339c96f0600b0a338625d3b018aa9f4111bc4",
+  "source_version": "5.0.0 (revised)",
+  "definition": "Gebäudeeingang: Zugang von aussen in ein Gebäude; der Eingang ist durch eine Gebäudeadresse identifiziert.",
+  "entity_paragraphs": [
+    "Der Gebäudeeingang wird im eidg. GWR wie folgt definiert:",
+    "Gebäudeeingang: Zugang von aussen in ein Gebäude; der Eingang ist durch eine Gebäudeadresse identifiziert.",
+    "Die Gebäudeadresse wird im eidg. GWR wie folgt definiert:",
+    "Gebäudeadresse: Adressierungsangaben nach Art. 26b der Verordnung vom 21. Mai 2008 über die geografischen Namen (GeoNV) und die Koordinaten des Gebäudeeingangs.",
+    "Die Gebäudeadresse dient als populärer Lageidentifikator eines Gebäudes und erlaubt u.a. das Zuordnen von natürlichen und juristischen Personen zu einzelnen Gebäuden.",
+    "Für jedes Gebäude besteht mindestens ein Gebäudeeingang. In der Regel besteht für ein Gebäude ein einziger postalisch bedienter Eingang, in Ausnahmefällen (z.B. Eckhäuser, Terrassenhäuser) kann ein Gebäude jedoch auch mehrere postalisch bediente Eingänge für einzelne Wohnungen bzw. Geschäfte, Büroräumlichkeiten u. dgl. aufweisen.",
+    "Nicht als Gebäudeeingang im Sinne des eidg. GWR gelten zusätzliche Kellereingänge, Garageneingängen, Noteingänge u. dgl.",
+    "Gemäss der Verordnung über die geografischen Namen muss jedes Gebäude mindestens anhand einer Adresse identifizierbar sein. Wohn- und Geschäftsgebäude sollten vorzugsweise beim Gebäudeeingang mit einem entsprechenden Nummernschild versehen sein. Diese Information ist bei Notfällen oder für die Postzustellung und für Lieferungen wichtig. Anhand der Koordinaten können die Gebäudeadressen auf einer Karte dargestellt und von Ortungssystemen erkannt werden.",
+    "Die Gebäudeadresse bezieht sich immer auf einen Gebäudeeingang. Wird einem Gebäude¬eingang aus administrativen Gründen eine neue Adresse zugeteilt (z.B. wegen Einführung einer strassenweisen Hausnummerierung), bleibt der Identifikator des Gebäudeeingangs unverändert und die Angaben zur Adresse ändern."
+  ],
+  "definition_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#beschreibung-der-entitaet-gebaeudeeingang",
+  "fields_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#section22",
+  "fields": [
+    {
+      "code": "EDID",
+      "label": "Eidgenössischer Eingangsidentifikator",
+      "description": "Identifikationsnummer des Gebäudeeingangs im eidg. GWR.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Der EGID + EDID bilden in Kombination eine gesamtschweizerisch eindeutige Identifikationsnummer für alle Gebäudeeingänge. Der EDID wird in Abhängigkeit des Gebäudes pro Gebäudeeingang vergeben und bleibt bei allen Veränderungen wie Neuadressierungen, Umbauten usw. unverändert. Lebenszyklus Mutationsereignis Neue ID im Register eingefügt Erfassung eines neuen Gebäudes Weiteren Gebäudeeingang hinzufügen Aus dem Register entfernt Fehlerfassung des Gebäudeingangs Fehlerfassung eines Gebäudes",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. c VGWR Art. 26b Abs. 1 Bst. b GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Ganzzahl), 2 Stellen (immer in Kombination mit dem EGID)",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Eidgenössischer Eingangsidentifikator 0-90 Nein",
+        "Meldepflicht": "Die Angabe ist für alle Gebäude obligatorisch. EO7239",
+        "Datenquellen": "Vergabe durch das BFS oder durch ein anerkanntes GWR",
+        "Qualitätsanforderungen": "Die Kombination EGID + EDID ist für die ganze Schweiz eindeutig. EQ1511"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#EDID"
+    },
+    {
+      "code": "EGAID",
+      "label": "Eidgenössischer Gebäudeadressidentifikator",
+      "description": "Identifikationsnummer der Gebäudeadresse.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Es handelt sich um eine für die ganze Schweiz und für jede Gebäudeadresse eindeutige Identifikationsnummer.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. a GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Ganzzahl), 9 Stellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Eidgenössischer Gebäudeadressidentifikator 100'000'000-900'000'000 Nein",
+        "Meldepflicht": "Die Angabe ist für alle Gebäudeadressen obligatorisch. EO4280",
+        "Datenquellen": "Er wird vom GWR gemäss der Vereinbarung mit dem Bundesamt für Landestopografie vergeben.",
+        "Qualitätsanforderungen": "Der Identifikator ist für die ganze Schweiz eindeutig. EQ1090"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#EGAID"
+    },
+    {
+      "code": "DEINR",
+      "label": "Eingangsnummer Gebäude",
+      "description": "Hausnummer als Teil der Gebäudeadresse.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Zusammen mit der Strassenbezeichnung bildet die Hausnummer die Gebäudeadresse im engeren Sinne. Meist handelt es sich um eine so genannte Polizeinummer, welche von der Gemeinde strassenweise vergeben wird (z.B. rechte Strassenseite mit geraden Nummern, linke Strassenseite mit ungeraden Nummern). In gewissen Gemeinden wird z.Z. noch die Versicherungsnummer als Hausnummer verwendet (gemeindeweise Hausnummerierung). In der Hausnummer kommen gelegentlich auch so genannte Suffixe (8a, 8b usw.) vor.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. c GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Alphanumerisch, 12 Stellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Eingangsnummer Gebäude Gemäss Codierung Ja",
+        "Meldepflicht": "Fakultativ",
+        "Datenquellen": "zuständige Stelle der Gemeinde amtliche Vermessung",
+        "Qualitätsanforderungen": "Eingänge von bestehenden Gebäuden (GSTAT 1004), deren Strassenbezeichnung (STRNAME) und Eingangsnummer, auch wenn diese leer ist, mehrmals innerhalb der gleichen 6-stelligen Postleitzahl (DPLZ4+DPLZZ) vorkommen, einschliesslich provisorische Unterkünfte und Sonderbauten (GKAT 1010-1080), sind nicht zulässig. EQ1968 Eingangsnummern, die Sonderzeichen enthalten, sind nicht zulässig. EQ4442 EQ7980 Eingangsnummern, die nicht mit einer Zahl oder einem Buchstaben beginnen, sind nicht zulässig. EQ4903 EQ1848 Eingangsnummern mit mehr als einem Punkt sind nicht zulässig. EQ9669 EQ6996 Eingangsnummern, die nach dem Punkt nicht nur Ziffern haben, sind nicht zulässig. EQ3388 EQ0110 Eingangsnummern mit mehr als einem Buchstaben am Anfang sind nicht zulässig. EQ3003 EQ6889 Eingangsnummern mit mehr als einem Block aus Zahlen oder Buchstaben sind nicht zulässig. EQ4442 EQ5776 Eingangsnummern mit mehr als drei Buchstaben sind für Neubauten nicht zulässig. EQ1315 EQ7515"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DEINR"
+    },
+    {
+      "code": "DKODE",
+      "label": "E-Eingangskoordinate",
+      "description": "Lokalisierung des Gebäudeeingangs mittels Landeskoordinatennetz (LV95).",
+      "metadata": {
+        "Detaillierte Beschreibung": "Die Koordinate E (East) entspricht der östlichen Komponente des geografischen Referenzpunkts des Gebäudeeingangs. Sie wird zusammen mit der Koordinate N (DKODN) gemäss dem Referenzsystem LV95 erfasst. Die Koordinaten E und N entsprechen der Lage des Gebäudeeingangs, die durch die amtliche Vermessung ermittelt wurde.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. h GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Positiv reell), 10 Stellen, 3 Dezimalstellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig E-Eingangskoordinate 2'480'000.000 - 2'840'000.999 Ja",
+        "Meldepflicht": "Fakultativ. Die Koordinaten des Eingangs sind entweder leer oder beide sind ausgefüllt . EO4582",
+        "Datenquellen": "Einzige Datenquelle: amtliche Vermessung",
+        "Qualitätsanforderungen": "Die Eingangskoordinaten befinden sich innerhalb der Grundrissfläche. EQ5941"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DKODE"
+    },
+    {
+      "code": "DKODN",
+      "label": "N-Eingangskoordinate",
+      "description": "Lokalisierung des Gebäudeeingangs mittels Landeskoordinatennetz (LV95).",
+      "metadata": {
+        "Detaillierte Beschreibung": "Die Koordinate N (North) entspricht der Nordkomponente des geografischen Referenzpunkts des Gebäudeeingangs. Sie wird zusammen mit der Koordinate E (DKODE) gemäss dem Referenzsystem LV95 gespeichert. Die Koordinaten E und N entsprechen der Lage des Gebäudeeingangs, die durch die amtliche Vermessung ermittelt wurde.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. h GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Positiv reell), 10 Stellen, 3 Dezimalstellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig N-Eingangskoordinate 1'070'000.000 - 1'300'000.999 Ja",
+        "Meldepflicht": "Fakultativ. Die Koordinaten des Eingangs sind entweder leer oder beide sind ausgefüllt . EO4582",
+        "Datenquellen": "Einzige Datenquelle: amtliche Vermessung",
+        "Qualitätsanforderungen": "Die Eingangskoordinaten befinden sich innerhalb der Grundrissfläche. EQ5941"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DKODN"
+    },
+    {
+      "code": "DOFFADR",
+      "label": "Offizielle Adresse",
+      "description": "Gibt an, ob die Adresse offiziell ist.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Gibt an, ob die Adresse von der Gemeinde validiert wurde. Alle Adressen sind Teil des Amtliches Verzeichnis der Gebäudeadressen nach Art. 26c der Verordnung über die geografischen Namen.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. i GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Nein",
+        "Codierung": "Numerisch (Ganzzahl), 1 Stelle, 1=ja, 0=nein",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Offizielle Adresse Gemäss Codierung Nein",
+        "Meldepflicht": "Die Angabe ist für alle Gebäudeeingänge obligatorisch. EO2117",
+        "Datenquellen": "Angaben der kommunalen Baubehörde",
+        "Qualitätsanforderungen": "Für nicht abgebrochene und nicht nicht realisierte Gebäude (GSTAT <> 1007, 1008) kann die Adresse nur offiziell deklariert werden, wenn die dazugehörige Strasse ebenfalls offiziell deklariert ist (STROFFIZIEL \"Ja\"). EQ3561"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DOFFADR"
+    },
+    {
+      "code": "DPLZ4",
+      "label": "Postleitzahl",
+      "description": "Die Kombination von DPLZ4 + DPLZZ ergibt eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Die Postleitzahl ist ein numerischer Wert mit 4 Stellen, der dem offiziellen PLZ-Verzeichnis der Schweizerischen Post entnommen wird. Die Kombination von DPLZ4 + DPLZZ weist der Gebäudeadresse eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis. Das Bundesamt für Landestopografie swisstopo erstellt, führt und veröffentlicht das Amtliche Ortschaftenverzeichnis, das die Postleitzahlen mit den dazugehörigen geografischen Perimetern übernimmt.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. f GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Ganzzahl), 4 Stellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig DPLZ4 1000 - 9699 Nein",
+        "Meldepflicht": "Die Angabe ist für alle Gebäudeeingänge obligatorisch. EO0816",
+        "Datenquellen": "Publizierte Adressdaten der Schweizerischen Post. Perimeter im Amtlichen Ortschaftenverzeichnis, der durch das Bundesamt für Landestopografie swisstopo wird.",
+        "Qualitätsanforderungen": "Alle Angaben sind gemäss den technischen Spezifikationen gültig. Nur Postleitzahlen, die einen geografischen Ort in der Schweiz bezeichnen, sind zulässig. Die Postleitzahl (DPLZ4 und DPLZ4 + DPLZZ) verweist auf eine aktuell gültige Postleitzahl im offiziellen PLZ-Verzeichnis der Schweizerischen Post. EQ4843"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DPLZ4"
+    },
+    {
+      "code": "DPLZZ",
+      "label": "Postleitzahl-Zusatzziffer",
+      "description": "Die Kombination von DPLZ4 + DPLZZ ergibt eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Die Postleitzahl-Zusatzziffer ist ein numerischer Wert mit 2 Stellen, der dem offiziellen PLZ-Verzeichnis der Schweizerischen Post entnommen wird. Die Kombination von DPLZ4 + DPLZZ weist der Gebäudeadresse eine gültige Ortschaft gemäss dem amtlichen Ortschaftenverzeichnis. Das Bundesamt für Landestopografie swisstopo erstellt, führt und veröffentlicht das Amtliche Ortschaftenverzeichnis, das die Postleitzahlen mit den dazugehörigen geografischen Perimetern übernimmt. Die PLZ-Zusatzziffer ist notwendig, da nicht alle Ortschaften anhand der PLZ4 eindeutig bestimmt sind. Ortschaften, die nicht mit einer 6-stelligen PLZ im PLZ-Verzeichnis geführt werden, können auch im GWR nicht erfasst werden.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. f GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a; und 26b; GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Numerisch (Ganzzahl), 2 Stellen",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig DPLZZ 00 - 99 Nein",
+        "Meldepflicht": "Die Angabe ist für alle Gebäudeeingänge obligatorisch. EO6282",
+        "Datenquellen": "Publizierte Adressdaten der Schweizerischen Post. Perimeter im Amtlichen Ortschaftenverzeichnis, der durch das Bundesamt für Landestopografie swisstopo wird.",
+        "Qualitätsanforderungen": "Alle Angaben sind gemäss den technischen Spezifikationen gültig. Nur Postleitzahlen, die einen geografischen Ort in der Schweiz bezeichnen, sind zulässig. Die Postleitzahl (DPLZ4 und DPLZ4 + DPLZZ) verweist auf eine aktuell gültige Postleitzahl im offiziellen PLZ-Verzeichnis der Schweizerischen Post. EQ4843"
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DPLZZ"
+    },
+    {
+      "code": "DPLZNAME",
+      "label": "Ortschaftsname",
+      "description": "Name der Ortschaft gemäss der Kombination DPLZ4 + DPLZZ aus dem amtlichen Ortschaftenverzeichnis.",
+      "metadata": {
+        "Detaillierte Beschreibung": "Der vollständige amtliche Ortschaftsname ist Bestandteil des Amtlichen Ortschaftenverzeichnis . Er wird immer in Zusammenhang mit einer DPLZ4 und einer DPLZZ zur Verfügung gestellt. Nur Ortschaftsnamen mit einer zugeordneten Flächengeometrie werden im Ortschaftenverzeichnis geführt.",
+        "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. f VGWR Art. 26b Abs. 1 Bst. f GeoNV",
+        "Informationen gemäss der VGWR": "Adressierungsangaben nach Artikel 26a und 26b GeoNV",
+        "Zugriff auf die Daten": "A",
+        "Stammdaten": "Ja",
+        "Codierung": "Alphanumerisch, 40 Stellen, gemäss Amtlichem Ortschaftenverzeichnis",
+        "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Ortschaftsname Gemäss Amtlichem Ortschaftenverzeichnis Nein",
+        "Meldepflicht": "Obligatorisch",
+        "Datenquellen": "Amtliches Ortschaftenverzeichnis",
+        "Qualitätsanforderungen": "Der Ortschaftsname ist im Amtlichem Ortschaftenverzeichnis enthalten. Nur Namen mit dazugehöriger Postleitzahl (DPLZ4 und DPLZZ) sind gültig. Nur Namen, die einen geografischen Ort in der Schweiz bezeichnen, sind zulässig."
+      },
+      "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#DPLZNAME"
+    }
+  ],
+  "building_reference": {
+    "code": "EGID",
+    "label": "Eidgenössischer Gebäudeidentifikator",
+    "description": "Gebäudeidentifikationsnummer im eidg. GWR.",
+    "metadata": {
+      "Detaillierte Beschreibung": "Der EGID ist eine gesamtschweizerisch eindeutige Identifikationsnummer für alle Gebäude. Er wird pro Gebäude unabhängig der Gemeindezugehörigkeit vergeben und bleibt bei allen Veränderungen wie Gemeindefusionen, Eigentümerwechseln, Umbauten usw. unverändert. Lebenszyklus Mutationsereignis Neue ID im Register eingefügt Erfassung eines neuen Gebäudes Status \"Nicht realisiert\" Ein neues Gebäude, bei welchem das Baugesuch entweder nicht realisiert, zurückgezogen oder abgelehnt wurde. Status \"Abgebrochen\" Das Gebäude wurde entweder abgebrochen oder durch äussere Einflüsse zerstört. Aus dem Register entfernt Fehlerfassung eines Gebäudes Der EGID ist einmalig, d.h. bei Abbruch oder Nichtrealisierung eines Gebäudes bleibt das Gebäude im Datenbestand des eidg. GWR gespeichert. Auch wenn am gleichen Standort ein Neubau entsteht, erhält das neu erstellte Gebäude einen neuen EGID, unabhängig davon, ob der Neubau die gleiche Adresse trägt wie das abgebrochene resp. nicht realisierte Gebäude. Wenn ein Gebäude durch einen Brand, Naturgefahren (Hangrutsch, Unwetter, Erdbeben, Überschwemmung usw.) oder allgemein durch ein Ereignis höherer Gewalt komplett zerstört und anschliessend wieder errichtet wird, dann wird ein neuer EGID vergeben. Ist das Gebäude infolge eines solchen Ereignisses nur beschädigt, aber nicht mehr nutzbar, wurde es als gesundheitsgefährdend deklariert oder sind nur noch Trümmer übrig, bleibt es aktiv und erhält den Status eines nicht nutzbaren Gebäudes (GSTAT 1005).",
+      "Rechtliche Grundlage": "Art. 8 Abs. 2 Bst. a VGWR Art. 26 Abs. 1 Bst. b GeoNV",
+      "Informationen gemäss der VGWR": "Gebäudeidentifikator des BFS (EGID)",
+      "Zugriff auf die Daten": "A",
+      "Stammdaten": "Ja",
+      "Codierung": "Numerisch (Ganzzahl), 9 Stellen",
+      "Technische Spezifikationen": "Merkmal Zulässige Werte Leere Werte zulässig Eidgenössischer Gebäudeidentifikator 1-900'000'000 Nein",
+      "Meldepflicht": "Die Angabe ist für alle Gebäude obligatorisch. BO1590",
+      "Datenquellen": "Vergabe durch das BFS oder durch ein anerkanntes GWR.",
+      "Qualitätsanforderungen": "Der Identifikator ist für die ganze Schweiz eindeutig. BQ4558"
+    },
+    "source_url": "https://www.housing-stat.ch/catalog/de/5.0/revised#EGID"
+  }
+}

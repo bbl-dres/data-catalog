@@ -275,7 +275,7 @@
   views.collectionControls = function (ctx) {
     const modes = ctx.isDomain ? DK.detail.tabs(ctx.entity) : [['tiles', t('toolbar.tiles')], ['table', t('toolbar.table')]];
     const tabs = modes.map(([id, label]) => `<button type="button" role="tab" id="view-tab-${id}" class="ob-tab ob-view-tab" aria-selected="${ctx.mode === id}" aria-controls="collection-view-panel" tabindex="${ctx.mode === id ? '0' : '-1'}" data-action="set-view" data-view="${id}">${esc(label)}</button>`).join('');
-    return `<div class="ob-collection-controls">
+    return `<div class="ob-view-controls ob-collection-controls">
       <div class="ob-tabs-frame ob-collection-tabs-frame"><div class="ob-tabs" role="tablist" aria-label="${esc(t('toolbar.view'))}">${tabs}</div></div>
       ${ctx.mode === 'overview' ? '' : `<div class="ob-local-actions">
         ${ui.collectionSearch(ctx.filter, 'collection-view-panel')}<div class="ob-local-menus">${DK.fieldPicker.button(ctx.kind)}${views.groupMenu(ctx)}</div>

@@ -8,7 +8,7 @@
 .ob-auth-field > span { font-weight: var(--ob-font-weight-semibold); }
 .ob-auth-field .ob-input { width: 100%; }
 .ob-auth-email { overflow-wrap: anywhere; font-weight: var(--ob-font-weight-semibold); }
-.ob-auth-submit { margin-top: var(--ob-space-lg); width: 100%; white-space: normal; height: auto; min-height: var(--ob-control-height); }
+.ob-auth-submit { margin-top: var(--ob-space-lg); width: 100%; }
 .ob-auth-message { margin-top: var(--ob-space-default); padding: var(--ob-space-md); border-left: var(--ob-border-width-lg) solid var(--ob-color-success); background: var(--ob-color-success-bg); overflow-wrap: anywhere; }
 .ob-auth-message.is-error { border-color: var(--ob-color-error); background: var(--ob-color-error-bg); }
 .ob-auth-secondary { margin-top: var(--ob-space-sm); }

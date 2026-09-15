@@ -249,6 +249,30 @@
     return `<tr role="row"${href ? ` class="is-clickable" data-href="${ui.esc(href)}"` : ''}>${tds}</tr>`;
   };
 
+  /** Visible viewport in client coordinates. It follows the software keyboard, not browser pinch zoom (app.js keeps native dialog geometry there). */
+  ui.viewportBox = function () {
+    const viewport = window.visualViewport, follow = viewport && viewport.scale === 1;
+    const top = follow ? viewport.offsetTop : 0, height = follow ? viewport.height : innerHeight;
+    return { top, height, bottom: top + height, width: innerWidth };
+  };
+
+  /** Anchors a fixed floating surface to its trigger: --ob-menu-offset below it, or above when only the top has room; start- or
+      end-aligned; --ob-space-sm inside the visible viewport. While the larger side offers at least half the visible height, the
+      surface is capped to it (and to maxHeight) and scrolls instead of covering its trigger; on shorter viewports it takes the
+      whole visible height. Callers own the surface's size, focus and lifecycle. */
+  ui.anchorPopover = function (node, trigger, { align = 'start', maxHeight = Infinity } = {}) {
+    const bounds = trigger.getBoundingClientRect(), view = ui.viewportBox();
+    const style = getComputedStyle(document.documentElement);
+    const inset = parseFloat(style.getPropertyValue('--ob-space-sm')), offset = parseFloat(style.getPropertyValue('--ob-menu-offset'));
+    const below = view.bottom - bounds.bottom - offset - inset, above = bounds.top - view.top - offset - inset, side = Math.max(above, below);
+    const limit = Math.max(0, Math.min(maxHeight, view.height - 2 * inset));
+    node.style.maxHeight = Math.min(limit, side >= view.height / 2 ? side : limit) + 'px';
+    const start = align === 'end' ? bounds.right - node.offsetWidth : bounds.left;
+    node.style.left = Math.max(inset, Math.min(start, view.width - node.offsetWidth - inset)) + 'px';
+    const top = node.offsetHeight <= below ? bounds.bottom + offset : bounds.top - node.offsetHeight - offset;
+    node.style.top = Math.max(view.top + inset, Math.min(top, view.bottom - node.offsetHeight - inset)) + 'px';
+  };
+
   /** Transient status message (bottom right). tone: info|success|warning */
   ui.toast = function (message, tone) {
     const region = document.getElementById('toasts');

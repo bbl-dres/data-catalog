@@ -3,18 +3,18 @@
   'use strict';
   const { ui, diagram } = DK, esc = ui.esc;
   const controls = {};
-  controls.compact = () => innerWidth <= 960 || (window.visualViewport?.scale === 1 ? visualViewport.height : innerHeight) <= 500;
-  controls.button = (action, label, icon, extra = '', variant = '') => `<button type="button" class="ob-button${icon ? ' ob-button--icon' : ''}${variant ? ' ob-button--' + esc(variant) : ''}" data-diagram-action="${action}"${icon ? ` aria-label="${esc(label)}" title="${esc(label)}"` : ''} ${extra}>${icon ? ui.icon(icon, 'lg') : esc(label)}</button>`;
+  controls.compact = () => innerWidth <= 960 || ui.viewportBox().height <= 500;
+  controls.button = (action, label, icon, extra = '', variants = '') => `<button type="button" class="ob-button${icon ? ' ob-button--icon' : ''}${variants.split(' ').filter(Boolean).map(variant => ' ob-button--' + esc(variant)).join('')}" data-diagram-action="${action}"${icon ? ` aria-label="${esc(label)}" title="${esc(label)}"` : ''} ${extra}>${icon ? ui.icon(icon, 'lg') : esc(label)}</button>`;
   controls.field = (caption, content) => `<label class="ob-form-field ob-export-control"><span>${esc(caption)}</span>${content}</label>`;
-  controls.choice = (caption, content, icon = '') => `<div class="ob-form-field ob-export-control"><span>${esc(caption)}</span><div class="ob-select-menu" data-select-label="${esc(caption)}" data-select-icon="${esc(icon)}">${content}</div></div>`;
+  controls.choice = (caption, content, icon = '', captionClass = '') => `<div class="ob-form-field ob-export-control"><span${captionClass ? ` class="${esc(captionClass)}"` : ''}>${esc(caption)}</span><div class="ob-select-menu" data-select-label="${esc(caption)}" data-select-icon="${esc(icon)}">${content}</div></div>`;
   controls.select = (name, caption, entries, value, icon) => controls.choice(caption, `<select class="ob-select" data-diagram-setting="${name}">${entries.map(([key, title]) => `<option value="${esc(key)}"${String(key) === String(value) ? ' selected' : ''}>${esc(title)}</option>`).join('')}</select>`, icon);
   controls.menu = (action, label, icon, extra = '') => `<button type="button" class="ob-button ob-button--menu" data-diagram-action="${action}" aria-haspopup="dialog" aria-expanded="false" ${extra}>${ui.buttonContent(label, { icon, menu: true })}</button>`;
   const tFor = session => (key, params) => diagram.t(session.snapshot, key, params);
   controls.shell = session => {
     const t = tFor(session), { settings } = session, button = controls.button, select = controls.select;
     return `<header class="ob-export-header"><h2 id="diagram-export-title">${esc(t('toolbar.export.diagram'))}</h2><div class="ob-export-header-actions">
-      ${controls.choice(t('header.language'), `<select class="ob-select ob-language-select" id="diagram-language">${Object.keys(session.catalogs).map(lang => `<option value="${lang}"${lang === session.language ? ' selected' : ''}>${lang.toUpperCase()}</option>`).join('')}</select>`)}
-      ${button('close', t('diagram.cancel'))}${button('download', t('diagram.download'), null, '', 'primary')}
+      ${controls.choice(t('header.language'), `<select class="ob-select ob-language-select" id="diagram-language">${Object.keys(session.catalogs).map(lang => `<option value="${lang}"${lang === session.language ? ' selected' : ''}>${lang.toUpperCase()}</option>`).join('')}</select>`, '', 'ob-sr-only')}
+      ${button('close', t('diagram.cancel'))}${button('download', t('diagram.download'), null, '', 'primary wrap')}
       </div></header>
       <details class="ob-disclosure ob-export-tools-panel"${controls.compact() ? '' : ' open'}><summary>${esc(t('toolbar.view'))}</summary><div class="ob-export-toolbar"><div class="ob-export-toolbar-start">
         <div class="ob-form-field ob-export-control ob-export-document-control"><span>${esc(t('print.document'))}</span>${controls.menu('document', settings.title, '', 'id="diagram-document-button"')}</div>

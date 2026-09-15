@@ -29,15 +29,8 @@
     };
     const position = () => {
       if (!trigger.isConnected) { close(); return; }
-      const box = trigger.getBoundingClientRect(), styles = getComputedStyle(document.documentElement);
-      const inset = parseFloat(styles.getPropertyValue('--ob-space-sm'));
-      const viewport = window.visualViewport, top = viewport?.scale === 1 ? viewport.offsetTop : 0;
-      const bottom = top + (viewport?.scale === 1 ? viewport.height : innerHeight);
-      const below = bottom - box.bottom - inset * 2, above = box.top - top - inset * 2;
-      node.style.maxHeight = Math.min(parseFloat(styles.getPropertyValue('--ob-field-picker-max-height')), Math.max(above, below), bottom - top - inset * 2) + 'px';
-      node.style.left = Math.max(inset, Math.min(box.right - node.offsetWidth, innerWidth - node.offsetWidth - inset)) + 'px';
-      const preferredTop = node.offsetHeight <= below ? box.bottom + inset : box.top - node.offsetHeight - inset;
-      node.style.top = Math.max(top + inset, Math.min(preferredTop, bottom - node.offsetHeight - inset)) + 'px';
+      const maxHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ob-field-picker-max-height'));
+      ui.anchorPopover(node, trigger, { align: 'end', maxHeight }); // the trigger ends the local actions row
     };
     listen(node, 'click', event => {
       event.stopPropagation();
