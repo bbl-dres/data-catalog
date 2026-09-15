@@ -68,14 +68,14 @@
     ],
     "video": {
       "title": "Wie der BBL-Datenkatalog funktioniert",
-      "src": "assets/bbl-datenkatalog-v2.mp4",
-      "poster": "assets/bbl-datenkatalog-v2-poster.jpg",
+      "src": "assets/bbl-datenkatalog-landscape.mp4",
+      "poster": "assets/bbl-datenkatalog-landscape-poster.jpg",
       "subtitles": {
-        "src": "assets/bbl-datenkatalog-v2.de.vtt",
+        "src": "assets/bbl-datenkatalog-landscape.de.vtt",
         "language": "de",
         "label": "Deutsch"
       },
-      "caption": "Wie der BBL-Datenkatalog funktioniert · 1:22 Min. · Deutsch, mit zuschaltbaren Untertiteln.",
+      "caption": "Wie der BBL-Datenkatalog funktioniert · 1:16 Min. · Deutsch, mit zuschaltbaren Untertiteln.",
       "fallbackLabel": "Video als MP4 öffnen"
     }
   },
