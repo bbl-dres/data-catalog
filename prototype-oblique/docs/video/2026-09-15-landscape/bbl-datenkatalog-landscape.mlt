@@ -1,0 +1,560 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mlt producer="tractor" version="7.38.0" LC_NUMERIC="C">
+  <profile description="HD 1080p30" width="1920" height="1080" frame_rate_num="30" frame_rate_den="1" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="16" display_aspect_den="9" colorspace="709" />
+  <producer id="black" in="0" out="2279">
+    <property name="resource">#ffffff</property>
+    <property name="mlt_service">color</property>
+    <property name="eof">pause</property>
+  </producer>
+  <playlist id="background">
+    <entry producer="black" in="0" out="2279" />
+  </playlist>
+  <producer id="chapter-00" in="0" out="218">
+    <property name="resource">graphics/chapter-00.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">219</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-00</property>
+  </producer>
+  <producer id="chapter-01" in="0" out="194">
+    <property name="resource">graphics/chapter-01.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">195</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-01</property>
+  </producer>
+  <producer id="chapter-02" in="0" out="122">
+    <property name="resource">graphics/chapter-02.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">123</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-02</property>
+  </producer>
+  <producer id="chapter-03" in="0" out="179">
+    <property name="resource">graphics/chapter-03.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">180</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-03</property>
+  </producer>
+  <producer id="chapter-04" in="0" out="215">
+    <property name="resource">graphics/chapter-04.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">216</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-04</property>
+  </producer>
+  <producer id="chapter-05" in="0" out="251">
+    <property name="resource">graphics/chapter-05.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">252</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-05</property>
+  </producer>
+  <producer id="chapter-06" in="0" out="251">
+    <property name="resource">graphics/chapter-06.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">252</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-06</property>
+  </producer>
+  <producer id="chapter-07" in="0" out="314">
+    <property name="resource">graphics/chapter-07.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">315</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-07</property>
+  </producer>
+  <producer id="chapter-08" in="0" out="194">
+    <property name="resource">graphics/chapter-08.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">195</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-08</property>
+  </producer>
+  <producer id="chapter-09" in="0" out="182">
+    <property name="resource">graphics/chapter-09.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">183</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">chapter-09</property>
+  </producer>
+  <producer id="endcard" in="0" out="149">
+    <property name="resource">graphics/endcard.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">150</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">endcard</property>
+  </producer>
+  <producer id="opening" in="0" out="218">
+    <property name="resource">graphics/opening.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">219</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">opening</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="silos" in="0" out="194">
+    <property name="resource">graphics/silos.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">195</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">silos</property>
+    <filter in="0" out="194">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;194=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="building" in="0" out="122">
+    <property name="resource">graphics/building.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">123</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">building</property>
+    <filter in="0" out="122">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;122=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="meaning" in="0" out="179">
+    <property name="resource">graphics/meaning.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">180</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">meaning</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="properties" in="0" out="215">
+    <property name="resource">graphics/properties.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">216</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">properties</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="perspectives" in="0" out="251">
+    <property name="resource">graphics/perspectives.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">252</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">perspectives</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="bridge" in="0" out="251">
+    <property name="resource">graphics/bridge.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">252</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">bridge</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="values" in="0" out="314">
+    <property name="resource">graphics/values.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">315</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">values</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="metadata" in="0" out="194">
+    <property name="resource">graphics/metadata.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">195</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">metadata</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="search" in="0" out="182">
+    <property name="resource">graphics/search.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">183</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">search</property>
+    <filter in="0" out="182">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;182=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="opening-links" in="0" out="104">
+    <property name="resource">graphics/opening-links.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">105</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">opening-links</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="question" in="0" out="68">
+    <property name="resource">graphics/question.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">69</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">question</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="storage" in="0" out="77">
+    <property name="resource">graphics/storage.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">78</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">storage</property>
+    <filter in="0" out="77">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;77=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="business-object" in="0" out="107">
+    <property name="resource">graphics/business-object.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">108</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">business-object</property>
+    <filter in="0" out="107">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;107=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="perspective-lines" in="0" out="146">
+    <property name="resource">graphics/perspective-lines.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">147</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">perspective-lines</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="bridge-lines" in="0" out="191">
+    <property name="resource">graphics/bridge-lines.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">192</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">bridge-lines</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="same-code" in="0" out="137">
+    <property name="resource">graphics/same-code.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">138</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">same-code</property>
+    <filter in="0" out="137">
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.rect">0=0 16 1920 1080 1;12~=0 0 1920 1080 1;137=0 0 1920 1080 1</property>
+      <property name="transition.distort">1</property>
+      <property name="transition.fill">1</property>
+    </filter>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <producer id="data-stays" in="0" out="116">
+    <property name="resource">graphics/data-stays.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">117</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">data-stays</property>
+    <filter in="0" out="9">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;9=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">10</property>
+    </filter>
+  </producer>
+  <chain id="narration" in="0" out="2279">
+    <property name="resource">../../../assets/Wie_der_BBL-Datenkatalog_funktioniert.mp4</property>
+    <property name="mlt_service">avformat</property>
+    <property name="video_index">-1</property>
+    <property name="audio_index">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">NotebookLM · Originalton</property>
+  </chain>
+  <playlist id="main_bin">
+    <property name="xml_retain">1</property>
+  </playlist>
+  <playlist id="audio">
+    <property name="shotcut:name">A1 · NotebookLM Originalton</property>
+    <property name="shotcut:audio">1</property>
+    <entry producer="narration" in="0" out="2279" />
+  </playlist>
+  <playlist id="v0">
+    <property name="shotcut:name">V1 · Hintergrund und Kapitel</property>
+    <property name="shotcut:video">1</property>
+    <entry producer="chapter-00" in="0" out="218" />
+    <entry producer="chapter-01" in="0" out="194" />
+    <entry producer="chapter-02" in="0" out="122" />
+    <entry producer="chapter-03" in="0" out="179" />
+    <entry producer="chapter-04" in="0" out="215" />
+    <entry producer="chapter-05" in="0" out="251" />
+    <entry producer="chapter-06" in="0" out="251" />
+    <entry producer="chapter-07" in="0" out="314" />
+    <entry producer="chapter-08" in="0" out="194" />
+    <entry producer="chapter-09" in="0" out="182" />
+    <entry producer="endcard" in="0" out="149" />
+  </playlist>
+  <playlist id="v1">
+    <property name="shotcut:name">V2 · Diagramme</property>
+    <property name="shotcut:video">1</property>
+    <entry producer="opening" in="0" out="218" />
+    <entry producer="silos" in="0" out="194" />
+    <entry producer="building" in="0" out="122" />
+    <entry producer="meaning" in="0" out="179" />
+    <entry producer="properties" in="0" out="215" />
+    <entry producer="perspectives" in="0" out="251" />
+    <entry producer="bridge" in="0" out="251" />
+    <entry producer="values" in="0" out="314" />
+    <entry producer="metadata" in="0" out="194" />
+    <entry producer="search" in="0" out="182" />
+    <blank length="150" />
+  </playlist>
+  <playlist id="v2">
+    <property name="shotcut:name">V3 · Ergänzungen</property>
+    <property name="shotcut:video">1</property>
+    <blank length="114" />
+    <entry producer="opening-links" in="0" out="104" />
+    <blank length="126" />
+    <entry producer="question" in="0" out="68" />
+    <blank length="225" />
+    <entry producer="storage" in="0" out="77" />
+    <blank length="108" />
+    <entry producer="business-object" in="0" out="107" />
+    <blank length="105" />
+    <entry producer="perspective-lines" in="0" out="146" />
+    <blank length="60" />
+    <entry producer="bridge-lines" in="0" out="191" />
+    <blank length="177" />
+    <entry producer="same-code" in="0" out="137" />
+    <blank length="78" />
+    <entry producer="data-stays" in="0" out="116" />
+    <blank length="333" />
+  </playlist>
+  <playlist id="v3">
+    <property name="shotcut:name">V4 · Akzente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="2280" />
+  </playlist>
+  <tractor id="tractor" shotcut="1" in="0" out="2279">
+    <property name="shotcut">1</property>
+    <property name="shotcut:name">Wie der BBL-Datenkatalog funktioniert · 16:9</property>
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectNotes">76 s · 1920×1080 · 30 fps. Original NotebookLM audio. Rebuilt diagrams. Import bbl-datenkatalog.de.srt in Shotcut's Subtitles panel if required. Text and diagram shapes are edited in build_video.py; clip timing and fades are editable here.</property>
+    <track producer="background" />
+    <track producer="audio" hide="video" />
+    <track producer="v0" hide="audio" />
+    <track producer="v1" hide="audio" />
+    <track producer="v2" hide="audio" />
+    <track producer="v3" hide="audio" />
+    <transition in="0" out="2279">
+      <property name="mlt_service">mix</property>
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition in="0" out="2279">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">2</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2279">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">3</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2279">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">4</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2279">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">5</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+  </tractor>
+</mlt>

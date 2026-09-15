@@ -1,0 +1,43 @@
+Der Datenkatalog des BBL organisiert das Immobilienmanagement.
+
+Aber wie funktioniert das ganz ohne eigene Daten?
+
+Verwaltungsdaten liegen verstreut in zahllosen isolierten IT-Systemen.
+
+Die Suche danach ist extrem mühsam.
+
+Nehmen wir als Beispiel einen völlig alltäglichen Begriff: das Gebäude.
+
+Der Katalog trennt als Erstes die inhaltliche Bedeutung streng
+
+von der technischen Speicherung in der Software.
+
+Er beschreibt das Gebäude mit all seinen fachlichen Eigenschaften.
+
+Diese rein inhaltliche Definition nennt man ein Geschäftsobjekt.
+
+In der Realität existiert so ein Gebäude aber in vielen Systemen gleichzeitig:
+
+als finanzieller Wert in SAP und als geografische Fläche im GIS.
+
+Der Katalog fungiert hier als Brücke.
+
+Er verbindet das abstrakte Geschäftsobjekt
+
+direkt mit den exakten Speicherorten, den sogenannten Datentabellen.
+
+Damit alle Systeme dieselbe Sprache sprechen,
+
+festigt der Katalog diese Brücke mit verbindlichen Wertelisten.
+
+So nutzt die Gebäudekategorie überall
+
+exakt denselben standardisierten Code.
+
+All diese Verbindungen sind reine Metadaten.
+
+Die sensiblen echten Daten bleiben immer geschützt in den Quellsystemen.
+
+Sucht eine Fachperson nun ein Gebäude,
+
+sieht sie sofort die exakte Definition und das führende Quellsystem.

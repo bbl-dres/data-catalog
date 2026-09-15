@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "saved": "2026-09-15",
+  "preservation": "Keep this version. Make future edits in a separate version folder.",
+  "files": {
+    "assets/Wie_der_BBL-Datenkatalog_funktioniert.mp4": {
+      "bytes": 5571951,
+      "sha256": "e2616f6dbbc4fb02a6c0dee8784fb059c5fd0044d9442bce1af0b1d9b4962796"
+    },
+    "docs/video/2026-09-15-landscape/bbl-datenkatalog-landscape.mlt": {
+      "bytes": 26201,
+      "sha256": "f5e9c3da01475de7d2f7b696babb19a7feaa820e8dacdd4bdcd4524be69d0bc0"
+    },
+    "docs/video/2026-09-15-landscape/bbl-datenkatalog.de.srt": {
+      "bytes": 2099,
+      "sha256": "7eb26dba392aeedea259001f3ea263998602e5ec0ffe815c2cddd600fbb50d6e"
+    },
+    "docs/video/2026-09-15-landscape/build_video.py": {
+      "bytes": 20468,
+      "sha256": "87662b51b386e104bdd9856c6f93923a7fb2d708d88bba39d750f21e6387f665"
+    },
+    "docs/video/2026-09-15-landscape/graphics/bridge-lines.png": {
+      "bytes": 8693,
+      "sha256": "08a7bedc87c49f6bbbd306bf887da0041de84b655234aab291e1bff265b42df0"
+    },
+    "docs/video/2026-09-15-landscape/graphics/bridge.png": {
+      "bytes": 34144,
+      "sha256": "54f25230e89d77d775b03707aec7854c09d91f831f58cf5484db9d6c73ab8dc5"
+    },
+    "docs/video/2026-09-15-landscape/graphics/building.png": {
+      "bytes": 13354,
+      "sha256": "e0900c0f7720322fad61f02ed5ac9380bce6e18a8ce8a58beea8160666a1966f"
+    },
+    "docs/video/2026-09-15-landscape/graphics/business-object.png": {
+      "bytes": 14499,
+      "sha256": "fff79c61f003b6df1e55a38c451cb7a41987132b7b6d3bfc0d12f0b07737c9a0"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-00.png": {
+      "bytes": 62123,
+      "sha256": "5ea40e666ae265c3d2b5971e1b7686876d4a9e1996208cb3431e5162731e3454"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-01.png": {
+      "bytes": 55582,
+      "sha256": "81490fa290afaef5498388ef9d6f44a4eb1681745c923a569ac6ee7edac29c66"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-02.png": {
+      "bytes": 55945,
+      "sha256": "d720767f57f3d6b59079c611ac220420b2a7ac2bf2dfc16a0b0a95651aa32344"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-03.png": {
+      "bytes": 67261,
+      "sha256": "03e990000a74e8db01ab749b7a0271acaf14e208294bd97f1cb87e82bfa96f74"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-04.png": {
+      "bytes": 63966,
+      "sha256": "6e54cb3a9ceeac87ffb87f9c7b0e78cc1f6bae2d56b04331934a49dcdce72381"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-05.png": {
+      "bytes": 62636,
+      "sha256": "ffd8085fe9b9de3b30bc8702a2d25a6d3799268aae347c66ca6e9511a07807c1"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-06.png": {
+      "bytes": 64387,
+      "sha256": "c28494be795f332f87f11ec21cb0b5a9a087416b5a973c8d22c0e075c77758ea"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-07.png": {
+      "bytes": 67727,
+      "sha256": "8295eb72b831e75d0ba39d2c94821e64c8dd8a15d1c08e8376617d76c3366687"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-08.png": {
+      "bytes": 53608,
+      "sha256": "b7105a566149696bc50045653b44dd8df785f97cbca9074f4f17d0dbf7f07289"
+    },
+    "docs/video/2026-09-15-landscape/graphics/chapter-09.png": {
+      "bytes": 60917,
+      "sha256": "349859900dc9e7e6bd7fd4a1a1cb284ea8b50aeca648a7d5113cdf20e639c60d"
+    },
+    "docs/video/2026-09-15-landscape/graphics/data-stays.png": {
+      "bytes": 13544,
+      "sha256": "b71109d08c5609177235916e4bdf40127814577e7d579f3f555b260882f66456"
+    },
+    "docs/video/2026-09-15-landscape/graphics/endcard.png": {
+      "bytes": 60243,
+      "sha256": "514d2a7c5cebe72a195f8658a95c48f664c70fa23729c19edd47e5864e420a96"
+    },
+    "docs/video/2026-09-15-landscape/graphics/meaning.png": {
+      "bytes": 19379,
+      "sha256": "ec7b0a71afcb80196093f5cb11d5a83360fa58a4560feba2f60e4f85b74d3860"
+    },
+    "docs/video/2026-09-15-landscape/graphics/metadata.png": {
+      "bytes": 31826,
+      "sha256": "f9a9416bd3df42931760fda81def5efd80299780907aa15e1f91a7ffa064fe90"
+    },
+    "docs/video/2026-09-15-landscape/graphics/opening-links.png": {
+      "bytes": 12070,
+      "sha256": "2fd7d26ceb5383ab5d88552302918b38db5ac18bb3f15660df63e73ab2a96c34"
+    },
+    "docs/video/2026-09-15-landscape/graphics/opening.png": {
+      "bytes": 23911,
+      "sha256": "8558d37496da46d59b83a7b98726990f917a0590ca2c5cc3717d814d87e52bd5"
+    },
+    "docs/video/2026-09-15-landscape/graphics/perspective-lines.png": {
+      "bytes": 14693,
+      "sha256": "4cb7b6ccf1ab3c248dfafe4ca774dcadc274f6bd8962f52c17b1bdc118392886"
+    },
+    "docs/video/2026-09-15-landscape/graphics/perspectives.png": {
+      "bytes": 28520,
+      "sha256": "962f5a08c0f8be4541b13bfebfa25d397530a733f9d40e765b36a9f8acb7926d"
+    },
+    "docs/video/2026-09-15-landscape/graphics/properties.png": {
+      "bytes": 26401,
+      "sha256": "edb26c9f07b6a7da2996f9dc1919b1455a160e55f5ad9670a3fb916028b67747"
+    },
+    "docs/video/2026-09-15-landscape/graphics/question.png": {
+      "bytes": 9480,
+      "sha256": "8a24c18b7fcd5621bc87e182ce0fb743658d00dd38fc0e6dba02d046be54daad"
+    },
+    "docs/video/2026-09-15-landscape/graphics/same-code.png": {
+      "bytes": 12497,
+      "sha256": "c385f827e3397cc91b80d4d90ca3138a8b46d9882aab35c7b0766dfeaa63b015"
+    },
+    "docs/video/2026-09-15-landscape/graphics/search.png": {
+      "bytes": 38807,
+      "sha256": "f776ffcf495744820c6489366ad1880974a736cf2e3726d0c85ac6f103d4c41d"
+    },
+    "docs/video/2026-09-15-landscape/graphics/silos.png": {
+      "bytes": 29078,
+      "sha256": "021c1be9b37476605e5635aa4403992d7d77cafc30fca89c6a7a4af98aec64b9"
+    },
+    "docs/video/2026-09-15-landscape/graphics/storage.png": {
+      "bytes": 26509,
+      "sha256": "90827ca821aeb1c6c0377a65d9d4b0b3d63beb3a3c2457086853cd5d45d79d7d"
+    },
+    "docs/video/2026-09-15-landscape/graphics/values.png": {
+      "bytes": 32242,
+      "sha256": "a6d531533990836f70e6f93c00ddb2d15f8368e539b86d54be9ab27ec3d5ff8f"
+    },
+    "docs/video/2026-09-15-landscape/sprechertext.txt": {
+      "bytes": 1324,
+      "sha256": "838a78103900e440045420ac09219e8565f77d9f2d7c339ae6edb0198177e59b"
+    },
+    "docs/video/2026-09-15-landscape/storyboard.jpg": {
+      "bytes": 180137,
+      "sha256": "6e5651506f4159853c4c03c3f6edcdcfa939a35d9de09eb7be1d69789fff838e"
+    },
+    "docs/video/2026-09-15-landscape/timeline.json": {
+      "bytes": 5162,
+      "sha256": "988747074cf5d907bba253eefe6a0c464605093820ba4375d8e5131ac8bc67c1"
+    },
+    "docs/video/2026-09-15-landscape/version-1-poster.jpg": {
+      "bytes": 128405,
+      "sha256": "649f566be0f0ee95ed4c13511b13f60dc188b711555b0b07598ee0b8b6d6a51a"
+    },
+    "docs/video/2026-09-15-landscape/version-1.de.vtt": {
+      "bytes": 2030,
+      "sha256": "bb5645412bf6cc17976a4c92a6e63fce4affa3b024e3e428f242937a909e08f8"
+    },
+    "docs/video/2026-09-15-landscape/version-1.mp4": {
+      "bytes": 2673357,
+      "sha256": "f744a2fd6962caf3f3c7af16b3032d8a0e361909527b465b6c69adba48ef0322"
+    }
+  }
+}

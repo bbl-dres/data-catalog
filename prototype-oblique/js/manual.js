@@ -21,8 +21,9 @@
   };
 
   manual.video = video => video ? `<figure class="ob-manual-video">
-    <video class="ob-video-player" controls playsinline preload="metadata" aria-label="${esc(video.title)}" aria-describedby="manual-video-caption">
+    <video class="ob-video-player" controls playsinline preload="metadata"${video.poster ? ` poster="${esc(video.poster)}"` : ''} aria-label="${esc(video.title)}" aria-describedby="manual-video-caption">
       <source src="${esc(video.src)}" type="video/mp4">
+      ${video.subtitles ? `<track kind="subtitles" src="${esc(video.subtitles.src)}" srclang="${esc(video.subtitles.language)}" label="${esc(video.subtitles.label)}">` : ''}
       ${ui.link(video.src, esc(video.fallbackLabel))}
     </video>
     <figcaption id="manual-video-caption">${esc(video.caption)}</figcaption>

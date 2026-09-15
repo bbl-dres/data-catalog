@@ -1,0 +1,81 @@
+WEBVTT
+
+00:00:00.230 --> 00:00:04.360
+Der Datenkatalog des BBL organisiert
+das Immobilienmanagement.
+
+00:00:04.500 --> 00:00:07.300
+Aber wie funktioniert das
+ganz ohne eigene Daten?
+
+00:00:07.490 --> 00:00:11.550
+Verwaltungsdaten liegen verstreut
+in zahllosen isolierten IT-Systemen.
+
+00:00:11.800 --> 00:00:13.650
+Die Suche danach ist extrem mühsam.
+
+00:00:13.830 --> 00:00:17.750
+Nehmen wir als Beispiel einen völlig
+alltäglichen Begriff: das Gebäude.
+
+00:00:18.090 --> 00:00:21.300
+Der Katalog trennt als Erstes
+die inhaltliche Bedeutung streng
+
+00:00:21.340 --> 00:00:23.780
+von der technischen Speicherung
+in der Software.
+
+00:00:23.930 --> 00:00:27.050
+Er beschreibt das Gebäude
+mit all seinen fachlichen Eigenschaften.
+
+00:00:27.500 --> 00:00:30.930
+Diese rein inhaltliche Definition
+nennt man ein Geschäftsobjekt.
+
+00:00:31.130 --> 00:00:35.330
+In der Realität existiert so ein Gebäude
+aber in vielen Systemen gleichzeitig:
+
+00:00:35.550 --> 00:00:39.350
+als finanzieller Wert in SAP
+und als geografische Fläche im GIS.
+
+00:00:39.680 --> 00:00:41.480
+Der Katalog fungiert hier als Brücke.
+
+00:00:41.600 --> 00:00:44.150
+Er verbindet das abstrakte Geschäftsobjekt
+
+00:00:44.270 --> 00:00:47.750
+direkt mit den exakten Speicherorten,
+den sogenannten Datentabellen.
+
+00:00:48.200 --> 00:00:50.400
+Damit alle Systeme dieselbe Sprache sprechen,
+
+00:00:50.500 --> 00:00:53.650
+festigt der Katalog diese Brücke
+mit verbindlichen Wertelisten.
+
+00:00:53.830 --> 00:00:56.020
+So nutzt die Gebäudekategorie überall
+
+00:00:56.050 --> 00:00:58.350
+exakt denselben standardisierten Code.
+
+00:00:58.590 --> 00:01:00.850
+All diese Verbindungen sind reine Metadaten.
+
+00:01:01.000 --> 00:01:04.750
+Die sensiblen echten Daten bleiben immer
+geschützt in den Quellsystemen.
+
+00:01:05.150 --> 00:01:07.000
+Sucht eine Fachperson nun ein Gebäude,
+
+00:01:07.070 --> 00:01:10.750
+sieht sie sofort die exakte Definition
+und das führende Quellsystem.

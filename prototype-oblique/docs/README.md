@@ -20,6 +20,7 @@ Maintain these guides alongside changes to the prototype. The app's [README](../
 | [Edit mode](edit-mode-implementation.md) | Design-study mapping, implemented scope, atomic save API and activation. |
 | [Design and code reviews](review/README.md) | Findings, implemented fixes, validation and explicit remaining limitations. |
 | [Wireframes and design archive](wireframes/README.md) | Preserved design studies and earlier prototype snapshots. |
+| [Landscape explainer video](video/2026-09-15-landscape/README.md) | NotebookLM audio, landscape diagrams, editable Shotcut timeline, subtitles and export instructions. |
 
 ## Keeping this folder useful
 
