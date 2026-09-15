@@ -1,0 +1,55 @@
+Was bedeutet «Baujahr» eigentlich:
+
+das Jahr der Fertigstellung
+
+oder das Jahr der letzten Renovation?
+
+Der Datenkatalog des BBL hilft,
+
+solche Fragen zu klären.
+
+Die eigentlichen Gebäudedaten
+
+bleiben in den jeweiligen Anwendungen.
+
+Im Katalog finden Sie die Informationen darüber.
+
+Geschäftsobjekte erklären Begriffe wie Gebäude, Grundstück oder Raum –
+
+unabhängig vom Quellsystem.
+
+Ihre Attribute beschreiben Eigenschaften,
+
+etwa eine Gebäude-ID oder eine Fläche.
+
+Für die technische Arbeit sind auch
+
+Tabellen und Felder beschrieben.
+
+Die Verknüpfungen zeigen, welche Einträge zusammengehören.
+
+Wertelisten erläutern zulässige Codes und ihre Bedeutung.
+
+Suchen Sie nach «Gebäude»
+
+und öffnen Sie den Eintrag.
+
+Beim Baujahr steht:
+
+Gemeint ist das Jahr, in dem das Gebäude
+
+fertiggestellt wurde.
+
+Das Jahr einer Renovation ist eine andere Angabe.
+
+So können verschiedene Teams dieselbe Angabe gleich verstehen.
+
+Unter «Verantwortlich» finden Sie
+
+die eingetragenen Fachstellen und Ansprechpersonen.
+
+Der Katalog ist noch ein Prototyp.
+
+Probieren Sie ihn aus:
+
+Suchen Sie nach einem Begriff aus Ihrem Arbeitsalltag.

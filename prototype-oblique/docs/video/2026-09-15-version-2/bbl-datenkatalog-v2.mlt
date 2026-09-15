@@ -1,0 +1,452 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mlt producer="tractor" version="7.38.0" LC_NUMERIC="C">
+  <profile description="HD 1080p30" width="1920" height="1080" frame_rate_num="30" frame_rate_den="1" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="16" display_aspect_den="9" colorspace="709" />
+  <producer id="white">
+    <property name="resource">#ffffff</property>
+    <property name="mlt_service">color</property>
+  </producer>
+  <playlist id="background">
+    <entry producer="white" in="0" out="2459" />
+  </playlist>
+  <producer id="hook-bg" in="0" out="369">
+    <property name="resource">graphics/hook-bg.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">370</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">hook-bg</property>
+  </producer>
+  <producer id="metadata-bg" in="0" out="264">
+    <property name="resource">graphics/metadata-bg.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">265</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">metadata-bg</property>
+  </producer>
+  <producer id="diagram-bg" in="0" out="752">
+    <property name="resource">graphics/diagram-bg.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">753</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">diagram-bg</property>
+  </producer>
+  <producer id="demo-search" in="0" out="91">
+    <property name="resource">graphics/demo-search.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">92</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">demo-search</property>
+  </producer>
+  <producer id="demo-open" in="0" out="33">
+    <property name="resource">graphics/demo-open.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">34</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">demo-open</property>
+  </producer>
+  <producer id="demo-attributes" in="0" out="61">
+    <property name="resource">graphics/demo-attributes.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">62</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">demo-attributes</property>
+  </producer>
+  <producer id="demo-definition" in="0" out="380">
+    <property name="resource">graphics/demo-definition.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">381</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">demo-definition</property>
+  </producer>
+  <producer id="demo-contacts" in="0" out="202">
+    <property name="resource">graphics/demo-contacts.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">203</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">demo-contacts</property>
+  </producer>
+  <producer id="endcard" in="0" out="299">
+    <property name="resource">graphics/endcard.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">300</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">endcard</property>
+  </producer>
+  <producer id="building-anchor" in="0" out="1387">
+    <property name="resource">graphics/building-anchor.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">1388</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">building-anchor</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="question-completion" in="0" out="279">
+    <property name="resource">graphics/question-completion.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">280</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">question-completion</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="hook-benefit" in="0" out="153">
+    <property name="resource">graphics/hook-benefit.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">154</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">hook-benefit</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="source-data" in="0" out="264">
+    <property name="resource">graphics/source-data.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">265</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">source-data</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="object-label" in="0" out="752">
+    <property name="resource">graphics/object-label.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">753</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">object-label</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="tables" in="0" out="407">
+    <property name="resource">graphics/tables.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">408</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">tables</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="value-lists" in="0" out="128">
+    <property name="resource">graphics/value-lists.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">129</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">value-lists</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="answer-summary" in="0" out="344">
+    <property name="resource">graphics/answer-summary.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">345</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">answer-summary</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="contacts-summary" in="0" out="195">
+    <property name="resource">graphics/contacts-summary.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">196</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">contacts-summary</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="question-renovation" in="0" out="227">
+    <property name="resource">graphics/question-renovation.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">228</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">question-renovation</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="metadata-card" in="0" out="119">
+    <property name="resource">graphics/metadata-card.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">120</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">metadata-card</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="attributes" in="0" out="580">
+    <property name="resource">graphics/attributes.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">581</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">attributes</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <producer id="documented-link" in="0" out="263">
+    <property name="resource">graphics/documented-link.png</property>
+    <property name="mlt_service">qimage</property>
+    <property name="length">264</property>
+    <property name="eof">pause</property>
+    <property name="aspect_ratio">1</property>
+    <property name="seekable">1</property>
+    <property name="shotcut:caption">documented-link</property>
+    <filter in="0" out="8">
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">0=0;8=1</property>
+      <property name="level">1</property>
+      <property name="shotcut:animIn">9</property>
+    </filter>
+  </producer>
+  <chain id="voice">
+    <property name="resource">audio/narration-v2.flac</property>
+    <property name="mlt_service">avformat</property>
+    <property name="video_index">-1</property>
+    <property name="audio_index">0</property>
+    <property name="shotcut:caption">Corinna · V2 Schnitt</property>
+  </chain>
+  <playlist id="main_bin">
+    <property name="xml_retain">1</property>
+  </playlist>
+  <playlist id="audio">
+    <property name="shotcut:name">A1 · Corinna</property>
+    <property name="shotcut:audio">1</property>
+    <entry producer="voice" in="0" out="2459" />
+  </playlist>
+  <playlist id="v0">
+    <property name="shotcut:name">V1 · Hintergrund und Titel</property>
+    <property name="shotcut:video">1</property>
+    <entry producer="hook-bg" in="0" out="369" />
+    <entry producer="metadata-bg" in="0" out="264" />
+    <entry producer="diagram-bg" in="0" out="752" />
+    <entry producer="demo-search" in="0" out="91" />
+    <entry producer="demo-open" in="0" out="33" />
+    <entry producer="demo-attributes" in="0" out="61" />
+    <entry producer="demo-definition" in="0" out="380" />
+    <entry producer="demo-contacts" in="0" out="202" />
+    <entry producer="endcard" in="0" out="299" />
+  </playlist>
+  <playlist id="v1">
+    <property name="shotcut:name">V2 · Durchgehendes Beispiel</property>
+    <property name="shotcut:video">1</property>
+    <entry producer="building-anchor" in="0" out="1387" />
+    <blank length="1072" />
+  </playlist>
+  <playlist id="v2">
+    <property name="shotcut:name">V3 · Elemente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="90" />
+    <entry producer="question-completion" in="0" out="279" />
+    <entry producer="source-data" in="0" out="264" />
+    <entry producer="object-label" in="0" out="752" />
+    <blank length="224" />
+    <entry producer="answer-summary" in="0" out="344" />
+    <blank length="7" />
+    <entry producer="contacts-summary" in="0" out="195" />
+    <blank length="300" />
+  </playlist>
+  <playlist id="v3">
+    <property name="shotcut:name">V4 · Elemente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="216" />
+    <entry producer="hook-benefit" in="0" out="153" />
+    <blank length="610" />
+    <entry producer="tables" in="0" out="407" />
+    <blank length="1072" />
+  </playlist>
+  <playlist id="v4">
+    <property name="shotcut:name">V5 · Elemente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="1259" />
+    <entry producer="value-lists" in="0" out="128" />
+    <blank length="1072" />
+  </playlist>
+  <playlist id="v5">
+    <property name="shotcut:name">V6 · Akzente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="142" />
+    <entry producer="question-renovation" in="0" out="227" />
+    <blank length="145" />
+    <entry producer="metadata-card" in="0" out="119" />
+    <blank length="172" />
+    <entry producer="attributes" in="0" out="580" />
+    <blank length="1072" />
+  </playlist>
+  <playlist id="v6">
+    <property name="shotcut:name">V7 · Akzente</property>
+    <property name="shotcut:video">1</property>
+    <blank length="1124" />
+    <entry producer="documented-link" in="0" out="263" />
+    <blank length="1072" />
+  </playlist>
+  <tractor id="tractor" shotcut="1" in="0" out="2459">
+    <property name="shotcut">1</property>
+    <property name="shotcut:name">BBL-Datenkatalog · Version 2</property>
+    <property name="shotcut:projectAudioChannels">1</property>
+    <property name="shotcut:projectNotes">Separate V2. Real prototype captures; edited existing Corinna narration. Do not overwrite V1. Regenerate artwork/audio with build_video.py; timing and fades editable here. Import bbl-datenkatalog-v2.de.srt for subtitles.</property>
+    <track producer="background" />
+    <track producer="audio" hide="video" />
+    <track producer="v0" hide="audio" />
+    <track producer="v1" hide="audio" />
+    <track producer="v2" hide="audio" />
+    <track producer="v3" hide="audio" />
+    <track producer="v4" hide="audio" />
+    <track producer="v5" hide="audio" />
+    <track producer="v6" hide="audio" />
+    <transition in="0" out="2459">
+      <property name="mlt_service">mix</property>
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">2</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">3</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">4</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">5</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">6</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">7</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+    <transition in="0" out="2459">
+      <property name="mlt_service">qtblend</property>
+      <property name="a_track">0</property>
+      <property name="b_track">8</property>
+      <property name="always_active">1</property>
+      <property name="compositing">0</property>
+    </transition>
+  </tractor>
+</mlt>

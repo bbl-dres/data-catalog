@@ -1,0 +1,98 @@
+1
+00:00:00,680 --> 00:00:03,160
+Was bedeutet «Baujahr» eigentlich:
+
+2
+00:00:03,400 --> 00:00:05,080
+das Jahr der Fertigstellung
+
+3
+00:00:05,080 --> 00:00:07,160
+oder das Jahr der letzten Renovation?
+
+4
+00:00:07,520 --> 00:00:09,760
+Der Datenkatalog des BBL hilft,
+
+5
+00:00:09,760 --> 00:00:12,160
+solche Fragen zu klären.
+
+6
+00:00:12,560 --> 00:00:14,800
+Suchen Sie nach «Gebäude»
+
+7
+00:00:14,800 --> 00:00:16,560
+und öffnen Sie den Eintrag.
+
+8
+00:00:16,880 --> 00:00:18,560
+Beim Baujahr steht:
+
+9
+00:00:18,880 --> 00:00:20,760
+Gemeint ist das Jahr,
+in dem das Gebäude
+
+10
+00:00:20,760 --> 00:00:22,760
+fertiggestellt wurde.
+
+11
+00:00:23,120 --> 00:00:26,560
+Das Jahr einer Renovation
+ist eine andere Angabe.
+
+12
+00:00:26,800 --> 00:00:30,760
+So können verschiedene Teams
+dieselbe Angabe gleich verstehen.
+
+13
+00:00:31,360 --> 00:00:34,200
+Unter «Verantwortlich» finden Sie
+
+14
+00:00:34,200 --> 00:00:37,440
+die eingetragenen Fachstellen
+und Ansprechpersonen.
+
+15
+00:00:37,840 --> 00:00:39,720
+Für die technische Arbeit sind auch
+
+16
+00:00:39,720 --> 00:00:41,840
+Tabellen und Felder beschrieben.
+
+17
+00:00:42,440 --> 00:00:46,440
+Die Verknüpfungen zeigen,
+welche Einträge zusammengehören.
+
+18
+00:00:46,960 --> 00:00:48,680
+Die eigentlichen Gebäudedaten
+
+19
+00:00:48,680 --> 00:00:51,360
+bleiben in den jeweiligen Anwendungen.
+
+20
+00:00:51,960 --> 00:00:55,120
+Im Katalog finden Sie
+die Informationen darüber.
+
+21
+00:00:55,480 --> 00:00:58,000
+Der Katalog ist noch ein Prototyp.
+
+22
+00:00:58,160 --> 00:00:59,600
+Probieren Sie ihn aus:
+
+23
+00:00:59,680 --> 00:01:02,680
+Suchen Sie nach einem Begriff
+aus Ihrem Arbeitsalltag.

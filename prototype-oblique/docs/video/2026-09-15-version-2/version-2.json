@@ -1,0 +1,196 @@
+{
+  "version": 2,
+  "saved": "2026-09-15",
+  "duration_seconds": 82,
+  "preserved_version_1_commit": "aca2c32",
+  "files": {
+    "docs/video/2026-09-15-version-2/.gitattributes": {
+      "bytes": 8,
+      "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+    },
+    "docs/video/2026-09-15-version-2/audio/corinna-explanation.flac": {
+      "bytes": 4203840,
+      "sha256": "599c397c806f990726fdc61aab481cbacc68a6a9c82e1df9f4cf73d3cd61d09a"
+    },
+    "docs/video/2026-09-15-version-2/audio/corinna-short.flac": {
+      "bytes": 2663025,
+      "sha256": "894d4194b46f4e0f1682318886818b4876536cff6d098455bc118248d2e18bc7"
+    },
+    "docs/video/2026-09-15-version-2/audio/narration-v2.flac": {
+      "bytes": 6845481,
+      "sha256": "847dddba3825a29399809eb843bbf188985cbe034d029d57bc48d24c97f6ea15"
+    },
+    "docs/video/2026-09-15-version-2/audio/normalization.json": {
+      "bytes": 709,
+      "sha256": "4fe2281119312c6a4bf1f193b381f19f5641c4b09df4ec5d976ae36a6dcffa6f"
+    },
+    "docs/video/2026-09-15-version-2/audio/source-explanation.srt": {
+      "bytes": 3200,
+      "sha256": "79a5c2036262c8fb65bad6ccd7ee354518298e32fb96ca7f1f24d4bc631c1bd0"
+    },
+    "docs/video/2026-09-15-version-2/audio/source-short.srt": {
+      "bytes": 1642,
+      "sha256": "aecece9c2e2b0e3515b3c7e812483f52e0a5850415f0021cc1c77bb80780a8a6"
+    },
+    "docs/video/2026-09-15-version-2/bbl-datenkatalog-v2.de.srt": {
+      "bytes": 2061,
+      "sha256": "c4d1f88d50f41a6e0cbd50778c37b51bb4539e6c883a083bf66747000fd5b8ba"
+    },
+    "docs/video/2026-09-15-version-2/bbl-datenkatalog-v2.mlt": {
+      "bytes": 20198,
+      "sha256": "a63264ece47381ff9c5ed4981ad4528678636e5d1753307ec10040a6742e1cef"
+    },
+    "docs/video/2026-09-15-version-2/build_video.py": {
+      "bytes": 19269,
+      "sha256": "13829a1f42a5d6ae5aaa1507bbc463daa84b9ee2cf388c8a60caaee8ac7ca681"
+    },
+    "docs/video/2026-09-15-version-2/captures/01-home.png": {
+      "bytes": 79305,
+      "sha256": "81393675510e2493c596410ff8de405aef1e4678a06b76520f976517d7dcaa10"
+    },
+    "docs/video/2026-09-15-version-2/captures/02-search.png": {
+      "bytes": 69369,
+      "sha256": "8a476fa9655e2132b0a695dca8c2fcec15439c6a939e979c1d99a508d1cdd935"
+    },
+    "docs/video/2026-09-15-version-2/captures/03-building.png": {
+      "bytes": 82823,
+      "sha256": "ab9f670053ac78fdbca58cd67c00b9606f942aabd96667eb070d0f30e3f58aae"
+    },
+    "docs/video/2026-09-15-version-2/captures/04-attribute-list.png": {
+      "bytes": 91099,
+      "sha256": "cea75580debecf0dc78ccc2ac26fa968044ec35085107970a0afed921e0aeff9"
+    },
+    "docs/video/2026-09-15-version-2/captures/05-baujahr.png": {
+      "bytes": 77763,
+      "sha256": "7fd2da4d568bda51d3b86101062a9a888caf564b72d9c6cdf1a56f8fea7ba990"
+    },
+    "docs/video/2026-09-15-version-2/export-review.jpg": {
+      "bytes": 308691,
+      "sha256": "46d31bf044eae418faed3b9232408c0f28677b68387a52b2bf7d47a1d405f97a"
+    },
+    "docs/video/2026-09-15-version-2/graphics/answer-summary.png": {
+      "bytes": 18999,
+      "sha256": "8a440b2da625e0483140deb8cd13bfafbcf666f81594cefac6bcf2725a678970"
+    },
+    "docs/video/2026-09-15-version-2/graphics/attributes.png": {
+      "bytes": 22143,
+      "sha256": "b8d27f3ddbd8a3bbbe58506517a6e9a6af3860d6fdc2a5542f2861882286c71e"
+    },
+    "docs/video/2026-09-15-version-2/graphics/building-anchor.png": {
+      "bytes": 13463,
+      "sha256": "0ce3e03b03c2fcd64cec5fa8f48c845535637f2b0fbe1416d5d575b21e40285f"
+    },
+    "docs/video/2026-09-15-version-2/graphics/contacts-summary.png": {
+      "bytes": 17769,
+      "sha256": "f43ebc8f9223aca47a27163a17afc303c74faf2120f2606650f24f19e8e1a471"
+    },
+    "docs/video/2026-09-15-version-2/graphics/demo-attributes.png": {
+      "bytes": 361924,
+      "sha256": "0c1183b8990a50899a00dbe025fdbca3b33639652889a32968050b798ade8603"
+    },
+    "docs/video/2026-09-15-version-2/graphics/demo-contacts.png": {
+      "bytes": 198403,
+      "sha256": "d429272895ea350d9884ef79fd4ffd2615318b5a51fdf7eddf02f256dbac49ac"
+    },
+    "docs/video/2026-09-15-version-2/graphics/demo-definition.png": {
+      "bytes": 307190,
+      "sha256": "516342db1a1a271703c7a001c025e8a345273dd2902d590609ce4911ad6729e8"
+    },
+    "docs/video/2026-09-15-version-2/graphics/demo-open.png": {
+      "bytes": 507332,
+      "sha256": "06889e27d80996081e5735093e6a829b4f58ba68ee8127d8e4278b38855ba254"
+    },
+    "docs/video/2026-09-15-version-2/graphics/demo-search.png": {
+      "bytes": 242924,
+      "sha256": "45eb5953e6d90f5ef3b803fbf81bff3a5b57e1449d3508b91f84ca1bf5094f45"
+    },
+    "docs/video/2026-09-15-version-2/graphics/diagram-bg.png": {
+      "bytes": 33024,
+      "sha256": "e55e258a9c36ee0cd8f1b10f5b87d585d25ec35e58ba3a6df5e39c53bf71c1df"
+    },
+    "docs/video/2026-09-15-version-2/graphics/documented-link.png": {
+      "bytes": 12439,
+      "sha256": "6441ff373da44cd46e564ad9a9b1b773b6928a627c74612f57a4f61fcd7c4781"
+    },
+    "docs/video/2026-09-15-version-2/graphics/endcard.png": {
+      "bytes": 75770,
+      "sha256": "90439fc106e0273614fc0498d9a33e2b43e3f2c25f6af31c859161f3d225d1d8"
+    },
+    "docs/video/2026-09-15-version-2/graphics/hook-benefit.png": {
+      "bytes": 13293,
+      "sha256": "502676c8b324ec1be9a2b2d9f83a527967ccc7cc16464e31227f0795b30d1704"
+    },
+    "docs/video/2026-09-15-version-2/graphics/hook-bg.png": {
+      "bytes": 32646,
+      "sha256": "ad0b97a54f04ed8940c2a41da588cb827f6c41fdf471471822e7fdbce7e323c5"
+    },
+    "docs/video/2026-09-15-version-2/graphics/metadata-bg.png": {
+      "bytes": 29558,
+      "sha256": "9a07c8f0d8ffb4b036a0ea8a215a3b5827ce4eb6349756ed69bc4dffcf9cc94c"
+    },
+    "docs/video/2026-09-15-version-2/graphics/metadata-card.png": {
+      "bytes": 27107,
+      "sha256": "e9d20a7663aa9eae698dd64cfd4fd59677f456af07fcae487c5bf8ce98114760"
+    },
+    "docs/video/2026-09-15-version-2/graphics/object-label.png": {
+      "bytes": 18705,
+      "sha256": "811a2e1f9955d2aed324a41d8daec29bee01d78faed7c3f5ac3b309797c05de6"
+    },
+    "docs/video/2026-09-15-version-2/graphics/question-completion.png": {
+      "bytes": 13458,
+      "sha256": "665f91e70eff3a36982831810fe5835c97aabdd398acf12de9078151dc80b143"
+    },
+    "docs/video/2026-09-15-version-2/graphics/question-renovation.png": {
+      "bytes": 14383,
+      "sha256": "037d6d73674d0070c7a1f492ff7ab961ed8fb743ce6c7ea7117f22b90cba52a1"
+    },
+    "docs/video/2026-09-15-version-2/graphics/source-data.png": {
+      "bytes": 20563,
+      "sha256": "dbd086ee28ca8eeec79e2d2a2f140155893531b81e087bb518906f6d9ae1090b"
+    },
+    "docs/video/2026-09-15-version-2/graphics/tables.png": {
+      "bytes": 19364,
+      "sha256": "ac0489e3b95621d4317141340fb81bdb4875dd725ae031b63c767eabb7f332d0"
+    },
+    "docs/video/2026-09-15-version-2/graphics/value-lists.png": {
+      "bytes": 19836,
+      "sha256": "f5ea3380deb423dd2160fd878f93394494e61fd633244fb96e181d104fe43e81"
+    },
+    "docs/video/2026-09-15-version-2/qa.json": {
+      "bytes": 905,
+      "sha256": "9df21c11c7b6dd1417dc3b0d1ccf6870c55ab1f95b327187d6a95517e9c512a6"
+    },
+    "docs/video/2026-09-15-version-2/README.md": {
+      "bytes": 6160,
+      "sha256": "05d86adc69feb7ee73bc3938bafbb1cc4148e1561afc814c4574ae6a5fef0606"
+    },
+    "docs/video/2026-09-15-version-2/sprechertext.txt": {
+      "bytes": 1146,
+      "sha256": "b06c19c3d0794d52253c574a81ab07a2f18c89303320b7e290e383aeccbbad9f"
+    },
+    "docs/video/2026-09-15-version-2/storyboard.jpg": {
+      "bytes": 288730,
+      "sha256": "b60d4359849943b53eca8f8672e9e02f74dde732767a6338f9b734c506212042"
+    },
+    "docs/video/2026-09-15-version-2/timeline.json": {
+      "bytes": 4426,
+      "sha256": "c758495844d3fbf23edf6e309576079366c87d557aa85ae1e30927780ff3cc00"
+    },
+    "docs/video/2026-09-15-version-2/verify_export.py": {
+      "bytes": 3355,
+      "sha256": "cb0f3113ae48603169c71b2d20c988e115c9f635b22ee6337ad9d669110e9445"
+    },
+    "assets/bbl-datenkatalog-v2-poster.jpg": {
+      "bytes": 114312,
+      "sha256": "0f1074c28946a00a88ac2cfa501068cec7c37817406b996ee19516d311e824b5"
+    },
+    "assets/bbl-datenkatalog-v2.de.vtt": {
+      "bytes": 1994,
+      "sha256": "9285ecd0b3f876ebb2ff33dc547cad0655b8f78c8b0df8b2e99ea1b1290cd35a"
+    },
+    "assets/bbl-datenkatalog-v2.mp4": {
+      "bytes": 2885113,
+      "sha256": "aeebf209eded7b77fe3aa3d30c6d76b02e54a5c05f23a1a842d23e751db3add8"
+    }
+  }
+}

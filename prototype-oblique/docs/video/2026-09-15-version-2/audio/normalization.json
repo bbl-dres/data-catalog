@@ -1,0 +1,27 @@
+{
+  "first_pass": {
+    "input_i": "-18.14",
+    "input_tp": "-5.80",
+    "input_lra": "3.50",
+    "input_thresh": "-28.63",
+    "output_i": "-18.81",
+    "output_tp": "-4.68",
+    "output_lra": "3.30",
+    "output_thresh": "-29.29",
+    "normalization_type": "dynamic",
+    "target_offset": "-0.19"
+  },
+  "second_pass": {
+    "input_i": "-18.08",
+    "input_tp": "-5.80",
+    "input_lra": "3.30",
+    "input_thresh": "-28.56",
+    "output_i": "-18.94",
+    "output_tp": "-6.66",
+    "output_lra": "3.30",
+    "output_thresh": "-29.42",
+    "normalization_type": "linear",
+    "target_offset": "-0.06"
+  },
+  "target_note": "Mono programme, -19 LUFS, -2 dBTP before AAC. Final AAC is measured separately."
+}

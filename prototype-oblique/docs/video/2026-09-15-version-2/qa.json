@@ -1,0 +1,55 @@
+{
+  "video": {
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30/1",
+        "nb_frames": "2460"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 1,
+        "r_frame_rate": "0/0",
+        "nb_frames": "3845"
+      }
+    ],
+    "format": {
+      "duration": "82.000000",
+      "size": "2885113"
+    }
+  },
+  "full_decode": "passed",
+  "audio": {
+    "integrated_lufs": -19.01,
+    "true_peak_dbtp": -6.65,
+    "loudness_range_lu": 3.4
+  },
+  "v1_preservation": {
+    "files_checked": 39,
+    "all_sha256_unchanged": true
+  },
+  "shotcut_resources": 23,
+  "subtitle_cues": 28,
+  "export_frames_seconds": [
+    2,
+    6,
+    10,
+    18.5,
+    25,
+    31,
+    39,
+    44,
+    48,
+    50,
+    51.5,
+    55,
+    62,
+    68,
+    77
+  ]
+}
